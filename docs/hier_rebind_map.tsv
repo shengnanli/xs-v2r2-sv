@@ -1803,6 +1803,7 @@ ICacheDataArray	res	MbistPipeIcacheDataWay0	SAME_PATH	res	MbistPipeIcacheDataWay
 ICacheDataArray	res_1	MbistPipeIcacheDataWay1	SAME_PATH	res_1	MbistPipeIcacheDataWay1		auto_same	
 ICacheDataArray	res_2	MbistPipeIcacheDataWay2	SAME_PATH	res_2	MbistPipeIcacheDataWay2		auto_same	
 ICacheDataArray	res_3	MbistPipeIcacheDataWay3	SAME_PATH	res_3	MbistPipeIcacheDataWay3		auto_same	
+ICacheMainPipe	toMSHRArbiter	Arbiter2_ICacheMissReq	DEEPER	u_core.toMSHRArbiter	Arbiter2_ICacheMissReq		auto_deeper	
 ICacheMetaArray	mbistPl	MbistPipeIcacheTag	SAME_PATH	mbistPl	MbistPipeIcacheTag		auto_same	
 ICacheMetaArray	tagArrays_0	SplittedSRAMTemplate	SAME_PATH	tagArrays_0	SplittedSRAMTemplate		auto_same	
 ICacheMetaArray	tagArrays_1	SplittedSRAMTemplate_1	SAME_PATH	tagArrays_1	SplittedSRAMTemplate_1		auto_same	
@@ -1826,6 +1827,7 @@ ICacheMissUnit	prefetchMSHRs_8	ICacheMSHR_12	DEEPER	u_core.prefetchMSHRs_8	ICach
 ICacheMissUnit	prefetchMSHRs_9	ICacheMSHR_13	DEEPER	u_core.prefetchMSHRs_9	ICacheMSHR_13		auto_deeper	
 ICacheMissUnit	priorityFIFO	FIFOReg	DEEPER	u_core.priorityFIFO	FIFOReg		auto_deeper	
 IMSICGateWay	msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0	DEEPER	u_core.msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0		auto_deeper	
+IPrefetchPipe	toMSHRArbiter	Arbiter2_ICacheMissReq	DEEPER	u_core.toMSHRArbiter	Arbiter2_ICacheMissReq		auto_deeper	
 ITTageTable	mbistPl	MbistPipeIttage	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
 ITTageTable	table_0	FoldedSRAMTemplate_22	SAME_PATH	table_0	FoldedSRAMTemplate_22		auto_same	
 ITTageTable	wrbypass	WrBypass_41	SAME_PATH	wrbypass	WrBypass_41		auto_same	

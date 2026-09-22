@@ -58,7 +58,7 @@ Arbiter1_L1BankedDataWriteReq	MISSING	UNPROVEN	-
 Arbiter1_L1BankedDataWriteReqCtrl	MISSING	UNPROVEN	-
 Arbiter1_L2TLBImp_Anon	GOLDEN_REUSE	UNPROVEN	-
 Arbiter1_TagWriteReq	MISSING	UNPROVEN	-
-Arbiter2_ICacheMissReq	REWRITTEN	PROVEN_DIRECT	rtl/frontend/Arbiter2_ICacheMissReq.sv
+Arbiter2_ICacheMissReq	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/Arbiter2_ICacheMissReq.sv
 Arbiter2_L2TLBImp_Anon	GOLDEN_REUSE	UNPROVEN	-
 Arbiter2_L2TLBImp_Anon_1	GOLDEN_REUSE	UNPROVEN	-
 Arbiter2_L2TlbWithHptwIdBundle	GOLDEN_REUSE	UNPROVEN	-
@@ -555,7 +555,7 @@ ICacheMSHR_6	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/ICacheMSHR_6.sv
 ICacheMSHR_7	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/ICacheMSHR_7.sv
 ICacheMSHR_8	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/ICacheMSHR_8.sv
 ICacheMSHR_9	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/ICacheMSHR_9.sv
-ICacheMainPipe	MISSING	UNPROVEN	-
+ICacheMainPipe	REWRITTEN	PROVEN_DIRECT	rtl/frontend/ICacheMainPipe.sv
 ICacheMetaArray	REWRITTEN	PROVEN_DIRECT	rtl/frontend/ICacheMetaArray.sv
 ICacheMissUnit	MACRO_OPAQUE	PROVEN_DIRECT	rtl/frontend/ICacheMissUnit.sv
 ICacheReplacer	REWRITTEN	PROVEN_DIRECT	rtl/frontend/ICacheReplacer.sv
@@ -563,7 +563,7 @@ IMSIC	MISSING	UNPROVEN	-
 IMSICGateWay	REWRITTEN	PROVEN_DIRECT	rtl/uncore/IMSICGateWay.sv
 IMSIC_WRAP	MISSING	UNPROVEN	-
 INT2FP	MISSING	UNPROVEN	-
-IPrefetchPipe	MISSING	UNPROVEN	-
+IPrefetchPipe	REWRITTEN	PROVEN_DIRECT	rtl/frontend/IPrefetchPipe.sv
 ITTage	GOLDEN_REUSE	PROVEN_IN_CONE	-
 ITTageTable	GOLDEN_REUSE	PROVEN_IN_CONE	rtl/frontend/ITTageTable.sv
 ITTageTable_1	GOLDEN_REUSE	PROVEN_IN_CONE	rtl/frontend/ITTageTable_1.sv
