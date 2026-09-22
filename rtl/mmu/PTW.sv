@@ -64,15 +64,15 @@
 //   L76  package xs_ptw_pkg
 //   L539  §1 全局控制与 CSR 选择
 //   L570  §2 寄存器声明
-//   L614  §3 当前 PTE / 故障判定
-//   L655  §4 地址生成
-//   L694  §5 事件与握手（注明 golden 的 _GEN_ 编号）
-//   L780  §6 状态机（异步复位域）—— 按 Chisel 的 when 顺序转写，后写者赢
-//   L921  §7 载荷寄存器（不复位域）
-//   L1048  §8 响应装配
-//   L1093  §9 输出
-//   L1198  §10 perf：fsm_count / fsm_busy / fsm_idle / resp_blocked / mem_count / mem_cycle / mem_blocked
-//   L1210  wrapper PTW（生成段）
+//   L617  §3 当前 PTE / 故障判定
+//   L658  §4 地址生成
+//   L697  §5 事件与握手（注明 golden 的 _GEN_ 编号）
+//   L783  §6 状态机（异步复位域）—— 按 Chisel 的 when 顺序转写，后写者赢
+//   L924  §7 载荷寄存器（不复位域）
+//   L1055  §8 响应装配
+//   L1100  §9 输出
+//   L1205  §10 perf：fsm_count / fsm_busy / fsm_idle / resp_blocked / mem_count / mem_cycle / mem_blocked
+//   L1217  wrapper PTW（生成段）
 package xs_ptw_pkg;
   // PtwMergeResp 一条表项（PTW 输出 / stage1 输入用同一形状；stage1 输入没有 af）
   typedef struct packed {
@@ -608,7 +608,10 @@ module xs_PTW_core
   hptw_resp_t  hptw_resp;
   logic [43:0] full_gvpn_reg;
   logic [1:0]  cache_level;
-  logic [6:0]  perf_r1, perf_r2;          // 7 个 perf 事件各两拍打拍
+  // 7 个 perf 事件各两拍打拍。★寄存器名沿用 golden（io_perf_<k>_value_REG / _REG_1）★：
+  //   perf_1 是 ~idle、perf_2 是 idle，两条链的签名互为反相，FM 按签名配对会把两级/两链配错
+  //   （commit aa8ec8df 实测：4 failing + 2 unmatched 全落在这 4 个寄存器上），只能按名配对。
+  logic io_perf_0_value_REG, io_perf_0_value_REG_1, io_perf_1_value_REG, io_perf_1_value_REG_1, io_perf_2_value_REG, io_perf_2_value_REG_1, io_perf_3_value_REG, io_perf_3_value_REG_1, io_perf_4_value_REG, io_perf_4_value_REG_1, io_perf_5_value_REG, io_perf_5_value_REG_1, io_perf_6_value_REG, io_perf_6_value_REG_1;
 
   // ===========================================================================
   // §3 当前 PTE / 故障判定
@@ -1038,10 +1041,14 @@ module xs_PTW_core
     if (update_full_gvpn_mem_resp) full_gvpn_reg <= full_gvpn_wire;
     else if (req_walk)   full_gvpn_reg <= (io_req_bits_req_info_s2xlate == ONLY_STAGE2) ? {6'h0, io_req_bits_req_info_vpn} : 44'h0;
     else if (req_stage1) full_gvpn_reg <= stage1_gen_ppn;
-    // perf 两拍打拍
-    perf_r1 <= {io_mem_req_valid_0 & ~io_mem_req_ready, mem_cycle_watch, mem_req_fire,
-                io_resp_valid_0 & ~io_resp_ready, idle, ~idle, req_fire};
-    perf_r2 <= perf_r1;
+    // perf 两拍打拍：fsm_count / fsm_busy / fsm_idle / resp_blocked / mem_count / mem_cycle / mem_blocked
+    io_perf_0_value_REG <= req_fire;                                io_perf_0_value_REG_1 <= io_perf_0_value_REG;
+    io_perf_1_value_REG <= ~idle;                                   io_perf_1_value_REG_1 <= io_perf_1_value_REG;
+    io_perf_2_value_REG <= idle;                                    io_perf_2_value_REG_1 <= io_perf_2_value_REG;
+    io_perf_3_value_REG <= io_resp_valid_0 & ~io_resp_ready;        io_perf_3_value_REG_1 <= io_perf_3_value_REG;
+    io_perf_4_value_REG <= mem_req_fire;                            io_perf_4_value_REG_1 <= io_perf_4_value_REG;
+    io_perf_5_value_REG <= mem_cycle_watch;                         io_perf_5_value_REG_1 <= io_perf_5_value_REG;
+    io_perf_6_value_REG <= io_mem_req_valid_0 & ~io_mem_req_ready;  io_perf_6_value_REG_1 <= io_perf_6_value_REG;
   end
 
   // ===========================================================================
@@ -1197,13 +1204,13 @@ module xs_PTW_core
   // ===========================================================================
   // §10 perf：fsm_count / fsm_busy / fsm_idle / resp_blocked / mem_count / mem_cycle / mem_blocked
   // ===========================================================================
-  assign io_perf_0_value = {5'h0, perf_r2[0]};
-  assign io_perf_1_value = {5'h0, perf_r2[1]};
-  assign io_perf_2_value = {5'h0, perf_r2[2]};
-  assign io_perf_3_value = {5'h0, perf_r2[3]};
-  assign io_perf_4_value = {5'h0, perf_r2[4]};
-  assign io_perf_5_value = {5'h0, perf_r2[5]};
-  assign io_perf_6_value = {5'h0, perf_r2[6]};
+  assign io_perf_0_value = {5'h0, io_perf_0_value_REG_1};
+  assign io_perf_1_value = {5'h0, io_perf_1_value_REG_1};
+  assign io_perf_2_value = {5'h0, io_perf_2_value_REG_1};
+  assign io_perf_3_value = {5'h0, io_perf_3_value_REG_1};
+  assign io_perf_4_value = {5'h0, io_perf_4_value_REG_1};
+  assign io_perf_5_value = {5'h0, io_perf_5_value_REG_1};
+  assign io_perf_6_value = {5'h0, io_perf_6_value_REG_1};
 
 endmodule
 
