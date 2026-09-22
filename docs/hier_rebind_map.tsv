@@ -1487,6 +1487,11 @@ ArrayMulDataModule	c53_986	C53	UNRESOLVED				none
 ArrayMulDataModule	c53_987	C53	UNRESOLVED				none	
 ArrayMulDataModule	c53_988	C53	UNRESOLVED				none	
 ArrayMulDataModule	c53_99	C53	UNRESOLVED				none	
+Bitmap	cache_req_arb	Arbiter8_bitmapCacheReqBundle	DEEPER	u_core.cache_req_arb	Arbiter8_bitmapCacheReqBundle		auto_deeper	
+Bitmap	mem_arb	RRArbiterInit	DEEPER	u_core.mem_arb	RRArbiterInit		auto_deeper	
+BitmapCache	ClockGate	ClockGate	DEEPER	u_core.ClockGate	ClockGate		auto_deeper	
+BitmapCache	bitmapcache	SplittedSRAM	DEEPER	u_core.bitmapcache	SplittedSRAM		auto_deeper	
+BitmapCache	mbistBC	MbistBitmapCache	DEEPER	u_core.mbistBC	MbistBitmapCache		auto_deeper	
 Bku	clmulModule	ClmulModule	DEEPER	u_core.clmulModule	ClmulModule		auto_deeper	
 Bku	countModule	CountModule	DEEPER	u_core.countModule	CountModule		auto_deeper	
 Bku	cryptoModule	CryptoModule	DEEPER	u_core.cryptoModule	CryptoModule		auto_deeper	
@@ -1803,6 +1808,7 @@ ICacheDataArray	res	MbistPipeIcacheDataWay0	SAME_PATH	res	MbistPipeIcacheDataWay
 ICacheDataArray	res_1	MbistPipeIcacheDataWay1	SAME_PATH	res_1	MbistPipeIcacheDataWay1		auto_same	
 ICacheDataArray	res_2	MbistPipeIcacheDataWay2	SAME_PATH	res_2	MbistPipeIcacheDataWay2		auto_same	
 ICacheDataArray	res_3	MbistPipeIcacheDataWay3	SAME_PATH	res_3	MbistPipeIcacheDataWay3		auto_same	
+ICacheMainPipe	toMSHRArbiter	Arbiter2_ICacheMissReq	DEEPER	u_core.toMSHRArbiter	Arbiter2_ICacheMissReq		auto_deeper	
 ICacheMetaArray	mbistPl	MbistPipeIcacheTag	SAME_PATH	mbistPl	MbistPipeIcacheTag		auto_same	
 ICacheMetaArray	tagArrays_0	SplittedSRAMTemplate	SAME_PATH	tagArrays_0	SplittedSRAMTemplate		auto_same	
 ICacheMetaArray	tagArrays_1	SplittedSRAMTemplate_1	SAME_PATH	tagArrays_1	SplittedSRAMTemplate_1		auto_same	
@@ -1826,6 +1832,7 @@ ICacheMissUnit	prefetchMSHRs_8	ICacheMSHR_12	DEEPER	u_core.prefetchMSHRs_8	ICach
 ICacheMissUnit	prefetchMSHRs_9	ICacheMSHR_13	DEEPER	u_core.prefetchMSHRs_9	ICacheMSHR_13		auto_deeper	
 ICacheMissUnit	priorityFIFO	FIFOReg	DEEPER	u_core.priorityFIFO	FIFOReg		auto_deeper	
 IMSICGateWay	msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0	DEEPER	u_core.msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0		auto_deeper	
+IPrefetchPipe	toMSHRArbiter	Arbiter2_ICacheMissReq	DEEPER	u_core.toMSHRArbiter	Arbiter2_ICacheMissReq		auto_deeper	
 ITTageTable	mbistPl	MbistPipeIttage	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
 ITTageTable	table_0	FoldedSRAMTemplate_22	SAME_PATH	table_0	FoldedSRAMTemplate_22		auto_same	
 ITTageTable	wrbypass	WrBypass_41	SAME_PATH	wrbypass	WrBypass_41		auto_same	
@@ -1883,6 +1890,11 @@ L2TlbMissQueue	io_out_q/ram_ext	ram_40x47	ONE_SITE	u_core.mem_ext	ram_40x47		aut
 LCredit2Decoupled	queue	Queue4_CHISNP	DEEPER	u_core.queue	Queue4_CHISNP		auto_deeper	
 LCredit2Decoupled_10	queue	Queue4_CHIDAT	DEEPER	u_core.queue	Queue4_CHIDAT		auto_deeper	
 LCredit2Decoupled_8	queue	Queue4_CHIREQ	DEEPER	u_core.queue	Queue4_CHIREQ		auto_deeper	
+LLPTW	bitmap_arb	RRArbiterInit_4	DEEPER	u_core.bitmap_arb	RRArbiterInit_4		auto_deeper	
+LLPTW	hptw_req_arb	Arbiter2_LLPTW_Anon	DEEPER	u_core.hptw_req_arb	Arbiter2_LLPTW_Anon		auto_deeper	
+LLPTW	hyper_arb1	RRArbiterInit_1	DEEPER	u_core.hyper_arb1	RRArbiterInit_1		auto_deeper	
+LLPTW	hyper_arb2	RRArbiterInit_1	DEEPER	u_core.hyper_arb2	RRArbiterInit_1		auto_deeper	
+LLPTW	mem_arb	RRArbiterInit_1	DEEPER	u_core.mem_arb	RRArbiterInit_1		auto_deeper	
 LinkMonitor	Decoupled2LCredit_txdatLink	Decoupled2LCredit_2	ONE_SITE	u_core.Decoupled2LCredit_txdat	Decoupled2LCredit_2		auto_one_site	
 LinkMonitor	Decoupled2LCredit_txreqLink	Decoupled2LCredit	ONE_SITE	u_core.Decoupled2LCredit_txreq	Decoupled2LCredit		auto_one_site	
 LinkMonitor	Decoupled2LCredit_txrspLink	Decoupled2LCredit_1	ONE_SITE	u_core.Decoupled2LCredit_txrsp	Decoupled2LCredit_1		auto_one_site	
