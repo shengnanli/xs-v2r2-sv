@@ -30,6 +30,10 @@ FM_VARIANTS = LLPTW
 FM_REF_DEPS_LLPTW = RRArbiterInit_1.sv RRArbiterInit_4.sv Arbiter2_LLPTW_Anon.sv
 # 关掉重复寄存器合并：让 passing 与 fm_predict.py 的模型逐位可对账。
 FM_MERGE_DUP = false
+# ★vmucp = true★：未开时 strict 首跑只剩 3 个 matched-unread 点（REG_reg / hpaddr_reg[49:48]，
+# 两侧同名、3↔3 双射、同一死因），依据与逐点说明在 verif/fm_target_config/LLPTW.tcl。
+# 打开 = 让 FM 把这 3 点也证一遍（更严，不是放松）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 
