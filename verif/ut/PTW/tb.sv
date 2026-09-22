@@ -18,6 +18,21 @@
 // 【判别力自证】覆盖计数下限（见文末断言）：resp fire / llptw fire / hptw req fire /
 //   mem req fire / gpf / gaf / entry pf / entry af / stage1Hit 回应 / 跳转回应 / bitmap req fire /
 //   四种 s2xlate 各自的回应 / Sv39 回应 都必须 > 0，任何一项为 0 则 tb 自判 FAIL。
+// 【实测】rtl/mmu/PTW.sv @ f4acfd23ef8e55a386cec6ca10613c5b46b9626d（FM SUCCEEDED 的那一版）
+//   两档 initreg × 3 seed × 200000 拍，每拍 208 次比较，全部 errors=0：
+//     make run SEED=1|7|42 NCYCLES=200000 INITREG=0|1
+//   档  seed  checks     errors  resp/llptw/hptw_req/mem_req  gpf/gaf/pf/af  s1/jmp/bm_req  s2x(no/s1/s2/all)
+//   ir0   1   41600000   0       6578/608/4153/2749           1889/891/2775/605  1223/1262/1691  1681/1709/1633/1555
+//   ir0   7   41600000   0       6924/693/4463/2932           2087/765/2898/599  1240/1286/1817  1675/1789/1813/1647
+//   ir0  42   41600000   0       6985/665/4542/2964           1992/827/2943/583  1247/1285/1808  1742/1773/1756/1714
+//   ir1   1   41600000   0       6578/608/4153/2749           1891/893/2775/605  1223/1262/1691  1681/1709/1633/1555
+//   ir1   7   41600000   0       6924/693/4463/2932           2089/767/2898/599  1240/1286/1817  1675/1789/1813/1647
+//   ir1  42   41600000   0       6985/665/4542/2964           1992/827/2943/583  1247/1285/1808  1742/1773/1756/1714
+//   两档 gpf/gaf 计数差 2（seed 1/7）来自不复位的 hptw_resp 初值在暖机前几拍参与 h_resp 输出——
+//   差异只在计数上，errors 两档都是 0。
+//   mutant（不进库，20k 拍 seed=1）：M1 gpf_level Sv39 首次读回不跳级 / M2 HPTW 不可读不判 gpf /
+//   M3 use_stage1 少 guestFault 分支 / M4 fake_pte ppn_high 取 0 / M5 onlyStage2 入口 GPA 越界不查
+//   —— 5/5 抓到（首个失配分别在 cyc 582 / 165 / 219 / 2 / 1254）。
 `timescale 1ns/1ps
 module tb;
   int errors = 0;
