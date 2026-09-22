@@ -22,6 +22,11 @@ FM_VARIANTS = Bitmap
 FM_REF_DEPS_Bitmap = RRArbiterInit.sv Arbiter8_bitmapCacheReqBundle.sv
 # 关掉重复寄存器合并：让 passing 与 fm_predict.py 的模型可逐位对账。
 FM_MERGE_DUP = false
+# ★vmucp = true（加强）★：首跑（evidence/36600b5a07b8）留下 24 个对称死位——
+# io_pmp_req_bits_addr_r[63:48]（16，FM 自己按名配对）+ entries_<i>_id[3]（8，由
+# fm_pins.tcl 显式配对）——两侧同为 cone-dead 且双射。打开 = 让 FM 把它们也证一遍。
+# 白名单条目与逐条依据在 verif/fm_target_config/Bitmap.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 
