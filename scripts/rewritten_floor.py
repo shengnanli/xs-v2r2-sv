@@ -136,6 +136,73 @@ def has_macro_call(body):
     return any(m not in _DIRECTIVES for m in re.findall(r'`(\w+)', body))
 
 
+_CONST_RHS = re.compile(r"^\s*(?:'[01bdhox]*[0-9a-fA-FxXzZ_]*|\d+'[bdhoBDHO][0-9a-fA-FxXzZ_]+|\d+|\{[\s\d'bdhoxzBDHOXZ_,{}]*\})\s*$")
+
+
+def const_driven(body, outs):
+    """输出里有多少根是**常量驱动**（assign x = '0 / 4'b0 / {…全常量}）。
+
+    ★为什么单列而不是判错★（2026-09-21，PtwCache lane 实测踩出来）：
+    常量驱动本身**不是错**。codex 0169 D3 刚裁定 Rob 的 debug_otherPdest
+    就该确定驱动为 0（UNOBSERVED_DEBUG_CLEANUP）；golden 里也有真的恒零输出。
+    所以不能把它降档。
+
+    问题在于**不单列就读不出区别**：PtwCache 开工时 228 根输出是 `assign io_x = '0;`
+    的占位，本判据照样读 236/236 REWRITTEN —— 做完之后还是 236/236。
+    ★量具从第一天就饱和，而我把它当进度量具交给了 lane★，这是我的错。
+
+    lane 给的那句话是这一列的验收标准，抄在这里：
+      ★进度量具必须能区分"还没做"与"做完了恰好是常量"★
+    所以这一列只报数、不改判，读它的人自己去分辨；
+    补好之后两个数**应当互为印证**（真做完时常量根数应当降到 golden 里真正恒常的那几根），
+    ★不是二选一★。
+    """
+    n = 0
+    for lhs in re.findall(r'\bassign\s+([^=;]*?)=([^;]*);', body, re.S):
+        names = set(re.findall(r'\w+', lhs[0])) & outs
+        if names and _CONST_RHS.match(lhs[1]):
+            n += len(names)
+    return n
+
+
+def const_driven_set(name, bodies, memo=None, stack=None):
+    """模块 name 的哪些网是**常量驱动**的 —— ★沿例化链传递★。
+
+    ★这是本文件第三次踩"只看一层"★（前两次：驱动下限本身、NO_OUTPUT 收窄）。
+    const_driven() 在单个模块体上量是对的，但本工程的形状是
+    「golden 同名壳 + xs_<名>_core 内层核」：228 根 `assign io_x = '0;` 全在**核**里，
+    壳只是把输出接到核的端口上。在壳上量，读数是 0 —— 看起来"没有占位"，
+    而实际 236 根输出里 228 根是钉死的常量。
+
+    所以和 effective_driven 同构：输出经例化端口连到子模块 C 的端口 cp 时，
+    cp 若在 C 的常量驱动集合里，这根输出就也算常量驱动。
+    """
+    memo = {} if memo is None else memo
+    stack = set() if stack is None else stack
+    if name in memo:
+        return memo[name]
+    if name in stack:
+        return set()
+    body = bodies.get(name)
+    if body is None:
+        return None            # 外部黑盒：不可知，调用方按"不是常量"处理
+    stack.add(name)
+    outs = output_ports(body)
+    d = set()
+    # 本层的真常量驱动
+    for lhs, rhs in re.findall(r'\bassign\s+([^=;]*?)=([^;]*);', body, re.S):
+        if _CONST_RHS.match(rhs):
+            d |= set(re.findall(r'\w+', lhs))
+    # 经子模块传上来的
+    for child, cport, names in instance_conns(body):
+        sub = const_driven_set(child, bodies, memo, stack)
+        if sub is not None and cport in sub:
+            d |= names
+    stack.discard(name)
+    memo[name] = d
+    return d
+
+
 def input_ports(body):
     """ANSI 端口表里的 input/inout 名字。只用来把"全 input 的 sink"和"空壳"分开。"""
     head = body.split(');', 1)[0] if ');' in body else body
@@ -349,6 +416,7 @@ def classify_rtl(repo=None):
             if name not in bodies or len(body) > len(bodies[name]):
                 bodies[name], where[name] = body, rel
     memo = {}
+    cmemo = {}
     idx = {}
     for name, body in bodies.items():
         outs = output_ports(body)
@@ -358,7 +426,8 @@ def classify_rtl(repo=None):
         # decide_tier 看不到 opq，所以在这里补这一刀）
         if tier == 'REWRITTEN' and (opq & outs):
             tier = 'MACRO_OPAQUE'
-        idx[name] = (tier, dn, on, where[name])
+        idx[name] = (tier, dn, on, where[name],
+                     len((const_driven_set(name, bodies, cmemo) or set()) & outs))
     if repo is None and fp is not None:
         _CACHE = (fp, idx)
     return idx
@@ -514,7 +583,8 @@ def main():
         if not v:
             print('%s: rtl/ 下没有这个模块' % a.module)
             return 1
-        print('%s\t%s\tdriven=%d/%d\t%s' % (a.module, v[0], v[1], v[2], v[3]))
+        extra = ('  其中常量驱动 %d 根' % v[4]) if len(v) > 4 and v[4] else ''
+        print('%s\t%s\tdriven=%d/%d\t%s%s' % (a.module, v[0], v[1], v[2], v[3], extra))
         return 0
     from collections import Counter
     c = Counter(v[0] for v in idx.values())
