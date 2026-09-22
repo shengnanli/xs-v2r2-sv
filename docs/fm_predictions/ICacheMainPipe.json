@@ -1,0 +1,10 @@
+{
+  "target": "ICacheMainPipe",
+  "ut": "ICacheMainPipe",
+  "regs": 1739,
+  "outs": 2328,
+  "expected": 4067,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "merge_dup=true（fm_eq.tcl 默认，未改）⇒ 模型 4067 不直接适用。手工推算：golden 里逐字相同的重复寄存器有 RegNext(s0_fire)×21（io_touch_0/1_valid_REG、s1_hits_REG/_1、s1_datas_REG×8、s1_data_is_from_MSHR_REG×8、s1_codes_REG，-20）、RegNext(s1_fire)×12（io_errors_*_valid_REG×2、io_errors_*_report_to_beu_REG×2、io_metaArrayFlush_*_valid_REG×2、REG..REG_3、s2_pmp_exception_REG、s2_pmp_mmio_REG，-11）；impl 侧各只写一份。若 FM 把这 2 组全部合并，预期 passing = 4067 - 31 = 4036。另预期 matched-unread：cntFtqFireInterval 32 位（XSPerfHistogram 死计数器，两侧对称保留）会被列为 unread，strict 首跑应 PARTIAL(unread)，须走 vmucp 白名单第二跑。"
+}
