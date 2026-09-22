@@ -1,0 +1,8 @@
+# run	2026-09-22T07:14:40Z	ut_dir=PTW
+commit	24ac22605a1b6b11671fd9b8708dcc53347123c2
+head_before	24ac22605a1b6b11671fd9b8708dcc53347123c2
+head_after	24ac22605a1b6b11671fd9b8708dcc53347123c2
+worktree_digest_before	06000aba04ae5a1b57ebfe6f4cc89e5b8183b024279876d388cfef72ab76b186
+worktree_digest_after	06000aba04ae5a1b57ebfe6f4cc89e5b8183b024279876d388cfef72ab76b186
+targets	PTW
+driver	mmu5-lane proof.sh（= run_proof.sh 去掉 readability_audit 拦截；该审计在本 commit 上 rc=1，红项为 rtl/backend/Rob.sv 的 E 类导航腐烂，main 继承）
