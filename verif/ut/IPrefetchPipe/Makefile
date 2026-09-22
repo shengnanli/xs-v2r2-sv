@@ -21,6 +21,20 @@ RTL_GOLDEN_DEPS = \
 FM_VARIANTS = IPrefetchPipe
 FM_REF_DEPS_IPrefetchPipe = Arbiter2_ICacheMissReq.sv
 
+# vmucp = 加强证明（让 FM 真的去比 matched-unread 点），不是放宽。
+# 第一次 strict 跑（commit 4be234a9，FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 未开）：
+# native SUCCEEDED、passing 910（Port 435 + DFF 475）、failing 0、unmatched 0(0)，
+# 但 matched-unread 96 → strict 判 PARTIAL。这 96 个点 FM 已经按名字/签名 1↔1 配上
+# （fm_work/IPrefetchPipe/unread_points.txt 每行都是 matched_nc r:… i:…），全是
+# **两侧对称**的"存了全宽、只读一截"的 cone-dead 位：
+#   s2_req_vaddr_0/1 [49:14] 与 [5:0]（只读 [13:6] 组索引）      42×2 = 84
+#   s2_req_paddr_0/1 [5:0]  （只读 [47:6] 块地址 / [47:12] ptag） 6×2 = 12
+#   s2_isSoftPrefetch（golden 只在 XSPerfAccumulate 里读，perf 段被编译掉）   1
+#   （其中 1 个点被 FM 合并进别的点，实际列出 96）
+# 可读核照 golden 存同样的寄存器，所以 impl 侧对称存在同一批死位。开 vmucp 后 FM 把
+# 这 96 对当比对点真的去证，passing 应从 910 涨到 1006；不 dont_verify、不黑盒、不约束 ref。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 # 端口顺序也当硬闸（wrapper 与 golden 端口表逐位同序）
 PORTLINT_ORDER = fail
 
