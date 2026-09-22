@@ -31,3 +31,15 @@ EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	signoff-strict	SUCCEEDED	25300	25300	0	0
 #     rtl/backend/xs_iq_entries_core.sv 55f185f5602052b6a80bb52268d4fa24bbd842828e2d1e933ece6e73bc3d4062
 #   且 sha256sum -c 对"第一次起跑前"的快照逐个复核过：9 个变体薄文件 + 共享核，
 #   从第一次起跑到最后一份 receipt 产出，字节一次都没动过（git status rtl/verif/scripts 全程为空）。
+#
+# ★验收：chk_impl 是否回到 same★
+# 复跑（★必须在 main worktree 里跑★：gen_receipt_harvest.py 的 lane_worktrees() 按设计
+#   **排除 REPO 自己**，在 wt-entrerun 里跑会看不见 wt-entrerun 自己的 evidence，
+#   于是仍旧选中旧的 wt-entries3:29dd150aa166 那一份、照样报 DIFFER —— 我第一次就踩了这个）：
+#     cd /home/eda/xs-env/xs-v2-sv && python3 scripts/gen_receipt_harvest.py --out <某个仓外路径>
+#   （只读调用：只 git worktree list / git ls-files / 读文件，--out 指到仓外）
+# 结果（main worktree HEAD 0e4afde0e3da2ddbac24085ab852bd4fcaa88221 时点）：
+#   9/9  chk_golden=same chk_impl=same chk_fm_eq=same chk_pins=same chk_decl=none
+#        chk_tool=same chk_facts=same  verdict=COLLECTED  evidence=wt-entrerun:fc1f3cddb64e
+#   全表 NEEDS_RERUN 从 25 降到 16，正好少了这 9 个。
+#   chk_pins 也从 `bridged` 变成 `same`：新 receipt 认证的就是当前那份 fm_pins_pre.tcl 字节。
