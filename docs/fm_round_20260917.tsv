@@ -407,7 +407,7 @@ SRAMTemplate_84	SUCCEEDED	p301 f0 um0 unread=? const_reg=? mode=assembly vmucp=f
 SRAMTemplate_86	SUCCEEDED	p301 f0 um0 unread=? const_reg=? mode=assembly vmucp=false @62fccb92c825 evidence/62fccb92c825/SRAMTemplate_86/receipt.json
 SRAMTemplate_88	SUCCEEDED	p301 f0 um0 unread=? const_reg=? mode=assembly vmucp=false @62fccb92c825 evidence/62fccb92c825/SRAMTemplate_88/receipt.json
 SRAMTemplate_92	SUCCEEDED	p301 f0 um0 unread=? const_reg=? mode=assembly vmucp=false @62fccb92c825 evidence/62fccb92c825/SRAMTemplate_92/receipt.json
-SSIT	SUCCEEDED	p14525 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @82fe3881c4d9 evidence/82fe3881c4d9/SSIT/receipt.json
+SSIT	SUCCEEDED	p14525 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @684cbdbaf05c evidence/684cbdbaf05c/SSIT/receipt.json
 Sbuffer	SUCCEEDED	p28329 f0 um0 unread=? const_reg=5 mode=signoff-strict vmucp=false @74f0107f65db evidence/74f0107f65db/Sbuffer/receipt.json
 SbufferData	SUCCEEDED	p23184 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @014a7e1521d4 evidence/014a7e1521d4/SbufferData/receipt.json
 SinkA	SUCCEEDED	p121 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/SinkA/receipt.json

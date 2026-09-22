@@ -153,48 +153,70 @@ def _add_canonical(dst, name, src):
 def stale_impl_targets():
     """★当前实现字节与 receipt 认证的不一致 -> 不是当前 proven★（codex 0170，选 A）。
 
-    判据不是新造的，仓里早就有、每次重算都在算：
-    `scripts/gen_receipt_harvest.py` 的 `chk_impl()` 逐个比对 receipt 的 `impl_closure`
-    里每个 kind=repo 文件的 sha256 与仓里当前字节，对不上就判 `DIFFER`。
-    ★问题一直是这张表算完了没人用★ —— proven 口径读的是 fm_round_*.tsv 的行，
-    于是同一个目标一边被收录表判 NEEDS_RERUN、一边被覆盖率台账计作 proven，
-    两张表就在同一个 docs/ 目录里彼此不说话。
+    判据同 `gen_receipt_harvest.py` 的 chk_impl()：receipt 的 impl_closure 里每个
+    kind=repo 文件的 sha256 必须等于仓里当前字节。★但这里不读收录表，直接对
+    **已跟踪的** receipt 逐份算★ —— 2026-09-22 两次实测逼出来的：
 
-    codex 0170 的裁定与 D1 的分野（原文）：
-      「D1 是缺归档但没有已知代码漂移；0184 是 receipt 明确认证旧 closure，
-        而当前 closure 已改变，并已有 OthersEntry 合并后无法 elaborate 的反例。
-        ★这会造成当前 RTL 的假绿，属于正确性问题，不是证据美化。★」
+      第一版读收录表的 chk_impl 列：收录表会扫 lane worktree，把**尚未合入**的新
+      receipt 选成 lead（in_vcs=no）。6 个 Entries* 在 wt-entrerun 刚跑出新证据、
+      还没合并时就被判"不陈旧"，而 proven 真正数进去的仍是 round 台账里那份
+      **陈旧的、已跟踪的**旧 receipt —— 一份没进仓的证据给一份过期的证据背书，
+      proven 凭空 +203,341 行。
+      第二版加了 in_vcs==yes：又**多排了 8,573 行**——lead 是 lane 里的新 receipt
+      （in_vcs=no）时，表里看不见那份仍然匹配的旧跟踪 receipt，于是被误判陈旧。
 
-    实测过的反例（不是假想）：OthersEntry 全族 18 个 wrapper 在
-    `29dd150a`(改共享核参数 API) 与 `809aebb6`(签核出 receipt) 这两条**互不为祖先**的
-    并行 lane 分别合入后，坏到连 elaborate 都过不去
-    （FMR_VLOG-273 Parameter 'IQ_TYPE_BIT' not defined），而 30 份 tracked receipt
-    照样让台账记绿，直到 `check_param_override` 偶然撞见。
+    收录表的 lead 选择回答的是"哪一份最该收"，不是"main 上有没有一份仍然成立的"。
+    两个问题不能共用一列。所以这里直接问后者：
+      目标不陈旧 ⟺ 存在一份**已跟踪、绿判决**的 receipt，其 impl_closure 全部字节仍等于当前仓。
+    codex 0170：「current proven」= 当前 main 字节 + 已跟踪 receipt。
 
-    ★这一类靠"下次注意"防不住★：两条 lane 内部都自洽，谁都没做错。
-
-    返回被判 STALE_IMPL_NEEDS_RERUN 的目标名集合。收录表不存在时返回空集
-    并在 stderr 出声 —— 判据读不到时**不许静默放行**。
+    实测反例仍是 OthersEntry：两条互不为祖先的并行 lane（29dd150a 改共享核 API /
+    809aebb6 签核）分别合入后，整族坏到连 elaborate 都过不去，而 30 份 tracked receipt
+    照样让台账记绿，直到 check_param_override 偶然撞见。★靠"下次注意"防不住。★
     """
-    f = REPO / 'docs' / 'receipt_harvest.tsv'
-    if not f.exists():
-        sys.stderr.write('rewrite_coverage: ★读不到 docs/receipt_harvest.tsv★ —— '
-                         'STALE_IMPL 判据本轮未生效，proven 可能含陈旧实现\n')
+    import hashlib
+    import json
+    import subprocess
+    try:
+        rels = subprocess.check_output(
+            ['git', '-C', str(REPO), 'ls-files', 'evidence/*/receipt.json']).decode().split()
+    except Exception:
+        sys.stderr.write('rewrite_coverage: ★列不出已跟踪 receipt★ —— STALE_IMPL 判据未生效\n')
         return set()
-    hdr, out = None, set()
-    for line in f.read_text(errors='replace').splitlines():
-        if line.startswith('#') or not line.strip():
+    _sha_cache = {}
+
+    def sha(path):
+        if path not in _sha_cache:
+            p = REPO / path
+            try:
+                _sha_cache[path] = hashlib.sha256(p.read_bytes()).hexdigest()
+            except OSError:
+                _sha_cache[path] = None
+        return _sha_cache[path]
+
+    seen, fresh = set(), set()
+    for rel in rels:
+        parts = rel.split('/')
+        if len(parts) < 4:
             continue
-        c = line.split('\t')
-        if hdr is None:
-            hdr = c
-            continue
+        tgt = parts[2]
         try:
-            if c[hdr.index('chk_impl')] != 'same':
-                out.add(c[hdr.index('target')])
-        except (ValueError, IndexError):
+            d = json.loads((REPO / rel).read_text())
+        except Exception:
             continue
-    return out
+        if d.get('verdict') not in ('SUCCEEDED', 'PASS_DEAD_REF'):
+            continue
+        seen.add(tgt)
+        ok = True
+        for e in (d.get('impl_closure') or []):
+            if e.get('kind') != 'repo':
+                continue
+            if sha(e.get('path', '')) != e.get('sha256'):
+                ok = False
+                break
+        if ok:
+            fresh.add(tgt)
+    return seen - fresh
 
 
 def proven_modules():
