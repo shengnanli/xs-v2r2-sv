@@ -1,0 +1,45 @@
+# Entries* 九变体重验批次 —— 实测（预测见 docs/entries_rerun_prereg.md，写在跑之前）
+# 输入 commit（9 个目标同一个）: fc1f3cddb64e677e4fcd7d0977c88cdd33c2cc00
+# G1 golden: /home/eda/xs-env/G1-canonical/golden-rtl（只读）
+# 复跑: cd verif/ut/<target> && make fm-<target>      （FM_MODE=signoff-strict 默认）
+# delta = 实测 passing - 预测 passing；预测容差 0
+target	mode	verdict	passing	pred_passing	delta	failing	unverified	aborted	unread_notcompared	unmatched_6	dont_verify	relaxed_appvars	receipt_sha256
+EntriesVfdivVidiv	signoff-strict	SUCCEEDED	12136	12136	0	0	0	0	0	0	0	0	ce38adb9fe485460ecf528656f83a3356133c9b67021b0e5b7babcd0232320c3
+EntriesFaluFmac	signoff-strict	SUCCEEDED	15934	15934	0	0	0	0	0	0	0	0	5131c364a051ee620ce37fdd49b9ed719aace7934391782c90017d90bc11012b
+EntriesFaluFmacFdiv	signoff-strict	SUCCEEDED	16549	16549	0	0	0	0	0	0	0	0	bab0da04e0349f2c446e776f198b487ab5ec6f432ad57c016b18da662d6e68a1
+EntriesFaluFcvtF2vFmacFdiv	signoff-strict	SUCCEEDED	16619	16619	0	0	0	0	0	0	0	0	c8a4ba31c8cb56c1729c76cb24c52eecbd6a3cb93c1c09d8c9cbb0f28de65c00
+EntriesVfmaVialuFixVfalu	signoff-strict	SUCCEEDED	18369	18369	0	0	0	0	0	0	0	0	3ad80c640968dc0e6d38efc5ca0a3eba11c6bc11a1d5405ce0425aa073fdd896
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	signoff-strict	SUCCEEDED	18755	18755	0	0	0	0	0	0	0	0	2732155072dcc95dd32e35d032d0b9c9b9b98073b9639e84dc93f6e2ab8ac9dd
+EntriesAluCsrFenceDiv	signoff-strict	SUCCEEDED	25001	25001	0	0	0	0	0	0	0	0	93b6ae73f2f63d5981fd28c85667ca134765c80574fa0d567d6d5411d24041d4
+EntriesAluMulBkuBrhJmp	signoff-strict	SUCCEEDED	25010	25010	0	0	0	0	0	0	0	0	be5606d5ad22ae18d3c078bd4294d953eba42be4ae761fac4144590ef85d117d
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	signoff-strict	SUCCEEDED	25300	25300	0	0	0	0	0	0	0	0	cd565c874886d3db5fb109541c49f653e31b20bbdc8989bb4f8ccb4cbb43aaf4
+# ---- 全批 9/9 SUCCEEDED, delta 全 0 ----
+# 钉点 fail-closed 守卫实跑读数（n / expect / miss），9/9 全 miss=0，fm.log 行首 Error: 计数全 0：
+#   EntriesVfdivVidiv                                     9898 /  9898 / 0
+#   EntriesFaluFmac                                      13166 / 13166 / 0
+#   EntriesFaluFmacFdiv                                  13180 / 13180 / 0
+#   EntriesFaluFcvtF2vFmacFdiv                           13208 / 13208 / 0
+#   EntriesVfmaVialuFixVfalu                             14374 / 14374 / 0
+#   EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf 14398 / 14398 / 0
+#   EntriesAluCsrFenceDiv                                20308 / 20308 / 0
+#   EntriesAluMulBkuBrhJmp                               20292 / 20292 / 0
+#   EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v              20516 / 20516 / 0
+#
+# ★receipt 里的 impl_commit 在本批里不是同一个值★（fc1f3cdd / 0fe82536 / 3d2a6881 / 331622b9 / 94a986e8）
+#   ——因为本 lane 按要求小步提交，make_receipt.py 取的是**跑完那一刻**的 HEAD。
+#   被证明的字节以 impl_closure 的 sha256 为准，整批完全一致：
+#     rtl/backend/xs_iq_entries_core.sv 55f185f5602052b6a80bb52268d4fa24bbd842828e2d1e933ece6e73bc3d4062
+#   且 sha256sum -c 对"第一次起跑前"的快照逐个复核过：9 个变体薄文件 + 共享核，
+#   从第一次起跑到最后一份 receipt 产出，字节一次都没动过（git status rtl/verif/scripts 全程为空）。
+#
+# ★验收：chk_impl 是否回到 same★
+# 复跑（★必须在 main worktree 里跑★：gen_receipt_harvest.py 的 lane_worktrees() 按设计
+#   **排除 REPO 自己**，在 wt-entrerun 里跑会看不见 wt-entrerun 自己的 evidence，
+#   于是仍旧选中旧的 wt-entries3:29dd150aa166 那一份、照样报 DIFFER —— 我第一次就踩了这个）：
+#     cd /home/eda/xs-env/xs-v2-sv && python3 scripts/gen_receipt_harvest.py --out <某个仓外路径>
+#   （只读调用：只 git worktree list / git ls-files / 读文件，--out 指到仓外）
+# 结果（main worktree HEAD 0e4afde0e3da2ddbac24085ab852bd4fcaa88221 时点）：
+#   9/9  chk_golden=same chk_impl=same chk_fm_eq=same chk_pins=same chk_decl=none
+#        chk_tool=same chk_facts=same  verdict=COLLECTED  evidence=wt-entrerun:fc1f3cddb64e
+#   全表 NEEDS_RERUN 从 25 降到 16，正好少了这 9 个。
+#   chk_pins 也从 `bridged` 变成 `same`：新 receipt 认证的就是当前那份 fm_pins_pre.tcl 字节。
