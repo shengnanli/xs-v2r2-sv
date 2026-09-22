@@ -210,10 +210,12 @@ ICacheMSHR_6	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmuc
 ICacheMSHR_7	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ICacheMSHR_7/receipt.json
 ICacheMSHR_8	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ICacheMSHR_8/receipt.json
 ICacheMSHR_9	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ICacheMSHR_9/receipt.json
+ICacheMainPipe	SUCCEEDED	p4034 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @8bb456d758e8 evidence/8bb456d758e8/ICacheMainPipe/receipt.json
 ICacheMetaArray	SUCCEEDED	p2500 f0 um0 unread=? const_reg=? mode=assembly vmucp=true @76d345fc6c4f evidence/76d345fc6c4f/ICacheMetaArray/receipt.json
 ICacheMissUnit	SUCCEEDED	p3215 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @76d345fc6c4f evidence/76d345fc6c4f/ICacheMissUnit/receipt.json
 ICacheReplacer	SUCCEEDED	p781 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @76d345fc6c4f evidence/76d345fc6c4f/ICacheReplacer/receipt.json
 IMSICGateWay	SUCCEEDED	p39 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ace84c0bea evidence/40ace84c0bea/IMSICGateWay/receipt.json
+IPrefetchPipe	SUCCEEDED	p1006 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @22646c6a3734 evidence/22646c6a3734/IPrefetchPipe/receipt.json
 ImmExtractor	SUCCEEDED	p64 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ImmExtractor/receipt.json
 ImmExtractor_12	SUCCEEDED	p128 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ImmExtractor_12/receipt.json
 IndexableCAMTemplate	SUCCEEDED	p80 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/IndexableCAMTemplate/receipt.json
