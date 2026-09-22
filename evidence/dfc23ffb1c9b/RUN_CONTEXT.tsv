@@ -1,0 +1,8 @@
+# run	2026-09-22T07:08:35Z	ut_dir=BitmapCache
+commit	dfc23ffb1c9b28198664ae2d7d9b08c331ac481a
+head_before	dfc23ffb1c9b28198664ae2d7d9b08c331ac481a
+head_after	dfc23ffb1c9b28198664ae2d7d9b08c331ac481a
+worktree_digest_before	c16eab14a7fd3ce809f664df2a9005bc6819ddbd433c991a9a144d42484afd42
+worktree_digest_after	c16eab14a7fd3ce809f664df2a9005bc6819ddbd433c991a9a144d42484afd42
+targets	BitmapCache
+driver	mmu5-lane proof.sh（= run_proof.sh 去掉 readability_audit 拦截；该审计在本 commit 上 rc=1，红项为 rtl/backend/Rob.sv 的 E 类导航腐烂，main 继承）

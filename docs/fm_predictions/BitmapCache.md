@@ -26,3 +26,10 @@
   P1 native SUCCEEDED；P2 failing 0；P3 unmatched 两侧 0；
   P4 unread 0（42 个 matched-unread 全部转成比较点）；
   P5 passing = 13069（= 第一次的 13027 + 42），黑盒边界仍为空。
+
+## 第二次跑的对账（commit dfc23ffb，vmucp 打开）
+
+    native SUCCEEDED / passing 13069 / failing 0 / unverified 0 / unread 0 / unmatched 全 0
+    黑盒边界空、无 dont_verify、无 relaxed appvar；峰值内存 962 MB，100 s
+    P1..P5 逐条命中；passing 13069 = 13027 + 42，差 +0。
+    证据 evidence/dfc23ffb1c9b/BitmapCache/receipt.json
