@@ -1,0 +1,29 @@
+**************************************************
+Report         : error_candidates
+
+Reference      : r:/WORK/NewDispatch
+Implementation : i:/WORK/NewDispatch
+Version        : V-2023.12-SP3
+Date           : Tue Sep 22 03:11:47 2026
+**************************************************
+
+Single error detected in implementation.
+
+Recommended error candidate:
+
+    Prim    u_core/conserveFlowTotal_reg[2][6]
+
+Alternate error candidates:
+ 1. Prim    u_core/gt_843_I3/C4
+
+ 2. Prim    u_core/gt_843_I3/C29
+
+ 3. Prim    u_core/C13432
+
+ 4. Prim    u_core/fm_mux_I21cf2/C0
+
+ 5. Prim    u_core/fm_mux_I21cf2/C1
+
+ 6. Prim    u_core/fm_mux_I21cf2/C4
+
+1

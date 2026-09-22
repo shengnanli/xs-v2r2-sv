@@ -1,0 +1,30 @@
+**************************************************
+Report         : verify_points
+
+Reference      : r:/WORK/NewDispatch
+Implementation : i:/WORK/NewDispatch
+Version        : V-2023.12-SP3
+Date           : Tue Sep 22 03:10:35 2026
+**************************************************
+
+Verify points: 16
+
+
+                  (Net)     r:/WORK/NewDispatch/io_fromRename_1_ready
+    (MATCHED)     (Port)    r:/WORK/NewDispatch/io_fromRename_0_ready
+    (MATCHED)     (Port)    r:/WORK/NewDispatch/io_enqRob_req_2_valid
+                  (Net)     r:/WORK/NewDispatch/io_enqRob_req_2_valid
+    (MATCHED)     (Port)    r:/WORK/NewDispatch/io_toRenameAllFire
+                  (Net)     r:/WORK/NewDispatch/io_toRenameAllFire
+                  (Net)     r:/WORK/NewDispatch/io_fromRename_3_ready
+    (MATCHED)     (Port)    r:/WORK/NewDispatch/io_fromRename_3_ready
+                  (Net)     r:/WORK/NewDispatch/io_fromRename_5_ready
+                  (Net)     r:/WORK/NewDispatch/io_fromRename_4_ready
+    (MATCHED)     (Port)    r:/WORK/NewDispatch/io_fromRename_5_ready
+    (MATCHED)     (Port)    r:/WORK/NewDispatch/io_fromRename_4_ready
+                  (Net)     r:/WORK/NewDispatch/io_fromRename_2_ready
+    (MATCHED)     (Port)    r:/WORK/NewDispatch/io_fromRename_2_ready
+    (MATCHED)     (Port)    r:/WORK/NewDispatch/io_fromRename_1_ready
+                  (Net)     r:/WORK/NewDispatch/io_fromRename_0_ready
+
+1

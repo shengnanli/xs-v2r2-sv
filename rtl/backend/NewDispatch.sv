@@ -37,16 +37,16 @@
 //   L677    节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
 //   L722    节 2.8】派遣流控 —— 这一拍六条 lane 到底谁能走
 //   L785    节 2.9】conserveFlowTotal —— 派遣级对 LSQ 占用量的保守上界
-//   L895    节 2.10】单步调试 —— dret 之后只放行一条机器指令
-//   L952    节 2.11】给 LSQ / busy table 的入队信号
-//   L973    节 2.12】perf / stallReason 的整拍口径
-//   L999    节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
-//   L8888   节 3.1】7 个 child 的输出线声明
-//   L9063   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
-//   L9195   节 3.3】payload 打包：io_fromRename -> rename_uop
-//   L10347  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
-//   L16397  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
-//   L16788  节 3.6】握手 / perf / stallReason 出口
+//   L912    节 2.10】单步调试 —— dret 之后只放行一条机器指令
+//   L969    节 2.11】给 LSQ / busy table 的入队信号
+//   L990    节 2.12】perf / stallReason 的整拍口径
+//   L1016   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
+//   L8905   节 3.1】7 个 child 的输出线声明
+//   L9080   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
+//   L9212   节 3.3】payload 打包：io_fromRename -> rename_uop
+//   L10364  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
+//   L16414  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
+//   L16805  节 3.6】握手 / perf / stallReason 出口
 //
 
 // ---------------------------------------------------------------------------
@@ -790,19 +790,36 @@ module xs_NewDispatch_core
   //     {算 16 的条数 (3 位), 算 2 与算 1 的和 (4 位)}
   // 即 highCount*16 + lowCount；lowCount 最大 2*6=12 不会进位到高位，所以拼接与
   // 加法同值。照抄拼接写法（写成加法虽同值，但 FM 要多证一次进位，没必要）。
+  //
+  // ★highCount 的位宽按 lane 分两档，这是给 FM 看的"形状"，不是功能★（步骤 3）
+  // golden 的 highCount 是 Chisel 的 PopCount(前 lane+1 条)，位宽 = log2Ceil(lane+2)：
+  // lane 0..2 是 **2 位**（最多数到 3），lane 3..5 才是 3 位；conserveFlowTotal_{0,1,2}
+  // 的 bit 6 在 golden 里是字面常量 1'h0，读入时就被折掉，根本不是寄存器。
+  // 第一版这里对所有 lane 都用 3 位累加：lane 2 的 bit 2 = ((a&b)&(a^b))&c，
+  // 函数上恒 0、结构上却是个进位链 —— FM 把它判成 DFF0X（constrained 0X：次态可证
+  // 为 0，但现态不许当 0），于是 impl 多出一个 golden 没有的自由寄存器
+  // conserveFlowTotal_reg[2][6]，ready_2 的锥里它取 1 就"失配"。那个赋值在真实设计里
+  // 第一拍之后永远到不了（三条 lane 的计数 ≤ 3 < 4）。修法不是加约束，而是把
+  // 位宽写成 golden 的形状，让 bit 6 两侧都是结构常量。功能一字不变：
+  // lane ≤ 2 时三个 1 位相加 ≤ 3，2 位装得下，值与 3 位累加完全相同。
+  // lane 0/1 的 bit 6/5/3 本来就是结构常量（零扩展再相加不产生进位），两侧一致，
+  // 这也是 ready_0 / ready_1 早就 passing 的原因。
   function automatic logic [6:0] conserve_total(input logic [RENAME_W-1:0] is16,
                                                 input logic [RENAME_W-1:0] is2,
                                                 input logic [RENAME_W-1:0] is1,
                                                 input int                  lane);
-    logic [2:0] highCount;
+    logic [1:0] highCount2;   // lane 0..2：PopCount 最多 3，2 位（照 golden）
+    logic [2:0] highCount3;   // lane 3..5：PopCount 最多 6，3 位
     logic [3:0] lowCount;
-    highCount = '0;
-    lowCount  = '0;
+    highCount2 = '0;
+    highCount3 = '0;
+    lowCount   = '0;
     for (int p = 0; p <= lane; p++) begin
-      highCount += 3'(is16[p]);
-      lowCount  += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
+      if (lane < 3) highCount2 += 2'(is16[p]);
+      else          highCount3 += 3'(is16[p]);
+      lowCount += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
     end
-    return {highCount, lowCount};
+    return (lane < 3) ? {1'b0, highCount2, lowCount} : {highCount3, lowCount};
   endfunction
 
   logic [RENAME_W-1:0][6:0] conserveFlowTotalDispatch;

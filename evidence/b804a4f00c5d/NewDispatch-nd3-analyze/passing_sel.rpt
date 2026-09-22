@@ -1,0 +1,43 @@
+**************************************************
+Report         : passing_points
+
+Reference      : r:/WORK/NewDispatch
+Implementation : i:/WORK/NewDispatch
+Version        : V-2023.12-SP3
+Date           : Tue Sep 22 03:11:13 2026
+**************************************************
+ATTENTION: Only a subset of the compare points was verified.
+
+2 Passing compare points:
+
+  Ref  Port       r:/WORK/NewDispatch/io_fromRename_0_ready
+  Impl Port       i:/WORK/NewDispatch/io_fromRename_0_ready
+
+  Ref  Port       r:/WORK/NewDispatch/io_fromRename_1_ready
+  Impl Port       i:/WORK/NewDispatch/io_fromRename_1_ready
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1
