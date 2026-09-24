@@ -1,0 +1,10 @@
+{
+  "target": "DecodeStage",
+  "ut": "DecodeStage",
+  "regs": 560,
+  "outs": 4755,
+  "expected": 5315,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "merge_dup=false（Makefile FM_MERGE_DUP=false）⇒ 模型适用。闭包=DecodeStage 本层 37 个寄存器(92 位: trapInstInfo 44 + recoveryFlag 1 + last_REG/last_REG_1 2 + fusionValid 5 + inValidNotReady 6 + frontend/backendStall 2 + io_perf 两级 32) + 子模块两侧共用 golden（VTypeGen 16 位 + DecodeUnitComp 寄存器）；outs=783 个输出端口位宽和。预期 matched-unread 2 = golden last_REG/last_REG_1（perf GatedValidRegNext 多出的一份，只喂 _probe，cone-dead，可读核对称保留 frontendStall_probe_q/backendStall_probe_q）：strict 首跑（vmucp 关）应 native SUCCEEDED、passing=expected-2、PARTIAL(unread 2)；开 vmucp（fm_pins.tcl 消名差 + fm_target_config 白名单）后 passing 应恰好 = expected、unread 0。"
+}
