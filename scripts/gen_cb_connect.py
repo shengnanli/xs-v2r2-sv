@@ -33,6 +33,7 @@ tb 的驱动/比对/覆盖代码全部是 G1 golden 端口表的机械函数—�
   rtl/backend/PipelineConnectPipe.sv
   rtl/backend/PipeGroupConnect.sv
   verif/ut/PipelineConnectPipe/tb.sv          verif/ut/PipelineConnectPipe/negtest.sv
+  verif/ut/PipelineConnectPipe/fm_map/PipelineConnectPipe.txt   （FM 字段映射，见 gen_pcp_field_map）
   verif/ut/PipeGroupConnect/tb.sv             verif/ut/PipeGroupConnect/negtest.sv
 （两个 UT 的 Makefile 是手写的，不由本脚本产出。）
 
@@ -1020,6 +1021,29 @@ def gen_pgc_tb(ports, lanes):
 
 
 # ---------------------------------------------------------------------------
+# FM 字段映射（verif/ut/PipelineConnectPipe/fm_map/PipelineConnectPipe.txt）
+# ---------------------------------------------------------------------------
+# 背景（2026-09-24 首跑实测，evidence/f615eb8a5e0d/PipelineConnectPipe）：默认配置
+# （merge_dup=true、不钉点）native SUCCEEDED 但 **6 个 ref 寄存器孤儿**（DFF0X：
+# data_lsrc_3_reg[0] + 5 个 `~leftFire & data_x` 形态的 1 位寄存器）⇒ signoff-strict PARTIAL。
+# 成因：那 13 个"只装 0"的字段（166 位）被 FM 判成 constrained-0X 常量寄存器，
+# merge_dup 把 golden 侧 160 个 mux 形态的合并成一个代表、5 个 and 形态的各自独立，
+# impl 侧 166 位全是同一形态合成一个代表 —— 两侧代表个数 1 vs 6，对不上。
+# 处置（加强，不是放宽）：(1) FM_MERGE_DUP=false 逐个比；(2) 用本映射把 golden 每个
+# data_<f> 寄存器位与 u_core/data_reg[bit] 的双射 set_user_match 钉死（fm_eq.tcl 的
+# match_packed_payload 在首次 match 前执行；映射文件字节进 sidecar 快照与 receipt）。
+# 偏移口径：packed struct 成员按声明序从 MSB 排到 LSB，声明序 = golden 出口端口序，
+# 所以最后一个字段 lo = 0，往前逐个累加宽度。位宽由 parse_pcp 已逐项核对 reg == 端口。
+def gen_pcp_field_map(outfields):
+    rows, lo = [], 0
+    for f, w in reversed(outfields):
+        rows.append((f, lo, w))
+        lo += w
+    rows.reverse()
+    return ''.join('%s %d %d\n' % r for r in rows)
+
+
+# ---------------------------------------------------------------------------
 # 必失败负测：G1 锚点不变式必须在 elaborate 期拦下错误参数（跑不失败 = 闸是摆设）
 # ---------------------------------------------------------------------------
 def gen_negtest(core, params_ok, params_bad, port_conn):
@@ -1062,6 +1086,7 @@ def render_all():
         REPO / 'rtl' / 'backend' / 'PipeGroupConnect.sv': gen_pgc_rtl(ports_g, lanes_g),
         REPO / 'verif' / 'ut' / 'PipelineConnectPipe' / 'tb.sv': gen_pcp_tb(ports_p, inf_p, outf_p),
         REPO / 'verif' / 'ut' / 'PipeGroupConnect' / 'tb.sv': gen_pgc_tb(ports_g, lanes_g),
+        REPO / 'verif' / 'ut' / 'PipelineConnectPipe' / 'fm_map' / 'PipelineConnectPipe.txt': gen_pcp_field_map(outf_p),
         REPO / 'verif' / 'ut' / 'PipelineConnectPipe' / 'negtest.sv': gen_negtest(
             'xs_PipelineConnectPipe_core', '.DATA_WIDTH(8), .PAYLOAD_W_G1(8)', '.DATA_WIDTH(7), .PAYLOAD_W_G1(8)',
             ".clock(clock), .reset(1'b0), .io_in_ready(), .io_in_valid(1'b0), .io_in_bits('0), "
@@ -1089,7 +1114,7 @@ def main():
         if drift:
             print('FAIL: 产物漂移:\n  ' + '\n  '.join(drift), file=sys.stderr)
             return 1
-        print('[ok] 6 个产物与生成结果逐字节一致')
+        print('[ok] %d 个产物与生成结果逐字节一致' % len(outs))
         return 0
     for p, text in outs.items():
         p.parent.mkdir(parents=True, exist_ok=True)

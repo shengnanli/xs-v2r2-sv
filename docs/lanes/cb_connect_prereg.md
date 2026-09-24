@@ -55,3 +55,43 @@ flush 290 / flush&fire 200 / payload 逐位 0-1 全覆盖，seed 1 initreg+0）�
 复跑：`cd verif/ut/PipelineConnectPipe && make compile && make run SEED=<s> INITREG=+vcs+initreg+<0|1> && make negtest`。
 
 PipeGroupConnect：同一套命令，结果在对账节补记（登记时 seed 1/7 initreg+0 已 `errors=0`，其余轮在跑）。
+
+## 4. 对账 —— PipelineConnectPipe 第 1 轮（impl commit `f615eb8a5e0d332794a342acab7d391f3ad2dee2`）
+
+证据 `evidence/f615eb8a5e0d/PipelineConnectPipe/`（receipt sha256
+`64db08911d1902fe073800e3cdd733e8cfd1097cb7cc534cf0c66850a64e16cf`，
+impl_closure[0] = rtl/backend/PipelineConnectPipe.sv `736b4e3bb617820bb9b54047ef2992a1069b56c37135bdc1875376a7626e3445`）：
+
+| 项 | 预测 | 实测 | 判 |
+|---|---|---|---|
+| native | SUCCEEDED | SUCCEEDED | ok |
+| passing | 1237 | **1071**（Port 619 + DFF 452） | 差 166 |
+| failing | 0 | 0 | ok |
+| unmatched | 0 | **ref 6 / impl 0** | ★失配 |
+| constant_reg | 0（允许指认项） | 1 | — |
+| verdict | SIGNOFF | **PARTIAL**（strict_unmatched!=0） | ★ |
+
+差额 166 = 恰好那 13 个"只装 0"字段的位数（160 位 mux 形态 + 6 位 `~leftFire & data_x` 形态）：
+FM 把它们判成 constrained-0X 常量寄存器（DFF0X），不产生比较点——这条在 §2 的"允许指认项"里，
+但 `constant_reg` 只记了 1 而不是 166，原因是 merge_dup=true 把同形态常量寄存器合并成一个代表：
+golden 侧 160 个 mux 形态 → 1 个代表，5 个 and 形态各自独立（次态依赖各自的 Q，输入锥不同）；
+impl 侧 166 位同一形态 → 1 个代表。两侧代表数 1 vs 6，于是 6 个 ref 代表成孤儿
+（unmatched.rpt：data_lsrc_3_reg[0] + isFP64Instr/isFpToVecInst/isReduction/isMove/lastUop 五个 1 位寄存器）。
+§2 反向出口第一条（"impl 侧出现 unmatched/unread 落在恒 0 位"）**没有触发**——孤儿全在 ref 侧、impl 侧 0，
+说明 golden 确实保留了这批寄存器、impl 也有对应物，只是工具合并口径两侧不一致。
+
+**不是 RTL 差异**：两种写法的次态函数都是 `~fire & Q`。处置为加强（不黑盒、不跳点、不放宽 appvar）：
+1. 目标域 `FM_MERGE_DUP = false`（verif/ut/PipelineConnectPipe/Makefile）——逐个比而不是合并后比；
+2. `fm_map/PipelineConnectPipe.txt`（生成器产出）把 golden 617 个 data 位与 `u_core/data_reg[bit]` 的双射
+   `set_user_match` 钉死，常量寄存器不再靠签名猜配。
+
+## 5. 第 2 轮跑前登记（★跑完不许改本节★）
+
+| 目标 | 预测 passing | failing | unmatched | unread | constant_reg |
+|---|---|---|---|---|---|
+| PipelineConnectPipe（merge_dup=false + 钉点） | **1071**（不变） | 0 | 0/0 | 0 | **166** |
+| PipeGroupConnect（默认配置，无钉点；无常量寄存器） | **8828** | 0 | 0/0 | 0 | 0 |
+
+反向出口：PipelineConnectPipe 若 passing 变成 1237（常量寄存器被逐个比了）也算过——但要写明；
+若 unmatched 仍非 0，说明钉点没生效（fm.log 里必须出现 `PACKED_MATCH: 617 points pinned`），停下诊断。
+PipeGroupConnect 若 lane 1~5 出现 impl-only 位或 unmatched 非 0，照实报（见 §2 反向出口）。

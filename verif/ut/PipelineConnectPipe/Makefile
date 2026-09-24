@@ -18,6 +18,21 @@ FM_VARIANTS = PipelineConnectPipe
 # 端口表逐行照 golden 生成（含顺序），把 ORDER 从 warn 升成硬闸。
 PORTLINT_ORDER = fail
 
+# ---------------------------------------------------------------------------
+# FM_MERGE_DUP=false —— ★加强，不是放宽★（2026-09-24 首跑实测，evidence/f615eb8a5e0d）
+# 默认 merge_dup=true 下 native SUCCEEDED / passing 1071 / failing 0，但 6 个 ref 寄存器
+# 孤儿（DFF0X：data_lsrc_3_reg[0] + data_vpu_fpu_isFP64Instr/isFpToVecInst/isReduction、
+# data_vpu_isMove、data_vpu_lastUop）⇒ signoff-strict PARTIAL。成因：13 个"只装 0"字段
+# （166 位）被判成 constrained-0X 常量寄存器，golden 侧 160 个 mux 形态被合并成一个代表、
+# 5 个 `~leftFire & data_x` 形态各自独立；impl 侧 166 位同一形态合成一个代表，
+# 两侧代表数 1 vs 6 对不上。这不是 RTL 差异（两种写法的次态函数都是 ~fire & Q）。
+# 处置：逐个而不是合并后比（更严），并由 fm_map/PipelineConnectPipe.txt 把 golden 每个
+# data_<f> 位与 u_core/data_reg[bit] 的双射钉死（scripts/gen_cb_connect.py 生成，勿手改；
+# ut_common.mk 的 fm-% 自动识别为 FM_FIELD_MAP）。
+# ★验收判据（跑前写死）★：unmatched 0/0、failing 0、passing 1071 不变、
+# constant_reg 从 1 变成 166（= 那 166 位逐个被识别成常量、两侧配对、不比）。
+FM_MERGE_DUP = false
+
 include ../../../scripts/ut_common.mk
 
 # 两档 initreg：编译期打开机制，运行期 make run INITREG=+vcs+initreg+0 / +1 选取值。
