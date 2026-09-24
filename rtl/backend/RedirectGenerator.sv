@@ -234,13 +234,15 @@ module xs_RedirectGenerator_core
   logic     flushAfter_level;
   logic [2:0] flushAfterCounter;   // 无复位
 
-  function automatic logic need_flush(input rob_ptr_t idx);
-    return flushAfter_valid
-         & (flushAfter_level & (idx == flushAfter_robIdx) | rob_is_after(idx, flushAfter_robIdx))
-         | robFlush_valid;
+  // 函数只看参数（Formality FMR_VLOG-091：函数体读模块级信号会让 set_top 失败）
+  function automatic logic need_flush(input rob_ptr_t idx, input logic fa_valid,
+                                      input rob_ptr_t fa_robIdx, input logic fa_level,
+                                      input logic rob_flushing);
+    return fa_valid & (fa_level & (idx == fa_robIdx) | rob_is_after(idx, fa_robIdx))
+         | rob_flushing;
   endfunction
-  wire exu_flushed  = need_flush(exu_bits.robIdx);
-  wire load_flushed = need_flush(load_bits.robIdx);
+  wire exu_flushed  = need_flush(exu_bits.robIdx,  flushAfter_valid, flushAfter_robIdx, flushAfter_level, robFlush_valid);
+  wire load_flushed = need_flush(load_bits.robIdx, flushAfter_valid, flushAfter_robIdx, flushAfter_level, robFlush_valid);
 
   wire oldestValid = (sel_exu & ~exu_flushed) | (sel_load & ~load_flushed);
 
