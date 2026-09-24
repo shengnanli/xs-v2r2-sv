@@ -24,7 +24,7 @@
 # 两个 REG（ssit 的与 waittable 的）叶名相同，靠层次路径区分，所以键是「路径+叶名」不是叶名。
 #
 # safe interp 约束同 SSIT 那份：只用 report_unmatched_points -list / set_user_match / puts /
-# 字符串处理；set_user_match 用返回值判成败；中止用 exit 3。
+# 字符串处理；set_user_match 用返回值判成败；中止用 error（safe interp 里没有 exit）。
 array set _mc_rename {
   ssit_io_update_REG_valid                 ssit_update_q_valid
   ssit_io_update_REG_ldpc                  ssit_update_q_ldpc
@@ -48,9 +48,15 @@ array set _mc_rename {
   s2_storeOldSSID                          s2_store_old_ssid
   s2_loadStrict                            s2_load_strict
 }
-# 期望配对数是字面整数：MemCtrl 138（42+5+91），WaitTable 5（只有 REG->timeout_q）
+# 期望配对数是字面整数：MemCtrl 138（42+5+91）。
+# WaitTable 单独做目标时**不钉**：它只有 REG->timeout_q 这一个改名（5 位），实测
+# （2026-09-24，fm_work/WaitTable）FM 原生就配上了（ref_unread=0 / impl_unread=0），
+# 这里若强求 5 对反而 fail-closed 误停；若哪天原生配不上，strict 终判的 unread 铁律会拦。
 set _mc_expect 138
-if {$top eq "WaitTable"} { set _mc_expect 5 }
+if {$top eq "WaitTable"} {
+    puts "MC_PIN_SKIP WaitTable: REG<->timeout_q 由 FM 原生配对（实测 ref_unread=0），本文件不钉"
+    return
+}
 
 # 把 r:/WORK/<top>/a/u_core/b/x_reg[3] 归一成 {a/b} 与 x_reg[3]（去容器/顶层/u_core 层）
 proc _mc_split {p} {
@@ -84,7 +90,7 @@ proc _mc_pin_renamed_regs { } {
         if {![info exists impl_lut($key)]} { puts "MC_PIN_MISS: $rp wants $key"; incr miss; continue }
         if {![set_user_match $rp $impl_lut($key)]} {
             puts "MC_PIN_FAIL: set_user_match returned 0 for $rp"
-            exit 3
+            error "MC_PIN_FAIL=$rp"   ;# safe interp 里没有 exit，中止用 error
         }
         unset impl_lut($key)
         incr n
@@ -92,7 +98,7 @@ proc _mc_pin_renamed_regs { } {
     puts "MC_PIN_END $::top n=$n miss=$miss expect=$_mc_expect"
     if {$miss != 0 || $n != $_mc_expect || [llength $refs] != $_mc_expect} {
         puts "MC_PIN_ERROR: pinned $n miss $miss ref_unread [llength $refs] but expected $_mc_expect"
-        exit 3
+        error "MC_PIN_COUNT=$n"
     }
     if {$n > 0} { match }
 }

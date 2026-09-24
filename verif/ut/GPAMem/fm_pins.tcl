@@ -11,7 +11,8 @@
 # 两侧死因相同（同一分 bank 结构下同一批高/低位无读者），按结构一一对应，这里显式钉死，
 # 再由 vmucp 把它们当比较点真比（见 verif/fm_target_config/GPAMem.tcl）。
 #
-# fail-closed：set_user_match 从不抛异常，用返回值判；钉完再数，必须正好 12，否则 exit 3。
+# fail-closed：set_user_match 从不抛异常，用返回值判；钉完再数，必须正好 12，否则 error 中止
+# （本文件跑在 sidecar 的 safe interp 里，那里没有 exit）。
 set _gpa_expect 12
 set _gpa_n 0
 set _gpa_fail 0
@@ -41,6 +42,6 @@ foreach _pair {
 puts "GPAMEM_PIN_END $top n=$_gpa_n fail=$_gpa_fail expect=$_gpa_expect"
 if {$_gpa_fail != 0 || $_gpa_n != $_gpa_expect} {
   puts "GPAMEM_PIN_ERROR: pinned $_gpa_n (fail $_gpa_fail) but expected $_gpa_expect"
-  exit 3
+  error "GPAMEM_PIN_COUNT=$_gpa_n"
 }
 match

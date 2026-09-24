@@ -1,10 +1,10 @@
-# VARIANTS: MemCtrl WaitTable
+# VARIANTS: MemCtrl
 # ---------------------------------------------------------------------------
 # MemCtrl/WaitTable 钉点文件的**夹具**（scripts/pin_call_equiv.py 用，不参与 FM 跑）。
 # 见 TLBFA/fm_pins_fixture.tcl 头部关于"为什么动态文件需要夹具"的说明。
 # 按 fm_pins.tcl 声明的结构造两侧点名：{层次前缀 golden名 位宽 可读核名}。
 #   MemCtrl: 自己 7 个（42 位）+ waittable/REG（5 位）+ ssit/ 14 个（91 位）= 138
-#   WaitTable: REG（5 位）= 5
+#   WaitTable 作为 top 时钉点文件直接 return（原生配对），不需要夹具数据。
 # ---------------------------------------------------------------------------
 set _FX_MC_MAP {
     {}          ssit_io_update_REG_valid                 1 ssit_update_q_valid

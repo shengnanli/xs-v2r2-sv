@@ -7,10 +7,12 @@
       redirect_struct     : redirectgen_pkg 里的 cfi_update_t / redirect_t（字段表见 FIELDS）
       redirectgen_wrapper : golden 同名 wrapper（端口表逐字来自 golden，struct 打包/拆包）
   verif/ut/RedirectGenerator/tb.sv        双例化随机比对 testbench（整文件）
-  verif/ut/RedirectGenerator/fm_pins.tcl  FM 钉点：golden 展平寄存器名 <-> 可读核 struct 位（整文件）
 
 字段表 FIELDS 是唯一事实源：struct 字段顺序、宽度、golden 展平名、load 侧是否存在。
-钉点的位偏移由它按 packed struct 规则（表首字段在 MSB）机械算出。
+★不产钉点文件★：Formality 把 packed struct 寄存器按字段名展平
+（s1_bits_reg[cfiUpdate][NOS_value][k]），diagnostic 实测（2026-09-24，commit 558d6240，
+无钉点）ref/impl 561+ 位全部原生配对：passing 1216 = 615 DFF + 601 Port、unmatched 0(0)、
+unread 0。早先那版按 s1_bits_reg[<位偏移>] 钉的文件是错的（FM-036 Unknown name），已删。
 
 用法: python3 scripts/gen_redirectgen.py [--check]
 """
@@ -273,85 +275,8 @@ endmodule
     return '\n'.join(L)
 
 
-# 标量寄存器：(golden 名, 位宽, impl 名, impl 是否向量)
-SCALARS = [
-    ('flushAfter_valid', 1, 'flushAfter_valid', False),
-    ('flushAfter_bits_robIdx_flag', 1, 'flushAfter_robIdx_reg[8]', None),   # struct rob_ptr_t: {flag, value[7:0]}
-    ('flushAfter_bits_robIdx_value', 8, 'flushAfter_robIdx', True),
-    ('flushAfter_bits_level', 1, 'flushAfter_level', False),
-    ('flushAfterCounter', 3, 'flushAfterCounter', True),
-    ('s1_redirect_valid_reg_last_REG', 1, 's1_valid', False),
-    ('s1_redirect_onehot_last_REG', 1, 's1_onehot_reg[0]', None),
-    ('s1_redirect_onehot_last_REG_1', 1, 's1_onehot_reg[1]', None),
-    ('io_stage2Redirect_bits_cfiUpdate_pd_r_valid', 1, 's1_pd_reg[5]', None),
-    ('io_stage2Redirect_bits_cfiUpdate_pd_r_isRVC', 1, 's1_pd_reg[4]', None),
-    ('io_stage2Redirect_bits_cfiUpdate_pd_r_brType', 2, 's1_pd_reg[2+', 'lo'),
-    ('io_stage2Redirect_bits_cfiUpdate_pd_r_isCall', 1, 's1_pd_reg[1]', None),
-    ('io_stage2Redirect_bits_cfiUpdate_pd_r_isRet', 1, 's1_pd_reg[0]', None),
-    ('io_memPredUpdate_valid_last_REG', 1, 'memPredUpdate_valid', False),
-    ('io_memPredUpdate_waddr_r', 10, 'memPred_waddr_q', True),
-    ('io_memPredUpdate_ldpc_r', 10, 'memPred_ldpc_q', True),
-    ('io_memPredUpdate_stpc_r', 10, 'memPred_stpc_q', True),
-]
 
 
-def gen_pins():
-    off = offsets()
-    rows = []   # (ref_leaf, impl_leaf)
-    for n, w, g, l in FLAT:
-        lo, _ = off[g]
-        for k in range(w):
-            ref = f's1_redirect_bits_reg_{g}_reg' + (f'\\[{k}\\]' if w > 1 else '')
-            rows.append((ref, f's1_bits_reg\\[{lo + k}\\]'))
-    for g, w, impl, vec in SCALARS:
-        for k in range(w):
-            ref = f'{g}_reg' + (f'\\[{k}\\]' if w > 1 else '')
-            if vec is None:
-                imp = impl.replace('[', '\\[').replace(']', '\\]')
-            elif vec == 'lo':
-                base, lo = impl.split('[')            # 's1_pd_reg[2+' -> 基名 + 起始位
-                imp = f"{base}\\[{int(lo.rstrip('+')) + k}\\]"
-            elif vec:
-                imp = f'{impl}_reg\\[{k}\\]'
-            else:
-                imp = f'{impl}_reg'
-            rows.append((ref, imp))
-    n = len(rows)
-    L = [f'''# RedirectGenerator FM 钉点 —— **只消名差**：golden 展平寄存器名 <-> 可读核 packed struct 位。
-# 自动生成：scripts/gen_redirectgen.py（字段表 FIELDS 驱动，位偏移机械算出）—— 勿手改
-#
-# 为什么需要：可读核把 Redirect 的 {TOTAL} 位存成一个 packed struct 寄存器 s1_bits
-# （Formality 展平成 s1_bits_reg[k]），golden 是逐字段展平的 s1_redirect_bits_reg_<字段>_reg[k]。
-# 多个同宽字段（24 个 afhob 位、一堆 1 位标志）签名相同，FM 原生匹配会放弃或错配，
-# 这里按字段表的位偏移显式钉死（加强匹配，不放宽任何东西）。
-# 标量寄存器（flushAfter/one-hot/pd/memPred）改了名，同样钉。
-#
-# fail-closed：每次 set_user_match 用返回值判成败（它从不抛异常），钉完再数，
-# 数量必须等于声明的字面整数 {n}（= redirect_t {TOTAL} 位 + 标量寄存器 {n - TOTAL} 位），否则 exit 3。
-set _rg_expect {n}
-set _rg_n 0
-set _rg_fail 0
-puts "RG_PIN_BEGIN $top expect=$_rg_expect"
-foreach _pair {{''']
-    for ref, imp in rows:
-        L.append(f'  {{{ref} {imp}}}')
-    L.append('''} {
-  lassign $_pair _r _i
-  if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/u_core/$_i"]} {
-    incr _rg_n
-  } else {
-    puts "RG_PIN_FAIL: $_r <-> $_i"
-    incr _rg_fail
-  }
-}
-puts "RG_PIN_END $top n=$_rg_n fail=$_rg_fail expect=$_rg_expect"
-if {$_rg_fail != 0 || $_rg_n != $_rg_expect} {
-  puts "RG_PIN_ERROR: pinned $_rg_n (fail $_rg_fail) but expected $_rg_expect"
-  exit 3
-}
-match
-''')
-    return '\n'.join(L)
 
 
 def main():
@@ -364,7 +289,7 @@ def main():
         return text[:m.start()] + m.group(1) + body + '\n' + m.group(3) + text[m.end():]
     text = sub(text, 'redirect_struct', sv_struct())
     text = sub(text, 'redirectgen_wrapper', sv_wrapper(ports))
-    outs = {RTL: text, UT / 'tb.sv': gen_tb(ports), UT / 'fm_pins.tcl': gen_pins()}
+    outs = {RTL: text, UT / 'tb.sv': gen_tb(ports)}
     stale = [p for p, t in outs.items() if not p.exists() or p.read_text() != t]
     if check:
         for p in stale:
@@ -373,7 +298,7 @@ def main():
     UT.mkdir(parents=True, exist_ok=True)
     for p, t in outs.items():
         p.write_text(t)
-    print(f'generated: {len(ports)} ports, redirect_t {TOTAL} bits, pins {len(gen_pins().splitlines())} lines')
+    print(f'generated: {len(ports)} ports, redirect_t {TOTAL} bits')
     return 0
 
 
