@@ -229,16 +229,72 @@ def pack_spec(ports):
 #   useRegCache_*/regCacheIdx_*  源是 RegCacheTagTable
 #   singleStep        组合式已追清，但它读的 3 个异步复位寄存器要 firedVec，
 #                     而 firedVec 依赖 LsqEnqCtrl 的 canAccept
-BLOCKED_LEAVES = (
-    ['srcState_%d' % j for j in range(5)]
-    + ['srcType_2', 'lqIdx_flag', 'lqIdx_value',
-       'sqIdx_flag', 'sqIdx_value', 'useRegCache_0', 'useRegCache_1',
-       'regCacheIdx_0', 'regCacheIdx_1']
-    + ['srcLoadDependency_%d_%d' % (s, k) for s in (0, 1) for k in range(3)])
+BLOCKED_LEAVES = []   # 步骤 4（2026-09-24）起清空：20 个 leaf 全部有来源，见 PACK_CHILD
 
-# 步骤 2 起有来源的 leaf：由 xs_NewDispatch_core 的派遣流控算出来。
-# （singleStep 原先在 BLOCKED_LEAVES 里，因为它要 firedVec，而 firedVec 要 LsqEnqCtrl
-#  的 canAccept —— 那条链在步骤 2 已经打通，故从"接不了"移到这里。）
+# 步骤 4：由子模块输出 / busy table 读口算出来的 leaf，逐条照抄 golden 的
+# fromRenameUpdate_<l>_bits_<leaf>（wire 由 child 实例端口直连，或一行组合式）。
+#   lqIdx/sqIdx            <- lsqEnqCtrl.io_enq_resp_<l>_*           （lane l -> resp l）
+#   useRegCache_j/regCacheIdx_j <- rcTagTable.io_readPorts_<2l+j>_{valid,addr}
+#   srcLoadDependency_s_k  <- srcType_s[0] ? intBusyTable.io_read_<2l+s>_loadDependency_k : 0
+#   srcType_2              <- srcType_2[2] & ignoreOldVd[l] ? 0 : srcType_2   （golden 原式）
+#   srcState_j             <- 1'b0：golden 的 fromRenameUpdate_*_bits_srcState_* 本来就是 1'h0，
+#                             真值是 IQSelUop 用 allSrcState 逐 IQ 覆写的，走核的 srcStateAll 口。
+def _pack_child(leaf, l):
+    m = re.match(r'^(lqIdx|sqIdx)_(flag|value)$', leaf)
+    if m:
+        return '_lsqEnqCtrl_io_enq_resp_%d_%s_%s' % (l, m.group(1), m.group(2))
+    m = re.match(r'^useRegCache_(\d)$', leaf)
+    if m:
+        return '_rcTagTable_io_readPorts_%d_valid' % (2 * l + int(m.group(1)))
+    m = re.match(r'^regCacheIdx_(\d)$', leaf)
+    if m:
+        return '_rcTagTable_io_readPorts_%d_addr' % (2 * l + int(m.group(1)))
+    m = re.match(r'^srcLoadDependency_([01])_(\d)$', leaf)   # 只有 src0/src1 走 intBusyTable；src2..4 由 pack_spec 照 golden 判（常量/直通）
+    if m:
+        sidx, k = int(m.group(1)), int(m.group(2))
+        return ("io_fromRename_%d_bits_srcType_%d[0] ? _intBusyTable_io_read_%d_loadDependency_%d : 2'h0"
+                % (l, sidx, 2 * l + sidx, k))
+    if leaf == 'srcType_2':
+        return ("io_fromRename_%d_bits_srcType_2[2] & ignoreOldVd[%d] ? 4'h0 : io_fromRename_%d_bits_srcType_2"
+                % (l, l, l))
+    if re.match(r'^srcState_\d$', leaf):
+        return "1'b0"
+    return None
+
+
+def gen_srcstate_glue():
+    """ignoreOldVd[l] 与 allSrcState[l][j][k]（k: 0 int / 1 fp / 2 vec / 3 v0 / 4 vl），逐条照抄 golden。
+    读口编号：int 2l+j (j<2)，fp/vec 3l+j (j<3)，v0/vl 各 l。不存在的 (j,k) 组合钉 0。"""
+    out = ['  // ---- 步骤 4：srcState 的原料（golden 的 allSrcState_<l>_<j>_<k> 与 ignoreOldVd_<l>）----',
+           '  logic [5:0]           ignoreOldVd;',
+           '  logic [5:0][4:0][4:0] allSrcState;   // [lane][src j][寄存器堆 k]']
+    for l in range(6):
+        fr = 'io_fromRename_%d_bits_' % l
+        out.append('  assign ignoreOldVd[%d] = _vlBusyTable_io_read_%d_resp & _vlBusyTable_io_vl_read_vlReadInfo_%d_is_nonzero' % (l, l, l))
+        out.append('    & ~%svpu_isDependOldVd' % fr)
+        out.append('    & (_vlBusyTable_io_vl_read_vlReadInfo_%d_is_vlmax & (%svpu_vm | %svpu_vma) & ~%svpu_isWritePartVd' % (l, fr, fr, fr))
+        out.append('       | (%svpu_vm | %svpu_vma) & %svpu_vta);' % (fr, fr, fr))
+        for j in range(5):
+            for k in range(5):
+                st = '%ssrcType_%d' % (fr, j)
+                if k == 0 and j < 2:
+                    e = "%s[0] & _intBusyTable_io_read_%d_resp | %s == 4'h0" % (st, 2 * l + j, st)
+                elif k == 1 and j < 3:
+                    e = "%s[1] & _fpBusyTable_io_read_%d_resp | %s == 4'h0" % (st, 3 * l + j, st)
+                elif k == 2 and j < 2:
+                    e = "%s[2] & _vecBusyTable_io_read_%d_resp | %s == 4'h0" % (st, 3 * l + j, st)
+                elif k == 2 and j == 2:
+                    e = "%s[2] & (_vecBusyTable_io_read_%d_resp | ignoreOldVd[%d]) | %s == 4'h0" % (st, 3 * l + 2, l, st)
+                elif k == 3 and j == 3:
+                    e = "%s[3] & _v0BusyTable_io_read_%d_resp | %s == 4'h0" % (st, l, st)
+                elif k == 4 and j == 4:
+                    e = "_vlBusyTable_io_read_%d_resp | %s == 4'h0" % (l, st)
+                else:
+                    e = "1'b0"
+                out.append('  assign allSrcState[%d][%d][%d] = %s;' % (l, j, k, e))
+    return out
+
+
 PACK_RESOLVED = {'singleStep': 'core_updatedSingleStep[%d]'}
 
 
@@ -248,6 +304,7 @@ def gen_pack(ports):
     out = ['  // 每条 lane 的 payload：四类来源逐条照抄 golden（见 pack_spec 注释）。',
            '  // 被 unresolved_* 驱动的位**故意不给驱动源** —— 悬空比钉 0 诚实：',
            '  // 钉 0 会让 elaborate 和 UT 变绿而掩盖「子模块还没实现」这件事。']
+    out += gen_srcstate_glue()
     for lane in range(6):
         out.append('')
         out.append('  // ---- lane %d ----' % lane)
@@ -256,6 +313,8 @@ def gen_pack(ports):
             tgt = '  assign rename_uop[%d].%s' % (lane, leaf)
             if leaf in PACK_RESOLVED:
                 out.append('%s = %s;' % (tgt, PACK_RESOLVED[leaf] % lane))
+            elif _pack_child(leaf, lane) is not None:
+                out.append('%s = %s;' % (tgt, _pack_child(leaf, lane)))
             elif leaf in BLOCKED_LEAVES:
                 out.append('%s = unresolved_%s_%d;' % (tgt, leaf, lane))
             elif kind == 'PASS':
@@ -277,6 +336,8 @@ def gen_unresolved(ports):
     leaves = dict(dyninst_leaves(ports))
     out = ['  // ★下面这些位现在没有来源★，全部悬空。真跑 UT 时它们是 X/Z，',
            '  // 所以「UT 没报错」在这个状态下不可能发生 —— 这是故意的。']
+    if not BLOCKED_LEAVES:
+        out.append('  // （步骤 4 起为空：20 个 leaf 全部接上，见 PACK 段与核的 srcStateAll 口）')
     for leaf in BLOCKED_LEAVES:
         w = leaves[leaf]
         ty = 'logic' if w == 1 else 'logic [%d:0]' % (w - 1)
