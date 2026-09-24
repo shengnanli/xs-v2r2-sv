@@ -37,16 +37,16 @@
 //   L680    节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
 //   L751    节 2.8】派遣流控 —— 这一拍六条 lane 到底谁能走
 //   L814    节 2.9】conserveFlowTotal —— 派遣级对 LSQ 占用量的保守上界
-//   L941    节 2.10】单步调试 —— dret 之后只放行一条机器指令
-//   L998    节 2.11】给 LSQ / busy table 的入队信号
-//   L1019   节 2.12】perf / stallReason 的整拍口径
-//   L1045   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
-//   L8938   节 3.1】7 个 child 的输出线声明
-//   L9113   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
-//   L9126   节 3.3】payload 打包：io_fromRename -> rename_uop
-//   L10456  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
-//   L16506  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
-//   L16897  节 3.6】握手 / perf / stallReason 出口
+//   L952    节 2.10】单步调试 —— dret 之后只放行一条机器指令
+//   L1009   节 2.11】给 LSQ / busy table 的入队信号
+//   L1030   节 2.12】perf / stallReason 的整拍口径
+//   L1056   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
+//   L8949   节 3.1】7 个 child 的输出线声明
+//   L9124   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
+//   L9137   节 3.3】payload 打包：io_fromRename -> rename_uop
+//   L10467  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
+//   L16517  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
+//   L16908  节 3.6】握手 / perf / stallReason 出口
 //
 
 // ---------------------------------------------------------------------------
