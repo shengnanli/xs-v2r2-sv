@@ -1,0 +1,10 @@
+{
+  "target": "FusionDecoder",
+  "ut": "FusionDecoder",
+  "regs": 200,
+  "outs": 145,
+  "expected": 345,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "merge_dup=false（Makefile FM_MERGE_DUP=false）⇒ 模型适用：regs=5对×(instrPairValid1+fusionVec28+notHint1+enabled1+rs2FromRs1_r1+rs2FromRs2_r1+lsrc2_bits_r5+lastFire1+REG1=40)=200，outs=145。预期 matched-unread 10 = 每对 lastFire/REG（perf 打拍，cone-dead，两侧对称保留）：strict 首跑（vmucp 关）应 native SUCCEEDED、passing=345-10=335、PARTIAL(unread 10)；开 vmucp（fm_pins.tcl 消名差 + fm_target_config 白名单）后 passing 应恰好 345、unread 0。"
+}
