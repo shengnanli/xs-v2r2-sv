@@ -1,0 +1,9 @@
+DIAG[nd4] Thu Sep 24 02:27:44 EDT 2026 commit: 3c62e43804b77cfcb10af03525946eea6d5d25e0 exclude: 
+重写件顶掉的 golden    : 558
+写出 /home/eda/xs-env/sim-work-perfbind2/nd4/files_simtop.f（2090 项）
+写出重绑 SimTop: /home/eda/xs-env/sim-work-perfbind2/nd4/build/rtl/SimTop.sv
+复核 /home/eda/xs-env/sim-work-perfbind2/nd4/build/rtl/SimTop.sv：6225 条 XMR 全走得通、锥体与 golden 结构逐行相同
+BUILD[nd4] start Thu Sep 24 02:31:33 EDT 2026
+BUILD[nd4] ok Thu Sep 24 02:43:07 EDT 2026
+RESULT[nd4]: EXCEEDED MAX CYCLE   assert.log=27921  Thu Sep 24 02:51:02 EDT 2026
+CHIP_RC=0
