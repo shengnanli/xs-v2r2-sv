@@ -117,3 +117,27 @@ impl_closure[0] = rtl/backend/PipelineConnectPipe.sv `736b4e3bb617820bb9b54047ef
 
 复跑：`PROOF_COMMIT=e47e713399e05b918c80dc5a4dc8674964d007e2 bash scripts/run_proof.sh PipelineConnectPipe PipelineConnectPipe`。
 第 1 轮（PARTIAL）的证据 `evidence/f615eb8a5e0d/PipelineConnectPipe/` 一并收进库，供审阅对照。
+
+## 7. 对账 —— PipeGroupConnect（impl commit `e47e713399e05b918c80dc5a4dc8674964d007e2`）
+
+UT（登记时未跑完的轮次补记）：seed 1/7/42 × `+vcs+initreg+0` / `+1`，各 200k 拍，6 轮全部 `errors=0`
+（checks 162,200,000/轮；seed 1 initreg+0 覆盖：整组 canAcc 仅靠 outAllFire 70637 拍、flush&fire 762，
+每 lane fire ≈65.6k~66.0k / backpr ≈74.2k / hold ≈43.4k~44.1k / deq ≈53.2k~53.5k / owrite ≈27.1k~27.4k /
+flush 182~192 / payload 逐位 0-1 全覆盖；两档日志 md5 不同）；negtest 两例 elaborate 期 FEST 拦下。
+复跑：`cd verif/ut/PipeGroupConnect && make compile && make run SEED=<s> INITREG=+vcs+initreg+<0|1> && make negtest`。
+
+FM 证据 `evidence/e47e713399e0/PipeGroupConnect/`（receipt sha256
+`9d5ade592301598d8e12d5282b01495114bb8386e54d818b57a7f1c66e802ef4`；
+impl_closure[0] = rtl/backend/PipeGroupConnect.sv `9f04065364fcb04f1c40eb008dd982b013b83be46c4c072041f9314b1a9253f4`；
+golden `e88a93c9a9203e68930ee49b6ed01f611fbcbf8ba19f0d2c3673d669b8d2f440`）：
+
+| 项 | §2/§5 预测 | 实测 | 判 |
+|---|---|---|---|
+| verdict | SUCCEEDED（signoff-strict，默认配置，无钉点） | **SUCCEEDED** | ok |
+| passing | 8828 | 8828（Port 4417 + DFF 4411；4417 按名 + 4411 按签名配对） | 差 0 |
+| failing | 0 | 0 | ok |
+| unmatched | 0/0 | 0/0（六项全零） | ok |
+| constant_reg | 0 | 无 | ok |
+| qualifications | 空 | 全空，无黑盒，merge_dup 默认 true | ok |
+
+复跑：`PROOF_COMMIT=e47e713399e05b918c80dc5a4dc8674964d007e2 bash scripts/run_proof.sh PipeGroupConnect PipeGroupConnect`。
