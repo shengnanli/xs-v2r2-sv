@@ -15,18 +15,18 @@ TB_SRCS  = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/MemCtrl.sv $(GOLDEN_RTL)/WaitTable.sv
 
-SDM_LEAVES = $(RTL_DIR)/common/xs_DataModule.sv \
-             $(RTL_DIR)/common/xs_SyncDataModule.sv \
-             $(RTL_DIR)/common/DataModule__64entry.sv \
-             $(RTL_DIR)/common/DataModule__64entry_16.sv \
-             $(RTL_DIR)/common/SyncDataModuleTemplate__1024entry.sv \
-             $(RTL_DIR)/common/SyncDataModuleTemplate__1024entry_1.sv
-RTL_GOLDEN_DEPS = $(RTL_DIR)/backend/SSIT.sv $(SDM_LEAVES)
+# SSIT 的 4 个 SyncDataModule 叶子：按 verif/ut/SSIT/Makefile 的同一口径，两侧都读 golden 的
+# 叶子文件（它们各自是已 SUCCEEDED 的独立目标：SyncDataModuleTemplate__1024entry{,_1} /
+# DataModule__64entry{,_16}，见 verif/ut/SyncDataModule）。首跑（evidence/9154088d8da0/MemCtrl）
+# 用 rtl/common 可读叶子时，8898 个 unmatched-unread 里 8k+ 是这 4 个叶子内部 banked
+# 数据阵列与地址/数据副本寄存器的两侧命名鸿沟（其中 _1024entry_1 是非对称写口专用核，
+# 结构本就不同），本层证明的对象是 MemCtrl/WaitTable/SSIT 的逻辑，不重证叶子。
+SSIT_LEAVES = SyncDataModuleTemplate__1024entry.sv SyncDataModuleTemplate__1024entry_1.sv \
+              DataModule__64entry.sv DataModule__64entry_16.sv
+RTL_GOLDEN_DEPS = $(RTL_DIR)/backend/SSIT.sv $(addprefix $(GOLDEN_RTL)/,$(SSIT_LEAVES))
 
 FM_VARIANTS = MemCtrl WaitTable
-FM_REF_DEPS_MemCtrl = SSIT.sv WaitTable.sv \
-                      SyncDataModuleTemplate__1024entry.sv SyncDataModuleTemplate__1024entry_1.sv \
-                      DataModule__64entry.sv DataModule__64entry_16.sv
+FM_REF_DEPS_MemCtrl = SSIT.sv WaitTable.sv $(SSIT_LEAVES)
 FM_REF_DEPS_WaitTable =
 
 PORTLINT_ORDER = fail
@@ -34,6 +34,11 @@ PORTLINT_ORDER = fail
 # 关掉 FM 的重复寄存器合并：让 passing 预测模型（Σ寄存器位 + 输出位）严格适用，
 # 跑前登记、跑后逐点对账（scripts/fm_predict.py）。两侧的重复寄存器都按 golden 保留。
 FM_MERGE_DUP = false
+
+# vmucp = 加强证明。两个目标都没有输出端口，全部寄存器在基线里都是 matched-unread
+# （首跑 passing 0）；开关后 FM 把它们当比较点真比。改名的标量寄存器先由 fm_pins.tcl 钉成
+# 138（MemCtrl）/ 5（WaitTable）对。依据与预期见 verif/fm_target_config/{MemCtrl,WaitTable}.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 

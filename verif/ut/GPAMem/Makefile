@@ -28,6 +28,11 @@ PORTLINT_ORDER = fail
 # 跑前登记、跑后逐点对账（scripts/fm_predict.py）。两侧的重复寄存器都按 golden 保留。
 FM_MERGE_DUP = false
 
+# vmucp = 加强证明（让 FM 真的去比 matched-unread 点），不是放宽。首跑只剩子模块里 12 个
+# 对称死位（读地址副本的 bank 号位 / bank 内位），fm_pins.tcl 钉成 12 对后由此开关真比；
+# 依据与预期见 verif/fm_target_config/GPAMem.tcl。开后 passing 应 3983 -> 3995。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 # golden 的随机初值 initial 段两侧统一用 SYNTHESIS 关掉。

@@ -309,7 +309,8 @@ def gen_pins():
             if vec is None:
                 imp = impl.replace('[', '\\[').replace(']', '\\]')
             elif vec == 'lo':
-                imp = impl.replace('[', '\\[') + f'{k}\\]'
+                base, lo = impl.split('[')            # 's1_pd_reg[2+' -> 基名 + 起始位
+                imp = f"{base}\\[{int(lo.rstrip('+')) + k}\\]"
             elif vec:
                 imp = f'{impl}_reg\\[{k}\\]'
             else:

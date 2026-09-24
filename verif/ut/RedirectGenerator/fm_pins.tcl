@@ -594,8 +594,8 @@ foreach _pair {
   {s1_redirect_onehot_last_REG_1_reg s1_onehot_reg\[1\]}
   {io_stage2Redirect_bits_cfiUpdate_pd_r_valid_reg s1_pd_reg\[5\]}
   {io_stage2Redirect_bits_cfiUpdate_pd_r_isRVC_reg s1_pd_reg\[4\]}
-  {io_stage2Redirect_bits_cfiUpdate_pd_r_brType_reg\[0\] s1_pd_reg\[2+0\]}
-  {io_stage2Redirect_bits_cfiUpdate_pd_r_brType_reg\[1\] s1_pd_reg\[2+1\]}
+  {io_stage2Redirect_bits_cfiUpdate_pd_r_brType_reg\[0\] s1_pd_reg\[2\]}
+  {io_stage2Redirect_bits_cfiUpdate_pd_r_brType_reg\[1\] s1_pd_reg\[3\]}
   {io_stage2Redirect_bits_cfiUpdate_pd_r_isCall_reg s1_pd_reg\[1\]}
   {io_stage2Redirect_bits_cfiUpdate_pd_r_isRet_reg s1_pd_reg\[0\]}
   {io_memPredUpdate_valid_last_REG_reg memPredUpdate_valid_reg}
