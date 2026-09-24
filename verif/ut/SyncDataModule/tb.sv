@@ -3270,6 +3270,76 @@ module tb;
     end
   end
 
+  // ---- agent/cb-rename 追加：GPAMem 的 gpaddr 表两个变体（用 gen_dm_wrappers.gen_tb 同一模板产出）
+  logic [3:0] vDataModule__16entry_20_io_raddr_0;
+  logic vDataModule__16entry_20_io_wen_0;
+  logic [3:0] vDataModule__16entry_20_io_waddr_0;
+  logic [55:0] vDataModule__16entry_20_io_wdata_0_gpaddr;
+  logic vDataModule__16entry_20_io_wdata_0_isForVSnonLeafPTE;
+  wire [55:0] vDataModule__16entry_20_g_io_rdata_0_gpaddr;
+  wire [55:0] vDataModule__16entry_20_i_io_rdata_0_gpaddr;
+  wire vDataModule__16entry_20_g_io_rdata_0_isForVSnonLeafPTE;
+  wire vDataModule__16entry_20_i_io_rdata_0_isForVSnonLeafPTE;
+  DataModule__16entry_20 u_g_DataModule__16entry_20 (.clock(clk), .io_raddr_0(vDataModule__16entry_20_io_raddr_0), .io_wen_0(vDataModule__16entry_20_io_wen_0), .io_waddr_0(vDataModule__16entry_20_io_waddr_0), .io_wdata_0_gpaddr(vDataModule__16entry_20_io_wdata_0_gpaddr), .io_wdata_0_isForVSnonLeafPTE(vDataModule__16entry_20_io_wdata_0_isForVSnonLeafPTE), .io_rdata_0_gpaddr(vDataModule__16entry_20_g_io_rdata_0_gpaddr), .io_rdata_0_isForVSnonLeafPTE(vDataModule__16entry_20_g_io_rdata_0_isForVSnonLeafPTE));
+  DataModule__16entry_20_xs u_i_DataModule__16entry_20 (.clock(clk), .io_raddr_0(vDataModule__16entry_20_io_raddr_0), .io_wen_0(vDataModule__16entry_20_io_wen_0), .io_waddr_0(vDataModule__16entry_20_io_waddr_0), .io_wdata_0_gpaddr(vDataModule__16entry_20_io_wdata_0_gpaddr), .io_wdata_0_isForVSnonLeafPTE(vDataModule__16entry_20_io_wdata_0_isForVSnonLeafPTE), .io_rdata_0_gpaddr(vDataModule__16entry_20_i_io_rdata_0_gpaddr), .io_rdata_0_isForVSnonLeafPTE(vDataModule__16entry_20_i_io_rdata_0_isForVSnonLeafPTE));
+  always @(negedge clk) begin
+    if (rst) begin
+      vDataModule__16entry_20_io_wen_0 <= 1'b0;
+    end else begin
+      vDataModule__16entry_20_io_raddr_0 <= 4'($urandom);
+      vDataModule__16entry_20_io_wen_0 <= ($urandom_range(0, 3) != 0);
+      vDataModule__16entry_20_io_waddr_0 <= 4'($urandom);
+      vDataModule__16entry_20_io_wdata_0_gpaddr <= 56'({$urandom(), $urandom()});
+      vDataModule__16entry_20_io_wdata_0_isForVSnonLeafPTE <= 1'($urandom);
+    end
+  end
+  always @(negedge clk) if (!rst && cycle > WARMUP) begin
+    #4;
+    checks++;
+    if (vDataModule__16entry_20_g_io_rdata_0_gpaddr !== vDataModule__16entry_20_i_io_rdata_0_gpaddr) begin
+      errors++; $display("[%0t] DataModule__16entry_20.io_rdata_0_gpaddr mismatch: g=%h i=%h", $time, vDataModule__16entry_20_g_io_rdata_0_gpaddr, vDataModule__16entry_20_i_io_rdata_0_gpaddr);
+    end
+    if (vDataModule__16entry_20_g_io_rdata_0_isForVSnonLeafPTE !== vDataModule__16entry_20_i_io_rdata_0_isForVSnonLeafPTE) begin
+      errors++; $display("[%0t] DataModule__16entry_20.io_rdata_0_isForVSnonLeafPTE mismatch: g=%h i=%h", $time, vDataModule__16entry_20_g_io_rdata_0_isForVSnonLeafPTE, vDataModule__16entry_20_i_io_rdata_0_isForVSnonLeafPTE);
+    end
+  end
+
+  logic vSyncDataModuleTemplate__64entry_5_io_ren_0;
+  logic [5:0] vSyncDataModuleTemplate__64entry_5_io_raddr_0;
+  logic vSyncDataModuleTemplate__64entry_5_io_wen_0;
+  logic [5:0] vSyncDataModuleTemplate__64entry_5_io_waddr_0;
+  logic [55:0] vSyncDataModuleTemplate__64entry_5_io_wdata_0_gpaddr;
+  logic vSyncDataModuleTemplate__64entry_5_io_wdata_0_isForVSnonLeafPTE;
+  wire [55:0] vSyncDataModuleTemplate__64entry_5_g_io_rdata_0_gpaddr;
+  wire [55:0] vSyncDataModuleTemplate__64entry_5_i_io_rdata_0_gpaddr;
+  wire vSyncDataModuleTemplate__64entry_5_g_io_rdata_0_isForVSnonLeafPTE;
+  wire vSyncDataModuleTemplate__64entry_5_i_io_rdata_0_isForVSnonLeafPTE;
+  SyncDataModuleTemplate__64entry_5 u_g_SyncDataModuleTemplate__64entry_5 (.clock(clk), .reset(rst), .io_ren_0(vSyncDataModuleTemplate__64entry_5_io_ren_0), .io_raddr_0(vSyncDataModuleTemplate__64entry_5_io_raddr_0), .io_wen_0(vSyncDataModuleTemplate__64entry_5_io_wen_0), .io_waddr_0(vSyncDataModuleTemplate__64entry_5_io_waddr_0), .io_wdata_0_gpaddr(vSyncDataModuleTemplate__64entry_5_io_wdata_0_gpaddr), .io_wdata_0_isForVSnonLeafPTE(vSyncDataModuleTemplate__64entry_5_io_wdata_0_isForVSnonLeafPTE), .io_rdata_0_gpaddr(vSyncDataModuleTemplate__64entry_5_g_io_rdata_0_gpaddr), .io_rdata_0_isForVSnonLeafPTE(vSyncDataModuleTemplate__64entry_5_g_io_rdata_0_isForVSnonLeafPTE));
+  SyncDataModuleTemplate__64entry_5_xs u_i_SyncDataModuleTemplate__64entry_5 (.clock(clk), .reset(rst), .io_ren_0(vSyncDataModuleTemplate__64entry_5_io_ren_0), .io_raddr_0(vSyncDataModuleTemplate__64entry_5_io_raddr_0), .io_wen_0(vSyncDataModuleTemplate__64entry_5_io_wen_0), .io_waddr_0(vSyncDataModuleTemplate__64entry_5_io_waddr_0), .io_wdata_0_gpaddr(vSyncDataModuleTemplate__64entry_5_io_wdata_0_gpaddr), .io_wdata_0_isForVSnonLeafPTE(vSyncDataModuleTemplate__64entry_5_io_wdata_0_isForVSnonLeafPTE), .io_rdata_0_gpaddr(vSyncDataModuleTemplate__64entry_5_i_io_rdata_0_gpaddr), .io_rdata_0_isForVSnonLeafPTE(vSyncDataModuleTemplate__64entry_5_i_io_rdata_0_isForVSnonLeafPTE));
+  always @(negedge clk) begin
+    if (rst) begin
+      vSyncDataModuleTemplate__64entry_5_io_ren_0 <= 1'b0;
+      vSyncDataModuleTemplate__64entry_5_io_wen_0 <= 1'b0;
+    end else begin
+      vSyncDataModuleTemplate__64entry_5_io_ren_0 <= ($urandom_range(0, 3) != 0);
+      vSyncDataModuleTemplate__64entry_5_io_raddr_0 <= 6'($urandom);
+      vSyncDataModuleTemplate__64entry_5_io_wen_0 <= ($urandom_range(0, 3) != 0);
+      vSyncDataModuleTemplate__64entry_5_io_waddr_0 <= 6'($urandom);
+      vSyncDataModuleTemplate__64entry_5_io_wdata_0_gpaddr <= 56'({$urandom(), $urandom()});
+      vSyncDataModuleTemplate__64entry_5_io_wdata_0_isForVSnonLeafPTE <= 1'($urandom);
+    end
+  end
+  always @(negedge clk) if (!rst && cycle > WARMUP) begin
+    #4;
+    checks++;
+    if (vSyncDataModuleTemplate__64entry_5_g_io_rdata_0_gpaddr !== vSyncDataModuleTemplate__64entry_5_i_io_rdata_0_gpaddr) begin
+      errors++; $display("[%0t] SyncDataModuleTemplate__64entry_5.io_rdata_0_gpaddr mismatch: g=%h i=%h", $time, vSyncDataModuleTemplate__64entry_5_g_io_rdata_0_gpaddr, vSyncDataModuleTemplate__64entry_5_i_io_rdata_0_gpaddr);
+    end
+    if (vSyncDataModuleTemplate__64entry_5_g_io_rdata_0_isForVSnonLeafPTE !== vSyncDataModuleTemplate__64entry_5_i_io_rdata_0_isForVSnonLeafPTE) begin
+      errors++; $display("[%0t] SyncDataModuleTemplate__64entry_5.io_rdata_0_isForVSnonLeafPTE mismatch: g=%h i=%h", $time, vSyncDataModuleTemplate__64entry_5_g_io_rdata_0_isForVSnonLeafPTE, vSyncDataModuleTemplate__64entry_5_i_io_rdata_0_isForVSnonLeafPTE);
+    end
+  end
+
   initial begin
     if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 50000;
     $fsdbDumpfile("novas.fsdb");
