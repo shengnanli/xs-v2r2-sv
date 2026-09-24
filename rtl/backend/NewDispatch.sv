@@ -837,18 +837,29 @@ module xs_NewDispatch_core
                                                 input logic [RENAME_W-1:0] is2,
                                                 input logic [RENAME_W-1:0] is1,
                                                 input int                  lane);
-    logic [1:0] highCount2;   // lane 0..2：PopCount 最多 3，2 位（照 golden）
-    logic [2:0] highCount3;   // lane 3..5：PopCount 最多 6，3 位
-    logic [3:0] lowCount;
-    highCount2 = '0;
-    highCount3 = '0;
-    lowCount   = '0;
+    // 步骤 4 再收一次：位宽**逐 lane 照抄 golden 的字面形状**（不只是 lane 2）：
+    //   lane 0  {2'h0, is16, 2'h0, is2, is1}          highCount 1 位、lowCount 2 位
+    //   lane 1  {1'h0, hc(2b), 1'h0, lc(3b)}          2 位、3 位
+    //   lane 2  {1'h0, hc(2b), lc(4b)}                2 位、4 位
+    //   lane 3+ {hc(3b), lc(4b)}                      3 位、4 位
+    // 原因：上一版 lane 0/1 的高位是"零扩展后相加"的结构常量，FM 判成 DFF0 但仍是
+    // 一个 golden 没有的 unmatched 点（6 个），signoff-strict 的 unmatched 必须为 0。
+    // 字面 0 与 golden 一样在读入时就折掉。值仍处处相同：各档位宽都装得下各自的最大值
+    // （lane l 的 highCount ≤ l+1，lowCount ≤ 2(l+1)）。
+    logic [2:0] hc;
+    logic [3:0] lc;
+    hc = '0;
+    lc = '0;
     for (int p = 0; p <= lane; p++) begin
-      if (lane < 3) highCount2 += 2'(is16[p]);
-      else          highCount3 += 3'(is16[p]);
-      lowCount += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
+      hc += 3'(is16[p]);
+      lc += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
     end
-    return (lane < 3) ? {1'b0, highCount2, lowCount} : {highCount3, lowCount};
+    case (lane)
+      0:       return {2'b00, hc[0], 2'b00, lc[1:0]};
+      1:       return {1'b0, hc[1:0], 1'b0, lc[2:0]};
+      2:       return {1'b0, hc[1:0], lc[3:0]};
+      default: return {hc, lc};
+    endcase
   endfunction
 
   logic [RENAME_W-1:0][6:0] conserveFlowTotalDispatch;
