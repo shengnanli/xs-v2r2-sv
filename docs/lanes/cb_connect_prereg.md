@@ -95,3 +95,25 @@ impl 侧 166 位同一形态 → 1 个代表。两侧代表数 1 vs 6，于是 6
 反向出口：PipelineConnectPipe 若 passing 变成 1237（常量寄存器被逐个比了）也算过——但要写明；
 若 unmatched 仍非 0，说明钉点没生效（fm.log 里必须出现 `PACKED_MATCH: 617 points pinned`），停下诊断。
 PipeGroupConnect 若 lane 1~5 出现 impl-only 位或 unmatched 非 0，照实报（见 §2 反向出口）。
+
+## 6. 对账 —— PipelineConnectPipe 第 2 轮（impl commit `e47e713399e05b918c80dc5a4dc8674964d007e2`）
+
+证据 `evidence/e47e713399e0/PipelineConnectPipe/`（receipt sha256
+`d673c343365032858023cb775018a3191f3cbc3eaa0a4dc2f23760eb56b08510`；
+impl_closure[0] = rtl/backend/PipelineConnectPipe.sv `736b4e3bb617820bb9b54047ef2992a1069b56c37135bdc1875376a7626e3445`，
+与第 1 轮逐字节相同——RTL 一个字节没动，变的只有证明配置；golden
+`2d62c0bd805eab55e7140815362fd13f62982d7e48db5b05422c11cb870cf0fe`）：
+
+| 项 | §5 预测 | 实测 | 判 |
+|---|---|---|---|
+| verdict | SUCCEEDED（signoff-strict） | **SUCCEEDED** | ok |
+| passing | 1071 | 1071（Port 619 + DFF 452） | 差 0 |
+| failing | 0 | 0 | ok |
+| unmatched | 0/0 | 0/0（compare/unread/bbout 六项全零） | ok |
+| constant_reg | 166 | 166 | ok |
+| 钉点 | `PACKED_MATCH: 617 points pinned` | 617 | ok |
+| appvar | merge_dup=false | readback `false` | ok |
+| qualifications | 空 | dont_verify/elab147/relaxed 全空，无黑盒 | ok |
+
+复跑：`PROOF_COMMIT=e47e713399e05b918c80dc5a4dc8674964d007e2 bash scripts/run_proof.sh PipelineConnectPipe PipelineConnectPipe`。
+第 1 轮（PARTIAL）的证据 `evidence/f615eb8a5e0d/PipelineConnectPipe/` 一并收进库，供审阅对照。

@@ -1,0 +1,52 @@
+**************************************************
+Report         : unmatched_points
+
+Reference      : r:/WORK/PipelineConnectPipe
+Implementation : i:/WORK/PipelineConnectPipe
+Version        : V-2023.12-SP3
+Date           : Thu Sep 24 02:24:51 2026
+**************************************************
+
+6 Unmatched points (6 reference, 0 implementation):
+
+  Ref  DFF0X      r:/WORK/PipelineConnectPipe/data_lsrc_3_reg[0]
+
+  Ref  DFF0X      r:/WORK/PipelineConnectPipe/data_vpu_fpu_isFP64Instr_reg
+
+  Ref  DFF0X      r:/WORK/PipelineConnectPipe/data_vpu_fpu_isFpToVecInst_reg
+
+  Ref  DFF0X      r:/WORK/PipelineConnectPipe/data_vpu_fpu_isReduction_reg
+
+  Ref  DFF0X      r:/WORK/PipelineConnectPipe/data_vpu_isMove_reg
+
+  Ref  DFF0X      r:/WORK/PipelineConnectPipe/data_vpu_lastUop_reg
+
+ [BBNet: multiply-driven net
+  BBox:  black-box
+  BBPin: black-box pin
+  Block: hierarchical block
+  BlPin: hierarchical block pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Net:   matchable net
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1
