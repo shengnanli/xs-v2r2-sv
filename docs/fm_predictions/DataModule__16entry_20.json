@@ -1,0 +1,9 @@
+{
+  "target": "DataModule__16entry_20",
+  "ut": "SyncDataModule",
+  "regs": 912,
+  "outs": 57,
+  "expected": 969,
+  "merge_dup": "true",
+  "model_applicable": false
+}

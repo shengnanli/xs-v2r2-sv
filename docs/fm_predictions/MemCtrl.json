@@ -1,0 +1,9 @@
+{
+  "target": "MemCtrl",
+  "ut": "MemCtrl",
+  "regs": 18135,
+  "outs": 0,
+  "expected": 18135,
+  "merge_dup": "false",
+  "model_applicable": true
+}

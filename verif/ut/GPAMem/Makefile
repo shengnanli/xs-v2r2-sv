@@ -24,6 +24,10 @@ FM_REF_DEPS_GPAMem = SyncDataModuleTemplate__64entry_5.sv DataModule__16entry_20
 
 PORTLINT_ORDER = fail
 
+# 关掉 FM 的重复寄存器合并：让 passing 预测模型（Σ寄存器位 + 输出位）严格适用，
+# 跑前登记、跑后逐点对账（scripts/fm_predict.py）。两侧的重复寄存器都按 golden 保留。
+FM_MERGE_DUP = false
+
 include ../../../scripts/ut_common.mk
 
 # golden 的随机初值 initial 段两侧统一用 SYNTHESIS 关掉。
