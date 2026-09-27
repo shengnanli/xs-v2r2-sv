@@ -44,6 +44,8 @@ FM_INTERFACE_ONLY = SyncDataModuleTemplate_BackendPC_64entry SnapshotGenerator_1
 # ★加强（不是放宽）：逐个比而不是合并重复寄存器后比——Rob 白盒展开后 160 项 debug 阵列的同构次态
 # 会让 merge 阶段跑不完（verif/ut/Rob/Makefile 实测 5674 s 仍未到 match）。
 FM_MERGE_DUP = false
+# ★加强：matched-but-not-compared 的对称内部死位也真比一遍（依据见 verif/fm_target_config/CtrlBlock.tcl）★
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 

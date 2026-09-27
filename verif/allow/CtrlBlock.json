@@ -1,0 +1,312 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "CtrlBlock",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "assembly 边界声明（CtrlBlock 是后端控制块装配层；wrapper 直接例化 22 个 child，impl 侧没有 u_core 层，两侧路径同名同数）。★Rob 不在黑盒里★：ref 用 golden Rob.sv、impl 用 rtl/backend/Rob.sv 重写件两侧白盒展开，CtrlBlock 是 Rob 那 448 位 debug_otherPdest 悬空输出的第一个可观测边界（codex 0169 D3 验收口径第 3 条；golden CtrlBlock 把这 56 个输出全接成 unused，所以本层 FM 看不到它们）。DecodeStage/FusionDecoder/Rename/RenameTableWrapper/RedirectGenerator/Trace/MemCtrl/GPAMem/NewDispatch 及 Rob 的 8 个 child 两侧同源 golden elaborate（UNCHANGED_GOLDEN_DEP：仍由别的 lane 重写中，对本目标零信息量），不黑盒、不在本表。green_child 12 个实例（7 个 child 目标）：都是本仓已签核绿的目标，按 D57 须持 verif/proof_certificates/<target>.json；本 commit 上一张证书都还没有（freeze 时铸），所以★故意不填 certificate_sha256★，让判定停在指名道姓的 green_child 证书缺失上；这些 child 只能记「在 CtrlBlock 上下文中已被覆盖」，不得写成各自的独立 SIGNOFF_PASS（codex 0168 §1）。APPROVED_MEMORY_MACRO_MODEL 8 个实例（3 个 firtool 行为级存储叶子：深度 160/320 非 2 的幂，本 lane 实测 inline 触发 FMR_ELAB-147→FM-262→set_top 失败，diff_rat_state_bank_320x776 单模块 elaborate 300 s 超时）：两侧对称接口黑盒。★候选，尚未入 verif/vendor_boundary.tsv★——scripts/audit_ram_memory_model.py：diff_rat_state_bank_320x776 M1 PASS；dt_pcTransType_160x2 / stateBankTags_320x3 是多读写口模板，M1 的单口模板判 FAIL（模板需扩展）；三者 M2/M3 均未做。入表须 codex 逐条审定，本声明只是把边界如实列出。",
+ "objects": [
+  {
+   "side": "r",
+   "design": "SyncDataModuleTemplate_BackendPC_64entry",
+   "path": "r:/WORK/CtrlBlock/pcMem",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "SyncDataModuleTemplate_BackendPC_64entry"
+  },
+  {
+   "side": "i",
+   "design": "SyncDataModuleTemplate_BackendPC_64entry",
+   "path": "i:/WORK/CtrlBlock/pcMem",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "SyncDataModuleTemplate_BackendPC_64entry"
+  },
+  {
+   "side": "r",
+   "design": "SnapshotGenerator_14",
+   "path": "r:/WORK/CtrlBlock/snpt",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "SnapshotGenerator_14"
+  },
+  {
+   "side": "i",
+   "design": "SnapshotGenerator_14",
+   "path": "i:/WORK/CtrlBlock/snpt",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "SnapshotGenerator_14"
+  },
+  {
+   "side": "r",
+   "design": "DelayN_15",
+   "path": "r:/WORK/CtrlBlock/s5_flushFromRobValidAhead_delay",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "DelayN_15"
+  },
+  {
+   "side": "i",
+   "design": "DelayN_15",
+   "path": "i:/WORK/CtrlBlock/s5_flushFromRobValidAhead_delay",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "DelayN_15"
+  },
+  {
+   "side": "r",
+   "design": "DelayN_15",
+   "path": "r:/WORK/CtrlBlock/s5_csrIsTrap_delay",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "DelayN_15"
+  },
+  {
+   "side": "i",
+   "design": "DelayN_15",
+   "path": "i:/WORK/CtrlBlock/s5_csrIsTrap_delay",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "DelayN_15"
+  },
+  {
+   "side": "r",
+   "design": "DelayN_17",
+   "path": "r:/WORK/CtrlBlock/io_toTop_cpuHalt_delay",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "DelayN_17"
+  },
+  {
+   "side": "i",
+   "design": "DelayN_17",
+   "path": "i:/WORK/CtrlBlock/io_toTop_cpuHalt_delay",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "DelayN_17"
+  },
+  {
+   "side": "r",
+   "design": "PipelineConnectPipe",
+   "path": "r:/WORK/CtrlBlock/decodePipeRenameModule",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "i",
+   "design": "PipelineConnectPipe",
+   "path": "i:/WORK/CtrlBlock/decodePipeRenameModule",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "r",
+   "design": "PipelineConnectPipe",
+   "path": "r:/WORK/CtrlBlock/decodePipeRenameModule_1",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "i",
+   "design": "PipelineConnectPipe",
+   "path": "i:/WORK/CtrlBlock/decodePipeRenameModule_1",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "r",
+   "design": "PipelineConnectPipe",
+   "path": "r:/WORK/CtrlBlock/decodePipeRenameModule_2",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "i",
+   "design": "PipelineConnectPipe",
+   "path": "i:/WORK/CtrlBlock/decodePipeRenameModule_2",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "r",
+   "design": "PipelineConnectPipe",
+   "path": "r:/WORK/CtrlBlock/decodePipeRenameModule_3",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "i",
+   "design": "PipelineConnectPipe",
+   "path": "i:/WORK/CtrlBlock/decodePipeRenameModule_3",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "r",
+   "design": "PipelineConnectPipe",
+   "path": "r:/WORK/CtrlBlock/decodePipeRenameModule_4",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "i",
+   "design": "PipelineConnectPipe",
+   "path": "i:/WORK/CtrlBlock/decodePipeRenameModule_4",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "r",
+   "design": "PipelineConnectPipe",
+   "path": "r:/WORK/CtrlBlock/decodePipeRenameModule_5",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "i",
+   "design": "PipelineConnectPipe",
+   "path": "i:/WORK/CtrlBlock/decodePipeRenameModule_5",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipelineConnectPipe"
+  },
+  {
+   "side": "r",
+   "design": "PipeGroupConnect",
+   "path": "r:/WORK/CtrlBlock/renamePipeDispatch",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipeGroupConnect"
+  },
+  {
+   "side": "i",
+   "design": "PipeGroupConnect",
+   "path": "i:/WORK/CtrlBlock/renamePipeDispatch",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PipeGroupConnect"
+  },
+  {
+   "side": "r",
+   "design": "dt_pcTransType_160x2",
+   "path": "r:/WORK/CtrlBlock/rob/dt_pcTransType_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "dt_pcTransType_160x2",
+   "path": "i:/WORK/CtrlBlock/rob/dt_pcTransType_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_0_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_0_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_1_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_1_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_2_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_2_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_3_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_3_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_4_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_4_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_5_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_5_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "stateBankTags_320x3",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/stateBankTags_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "stateBankTags_320x3",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/stateBankTags_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}
