@@ -1,0 +1,10 @@
+{
+  "target": "SQData8Module",
+  "ut": "SQData8Module",
+  "regs": 1124,
+  "outs": 45,
+  "expected": 1169,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "重出证(agent/sqdm): 旧receipt f4184ea93fcf passing=1169 (merge_dup=true, 模型MODEL_NA); 本次改动仅 SQData8Module.sv 前递树 if-链→或归约+三目链(纯组合, 寄存器/端口不变), 预测 passing=1169 不变"
+}
