@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Generate ten readable constant/pass-through CSR leaves."""
+import argparse
 from pathlib import Path
 R=Path(__file__).resolve().parents[1]/'rtl/backend'
-def emit(n,s): (R/f'{n}.sv').write_text(s)
+OUTPUTS={}
+def emit(n,s): OUTPUTS[n]=s
 def hdr(d): return f"// {d}\n// The semantic core states the CSR behavior; the exact wrapper preserves ports.\n// This combinational leaf contains no hidden architectural state.\n"
 for n in ['Sstateen1Module','Sstateen2Module','Sstateen3Module']:
  emit(n,hdr(f'{n} is an unimplemented 32-bit state-enable bank and reads as zero.')+f'''module xs_{n}_core(output logic [31:0] value,mirror); assign value=32'b0; assign mirror=32'b0; endmodule
@@ -16,3 +18,16 @@ for n in ['Pmpcfg0Module','Pmpcfg2Module','Pmpcfg4Module']:
  emit(n,hdr(f'{n} exposes the decoded PMP configuration word through both CSR views.')+f'''module xs_{n}_core(input logic [63:0] source,output logic [63:0] value,mirror); assign value=source; assign mirror=source; endmodule
 module {n}(output logic [63:0] rdata,output logic [63:0] regOut_ALL,input logic [63:0] cfgRData); xs_{n}_core u_core(.source(cfgRData),.value(rdata),.mirror(regOut_ALL)); endmodule
 ''')
+
+def main():
+ ap=argparse.ArgumentParser();ap.add_argument('--check',action='store_true');args=ap.parse_args();drift=[]
+ for name,text in OUTPUTS.items():
+  path=R/f'{name}.sv'
+  if args.check:
+   if not path.exists() or path.read_text()!=text: drift.append(str(path))
+  else: path.write_text(text)
+ if drift:
+  print('gen_csr_leaves10b --check: DRIFT: '+' '.join(drift));raise SystemExit(1)
+ if args.check: print(f'gen_csr_leaves10b --check: OK ({len(OUTPUTS)} files)')
+
+if __name__=='__main__': main()
