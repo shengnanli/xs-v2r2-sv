@@ -1,0 +1,141 @@
+ref	r:/WORK/PtwCache/data_resp_r_0_entries_prefetch_reg
+ref	r:/WORK/PtwCache/data_resp_r_1_entries_prefetch_reg
+ref	r:/WORK/PtwCache/hitPre_r_1_reg
+ref	r:/WORK/PtwCache/hitPre_r_reg
+ref	r:/WORK/PtwCache/l1_ramDatas_0_entries_prefetch_reg
+ref	r:/WORK/PtwCache/l1_ramDatas_1_entries_prefetch_reg
+ref	r:/WORK/PtwCache/l2Pre_reg
+ref	r:/WORK/PtwCache/l2_0_prefetch_reg
+ref	r:/WORK/PtwCache/l2_10_prefetch_reg
+ref	r:/WORK/PtwCache/l2_11_prefetch_reg
+ref	r:/WORK/PtwCache/l2_12_prefetch_reg
+ref	r:/WORK/PtwCache/l2_13_prefetch_reg
+ref	r:/WORK/PtwCache/l2_14_prefetch_reg
+ref	r:/WORK/PtwCache/l2_15_prefetch_reg
+ref	r:/WORK/PtwCache/l2_1_prefetch_reg
+ref	r:/WORK/PtwCache/l2_2_prefetch_reg
+ref	r:/WORK/PtwCache/l2_3_prefetch_reg
+ref	r:/WORK/PtwCache/l2_4_prefetch_reg
+ref	r:/WORK/PtwCache/l2_5_prefetch_reg
+ref	r:/WORK/PtwCache/l2_6_prefetch_reg
+ref	r:/WORK/PtwCache/l2_7_prefetch_reg
+ref	r:/WORK/PtwCache/l2_8_prefetch_reg
+ref	r:/WORK/PtwCache/l2_9_prefetch_reg
+ref	r:/WORK/PtwCache/l3Pre_r_reg
+ref	r:/WORK/PtwCache/l3_0_prefetch_reg
+ref	r:/WORK/PtwCache/l3_10_prefetch_reg
+ref	r:/WORK/PtwCache/l3_11_prefetch_reg
+ref	r:/WORK/PtwCache/l3_12_prefetch_reg
+ref	r:/WORK/PtwCache/l3_13_prefetch_reg
+ref	r:/WORK/PtwCache/l3_14_prefetch_reg
+ref	r:/WORK/PtwCache/l3_15_prefetch_reg
+ref	r:/WORK/PtwCache/l3_1_prefetch_reg
+ref	r:/WORK/PtwCache/l3_2_prefetch_reg
+ref	r:/WORK/PtwCache/l3_3_prefetch_reg
+ref	r:/WORK/PtwCache/l3_4_prefetch_reg
+ref	r:/WORK/PtwCache/l3_5_prefetch_reg
+ref	r:/WORK/PtwCache/l3_6_prefetch_reg
+ref	r:/WORK/PtwCache/l3_7_prefetch_reg
+ref	r:/WORK/PtwCache/l3_8_prefetch_reg
+ref	r:/WORK/PtwCache/l3_9_prefetch_reg
+ref	r:/WORK/PtwCache/mbistPlL0/addrRdReg_reg[6]
+ref	r:/WORK/PtwCache/mbistPlL0/addrReg_reg[0]
+ref	r:/WORK/PtwCache/mbistPlL0/addrReg_reg[1]
+ref	r:/WORK/PtwCache/mbistPlL0/addrReg_reg[2]
+ref	r:/WORK/PtwCache/mbistPlL0/addrReg_reg[3]
+ref	r:/WORK/PtwCache/mbistPlL0/addrReg_reg[4]
+ref	r:/WORK/PtwCache/mbistPlL0/addrReg_reg[5]
+ref	r:/WORK/PtwCache/mbistPlL0/addrReg_reg[6]
+ref	r:/WORK/PtwCache/mbistPlL1/addrRdReg_reg[2]
+ref	r:/WORK/PtwCache/mbistPlL1/addrReg_reg[0]
+ref	r:/WORK/PtwCache/mbistPlL1/addrReg_reg[1]
+ref	r:/WORK/PtwCache/mbistPlL1/addrReg_reg[2]
+ref	r:/WORK/PtwCache/wakeup_req_delay_tag_reg[3]
+ref	r:/WORK/PtwCache/wakeup_req_delay_tag_reg[4]
+ref	r:/WORK/PtwCache/wakeup_req_delay_tag_reg[5]
+ref	r:/WORK/PtwCache/wakeup_req_delay_tag_reg[6]
+ref	r:/WORK/PtwCache/wakeup_req_delay_tag_reg[7]
+ref	r:/WORK/PtwCache/wakeup_req_delay_tag_reg[8]
+ref	r:/WORK/PtwCache/wakeup_req_delay_way_info_reg[0]
+ref	r:/WORK/PtwCache/wakeup_req_way_info_reg[0]
+impl	i:/WORK/PtwCache/u_core/l1_ramdata_reg[0]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l1_ramdata_reg[1]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l1_resp_r_reg[0]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l1_resp_r_reg[1]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[0]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[10]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[11]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[12]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[13]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[14]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[15]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[1]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[2]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[3]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[4]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[5]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[6]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[7]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[8]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_entry_reg[9]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l2_pre_ck_reg
+impl	i:/WORK/PtwCache/u_core/l2_pre_r_reg
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[0]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[10]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[11]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[12]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[13]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[14]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[15]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[1]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[2]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[3]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[4]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[5]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[6]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[7]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[8]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_entry_reg[9]\[prefetch]
+impl	i:/WORK/PtwCache/u_core/l3_pre_ck_reg
+impl	i:/WORK/PtwCache/u_core/l3_pre_r_reg
+impl	i:/WORK/PtwCache/u_core/sp_hitdata_ck_reg\[prefetch]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrRdReg_reg[6]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[0]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[1]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[2]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[3]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[4]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[5]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[6]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l1/u_core/addrRdReg_reg[2]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l1/u_core/addrReg_reg[0]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l1/u_core/addrReg_reg[1]
+impl	i:/WORK/PtwCache/u_core/u_mbist_l1/u_core/addrReg_reg[2]
+impl	i:/WORK/PtwCache/u_core/wk_d_tag_reg[3]
+impl	i:/WORK/PtwCache/u_core/wk_d_tag_reg[4]
+impl	i:/WORK/PtwCache/u_core/wk_d_tag_reg[5]
+impl	i:/WORK/PtwCache/u_core/wk_d_tag_reg[6]
+impl	i:/WORK/PtwCache/u_core/wk_d_tag_reg[7]
+impl	i:/WORK/PtwCache/u_core/wk_d_tag_reg[8]
+impl	i:/WORK/PtwCache/u_core/wk_d_way_reg[0]
+impl	i:/WORK/PtwCache/u_core/wk_way_reg[0]
+matched_nc	r:/WORK/PtwCache/l0/array_0_0_0/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_0/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_0_1/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_1/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_0_2/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_2/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_0_3/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_3/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_0_4/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_4/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_0_5/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_5/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_0_6/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_6/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_0_7/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_7/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_1_0/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_0/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_1_1/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_1/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_1_2/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_2/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_1_3/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_3/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_1_4/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_4/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_1_5/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_5/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_1_6/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_6/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l0/array_0_1_7/array/array/array_11_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_7/array/array/array_11_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/l1/array_0_0_0/array/array/array_10_ext/reg_RW0_ren_reg i:/WORK/PtwCache/u_core/u_l1_sram/array_0_0_0/array/array/array_10_ext/reg_RW0_ren_reg
+matched_nc	r:/WORK/PtwCache/resp_res_l1_pre_reg {i:/WORK/PtwCache/u_core/resp_res_l1_reg\[pre]}
+matched_nc	r:/WORK/PtwCache/resp_res_l2_pre_reg {i:/WORK/PtwCache/u_core/resp_res_l2_reg\[pre]}
+matched_nc	r:/WORK/PtwCache/resp_res_l3_pre_reg {i:/WORK/PtwCache/u_core/resp_res_l3_reg\[pre]}

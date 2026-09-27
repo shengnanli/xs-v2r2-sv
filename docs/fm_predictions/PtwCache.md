@@ -171,6 +171,60 @@ detached clean worktree @ 本 commit → `make fm-PtwCache`（XSSV_HOME=该 work
 跑前/跑后 tracked 文件整体 sha256 相等 → receipt/fm.log/sidecar 收进 evidence/<commit12>/PtwCache/
 并追加 RUN_CONTEXT.tsv。跑证明期间不动那个 worktree 里的任何文件。
 
-## 第 3 轮跑后对账
+## 第 3 轮跑后对账（2026-09-22 07:52Z 跑完；本节只填读数与纠错，不改上面任何一行）
 
-（留空，跑完补。）
+证据：`evidence/6a102f7a5101/PtwCache/`（impl commit 6a102f7a5101ef0ccd0ff8abf477d8fa7c66e0ac，
+FM_RUN_ID=PtwCache-20260922T063326Z-6a102f7a，worktree digest 跑前==跑后
+512429e98b933a740f38e8bd46362f7eca794673f7763341fd4af489c0ba0364）
+  receipt.json sha256  05978b67019a21b6ea5457a9a5501aa46972c2e0f81b4de8172141959ae2ce21
+  fm.log sha256        041cdb6d5cd8d8d895ccd52ba0fb3d1cce9329619a42c881b2e3e09d7ced2c0c
+  native_facts sha256  d42d306077bc57bae39f3797f2cfe9efc6b032edbd5cea5e72990eae5e97134c
+  impl_closure[0]      rtl/mmu/PtwCache.sv 25105e164af4bb8bdf65d1fb651212c0f0851480444dff933a62e8e9c59a46e7
+
+读数（fm.log 692-699 行的 Matched Compare Points 表 + sidecar native_facts.json）：
+  native SUCCEEDED / passing 143,717（Port 2714 + DFF 141,001 + LAT 2）/ failing 0（limit 20，未截断）/
+  unverified 0 / unmatched 比较点 0(0) / dont_verify 无 / 黑盒 0 /
+  ★unread：matched-not-compared 20 对 + unmatched-unread ref 60 / impl 61★
+  ⇒ validator **PARTIAL（reason=strict_unread!=0）**，receipt verdict=PARTIAL。
+  fm_verdict 的 unread=61 是 max(20, 60, 61)。
+  墙钟：elaborate 4 min、match 从 06:37Z 到 ~07:15Z（唯一采样点 142370M/284881 (46%) @2167.9 s）、
+  verify 到 07:52Z；CPU 4668.8 s，峰值内存 4735 MB。
+
+逐条对账：
+  P1 SUCCEEDED         ★中★（native）。但 strict verdict 是 PARTIAL，不是 SIGNOFF 绿。
+  P2 failing=0         ★中★（failing 0 < limit 20，非截断值）。
+  P3 unmatched=0       ★中★（比较点两侧 0/0）—— 登记里最怕的 ishptw/s2x_info/pte_index 三点**没有**出现。
+                       但未读点里有 60↔61 个 unmatched-unread，见下。
+  P4 unread=0          ★不中★：20 matched_nc + 60/61 unmatched unread，allowlist 空。
+  P5 黑盒空            ★中★（matched_blackbox_pairs 0、unresolved 0、无 ELAB-147）。
+  P6 T∈[156400,172040] ★不中★，而且是口径错：进度行的 284,881 是**两侧对象之和**（ref 143,797 +
+                       impl 141,084），不是 ref 侧比较点数；第 2 轮的 156,400 是同口径下 merge 之后的和。
+                       用 ref 侧口径：passing 143,717 + matched_nc 20 + ref unmatched-unread 60 = **143,797**，
+                       ★逐位等于登记里的手工模型 143,797★（regs 21088 + outs 2714 + 3147 + 116848）。
+                       登记里说"手工模型仍算漏 ≥12,603"是把 284,881/156,400 当成了 ref 侧点数，那句判断错了；
+                       手工模型本身是对的。"passing==T"因 unread≠0 也不中。
+  P7 merge_dup 读回     ★中★：entry_appvars.verification_merge_duplicated_registers=false，
+                       fm.log "Merging duplicated registers" 状态行 0（第 2 轮 5）。
+  P8 收敛              ★中★：match ~38 min 跑完（第 2 轮 75 min 只到 84%），无需中途取样。
+
+★登记里的一句错话（在此纠正，不改原文）★：第 3 轮登记写"impl 核与第 2 轮登记时逐字节相同、
+git diff 为空"。实测 `git diff --stat 9280f5bc..b804a4f0 -- rtl/mmu/PtwCache.sv` = 164+/109−
+（115d072b 的 FMR_VLOG-091 函数参数化修法 + 1107f3b7 头注释），剥注释后 sha256 也不同
+（1e7b4ffd… vs a640e5b7…）。证明钉在 6a102f7a 的字节上，这句错话不影响证明，但它是错的。
+
+`fm_predict.py check PtwCache`：预期 26599 / 实测 143717 / ABOVE_MODEL（红），与登记预告一致。
+
+### unread 的三族（下一轮的对象）
+  a. 20 对 matched_nc（两侧同名签名配上）：17 个 SRAM 叶子 `array_1x_ext/reg_RW0_ren_reg`（golden .v 在
+     SYNTHESIS 下 RW0_rdata 直接取 ram[reg_RW0_addr]，reg_RW0_ren 无读者；两侧同一份文件）+
+     `resp_res_l{1,2,3}_pre`（golden 的 io_resp_bits_prefetch 只取 sp/l0 那一路，l1/l2/l3 的 pre 无读者，impl 照抄）。
+  b. 60 个 ref unmatched-unread ↔ 60 个 impl 同义点（名字/层次不同，签名为空配不上）：
+     l2_N_prefetch/l3_N_prefetch ×32 ↔ l2_entry_reg[N].prefetch/l3_entry_reg[N].prefetch；
+     hitPre_r/hitPre_r_1/l3Pre_r/l2Pre ↔ l3_pre_r/l2_pre_r/l3_pre_ck/l2_pre_ck；
+     data_resp_r_N_entries_prefetch/l1_ramDatas_N_entries_prefetch ×4 ↔ l1_resp_r[N].prefetch/l1_ramdata[N].prefetch；
+     wakeup_req_delay_tag[3..8]/wakeup_req_delay_way_info[0]/wakeup_req_way_info[0] ×8 ↔ wk_d_tag[3..8]/wk_d_way[0]/wk_way[0]
+     （golden 只读 tag[2:0]/[37:9] 与 way_info[3:1]）；
+     mbistPlL{0,1}/addrReg[k]、addrRdReg[k] ×12 ↔ u_mbist_l{0,1}/u_core/同名（共享核 xs_mbist_pipe_core 的位）。
+  c. ★impl 独有 1 个★：`sp_hitdata_ck\[prefetch]` —— impl 把 sp 命中项整条 struct 打拍进 check 级，
+     其中 prefetch 位另有 sp_pre_ck 一份在用，struct 里那一位无读者；golden 只有 spPre 一份。
+     这是 impl 侧多存的死位（IMPL_DEAD），要修 RTL 消掉才能双射。
