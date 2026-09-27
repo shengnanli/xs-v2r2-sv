@@ -125,8 +125,11 @@ module xs_DiffRatStateBuffer_core
 
   // 槽有效位（复位 0）：提交读清零压过同拍写置位；越界读取第 0 项、越界写无效（照 golden）
   logic [SLOTS-1:0] stateSlotValid;
-  wire  readSlot_in_range = (readSlot < SLOT_W'(SLOTS));
-  wire  readSlotValid     = readSlot_in_range ? stateSlotValid[readSlot] : stateSlotValid[0];
+  // 读选择照 golden 的做法把 320 位扩成 2^SLOT_W=512 位（越界那 192 项都是第 0 项）再用 9 位下标索引：
+  // 这样下标的声明位宽与向量深度精确相等。写成 `in_range ? v[slot] : v[0]` 时 FM 只按下标声明
+  // 位宽判越界、不传播守卫，impl 侧 set_top 会 FMR_ELAB-147（2026-09-27 实测，见 CONVENTIONS）。
+  wire  [(1 << SLOT_W)-1:0] stateSlotValidExt = {{((1 << SLOT_W) - SLOTS){stateSlotValid[0]}}, stateSlotValid};
+  wire  readSlotValid     = stateSlotValidExt[readSlot];
   wire  readRequestValid  = commitRobIdx_valid & readSlotValid;
 
   always_ff @(posedge clock or posedge reset) begin

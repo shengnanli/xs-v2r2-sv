@@ -103,3 +103,18 @@ detached checkout 上同样红**（Bitmap / InterruptFilter 动态钉点无夹�
 RenameTableWrapper 报 `elab_error:xs_SnapshotGenerator_core: 覆盖了不存在的参数 ['DATA_W']`，
 该错在已签核的 RenameTable 目标上同样出现（`--only RenameTable` 4/4 ERROR），是该脚本的静态
 elaborator 认不出 `parameter int DATA_W = $bits(rab_ptr_t)`，非本 lane 引入、不改。
+
+## 5. 第一次起跑的结果与修正（★§2 预测不动★）
+
+第一次 `scripts/run_proof.sh RenameTableWrapper DiffRatStateBuffer RenameTableWrapper`
+@ `3070f15a64e8001bff2bb0fc73f11d0ed8a1709b`（`evidence/3070f15a64e8/*/fm.log`，无 receipt）：
+
+- **ref 侧 `set_top r:/WORK/<top>` 两个目标都成功**——两个存储宏对称黑盒确实消掉了 golden 侧那条
+  FMR_ELAB-147（上一条 lane 卡死的那一步已过）。
+- **impl 侧 `set_top` 失败**：唯一一条 `FMR_ELAB-147 (Signal: stateSlotValid Block: /xs_DiffRatStateBuffer_core
+  Line: 129)` -> FM-262 -> FM-156，两目标同一根因。是我自己核里
+  `readSlot_in_range ? stateSlotValid[readSlot] : stateSlotValid[0]` 这个 `arr[cond ? idx : 0]` 形状
+  （CONVENTIONS：FM 按下标声明位宽判越界、不传播守卫；9 位下标 vs 320 深必报）。
+- 修法（不加 appvar、不 filter）：照 golden 把 320 位 valid 扩成 2^9=512 位（越界 192 项都是第 0 项，
+  语义与 golden `_GEN` 逐位相同）再用 9 位下标索引——下标声明位宽与向量深度精确相等。
+  寄存器/输出位数不变，§2 预测不变。修正 commit 见对账节 A；UT 3 seed × 2 档在修正后的字节上重跑。
