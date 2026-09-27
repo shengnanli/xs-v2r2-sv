@@ -1,0 +1,112 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/Pmpaddr40Module
+Implementation : i:/WORK/Pmpaddr40Module
+Version        : V-2023.12-SP3
+Date           : Sun Sep 27 10:59:19 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    Pmpaddr33Module
+
+       Instances : 0
+
+e *    Pmpaddr34Module
+
+       Instances : 0
+
+e *    Pmpaddr35Module
+
+       Instances : 0
+
+e *    Pmpaddr36Module
+
+       Instances : 0
+
+e *    Pmpaddr37Module
+
+       Instances : 0
+
+e *    Pmpaddr38Module
+
+       Instances : 0
+
+e *    Pmpaddr39Module
+
+       Instances : 0
+
+e *    Pmpaddr41Module
+
+       Instances : 0
+
+e *    Pmpaddr42Module
+
+       Instances : 0
+
+e *    Pmpaddr43Module
+
+       Instances : 0
+
+e *    Pmpaddr44Module
+
+       Instances : 0
+
+e *    Pmpaddr45Module
+
+       Instances : 0
+
+e *    Pmpaddr46Module
+
+       Instances : 0
+
+e *    Pmpaddr47Module
+
+       Instances : 0
+
+e *    Pmpaddr48Module
+
+       Instances : 0
+
+e *    Pmpaddr49Module
+
+       Instances : 0
+
+e *    Pmpaddr50Module
+
+       Instances : 0
+
+e *    Pmpaddr51Module
+
+       Instances : 0
+
+e *    Pmpaddr52Module
+
+       Instances : 0
+
+
+1
+
