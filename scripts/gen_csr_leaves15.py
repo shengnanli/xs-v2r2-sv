@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Generate fifteen readable CSR/control leaf wrappers."""
+import argparse
 from pathlib import Path
 R=Path(__file__).resolve().parents[1]/'rtl/backend'
-def emit(n,s): (R/f'{n}.sv').write_text(s)
+OUTPUTS={}
+def emit(n,s): OUTPUTS[n]=s
 def head(desc): return f"// {desc}\n// The semantic core names the operation; the exact-name wrapper preserves integration.\n// This leaf is combinational and contains no hidden architectural state.\n"
 
 emit('MconfigptrModule',head('Machine configuration pointer is architecturally hard-wired to zero.')+'''module xs_MconfigptrModule_core(output logic [63:0] value); assign value=64'b0; endmodule
@@ -29,3 +31,21 @@ module {n}(output logic [63:0] rdata,output logic [63:0] regOut_ALL,input logic 
 emit('IntSyncSyncCrossingSink',head('Synchronous interrupt crossing sink is a one-bit transparent endpoint.')+'''module xs_IntSyncSyncCrossingSink_core(input logic incoming,output logic outgoing); assign outgoing=incoming; endmodule
 module IntSyncSyncCrossingSink(input logic auto_in_sync_0,output logic auto_out_0); xs_IntSyncSyncCrossingSink_core u_core(.incoming(auto_in_sync_0),.outgoing(auto_out_0)); endmodule
 ''')
+
+def main():
+    ap=argparse.ArgumentParser()
+    ap.add_argument('--check',action='store_true')
+    args=ap.parse_args()
+    drift=[]
+    for name,text in OUTPUTS.items():
+        path=R/f'{name}.sv'
+        if args.check:
+            if not path.exists() or path.read_text()!=text: drift.append(str(path))
+        else:
+            path.write_text(text)
+    if drift:
+        print('gen_csr_leaves15 --check: DRIFT: '+' '.join(drift))
+        raise SystemExit(1)
+    if args.check: print(f'gen_csr_leaves15 --check: OK ({len(OUTPUTS)} files)')
+
+if __name__=='__main__': main()
