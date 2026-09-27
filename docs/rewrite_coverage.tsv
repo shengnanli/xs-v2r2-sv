@@ -21,7 +21,7 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	593	599	99.0
+fm_targets_configured	618	624	99.0
 unique_design_written	207	1191	17.4
 unique_design_proven	201	1191	16.9
 golden_lines_written	2263503	3902283	58.0
