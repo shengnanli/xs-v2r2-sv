@@ -9,8 +9,21 @@ module xs_MaskExtractor_core (
   output logic [15:0] byte_mask
 );
   always_comb begin
-    for (int byte_lane = 0; byte_lane < 16; byte_lane++)
-      byte_mask[byte_lane] = element_mask[byte_lane >> vsew];
+    unique case (vsew)
+      2'd0: byte_mask = element_mask;
+      2'd1: begin
+        for (int byte_lane = 0; byte_lane < 16; byte_lane++)
+          byte_mask[byte_lane] = element_mask[byte_lane / 2];
+      end
+      2'd2: begin
+        for (int byte_lane = 0; byte_lane < 16; byte_lane++)
+          byte_mask[byte_lane] = element_mask[byte_lane / 4];
+      end
+      default: begin
+        for (int byte_lane = 0; byte_lane < 16; byte_lane++)
+          byte_mask[byte_lane] = element_mask[byte_lane / 8];
+      end
+    endcase
   end
 endmodule
 
