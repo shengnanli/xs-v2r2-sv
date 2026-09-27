@@ -270,7 +270,7 @@ DelayN_8	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_8.sv
 DelayN_9	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DelayN_9.sv
 DelayQueue	MISSING	UNPROVEN	-
 DelayQueue_1	MISSING	UNPROVEN	-
-DiffRatStateBuffer	REWRITTEN	UNPROVEN	rtl/backend/DiffRatStateBuffer.sv
+DiffRatStateBuffer	REWRITTEN	PROVEN_DIRECT	rtl/backend/DiffRatStateBuffer.sv
 Directory	MISSING	UNPROVEN	-
 Directory_1	MISSING	UNPROVEN	-
 Directory_2	MISSING	UNPROVEN	-
@@ -693,7 +693,7 @@ LqPAddrModule_1	MISSING	UNPROVEN	-
 LqVAddrModule	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LqVAddrModule.sv
 LsqEnqCtrl	REWRITTEN	PROVEN_DIRECT	rtl/backend/LsqEnqCtrl.sv
 LsqWrapper	MISSING	UNPROVEN	-
-MEFreeList	MISSING	UNPROVEN	-
+MEFreeList	REWRITTEN	PROVEN_DIRECT	rtl/backend/MEFreeList.sv
 MLevelPermitModule	MISSING	UNPROVEN	-
 MMIOBridge	MISSING	UNPROVEN	-
 MMIOBridgeEntry	MISSING	UNPROVEN	-
@@ -1319,10 +1319,10 @@ RegCacheTagModule_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/RegCacheTagModule_1.sv
 RegCacheTagTable	REWRITTEN	PROVEN_DIRECT	rtl/backend/RegCacheTagTable.sv
 RegGen	MISSING	UNPROVEN	-
 RegionWays	GOLDEN_REUSE	PROVEN_IN_CONE	-
-Rename	MISSING	UNPROVEN	-
+Rename	REWRITTEN	PROVEN_DIRECT	rtl/backend/Rename.sv
 RenameBuffer	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameBuffer.sv
 RenameTable	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTable.sv
-RenameTableWrapper	REWRITTEN	UNPROVEN	rtl/backend/RenameTableWrapper.sv
+RenameTableWrapper	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTableWrapper.sv
 RenameTable_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTable_1.sv
 RenameTable_2	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTable_2.sv
 RenameTable_3	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTable_3.sv
@@ -1507,9 +1507,9 @@ Sstateen3Module	MISSING	UNPROVEN	-
 SstcInterruptGen	MISSING	UNPROVEN	-
 Std	MISSING	UNPROVEN	-
 StdFreeList	REWRITTEN	PROVEN_DIRECT	rtl/backend/StdFreeList.sv
-StdFreeList_1	MISSING	UNPROVEN	-
-StdFreeList_2	MISSING	UNPROVEN	-
-StdFreeList_3	MISSING	UNPROVEN	-
+StdFreeList_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/StdFreeList_1.sv
+StdFreeList_2	REWRITTEN	PROVEN_DIRECT	rtl/backend/StdFreeList_2.sv
+StdFreeList_3	REWRITTEN	PROVEN_DIRECT	rtl/backend/StdFreeList_3.sv
 StimecmpModule	MISSING	UNPROVEN	-
 StopeiModule	MISSING	UNPROVEN	-
 StopiModule	MISSING	UNPROVEN	-
@@ -1782,7 +1782,7 @@ compare_3to1_1	MISSING	UNPROVEN	-
 compare_3to1_2	MISSING	UNPROVEN	-
 compare_3to1_6	MISSING	UNPROVEN	-
 cycleModule	MISSING	UNPROVEN	-
-diff_rat_state_bank_320x776	REWRITTEN	UNPROVEN	rtl/backend/diff_rat_state_bank_320x776.sv
+diff_rat_state_bank_320x776	VENDOR_BOUNDARY	VENDOR_BOUNDARY	-
 dt_pcTransType_160x2	MISSING	UNPROVEN	-
 fpdiv_r64_block	MISSING	UNPROVEN	-
 fpdiv_r64_block_vector	MISSING	UNPROVEN	-
@@ -1811,6 +1811,6 @@ r4_qds_v2_spec	MISSING	UNPROVEN	-
 skidBufferConnect	MISSING	UNPROVEN	-
 slidednVs2VdTable	MISSING	UNPROVEN	-
 slideupVs2VdTable	MISSING	UNPROVEN	-
-stateBankTags_320x3	REWRITTEN	UNPROVEN	rtl/backend/stateBankTags_320x3.sv
+stateBankTags_320x3	VENDOR_BOUNDARY	VENDOR_BOUNDARY	-
 strdiedLSNumOfUopTable	MISSING	PROVEN_IN_CONE	-
 timeModule	MISSING	UNPROVEN	-

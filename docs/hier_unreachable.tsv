@@ -88,6 +88,12 @@ RegCacheTagModule_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RegCacheTagTable	1	RegCach
 RightShiftModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftModule.sv
 RightShiftWordModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftWordModule.sv
 ShiftResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/ShiftResultSelect.sv
+SnapshotGenerator_11	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	StdFreeList_1	1	-	rtl/backend/SnapshotGenerator_11.sv
+SnapshotGenerator_12	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	StdFreeList_2,StdFreeList_3	2	-	rtl/backend/SnapshotGenerator_12.sv
+StdFreeList	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Rename	1	Rename	rtl/backend/StdFreeList.sv
+StdFreeList_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Rename	1	Rename	rtl/backend/StdFreeList_1.sv
+StdFreeList_2	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Rename	1	Rename	rtl/backend/StdFreeList_2.sv
+StdFreeList_3	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Rename	1	Rename	rtl/backend/StdFreeList_3.sv
 SyncDataModuleTemplate_FtqPC_64entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	FtqPcMemWrapper	1	FtqPcMemWrapper	rtl/common/SyncDataModuleTemplate_FtqPC_64entry.sv
 UIntCompressor_27_000000000000001010100000000	GOLDEN_ONLY	ABSORBED_COLLATERAL	EnqEntry_10,EnqEntry_12,EnqEntry_8,OthersEntry_104,OthersEntry_106,OthersEntry_120,OthersEntry_122,OthersEntry_88,OthersEntry_90	54	-	$(GOLDEN_RTL)/UIntCompressor_27_000000000000001010100000000.sv
 WordResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/WordResultSelect.sv

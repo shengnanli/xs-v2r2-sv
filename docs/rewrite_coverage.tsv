@@ -21,15 +21,15 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	564	574	98.3
+fm_targets_configured	571	577	99.0
 unique_design_written	193	1191	16.2
-unique_design_proven	183	1191	15.4
-golden_lines_written	2237851	3902283	57.3
-golden_lines_proven	1887412	3902283	48.4
+unique_design_proven	187	1191	15.7
+golden_lines_written	2254876	3902283	57.8
+golden_lines_proven	1917141	3902283	49.1
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2069145	3349905	61.8
-incore_golden_lines_proven	1722958	3349905	51.4
+incore_golden_lines_written	2086170	3349905	62.3
+incore_golden_lines_proven	1752687	3349905	52.3
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	168706	552378	30.5
@@ -38,7 +38,7 @@ outcore_golden_lines_proven	164454	552378	29.8
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	18	564	3.2
+legacy_proven_unanchored	18	571	3.2
 #   合计 7776 golden 行
 #   DuplicatedTagArray                            651 行
 #   ITTageTable                                   336 行
@@ -60,16 +60,12 @@ legacy_proven_unanchored	18	564	3.2
 #   TageBTable                                    396 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
-#   DiffRatStateBuffer                              10187 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
 #   OpenLLC                                          4252 行
 #   PtwCache                                        45308 行
-#   RenameTableWrapper                               2249 行
 #   Rob                                            266227 行
 #   StorePipe                                          93 行
-#   diff_rat_state_bank_320x776                       120 行
-#   stateBankTags_320x3                               148 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 # ★只列核内★：核外的另列在本表末尾，不要从那里接活

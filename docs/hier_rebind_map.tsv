@@ -1994,6 +1994,7 @@ LqVAddrModule	sx_writeData_resp_pipMod_6	DelayNWithValid_155	GEN_SITE_UNINDEXED	
 LqVAddrModule	sx_writeData_resp_pipMod_7	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
 LqVAddrModule	sx_writeData_resp_pipMod_8	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
 LqVAddrModule	sx_writeData_resp_pipMod_9	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
+MEFreeList	snapshots_snapshotGen	SnapshotGenerator	DEEPER	u_core.snapshots_snapshotGen	xs_SnapshotGenerator_core		auto_deeper	
 MemCtrl	ssit	SSIT	DEEPER	u_core.ssit	SSIT		auto_deeper	
 MemCtrl	waittable	WaitTable	DEEPER	u_core.waittable	WaitTable		auto_deeper	
 MulUnit	mulDataModule	ArrayMulDataModule	DEEPER	u_core.mulDataModule	ArrayMulDataModule		auto_deeper	
@@ -2326,6 +2327,12 @@ RegCache	MemRegCacheAgeTimer	RegCacheAgeTimer_1	ONE_SITE	u_core.MemRegCache_age_
 RegCache	MemRegCacheRepRCIdx_age	RegCacheAgeDetector_1	ONE_SITE	u_core.MemRegCache_rep	RegCacheAgeDetector_1		auto_one_site	
 RegCacheTagTable	IntRCTagTable	RegCacheTagModule	DEEPER	u_core.IntRCTagTable	xs_RegCacheTagModule_core		auto_deeper	
 RegCacheTagTable	MemRCTagTable	RegCacheTagModule_1	DEEPER	u_core.MemRCTagTable	xs_RegCacheTagModule_core		auto_deeper	
+Rename	compressUnit	CompressUnit	DEEPER	u_core.compressUnit	CompressUnit		auto_deeper	
+Rename	fpFreeList	StdFreeList	UNRESOLVED				none	
+Rename	intFreeList	MEFreeList	DEEPER	u_core.intFreeList	MEFreeList		auto_deeper	
+Rename	v0FreeList	StdFreeList_2	UNRESOLVED				none	
+Rename	vecFreeList	StdFreeList_1	UNRESOLVED				none	
+Rename	vlFreeList	StdFreeList_3	UNRESOLVED				none	
 RenameBuffer	walkPtrSnapshots_snapshotGen	SnapshotGenerator	SAME_PATH	walkPtrSnapshots_snapshotGen	SnapshotGenerator		auto_same	
 RenameTable	snapshots_snapshotGen	SnapshotGenerator_4	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_4		auto_same	
 RenameTableWrapper	diffRatBuffer	DiffRatStateBuffer	DEEPER	u_core.diffRatBuffer	DiffRatStateBuffer		auto_deeper	
@@ -2462,7 +2469,6 @@ SplittedSRAM_2	array_0_1_4	SRAMTemplate_129	SAME_PATH	array_0_1_4	SRAMTemplate_1
 SplittedSRAM_2	array_0_1_5	SRAMTemplate_129	SAME_PATH	array_0_1_5	SRAMTemplate_129		auto_same	
 SplittedSRAM_2	array_0_1_6	SRAMTemplate_143	SAME_PATH	array_0_1_6	SRAMTemplate_143		auto_same	
 SplittedSRAM_2	array_0_1_7	SRAMTemplate_143	SAME_PATH	array_0_1_7	SRAMTemplate_143		auto_same	
-StdFreeList	snapshots_snapshotGen	SnapshotGenerator	DEEPER	u_core.snapshots_snapshotGen	SnapshotGenerator		auto_deeper	
 StoreQueue	dataBuffer	DatamoduleResultBuffer	DEEPER	u_core.dataBuffer	DatamoduleResultBuffer		auto_deeper	
 StoreQueue	dataModule	SQDataModule	DEEPER	u_core.dataModule	SQDataModule		auto_deeper	
 StoreQueue	exceptionBuffer	StoreExceptionBuffer	DEEPER	u_core.exceptionBuffer	StoreExceptionBuffer		auto_deeper	
