@@ -65,8 +65,12 @@ def module_bodies(text):
     t = _strip_comments(text)
     out = {}
     for m in _MOD.finditer(t):
-        end = t.find('\nendmodule', m.end())
-        out[m.group(1)] = t[m.start():end if end >= 0 else len(t)]
+        # ★endmodule 不一定在行首：整模块写成一行时它跟在 `;` 后面。
+        # 找 '\nendmodule' 会一路吞到文件尾，把下一个模块的体也算进来，
+        # 而单行模块自己的实例化又因为不在行首被 _INST 漏掉 → 误判 SKELETON
+        # （2026-09-27 codex 的 25 个 CSR 叶子全中）。判据不许对排版敏感。
+        e = re.compile(r'\bendmodule\b').search(t, m.end())
+        out[m.group(1)] = t[m.start():e.start() if e else len(t)]
     return out
 
 
@@ -259,8 +263,9 @@ def classify_body(body):
 #   C 不在 rtl/ 里（黑盒 / 厂商宏 / golden 复用）→ 算驱动（不归我们管）
 #   C 在 rtl/ 里                                → cp 必须**自己**是有效驱动的
 # 递归取不动点，环用"在算中返回空集"挡住。
+# 实例化在"语句开头"：行首，或者前一条语句的 `;` 之后（单行模块）。
 _INST = re.compile(
-    r'^[ \t]*(\w+)[ \t]*(?:#\s*\([^;]*?\)\s*)?(\w+)\s*\(', re.M)
+    r'(?:^|(?<=;))[ \t]*(\w+)[ \t]*(?:#\s*\([^;]*?\)\s*)?(\w+)\s*\(', re.M)
 _NOT_MODULE = {'if', 'for', 'while', 'case', 'casex', 'casez', 'always',
                'always_ff', 'always_comb', 'always_latch', 'assign', 'initial',
                'final', 'module', 'endmodule', 'function', 'task', 'generate',
@@ -522,6 +527,11 @@ module WrapExpr(input logic clk, input logic x, input logic y, output logic io_a
 endmodule
 ''', 'SKELETON', (0, 1)),
     # 反测：不许把比较当赋值
+    # 反测：排版不是判据。整模块一行、endmodule 不在行首、实例化跟在 `;` 后，
+    # 输出照样是被实例驱动的（2026-09-27 codex CSR 叶子形态）
+    ('I 单行模块：实例驱动输出照样算 REWRITTEN', '''
+module One(output logic [63:0] rdata, input logic [5:0] hartid); xs_One_core u_core(.a(hartid), .v(rdata)); endmodule
+''', 'REWRITTEN', (1, 1)),
     ('F2 一个端口都没有 = 空壳，不是 sink', '''
 module Empty;
 endmodule
