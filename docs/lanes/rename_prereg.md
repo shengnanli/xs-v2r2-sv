@@ -153,3 +153,42 @@ initreg 覆盖 → 没写过的槽被 useSnpt 选中就 X)。比对 1,020 个输
 | unmatched 六项 | 全 0（`RN_PREPIN_END … n=200`，`RN_PIN_END … n=530 miss=0`） |
 | 黑盒 | FM-249 No black boxes |
 | mode / verdict / vmucp | signoff-strict / SUCCEEDED / true |
+
+---
+
+# 对账（跑完追加；上文各节未改一字）
+
+## A. 起止 commit（完整 hash）
+
+| 目标 | 跑前登记 / proof commit | 证据目录 | receipt sha256 |
+|---|---|---|---|
+| StdFreeList / _2 / _3 | `e9987342c6f999366067241997bc89a07e1bd02a` | evidence/e9987342c6f9 | 见各 receipt.json |
+| StdFreeList_1（vmucp 后重证） | `0e1b68b4ea73…`（`git rev-parse 0e1b68b4`） | evidence/0e1b68b4ea73 | 见 receipt.json |
+| MEFreeList | `361e2ab086bf28c8fd3119b37c97df7b8f7b978f` | evidence/361e2ab086bf | 见 receipt.json |
+| Rename | `843afc0c2d9a3db1243798686ba35c246bc52122` | evidence/843afc0c2d9a | `6397c9443742e12e78ca6bf5fc01518d1245648a68eb4280190e54ef6dc11202` |
+
+## B. 逐条对账（`python3 scripts/fm_predict.py check <target>`，全部「全部对上」）
+
+| 目标 | 预测 | 实测 passing | 差 | 指认 | failing/unverified/aborted/unread | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|---|---|
+| StdFreeList | 1593 | 1593 | 0 | — | 0/0/0/0 | 全 0 | 无 | SUCCEEDED |
+| StdFreeList_1 | 892 | 首跑 890(PARTIAL, unread 2) → vmucp 892 | 0 | — | 0/0/0/0 | 全 0 | 无 | SUCCEEDED |
+| StdFreeList_2 | 336 | 336 | 0 | — | 0/0/0/0 | 全 0 | 无 | SUCCEEDED |
+| StdFreeList_3 | 426 | 426 | 0 | — | 0/0/0/0 | 全 0 | 无 | SUCCEEDED |
+| MEFreeList | 2716 | 2716 | 0 | — | 0/0/0/0 | 全 0（钉点 530/530） | 无 | SUCCEEDED |
+| Rename | 11353（预计实测 11153） | 11153 | 200 | constant_reg 200 | 0/0/0/0 | 全 0（pre-pin 200 + pin 530/530） | FM-249 无 | SUCCEEDED |
+
+Rename：mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify [] / elab147 [] /
+relaxed_appvars [] / failing_truncated false / fm.log 行首 `Error:` 0 / impl_worktree_dirty false。
+impl_closure[0] = rtl/backend/Rename.sv `9f3e22dfe2cfc0ba2f013e3ade686a8ca05d086e13a7c97ca4c399e06f4a44b9`。
+
+§3.4 的两处「可能出错」都没发生（pre-pin 200/200、pin 530/530）。
+
+## C. 复跑
+
+```
+cd /home/eda/xs-env/wt-rename
+PROOF_COMMIT=843afc0c2d9a3db1243798686ba35c246bc52122 scripts/run_proof.sh Rename Rename
+python3 scripts/fm_predict.py check Rename
+cd verif/ut/Rename && make run SEED=1 INITREG=+vcs+initreg+random   # 另 +vcs+initreg+0；SEED=7/42
+```
