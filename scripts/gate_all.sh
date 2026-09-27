@@ -150,6 +150,8 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
          scripts/gen_newdispatch_tb.py scripts/gen_tlbnb_family.py \
          scripts/gen_predictor.py scripts/gen_rob.py \
+         scripts/gen_csr_leaves15.py scripts/gen_csr_leaves10b.py \
+         scripts/gen_redirectgen.py scripts/gen_renametablewrapper.py \
          scripts/gen_rob_ut.py scripts/gen_sbuffer.py \
          scripts/gen_sbuffer_tb.py scripts/gen_tlbsw_family.py \
          scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
