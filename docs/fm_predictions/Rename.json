@@ -1,0 +1,9 @@
+{
+  "target": "Rename",
+  "ut": "Rename",
+  "regs": 6336,
+  "outs": 5017,
+  "expected": 11353,
+  "merge_dup": "false",
+  "model_applicable": true
+}
