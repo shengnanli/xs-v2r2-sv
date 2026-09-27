@@ -1,0 +1,106 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "RenameTableWrapper",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "assembly 边界声明：黑盒**只有**两个 codex 0158 §1 审定过的 firtool 行为级存储宏（verif/vendor_boundary.tsv：diff_rat_state_bank_320x776 sha256 8209b41d…、stateBankTags_320x3 sha256 61e51d07…；深度 320 / 地址 9 位，白盒化在 ref 侧 set_top 就 FMR_ELAB-147），两侧对称：ref 6 个扁平 bank 实例 + 1 tags，impl generate-for g_bank[0..5] + 1 tags（按设计名计数 6/1 == 6/1）。不含任何逻辑子模块、不含 green_child、不含 golden_logic_reuse。 五张 RenameTable（RenameTable/_1/_2/_3 + SnapshotGenerator_4..7）与 DiffRatStateBuffer 本体在本目标里**不黑盒**：ref 读 golden 文件、impl 读 rtl/backend 可读件（RenameTable 系已各自签核，但这里两侧完整 elaborate，不依赖其证书，故没有 green_child 条目、也就没有 certificate_sha256 可填）。路径里 diffRatBuffer 是两侧同名的 DiffRatStateBuffer 实例。",
+ "objects": [
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/RenameTableWrapper/u_core/diffRatBuffer/u_core/g_bank[0].diff_rat_state_bank_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/RenameTableWrapper/u_core/diffRatBuffer/u_core/g_bank[1].diff_rat_state_bank_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/RenameTableWrapper/u_core/diffRatBuffer/u_core/g_bank[2].diff_rat_state_bank_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/RenameTableWrapper/u_core/diffRatBuffer/u_core/g_bank[3].diff_rat_state_bank_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/RenameTableWrapper/u_core/diffRatBuffer/u_core/g_bank[4].diff_rat_state_bank_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/RenameTableWrapper/u_core/diffRatBuffer/u_core/g_bank[5].diff_rat_state_bank_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "stateBankTags_320x3",
+   "path": "i:/WORK/RenameTableWrapper/u_core/diffRatBuffer/u_core/stateBankTags_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/RenameTableWrapper/diffRatBuffer/diff_rat_state_bank_0_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/RenameTableWrapper/diffRatBuffer/diff_rat_state_bank_1_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/RenameTableWrapper/diffRatBuffer/diff_rat_state_bank_2_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/RenameTableWrapper/diffRatBuffer/diff_rat_state_bank_3_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/RenameTableWrapper/diffRatBuffer/diff_rat_state_bank_4_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/RenameTableWrapper/diffRatBuffer/diff_rat_state_bank_5_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "stateBankTags_320x3",
+   "path": "r:/WORK/RenameTableWrapper/diffRatBuffer/stateBankTags_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}

@@ -21,14 +21,14 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	559	570	98.1
+fm_targets_configured	559	572	97.7
 unique_design_written	189	1191	15.9
 unique_design_proven	176	1191	14.8
-golden_lines_written	2218575	3902283	56.9
+golden_lines_written	2224194	3902283	57.0
 golden_lines_proven	1762717	3902283	45.2
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2049869	3349905	61.2
+incore_golden_lines_written	2055488	3349905	61.4
 incore_golden_lines_proven	1598263	3349905	47.7
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
@@ -65,14 +65,14 @@ legacy_proven_unanchored	18	557	3.2
 #   L2TLB                                           20101 行
 #   NewDispatch                                    100983 行
 #   OpenLLC                                          4252 行
+#   PipeGroupConnect                                 5039 行
+#   PipelineConnectPipe                               848 行
 #   PtwCache                                        45308 行
 #   RenameTableWrapper                               2249 行
 #   Rob                                            266227 行
 #   SQData8Module                                    3529 行
 #   SQDataModule                                      907 行
 #   StorePipe                                          93 行
-#   diff_rat_state_bank_320x776                       120 行
-#   stateBankTags_320x3                               148 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 # ★只列核内★：核外的另列在本表末尾，不要从那里接活

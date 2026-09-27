@@ -1,0 +1,23 @@
+{
+  "target": "RenameTableWrapper",
+  "ut": "RenameTableWrapper",
+  "regs": 12781,
+  "outs": 2102,
+  "expected": 19766,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 4883,
+  "bbox": {
+    "diff_rat_state_bank_320x776": {
+      "insts": 6,
+      "in_bits": 798,
+      "points": 4788
+    },
+    "stateBankTags_320x3": {
+      "insts": 1,
+      "in_bits": 95,
+      "points": 95
+    }
+  },
+  "note": "assembly 模式；黑盒仅两个审定存储宏（ref 7 实例/impl 7 实例），先例 L2TlbMissQueue 实测黑盒输入引脚不进 passing（125 == 模型 125），故预测 = 模型值，可接受偏差 0；唯一允许的指认项是 receipt 的 constant_reg"
+}

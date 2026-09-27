@@ -19,7 +19,9 @@
 //
 // ★ golden 事实 ★
 //   - 存储叶子 diff_rat_state_bank_320x776 ×6 与 stateBankTags_320x3 是 firtool 行为级
-//     存储（本仓 rtl/backend 下同名可读件），深度 320 / 地址 9 位。
+//     存储，深度 320 / 地址 9 位（2^9=512>320，白盒化必触发 FMR_ELAB-147）。本核直接例化
+//     golden 那两份（APPROVED_MEMORY_MACRO_MODEL，verif/vendor_boundary.tsv 逐条审定），
+//     FM 两侧对称黑盒，仿真两侧共用 golden 叶子 —— 与 L2TlbMissQueue 的 ram_40x47 同一处置。
 //   - stateSlotValid 320 项：提交读清零压过同拍写置位；**越界下标**（slot ≥ 320）读到的是
 //     第 0 项（firtool 对 Vec 越界读的展开结果），写则无效果 —— 照抄。
 //   - committedRat 复位值 = DiffRatState.init：int 全 0、fp[i]=i、vec[i]=i+1、v0=0、vl=0。

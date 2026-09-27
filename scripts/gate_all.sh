@@ -63,6 +63,12 @@ run "证书判据元负例"     env XSSV_CERT_TEST_SABOTAGE=all python3 scripts/
 # recompute_closure_at 只复算 kind=='repo'，golden 条目被整个跳过 ⇒ D57 原九条一条不响。
 run "证书 golden-in-impl" python3 scripts/test_proof_certificate_grandchild.py
 run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_certificate_grandchild.py
+# codex 0158 §1 的三项最小功能审查（APPROVED_MEMORY_MACRO_MODEL 入表前置）：
+# 先负测（合成夹具，每条判据一正一反，秒级不读 golden），再对 verif/ram_model_parents.tsv
+# 登记的每一条在 golden 现文件上复算 M1/M2/M3。★此前两条都没进 gate_all★——脚本在、能跑、
+# 没人跑；2026-09-27 扩多写口/多实例/输入偏移三种形态时一并挂上。
+run "RAM 模型审查负测"    python3 scripts/test_audit_ram_memory_model.py
+run "RAM 模型审查复算"    python3 scripts/audit_ram_memory_model.py --check
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
 # WBArbiter 反饥饿状态机的可达性表：verif/ut/WBArbiterVariants/tb.sv 的覆盖判据是

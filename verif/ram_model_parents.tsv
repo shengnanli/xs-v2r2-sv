@@ -12,6 +12,14 @@
 #   1 design        golden RAM 模型的字面 module 名（与 registry 第 1 列同名）
 #   2 parent_ref    ref 侧例化它的 golden 文件（相对 $(GOLDEN_RTL)）
 #   3 parent_impl   impl 侧例化它的重写文件（相对仓库根）
+#   4 addr_contract （可选）M3 形态 B「输入偏移地址」所依赖的接口契约，形如
+#                   `value<Vmax@<出处>`。形态 A（环形指针归纳证明）不需要，留 `-`。
+#                   ★写了契约不等于证明了契约★：脚本只核「契约充分」（Vmax + K <= depth 且
+#                   2^w <= depth）并把每个 V/F 的名字打印出来；契约本身成立与否是父级之外的
+#                   事实（DiffRatStateBuffer：robIdx 是 CircularQueuePtr(RobSize=160)，
+#                   value ∈ [0,159] 由 Rob 维护），审定条目的 rationale 必须把这一点写明。
 # ---------------------------------------------------------------------------
-# design	parent_ref	parent_impl
-ram_40x47	Queue40_L2TlbMQBundle.sv	rtl/memblock/L2TlbMissQueue.sv
+# design	parent_ref	parent_impl	addr_contract
+ram_40x47	Queue40_L2TlbMQBundle.sv	rtl/memblock/L2TlbMissQueue.sv	-
+diff_rat_state_bank_320x776	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer.sv	value<160@robIdx=CircularQueuePtr(RobSize=160),value∈[0,159] 由 Rob 维护
+stateBankTags_320x3	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer.sv	value<160@robIdx=CircularQueuePtr(RobSize=160),value∈[0,159] 由 Rob 维护
