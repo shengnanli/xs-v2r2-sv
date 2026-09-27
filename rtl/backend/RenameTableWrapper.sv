@@ -24,6 +24,13 @@
 //   - debug 输出只剩 int（debug_int_rat[32]）与 diff_vl_rat（来自 DiffRatStateBuffer）；
 //     fp/vec 的 debug_rdata、fp/vec/vl 的 need_free 无消费者，不接。
 // =============================================================================
+// 本文件导航（共 2081 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L28    renametablewrapper_pkg —— 参数与 rab_info_t / rat_write_t
+//   L62    xs_RenameTableWrapper_core —— 端口表（数组化的读/写口）
+//   L140   每张表的两组写口（arch 提交 / spec rename 优先否则 walk）
+//   L180   生成区：五张 RenameTable + DiffRatStateBuffer 例化（scripts/gen_renametablewrapper.py）
+//   L1059  difftest bore 打包（int/fp 32 项、vec 拆 64 个 9 位值）
+//   L1076  生成区：golden 同名 wrapper（455 端口逐字来自 golden）
 
 package renametablewrapper_pkg;
   localparam int unsigned RENAME_W   = 6;    // RenameWidth = RabCommitWidth = DecodeWidth
