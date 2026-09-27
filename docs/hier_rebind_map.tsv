@@ -1515,6 +1515,8 @@ DecodeStage	decoders_3	DecodeUnit	GEN_SITE	u_core.g_simple[3].u_decoder	DecodeUn
 DecodeStage	decoders_4	DecodeUnit	GEN_SITE	u_core.g_simple[4].u_decoder	DecodeUnit		auto_gen_site_suffix	
 DecodeStage	decoders_5	DecodeUnit	GEN_SITE	u_core.g_simple[5].u_decoder	DecodeUnit		auto_gen_site_suffix	
 DecodeStage	vtypeGen	VTypeGen	ONE_SITE	u_core.u_vtype_gen	VTypeGen		auto_one_site	
+DecodeUnit	fpDecoder	FPDecoder	DEEPER	u_core.fpDecoder	FPDecoder		auto_deeper	
+DecodeUnit	uopInfoGen	UopInfoGen	DEEPER	u_core.uopInfoGen	UopInfoGen		auto_deeper	
 DecodeUnitComp	indexedLSRegOffset_1	indexedLSUopTable_1	UNRESOLVED				none	
 DecodeUnitComp	indexedLSRegOffset_2	indexedLSUopTable_2	UNRESOLVED				none	
 DecodeUnitComp	indexedLSRegOffset_3	indexedLSUopTable_3	UNRESOLVED				none	
@@ -2722,6 +2724,7 @@ UopInfoGen	indexedLSTable	indexedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	
 UopInfoGen	stridedLSTable	strdiedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	同上
 VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。
 VSetRvfWvf	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	同上
+VTypeGen	vsetModule	VsetModule	UNRESOLVED				none	
 WrBypass	data_mem_0_ext	data_mem_0_8x3	INLINE_REG_ARRAY	u_core	-	data_mem	declared	rtl/frontend/WrBypass.sv:124-126「对应 golden 的 data_mem_*_ext 寄存器堆」logic [NUM_ENTRIES][NUM_WAYS][DATA_WIDTH] data_mem。
 WrBypass	idx_tag_cam	IndexableCAMTemplate	DEEPER	u_core.idx_tag_cam	xs_IndexableCAMTemplate_core		auto_deeper	
 WrBypass_32	data_mem_ext	data_mem_8x4	INLINE_REG_ARRAY	u_core	-	data_mem	declared	同上
