@@ -62,3 +62,37 @@ walkToArch 20,394 / specUpdate 92,739 / vsetvl_seen 13,781；两档日志 md5 �
 DecodeUnit：seed 1 × `+vcs+initreg+0` × 20k 拍 `errors=0`，716/716 可达表项全部命中；
 3 seed × 2 档 × 200k 的全量在跑，结果在对账节补记（登记时不许改本节）。
 复跑：`cd verif/ut/DecodeUnit && python3 gen.py --check && make compile && make run SEED=<s> INITREG=+vcs+initreg+<0|random>`。
+
+## 4. 对账（impl commit `2897a7dbeeb5bb981a0d5f6a2a6fff7489d6bee6`，即登记 commit；RTL 字节与 b8c053d4 相同）
+
+证据 `evidence/2897a7dbeeb5/{DecodeUnit,VTypeGen}/`（receipt.json sha256：
+DecodeUnit `9477e9444f4b14ec57aa8ff2be7e83c008114f36c1355a7ae4a68fb2fa21242b`，
+VTypeGen `3604640151002ae429fb1783274b6badaaf00c82840136fae84f6ad5ef33879c`）。
+
+impl_closure sha256：`rtl/backend/DecodeUnit.sv` `aaaabf4c75789c734ab6da6a500f4f494633f6ce56d75aa9e0011c0a98bde52c`、
+`rtl/backend/FPDecoder.sv` `088ef87c8c88300d3aa77fac0122512156d6746f7f5a58bef3683f4c381a64b4`、
+`rtl/backend/UopInfoGen.sv` `71ae245137afac81a776166e54e2c798ad304ee8541bae290ea63621304beded`；
+`rtl/backend/VTypeGen.sv` `c94689d79592a6574dcf10e21fbf7e8318afd41dceb03b7bd0265aa43bb84067`、
+`rtl/backend/backend_common_pkg.sv` `f404f8ee5d07d1dd5641a9aab807b29e58ac560529c03fb05f92cd742263b87b`。
+golden：DecodeUnit.sv `da56d422…c35d58d`、VTypeGen.sv `3d1ee107…b7a495559`、VsetModule.sv `9eb34d3c…29126b87`（全串在 receipt 里）。
+
+| 项 | DecodeUnit 预测 | 实测 | 判 | VTypeGen 预测 | 实测 | 判 |
+|---|---|---|---|---|---|---|
+| verdict（signoff-strict） | SUCCEEDED | **SUCCEEDED** | ok | SUCCEEDED | **SUCCEEDED** | ok |
+| passing | 442 | 442（442 按名配对 / 0 按签名） | 差 0 | 24 | 24 | 差 0 |
+| failing | 0 | 0（failing_truncated=false） | ok | 0 | 0 | ok |
+| unverified | 0 | 0 | ok | 0 | 0 | ok |
+| unmatched ref/impl | 0/0 | 0/0 | ok | 0/0 | 0/0 | ok |
+| unread | 0 | 0（unread_points.txt 空） | ok | 0 | 0 | ok |
+| constant_reg | 0 | 无 | ok | 0 | 无 | ok |
+| 黑盒 | 0 | 0（FM-249 "No black boxes"） | ok | 0 | 0 | ok |
+| dont_verify / elab147 / appvar 放宽 | 无 | 全空；merge_dup=false 读回一致 | ok | 无 | 全空 | ok |
+
+反向出口一条都没触发。FM 资源：DecodeUnit 273 s / 1089 MB；VTypeGen < 867 MB 地板。
+
+UT（登记时未跑完的补记）：DecodeUnit seed 1/7/42 × `+vcs+initreg+0` / `+random`，各 200k 拍，6 轮全部
+`errors=0`、checks 200,000/轮、716/716 可达表项全部命中（seed 1 的 +random 那轮第一次因三个并行
+simv 共用一个 `simv.daidir` 撞出 VFS_SDB_ERROR 未起跑，单独重跑后绿；两档日志 md5 不同）。
+
+复跑：`PROOF_COMMIT=2897a7dbeeb5bb981a0d5f6a2a6fff7489d6bee6 bash scripts/run_proof.sh DecodeUnit DecodeUnit`、
+`PROOF_COMMIT=2897a7dbeeb5bb981a0d5f6a2a6fff7489d6bee6 bash scripts/run_proof.sh VTypeGen VTypeGen`。
