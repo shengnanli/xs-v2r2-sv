@@ -5,5 +5,6 @@
   "outs": 720,
   "expected": 18704,
   "merge_dup": "false",
-  "model_applicable": true
+  "model_applicable": true,
+  "note": "重出证(agent/sqdm): 旧receipt 54b34842a29b passing=18704 == 模型 18704 (merge_dup=false); 差异文件仅子模块 SQData8Module.sv 前递树(纯组合), 预测 passing=18704 不变, 差额预期 0"
 }
