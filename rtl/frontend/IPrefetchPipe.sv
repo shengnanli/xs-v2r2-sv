@@ -244,7 +244,10 @@ module xs_IPrefetchPipe
   // WayLookup 写口
   input  logic                              io_wayLookupWrite_ready,
   output logic                              io_wayLookupWrite_valid,
-  output way_lookup_info_t                  io_wayLookupWrite_bits
+  output way_lookup_info_t                  io_wayLookupWrite_bits,
+  // perf 探针：golden 里是 IPrefetchPipe 内部的 `from_bpu_s1_flush_probe` 线（XSPerfAccumulate
+  // bpu_s1_flush），SimTop 用绝对层次引用；按 golden 同名导到 wrapper（见 ICacheMainPipe 同法）。
+  output logic                              from_bpu_s1_flush_probe
 );
 
   // ---------------------------------------------------------------------------
@@ -572,6 +575,7 @@ module xs_IPrefetchPipe
   assign from_bpu_s1_flush = s1_valid & ~s1_isSoftPrefetch & io_flushFromBpu_s3.valid
                            & ftq_not_after(io_flushFromBpu_s3.bits, s1_req_ftqIdx);
   assign s1_flush     = io_flush | from_bpu_s1_flush;
+  assign from_bpu_s1_flush_probe = from_bpu_s1_flush;
   assign s1_ready     = (next_state == S_IDLE);
   assign s1_fire      = s1_ready & s1_valid & ~s1_flush;
   assign s1_real_fire = s1_fire & io_csr_pf_enable;   // 预取关掉时请求在 s1 就地丢弃
@@ -892,6 +896,8 @@ module IPrefetchPipe
   logic [PORT_NUM-1:0][IDX_BITS-1:0] meta_req_vSetIdx;
   miss_req_t                         mshr_req;
   way_lookup_info_t                  wl_bits;
+  // golden 同名 perf 探针（SimTop XMR 观测点；不是对外端口）
+  wire                               from_bpu_s1_flush_probe;
 
   xs_IPrefetchPipe u_core (
     .clock(clock), .reset(reset),
@@ -910,7 +916,8 @@ module IPrefetchPipe
     .io_MSHRResp_valid(io_MSHRResp_valid), .io_MSHRResp_bits(mshr_resp),
     .io_wayLookupWrite_ready(io_wayLookupWrite_ready),
     .io_wayLookupWrite_valid(io_wayLookupWrite_valid),
-    .io_wayLookupWrite_bits(wl_bits)
+    .io_wayLookupWrite_bits(wl_bits),
+    .from_bpu_s1_flush_probe(from_bpu_s1_flush_probe)
   );
 
   // ---- struct → flat ----
