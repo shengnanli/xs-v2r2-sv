@@ -30,6 +30,13 @@ FM_REF_DEPS_StdFreeList_3 = SnapshotGenerator_12.sv
 # 跑前登记 / 跑后逐位对账(见 docs/fm_predictions/StdFreeList_{1,2,3}.json)。
 FM_MERGE_DUP = false
 
+# ★只对 StdFreeList_1 开 matched-unread 加强(vmucp)★ —— 依据与判据见
+# verif/fm_target_config/StdFreeList_1.tcl。一句话：SIZE=81 的四分位边界 20/40/60 都是 4 的倍数，
+# freeRegCntReg[1:0] 两侧同为死位(首跑 evidence/e9987342c6f9：passing 890 + unread 2(2) → PARTIAL)。
+# _2/_3 没有 unread 点，对它们开 vmucp 会是空转(passing 不增)，所以按 target 分开：
+# 递归展开的变量在 fm-% 配方里求值，$* 就是当前 target 名。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = $(if $(filter StdFreeList_1,$*),true,)
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

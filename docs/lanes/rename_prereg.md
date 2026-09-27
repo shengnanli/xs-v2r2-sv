@@ -94,3 +94,13 @@ seed 1/7/42 × {+vcs+initreg+random, +vcs+initreg+0} = 6/6 `checks=200000 errors
 
 可能出错：钉点脚本跑在 safe interp 里，若 `report_unmatched_points -list` 的叶名格式与试跑不同会
 `error` 早退(表现为 FM 早退而不是数字小偏离)。
+
+### 1.5 首跑结果与追加（不改 1.3 的数字）
+
+evidence/e9987342c6f9（proof commit `e9987342c6f999366067241997bc89a07e1bd02a`）：
+StdFreeList 1593 / StdFreeList_2 336 / StdFreeList_3 426 三个 SUCCEEDED 逐位等于模型；
+**StdFreeList_1 PARTIAL**：native SUCCEEDED passing 890、failing 0、unmatched 全 0，但
+unread_notcompared 2 = `freeRegCntReg_reg[1:0]`（两侧 matched_nc）。原因：SIZE=81 的
+四分位边界 20/40/60 都是 4 的倍数，低 2 位不进任何比较，golden 与核同为死位。
+处置：`verif/fm_target_config/StdFreeList_1.tcl` 加 vmucp 白名单（六条证据在文件里），
+Makefile 只对该 target 开 vmucp；预测不变仍是 **892**（= 890 + 2，且 = 模型值）。
