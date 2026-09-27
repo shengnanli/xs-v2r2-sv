@@ -40,7 +40,7 @@ module tb;
     expected7[4]=packed7[2]; expected7[2]=packed7[1]; expected7[0]=packed7[0];
     check_value(d11 === 11'(a11-b11), "Adder");
     check_value(d8 === 8'(a8-b8), "Adder_2");
-    check_value(d65 === ({1'b0,x64}-{1'b0,y64}), "SubModule");
+    check_value(d65 === ({1'b0,x64}+{1'b0,~y64}+65'd1), "SubModule");
     check_value(add64 === x64+y64 && add32 === x32+y64[31:0], "AddModule");
     check_value(cz === (((~(|x64)) ^ select_nez) ? 64'b0 : y64), "ConditionalZero");
     check_value(comp3 === {sparse27[12],sparse27[10],sparse27[8]}, "Compressor3");
