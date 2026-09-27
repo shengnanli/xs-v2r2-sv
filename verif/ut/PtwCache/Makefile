@@ -88,3 +88,18 @@ SIM_ARGS += +vcs+initreg+0
 .PHONY: run-initreg1
 run-initreg1:
 	$(MAKE) run SIM_ARGS="+ncycles=$(NCYCLES) +vcs+initreg+1" SEED=$(SEED)
+
+# ---------------------------------------------------------------------------
+# FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true —— ★加强证明，不是 waiver★（第 4 轮）
+# 两处须同时生效：这里一半，另一半是 verif/fm_target_config/PtwCache.tcl 的 fm_target_vmucp_allow
+#（fail-closed：没有那一行开这一项直接 FM_MODE_ERROR）。
+# ★顺序：先配对，再加强★。第 3 轮（evidence/6a102f7a5101/PtwCache/）strict 跑成
+#   native SUCCEEDED / passing 143717 / failing 0 / unverified 0 / unmatched 比较点 0(0)，
+#   卡点 = unread：matched_nc 20 对 + unmatched unread ref 60 / impl 61。
+# 处置三步，全是加强：
+#   (1) RTL 消掉 impl 独有的 1 个死位 sp_hitdata_ck[prefetch]（golden 只有 spPre 一份），61 -> 60；
+#   (2) fm_pins.tcl 把 60 对同义死位钉成双射（五族，fail-closed，见该文件头）；
+#   (3) 本项让 FM 真去比 20+60=80 个 matched unread 点。
+# ★验收判据（不达标就不算过，"passing 不增即空转"）★：
+#   passing 143717 -> 143797（正好 +80）、failing 仍 0、unread 归 0、unmatched 六项全零。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true

@@ -19,5 +19,5 @@
       "points": 2000
     }
   },
-  "note": "★工具的 26599 不是本目标的上界：它把 array_10_ext.v / array_11_ext.v 当黑盒（from_ut 只挑 .sv，bbin=2797），而本目标两侧都白盒读这两个 .v（Makefile RTL_GOLDEN_DEPS/FM_REF_DEPS 列出，第 2 轮 fm.log 918/926 行 'Elaborating design array_1x_ext'）。手工修正 = 21088 + 2714 − 2797(去黑盒输入) + 3147(array_10_ext: 1+2+786×4) + 116848(16×array_11_ext: 1+6+114×64) = 143,797。但第 2 轮 merge_dup=true 时实测比较点总数已是 156,400 > 143,797，即手工模型也仍算漏 ≥12,603 点、未指认。所以本轮不拿任何模型数当点预测；check 机械判 ABOVE_MODEL 是预期内的、已在登记里说明。可证伪的数值承诺见 docs/fm_predictions/PtwCache.md 第 3 轮登记 P6/P7。"
+  "note": "第 4 轮（vmucp+60 钉点+消 1 impl 死位）登记。工具的 26599 仍把白盒读入的 array_1x_ext.v 当黑盒（bbin 2797），不是本目标的上界；手工模型 143,797 = regs 21088 + outs 2714 + 3147 + 116848，第 3 轮实测 ref 侧点数 passing 143717 + matched_nc 20 + unmatched-unread 60 = 143,797 逐位相等。本轮预测 passing = 143,797（正好 +80：20 matched_nc + 60 钉点后新配的对，全部由 vmucp 实开比较），failing 0 / unread 0 / unmatched 六项全零 / constant_reg 0。check 机械判 ABOVE_MODEL 是预期内（工具缺口，登记里已说明）。"
 }

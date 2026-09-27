@@ -228,3 +228,30 @@ git diff 为空"。实测 `git diff --stat 9280f5bc..b804a4f0 -- rtl/mmu/PtwCach
   c. ★impl 独有 1 个★：`sp_hitdata_ck\[prefetch]` —— impl 把 sp 命中项整条 struct 打拍进 check 级，
      其中 prefetch 位另有 sp_pre_ck 一份在用，struct 里那一位无读者；golden 只有 spPre 一份。
      这是 impl 侧多存的死位（IMPL_DEAD），要修 RTL 消掉才能双射。
+
+## 第 4 轮跑前登记（2026-09-27，agent/ptwcache3；本节在证明之前进库，之后不许改）
+
+改动（与本节同一个 commit）：
+  1. rtl/mmu/PtwCache.sv：sp_hit_t 去掉 prefetch 字段，sp_pre_c 改为独立的同链优先级选择
+     （消掉 impl 独有死位 sp_hitdata_ck[prefetch]；行为不变，那一位本来无读者）。导航表重生。
+     ★受影响 receipt★：只有 PtwCache 自己的 evidence/6a102f7a5101（PARTIAL），
+     check_shared_impl_impact.py --file rtl/mmu/PtwCache.sv ⇒ 1 个目标 PtwCache。
+  2. verif/ut/PtwCache/fm_pins.tcl：60 对同义死位 set_user_match，五族，fail-closed 五层判据；
+     纯 tclsh 打桩喂第 3 轮实测名单：pinned 60 / 双射成立 / 家族数 32/4/4/8/12。
+  3. verif/ut/PtwCache/Makefile：FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true。
+  4. verif/fm_target_config/PtwCache.tcl：fm_target_vmucp_allow + 依据。
+  5. docs/fm_predictions/PtwCache.json 重登记（note 里有本轮点预测）。
+
+可证伪的承诺：
+  Q1  native SUCCEEDED，validator verdict = SUCCEEDED（strict，allowlist 空）。
+  Q2  failing = 0（若 == limit 只写"至少 N 个，计数被截断"）。
+  Q3  unmatched 六项全零（compare/unread/bbout × ref/impl）。
+  Q4  unread = 0：fm.log 有 PTWCACHE_PIN_END n=60，钉点后 matched_unread_notcompared_pairs = 80。
+  Q5  ★passing = 143,797★（143,717 + 80，正好；由 vmucp 实开比较，passing 不增即空转不算过）。
+  Q6  黑盒边界仍为空；appvar 读回 merge_dup=false、vmucp=true；无 dont_verify。
+  Q7  UT 回归：两档 initreg × 3 seed × 200k 仍 errors=0（RTL 动了一行语义无关的死位，必须重跑）。
+  Q8  `fm_predict.py check`：ABOVE_MODEL（工具缺口，预告在先）。
+
+## 第 4 轮跑后对账
+
+（留空，跑完补。）
