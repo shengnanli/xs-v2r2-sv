@@ -1,0 +1,297 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "NewDispatch",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "golden-only cone-dead（golden 的 topdown stallReason 统计流水，无任何输出/寄存器消费）。golden NewDispatch.sv 把输入 io_stallReason_reason_<l> 打两拍：reg [5:0] decodeReason_REG_<l> <= io_stallReason_reason_<l>（L91144 起）、decodeReason_<l> <= decodeReason_REG_<l>（L91150 起），6 条 lane × 6 位 × 2 级 = 72 位；它们的唯一读者是组合线 stallReason_<l>（L86470–86640，Chisel 的 TopDown stall 归因：`(|renameReason_l) ? renameReason_l : (|decodeReason_l) ? decodeReason_l : 6'h25`），而 stallReason_<l> 的唯一消费者是 `stallReason_l == 6'hN` 的逐类计数 _GEN_164 等（L86641 起，Chisel 的 XSPerfHistogram），这些计数在本模块内没有任何消费者（既不进 io_perf_*_value——那 8 路来自 dispatch_in/util/wait 等计数（L100974–100981）——也不进任何寄存器或输出），firtool 只删了 histogram 本体而留下了喂它的流水。FM 在 ref 侧把这 72 个寄存器判为 unread（unmatched, status unread），且集合在步骤 2 组 B、步骤 3 两次诊断跑与签核跑里一直是同一批 72 个。impl 不实现这条死流水（io_stallReason_* 的活出口由节 2.12 / 3.6 直接算出，两侧 io_stallReason_* 比较点全部 passing），impl 侧 unread 为 0，符合 PASS_DEAD_REF 的 impl-clean 条件。",
+ "observed_points": 72,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_0_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_0_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_0_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_0_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_0_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_0_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_1_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_1_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_1_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_1_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_1_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_1_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_2_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_2_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_2_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_2_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_2_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_2_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_3_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_3_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_3_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_3_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_3_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_3_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_4_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_4_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_4_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_4_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_4_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_4_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_5_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_5_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_5_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_5_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_5_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_5_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_0_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_0_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_0_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_0_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_0_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_0_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_1_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_1_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_1_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_1_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_1_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_1_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_2_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_2_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_2_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_2_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_2_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_2_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_3_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_3_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_3_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_3_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_3_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_3_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_4_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_4_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_4_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_4_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_4_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_4_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_5_reg[0]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_5_reg[1]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_5_reg[2]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_5_reg[3]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_5_reg[4]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/NewDispatch/decodeReason_REG_5_reg[5]",
+   "class": "golden_only_cone_dead_topdown_stall_reason_pipe"
+  }
+ ]
+}

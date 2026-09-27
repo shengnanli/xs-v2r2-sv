@@ -100,9 +100,9 @@ def is_dangling(name):
         # 不再有 Z，所以 valid 归判据 A（必须始终一致），不是悬空位。
         return False
     leaf = m.group(3)
-    ms = re.match(r'^srcState_(\d)$', leaf)
-    if ms:                   # 掩码折 0 的那些由核直接钉 1'b0，不是悬空
-        return bool(SRCSTATE_LIVE[q // 2][int(ms.group(1))])
+    # 步骤 4（2026-09-24）起 srcState 也有真来源（核的 srcStateAll 逐 IQ 选择），
+    # 与其余 leaf 一样归判据 A；BLOCKED_LEAVES 已清空，下面这行恒为 False，留着
+    # 是为了"哪天又有 leaf 接不上"时判据 B 自动恢复。
     return leaf in set(G.BLOCKED_LEAVES)
 
 

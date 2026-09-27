@@ -26,27 +26,27 @@
 //   L134    节 1.2】单队列 FU 组表（6 组）—— 这些 fuType 只有一个 IQ 能收，不用排序
 //   L152    节 1.3】dyninst_t —— 派遣级搬运的 uop payload
 //   L167    节 1.4】srcState 逐 IQ 掩码 —— 每个 IQ 只关心自己 FU 真会读的那几个源
-//   L375    节 1.5】xs_nd_iq_rank —— 「按占用数给同组 IQ 排名」的**唯一一份**逻辑
-//   L420    节 2】xs_NewDispatch_core —— 可读核（选队列网络 + 全部状态）
-//   L475    节 2.1】fuType 归组（组合）
-//   L492    节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
-//   L575    节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
-//   L582    节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
-//   L598    节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
-//   L651    节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
-//   L677    节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
-//   L722    节 2.8】派遣流控 —— 这一拍六条 lane 到底谁能走
-//   L785    节 2.9】conserveFlowTotal —— 派遣级对 LSQ 占用量的保守上界
-//   L912    节 2.10】单步调试 —— dret 之后只放行一条机器指令
-//   L969    节 2.11】给 LSQ / busy table 的入队信号
-//   L990    节 2.12】perf / stallReason 的整拍口径
-//   L1016   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
-//   L8905   节 3.1】7 个 child 的输出线声明
-//   L9080   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
-//   L9212   节 3.3】payload 打包：io_fromRename -> rename_uop
-//   L10364  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
-//   L16414  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
-//   L16805  节 3.6】握手 / perf / stallReason 出口
+//   L377    节 1.5】xs_nd_iq_rank —— 「按占用数给同组 IQ 排名」的**唯一一份**逻辑
+//   L422    节 2】xs_NewDispatch_core —— 可读核（选队列网络 + 全部状态）
+//   L478    节 2.1】fuType 归组（组合）
+//   L495    节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
+//   L578    节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
+//   L585    节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
+//   L601    节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
+//   L654    节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
+//   L680    节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
+//   L751    节 2.8】派遣流控 —— 这一拍六条 lane 到底谁能走
+//   L814    节 2.9】conserveFlowTotal —— 派遣级对 LSQ 占用量的保守上界
+//   L955    节 2.10】单步调试 —— dret 之后只放行一条机器指令
+//   L1012   节 2.11】给 LSQ / busy table 的入队信号
+//   L1033   节 2.12】perf / stallReason 的整拍口径
+//   L1059   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
+//   L8952   节 3.1】7 个 child 的输出线声明
+//   L9127   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
+//   L9140   节 3.3】payload 打包：io_fromRename -> rename_uop
+//   L10470  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
+//   L16520  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
+//   L16911  节 3.6】握手 / perf / stallReason 出口
 //
 
 // ---------------------------------------------------------------------------
@@ -174,15 +174,17 @@ package newdispatch_pkg;
   //   IQ 10,11 (sta_mou)              src0,1
   //   IQ 12-14 (ldu)                  只有 src0          —— load 单源
   //   IQ 15,16 (vldu_vstu)            src0..4
-  // ★这张表只说「哪几个 j 是活的」★。活的那几个具体 OR 哪几个寄存器堆的 busy 位
-  // （Chisel 的 selSrcState），**还没追清** —— 要等 BusyTable（Lane H）落地再定。
-  localparam logic [4:0] SRCSTATE_LIVE [IQ_NUM] = '{
-    5'b00011, 5'b00011, 5'b00011, 5'b00011,   // IQ 0-3
-    5'b00111, 5'b00111, 5'b00111,             // IQ 4-6
-    5'b11111, 5'b11111, 5'b11111,             // IQ 7-9
-    5'b00011, 5'b00011,                       // IQ 10,11
-    5'b00001, 5'b00001, 5'b00001,             // IQ 12-14
-    5'b11111, 5'b11111};                      // IQ 15,16
+  // 步骤 4 起这张表升级成「活的那一位 OR 哪几个寄存器堆的 busy 位」（golden 的
+  // IQSelUop_<q>_bits_srcState_<j> 逐条实测）：
+  //   0 int   1 fp   2 vec   3 v0   4 vl   5 = int|fp（IQ 10,11 的 src1：store data 可来自
+  //   整数或浮点堆，golden 是两路 mux 再 OR）  -1 = 折成常量 0
+  localparam int SRC_CLASS [IQ_NUM][5] = '{
+    '{0, 0, -1, -1, -1}, '{0, 0, -1, -1, -1}, '{0, 0, -1, -1, -1}, '{0, 0, -1, -1, -1},   // IQ 0-3
+    '{1, 1,  1, -1, -1}, '{1, 1,  1, -1, -1}, '{1, 1,  1, -1, -1},                        // IQ 4-6
+    '{2, 2,  2,  3,  4}, '{2, 2,  2,  3,  4}, '{2, 2,  2,  3,  4},                        // IQ 7-9
+    '{0, 5, -1, -1, -1}, '{0, 5, -1, -1, -1},                                             // IQ 10,11
+    '{0, -1, -1, -1, -1}, '{0, -1, -1, -1, -1}, '{0, -1, -1, -1, -1},                     // IQ 12-14
+    '{2, 2,  2,  3,  4}, '{2, 2,  2,  3,  4}};                                            // IQ 15,16
 
   // BEGIN GENERATED(DYNINST_T)
 typedef struct packed {
@@ -443,6 +445,7 @@ module xs_NewDispatch_core
 
   // payload 通路：6 条 lane 的 uop 进来，34 个 IQ 入队口的 uop 出去
   input  dyninst_t                             rename_uop  [RENAME_W],
+  input  logic [RENAME_W-1:0][4:0][4:0]        srcStateAll,     // [lane][src j][寄存器堆 k] 的"源就绪"，wrapper 从 5 个 busy table 算
   output dyninst_t                             iq_uop      [IQ_ENQ],
   output logic [IQ_ENQ-1:0]                    iq_valid,
 
@@ -696,6 +699,31 @@ module xs_NewDispatch_core
       for (int l = 0; l < RENAME_W; l++)
         oh[q][l] = (uopSelIQMatrix[l][q / 2] == 3'(q % 2) + 3'd1);
 
+  // srcState 的逐 IQ 选择：与 bits 同一形状的 PriorityMux（尾项无条件取 lane5），
+  // 只是被选的量不是 payload 而是 srcStateAll[l][j][k]；k=5 时两路（int、fp）各选一次再 OR。
+  logic [IQ_ENQ-1:0][4:0] iqSrcState;
+
+  always_comb begin
+    for (int q = 0; q < IQ_ENQ; q++)
+      for (int j = 0; j < 5; j++) begin
+        automatic int   k  = SRC_CLASS[q / 2][j];
+        automatic int   k0 = (k == 5) ? 0 : k;
+        automatic logic s0 = 1'b0;
+        automatic logic s1 = 1'b0;
+        if (k >= 0) begin
+          s0 = srcStateAll[RENAME_W-1][j][k0];
+          for (int l = RENAME_W-2; l >= 0; l--)
+            if (oh[q][l]) s0 = srcStateAll[l][j][k0];
+        end
+        if (k == 5) begin
+          s1 = srcStateAll[RENAME_W-1][j][1];
+          for (int l = RENAME_W-2; l >= 0; l--)
+            if (oh[q][l]) s1 = srcStateAll[l][j][1];
+        end
+        iqSrcState[q][j] = s0 | s1;
+      end
+  end
+
   always_comb begin
     for (int q = 0; q < IQ_ENQ; q++) begin
       // bits：无默认值的 PriorityMux，尾项无条件
@@ -708,13 +736,14 @@ module xs_NewDispatch_core
       for (int l = RENAME_W-2; l >= 0; l--)
         if (oh[q][l]) iq_valid[q] = renameUpdateValid[l];
 
-      // srcState 逐 IQ 掩码：该 IQ 的 FU 不读的源，golden 折成常量 0。
+      // srcState 逐 IQ 覆写（golden：IQSelUop 不透传 fromRenameUpdate 的 srcState，
+      // 而是按该 IQ 的寄存器堆类别 k 从 allSrcState_<l>_<j>_<k> 里用同一组 oh 再选一次）。
       // dyninst_t 里 srcState 是 5 个独立 leaf（照 golden 端口名），不是数组，故展开写。
-      if (!SRCSTATE_LIVE[q / 2][0]) iq_uop[q].srcState_0 = 1'b0;
-      if (!SRCSTATE_LIVE[q / 2][1]) iq_uop[q].srcState_1 = 1'b0;
-      if (!SRCSTATE_LIVE[q / 2][2]) iq_uop[q].srcState_2 = 1'b0;
-      if (!SRCSTATE_LIVE[q / 2][3]) iq_uop[q].srcState_3 = 1'b0;
-      if (!SRCSTATE_LIVE[q / 2][4]) iq_uop[q].srcState_4 = 1'b0;
+      iq_uop[q].srcState_0 = iqSrcState[q][0];
+      iq_uop[q].srcState_1 = iqSrcState[q][1];
+      iq_uop[q].srcState_2 = iqSrcState[q][2];
+      iq_uop[q].srcState_3 = iqSrcState[q][3];
+      iq_uop[q].srcState_4 = iqSrcState[q][4];
     end
   end
 
@@ -808,18 +837,15 @@ module xs_NewDispatch_core
                                                 input logic [RENAME_W-1:0] is2,
                                                 input logic [RENAME_W-1:0] is1,
                                                 input int                  lane);
-    logic [1:0] highCount2;   // lane 0..2：PopCount 最多 3，2 位（照 golden）
-    logic [2:0] highCount3;   // lane 3..5：PopCount 最多 6，3 位
+    logic [2:0] highCount;
     logic [3:0] lowCount;
-    highCount2 = '0;
-    highCount3 = '0;
-    lowCount   = '0;
+    highCount = '0;
+    lowCount  = '0;
     for (int p = 0; p <= lane; p++) begin
-      if (lane < 3) highCount2 += 2'(is16[p]);
-      else          highCount3 += 3'(is16[p]);
-      lowCount += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
+      highCount += 3'(is16[p]);
+      lowCount  += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
     end
-    return (lane < 3) ? {1'b0, highCount2, lowCount} : {highCount3, lowCount};
+    return {highCount, lowCount};
   endfunction
 
   logic [RENAME_W-1:0][6:0] conserveFlowTotalDispatch;
@@ -836,9 +862,26 @@ module xs_NewDispatch_core
         conserve_total(renIsVlsOther, renIsVlsUnitStride, renIsLSType, l);
     end
 
-  always_ff @(posedge clock)   // 无复位：照抄 golden
-    conserveFlowTotal <= toRenameAllFire_o ? conserveFlowTotalRename
-                                           : conserveFlowTotalDispatch;
+  // ★寄存器位宽逐 lane 照抄 golden 的字面形状，且常量位要在 always_ff 的赋值里**直接写字面 0**★
+  //   lane 0  {2'h0, hc[0], 2'h0, lc[1:0]}    lane 1  {1'h0, hc[1:0], 1'h0, lc[2:0]}
+  //   lane 2  {1'h0, hc[1:0], lc[3:0]}        lane 3+ {hc[2:0], lc[3:0]}
+  // 三步教训（步骤 3 → 4）：(1) 3 位累加的 lane 2 bit 6 是进位链，FM 判 DFF0X 且配不上（步骤 3 修）；
+  // (2) 改成函数里返回 {1'b0,...} 再过一个 ?: 选择，FM 能折成 DFF0，但 6 个常量位各自来自
+  // 不同的 mux 输出网，merge_dup 不把它们当重复寄存器合并，仍是 6 个 golden 没有的 unmatched 点；
+  // (3) 把选择放里面、字面 0 放外面（正是 golden `{1'h0, sel ? .. : ..}` 的写法），常量位共用
+  // 同一个常量网，FM 读入时与 golden 一样合并/折掉。值仍处处相同（各档位宽装得下各自最大值）。
+  logic [RENAME_W-1:0][6:0] conserveFlowNext;
+
+  always_comb
+    conserveFlowNext = toRenameAllFire_o ? conserveFlowTotalRename : conserveFlowTotalDispatch;
+
+  always_ff @(posedge clock) begin   // 无复位：照抄 golden
+    conserveFlowTotal[0] <= {2'b00, conserveFlowNext[0][4],   2'b00, conserveFlowNext[0][1:0]};
+    conserveFlowTotal[1] <= {1'b0,  conserveFlowNext[1][5:4], 1'b0,  conserveFlowNext[1][2:0]};
+    conserveFlowTotal[2] <= {1'b0,  conserveFlowNext[2][5:0]};
+    for (int l = 3; l < RENAME_W; l++)
+      conserveFlowTotal[l] <= conserveFlowNext[l];
+  end
 
   // ---- allowDispatch：级联的"前面都放行、且本条要的资源还够" ----
   // golden 的分支顺序是 store/vstore -> load/vload -> 其他；AMO 与非访存都只继承前一条。
@@ -1042,18 +1085,21 @@ endmodule
 //      ★为什么要留痕而不是改对就算★：本仓的教训是「结论会传下去，限定条件不会」。
 //      一条过期的"未实现"注释会让下一个读者**主动放弃一条已经可走的路** ——
 //      这比数字错了更贵。所以删改它必须写明何时、因何失效。
-//   b. ★步骤 2 起 singleStep 已从本条移出★（它要 firedVec，而 firedVec 要
-//      LsqEnqCtrl 的 canAccept —— 那条链在节 2.8 已经打通）。剩下 20 个 leaf
-//      仍在节 3.2 里声明成 unresolved_* 且**故意不给驱动**（钉 0 会让 elaborate
-//      和 UT 变绿而掩盖缺口，悬空则仿真必然出 X/Z）：
-//        srcState_0..4 / srcType_2（经 ignoreOldVd）/ srcLoadDependency_{0,1}_{0,1,2} /
-//        lqIdx / sqIdx / useRegCache_{0,1} / regCacheIdx_{0,1}
-//      它们只影响 io_toIssueQueues_*，合计 608 端口 / 1488 bit。
-//      ★其中 srcState_0..4 与 srcType_2（306 bit）不是"接上就行"★：golden 的
-//      IQSelUop(q).bits.srcState(j) 是按该 IQ 的 FU 会读哪几个寄存器堆、把
-//      allSrcState(lane)(j)(k) 的**逐 IQ 不同子集** OR 起来，所以它不可能用
-//      现在这种"每 lane 一个标量 srcState_j"的形状表达 —— 节 1.4 的掩码只表达了
-//      "这一位是不是恒 0"。要接得先改 payload 通路的形状。
+//   b. ★步骤 4（2026-09-24）已完成：20 个 leaf 全部接上，原文与失效理由如下★
+//      原文：「步骤 2 起 singleStep 已从本条移出。剩下 20 个 leaf 仍在节 3.2 里声明成
+//             unresolved_* 且故意不给驱动：srcState_0..4 / srcType_2（经 ignoreOldVd）/
+//             srcLoadDependency_{0,1}_{0,1,2} / lqIdx / sqIdx / useRegCache_{0,1} /
+//             regCacheIdx_{0,1}，合计 608 端口 / 1488 bit。其中 srcState_0..4 与
+//             srcType_2（306 bit）不是"接上就行"：golden 的 IQSelUop(q).bits.srcState(j)
+//             是按该 IQ 的 FU 会读哪几个寄存器堆、把 allSrcState(lane)(j)(k) 的逐 IQ
+//             不同子集 OR 起来，要接得先改 payload 通路的形状。」
+//      ★怎么接的★：lqIdx/sqIdx 直连 lsqEnqCtrl.io_enq_resp_<l>；useRegCache/regCacheIdx
+//      直连 rcTagTable.io_readPorts_<2l+j>；srcLoadDependency 与 srcType_2 各一行 golden
+//      原式（节 3.3，由 gen_newdispatch.py 的 _pack_child 生成）；srcState 走新的形状：
+//      wrapper 算 allSrcState[l][j][k]（节 3.3 顶部）送进核的 srcStateAll 口，核在节 2.7
+//      按节 1.4 的 SRC_CLASS 表逐 IQ 用同一组 oh 再选一次（IQ 10,11 的 src1 是 int|fp 两路 OR）。
+//      整芯片实测（步骤 3 §5）证明这 1488 bit 正是芯片不提交的原因：同一条 uop 进同一个
+//      IQ 口，golden srcState=1 而重写侧是随机常量 0，永远等不到源就绪。
 //   c. ★步骤 2（2026-09-21）已完成，原文与失效理由如下★：
 //      原文：「握手一路（io_fromRename_*_ready / io_toRenameAllFire / io_enqRob /
 //             io_toMem / io_perf / io_stallReason）尚未接 —— 它们都要 LsqEnqCtrl 的
@@ -1063,8 +1109,9 @@ endmodule
 //      没人读的本地线上），io_enqRob 的 379 个里 355 个是 io_fromRename 逐字直通。
 //      真正要流控的只有 40 个端口，已由节 2.8~2.12 + 节 3.6 接上。
 //      现在 **7725 个端口全部有驱动源，未驱动 output = 0**。
-//   d. srcState 的逐 IQ「活/死」掩码已追清（节 1.4），但活的那几个具体 OR 哪
-//      几个寄存器堆的 busy 位（Chisel 的 selSrcState）**还没追清**，等 Lane H。
+//   d. ★步骤 4 已追清★：节 1.4 的表从「活/死掩码」升级成「OR 哪几个寄存器堆」
+//      （SRC_CLASS），逐 IQ 实测自 golden 的 IQSelUop_<q>_bits_srcState_<j>。
+//      原文：「活的那几个具体 OR 哪几个寄存器堆的 busy 位还没追清，等 Lane H。」
 //   在 a~d 做完之前，任何 UT/FM 的绿都不代表这个模块对。
 module NewDispatch
   import newdispatch_pkg::*;
@@ -8798,8 +8845,8 @@ module NewDispatch
   // END GENERATED
 );
 
-  // 已追清部分：把选队列网络接上可读核。握手类输入依赖 LsqEnqCtrl（未实现），
-  // 这里用 unresolved_* 明确标出，**不是**已经算对的值。
+  // 选队列网络接上可读核。（步骤 2 前握手类输入曾接 unresolved_*；步骤 2 起
+  // 全部由节 2.8~2.12 的派遣流控与 child 输出驱动，步骤 4 起 payload 也无悬空位。）
   logic [5:0][34:0] core_renameIn_fuType;
   logic [5:0][8:0]  core_renameIn_fuOpType;
   logic [5:0]       core_renameIn_valid;
@@ -9077,131 +9124,12 @@ module NewDispatch
   // END GENERATED
 
   // -------------------------------------------------------------------------
-  // 【节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
+  // 【节 3.2】还接不了的位：集中声明，**故意不给驱动**（步骤 4 起为空，历史见文件头 b）
   // -------------------------------------------------------------------------
   // BEGIN GENERATED(UNRESOLVED)
   // ★下面这些位现在没有来源★，全部悬空。真跑 UT 时它们是 X/Z，
   // 所以「UT 没报错」在这个状态下不可能发生 —— 这是故意的。
-  logic          unresolved_srcState_0_0;
-  logic          unresolved_srcState_0_1;
-  logic          unresolved_srcState_0_2;
-  logic          unresolved_srcState_0_3;
-  logic          unresolved_srcState_0_4;
-  logic          unresolved_srcState_0_5;
-  logic          unresolved_srcState_1_0;
-  logic          unresolved_srcState_1_1;
-  logic          unresolved_srcState_1_2;
-  logic          unresolved_srcState_1_3;
-  logic          unresolved_srcState_1_4;
-  logic          unresolved_srcState_1_5;
-  logic          unresolved_srcState_2_0;
-  logic          unresolved_srcState_2_1;
-  logic          unresolved_srcState_2_2;
-  logic          unresolved_srcState_2_3;
-  logic          unresolved_srcState_2_4;
-  logic          unresolved_srcState_2_5;
-  logic          unresolved_srcState_3_0;
-  logic          unresolved_srcState_3_1;
-  logic          unresolved_srcState_3_2;
-  logic          unresolved_srcState_3_3;
-  logic          unresolved_srcState_3_4;
-  logic          unresolved_srcState_3_5;
-  logic          unresolved_srcState_4_0;
-  logic          unresolved_srcState_4_1;
-  logic          unresolved_srcState_4_2;
-  logic          unresolved_srcState_4_3;
-  logic          unresolved_srcState_4_4;
-  logic          unresolved_srcState_4_5;
-  logic [3:0]    unresolved_srcType_2_0;
-  logic [3:0]    unresolved_srcType_2_1;
-  logic [3:0]    unresolved_srcType_2_2;
-  logic [3:0]    unresolved_srcType_2_3;
-  logic [3:0]    unresolved_srcType_2_4;
-  logic [3:0]    unresolved_srcType_2_5;
-  logic          unresolved_lqIdx_flag_0;
-  logic          unresolved_lqIdx_flag_1;
-  logic          unresolved_lqIdx_flag_2;
-  logic          unresolved_lqIdx_flag_3;
-  logic          unresolved_lqIdx_flag_4;
-  logic          unresolved_lqIdx_flag_5;
-  logic [6:0]    unresolved_lqIdx_value_0;
-  logic [6:0]    unresolved_lqIdx_value_1;
-  logic [6:0]    unresolved_lqIdx_value_2;
-  logic [6:0]    unresolved_lqIdx_value_3;
-  logic [6:0]    unresolved_lqIdx_value_4;
-  logic [6:0]    unresolved_lqIdx_value_5;
-  logic          unresolved_sqIdx_flag_0;
-  logic          unresolved_sqIdx_flag_1;
-  logic          unresolved_sqIdx_flag_2;
-  logic          unresolved_sqIdx_flag_3;
-  logic          unresolved_sqIdx_flag_4;
-  logic          unresolved_sqIdx_flag_5;
-  logic [5:0]    unresolved_sqIdx_value_0;
-  logic [5:0]    unresolved_sqIdx_value_1;
-  logic [5:0]    unresolved_sqIdx_value_2;
-  logic [5:0]    unresolved_sqIdx_value_3;
-  logic [5:0]    unresolved_sqIdx_value_4;
-  logic [5:0]    unresolved_sqIdx_value_5;
-  logic          unresolved_useRegCache_0_0;
-  logic          unresolved_useRegCache_0_1;
-  logic          unresolved_useRegCache_0_2;
-  logic          unresolved_useRegCache_0_3;
-  logic          unresolved_useRegCache_0_4;
-  logic          unresolved_useRegCache_0_5;
-  logic          unresolved_useRegCache_1_0;
-  logic          unresolved_useRegCache_1_1;
-  logic          unresolved_useRegCache_1_2;
-  logic          unresolved_useRegCache_1_3;
-  logic          unresolved_useRegCache_1_4;
-  logic          unresolved_useRegCache_1_5;
-  logic [4:0]    unresolved_regCacheIdx_0_0;
-  logic [4:0]    unresolved_regCacheIdx_0_1;
-  logic [4:0]    unresolved_regCacheIdx_0_2;
-  logic [4:0]    unresolved_regCacheIdx_0_3;
-  logic [4:0]    unresolved_regCacheIdx_0_4;
-  logic [4:0]    unresolved_regCacheIdx_0_5;
-  logic [4:0]    unresolved_regCacheIdx_1_0;
-  logic [4:0]    unresolved_regCacheIdx_1_1;
-  logic [4:0]    unresolved_regCacheIdx_1_2;
-  logic [4:0]    unresolved_regCacheIdx_1_3;
-  logic [4:0]    unresolved_regCacheIdx_1_4;
-  logic [4:0]    unresolved_regCacheIdx_1_5;
-  logic [1:0]    unresolved_srcLoadDependency_0_0_0;
-  logic [1:0]    unresolved_srcLoadDependency_0_0_1;
-  logic [1:0]    unresolved_srcLoadDependency_0_0_2;
-  logic [1:0]    unresolved_srcLoadDependency_0_0_3;
-  logic [1:0]    unresolved_srcLoadDependency_0_0_4;
-  logic [1:0]    unresolved_srcLoadDependency_0_0_5;
-  logic [1:0]    unresolved_srcLoadDependency_0_1_0;
-  logic [1:0]    unresolved_srcLoadDependency_0_1_1;
-  logic [1:0]    unresolved_srcLoadDependency_0_1_2;
-  logic [1:0]    unresolved_srcLoadDependency_0_1_3;
-  logic [1:0]    unresolved_srcLoadDependency_0_1_4;
-  logic [1:0]    unresolved_srcLoadDependency_0_1_5;
-  logic [1:0]    unresolved_srcLoadDependency_0_2_0;
-  logic [1:0]    unresolved_srcLoadDependency_0_2_1;
-  logic [1:0]    unresolved_srcLoadDependency_0_2_2;
-  logic [1:0]    unresolved_srcLoadDependency_0_2_3;
-  logic [1:0]    unresolved_srcLoadDependency_0_2_4;
-  logic [1:0]    unresolved_srcLoadDependency_0_2_5;
-  logic [1:0]    unresolved_srcLoadDependency_1_0_0;
-  logic [1:0]    unresolved_srcLoadDependency_1_0_1;
-  logic [1:0]    unresolved_srcLoadDependency_1_0_2;
-  logic [1:0]    unresolved_srcLoadDependency_1_0_3;
-  logic [1:0]    unresolved_srcLoadDependency_1_0_4;
-  logic [1:0]    unresolved_srcLoadDependency_1_0_5;
-  logic [1:0]    unresolved_srcLoadDependency_1_1_0;
-  logic [1:0]    unresolved_srcLoadDependency_1_1_1;
-  logic [1:0]    unresolved_srcLoadDependency_1_1_2;
-  logic [1:0]    unresolved_srcLoadDependency_1_1_3;
-  logic [1:0]    unresolved_srcLoadDependency_1_1_4;
-  logic [1:0]    unresolved_srcLoadDependency_1_1_5;
-  logic [1:0]    unresolved_srcLoadDependency_1_2_0;
-  logic [1:0]    unresolved_srcLoadDependency_1_2_1;
-  logic [1:0]    unresolved_srcLoadDependency_1_2_2;
-  logic [1:0]    unresolved_srcLoadDependency_1_2_3;
-  logic [1:0]    unresolved_srcLoadDependency_1_2_4;
-  logic [1:0]    unresolved_srcLoadDependency_1_2_5;
+  // （步骤 4 起为空：20 个 leaf 全部接上，见 PACK 段与核的 srcStateAll 口）
   // END GENERATED
 
   dyninst_t rename_uop [6];
@@ -9215,6 +9143,183 @@ module NewDispatch
   // 每条 lane 的 payload：四类来源逐条照抄 golden（见 pack_spec 注释）。
   // 被 unresolved_* 驱动的位**故意不给驱动源** —— 悬空比钉 0 诚实：
   // 钉 0 会让 elaborate 和 UT 变绿而掩盖「子模块还没实现」这件事。
+  // ---- 步骤 4：srcState 的原料（golden 的 allSrcState_<l>_<j>_<k> 与 ignoreOldVd_<l>）----
+  logic [5:0]           ignoreOldVd;
+  logic [5:0][4:0][4:0] allSrcState;   // [lane][src j][寄存器堆 k]
+  assign ignoreOldVd[0] = _vlBusyTable_io_read_0_resp & _vlBusyTable_io_vl_read_vlReadInfo_0_is_nonzero
+    & ~io_fromRename_0_bits_vpu_isDependOldVd
+    & (_vlBusyTable_io_vl_read_vlReadInfo_0_is_vlmax & (io_fromRename_0_bits_vpu_vm | io_fromRename_0_bits_vpu_vma) & ~io_fromRename_0_bits_vpu_isWritePartVd
+       | (io_fromRename_0_bits_vpu_vm | io_fromRename_0_bits_vpu_vma) & io_fromRename_0_bits_vpu_vta);
+  assign allSrcState[0][0][0] = io_fromRename_0_bits_srcType_0[0] & _intBusyTable_io_read_0_resp | io_fromRename_0_bits_srcType_0 == 4'h0;
+  assign allSrcState[0][0][1] = io_fromRename_0_bits_srcType_0[1] & _fpBusyTable_io_read_0_resp | io_fromRename_0_bits_srcType_0 == 4'h0;
+  assign allSrcState[0][0][2] = io_fromRename_0_bits_srcType_0[2] & _vecBusyTable_io_read_0_resp | io_fromRename_0_bits_srcType_0 == 4'h0;
+  assign allSrcState[0][0][3] = 1'b0;
+  assign allSrcState[0][0][4] = 1'b0;
+  assign allSrcState[0][1][0] = io_fromRename_0_bits_srcType_1[0] & _intBusyTable_io_read_1_resp | io_fromRename_0_bits_srcType_1 == 4'h0;
+  assign allSrcState[0][1][1] = io_fromRename_0_bits_srcType_1[1] & _fpBusyTable_io_read_1_resp | io_fromRename_0_bits_srcType_1 == 4'h0;
+  assign allSrcState[0][1][2] = io_fromRename_0_bits_srcType_1[2] & _vecBusyTable_io_read_1_resp | io_fromRename_0_bits_srcType_1 == 4'h0;
+  assign allSrcState[0][1][3] = 1'b0;
+  assign allSrcState[0][1][4] = 1'b0;
+  assign allSrcState[0][2][0] = 1'b0;
+  assign allSrcState[0][2][1] = io_fromRename_0_bits_srcType_2[1] & _fpBusyTable_io_read_2_resp | io_fromRename_0_bits_srcType_2 == 4'h0;
+  assign allSrcState[0][2][2] = io_fromRename_0_bits_srcType_2[2] & (_vecBusyTable_io_read_2_resp | ignoreOldVd[0]) | io_fromRename_0_bits_srcType_2 == 4'h0;
+  assign allSrcState[0][2][3] = 1'b0;
+  assign allSrcState[0][2][4] = 1'b0;
+  assign allSrcState[0][3][0] = 1'b0;
+  assign allSrcState[0][3][1] = 1'b0;
+  assign allSrcState[0][3][2] = 1'b0;
+  assign allSrcState[0][3][3] = io_fromRename_0_bits_srcType_3[3] & _v0BusyTable_io_read_0_resp | io_fromRename_0_bits_srcType_3 == 4'h0;
+  assign allSrcState[0][3][4] = 1'b0;
+  assign allSrcState[0][4][0] = 1'b0;
+  assign allSrcState[0][4][1] = 1'b0;
+  assign allSrcState[0][4][2] = 1'b0;
+  assign allSrcState[0][4][3] = 1'b0;
+  assign allSrcState[0][4][4] = _vlBusyTable_io_read_0_resp | io_fromRename_0_bits_srcType_4 == 4'h0;
+  assign ignoreOldVd[1] = _vlBusyTable_io_read_1_resp & _vlBusyTable_io_vl_read_vlReadInfo_1_is_nonzero
+    & ~io_fromRename_1_bits_vpu_isDependOldVd
+    & (_vlBusyTable_io_vl_read_vlReadInfo_1_is_vlmax & (io_fromRename_1_bits_vpu_vm | io_fromRename_1_bits_vpu_vma) & ~io_fromRename_1_bits_vpu_isWritePartVd
+       | (io_fromRename_1_bits_vpu_vm | io_fromRename_1_bits_vpu_vma) & io_fromRename_1_bits_vpu_vta);
+  assign allSrcState[1][0][0] = io_fromRename_1_bits_srcType_0[0] & _intBusyTable_io_read_2_resp | io_fromRename_1_bits_srcType_0 == 4'h0;
+  assign allSrcState[1][0][1] = io_fromRename_1_bits_srcType_0[1] & _fpBusyTable_io_read_3_resp | io_fromRename_1_bits_srcType_0 == 4'h0;
+  assign allSrcState[1][0][2] = io_fromRename_1_bits_srcType_0[2] & _vecBusyTable_io_read_3_resp | io_fromRename_1_bits_srcType_0 == 4'h0;
+  assign allSrcState[1][0][3] = 1'b0;
+  assign allSrcState[1][0][4] = 1'b0;
+  assign allSrcState[1][1][0] = io_fromRename_1_bits_srcType_1[0] & _intBusyTable_io_read_3_resp | io_fromRename_1_bits_srcType_1 == 4'h0;
+  assign allSrcState[1][1][1] = io_fromRename_1_bits_srcType_1[1] & _fpBusyTable_io_read_4_resp | io_fromRename_1_bits_srcType_1 == 4'h0;
+  assign allSrcState[1][1][2] = io_fromRename_1_bits_srcType_1[2] & _vecBusyTable_io_read_4_resp | io_fromRename_1_bits_srcType_1 == 4'h0;
+  assign allSrcState[1][1][3] = 1'b0;
+  assign allSrcState[1][1][4] = 1'b0;
+  assign allSrcState[1][2][0] = 1'b0;
+  assign allSrcState[1][2][1] = io_fromRename_1_bits_srcType_2[1] & _fpBusyTable_io_read_5_resp | io_fromRename_1_bits_srcType_2 == 4'h0;
+  assign allSrcState[1][2][2] = io_fromRename_1_bits_srcType_2[2] & (_vecBusyTable_io_read_5_resp | ignoreOldVd[1]) | io_fromRename_1_bits_srcType_2 == 4'h0;
+  assign allSrcState[1][2][3] = 1'b0;
+  assign allSrcState[1][2][4] = 1'b0;
+  assign allSrcState[1][3][0] = 1'b0;
+  assign allSrcState[1][3][1] = 1'b0;
+  assign allSrcState[1][3][2] = 1'b0;
+  assign allSrcState[1][3][3] = io_fromRename_1_bits_srcType_3[3] & _v0BusyTable_io_read_1_resp | io_fromRename_1_bits_srcType_3 == 4'h0;
+  assign allSrcState[1][3][4] = 1'b0;
+  assign allSrcState[1][4][0] = 1'b0;
+  assign allSrcState[1][4][1] = 1'b0;
+  assign allSrcState[1][4][2] = 1'b0;
+  assign allSrcState[1][4][3] = 1'b0;
+  assign allSrcState[1][4][4] = _vlBusyTable_io_read_1_resp | io_fromRename_1_bits_srcType_4 == 4'h0;
+  assign ignoreOldVd[2] = _vlBusyTable_io_read_2_resp & _vlBusyTable_io_vl_read_vlReadInfo_2_is_nonzero
+    & ~io_fromRename_2_bits_vpu_isDependOldVd
+    & (_vlBusyTable_io_vl_read_vlReadInfo_2_is_vlmax & (io_fromRename_2_bits_vpu_vm | io_fromRename_2_bits_vpu_vma) & ~io_fromRename_2_bits_vpu_isWritePartVd
+       | (io_fromRename_2_bits_vpu_vm | io_fromRename_2_bits_vpu_vma) & io_fromRename_2_bits_vpu_vta);
+  assign allSrcState[2][0][0] = io_fromRename_2_bits_srcType_0[0] & _intBusyTable_io_read_4_resp | io_fromRename_2_bits_srcType_0 == 4'h0;
+  assign allSrcState[2][0][1] = io_fromRename_2_bits_srcType_0[1] & _fpBusyTable_io_read_6_resp | io_fromRename_2_bits_srcType_0 == 4'h0;
+  assign allSrcState[2][0][2] = io_fromRename_2_bits_srcType_0[2] & _vecBusyTable_io_read_6_resp | io_fromRename_2_bits_srcType_0 == 4'h0;
+  assign allSrcState[2][0][3] = 1'b0;
+  assign allSrcState[2][0][4] = 1'b0;
+  assign allSrcState[2][1][0] = io_fromRename_2_bits_srcType_1[0] & _intBusyTable_io_read_5_resp | io_fromRename_2_bits_srcType_1 == 4'h0;
+  assign allSrcState[2][1][1] = io_fromRename_2_bits_srcType_1[1] & _fpBusyTable_io_read_7_resp | io_fromRename_2_bits_srcType_1 == 4'h0;
+  assign allSrcState[2][1][2] = io_fromRename_2_bits_srcType_1[2] & _vecBusyTable_io_read_7_resp | io_fromRename_2_bits_srcType_1 == 4'h0;
+  assign allSrcState[2][1][3] = 1'b0;
+  assign allSrcState[2][1][4] = 1'b0;
+  assign allSrcState[2][2][0] = 1'b0;
+  assign allSrcState[2][2][1] = io_fromRename_2_bits_srcType_2[1] & _fpBusyTable_io_read_8_resp | io_fromRename_2_bits_srcType_2 == 4'h0;
+  assign allSrcState[2][2][2] = io_fromRename_2_bits_srcType_2[2] & (_vecBusyTable_io_read_8_resp | ignoreOldVd[2]) | io_fromRename_2_bits_srcType_2 == 4'h0;
+  assign allSrcState[2][2][3] = 1'b0;
+  assign allSrcState[2][2][4] = 1'b0;
+  assign allSrcState[2][3][0] = 1'b0;
+  assign allSrcState[2][3][1] = 1'b0;
+  assign allSrcState[2][3][2] = 1'b0;
+  assign allSrcState[2][3][3] = io_fromRename_2_bits_srcType_3[3] & _v0BusyTable_io_read_2_resp | io_fromRename_2_bits_srcType_3 == 4'h0;
+  assign allSrcState[2][3][4] = 1'b0;
+  assign allSrcState[2][4][0] = 1'b0;
+  assign allSrcState[2][4][1] = 1'b0;
+  assign allSrcState[2][4][2] = 1'b0;
+  assign allSrcState[2][4][3] = 1'b0;
+  assign allSrcState[2][4][4] = _vlBusyTable_io_read_2_resp | io_fromRename_2_bits_srcType_4 == 4'h0;
+  assign ignoreOldVd[3] = _vlBusyTable_io_read_3_resp & _vlBusyTable_io_vl_read_vlReadInfo_3_is_nonzero
+    & ~io_fromRename_3_bits_vpu_isDependOldVd
+    & (_vlBusyTable_io_vl_read_vlReadInfo_3_is_vlmax & (io_fromRename_3_bits_vpu_vm | io_fromRename_3_bits_vpu_vma) & ~io_fromRename_3_bits_vpu_isWritePartVd
+       | (io_fromRename_3_bits_vpu_vm | io_fromRename_3_bits_vpu_vma) & io_fromRename_3_bits_vpu_vta);
+  assign allSrcState[3][0][0] = io_fromRename_3_bits_srcType_0[0] & _intBusyTable_io_read_6_resp | io_fromRename_3_bits_srcType_0 == 4'h0;
+  assign allSrcState[3][0][1] = io_fromRename_3_bits_srcType_0[1] & _fpBusyTable_io_read_9_resp | io_fromRename_3_bits_srcType_0 == 4'h0;
+  assign allSrcState[3][0][2] = io_fromRename_3_bits_srcType_0[2] & _vecBusyTable_io_read_9_resp | io_fromRename_3_bits_srcType_0 == 4'h0;
+  assign allSrcState[3][0][3] = 1'b0;
+  assign allSrcState[3][0][4] = 1'b0;
+  assign allSrcState[3][1][0] = io_fromRename_3_bits_srcType_1[0] & _intBusyTable_io_read_7_resp | io_fromRename_3_bits_srcType_1 == 4'h0;
+  assign allSrcState[3][1][1] = io_fromRename_3_bits_srcType_1[1] & _fpBusyTable_io_read_10_resp | io_fromRename_3_bits_srcType_1 == 4'h0;
+  assign allSrcState[3][1][2] = io_fromRename_3_bits_srcType_1[2] & _vecBusyTable_io_read_10_resp | io_fromRename_3_bits_srcType_1 == 4'h0;
+  assign allSrcState[3][1][3] = 1'b0;
+  assign allSrcState[3][1][4] = 1'b0;
+  assign allSrcState[3][2][0] = 1'b0;
+  assign allSrcState[3][2][1] = io_fromRename_3_bits_srcType_2[1] & _fpBusyTable_io_read_11_resp | io_fromRename_3_bits_srcType_2 == 4'h0;
+  assign allSrcState[3][2][2] = io_fromRename_3_bits_srcType_2[2] & (_vecBusyTable_io_read_11_resp | ignoreOldVd[3]) | io_fromRename_3_bits_srcType_2 == 4'h0;
+  assign allSrcState[3][2][3] = 1'b0;
+  assign allSrcState[3][2][4] = 1'b0;
+  assign allSrcState[3][3][0] = 1'b0;
+  assign allSrcState[3][3][1] = 1'b0;
+  assign allSrcState[3][3][2] = 1'b0;
+  assign allSrcState[3][3][3] = io_fromRename_3_bits_srcType_3[3] & _v0BusyTable_io_read_3_resp | io_fromRename_3_bits_srcType_3 == 4'h0;
+  assign allSrcState[3][3][4] = 1'b0;
+  assign allSrcState[3][4][0] = 1'b0;
+  assign allSrcState[3][4][1] = 1'b0;
+  assign allSrcState[3][4][2] = 1'b0;
+  assign allSrcState[3][4][3] = 1'b0;
+  assign allSrcState[3][4][4] = _vlBusyTable_io_read_3_resp | io_fromRename_3_bits_srcType_4 == 4'h0;
+  assign ignoreOldVd[4] = _vlBusyTable_io_read_4_resp & _vlBusyTable_io_vl_read_vlReadInfo_4_is_nonzero
+    & ~io_fromRename_4_bits_vpu_isDependOldVd
+    & (_vlBusyTable_io_vl_read_vlReadInfo_4_is_vlmax & (io_fromRename_4_bits_vpu_vm | io_fromRename_4_bits_vpu_vma) & ~io_fromRename_4_bits_vpu_isWritePartVd
+       | (io_fromRename_4_bits_vpu_vm | io_fromRename_4_bits_vpu_vma) & io_fromRename_4_bits_vpu_vta);
+  assign allSrcState[4][0][0] = io_fromRename_4_bits_srcType_0[0] & _intBusyTable_io_read_8_resp | io_fromRename_4_bits_srcType_0 == 4'h0;
+  assign allSrcState[4][0][1] = io_fromRename_4_bits_srcType_0[1] & _fpBusyTable_io_read_12_resp | io_fromRename_4_bits_srcType_0 == 4'h0;
+  assign allSrcState[4][0][2] = io_fromRename_4_bits_srcType_0[2] & _vecBusyTable_io_read_12_resp | io_fromRename_4_bits_srcType_0 == 4'h0;
+  assign allSrcState[4][0][3] = 1'b0;
+  assign allSrcState[4][0][4] = 1'b0;
+  assign allSrcState[4][1][0] = io_fromRename_4_bits_srcType_1[0] & _intBusyTable_io_read_9_resp | io_fromRename_4_bits_srcType_1 == 4'h0;
+  assign allSrcState[4][1][1] = io_fromRename_4_bits_srcType_1[1] & _fpBusyTable_io_read_13_resp | io_fromRename_4_bits_srcType_1 == 4'h0;
+  assign allSrcState[4][1][2] = io_fromRename_4_bits_srcType_1[2] & _vecBusyTable_io_read_13_resp | io_fromRename_4_bits_srcType_1 == 4'h0;
+  assign allSrcState[4][1][3] = 1'b0;
+  assign allSrcState[4][1][4] = 1'b0;
+  assign allSrcState[4][2][0] = 1'b0;
+  assign allSrcState[4][2][1] = io_fromRename_4_bits_srcType_2[1] & _fpBusyTable_io_read_14_resp | io_fromRename_4_bits_srcType_2 == 4'h0;
+  assign allSrcState[4][2][2] = io_fromRename_4_bits_srcType_2[2] & (_vecBusyTable_io_read_14_resp | ignoreOldVd[4]) | io_fromRename_4_bits_srcType_2 == 4'h0;
+  assign allSrcState[4][2][3] = 1'b0;
+  assign allSrcState[4][2][4] = 1'b0;
+  assign allSrcState[4][3][0] = 1'b0;
+  assign allSrcState[4][3][1] = 1'b0;
+  assign allSrcState[4][3][2] = 1'b0;
+  assign allSrcState[4][3][3] = io_fromRename_4_bits_srcType_3[3] & _v0BusyTable_io_read_4_resp | io_fromRename_4_bits_srcType_3 == 4'h0;
+  assign allSrcState[4][3][4] = 1'b0;
+  assign allSrcState[4][4][0] = 1'b0;
+  assign allSrcState[4][4][1] = 1'b0;
+  assign allSrcState[4][4][2] = 1'b0;
+  assign allSrcState[4][4][3] = 1'b0;
+  assign allSrcState[4][4][4] = _vlBusyTable_io_read_4_resp | io_fromRename_4_bits_srcType_4 == 4'h0;
+  assign ignoreOldVd[5] = _vlBusyTable_io_read_5_resp & _vlBusyTable_io_vl_read_vlReadInfo_5_is_nonzero
+    & ~io_fromRename_5_bits_vpu_isDependOldVd
+    & (_vlBusyTable_io_vl_read_vlReadInfo_5_is_vlmax & (io_fromRename_5_bits_vpu_vm | io_fromRename_5_bits_vpu_vma) & ~io_fromRename_5_bits_vpu_isWritePartVd
+       | (io_fromRename_5_bits_vpu_vm | io_fromRename_5_bits_vpu_vma) & io_fromRename_5_bits_vpu_vta);
+  assign allSrcState[5][0][0] = io_fromRename_5_bits_srcType_0[0] & _intBusyTable_io_read_10_resp | io_fromRename_5_bits_srcType_0 == 4'h0;
+  assign allSrcState[5][0][1] = io_fromRename_5_bits_srcType_0[1] & _fpBusyTable_io_read_15_resp | io_fromRename_5_bits_srcType_0 == 4'h0;
+  assign allSrcState[5][0][2] = io_fromRename_5_bits_srcType_0[2] & _vecBusyTable_io_read_15_resp | io_fromRename_5_bits_srcType_0 == 4'h0;
+  assign allSrcState[5][0][3] = 1'b0;
+  assign allSrcState[5][0][4] = 1'b0;
+  assign allSrcState[5][1][0] = io_fromRename_5_bits_srcType_1[0] & _intBusyTable_io_read_11_resp | io_fromRename_5_bits_srcType_1 == 4'h0;
+  assign allSrcState[5][1][1] = io_fromRename_5_bits_srcType_1[1] & _fpBusyTable_io_read_16_resp | io_fromRename_5_bits_srcType_1 == 4'h0;
+  assign allSrcState[5][1][2] = io_fromRename_5_bits_srcType_1[2] & _vecBusyTable_io_read_16_resp | io_fromRename_5_bits_srcType_1 == 4'h0;
+  assign allSrcState[5][1][3] = 1'b0;
+  assign allSrcState[5][1][4] = 1'b0;
+  assign allSrcState[5][2][0] = 1'b0;
+  assign allSrcState[5][2][1] = io_fromRename_5_bits_srcType_2[1] & _fpBusyTable_io_read_17_resp | io_fromRename_5_bits_srcType_2 == 4'h0;
+  assign allSrcState[5][2][2] = io_fromRename_5_bits_srcType_2[2] & (_vecBusyTable_io_read_17_resp | ignoreOldVd[5]) | io_fromRename_5_bits_srcType_2 == 4'h0;
+  assign allSrcState[5][2][3] = 1'b0;
+  assign allSrcState[5][2][4] = 1'b0;
+  assign allSrcState[5][3][0] = 1'b0;
+  assign allSrcState[5][3][1] = 1'b0;
+  assign allSrcState[5][3][2] = 1'b0;
+  assign allSrcState[5][3][3] = io_fromRename_5_bits_srcType_3[3] & _v0BusyTable_io_read_5_resp | io_fromRename_5_bits_srcType_3 == 4'h0;
+  assign allSrcState[5][3][4] = 1'b0;
+  assign allSrcState[5][4][0] = 1'b0;
+  assign allSrcState[5][4][1] = 1'b0;
+  assign allSrcState[5][4][2] = 1'b0;
+  assign allSrcState[5][4][3] = 1'b0;
+  assign allSrcState[5][4][4] = _vlBusyTable_io_read_5_resp | io_fromRename_5_bits_srcType_4 == 4'h0;
 
   // ---- lane 0 ----
   assign rename_uop[0].instr = io_fromRename_0_bits_instr;
@@ -9260,7 +9365,7 @@ module NewDispatch
   assign rename_uop[0].satpFlushFirstFetchFault = io_fromRename_0_bits_satpFlushFirstFetchFault;
   assign rename_uop[0].srcType_0 = io_fromRename_0_bits_srcType_0;
   assign rename_uop[0].srcType_1 = io_fromRename_0_bits_srcType_1;
-  assign rename_uop[0].srcType_2 = unresolved_srcType_2_0;
+  assign rename_uop[0].srcType_2 = io_fromRename_0_bits_srcType_2[2] & ignoreOldVd[0] ? 4'h0 : io_fromRename_0_bits_srcType_2;
   assign rename_uop[0].srcType_3 = io_fromRename_0_bits_srcType_3;
   assign rename_uop[0].srcType_4 = io_fromRename_0_bits_srcType_4;
   assign rename_uop[0].ldest = io_fromRename_0_bits_ldest;
@@ -9332,17 +9437,17 @@ module NewDispatch
   assign rename_uop[0].numUops = io_fromRename_0_bits_numUops;
   assign rename_uop[0].numWB = io_fromRename_0_bits_numWB;
   assign rename_uop[0].commitType = io_fromRename_0_bits_commitType;
-  assign rename_uop[0].srcState_0 = unresolved_srcState_0_0;
-  assign rename_uop[0].srcState_1 = unresolved_srcState_1_0;
-  assign rename_uop[0].srcState_2 = unresolved_srcState_2_0;
-  assign rename_uop[0].srcState_3 = unresolved_srcState_3_0;
-  assign rename_uop[0].srcState_4 = unresolved_srcState_4_0;
-  assign rename_uop[0].srcLoadDependency_0_0 = unresolved_srcLoadDependency_0_0_0;
-  assign rename_uop[0].srcLoadDependency_0_1 = unresolved_srcLoadDependency_0_1_0;
-  assign rename_uop[0].srcLoadDependency_0_2 = unresolved_srcLoadDependency_0_2_0;
-  assign rename_uop[0].srcLoadDependency_1_0 = unresolved_srcLoadDependency_1_0_0;
-  assign rename_uop[0].srcLoadDependency_1_1 = unresolved_srcLoadDependency_1_1_0;
-  assign rename_uop[0].srcLoadDependency_1_2 = unresolved_srcLoadDependency_1_2_0;
+  assign rename_uop[0].srcState_0 = 1'b0;
+  assign rename_uop[0].srcState_1 = 1'b0;
+  assign rename_uop[0].srcState_2 = 1'b0;
+  assign rename_uop[0].srcState_3 = 1'b0;
+  assign rename_uop[0].srcState_4 = 1'b0;
+  assign rename_uop[0].srcLoadDependency_0_0 = io_fromRename_0_bits_srcType_0[0] ? _intBusyTable_io_read_0_loadDependency_0 : 2'h0;
+  assign rename_uop[0].srcLoadDependency_0_1 = io_fromRename_0_bits_srcType_0[0] ? _intBusyTable_io_read_0_loadDependency_1 : 2'h0;
+  assign rename_uop[0].srcLoadDependency_0_2 = io_fromRename_0_bits_srcType_0[0] ? _intBusyTable_io_read_0_loadDependency_2 : 2'h0;
+  assign rename_uop[0].srcLoadDependency_1_0 = io_fromRename_0_bits_srcType_1[0] ? _intBusyTable_io_read_1_loadDependency_0 : 2'h0;
+  assign rename_uop[0].srcLoadDependency_1_1 = io_fromRename_0_bits_srcType_1[0] ? _intBusyTable_io_read_1_loadDependency_1 : 2'h0;
+  assign rename_uop[0].srcLoadDependency_1_2 = io_fromRename_0_bits_srcType_1[0] ? _intBusyTable_io_read_1_loadDependency_2 : 2'h0;
   assign rename_uop[0].srcLoadDependency_2_0 = 2'h0;
   assign rename_uop[0].srcLoadDependency_2_1 = 2'h0;
   assign rename_uop[0].srcLoadDependency_2_2 = 2'h0;
@@ -9358,10 +9463,10 @@ module NewDispatch
   assign rename_uop[0].psrc_3 = io_fromRename_0_bits_psrc_3;
   assign rename_uop[0].psrc_4 = io_fromRename_0_bits_psrc_4;
   assign rename_uop[0].pdest = io_fromRename_0_bits_pdest;
-  assign rename_uop[0].useRegCache_0 = unresolved_useRegCache_0_0;
-  assign rename_uop[0].useRegCache_1 = unresolved_useRegCache_1_0;
-  assign rename_uop[0].regCacheIdx_0 = unresolved_regCacheIdx_0_0;
-  assign rename_uop[0].regCacheIdx_1 = unresolved_regCacheIdx_1_0;
+  assign rename_uop[0].useRegCache_0 = _rcTagTable_io_readPorts_0_valid;
+  assign rename_uop[0].useRegCache_1 = _rcTagTable_io_readPorts_1_valid;
+  assign rename_uop[0].regCacheIdx_0 = _rcTagTable_io_readPorts_0_addr;
+  assign rename_uop[0].regCacheIdx_1 = _rcTagTable_io_readPorts_1_addr;
   assign rename_uop[0].robIdx_flag = io_fromRename_0_bits_robIdx_flag;
   assign rename_uop[0].robIdx_value = io_fromRename_0_bits_robIdx_value;
   assign rename_uop[0].instrSize = io_fromRename_0_bits_instrSize;
@@ -9390,10 +9495,10 @@ module NewDispatch
   assign rename_uop[0].loadWaitBit = 1'h0;
   assign rename_uop[0].loadWaitStrict = 1'h0;
   assign rename_uop[0].ssid = 5'h0;
-  assign rename_uop[0].lqIdx_flag = unresolved_lqIdx_flag_0;
-  assign rename_uop[0].lqIdx_value = unresolved_lqIdx_value_0;
-  assign rename_uop[0].sqIdx_flag = unresolved_sqIdx_flag_0;
-  assign rename_uop[0].sqIdx_value = unresolved_sqIdx_value_0;
+  assign rename_uop[0].lqIdx_flag = _lsqEnqCtrl_io_enq_resp_0_lqIdx_flag;
+  assign rename_uop[0].lqIdx_value = _lsqEnqCtrl_io_enq_resp_0_lqIdx_value;
+  assign rename_uop[0].sqIdx_flag = _lsqEnqCtrl_io_enq_resp_0_sqIdx_flag;
+  assign rename_uop[0].sqIdx_value = _lsqEnqCtrl_io_enq_resp_0_sqIdx_value;
   assign rename_uop[0].singleStep = core_updatedSingleStep[0];
   assign rename_uop[0].replayInst = 1'h0;
   assign rename_uop[0].debug_fuType = io_fromRename_0_bits_debug_fuType;
@@ -9444,7 +9549,7 @@ module NewDispatch
   assign rename_uop[1].satpFlushFirstFetchFault = io_fromRename_1_bits_satpFlushFirstFetchFault;
   assign rename_uop[1].srcType_0 = io_fromRename_1_bits_srcType_0;
   assign rename_uop[1].srcType_1 = io_fromRename_1_bits_srcType_1;
-  assign rename_uop[1].srcType_2 = unresolved_srcType_2_1;
+  assign rename_uop[1].srcType_2 = io_fromRename_1_bits_srcType_2[2] & ignoreOldVd[1] ? 4'h0 : io_fromRename_1_bits_srcType_2;
   assign rename_uop[1].srcType_3 = io_fromRename_1_bits_srcType_3;
   assign rename_uop[1].srcType_4 = io_fromRename_1_bits_srcType_4;
   assign rename_uop[1].ldest = io_fromRename_1_bits_ldest;
@@ -9516,17 +9621,17 @@ module NewDispatch
   assign rename_uop[1].numUops = io_fromRename_1_bits_numUops;
   assign rename_uop[1].numWB = io_fromRename_1_bits_numWB;
   assign rename_uop[1].commitType = io_fromRename_1_bits_commitType;
-  assign rename_uop[1].srcState_0 = unresolved_srcState_0_1;
-  assign rename_uop[1].srcState_1 = unresolved_srcState_1_1;
-  assign rename_uop[1].srcState_2 = unresolved_srcState_2_1;
-  assign rename_uop[1].srcState_3 = unresolved_srcState_3_1;
-  assign rename_uop[1].srcState_4 = unresolved_srcState_4_1;
-  assign rename_uop[1].srcLoadDependency_0_0 = unresolved_srcLoadDependency_0_0_1;
-  assign rename_uop[1].srcLoadDependency_0_1 = unresolved_srcLoadDependency_0_1_1;
-  assign rename_uop[1].srcLoadDependency_0_2 = unresolved_srcLoadDependency_0_2_1;
-  assign rename_uop[1].srcLoadDependency_1_0 = unresolved_srcLoadDependency_1_0_1;
-  assign rename_uop[1].srcLoadDependency_1_1 = unresolved_srcLoadDependency_1_1_1;
-  assign rename_uop[1].srcLoadDependency_1_2 = unresolved_srcLoadDependency_1_2_1;
+  assign rename_uop[1].srcState_0 = 1'b0;
+  assign rename_uop[1].srcState_1 = 1'b0;
+  assign rename_uop[1].srcState_2 = 1'b0;
+  assign rename_uop[1].srcState_3 = 1'b0;
+  assign rename_uop[1].srcState_4 = 1'b0;
+  assign rename_uop[1].srcLoadDependency_0_0 = io_fromRename_1_bits_srcType_0[0] ? _intBusyTable_io_read_2_loadDependency_0 : 2'h0;
+  assign rename_uop[1].srcLoadDependency_0_1 = io_fromRename_1_bits_srcType_0[0] ? _intBusyTable_io_read_2_loadDependency_1 : 2'h0;
+  assign rename_uop[1].srcLoadDependency_0_2 = io_fromRename_1_bits_srcType_0[0] ? _intBusyTable_io_read_2_loadDependency_2 : 2'h0;
+  assign rename_uop[1].srcLoadDependency_1_0 = io_fromRename_1_bits_srcType_1[0] ? _intBusyTable_io_read_3_loadDependency_0 : 2'h0;
+  assign rename_uop[1].srcLoadDependency_1_1 = io_fromRename_1_bits_srcType_1[0] ? _intBusyTable_io_read_3_loadDependency_1 : 2'h0;
+  assign rename_uop[1].srcLoadDependency_1_2 = io_fromRename_1_bits_srcType_1[0] ? _intBusyTable_io_read_3_loadDependency_2 : 2'h0;
   assign rename_uop[1].srcLoadDependency_2_0 = 2'h0;
   assign rename_uop[1].srcLoadDependency_2_1 = 2'h0;
   assign rename_uop[1].srcLoadDependency_2_2 = 2'h0;
@@ -9542,10 +9647,10 @@ module NewDispatch
   assign rename_uop[1].psrc_3 = io_fromRename_1_bits_psrc_3;
   assign rename_uop[1].psrc_4 = io_fromRename_1_bits_psrc_4;
   assign rename_uop[1].pdest = io_fromRename_1_bits_pdest;
-  assign rename_uop[1].useRegCache_0 = unresolved_useRegCache_0_1;
-  assign rename_uop[1].useRegCache_1 = unresolved_useRegCache_1_1;
-  assign rename_uop[1].regCacheIdx_0 = unresolved_regCacheIdx_0_1;
-  assign rename_uop[1].regCacheIdx_1 = unresolved_regCacheIdx_1_1;
+  assign rename_uop[1].useRegCache_0 = _rcTagTable_io_readPorts_2_valid;
+  assign rename_uop[1].useRegCache_1 = _rcTagTable_io_readPorts_3_valid;
+  assign rename_uop[1].regCacheIdx_0 = _rcTagTable_io_readPorts_2_addr;
+  assign rename_uop[1].regCacheIdx_1 = _rcTagTable_io_readPorts_3_addr;
   assign rename_uop[1].robIdx_flag = io_fromRename_1_bits_robIdx_flag;
   assign rename_uop[1].robIdx_value = io_fromRename_1_bits_robIdx_value;
   assign rename_uop[1].instrSize = io_fromRename_1_bits_instrSize;
@@ -9574,10 +9679,10 @@ module NewDispatch
   assign rename_uop[1].loadWaitBit = 1'h0;
   assign rename_uop[1].loadWaitStrict = 1'h0;
   assign rename_uop[1].ssid = 5'h0;
-  assign rename_uop[1].lqIdx_flag = unresolved_lqIdx_flag_1;
-  assign rename_uop[1].lqIdx_value = unresolved_lqIdx_value_1;
-  assign rename_uop[1].sqIdx_flag = unresolved_sqIdx_flag_1;
-  assign rename_uop[1].sqIdx_value = unresolved_sqIdx_value_1;
+  assign rename_uop[1].lqIdx_flag = _lsqEnqCtrl_io_enq_resp_1_lqIdx_flag;
+  assign rename_uop[1].lqIdx_value = _lsqEnqCtrl_io_enq_resp_1_lqIdx_value;
+  assign rename_uop[1].sqIdx_flag = _lsqEnqCtrl_io_enq_resp_1_sqIdx_flag;
+  assign rename_uop[1].sqIdx_value = _lsqEnqCtrl_io_enq_resp_1_sqIdx_value;
   assign rename_uop[1].singleStep = core_updatedSingleStep[1];
   assign rename_uop[1].replayInst = 1'h0;
   assign rename_uop[1].debug_fuType = io_fromRename_1_bits_debug_fuType;
@@ -9628,7 +9733,7 @@ module NewDispatch
   assign rename_uop[2].satpFlushFirstFetchFault = io_fromRename_2_bits_satpFlushFirstFetchFault;
   assign rename_uop[2].srcType_0 = io_fromRename_2_bits_srcType_0;
   assign rename_uop[2].srcType_1 = io_fromRename_2_bits_srcType_1;
-  assign rename_uop[2].srcType_2 = unresolved_srcType_2_2;
+  assign rename_uop[2].srcType_2 = io_fromRename_2_bits_srcType_2[2] & ignoreOldVd[2] ? 4'h0 : io_fromRename_2_bits_srcType_2;
   assign rename_uop[2].srcType_3 = io_fromRename_2_bits_srcType_3;
   assign rename_uop[2].srcType_4 = io_fromRename_2_bits_srcType_4;
   assign rename_uop[2].ldest = io_fromRename_2_bits_ldest;
@@ -9700,17 +9805,17 @@ module NewDispatch
   assign rename_uop[2].numUops = io_fromRename_2_bits_numUops;
   assign rename_uop[2].numWB = io_fromRename_2_bits_numWB;
   assign rename_uop[2].commitType = io_fromRename_2_bits_commitType;
-  assign rename_uop[2].srcState_0 = unresolved_srcState_0_2;
-  assign rename_uop[2].srcState_1 = unresolved_srcState_1_2;
-  assign rename_uop[2].srcState_2 = unresolved_srcState_2_2;
-  assign rename_uop[2].srcState_3 = unresolved_srcState_3_2;
-  assign rename_uop[2].srcState_4 = unresolved_srcState_4_2;
-  assign rename_uop[2].srcLoadDependency_0_0 = unresolved_srcLoadDependency_0_0_2;
-  assign rename_uop[2].srcLoadDependency_0_1 = unresolved_srcLoadDependency_0_1_2;
-  assign rename_uop[2].srcLoadDependency_0_2 = unresolved_srcLoadDependency_0_2_2;
-  assign rename_uop[2].srcLoadDependency_1_0 = unresolved_srcLoadDependency_1_0_2;
-  assign rename_uop[2].srcLoadDependency_1_1 = unresolved_srcLoadDependency_1_1_2;
-  assign rename_uop[2].srcLoadDependency_1_2 = unresolved_srcLoadDependency_1_2_2;
+  assign rename_uop[2].srcState_0 = 1'b0;
+  assign rename_uop[2].srcState_1 = 1'b0;
+  assign rename_uop[2].srcState_2 = 1'b0;
+  assign rename_uop[2].srcState_3 = 1'b0;
+  assign rename_uop[2].srcState_4 = 1'b0;
+  assign rename_uop[2].srcLoadDependency_0_0 = io_fromRename_2_bits_srcType_0[0] ? _intBusyTable_io_read_4_loadDependency_0 : 2'h0;
+  assign rename_uop[2].srcLoadDependency_0_1 = io_fromRename_2_bits_srcType_0[0] ? _intBusyTable_io_read_4_loadDependency_1 : 2'h0;
+  assign rename_uop[2].srcLoadDependency_0_2 = io_fromRename_2_bits_srcType_0[0] ? _intBusyTable_io_read_4_loadDependency_2 : 2'h0;
+  assign rename_uop[2].srcLoadDependency_1_0 = io_fromRename_2_bits_srcType_1[0] ? _intBusyTable_io_read_5_loadDependency_0 : 2'h0;
+  assign rename_uop[2].srcLoadDependency_1_1 = io_fromRename_2_bits_srcType_1[0] ? _intBusyTable_io_read_5_loadDependency_1 : 2'h0;
+  assign rename_uop[2].srcLoadDependency_1_2 = io_fromRename_2_bits_srcType_1[0] ? _intBusyTable_io_read_5_loadDependency_2 : 2'h0;
   assign rename_uop[2].srcLoadDependency_2_0 = 2'h0;
   assign rename_uop[2].srcLoadDependency_2_1 = 2'h0;
   assign rename_uop[2].srcLoadDependency_2_2 = 2'h0;
@@ -9726,10 +9831,10 @@ module NewDispatch
   assign rename_uop[2].psrc_3 = io_fromRename_2_bits_psrc_3;
   assign rename_uop[2].psrc_4 = io_fromRename_2_bits_psrc_4;
   assign rename_uop[2].pdest = io_fromRename_2_bits_pdest;
-  assign rename_uop[2].useRegCache_0 = unresolved_useRegCache_0_2;
-  assign rename_uop[2].useRegCache_1 = unresolved_useRegCache_1_2;
-  assign rename_uop[2].regCacheIdx_0 = unresolved_regCacheIdx_0_2;
-  assign rename_uop[2].regCacheIdx_1 = unresolved_regCacheIdx_1_2;
+  assign rename_uop[2].useRegCache_0 = _rcTagTable_io_readPorts_4_valid;
+  assign rename_uop[2].useRegCache_1 = _rcTagTable_io_readPorts_5_valid;
+  assign rename_uop[2].regCacheIdx_0 = _rcTagTable_io_readPorts_4_addr;
+  assign rename_uop[2].regCacheIdx_1 = _rcTagTable_io_readPorts_5_addr;
   assign rename_uop[2].robIdx_flag = io_fromRename_2_bits_robIdx_flag;
   assign rename_uop[2].robIdx_value = io_fromRename_2_bits_robIdx_value;
   assign rename_uop[2].instrSize = io_fromRename_2_bits_instrSize;
@@ -9758,10 +9863,10 @@ module NewDispatch
   assign rename_uop[2].loadWaitBit = 1'h0;
   assign rename_uop[2].loadWaitStrict = 1'h0;
   assign rename_uop[2].ssid = 5'h0;
-  assign rename_uop[2].lqIdx_flag = unresolved_lqIdx_flag_2;
-  assign rename_uop[2].lqIdx_value = unresolved_lqIdx_value_2;
-  assign rename_uop[2].sqIdx_flag = unresolved_sqIdx_flag_2;
-  assign rename_uop[2].sqIdx_value = unresolved_sqIdx_value_2;
+  assign rename_uop[2].lqIdx_flag = _lsqEnqCtrl_io_enq_resp_2_lqIdx_flag;
+  assign rename_uop[2].lqIdx_value = _lsqEnqCtrl_io_enq_resp_2_lqIdx_value;
+  assign rename_uop[2].sqIdx_flag = _lsqEnqCtrl_io_enq_resp_2_sqIdx_flag;
+  assign rename_uop[2].sqIdx_value = _lsqEnqCtrl_io_enq_resp_2_sqIdx_value;
   assign rename_uop[2].singleStep = core_updatedSingleStep[2];
   assign rename_uop[2].replayInst = 1'h0;
   assign rename_uop[2].debug_fuType = io_fromRename_2_bits_debug_fuType;
@@ -9812,7 +9917,7 @@ module NewDispatch
   assign rename_uop[3].satpFlushFirstFetchFault = io_fromRename_3_bits_satpFlushFirstFetchFault;
   assign rename_uop[3].srcType_0 = io_fromRename_3_bits_srcType_0;
   assign rename_uop[3].srcType_1 = io_fromRename_3_bits_srcType_1;
-  assign rename_uop[3].srcType_2 = unresolved_srcType_2_3;
+  assign rename_uop[3].srcType_2 = io_fromRename_3_bits_srcType_2[2] & ignoreOldVd[3] ? 4'h0 : io_fromRename_3_bits_srcType_2;
   assign rename_uop[3].srcType_3 = io_fromRename_3_bits_srcType_3;
   assign rename_uop[3].srcType_4 = io_fromRename_3_bits_srcType_4;
   assign rename_uop[3].ldest = io_fromRename_3_bits_ldest;
@@ -9884,17 +9989,17 @@ module NewDispatch
   assign rename_uop[3].numUops = io_fromRename_3_bits_numUops;
   assign rename_uop[3].numWB = io_fromRename_3_bits_numWB;
   assign rename_uop[3].commitType = io_fromRename_3_bits_commitType;
-  assign rename_uop[3].srcState_0 = unresolved_srcState_0_3;
-  assign rename_uop[3].srcState_1 = unresolved_srcState_1_3;
-  assign rename_uop[3].srcState_2 = unresolved_srcState_2_3;
-  assign rename_uop[3].srcState_3 = unresolved_srcState_3_3;
-  assign rename_uop[3].srcState_4 = unresolved_srcState_4_3;
-  assign rename_uop[3].srcLoadDependency_0_0 = unresolved_srcLoadDependency_0_0_3;
-  assign rename_uop[3].srcLoadDependency_0_1 = unresolved_srcLoadDependency_0_1_3;
-  assign rename_uop[3].srcLoadDependency_0_2 = unresolved_srcLoadDependency_0_2_3;
-  assign rename_uop[3].srcLoadDependency_1_0 = unresolved_srcLoadDependency_1_0_3;
-  assign rename_uop[3].srcLoadDependency_1_1 = unresolved_srcLoadDependency_1_1_3;
-  assign rename_uop[3].srcLoadDependency_1_2 = unresolved_srcLoadDependency_1_2_3;
+  assign rename_uop[3].srcState_0 = 1'b0;
+  assign rename_uop[3].srcState_1 = 1'b0;
+  assign rename_uop[3].srcState_2 = 1'b0;
+  assign rename_uop[3].srcState_3 = 1'b0;
+  assign rename_uop[3].srcState_4 = 1'b0;
+  assign rename_uop[3].srcLoadDependency_0_0 = io_fromRename_3_bits_srcType_0[0] ? _intBusyTable_io_read_6_loadDependency_0 : 2'h0;
+  assign rename_uop[3].srcLoadDependency_0_1 = io_fromRename_3_bits_srcType_0[0] ? _intBusyTable_io_read_6_loadDependency_1 : 2'h0;
+  assign rename_uop[3].srcLoadDependency_0_2 = io_fromRename_3_bits_srcType_0[0] ? _intBusyTable_io_read_6_loadDependency_2 : 2'h0;
+  assign rename_uop[3].srcLoadDependency_1_0 = io_fromRename_3_bits_srcType_1[0] ? _intBusyTable_io_read_7_loadDependency_0 : 2'h0;
+  assign rename_uop[3].srcLoadDependency_1_1 = io_fromRename_3_bits_srcType_1[0] ? _intBusyTable_io_read_7_loadDependency_1 : 2'h0;
+  assign rename_uop[3].srcLoadDependency_1_2 = io_fromRename_3_bits_srcType_1[0] ? _intBusyTable_io_read_7_loadDependency_2 : 2'h0;
   assign rename_uop[3].srcLoadDependency_2_0 = 2'h0;
   assign rename_uop[3].srcLoadDependency_2_1 = 2'h0;
   assign rename_uop[3].srcLoadDependency_2_2 = 2'h0;
@@ -9910,10 +10015,10 @@ module NewDispatch
   assign rename_uop[3].psrc_3 = io_fromRename_3_bits_psrc_3;
   assign rename_uop[3].psrc_4 = io_fromRename_3_bits_psrc_4;
   assign rename_uop[3].pdest = io_fromRename_3_bits_pdest;
-  assign rename_uop[3].useRegCache_0 = unresolved_useRegCache_0_3;
-  assign rename_uop[3].useRegCache_1 = unresolved_useRegCache_1_3;
-  assign rename_uop[3].regCacheIdx_0 = unresolved_regCacheIdx_0_3;
-  assign rename_uop[3].regCacheIdx_1 = unresolved_regCacheIdx_1_3;
+  assign rename_uop[3].useRegCache_0 = _rcTagTable_io_readPorts_6_valid;
+  assign rename_uop[3].useRegCache_1 = _rcTagTable_io_readPorts_7_valid;
+  assign rename_uop[3].regCacheIdx_0 = _rcTagTable_io_readPorts_6_addr;
+  assign rename_uop[3].regCacheIdx_1 = _rcTagTable_io_readPorts_7_addr;
   assign rename_uop[3].robIdx_flag = io_fromRename_3_bits_robIdx_flag;
   assign rename_uop[3].robIdx_value = io_fromRename_3_bits_robIdx_value;
   assign rename_uop[3].instrSize = io_fromRename_3_bits_instrSize;
@@ -9942,10 +10047,10 @@ module NewDispatch
   assign rename_uop[3].loadWaitBit = 1'h0;
   assign rename_uop[3].loadWaitStrict = 1'h0;
   assign rename_uop[3].ssid = 5'h0;
-  assign rename_uop[3].lqIdx_flag = unresolved_lqIdx_flag_3;
-  assign rename_uop[3].lqIdx_value = unresolved_lqIdx_value_3;
-  assign rename_uop[3].sqIdx_flag = unresolved_sqIdx_flag_3;
-  assign rename_uop[3].sqIdx_value = unresolved_sqIdx_value_3;
+  assign rename_uop[3].lqIdx_flag = _lsqEnqCtrl_io_enq_resp_3_lqIdx_flag;
+  assign rename_uop[3].lqIdx_value = _lsqEnqCtrl_io_enq_resp_3_lqIdx_value;
+  assign rename_uop[3].sqIdx_flag = _lsqEnqCtrl_io_enq_resp_3_sqIdx_flag;
+  assign rename_uop[3].sqIdx_value = _lsqEnqCtrl_io_enq_resp_3_sqIdx_value;
   assign rename_uop[3].singleStep = core_updatedSingleStep[3];
   assign rename_uop[3].replayInst = 1'h0;
   assign rename_uop[3].debug_fuType = io_fromRename_3_bits_debug_fuType;
@@ -9996,7 +10101,7 @@ module NewDispatch
   assign rename_uop[4].satpFlushFirstFetchFault = io_fromRename_4_bits_satpFlushFirstFetchFault;
   assign rename_uop[4].srcType_0 = io_fromRename_4_bits_srcType_0;
   assign rename_uop[4].srcType_1 = io_fromRename_4_bits_srcType_1;
-  assign rename_uop[4].srcType_2 = unresolved_srcType_2_4;
+  assign rename_uop[4].srcType_2 = io_fromRename_4_bits_srcType_2[2] & ignoreOldVd[4] ? 4'h0 : io_fromRename_4_bits_srcType_2;
   assign rename_uop[4].srcType_3 = io_fromRename_4_bits_srcType_3;
   assign rename_uop[4].srcType_4 = io_fromRename_4_bits_srcType_4;
   assign rename_uop[4].ldest = io_fromRename_4_bits_ldest;
@@ -10068,17 +10173,17 @@ module NewDispatch
   assign rename_uop[4].numUops = io_fromRename_4_bits_numUops;
   assign rename_uop[4].numWB = io_fromRename_4_bits_numWB;
   assign rename_uop[4].commitType = io_fromRename_4_bits_commitType;
-  assign rename_uop[4].srcState_0 = unresolved_srcState_0_4;
-  assign rename_uop[4].srcState_1 = unresolved_srcState_1_4;
-  assign rename_uop[4].srcState_2 = unresolved_srcState_2_4;
-  assign rename_uop[4].srcState_3 = unresolved_srcState_3_4;
-  assign rename_uop[4].srcState_4 = unresolved_srcState_4_4;
-  assign rename_uop[4].srcLoadDependency_0_0 = unresolved_srcLoadDependency_0_0_4;
-  assign rename_uop[4].srcLoadDependency_0_1 = unresolved_srcLoadDependency_0_1_4;
-  assign rename_uop[4].srcLoadDependency_0_2 = unresolved_srcLoadDependency_0_2_4;
-  assign rename_uop[4].srcLoadDependency_1_0 = unresolved_srcLoadDependency_1_0_4;
-  assign rename_uop[4].srcLoadDependency_1_1 = unresolved_srcLoadDependency_1_1_4;
-  assign rename_uop[4].srcLoadDependency_1_2 = unresolved_srcLoadDependency_1_2_4;
+  assign rename_uop[4].srcState_0 = 1'b0;
+  assign rename_uop[4].srcState_1 = 1'b0;
+  assign rename_uop[4].srcState_2 = 1'b0;
+  assign rename_uop[4].srcState_3 = 1'b0;
+  assign rename_uop[4].srcState_4 = 1'b0;
+  assign rename_uop[4].srcLoadDependency_0_0 = io_fromRename_4_bits_srcType_0[0] ? _intBusyTable_io_read_8_loadDependency_0 : 2'h0;
+  assign rename_uop[4].srcLoadDependency_0_1 = io_fromRename_4_bits_srcType_0[0] ? _intBusyTable_io_read_8_loadDependency_1 : 2'h0;
+  assign rename_uop[4].srcLoadDependency_0_2 = io_fromRename_4_bits_srcType_0[0] ? _intBusyTable_io_read_8_loadDependency_2 : 2'h0;
+  assign rename_uop[4].srcLoadDependency_1_0 = io_fromRename_4_bits_srcType_1[0] ? _intBusyTable_io_read_9_loadDependency_0 : 2'h0;
+  assign rename_uop[4].srcLoadDependency_1_1 = io_fromRename_4_bits_srcType_1[0] ? _intBusyTable_io_read_9_loadDependency_1 : 2'h0;
+  assign rename_uop[4].srcLoadDependency_1_2 = io_fromRename_4_bits_srcType_1[0] ? _intBusyTable_io_read_9_loadDependency_2 : 2'h0;
   assign rename_uop[4].srcLoadDependency_2_0 = 2'h0;
   assign rename_uop[4].srcLoadDependency_2_1 = 2'h0;
   assign rename_uop[4].srcLoadDependency_2_2 = 2'h0;
@@ -10094,10 +10199,10 @@ module NewDispatch
   assign rename_uop[4].psrc_3 = io_fromRename_4_bits_psrc_3;
   assign rename_uop[4].psrc_4 = io_fromRename_4_bits_psrc_4;
   assign rename_uop[4].pdest = io_fromRename_4_bits_pdest;
-  assign rename_uop[4].useRegCache_0 = unresolved_useRegCache_0_4;
-  assign rename_uop[4].useRegCache_1 = unresolved_useRegCache_1_4;
-  assign rename_uop[4].regCacheIdx_0 = unresolved_regCacheIdx_0_4;
-  assign rename_uop[4].regCacheIdx_1 = unresolved_regCacheIdx_1_4;
+  assign rename_uop[4].useRegCache_0 = _rcTagTable_io_readPorts_8_valid;
+  assign rename_uop[4].useRegCache_1 = _rcTagTable_io_readPorts_9_valid;
+  assign rename_uop[4].regCacheIdx_0 = _rcTagTable_io_readPorts_8_addr;
+  assign rename_uop[4].regCacheIdx_1 = _rcTagTable_io_readPorts_9_addr;
   assign rename_uop[4].robIdx_flag = io_fromRename_4_bits_robIdx_flag;
   assign rename_uop[4].robIdx_value = io_fromRename_4_bits_robIdx_value;
   assign rename_uop[4].instrSize = io_fromRename_4_bits_instrSize;
@@ -10126,10 +10231,10 @@ module NewDispatch
   assign rename_uop[4].loadWaitBit = 1'h0;
   assign rename_uop[4].loadWaitStrict = 1'h0;
   assign rename_uop[4].ssid = 5'h0;
-  assign rename_uop[4].lqIdx_flag = unresolved_lqIdx_flag_4;
-  assign rename_uop[4].lqIdx_value = unresolved_lqIdx_value_4;
-  assign rename_uop[4].sqIdx_flag = unresolved_sqIdx_flag_4;
-  assign rename_uop[4].sqIdx_value = unresolved_sqIdx_value_4;
+  assign rename_uop[4].lqIdx_flag = _lsqEnqCtrl_io_enq_resp_4_lqIdx_flag;
+  assign rename_uop[4].lqIdx_value = _lsqEnqCtrl_io_enq_resp_4_lqIdx_value;
+  assign rename_uop[4].sqIdx_flag = _lsqEnqCtrl_io_enq_resp_4_sqIdx_flag;
+  assign rename_uop[4].sqIdx_value = _lsqEnqCtrl_io_enq_resp_4_sqIdx_value;
   assign rename_uop[4].singleStep = core_updatedSingleStep[4];
   assign rename_uop[4].replayInst = 1'h0;
   assign rename_uop[4].debug_fuType = io_fromRename_4_bits_debug_fuType;
@@ -10180,7 +10285,7 @@ module NewDispatch
   assign rename_uop[5].satpFlushFirstFetchFault = io_fromRename_5_bits_satpFlushFirstFetchFault;
   assign rename_uop[5].srcType_0 = io_fromRename_5_bits_srcType_0;
   assign rename_uop[5].srcType_1 = io_fromRename_5_bits_srcType_1;
-  assign rename_uop[5].srcType_2 = unresolved_srcType_2_5;
+  assign rename_uop[5].srcType_2 = io_fromRename_5_bits_srcType_2[2] & ignoreOldVd[5] ? 4'h0 : io_fromRename_5_bits_srcType_2;
   assign rename_uop[5].srcType_3 = io_fromRename_5_bits_srcType_3;
   assign rename_uop[5].srcType_4 = io_fromRename_5_bits_srcType_4;
   assign rename_uop[5].ldest = io_fromRename_5_bits_ldest;
@@ -10252,17 +10357,17 @@ module NewDispatch
   assign rename_uop[5].numUops = io_fromRename_5_bits_numUops;
   assign rename_uop[5].numWB = io_fromRename_5_bits_numWB;
   assign rename_uop[5].commitType = io_fromRename_5_bits_commitType;
-  assign rename_uop[5].srcState_0 = unresolved_srcState_0_5;
-  assign rename_uop[5].srcState_1 = unresolved_srcState_1_5;
-  assign rename_uop[5].srcState_2 = unresolved_srcState_2_5;
-  assign rename_uop[5].srcState_3 = unresolved_srcState_3_5;
-  assign rename_uop[5].srcState_4 = unresolved_srcState_4_5;
-  assign rename_uop[5].srcLoadDependency_0_0 = unresolved_srcLoadDependency_0_0_5;
-  assign rename_uop[5].srcLoadDependency_0_1 = unresolved_srcLoadDependency_0_1_5;
-  assign rename_uop[5].srcLoadDependency_0_2 = unresolved_srcLoadDependency_0_2_5;
-  assign rename_uop[5].srcLoadDependency_1_0 = unresolved_srcLoadDependency_1_0_5;
-  assign rename_uop[5].srcLoadDependency_1_1 = unresolved_srcLoadDependency_1_1_5;
-  assign rename_uop[5].srcLoadDependency_1_2 = unresolved_srcLoadDependency_1_2_5;
+  assign rename_uop[5].srcState_0 = 1'b0;
+  assign rename_uop[5].srcState_1 = 1'b0;
+  assign rename_uop[5].srcState_2 = 1'b0;
+  assign rename_uop[5].srcState_3 = 1'b0;
+  assign rename_uop[5].srcState_4 = 1'b0;
+  assign rename_uop[5].srcLoadDependency_0_0 = io_fromRename_5_bits_srcType_0[0] ? _intBusyTable_io_read_10_loadDependency_0 : 2'h0;
+  assign rename_uop[5].srcLoadDependency_0_1 = io_fromRename_5_bits_srcType_0[0] ? _intBusyTable_io_read_10_loadDependency_1 : 2'h0;
+  assign rename_uop[5].srcLoadDependency_0_2 = io_fromRename_5_bits_srcType_0[0] ? _intBusyTable_io_read_10_loadDependency_2 : 2'h0;
+  assign rename_uop[5].srcLoadDependency_1_0 = io_fromRename_5_bits_srcType_1[0] ? _intBusyTable_io_read_11_loadDependency_0 : 2'h0;
+  assign rename_uop[5].srcLoadDependency_1_1 = io_fromRename_5_bits_srcType_1[0] ? _intBusyTable_io_read_11_loadDependency_1 : 2'h0;
+  assign rename_uop[5].srcLoadDependency_1_2 = io_fromRename_5_bits_srcType_1[0] ? _intBusyTable_io_read_11_loadDependency_2 : 2'h0;
   assign rename_uop[5].srcLoadDependency_2_0 = 2'h0;
   assign rename_uop[5].srcLoadDependency_2_1 = 2'h0;
   assign rename_uop[5].srcLoadDependency_2_2 = 2'h0;
@@ -10278,10 +10383,10 @@ module NewDispatch
   assign rename_uop[5].psrc_3 = io_fromRename_5_bits_psrc_3;
   assign rename_uop[5].psrc_4 = io_fromRename_5_bits_psrc_4;
   assign rename_uop[5].pdest = io_fromRename_5_bits_pdest;
-  assign rename_uop[5].useRegCache_0 = unresolved_useRegCache_0_5;
-  assign rename_uop[5].useRegCache_1 = unresolved_useRegCache_1_5;
-  assign rename_uop[5].regCacheIdx_0 = unresolved_regCacheIdx_0_5;
-  assign rename_uop[5].regCacheIdx_1 = unresolved_regCacheIdx_1_5;
+  assign rename_uop[5].useRegCache_0 = _rcTagTable_io_readPorts_10_valid;
+  assign rename_uop[5].useRegCache_1 = _rcTagTable_io_readPorts_11_valid;
+  assign rename_uop[5].regCacheIdx_0 = _rcTagTable_io_readPorts_10_addr;
+  assign rename_uop[5].regCacheIdx_1 = _rcTagTable_io_readPorts_11_addr;
   assign rename_uop[5].robIdx_flag = io_fromRename_5_bits_robIdx_flag;
   assign rename_uop[5].robIdx_value = io_fromRename_5_bits_robIdx_value;
   assign rename_uop[5].instrSize = io_fromRename_5_bits_instrSize;
@@ -10310,10 +10415,10 @@ module NewDispatch
   assign rename_uop[5].loadWaitBit = 1'h0;
   assign rename_uop[5].loadWaitStrict = 1'h0;
   assign rename_uop[5].ssid = 5'h0;
-  assign rename_uop[5].lqIdx_flag = unresolved_lqIdx_flag_5;
-  assign rename_uop[5].lqIdx_value = unresolved_lqIdx_value_5;
-  assign rename_uop[5].sqIdx_flag = unresolved_sqIdx_flag_5;
-  assign rename_uop[5].sqIdx_value = unresolved_sqIdx_value_5;
+  assign rename_uop[5].lqIdx_flag = _lsqEnqCtrl_io_enq_resp_5_lqIdx_flag;
+  assign rename_uop[5].lqIdx_value = _lsqEnqCtrl_io_enq_resp_5_lqIdx_value;
+  assign rename_uop[5].sqIdx_flag = _lsqEnqCtrl_io_enq_resp_5_sqIdx_flag;
+  assign rename_uop[5].sqIdx_value = _lsqEnqCtrl_io_enq_resp_5_sqIdx_value;
   assign rename_uop[5].singleStep = core_updatedSingleStep[5];
   assign rename_uop[5].replayInst = 1'h0;
   assign rename_uop[5].debug_fuType = io_fromRename_5_bits_debug_fuType;
@@ -10333,6 +10438,7 @@ module NewDispatch
     .uopSelIQMatrix_o  (core_uopSelIQMatrix),
     .uopBlockByIQ_o    (core_uopBlockByIQ),
     .rename_uop        (rename_uop),
+    .srcStateAll       (allSrcState),
     .iq_uop            (iq_uop),
     .iq_valid          (iq_valid),
 
