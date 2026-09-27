@@ -283,8 +283,20 @@ def _expand(s, vars_, depth=0):
 
 def from_ut(ut):
     mk = (REPO / 'verif' / 'ut' / ut / 'Makefile').read_text(errors='replace')
+    # ★同目录的 `include xxx.mk` 先内联★（2026-09-27 CtrlBlock）：闭包文件表由生成器写在
+    # verif/ut/CtrlBlock/closure.mk 里、Makefile 只 include 它。不内联的话 FM_REF_DEPS 里的
+    # $(GOLDEN_CLOSURE_*) 展不开，模型退回 regs+outs（缺失与否定长得一样）。只认同目录、
+    # 只认 .mk、读不到就原样留着让 deps_unexpanded 守卫报出来。
+    def _inl(m):
+        f = REPO / 'verif' / 'ut' / ut / m.group(1)
+        return f.read_text(errors='replace') if f.suffix == '.mk' and f.exists() else m.group(0)
+    mk = re.sub(r'^include\s+(\S+)\s*$', _inl, mk, flags=re.M)
     mk = re.sub(r'\\\n', ' ', mk)          # 续行拼起来
     vars_ = _mk_vars(mk)
+    # ★FM_INTERFACE_ONLY 里的模块在证明里是接口黑盒★：从 deps 里剔掉，让下面的 bbox_counts
+    # 按黑盒计（BBPin 输入位进模型、子树寄存器不进）。Makefile 没写就是空表，行为不变。
+    io_ = re.search(r'^FM_INTERFACE_ONLY[^\S\n]*=[^\S\n]*(.*)$', mk, re.M)
+    iface_only = set(_expand(io_.group(1), vars_).split()) if io_ else set()
     mv = re.search(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', mk, re.M)
     if not mv:
         sys.exit(f'{ut}: Makefile 里没有 FM_VARIANTS')
@@ -303,6 +315,7 @@ def from_ut(ut):
         raw = d.group(1) if d else ''
         exp = _expand(raw, vars_)
         deps = [x.split('/')[-1][:-3] for x in exp.split() if x.endswith('.sv')]
+        deps = [x for x in deps if x not in iface_only]
         unexp = sorted(set(re.findall(r'\$\(([A-Za-z_]\w*)\)', exp)))
         out.append(model(t, deps, unexp))
     return out
