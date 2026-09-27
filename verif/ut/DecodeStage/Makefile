@@ -1,29 +1,36 @@
 # DecodeStage —— 译码级（6 个 DecodeUnit + DecodeUnitComp + VTypeGen 的父层，粘合逻辑）
 #
-# 子模块闭包全部**两侧共用 golden 定义**（RTL_GOLDEN_DEPS）：DecodeUnit / VTypeGen 本轮尚未
-# 重写（三轴表 MISSING），DecodeUnitComp 虽已重写并单独签核（verif/ut/DecodeUnitComp），
-# 但本目标只证 DecodeStage 这一层的粘合逻辑，子模块在 UT 里两侧同一份定义、在 FM 里
-# ref 侧走 FM_REF_DEPS、impl 侧走同一批 golden 文件，两侧完整 elaborate、无黑盒。
-# 于是本目标的"绿"是**条件绿**：DecodeStage 粘合逻辑与 golden 等价，子模块的正确性
-# 由它们各自的签核负责（DecodeUnit / VTypeGen 待做）。
+# 子模块处理（2026-09-27 起）：DecodeUnit ×6 / VTypeGen（及其下的 FPDecoder / UopInfoGen /
+# vset_pkg）已重写并各自 signoff-strict SUCCEEDED（verif/ut/DecodeUnit、verif/ut/VTypeGen），
+# 本目标 impl 侧改用**重写件**（RTL_SRCS），ref 侧仍走 golden（FM_REF_DEPS）——两侧各自完整
+# elaborate、无黑盒，DecodeStage 对这两个 child 的依赖从"条件绿"变成真绿。
+# DecodeUnitComp 闭包（VecExceptionGen + indexedLSUopTable_1..7）保持两侧共用 golden 定义
+# （RTL_GOLDEN_DEPS）：它已单独签核，本目标沿用原来的口径只证粘合逻辑那一层。
 MODULE = DecodeStage
 
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/DecodeStage.sv
+RTL_SRCS = $(RTL_DIR)/backend/backend_common_pkg.sv \
+           $(RTL_DIR)/backend/FPDecoder.sv \
+           $(RTL_DIR)/backend/UopInfoGen.sv \
+           $(RTL_DIR)/backend/DecodeUnit.sv \
+           $(RTL_DIR)/backend/VTypeGen.sv \
+           $(RTL_DIR)/backend/DecodeStage.sv
 TB_SRCS  = tb.sv
 
-GOLDEN_SRCS = $(GOLDEN_RTL)/DecodeStage.sv
+# golden 侧（UT 的 golden 实例；FM 的 ref 容器）：DecodeStage + DecodeUnit/VTypeGen 闭包的 golden 定义
+GOLDEN_SRCS = $(GOLDEN_RTL)/DecodeStage.sv $(addprefix $(GOLDEN_RTL)/,$(REWRITTEN_CHILD_CLOSURE))
 
-# 子模块闭包（golden 文件，两侧共用）：
+# 子模块闭包（golden 文件名）：
 #   DecodeUnit -> FPDecoder, UopInfoGen -> strdiedLSNumOfUopTable, indexedLSNumOfUopTable
-#   DecodeUnitComp -> VecExceptionGen, indexedLSUopTable_1..7
-#   VTypeGen -> VsetModule
-CHILD_CLOSURE = DecodeUnit.sv FPDecoder.sv UopInfoGen.sv strdiedLSNumOfUopTable.sv \
-  indexedLSNumOfUopTable.sv DecodeUnitComp.sv VecExceptionGen.sv \
+#   VTypeGen -> VsetModule                                  —— 这两族 impl 侧用重写件
+#   DecodeUnitComp -> VecExceptionGen, indexedLSUopTable_1..7 —— 两侧共用 golden
+REWRITTEN_CHILD_CLOSURE = DecodeUnit.sv FPDecoder.sv UopInfoGen.sv strdiedLSNumOfUopTable.sv \
+  indexedLSNumOfUopTable.sv VTypeGen.sv VsetModule.sv
+SHARED_CHILD_CLOSURE = DecodeUnitComp.sv VecExceptionGen.sv \
   indexedLSUopTable_1.sv indexedLSUopTable_2.sv indexedLSUopTable_3.sv indexedLSUopTable_4.sv \
-  indexedLSUopTable_5.sv indexedLSUopTable_6.sv indexedLSUopTable_7.sv \
-  VTypeGen.sv VsetModule.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(CHILD_CLOSURE))
+  indexedLSUopTable_5.sv indexedLSUopTable_6.sv indexedLSUopTable_7.sv
+CHILD_CLOSURE = $(REWRITTEN_CHILD_CLOSURE) $(SHARED_CHILD_CLOSURE)
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(SHARED_CHILD_CLOSURE))
 
 FM_VARIANTS = DecodeStage
 FM_REF_DEPS_DecodeStage = $(CHILD_CLOSURE)
