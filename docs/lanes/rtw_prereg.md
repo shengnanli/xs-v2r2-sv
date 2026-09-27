@@ -137,3 +137,60 @@ failing 0 / unmatched 0 / 黑盒 14 对象（与 allow 声明精确相等）/ �
    （依据写明 18 点来源与对称性），Makefile 仅对 `fm-RenameTableWrapper` 开
    `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true`。预期 18 点转入 passing，**passing 回到 19766**，unread 0。
    若加强后出现 failing ⇒ 停下诊断（standing rule 的停止条件），照实报。
+
+---
+
+# 对账（跑完追加，★§2 数字未动★）
+
+## A. 起止 commit
+
+| 项 | 值 |
+|---|---|
+| 基线 main | `d5b637e8` |
+| 跑前登记 | `3070f15a64e8001bff2bb0fc73f11d0ed8a1709b`（第一次起跑：impl 侧 ELAB-147，无 receipt） |
+| 修正 1 | `dc57056bf19901fa6d62a0f1349bcf9026855dc5`（第二次起跑：native SUCCEEDED / PARTIAL unread） |
+| 修正 2 = 受理 commit | `6aed766ee2ebb18b4538e31c6b412044f2a32b44`（第三次起跑：两目标 SUCCEEDED） |
+| 复跑命令 | `bash scripts/run_proof.sh RenameTableWrapper DiffRatStateBuffer RenameTableWrapper`（PROOF_COMMIT=6aed766e） |
+
+## B. FM 读数（`evidence/6aed766ee2eb/<target>/`，RUN_CONTEXT 前后 worktree 摘要一致）
+
+| 目标 | verdict | native | mode | vmucp | passing | failing | unverified | aborted | unmatched | unread | 黑盒对象 | blackbox_out | dont_verify | elab147 | `^ *Error:` |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| DiffRatStateBuffer | **SUCCEEDED** | SUCCEEDED | assembly | false | **11418** | 0 | 0 | 0 | 0 | 0 | 14（r7/i7）== 声明 | 0 | 无 | 无 | 0 |
+| RenameTableWrapper | **SUCCEEDED** | SUCCEEDED | assembly | **true** | **19766** | 0 | 0 | 0 | 0 | 0 | 14（r7/i7）== 声明 | 0 | 无 | 无 | 0 |
+
+黑盒边界（两目标同一集合）：ref `r:/WORK/<top>[/diffRatBuffer]/diff_rat_state_bank_{0..5}_ext` + `stateBankTags_ext`；
+impl `i:/WORK/<top>/u_core[/diffRatBuffer/u_core]/g_bank[0..5].diff_rat_state_bank_ext` + `stateBankTags_ext`。
+只有这两个审定过的存储宏，无逻辑子模块黑盒，无 green_child。
+
+receipt sha256：
+- `evidence/6aed766ee2eb/DiffRatStateBuffer/receipt.json` = `14f13856503cb999acf805014427abd8035a1a7cde5a515dcd5f01751c381a91`
+- `evidence/6aed766ee2eb/RenameTableWrapper/receipt.json` = `604de2048332c5fc93e712d12261acc4be6ab8017f837f7454cb8043ee8b9d5a`
+
+## C. 逐条对账（`python3 scripts/fm_predict.py check DiffRatStateBuffer RenameTableWrapper`）
+
+| 目标 | 预测 | 实测 | 差 | constant_reg | 判决 |
+|---|---|---|---|---|---|
+| DiffRatStateBuffer | 11418 | 11418 | 0 | 0 | 逐位相等 |
+| RenameTableWrapper | 19766 | 19766 | 0 | 0 | 逐位相等 |
+
+中间轮次 dc57056b 的 19748 = 19766 − 18，那 18 点正是 §6 指认的 need_free 对称死位；加强后如预期回到 19766。
+
+vmucp standing rule 六条：① 精确目标绑定 `verif/fm_target_config/RenameTableWrapper.tcl`（单目标，无通配；DiffRatStateBuffer 不在）；
+② 18 点逐名自动配对（`unread_points.txt` 每行一对，无 set_user_match、无强配）；③ FM 实开比较，passing 19748 → 19766；
+④ failing/unverified/unread 全零；⑤ 无 dont_verify、黑盒集合与不加强轮次相同（14 个存储宏）；⑥ 来源与对称性写在该 tcl 与本文件 §6。
+
+## D. UT 两档读数（受理 commit 的字节，`verif/ut/RenameTableWrapper`）
+
+| seed | `+vcs+initreg+random` | `+vcs+initreg+0` |
+|---|---|---|
+| 1 | checks=199986 errors=0 TEST PASSED | checks=199986 errors=0 TEST PASSED |
+| 7 | checks=199986 errors=0 TEST PASSED | checks=199986 errors=0 TEST PASSED |
+| 42 | checks=199986 errors=0 TEST PASSED | checks=199986 errors=0 TEST PASSED |
+
+## E. 反向出口逐条核
+
+§2 列的四条反向出口：ELAB-147 —— 第一次起跑 impl 侧命中（我核里的 `arr[cond?idx:0]`，非黑盒失效），改 RTL 消掉，未加 appvar / filter；
+黑盒集合失配 —— 未发生（声明路径一次对上）；failing —— 三轮均 0；impl unmatched/unread —— 第二轮 1 个 impl 伪影，改 RTL 消掉。
+两个叶子（`diff_rat_state_bank_320x776` / `stateBankTags_320x3`）本身不再是 FM target（与 ram_40x47 同口径），其正确性由
+审定条目（M1 模板逐字相等 + UT 两侧共用同一份 golden 叶子）承担。
