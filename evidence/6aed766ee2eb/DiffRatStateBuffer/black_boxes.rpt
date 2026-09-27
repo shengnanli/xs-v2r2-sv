@@ -1,0 +1,136 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/DiffRatStateBuffer
+Implementation : i:/WORK/DiffRatStateBuffer
+Version        : V-2023.12-SP3
+Date           : Sun Sep 27 01:34:36 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    TECH LIBRARY - i:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      diff_rat_state_bank_320x776
+
+       Instances : 6 of 6
+       ------------------------
+       i:/WORK/DiffRatStateBuffer/u_core/g_bank[5].diff_rat_state_bank_ext
+       i:/WORK/DiffRatStateBuffer/u_core/g_bank[4].diff_rat_state_bank_ext
+       i:/WORK/DiffRatStateBuffer/u_core/g_bank[3].diff_rat_state_bank_ext
+       i:/WORK/DiffRatStateBuffer/u_core/g_bank[2].diff_rat_state_bank_ext
+       i:/WORK/DiffRatStateBuffer/u_core/g_bank[1].diff_rat_state_bank_ext
+       i:/WORK/DiffRatStateBuffer/u_core/g_bank[0].diff_rat_state_bank_ext
+
+u      stateBankTags_320x3
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/DiffRatStateBuffer/u_core/stateBankTags_ext
+
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    RenameTable
+
+       Instances : 0
+
+e *    RenameTableWrapper
+
+       Instances : 0
+
+e *    RenameTable_1
+
+       Instances : 0
+
+e *    RenameTable_2
+
+       Instances : 0
+
+e *    RenameTable_3
+
+       Instances : 0
+
+e *    SnapshotGenerator
+
+       Instances : 0
+
+e *    SnapshotGenerator_4
+
+       Instances : 0
+
+e *    SnapshotGenerator_5
+
+       Instances : 0
+
+e *    SnapshotGenerator_6
+
+       Instances : 0
+
+e *    SnapshotGenerator_7
+
+       Instances : 0
+
+e *    xs_RenameTableWrapper_core
+
+       Instances : 0
+
+e *    xs_RenameTable_core
+
+       Instances : 0
+
+e *    xs_SnapshotGenerator_core
+
+       Instances : 0
+
+
+
+##################################################################
+####    TECH LIBRARY - r:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      diff_rat_state_bank_320x776
+
+       Instances : 6 of 6
+       ------------------------
+       r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_0_ext
+       r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_1_ext
+       r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_2_ext
+       r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_3_ext
+       r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_4_ext
+       r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_5_ext
+
+u      stateBankTags_320x3
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/DiffRatStateBuffer/stateBankTags_ext
+
+
+1
+

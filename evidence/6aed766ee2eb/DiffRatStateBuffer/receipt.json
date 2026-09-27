@@ -1,0 +1,258 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "DiffRatStateBuffer",
+ "run_id": "RenameTableWrapper-20260927T053317Z-6aed766e",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/DiffRatStateBuffer.sv",
+   "kind": "golden",
+   "sha256": "9a628561323ef3a3e7b3461aedfa13787585c16a9648828c34d391de8a996b8c"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/DiffRatStateBuffer.sv",
+   "kind": "repo",
+   "sha256": "69d2a20164169418324f71094cecd1b973750042e669071224359b3be5cfa2cb"
+  },
+  {
+   "path": "rtl/backend/RenameTableWrapper.sv",
+   "kind": "repo",
+   "sha256": "36449cda55749567a4b90d80bc3a1333a3fa70394018a58ea9775aa2ad602e38"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator.sv",
+   "kind": "repo",
+   "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_4.sv",
+   "kind": "repo",
+   "sha256": "129d7c4bd3af57c1297e0e04aa97374122a21d9122231297051ba1a64d16394e"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_5.sv",
+   "kind": "repo",
+   "sha256": "3bb3b69079c6d0344c7d91d3b38e76373a9a39655878a61d6c9f81e9a5c2f866"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_6.sv",
+   "kind": "repo",
+   "sha256": "a3eadbfd5b46b8fbd55cb4aeed4c5865ffc5926d0f0c1441de4c79d76d66941e"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_7.sv",
+   "kind": "repo",
+   "sha256": "c4abd95905b35c8dafb23bc35c143da847e61de2e145516784f1bdc5dc757922"
+  },
+  {
+   "path": "rtl/backend/RenameTable.sv",
+   "kind": "repo",
+   "sha256": "9fefc24066041ebc1c6f208293452ef2b3df074b1e846676c8b124ed6d1b337f"
+  },
+  {
+   "path": "rtl/backend/RenameTable_1.sv",
+   "kind": "repo",
+   "sha256": "2f28998e3ce718ad0db165d85bbee0edacddc43ff8c721bca7996e7fe32a7d0b"
+  },
+  {
+   "path": "rtl/backend/RenameTable_2.sv",
+   "kind": "repo",
+   "sha256": "af08fd0f1c142c686646b31447e5ac1bababab91e66b9b45970dd85b10e98f54"
+  },
+  {
+   "path": "rtl/backend/RenameTable_3.sv",
+   "kind": "repo",
+   "sha256": "c6b2fa617b1f985e7440633f3e532f7aefb14112cf88280862b6ee459c39cf17"
+  }
+ ],
+ "impl_commit": "6aed766ee2ebb18b4538e31c6b412044f2a32b44",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "1",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/DiffRatStateBuffer.json",
+    "sha256": "edf48aee3bdffc3b3073cf5b427f417ad91b8b7d08f4dda0b0957354a1273c1a"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "RenameTableWrapper-20260927T053317Z-6aed766e",
+  "top": "DiffRatStateBuffer",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 11418,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_0_ext",
+     "impl_path": "i:/WORK/DiffRatStateBuffer/u_core/g_bank[0].diff_rat_state_bank_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_1_ext",
+     "impl_path": "i:/WORK/DiffRatStateBuffer/u_core/g_bank[1].diff_rat_state_bank_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_2_ext",
+     "impl_path": "i:/WORK/DiffRatStateBuffer/u_core/g_bank[2].diff_rat_state_bank_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_3_ext",
+     "impl_path": "i:/WORK/DiffRatStateBuffer/u_core/g_bank[3].diff_rat_state_bank_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_4_ext",
+     "impl_path": "i:/WORK/DiffRatStateBuffer/u_core/g_bank[4].diff_rat_state_bank_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_5_ext",
+     "impl_path": "i:/WORK/DiffRatStateBuffer/u_core/g_bank[5].diff_rat_state_bank_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DiffRatStateBuffer/stateBankTags_ext",
+     "impl_path": "i:/WORK/DiffRatStateBuffer/u_core/stateBankTags_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_0_ext",
+    "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_1_ext",
+    "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_2_ext",
+    "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_3_ext",
+    "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_4_ext",
+    "r:/WORK/DiffRatStateBuffer/diff_rat_state_bank_5_ext",
+    "r:/WORK/DiffRatStateBuffer/stateBankTags_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/DiffRatStateBuffer/u_core/g_bank[0].diff_rat_state_bank_ext",
+    "i:/WORK/DiffRatStateBuffer/u_core/g_bank[1].diff_rat_state_bank_ext",
+    "i:/WORK/DiffRatStateBuffer/u_core/g_bank[2].diff_rat_state_bank_ext",
+    "i:/WORK/DiffRatStateBuffer/u_core/g_bank[3].diff_rat_state_bank_ext",
+    "i:/WORK/DiffRatStateBuffer/u_core/g_bank[4].diff_rat_state_bank_ext",
+    "i:/WORK/DiffRatStateBuffer/u_core/g_bank[5].diff_rat_state_bank_ext",
+    "i:/WORK/DiffRatStateBuffer/u_core/stateBankTags_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 11418,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "DiffRatStateBuffer",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_objects": 14
+ }
+}

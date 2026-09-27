@@ -19,7 +19,9 @@
 //
 // ★ golden 事实 ★
 //   - 存储叶子 diff_rat_state_bank_320x776 ×6 与 stateBankTags_320x3 是 firtool 行为级
-//     存储（本仓 rtl/backend 下同名可读件），深度 320 / 地址 9 位。
+//     存储，深度 320 / 地址 9 位（2^9=512>320，白盒化必触发 FMR_ELAB-147）。本核直接例化
+//     golden 那两份（APPROVED_MEMORY_MACRO_MODEL，verif/vendor_boundary.tsv 逐条审定），
+//     FM 两侧对称黑盒，仿真两侧共用 golden 叶子 —— 与 L2TlbMissQueue 的 ram_40x47 同一处置。
 //   - stateSlotValid 320 项：提交读清零压过同拍写置位；**越界下标**（slot ≥ 320）读到的是
 //     第 0 项（firtool 对 Vec 越界读的展开结果），写则无效果 —— 照抄。
 //   - committedRat 复位值 = DiffRatState.init：int 全 0、fp[i]=i、vec[i]=i+1、v0=0、vl=0。
@@ -123,20 +125,30 @@ module xs_DiffRatStateBuffer_core
 
   // 槽有效位（复位 0）：提交读清零压过同拍写置位；越界读取第 0 项、越界写无效（照 golden）
   logic [SLOTS-1:0] stateSlotValid;
-  wire  readSlot_in_range = (readSlot < SLOT_W'(SLOTS));
-  wire  readSlotValid     = readSlot_in_range ? stateSlotValid[readSlot] : stateSlotValid[0];
+  // 读选择照 golden 的做法把 320 位扩成 2^SLOT_W=512 位（越界那 192 项都是第 0 项）再用 9 位下标索引：
+  // 这样下标的声明位宽与向量深度精确相等。写成 `in_range ? v[slot] : v[0]` 时 FM 只按下标声明
+  // 位宽判越界、不传播守卫，impl 侧 set_top 会 FMR_ELAB-147（2026-09-27 实测，见 CONVENTIONS）。
+  wire  [(1 << SLOT_W)-1:0] stateSlotValidExt = {{((1 << SLOT_W) - SLOTS){stateSlotValid[0]}}, stateSlotValid};
+  wire  readSlotValid     = stateSlotValidExt[readSlot];
   wire  readRequestValid  = commitRobIdx_valid & readSlotValid;
+
+  // 本拍有哪些槽被写（6 路 rename 按槽号 one-hot 归并）。放在 always_comb 里算：写在 always_ff
+  // 内的临时量会被 FM 看成一个 impl 独有的未读寄存器（set_hit_reg，第二次起跑实测）。
+  // 用「常量下标 + 相等比较」而不是 slotSetHit[stateWriteSlot[k]]：后者 9 位变量下标索引 320 位向量，
+  // FM 又会报 FMR_ELAB-147；相等比较形式下越界槽号（>= 320）自然谁也不命中（= golden 越界写无效）。
+  logic [SLOTS-1:0] slotSetHit;
+  always_comb
+    for (int s = 0; s < SLOTS; s++) begin
+      slotSetHit[s] = 1'b0;
+      for (int k = 0; k < RENAME_W; k++)
+        slotSetHit[s] |= stateWriteValid[k] & (stateWriteSlot[k] == SLOT_W'(s));
+    end
 
   always_ff @(posedge clock or posedge reset) begin
     if (reset) stateSlotValid <= '0;
     else
-      for (int s = 0; s < SLOTS; s++) begin
-        logic set_hit;
-        set_hit = 1'b0;
-        for (int k = 0; k < RENAME_W; k++)
-          set_hit |= stateWriteValid[k] & (stateWriteSlot[k] == SLOT_W'(s));
-        stateSlotValid[s] <= ~(commitRobIdx_valid & (readSlot == SLOT_W'(s))) & (set_hit | stateSlotValid[s]);
-      end
+      for (int s = 0; s < SLOTS; s++)
+        stateSlotValid[s] <= ~(commitRobIdx_valid & (readSlot == SLOT_W'(s))) & (slotSetHit[s] | stateSlotValid[s]);
   end
 
   // 6 个 bank（每路 rename 独占一个）+ tags（记槽在哪个 bank）
