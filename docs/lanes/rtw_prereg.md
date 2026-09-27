@@ -118,3 +118,22 @@ elaborator 认不出 `parameter int DATA_W = $bits(rab_ptr_t)`，非本 lane 引
 - 修法（不加 appvar、不 filter）：照 golden 把 320 位 valid 扩成 2^9=512 位（越界 192 项都是第 0 项，
   语义与 golden `_GEN` 逐位相同）再用 9 位下标索引——下标声明位宽与向量深度精确相等。
   寄存器/输出位数不变，§2 预测不变。修正 commit 见对账节 A；UT 3 seed × 2 档在修正后的字节上重跑。
+
+## 6. 第二次起跑的结果与修正（★§2 预测不动★）
+
+第二次 `run_proof` @ `dc57056bf19901fa6d62a0f1349bcf9026855dc5`（`evidence/dc57056bf199/`，两份 receipt 已产出，
+判定 PARTIAL，reason `assembly_unread!=0`）：两侧 `set_top` 都过，**native 两目标 SUCCEEDED**，
+failing 0 / unmatched 0 / 黑盒 14 对象（与 allow 声明精确相等）/ 无 dont_verify / 无 elab147。
+
+| 目标 | passing | 预测 | 差 | unread | 指认 |
+|---|---|---|---|---|---|
+| DiffRatStateBuffer | 11418 | 11418 | 0 | 1（impl-only `u_core/set_hit_reg`） | 我核里 always_ff 内的临时量 `set_hit` 被 FM 当成 impl 独有未读寄存器（老伪影形态） |
+| RenameTableWrapper | 19748 | 19766 | **18** | 18 matched_nc + 同上 1 | 18 = v0Rat/vecRat/vlRat 三张表 × 6 路 `need_free` 寄存器，两侧同为死位（golden 只引出 int/fp 的 need_free） |
+
+修正（不改预测）：
+1. `set_hit` 改为 always_comb 的 `slotSetHit[SLOTS]`（常量下标 + 相等比较形式，避免再撞 ELAB-147），
+   语义逐位相同，寄存器数不变。预期 DiffRatStateBuffer unread 0 -> SUCCEEDED。
+2. RenameTableWrapper 走 vmucp standing rule：`verif/fm_target_config/RenameTableWrapper.tcl`
+   （依据写明 18 点来源与对称性），Makefile 仅对 `fm-RenameTableWrapper` 开
+   `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true`。预期 18 点转入 passing，**passing 回到 19766**，unread 0。
+   若加强后出现 failing ⇒ 停下诊断（standing rule 的停止条件），照实报。

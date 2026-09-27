@@ -132,16 +132,23 @@ module xs_DiffRatStateBuffer_core
   wire  readSlotValid     = stateSlotValidExt[readSlot];
   wire  readRequestValid  = commitRobIdx_valid & readSlotValid;
 
+  // 本拍有哪些槽被写（6 路 rename 按槽号 one-hot 归并）。放在 always_comb 里算：写在 always_ff
+  // 内的临时量会被 FM 看成一个 impl 独有的未读寄存器（set_hit_reg，第二次起跑实测）。
+  // 用「常量下标 + 相等比较」而不是 slotSetHit[stateWriteSlot[k]]：后者 9 位变量下标索引 320 位向量，
+  // FM 又会报 FMR_ELAB-147；相等比较形式下越界槽号（>= 320）自然谁也不命中（= golden 越界写无效）。
+  logic [SLOTS-1:0] slotSetHit;
+  always_comb
+    for (int s = 0; s < SLOTS; s++) begin
+      slotSetHit[s] = 1'b0;
+      for (int k = 0; k < RENAME_W; k++)
+        slotSetHit[s] |= stateWriteValid[k] & (stateWriteSlot[k] == SLOT_W'(s));
+    end
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) stateSlotValid <= '0;
     else
-      for (int s = 0; s < SLOTS; s++) begin
-        logic set_hit;
-        set_hit = 1'b0;
-        for (int k = 0; k < RENAME_W; k++)
-          set_hit |= stateWriteValid[k] & (stateWriteSlot[k] == SLOT_W'(s));
-        stateSlotValid[s] <= ~(commitRobIdx_valid & (readSlot == SLOT_W'(s))) & (set_hit | stateSlotValid[s]);
-      end
+      for (int s = 0; s < SLOTS; s++)
+        stateSlotValid[s] <= ~(commitRobIdx_valid & (readSlot == SLOT_W'(s))) & (slotSetHit[s] | stateSlotValid[s]);
   end
 
   // 6 个 bank（每路 rename 独占一个）+ tags（记槽在哪个 bank）

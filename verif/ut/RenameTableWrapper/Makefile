@@ -43,6 +43,10 @@ FM_REF_DEPS_DiffRatStateBuffer =
 # SnapshotGenerator、DiffRatStateBuffer 本体）两侧全部 elaborate 受验，不走 green_child。
 FM_MODE = assembly
 FM_ALLOWLIST ?= 1
+# RenameTableWrapper 单独开 matched-unread 加强（依据见 verif/fm_target_config/RenameTableWrapper.tcl）：
+# v0/vec/vl 三张表的 need_free 寄存器在本层两侧同为死位（golden 只把 int/fp 的 need_free 引出），
+# 18 点 matched_nc；加强后 FM 实际比较它们。DiffRatStateBuffer 不开（其 unread 是 impl 伪影，改 RTL）。
+fm-RenameTableWrapper: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail
 
