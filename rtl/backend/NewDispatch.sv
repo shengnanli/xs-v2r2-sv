@@ -837,29 +837,15 @@ module xs_NewDispatch_core
                                                 input logic [RENAME_W-1:0] is2,
                                                 input logic [RENAME_W-1:0] is1,
                                                 input int                  lane);
-    // 步骤 4 再收一次：位宽**逐 lane 照抄 golden 的字面形状**（不只是 lane 2）：
-    //   lane 0  {2'h0, is16, 2'h0, is2, is1}          highCount 1 位、lowCount 2 位
-    //   lane 1  {1'h0, hc(2b), 1'h0, lc(3b)}          2 位、3 位
-    //   lane 2  {1'h0, hc(2b), lc(4b)}                2 位、4 位
-    //   lane 3+ {hc(3b), lc(4b)}                      3 位、4 位
-    // 原因：上一版 lane 0/1 的高位是"零扩展后相加"的结构常量，FM 判成 DFF0 但仍是
-    // 一个 golden 没有的 unmatched 点（6 个），signoff-strict 的 unmatched 必须为 0。
-    // 字面 0 与 golden 一样在读入时就折掉。值仍处处相同：各档位宽都装得下各自的最大值
-    // （lane l 的 highCount ≤ l+1，lowCount ≤ 2(l+1)）。
-    logic [2:0] hc;
-    logic [3:0] lc;
-    hc = '0;
-    lc = '0;
+    logic [2:0] highCount;
+    logic [3:0] lowCount;
+    highCount = '0;
+    lowCount  = '0;
     for (int p = 0; p <= lane; p++) begin
-      hc += 3'(is16[p]);
-      lc += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
+      highCount += 3'(is16[p]);
+      lowCount  += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
     end
-    case (lane)
-      0:       return {2'b00, hc[0], 2'b00, lc[1:0]};
-      1:       return {1'b0, hc[1:0], 1'b0, lc[2:0]};
-      2:       return {1'b0, hc[1:0], lc[3:0]};
-      default: return {hc, lc};
-    endcase
+    return {highCount, lowCount};
   endfunction
 
   logic [RENAME_W-1:0][6:0] conserveFlowTotalDispatch;
@@ -876,9 +862,26 @@ module xs_NewDispatch_core
         conserve_total(renIsVlsOther, renIsVlsUnitStride, renIsLSType, l);
     end
 
-  always_ff @(posedge clock)   // 无复位：照抄 golden
-    conserveFlowTotal <= toRenameAllFire_o ? conserveFlowTotalRename
-                                           : conserveFlowTotalDispatch;
+  // ★寄存器位宽逐 lane 照抄 golden 的字面形状，且常量位要在 always_ff 的赋值里**直接写字面 0**★
+  //   lane 0  {2'h0, hc[0], 2'h0, lc[1:0]}    lane 1  {1'h0, hc[1:0], 1'h0, lc[2:0]}
+  //   lane 2  {1'h0, hc[1:0], lc[3:0]}        lane 3+ {hc[2:0], lc[3:0]}
+  // 三步教训（步骤 3 → 4）：(1) 3 位累加的 lane 2 bit 6 是进位链，FM 判 DFF0X 且配不上（步骤 3 修）；
+  // (2) 改成函数里返回 {1'b0,...} 再过一个 ?: 选择，FM 能折成 DFF0，但 6 个常量位各自来自
+  // 不同的 mux 输出网，merge_dup 不把它们当重复寄存器合并，仍是 6 个 golden 没有的 unmatched 点；
+  // (3) 把选择放里面、字面 0 放外面（正是 golden `{1'h0, sel ? .. : ..}` 的写法），常量位共用
+  // 同一个常量网，FM 读入时与 golden 一样合并/折掉。值仍处处相同（各档位宽装得下各自最大值）。
+  logic [RENAME_W-1:0][6:0] conserveFlowNext;
+
+  always_comb
+    conserveFlowNext = toRenameAllFire_o ? conserveFlowTotalRename : conserveFlowTotalDispatch;
+
+  always_ff @(posedge clock) begin   // 无复位：照抄 golden
+    conserveFlowTotal[0] <= {2'b00, conserveFlowNext[0][4],   2'b00, conserveFlowNext[0][1:0]};
+    conserveFlowTotal[1] <= {1'b0,  conserveFlowNext[1][5:4], 1'b0,  conserveFlowNext[1][2:0]};
+    conserveFlowTotal[2] <= {1'b0,  conserveFlowNext[2][5:0]};
+    for (int l = 3; l < RENAME_W; l++)
+      conserveFlowTotal[l] <= conserveFlowNext[l];
+  end
 
   // ---- allowDispatch：级联的"前面都放行、且本条要的资源还够" ----
   // golden 的分支顺序是 store/vstore -> load/vload -> 其他；AMO 与非访存都只继承前一条。
