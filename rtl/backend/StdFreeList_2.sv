@@ -1,0 +1,132 @@
+// =============================================================================
+// StdFreeList_2 —— StdFreeList 家族参数变体：v0 掩码寄存器 Reg_V0(V0PhyRegs-V0LogicRegs)
+// 本文件只做参数化与端口展平；核体见 rtl/backend/StdFreeList.sv(xs_StdFreeList_core，
+//   含家族 4 个变体的参数表与机制说明)。
+// golden 对照：G1-canonical/golden-rtl/StdFreeList_2.sv —— SIZE=21(回绕常量)、
+//   NUM_LOGIC_REGS=1(复位初值基数)、commit 侧看 v0Wen；控制逻辑与基线变体逐字相同。
+// ★本文件由 verif/ut/StdFreeListVariants/gen_variants.py 生成，改请改生成器★
+// =============================================================================
+module StdFreeList_2(
+  input        clock,
+  input        reset,
+  input        io_redirect,
+  input        io_walk,
+  input        io_allocateReq_0,
+  input        io_allocateReq_1,
+  input        io_allocateReq_2,
+  input        io_allocateReq_3,
+  input        io_allocateReq_4,
+  input        io_allocateReq_5,
+  input        io_walkReq_0,
+  input        io_walkReq_1,
+  input        io_walkReq_2,
+  input        io_walkReq_3,
+  input        io_walkReq_4,
+  input        io_walkReq_5,
+  output [7:0] io_allocatePhyReg_0,
+  output [7:0] io_allocatePhyReg_1,
+  output [7:0] io_allocatePhyReg_2,
+  output [7:0] io_allocatePhyReg_3,
+  output [7:0] io_allocatePhyReg_4,
+  output [7:0] io_allocatePhyReg_5,
+  output       io_canAllocate,
+  input        io_doAllocate,
+  input        io_freeReq_0,
+  input        io_freeReq_1,
+  input        io_freeReq_2,
+  input        io_freeReq_3,
+  input        io_freeReq_4,
+  input        io_freeReq_5,
+  input  [7:0] io_freePhyReg_0,
+  input  [7:0] io_freePhyReg_1,
+  input  [7:0] io_freePhyReg_2,
+  input  [7:0] io_freePhyReg_3,
+  input  [7:0] io_freePhyReg_4,
+  input  [7:0] io_freePhyReg_5,
+  input        io_commit_isCommit,
+  input        io_commit_commitValid_0,
+  input        io_commit_commitValid_1,
+  input        io_commit_commitValid_2,
+  input        io_commit_commitValid_3,
+  input        io_commit_commitValid_4,
+  input        io_commit_commitValid_5,
+  input        io_commit_info_0_v0Wen,
+  input        io_commit_info_1_v0Wen,
+  input        io_commit_info_2_v0Wen,
+  input        io_commit_info_3_v0Wen,
+  input        io_commit_info_4_v0Wen,
+  input        io_commit_info_5_v0Wen,
+  input        io_snpt_snptEnq,
+  input        io_snpt_snptDeq,
+  input        io_snpt_useSnpt,
+  input  [1:0] io_snpt_snptSelect,
+  input        io_snpt_flushVec_0,
+  input        io_snpt_flushVec_1,
+  input        io_snpt_flushVec_2,
+  input        io_snpt_flushVec_3,
+  output [5:0] io_perf_0_value,
+  output [5:0] io_perf_1_value,
+  output [5:0] io_perf_2_value,
+  output [5:0] io_perf_3_value
+);
+  import stdfreelist_pkg::*;
+
+  logic [5:0] io_allocateReq;
+  logic [5:0] io_walkReq;
+  logic [7:0] allocatePhyReg [6];
+  logic [5:0] io_freeReq;
+  logic [7:0] freePhyReg [6];
+  logic [5:0] io_commit_commitValid;
+  logic [5:0] io_commit_info_regWen;
+  logic [3:0] io_snpt_flushVec;
+  logic [5:0] perf_value [4];
+
+  assign io_allocateReq = {io_allocateReq_5, io_allocateReq_4, io_allocateReq_3,
+                           io_allocateReq_2, io_allocateReq_1, io_allocateReq_0};
+  assign io_walkReq     = {io_walkReq_5, io_walkReq_4, io_walkReq_3,
+                           io_walkReq_2, io_walkReq_1, io_walkReq_0};
+  assign io_freeReq     = {io_freeReq_5, io_freeReq_4, io_freeReq_3,
+                           io_freeReq_2, io_freeReq_1, io_freeReq_0};
+  assign freePhyReg     = '{io_freePhyReg_0, io_freePhyReg_1, io_freePhyReg_2,
+                            io_freePhyReg_3, io_freePhyReg_4, io_freePhyReg_5};
+  assign io_commit_commitValid = {io_commit_commitValid_5, io_commit_commitValid_4,
+                                  io_commit_commitValid_3, io_commit_commitValid_2,
+                                  io_commit_commitValid_1, io_commit_commitValid_0};
+  assign io_commit_info_regWen = {io_commit_info_5_v0Wen, io_commit_info_4_v0Wen, io_commit_info_3_v0Wen, io_commit_info_2_v0Wen, io_commit_info_1_v0Wen, io_commit_info_0_v0Wen};
+  assign io_snpt_flushVec = {io_snpt_flushVec_3, io_snpt_flushVec_2,
+                             io_snpt_flushVec_1, io_snpt_flushVec_0};
+
+  assign io_allocatePhyReg_0 = allocatePhyReg[0];
+  assign io_allocatePhyReg_1 = allocatePhyReg[1];
+  assign io_allocatePhyReg_2 = allocatePhyReg[2];
+  assign io_allocatePhyReg_3 = allocatePhyReg[3];
+  assign io_allocatePhyReg_4 = allocatePhyReg[4];
+  assign io_allocatePhyReg_5 = allocatePhyReg[5];
+  assign io_perf_0_value = perf_value[0];
+  assign io_perf_1_value = perf_value[1];
+  assign io_perf_2_value = perf_value[2];
+  assign io_perf_3_value = perf_value[3];
+
+  xs_StdFreeList_core #(.SIZE(V0_SIZE), .NUM_LOGIC_REGS(V0_NUM_LOGIC)) u_core (
+    .clock(clock),
+    .reset(reset),
+    .io_redirect(io_redirect),
+    .io_walk(io_walk),
+    .io_allocateReq(io_allocateReq),
+    .io_walkReq(io_walkReq),
+    .io_allocatePhyReg(allocatePhyReg),
+    .io_canAllocate(io_canAllocate),
+    .io_doAllocate(io_doAllocate),
+    .io_freeReq(io_freeReq),
+    .io_freePhyReg(freePhyReg),
+    .io_commit_isCommit(io_commit_isCommit),
+    .io_commit_commitValid(io_commit_commitValid),
+    .io_commit_info_regWen(io_commit_info_regWen),
+    .io_snpt_snptEnq(io_snpt_snptEnq),
+    .io_snpt_snptDeq(io_snpt_snptDeq),
+    .io_snpt_useSnpt(io_snpt_useSnpt),
+    .io_snpt_snptSelect(io_snpt_snptSelect),
+    .io_snpt_flushVec(io_snpt_flushVec),
+    .io_perf_value(perf_value)
+  );
+endmodule
