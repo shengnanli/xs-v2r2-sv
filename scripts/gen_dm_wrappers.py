@@ -30,12 +30,15 @@ OUTER = ["SyncDataModuleTemplate_BackendPC_64entry", "SyncDataModuleTemplate_Ftq
          "SyncDataModuleTemplate__1024entry", "SyncDataModuleTemplate__1024entry_1",
          "SyncDataModuleTemplate__64entry", "SyncDataModuleTemplate__64entry_1",
          "SyncDataModuleTemplate__64entry_2", "SyncDataModuleTemplate__64entry_3",
-         "SyncDataModuleTemplate__64entry_4"]
+         "SyncDataModuleTemplate__64entry_4",
+         # GPAMem 的 64 项 gpaddr 表（agent/cb-rename 补登记；薄文件手工派生，见其文件头）
+         "SyncDataModuleTemplate__64entry_5"]
 INNER = ["DataModule_BackendPC_16entry", "DataModule_FtqPC_16entry",
          "DataModule__64entry", "DataModule__64entry_16",
          "DataModule__16entry", "DataModule__16entry_4",
          "DataModule__16entry_8", "DataModule__16entry_12",
-         "DataModule__16entry_16"]
+         "DataModule__16entry_16",
+         "DataModule__16entry_20"]
 
 def detect_bypass(inner_file, nr):
     """从内层 golden 代码探测每个读口是否有写旁路：

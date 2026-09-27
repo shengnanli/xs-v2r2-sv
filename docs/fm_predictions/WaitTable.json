@@ -1,0 +1,9 @@
+{
+  "target": "WaitTable",
+  "ut": "MemCtrl",
+  "regs": 2073,
+  "outs": 0,
+  "expected": 2073,
+  "merge_dup": "false",
+  "model_applicable": true
+}

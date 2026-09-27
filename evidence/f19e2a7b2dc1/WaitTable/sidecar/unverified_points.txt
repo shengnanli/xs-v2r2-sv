@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/WaitTable
+Implementation : i:/WORK/WaitTable
+Version        : V-2023.12-SP3
+Date           : Thu Sep 24 03:09:47 2026
+**************************************************
+
+No unverified compare points.
+
+1
