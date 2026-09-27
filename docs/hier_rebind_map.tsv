@@ -1515,6 +1515,13 @@ DecodeUnitComp	indexedLSRegOffset_5	indexedLSUopTable_5	UNRESOLVED				none
 DecodeUnitComp	indexedLSRegOffset_6	indexedLSUopTable_6	UNRESOLVED				none	
 DecodeUnitComp	indexedLSRegOffset_7	indexedLSUopTable_7	UNRESOLVED				none	
 DecodeUnitComp	vecException	VecExceptionGen	DEEPER	u_core.vecException	VecExceptionGen		auto_deeper	
+DiffRatStateBuffer	diff_rat_state_bank_0_ext	diff_rat_state_bank_320x776	GEN_SITE_UNINDEXED	u_core.g_bank[k].diff_rat_state_bank_ext	diff_rat_state_bank_320x776		auto_gen_site	
+DiffRatStateBuffer	diff_rat_state_bank_1_ext	diff_rat_state_bank_320x776	GEN_SITE_UNINDEXED	u_core.g_bank[k].diff_rat_state_bank_ext	diff_rat_state_bank_320x776		auto_gen_site	
+DiffRatStateBuffer	diff_rat_state_bank_2_ext	diff_rat_state_bank_320x776	GEN_SITE_UNINDEXED	u_core.g_bank[k].diff_rat_state_bank_ext	diff_rat_state_bank_320x776		auto_gen_site	
+DiffRatStateBuffer	diff_rat_state_bank_3_ext	diff_rat_state_bank_320x776	GEN_SITE_UNINDEXED	u_core.g_bank[k].diff_rat_state_bank_ext	diff_rat_state_bank_320x776		auto_gen_site	
+DiffRatStateBuffer	diff_rat_state_bank_4_ext	diff_rat_state_bank_320x776	GEN_SITE_UNINDEXED	u_core.g_bank[k].diff_rat_state_bank_ext	diff_rat_state_bank_320x776		auto_gen_site	
+DiffRatStateBuffer	diff_rat_state_bank_5_ext	diff_rat_state_bank_320x776	GEN_SITE_UNINDEXED	u_core.g_bank[k].diff_rat_state_bank_ext	diff_rat_state_bank_320x776		auto_gen_site	
+DiffRatStateBuffer	stateBankTags_ext	stateBankTags_320x3	DEEPER	u_core.stateBankTags_ext	stateBankTags_320x3		auto_deeper	
 DuplicatedTagArray	array_0	TagArray	GEN_SITE	g_tarr[0].array_k	TagArray		auto_gen_site_suffix	
 DuplicatedTagArray	array_1	TagArray	GEN_SITE	g_tarr[1].array_k	TagArray		auto_gen_site_suffix	
 DuplicatedTagArray	array_2	TagArray	GEN_SITE	g_tarr[2].array_k	TagArray		auto_gen_site_suffix	
@@ -1763,6 +1770,7 @@ FtqPcMemWrapper	mem/dataBanks_0	DataModule_FtqPC_16entry	INSTANCE	u_core.u_mem.g
 FtqPcMemWrapper	mem/dataBanks_1	DataModule_FtqPC_16entry	INSTANCE	u_core.u_mem.g_bank[1].dataBank	xs_DataModule		declared	本行的 owner 自己也被吸收了（FtqPcMemWrapper/mem -> u_core.u_mem），故路径相对顶上它的 xs_SyncDataModule 写；bank 序与其余 SyncDataModuleTemplate 家族同。
 FtqPcMemWrapper	mem/dataBanks_2	DataModule_FtqPC_16entry	INSTANCE	u_core.u_mem.g_bank[2].dataBank	xs_DataModule		declared	本行的 owner 自己也被吸收了（FtqPcMemWrapper/mem -> u_core.u_mem），故路径相对顶上它的 xs_SyncDataModule 写；bank 序与其余 SyncDataModuleTemplate 家族同。
 FtqPcMemWrapper	mem/dataBanks_3	DataModule_FtqPC_16entry	INSTANCE	u_core.u_mem.g_bank[3].dataBank	xs_DataModule		declared	本行的 owner 自己也被吸收了（FtqPcMemWrapper/mem -> u_core.u_mem），故路径相对顶上它的 xs_SyncDataModule 写；bank 序与其余 SyncDataModuleTemplate 家族同。
+GPAMem	mem	SyncDataModuleTemplate__64entry_5	DEEPER	u_core.mem	SyncDataModuleTemplate__64entry_5		auto_deeper	
 ICache	ctrlUnitOpt	ICacheCtrlUnit	DEEPER	u_core.ctrlUnitOpt	ICacheCtrlUnit		auto_deeper	
 ICache	dataArray	ICacheDataArray	DEEPER	u_core.dataArray	ICacheDataArray		auto_deeper	
 ICache	mainPipe	ICacheMainPipe	DEEPER	u_core.mainPipe	ICacheMainPipe		auto_deeper	
@@ -1978,6 +1986,8 @@ LqVAddrModule	sx_writeData_resp_pipMod_6	DelayNWithValid_155	GEN_SITE_UNINDEXED	
 LqVAddrModule	sx_writeData_resp_pipMod_7	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
 LqVAddrModule	sx_writeData_resp_pipMod_8	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
 LqVAddrModule	sx_writeData_resp_pipMod_9	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
+MemCtrl	ssit	SSIT	DEEPER	u_core.ssit	SSIT		auto_deeper	
+MemCtrl	waittable	WaitTable	DEEPER	u_core.waittable	WaitTable		auto_deeper	
 MulUnit	mulDataModule	ArrayMulDataModule	DEEPER	u_core.mulDataModule	ArrayMulDataModule		auto_deeper	
 NewDispatch	fpBusyTable	BusyTable_1	SAME_PATH	fpBusyTable	BusyTable_1		auto_same	
 NewDispatch	intBusyTable	BusyTable	SAME_PATH	intBusyTable	BusyTable		auto_same	
@@ -2310,6 +2320,12 @@ RegCacheTagTable	IntRCTagTable	RegCacheTagModule	DEEPER	u_core.IntRCTagTable	xs_
 RegCacheTagTable	MemRCTagTable	RegCacheTagModule_1	DEEPER	u_core.MemRCTagTable	xs_RegCacheTagModule_core		auto_deeper	
 RenameBuffer	walkPtrSnapshots_snapshotGen	SnapshotGenerator	SAME_PATH	walkPtrSnapshots_snapshotGen	SnapshotGenerator		auto_same	
 RenameTable	snapshots_snapshotGen	SnapshotGenerator_4	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_4		auto_same	
+RenameTableWrapper	diffRatBuffer	DiffRatStateBuffer	DEEPER	u_core.diffRatBuffer	DiffRatStateBuffer		auto_deeper	
+RenameTableWrapper	fpRat	RenameTable_1	DEEPER	u_core.fpRat	RenameTable_1		auto_deeper	
+RenameTableWrapper	intRat	RenameTable	DEEPER	u_core.intRat	RenameTable		auto_deeper	
+RenameTableWrapper	v0Rat	RenameTable_3	DEEPER	u_core.v0Rat	RenameTable_3		auto_deeper	
+RenameTableWrapper	vecRat	RenameTable_2	DEEPER	u_core.vecRat	RenameTable_2		auto_deeper	
+RenameTableWrapper	vlRat	RenameTable_3	DEEPER	u_core.vlRat	RenameTable_3		auto_deeper	
 RenameTable_1	snapshots_snapshotGen	SnapshotGenerator_5	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_5		auto_same	
 RenameTable_2	snapshots_snapshotGen	SnapshotGenerator_6	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_6		auto_same	
 RenameTable_3	snapshots_snapshotGen	SnapshotGenerator_7	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_7		auto_same	
@@ -2506,6 +2522,10 @@ SyncDataModuleTemplate__64entry_4	dataBanks_0	DataModule__16entry_16	INSTANCE	u_
 SyncDataModuleTemplate__64entry_4	dataBanks_1	DataModule__16entry_16	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上
 SyncDataModuleTemplate__64entry_4	dataBanks_2	DataModule__16entry_16	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上
 SyncDataModuleTemplate__64entry_4	dataBanks_3	DataModule__16entry_16	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_5	dataBanks_0	DataModule__16entry_20	UNRESOLVED				none	
+SyncDataModuleTemplate__64entry_5	dataBanks_1	DataModule__16entry_20	UNRESOLVED				none	
+SyncDataModuleTemplate__64entry_5	dataBanks_2	DataModule__16entry_20	UNRESOLVED				none	
+SyncDataModuleTemplate__64entry_5	dataBanks_3	DataModule__16entry_20	UNRESOLVED				none	
 TLBNonBlock	csr_delay	DelayN_7	SAME_PATH	csr_delay	DelayN_7		auto_same	
 TLBNonBlock	entries	TlbStorageWrapper_1	SAME_PATH	entries	TlbStorageWrapper_1		auto_same	
 TLBNonBlock	sfence_delay	DelayN_9	SAME_PATH	sfence_delay	DelayN_9		auto_same	
@@ -2683,6 +2703,7 @@ TlbStorageWrapper	page_itlb_storage_fa	TLBFA	SAME_PATH	page_itlb_storage_fa	TLBF
 TlbStorageWrapper_1	page_ldtlb_storage_fa	TLBFA_1	SAME_PATH	page_ldtlb_storage_fa	TLBFA_1		auto_same	
 TlbStorageWrapper_2	page_sttlb_storage_fa	TLBFA_2	SAME_PATH	page_sttlb_storage_fa	TLBFA_2		auto_same	
 TlbStorageWrapper_3	page_pftlb_storage_fa	TLBFA_3	SAME_PATH	page_pftlb_storage_fa	TLBFA_3		auto_same	
+Trace	traceBuffer	TraceBuffer	DEEPER	u_core.traceBuffer	TraceBuffer		auto_deeper	
 UopInfoGen	indexedLSTable	indexedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	rtl/backend/UopInfoGen.sv:88「可读核把这两张表用 function 内联(语义等价),故 wrapper 无子模块」。
 UopInfoGen	stridedLSTable	strdiedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	同上
 VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。

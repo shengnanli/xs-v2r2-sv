@@ -203,7 +203,7 @@ DataModule_FtqPC_16entry	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DataModule_FtqPC_
 DataModule__16entry	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DataModule__16entry.sv
 DataModule__16entry_12	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DataModule__16entry_12.sv
 DataModule__16entry_16	REWRITTEN	PROVEN_DIRECT	rtl/common/DataModule__16entry_16.sv
-DataModule__16entry_20	MISSING	UNPROVEN	-
+DataModule__16entry_20	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DataModule__16entry_20.sv
 DataModule__16entry_4	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DataModule__16entry_4.sv
 DataModule__16entry_8	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DataModule__16entry_8.sv
 DataModule__64entry	REWRITTEN	PROVEN_DIRECT	rtl/common/DataModule__64entry.sv
@@ -270,7 +270,7 @@ DelayN_8	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_8.sv
 DelayN_9	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DelayN_9.sv
 DelayQueue	MISSING	UNPROVEN	-
 DelayQueue_1	MISSING	UNPROVEN	-
-DiffRatStateBuffer	MISSING	UNPROVEN	-
+DiffRatStateBuffer	REWRITTEN	UNPROVEN	rtl/backend/DiffRatStateBuffer.sv
 Directory	MISSING	UNPROVEN	-
 Directory_1	MISSING	UNPROVEN	-
 Directory_2	MISSING	UNPROVEN	-
@@ -465,7 +465,7 @@ FuBusyTableWrite_75	REWRITTEN	PROVEN_DIRECT	rtl/backend/FuBusyTableWrite_75.sv
 FuBusyTableWrite_79	REWRITTEN	PROVEN_DIRECT	rtl/backend/FuBusyTableWrite_79.sv
 FuBusyTableWrite_80	REWRITTEN	PROVEN_DIRECT	rtl/backend/FuBusyTableWrite_80.sv
 FusionDecoder	MISSING	UNPROVEN	-
-GPAMem	MISSING	UNPROVEN	-
+GPAMem	REWRITTEN	PROVEN_DIRECT	rtl/backend/GPAMem.sv
 GatedSplittedSRAM	MISSING	UNPROVEN	-
 GatedSplittedSRAM_1	MISSING	UNPROVEN	-
 GatedSplittedSRAM_2	MISSING	UNPROVEN	-
@@ -755,7 +755,7 @@ McountinhibitModule	MISSING	UNPROVEN	-
 McycleModule	MISSING	UNPROVEN	-
 MedelegModule	MISSING	UNPROVEN	-
 MemBlock	MISSING	UNPROVEN	-
-MemCtrl	MISSING	UNPROVEN	-
+MemCtrl	NO_OUTPUT	PROVEN_DIRECT	rtl/backend/MemCtrl.sv
 MemExeUnit	MISSING	UNPROVEN	-
 MemMisc	MISSING	UNPROVEN	-
 MemTrigger	MISSING	UNPROVEN	-
@@ -945,7 +945,7 @@ PTWNewFilter	MISSING	UNPROVEN	-
 PTWRepeaterNB	MISSING	UNPROVEN	-
 PatternHistoryTable	MISSING	UNPROVEN	-
 Permutation	MISSING	UNPROVEN	-
-PipeGroupConnect	MISSING	UNPROVEN	-
+PipeGroupConnect	REWRITTEN	PROVEN_DIRECT	rtl/backend/PipeGroupConnect.sv
 PipeWithFlush	REWRITTEN	PROVEN_DIRECT	rtl/common/PipeWithFlush.sv
 PipeWithFlush_1	REWRITTEN	PROVEN_DIRECT	rtl/common/PipeWithFlush_1.sv
 PipeWithFlush_10	REWRITTEN	PROVEN_DIRECT	rtl/common/PipeWithFlush_10.sv
@@ -955,7 +955,7 @@ PipeWithFlush_7	REWRITTEN	PROVEN_DIRECT	rtl/common/PipeWithFlush_7.sv
 PipeWithFlush_8	REWRITTEN	PROVEN_DIRECT	rtl/common/PipeWithFlush_8.sv
 PipeWithFlush_9	REWRITTEN	PROVEN_DIRECT	rtl/common/PipeWithFlush_9.sv
 Pipeline	REWRITTEN	PROVEN_DIRECT	rtl/memblock/Pipeline.sv
-PipelineConnectPipe	MISSING	UNPROVEN	-
+PipelineConnectPipe	REWRITTEN	PROVEN_DIRECT	rtl/backend/PipelineConnectPipe.sv
 PipelineRegModule	MISSING	UNPROVEN	-
 PipelineRegModule_1	MISSING	UNPROVEN	-
 PipelineRegModule_2	MISSING	UNPROVEN	-
@@ -1304,7 +1304,7 @@ Rec7Table	MISSING	UNPROVEN	-
 ReceiverLinkMonitor	MISSING	UNPROVEN	-
 RecentRequestTable	MISSING	UNPROVEN	-
 RecentRequestTable_1	MISSING	UNPROVEN	-
-RedirectGenerator	MISSING	UNPROVEN	-
+RedirectGenerator	REWRITTEN	PROVEN_DIRECT	rtl/backend/RedirectGenerator.sv
 Reduction	MISSING	UNPROVEN	-
 RefillUnit	MISSING	UNPROVEN	-
 RegCache	REWRITTEN	PROVEN_DIRECT	rtl/backend/RegCache.sv
@@ -1322,7 +1322,7 @@ RegionWays	GOLDEN_REUSE	PROVEN_IN_CONE	-
 Rename	MISSING	UNPROVEN	-
 RenameBuffer	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameBuffer.sv
 RenameTable	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTable.sv
-RenameTableWrapper	MISSING	UNPROVEN	-
+RenameTableWrapper	REWRITTEN	UNPROVEN	rtl/backend/RenameTableWrapper.sv
 RenameTable_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTable_1.sv
 RenameTable_2	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTable_2.sv
 RenameTable_3	REWRITTEN	PROVEN_DIRECT	rtl/backend/RenameTable_3.sv
@@ -1420,7 +1420,7 @@ SRT16Divint	MISSING	UNPROVEN	-
 SRT16Divint_4	MISSING	UNPROVEN	-
 SRT16Divint_6	MISSING	UNPROVEN	-
 SRT4qdsCons	MISSING	UNPROVEN	-
-SSIT	NO_OUTPUT	PROVEN_DIRECT	rtl/backend/SSIT.sv
+SSIT	GOLDEN_REUSE	PROVEN_DIRECT	rtl/backend/SSIT.sv
 SYSCNT	MISSING	UNPROVEN	-
 SatpFlushMod	MISSING	UNPROVEN	-
 SatpModule	MISSING	UNPROVEN	-
@@ -1536,7 +1536,7 @@ SyncDataModuleTemplate__64entry_1	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SyncData
 SyncDataModuleTemplate__64entry_2	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SyncDataModuleTemplate__64entry_2.sv
 SyncDataModuleTemplate__64entry_3	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SyncDataModuleTemplate__64entry_3.sv
 SyncDataModuleTemplate__64entry_4	REWRITTEN	PROVEN_DIRECT	rtl/common/SyncDataModuleTemplate__64entry_4.sv
-SyncDataModuleTemplate__64entry_5	MISSING	UNPROVEN	-
+SyncDataModuleTemplate__64entry_5	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SyncDataModuleTemplate__64entry_5.sv
 TIMER	MISSING	UNPROVEN	-
 TL2CHICoupledL2	MISSING	UNPROVEN	-
 TLAsyncCrossingSink	GOLDEN_REUSE	PROVEN_IN_CONE	-
@@ -1610,8 +1610,8 @@ TlbStorageWrapper_2	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/TlbStorageWrapper_2.
 TlbStorageWrapper_3	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/TlbStorageWrapper_3.sv
 TopDownMonitor	MISSING	UNPROVEN	-
 TopDownMonitor_1	MISSING	UNPROVEN	-
-Trace	MISSING	UNPROVEN	-
-TraceBuffer	MISSING	UNPROVEN	-
+Trace	REWRITTEN	PROVEN_DIRECT	rtl/backend/Trace.sv
+TraceBuffer	REWRITTEN	PROVEN_DIRECT	rtl/backend/TraceBuffer.sv
 TrainFilter	MISSING	UNPROVEN	-
 TrainFilter_1	MISSING	UNPROVEN	-
 TransmitterLinkMonitor	MISSING	UNPROVEN	-
@@ -1756,7 +1756,7 @@ WBArbiter_58	REWRITTEN	PROVEN_DIRECT	rtl/backend/WBArbiter_58.sv
 WBArbiter_64	REWRITTEN	PROVEN_DIRECT	rtl/backend/WBArbiter_64.sv
 WBArbiter_65	REWRITTEN	PROVEN_DIRECT	rtl/backend/WBArbiter_65.sv
 WBArbiter_66	REWRITTEN	PROVEN_DIRECT	rtl/backend/WBArbiter_66.sv
-WaitTable	MISSING	UNPROVEN	-
+WaitTable	NO_OUTPUT	PROVEN_DIRECT	rtl/backend/WaitTable.sv
 WayLookup	REWRITTEN	PROVEN_DIRECT	rtl/frontend/WayLookup.sv
 WbDataPath	MISSING	UNPROVEN	-
 WbFuBusyTable	REWRITTEN	PROVEN_DIRECT	rtl/backend/WbFuBusyTable.sv
@@ -1782,7 +1782,7 @@ compare_3to1_1	MISSING	UNPROVEN	-
 compare_3to1_2	MISSING	UNPROVEN	-
 compare_3to1_6	MISSING	UNPROVEN	-
 cycleModule	MISSING	UNPROVEN	-
-diff_rat_state_bank_320x776	MISSING	UNPROVEN	-
+diff_rat_state_bank_320x776	REWRITTEN	UNPROVEN	rtl/backend/diff_rat_state_bank_320x776.sv
 dt_pcTransType_160x2	MISSING	UNPROVEN	-
 fpdiv_r64_block	MISSING	UNPROVEN	-
 fpdiv_r64_block_vector	MISSING	UNPROVEN	-
@@ -1811,6 +1811,6 @@ r4_qds_v2_spec	MISSING	UNPROVEN	-
 skidBufferConnect	MISSING	UNPROVEN	-
 slidednVs2VdTable	MISSING	UNPROVEN	-
 slideupVs2VdTable	MISSING	UNPROVEN	-
-stateBankTags_320x3	MISSING	UNPROVEN	-
+stateBankTags_320x3	REWRITTEN	UNPROVEN	rtl/backend/stateBankTags_320x3.sv
 strdiedLSNumOfUopTable	MISSING	PROVEN_IN_CONE	-
 timeModule	MISSING	UNPROVEN	-

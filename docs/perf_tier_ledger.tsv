@@ -20,15 +20,15 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED       19805
-# status GAP             4204
+# status MEASURED       19804
+# status GAP             4205
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock	new condition %d %d %d\n	A_FUNC_ASSERT	MEASURED	20	15	0	CtrlBlock	no	assert_is_cycle_visible_behavior	ePipeRenameModule_io_out_bits_ftqOffset); wire cond1 = data_0_probe & _ftqOffsetDiff_T == 4'h1; wire cond2 = …
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode.decoderComp	uop number %d is illegal, cannot be zero	A_FUNC_ASSERT	MEASURED	2	1	0	DecodeUnitComp	yes	assert_is_cycle_visible_behavior	是本模块端口（逃出模块 = FM 比较边界）
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	more then one fusion matched\n	A_FUNC_ASSERT	MEASURED	5	0	0	FusionDecoder	no	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rat	pdest for $0 should be 0\n	A_FUNC_ASSERT	MEASURED	12	0	0	RenameTableWrapper	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rat	pdest for $0 should be 0\n	A_FUNC_ASSERT	MEASURED	12	0	0	RenameTableWrapper	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rat.fpRat.snapshots_snapshotGen	snapshots should not be empty when dequeue!\n	A_FUNC_ASSERT	GAP	1	0	1	SnapshotGenerator_5	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rat.intRat.snapshots_snapshotGen	snapshots should not be empty when dequeue!\n	A_FUNC_ASSERT	GAP	1	0	1	SnapshotGenerator_4	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rat.v0Rat.snapshots_snapshotGen	snapshots should not be empty when dequeue!\n	A_FUNC_ASSERT	GAP	1	0	1	SnapshotGenerator_7	yes	assert_is_cycle_visible_behavior	
@@ -930,7 +930,7 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssi
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lysy	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4116
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_should_strict	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4118
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_strict_failed	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4119
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.waittable	wait_table_bit_set	C_DIAG	MEASURED	1	0	0	WaitTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	WaitTable._GEN_7
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.waittable	wait_table_bit_set	C_DIAG	GAP	1	0	1	WaitTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	WaitTable._GEN_7
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rename	control_recovery_stall	B_CONTROL	MEASURED	1	1	0	Rename	no	FC/read_by_logic:Rename.ctrlRecStall_probe	sMemVio; wire otherRecStall_probe = recStall_probe & ~(ctrlRecStall_probe | mvioRecStall_probe); wire _multiF…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rename	fused_lui_load_instr_count	C_DIAG	MEASURED	1	0	0	Rename	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Rename._GEN_47
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rename	in_fire_count	B_CONTROL	MEASURED	1	1	0	Rename	no	FC/read_by_logic:Rename._GEN_40	napshot_T_6}))}); wire [2:0] _GEN_40; assign _GEN_40 = _GEN_39; wire [2:0] _GEN_41; assign _GEN_41 = _GEN_39;…
