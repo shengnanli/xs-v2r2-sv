@@ -131,7 +131,7 @@ def build_pairs(g, ty, table):
         'fpWen': ('g_fpwen', 'q'), 'vecWen': ('g_vecwen', 'vec_q'), 'v0Wen': ('g_vecwen', 'v0_q'),
         'vlWen': ('g_vlwen', 'q'), 'vxsat': ('g_vxsat', 'q'), 'fflags': ('g_fflags', 'fflags_q'),
         'wflags': ('g_fflags', 'wflags_q'), 'redirect_valid': ('g_rlite', 'valid_q'),
-        'redirect_bits_cfiUpdate_taken': ('g_rlite', 'taken_q'), 'redirect_bits_cfiUpdate_isMisPred': ('g_rlite', 'mispred_q'),
+        'redirect_bits_cfiUpdate_taken': ('g_rlite.g_tm', 'taken_q'), 'redirect_bits_cfiUpdate_isMisPred': ('g_rlite.g_tm', 'mispred_q'),
         'flushPipe': ('g_flushpipe', 'q'), 'satpFlushPipe': ('g_satpfp', 'q'), 'replay': ('g_replay', 'q'),
         'trigger': ('g_trigger', 'q'), 'debug_isPerfCnt': ('g_perfcnt', 'q'),
         'debug_isMMIO': ('g_dbgmem', 'mmio_q'), 'debug_isNCIO': ('g_dbgmem', 'ncio_q'),
@@ -148,7 +148,7 @@ def build_pairs(g, ty, table):
             base = 'g_wb[%d].' % lane
             md = re.match(r'data_(\d)$', f)
             me = re.match(r'exceptionVec_(\d+)$', f)
-            if f in WB_SIMPLE:
+            if f in WB_SIMPLE and not (table[lane]['has_redir_full'] and f.startswith('redirect_bits_cfiUpdate_')):
                 blk, reg = WB_SIMPLE[f]
                 emit(gname, gw, base + blk + '.' + reg, 0)
             elif md:

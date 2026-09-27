@@ -573,7 +573,6 @@ CORE_PORTS = [
 # ---------------------------------------------------------------------------
 GROUPS = collections.OrderedDict([
     ('has_robidx_flag', ['robIdx_flag']),
-    ('has_pdest', ['pdest']),
     ('has_intwen', ['intWen']), ('has_fpwen', ['fpWen']), ('has_vecwen', ['vecWen', 'v0Wen']),
     ('has_vlwen', ['vlWen']), ('has_vxsat', ['vxsat']),
     ('has_fflags', ['fflags', 'wflags']),
@@ -630,6 +629,8 @@ def lane_table(g):
             dw.append(f.get(key, 0))
             used.add(key)
         row['data_w'] = dw
+        row['pdest_w'] = f.get('pdest', 0)
+        used.add('pdest')
         base = [x in f for x in BASE_FIELDS]
         if all(base):
             row['has_base'] = 1
@@ -705,9 +706,9 @@ def fmt_lane_table(table, exu_lanes, csr_lanes):
     keys = ['has_base'] + list(GROUPS.keys()) + ['has_redir_full']
     for lane, r in enumerate(table):
         flags = ', '.join('%s:1\'b%d' % (k, r[k]) for k in keys)
-        line = ("    '{data_w:{%s}, %s, exc_mask:24'h%06X, need_exc_gen:1'b%d, has_valid:1'b%d, has_csr:1'b%d, "
+        line = ("    '{data_w:{%s}, pdest_w:4'd%d, %s, exc_mask:24'h%06X, need_exc_gen:1'b%d, has_valid:1'b%d, has_csr:1'b%d, "
                 "same_group:27'h%07X, nums_w:4'd%d}%s   // lane %d") % (
-            ', '.join("8'd%d" % w for w in reversed(r['data_w'])), flags, r['exc_mask'], r['need_exc_gen'],
+            ', '.join("8'd%d" % w for w in reversed(r['data_w'])), r['pdest_w'], flags, r['exc_mask'], r['need_exc_gen'],
             r['has_valid'], r['has_csr'], r['same_group'], r['nums_w'], ',' if lane != WB_N - 1 else '', lane)
         out.append(line)
     out.append('  };')

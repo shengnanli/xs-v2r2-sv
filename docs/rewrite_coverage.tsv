@@ -21,14 +21,14 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	551	558	98.7
-unique_design_written	179	1191	15.0
+fm_targets_configured	551	561	98.2
+unique_design_written	182	1191	15.3
 unique_design_proven	170	1191	14.3
-golden_lines_written	2192504	3902283	56.2
+golden_lines_written	2256026	3902283	57.8
 golden_lines_proven	1749350	3902283	44.8
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2023798	3349905	60.4
+incore_golden_lines_written	2087320	3349905	62.3
 incore_golden_lines_proven	1584896	3349905	47.3
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
@@ -60,10 +60,13 @@ legacy_proven_unanchored	18	549	3.3
 #   TageBTable                                    396 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
+#   CtrlBlock                                       57635 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
 #   NewDispatch                                    100983 行
 #   OpenLLC                                          4252 行
+#   PipeGroupConnect                                 5039 行
+#   PipelineConnectPipe                               848 行
 #   PtwCache                                        45308 行
 #   Rob                                            266227 行
 #   SQData8Module                                    3529 行
@@ -75,7 +78,6 @@ legacy_proven_unanchored	18	549	3.3
 remaining_design	golden_lines	variants	scope
 Backend	79590	1	REWRITE_L
 LoadQueueUncache	59051	1	REWRITE_L
-CtrlBlock	57635	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
 Slice	45020	5	REWRITE_L
 EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
@@ -103,6 +105,7 @@ MainPipe	9208	3	REWRITE_L
 MissQueue	9125	1	REWRITE_L
 LoadQueue	8336	1	REWRITE_L
 OthersEntryVecMem	8182	4	-
+VSMergeBufferImp	8007	1	-
 #
 # ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
 #   让人看得见它们的存在，别当成"还没人接的活"★  合计 354539 行

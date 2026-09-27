@@ -1019,8 +1019,8 @@ _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_robIdx_valu
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_robIdx_value_reg\[6\] i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_base.robidx_value_q_reg\[6\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_robIdx_value_reg\[7\] i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_base.robidx_value_q_reg\[7\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_redirect_valid_reg i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_rlite.valid_q_reg
-_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_redirect_bits_cfiUpdate_taken_reg i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_rlite.taken_q_reg
-_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_redirect_bits_cfiUpdate_isMisPred_reg i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_rlite.mispred_q_reg
+_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_redirect_bits_cfiUpdate_taken_reg i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_rlite.g_tm.taken_q_reg
+_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_redirect_bits_cfiUpdate_isMisPred_reg i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_rlite.g_tm.mispred_q_reg
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_debugInfo_enqRsTime_reg\[0\] i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_base.enqRsTime_q_reg\[0\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_debugInfo_enqRsTime_reg\[1\] i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_base.enqRsTime_q_reg\[1\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_1_debugInfo_enqRsTime_reg\[2\] i:/WORK/CtrlBlock/u_core/g_wb\[1\].g_base.enqRsTime_q_reg\[2\]
@@ -1679,8 +1679,8 @@ _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_robIdx_valu
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_robIdx_value_reg\[6\] i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_base.robidx_value_q_reg\[6\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_robIdx_value_reg\[7\] i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_base.robidx_value_q_reg\[7\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_redirect_valid_reg i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_rlite.valid_q_reg
-_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_redirect_bits_cfiUpdate_taken_reg i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_rlite.taken_q_reg
-_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_redirect_bits_cfiUpdate_isMisPred_reg i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_rlite.mispred_q_reg
+_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_redirect_bits_cfiUpdate_taken_reg i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_rlite.g_tm.taken_q_reg
+_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_redirect_bits_cfiUpdate_isMisPred_reg i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_rlite.g_tm.mispred_q_reg
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_debugInfo_enqRsTime_reg\[0\] i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_base.enqRsTime_q_reg\[0\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_debugInfo_enqRsTime_reg\[1\] i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_base.enqRsTime_q_reg\[1\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_3_debugInfo_enqRsTime_reg\[2\] i:/WORK/CtrlBlock/u_core/g_wb\[3\].g_base.enqRsTime_q_reg\[2\]
@@ -2403,8 +2403,8 @@ _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_robIdx_valu
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_robIdx_value_reg\[6\] i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_base.robidx_value_q_reg\[6\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_robIdx_value_reg\[7\] i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_base.robidx_value_q_reg\[7\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_redirect_valid_reg i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_rlite.valid_q_reg
-_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_redirect_bits_cfiUpdate_taken_reg i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_rlite.taken_q_reg
-_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_redirect_bits_cfiUpdate_isMisPred_reg i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_rlite.mispred_q_reg
+_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_redirect_bits_cfiUpdate_taken_reg i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_rlite.g_tm.taken_q_reg
+_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_redirect_bits_cfiUpdate_isMisPred_reg i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_rlite.g_tm.mispred_q_reg
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_fflags_reg\[0\] i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_fflags.fflags_q_reg\[0\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_fflags_reg\[1\] i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_fflags.fflags_q_reg\[1\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_5_fflags_reg\[2\] i:/WORK/CtrlBlock/u_core/g_wb\[5\].g_fflags.fflags_q_reg\[2\]
@@ -3559,8 +3559,8 @@ _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bi
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_target_reg\[47\] i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rfull.q_reg\[198\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_target_reg\[48\] i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rfull.q_reg\[199\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_target_reg\[49\] i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rfull.q_reg\[200\]
-_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_taken_reg i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rlite.taken_q_reg
-_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_isMisPred_reg i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rlite.mispred_q_reg
+_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_taken_reg i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rfull.q_reg\[150\]
+_cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_isMisPred_reg i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rfull.q_reg\[149\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_shift_reg\[0\] i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rfull.q_reg\[147\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_shift_reg\[1\] i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rfull.q_reg\[148\]
 _cbpin r:/WORK/CtrlBlock/delayedNotFlushedWriteBack_delayed_bits_r_7_redirect_bits_cfiUpdate_addIntoHist_reg i:/WORK/CtrlBlock/u_core/g_wb\[7\].g_rfull.q_reg\[146\]

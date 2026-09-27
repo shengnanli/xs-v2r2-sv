@@ -63,24 +63,24 @@
 // ============================================================================
 // 私有类型包
 // ============================================================================
-// 本文件导航（共 38305 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 38318 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L83    私有类型包
 //   L615   可读核端口束：顶层 IO 里核真消费/真驱动的那部分
 //   L945   可读核：CtrlBlock 的全部 glue 逻辑
 //   L986   1. 重定向流水：s0 Rob.flushOut → s1 → s1_s3
-//   L1087  2. 写回打拍与压缩：27 路 ExuOutput 各打一拍，valid 过滤掉被更老重定向冲掉的
-//   L1089  被 s1_s3 或 s2_s4 冲掉
-//   L1456  3. 执行单元重定向：4 个带 redirect 的写回口里选最老的，打一拍给 RedirectGenerator
-//   L1548  4. load 违例重定向
-//   L1568  5. pcMem 读口分配
-//   L1634  6. 发给前端 FTQ：提交信息、Rob flush
-//   L1695  7. 译码缓冲：decode 收不下的指令暂存 6 项，整体前移；缓冲非空时优先喂缓冲
-//   L1769  8. 快照：rename 出口打了 snapshot 的 uop 记一份 RobPtr 组，重定向时决定回滚到哪份
-//   L1852  9. 融合译码：改写 rename/dispatch 入口的字段；清掉被融合的第二条
-//   L1897  10. 访存依赖预测：译码 fire 那拍和下一拍把 foldpc 送 MemCtrl
-//   L1909  11. Rob 入队：NewDispatch 的请求打一拍
-//   L1951  12. 杂项：vstart、retiredInstr、向量异常模块要的旧 pdest、perf/error 打两拍
-//   L1991  golden 同名 wrapper：扁平端口 + 22 个 child 实例 + 可读核
+//   L1088  2. 写回打拍与压缩：27 路 ExuOutput 各打一拍，valid 过滤掉被更老重定向冲掉的
+//   L1090  被 s1_s3 或 s2_s4 冲掉
+//   L1463  3. 执行单元重定向：4 个带 redirect 的写回口里选最老的，打一拍给 RedirectGenerator
+//   L1555  4. load 违例重定向
+//   L1575  5. pcMem 读口分配
+//   L1641  6. 发给前端 FTQ：提交信息、Rob flush
+//   L1702  7. 译码缓冲：decode 收不下的指令暂存 6 项，整体前移；缓冲非空时优先喂缓冲
+//   L1779  8. 快照：rename 出口打了 snapshot 的 uop 记一份 RobPtr 组，重定向时决定回滚到哪份
+//   L1862  9. 融合译码：改写 rename/dispatch 入口的字段；清掉被融合的第二条
+//   L1907  10. 访存依赖预测：译码 fire 那拍和下一拍把 foldpc 送 MemCtrl
+//   L1919  11. Rob 入队：NewDispatch 的请求打一拍
+//   L1964  12. 杂项：vstart、retiredInstr、向量异常模块要的旧 pdest、perf/error 打两拍
+//   L2004  golden 同名 wrapper：扁平端口 + 22 个 child 实例 + 可读核
 //
 package ctrlblock_pkg;
 
@@ -419,7 +419,7 @@ package ctrlblock_pkg;
     logic [5:0][7:0] data_w;      // data_0..data_5 各段寄存器位宽（64 或 128）；0 = 该段没保留
     logic        has_base;        // robIdx.value + debugInfo enqRs/select/issue 时间戳 + writebackTime 计数器 + data_0
     logic        has_robidx_flag; // robIdx.flag
-    logic        has_pdest;
+    logic [3:0]  pdest_w;         // pdest 寄存器位宽（整数口 8、向量口 7；0 = 没保留）
     logic        has_intwen, has_fpwen, has_vecwen, has_vlwen, has_vxsat;
     logic        has_fflags;      // fflags + wflags
     logic        has_redir_lite;  // redirect_valid + cfiUpdate.taken + cfiUpdate.isMisPred
@@ -449,33 +449,33 @@ package ctrlblock_pkg;
   localparam int EXU_REDIR_LANE [EXU_REDIR_N] = '{1, 3, 5, 7};   // 带 redirect 的写回口
   localparam logic [EXU_REDIR_N-1:0] EXU_REDIR_CSR_OH = 4'b1000;   // 其中哪一个是 CSR 口
   localparam wb_lane_shape_t WB_LANE [WB_N] = '{
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 0
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b1, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h0000002, nums_w:4'd1},   // lane 1
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 2
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b1, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h0000008, nums_w:4'd1},   // lane 3
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 4
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd128}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b1, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h003FFF5, nums_w:4'd5},   // lane 5
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 6
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd64, 8'd64}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b1, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b1, has_flushpipe:1'b1, has_satpflushpipe:1'b1, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b1, has_perfcnt:1'b1, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b1, exc_mask:24'h400F0C, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b1, same_group:27'h0001FF5, nums_w:4'd4},   // lane 7
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd128}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h003FFF5, nums_w:4'd5},   // lane 8
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 9
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 10
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 11
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 12
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd128, 8'd128, 8'd128}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b0, has_vxsat:1'b1, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000004, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 13
-    '{data_w:{8'd128, 8'd128, 8'd128, 8'd128, 8'd128, 8'd128}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b1, has_fpwen:1'b1, has_vecwen:1'b1, has_vlwen:1'b1, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000004, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 14
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd128, 8'd128, 8'd128}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b0, has_vxsat:1'b1, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 15
-    '{data_w:{8'd0, 8'd0, 8'd128, 8'd128, 8'd128, 8'd128}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b0, has_fpwen:1'b1, has_vecwen:1'b1, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 16
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd128, 8'd128, 8'd128}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 17
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b1, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b1, has_trigger:1'b1, has_predecode:1'b0, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0040000, nums_w:4'd1},   // lane 18
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b1, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b1, has_trigger:1'b1, has_predecode:1'b0, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0080000, nums_w:4'd1},   // lane 19
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b1, has_fpwen:1'b1, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b1, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b1, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0100000, nums_w:4'd1},   // lane 20
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b1, has_fpwen:1'b1, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b1, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b1, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0200000, nums_w:4'd1},   // lane 21
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b1, has_fpwen:1'b1, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b1, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b1, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0400000, nums_w:4'd1},   // lane 22
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd128}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b1, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b0, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b1, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h1800000, nums_w:4'd2},   // lane 23
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd128}, has_base:1'b1, has_robidx_flag:1'b1, has_pdest:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b1, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b0, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b1, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h1800000, nums_w:4'd2},   // lane 24
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd0}, has_base:1'b0, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0000000, nums_w:4'd0},   // lane 25
-    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd0}, has_base:1'b0, has_robidx_flag:1'b0, has_pdest:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0000000, nums_w:4'd0}   // lane 26
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 0
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b1, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h0000002, nums_w:4'd1},   // lane 1
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 2
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b1, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h0000008, nums_w:4'd1},   // lane 3
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 4
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd128}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b1, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h003FFF5, nums_w:4'd5},   // lane 5
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 6
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd64, 8'd64}, pdest_w:4'd8, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b1, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b1, has_flushpipe:1'b1, has_satpflushpipe:1'b1, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b1, has_perfcnt:1'b1, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b1, exc_mask:24'h400F0C, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b1, same_group:27'h0001FF5, nums_w:4'd4},   // lane 7
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd128}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h003FFF5, nums_w:4'd5},   // lane 8
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 9
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 10
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 11
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd0, has_base:1'b1, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0001FF5, nums_w:4'd4},   // lane 12
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd128, 8'd128, 8'd128}, pdest_w:4'd7, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b0, has_vxsat:1'b1, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000004, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 13
+    '{data_w:{8'd128, 8'd128, 8'd128, 8'd128, 8'd128, 8'd128}, pdest_w:4'd8, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b1, has_fpwen:1'b1, has_vecwen:1'b1, has_vlwen:1'b1, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000004, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 14
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd128, 8'd128, 8'd128}, pdest_w:4'd7, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b0, has_vxsat:1'b1, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 15
+    '{data_w:{8'd0, 8'd0, 8'd128, 8'd128, 8'd128, 8'd128}, pdest_w:4'd8, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b0, has_fpwen:1'b1, has_vecwen:1'b1, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 16
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd128, 8'd128, 8'd128}, pdest_w:4'd7, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b1, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b1, has_csr:1'b0, same_group:27'h003E120, nums_w:4'd3},   // lane 17
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd8, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b1, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b1, has_trigger:1'b1, has_predecode:1'b0, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0040000, nums_w:4'd1},   // lane 18
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd8, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b1, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b1, has_trigger:1'b1, has_predecode:1'b0, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0080000, nums_w:4'd1},   // lane 19
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd8, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b1, has_fpwen:1'b1, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b1, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b1, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0100000, nums_w:4'd1},   // lane 20
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd8, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b1, has_fpwen:1'b1, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b1, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b1, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0200000, nums_w:4'd1},   // lane 21
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd64}, pdest_w:4'd8, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b1, has_fpwen:1'b1, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b1, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b1, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h0400000, nums_w:4'd1},   // lane 22
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd128}, pdest_w:4'd7, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b1, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b0, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b1, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h1800000, nums_w:4'd2},   // lane 23
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd128}, pdest_w:4'd7, has_base:1'b1, has_robidx_flag:1'b1, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b1, has_vlwen:1'b1, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b1, has_satpflushpipe:1'b0, has_replay:1'b1, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b1, has_predecode:1'b0, has_perfcnt:1'b1, has_dbgmem:1'b1, has_dbglong:1'b1, has_vls:1'b1, has_redir_full:1'b0, exc_mask:24'hFFFFFF, need_exc_gen:1'b1, has_valid:1'b1, has_csr:1'b0, same_group:27'h1800000, nums_w:4'd2},   // lane 24
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd0}, pdest_w:4'd0, has_base:1'b0, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0000000, nums_w:4'd0},   // lane 25
+    '{data_w:{8'd0, 8'd0, 8'd0, 8'd0, 8'd0, 8'd0}, pdest_w:4'd0, has_base:1'b0, has_robidx_flag:1'b0, has_intwen:1'b0, has_fpwen:1'b0, has_vecwen:1'b0, has_vlwen:1'b0, has_vxsat:1'b0, has_fflags:1'b0, has_redir_lite:1'b0, has_flushpipe:1'b0, has_satpflushpipe:1'b0, has_replay:1'b0, has_lqidx:1'b0, has_sqidx:1'b0, has_trigger:1'b0, has_predecode:1'b0, has_perfcnt:1'b0, has_dbgmem:1'b0, has_dbglong:1'b0, has_vls:1'b0, has_redir_full:1'b0, exc_mask:24'h000000, need_exc_gen:1'b0, has_valid:1'b0, has_csr:1'b0, same_group:27'h0000000, nums_w:4'd0}   // lane 26
   };
   // END GENERATED
 
@@ -1012,6 +1012,7 @@ module xs_CtrlBlock_core
     r.level          = f.level;
     r.satpFlush      = f.satpFlush;
     r.isVlsException = f.isVlsException;
+    r.interrupt      = 1'b1;   // Rob.flushOut.bits.interrupt 恒为 true（golden：s2_s4.interrupt <= s1v | stage2.interrupt）
     return r;
   endfunction
   logic      s1_s3_valid;
@@ -1164,9 +1165,9 @@ module xs_CtrlBlock_core
       assign bits.robIdx.flag = 1'b0;
     end
 
-    if (L.has_pdest) begin : g_pdest
-      logic [PREG_W-1:0] q; always_ff @(posedge clock) if (in_valid) q <= in_bits.pdest;
-      assign bits.pdest = q;
+    if (L.pdest_w != 0) begin : g_pdest
+      logic [L.pdest_w-1:0] q; always_ff @(posedge clock) if (in_valid) q <= in_bits.pdest[L.pdest_w-1:0];
+      assign bits.pdest = PREG_W'(q);
     end else begin : g_nopdest
       assign bits.pdest = '0;
     end
@@ -1215,16 +1216,20 @@ module xs_CtrlBlock_core
     end
 
     // 重定向：BJU/CSR 口保留 valid + taken + isMisPred；只有 CSR 口保留整个 redirect
+    // BJU 口只保留 redirect_valid + taken + isMisPred（g_rlite）；CSR 口保留整个 redirect（g_rfull，含这两位）
     if (L.has_redir_lite) begin : g_rlite
-      logic valid_q, taken_q, mispred_q;
-      always_ff @(posedge clock) if (in_valid) begin
-        valid_q   <= in_bits.redirect_valid;
-        taken_q   <= in_bits.redirect.cfiUpdate.taken;
-        mispred_q <= in_bits.redirect.cfiUpdate.isMisPred;
+      logic valid_q;
+      always_ff @(posedge clock) if (in_valid) valid_q <= in_bits.redirect_valid;
+      assign bits.redirect_valid = valid_q;
+      if (!L.has_redir_full) begin : g_tm
+        logic taken_q, mispred_q;
+        always_ff @(posedge clock) if (in_valid) begin
+          taken_q   <= in_bits.redirect.cfiUpdate.taken;
+          mispred_q <= in_bits.redirect.cfiUpdate.isMisPred;
+        end
+        assign bits.redirect.cfiUpdate.taken     = taken_q;
+        assign bits.redirect.cfiUpdate.isMisPred = mispred_q;
       end
-      assign bits.redirect_valid              = valid_q;
-      assign bits.redirect.cfiUpdate.taken     = taken_q;
-      assign bits.redirect.cfiUpdate.isMisPred = mispred_q;
     end else begin : g_norlite
       assign bits.redirect_valid              = 1'b0;
       assign bits.redirect.cfiUpdate.taken     = 1'b0;
@@ -1233,6 +1238,8 @@ module xs_CtrlBlock_core
     if (L.has_redir_full) begin : g_rfull
       redirect_t q;
       always_ff @(posedge clock) if (in_valid) q <= in_bits.redirect;
+      assign bits.redirect.cfiUpdate.taken     = q.cfiUpdate.taken;
+      assign bits.redirect.cfiUpdate.isMisPred = q.cfiUpdate.isMisPred;
       assign bits.redirect.isRVC        = q.isRVC;
       assign bits.redirect.robIdx       = q.robIdx;
       assign bits.redirect.ftqIdx       = q.ftqIdx;
@@ -1748,8 +1755,11 @@ module xs_CtrlBlock_core
       else if (decode_i.redirect | pop_last) dbuf_valid_q[i] <= 1'b0;
       else if (shift_from_buf) dbuf_valid_q[i] <= (dbuf_accept_num > 3'(DECODE_W - 1 - i)) ? 1'b0 : buf_valid_sel;
       else if (load_from_fe)   dbuf_valid_q[i] <= (fe_accept_num   > 3'(DECODE_W - 1 - i)) ? 1'b0 : fe_valid_sel;
-    always_ff @(posedge clock)
+    always_ff @(posedge clock) begin
       if (shift_from_buf | load_from_fe) dbuf_bits_q[i] <= dbuf_next;
+      // 没保留的异常位无条件写 0：让它们成为真常量寄存器（不占比较点），而不是 hold-clear 形的未读寄存器
+      for (int b = 0; b < EXC_N; b++) if (!DECODE_EXC_KEEP[b]) dbuf_bits_q[i].exceptionVec[b] <= 1'b0;
+    end
     // DecodeStage 入口：缓冲非空喂缓冲，否则喂前端
     assign decode_i.in[i].valid = dbuf_valid_q[0] ? dbuf_valid_q[i] : io_in.cfVec[i].valid;
     assign decode_i.in[i].bits  = dbuf_valid_q[i] ? dbuf_bits_q[i]  : fe_bits[i];
@@ -1919,7 +1929,10 @@ module xs_CtrlBlock_core
     end
     always_ff @(posedge clock)
       enq_valid_q[i] <= dispatch_o.enqRob_req[i].valid & ~s1_s3_valid;
-    always_ff @(posedge clock) if (dispatch_o.enqRob_req[i].valid) enq_bits_q[i] <= enq_next;
+    always_ff @(posedge clock) begin
+      if (dispatch_o.enqRob_req[i].valid) enq_bits_q[i] <= enq_next;
+      for (int b = 0; b < EXC_N; b++) if (!ENQ_EXC_KEEP[b]) enq_bits_q[i].exceptionVec[b] <= 1'b0;   // 同上：真常量而非 hold-clear
+    end
     assign rob_i.enq_req[i].valid = enq_valid_q[i];
     assign rob_i.enq_req[i].bits  = enq_bits_q[i];
   end
