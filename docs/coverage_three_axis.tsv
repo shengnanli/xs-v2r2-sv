@@ -574,7 +574,7 @@ ImmExtractor	REWRITTEN	PROVEN_DIRECT	rtl/backend/ImmExtractor.sv
 ImmExtractor_12	REWRITTEN	PROVEN_DIRECT	rtl/backend/ImmExtractor_12.sv
 ImmExtractor_2	MISSING	UNPROVEN	-
 ImmExtractor_37	MISSING	UNPROVEN	-
-ImmExtractor_57	MISSING	UNPROVEN	-
+ImmExtractor_57	REWRITTEN	PROVEN_DIRECT	rtl/backend/ImmExtractor_57.sv
 IndexableCAMTemplate	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/IndexableCAMTemplate.sv
 IndexableCAMTemplate_32	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/IndexableCAMTemplate_32.sv
 IndexableCAMTemplate_33	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/IndexableCAMTemplate_33.sv
@@ -712,7 +712,7 @@ MStatusModule	MISSING	UNPROVEN	-
 MainPipe	MISSING	UNPROVEN	-
 MainPipe_1	MISSING	UNPROVEN	-
 MainPipe_5	MISSING	UNPROVEN	-
-MaskExtractor	MISSING	UNPROVEN	-
+MaskExtractor	REWRITTEN	PROVEN_DIRECT	rtl/backend/MaskExtractor.sv
 MaxPeriodFibonacciLFSR	GOLDEN_REUSE	PROVEN_IN_CONE	-
 MaxPeriodFibonacciLFSR_3	GOLDEN_REUSE	UNPROVEN	-
 MbistBitmapCache	GOLDEN_REUSE	PROVEN_IN_CONE	-
@@ -1673,7 +1673,7 @@ VFixPoint64b	MISSING	UNPROVEN	-
 VIAlu	MISSING	UNPROVEN	-
 VIAluDecoder	MISSING	UNPROVEN	-
 VIAluFix	MISSING	UNPROVEN	-
-VIAluSrcTypeModule	MISSING	UNPROVEN	-
+VIAluSrcTypeModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIAluSrcTypeModule.sv
 VIDiv	MISSING	UNPROVEN	-
 VIMac64b	MISSING	UNPROVEN	-
 VIMacSrcTypeModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIMacSrcTypeModule.sv
