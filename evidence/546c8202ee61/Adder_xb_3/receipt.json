@@ -1,0 +1,202 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Adder_xb_3",
+ "run_id": "ArithmeticLeaves10-20260927T104656Z-546c8202",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Adder_xb_3.sv",
+   "kind": "golden",
+   "sha256": "bf4c257fbc6af3a49ca343a22314ce1a222be19db04c15113e737166e8088696"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Adder_18.sv",
+   "kind": "repo",
+   "sha256": "fbc4d495bf279d1696dbb1d2483eaa7ae72d929a45a0f5b127e89a2f1a241b8d"
+  },
+  {
+   "path": "rtl/backend/Adder_xb.sv",
+   "kind": "repo",
+   "sha256": "ffd6a1393fe5a12397a4ef3d1b454412d9bed0ebd7c8291ac7b03fcd8e55eb0e"
+  },
+  {
+   "path": "rtl/backend/Adder_xb_3.sv",
+   "kind": "repo",
+   "sha256": "71372f2c8c20cfaafb33c38f23c9819907cfbcebb11c6c125e8a867999586a97"
+  },
+  {
+   "path": "rtl/backend/Adder_xb_8.sv",
+   "kind": "repo",
+   "sha256": "b61d8df1298abf2dc4750be22c5f180a79b38d1c2d33c1d9b0b412262a6bb6c8"
+  },
+  {
+   "path": "rtl/backend/Adder_xb_20.sv",
+   "kind": "repo",
+   "sha256": "2731300f92f88b59386f495c682f4d0d55fd427ff4068aba350316bb5ebb9514"
+  },
+  {
+   "path": "rtl/backend/CSA3to2_20.sv",
+   "kind": "repo",
+   "sha256": "68b80478b0b79341c40061a079afbe6667535b211720a40a0ccfe8c3d763dec1"
+  },
+  {
+   "path": "rtl/backend/CSA3to2_24.sv",
+   "kind": "repo",
+   "sha256": "0cd8faaeef8d2e32d8be5743cc3faab634f2fdae542dac65b33b7357d7858619"
+  },
+  {
+   "path": "rtl/backend/CSA3to2_124.sv",
+   "kind": "repo",
+   "sha256": "9628e960b93f284b73d28e617bd27bad92df6eeb371392d3391a305806397548"
+  },
+  {
+   "path": "rtl/backend/CSA3to2_125.sv",
+   "kind": "repo",
+   "sha256": "c0577116c5f78b1bfc5697545c6e1e8a0edcbc014b81c7ffa3348812e747b9d7"
+  },
+  {
+   "path": "rtl/backend/CSA3to2_127.sv",
+   "kind": "repo",
+   "sha256": "6daebd3accfdc8cc5779857d088e510c494c836e4898b7e2cfd71a90e3572566"
+  }
+ ],
+ "impl_commit": "546c8202ee611121bb0e2b31c6adb3168b89489b",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ArithmeticLeaves10-20260927T104656Z-546c8202",
+  "top": "Adder_xb_3",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 1,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 1,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Adder_xb_3",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
