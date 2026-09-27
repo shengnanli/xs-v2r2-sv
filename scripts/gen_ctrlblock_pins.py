@@ -108,20 +108,41 @@ def build_pairs(g, ty, table):
         """golden 字段名（如 redirect_bits_cfiUpdate_ssp）→ ('.redirect.cfiUpdate.ssp')"""
         return GC.canon(field)
 
+    def reg_name(ibase):
+        """impl 寄存器基名 → Formality 的 cell 名：`x` → `x_reg`；非打包数组元素 `x[3]` → `x_reg[3]`。"""
+        um = re.match(r'^(.*?)\[(\d+)\]$', ibase)
+        if um:
+            return '%s_reg[%s]' % (um.group(1), um.group(2))
+        return ibase + '_reg'
+
     def emit(gname, gw, ibase, ioff, iw=None):
-        """golden 寄存器 gname（gw 位）↔ impl 寄存器 ibase 从位 ioff 起。"""
+        """golden 寄存器 gname（gw 位）↔ impl 的 logic 向量/标量寄存器 ibase 从位 ioff 起
+        （Formality 对 logic 向量点名 x_reg[b]，1 位标量点名 x_reg 无下标；packed 二维 x_reg[k][b]）。"""
         if iw is not None and iw != gw:
             GC.die('%s: golden %d 位 vs impl 目标 %d 位' % (gname, gw, iw))
+        base = reg_name(ibase)
+        # 1 位 golden 寄存器 ↔ impl 1 位标量：Formality 点名无 [0]；只有 PACKED_VEC 里的向量按位下标
+        scalar = gw == 1 and ibase.split('.')[-1].split('[')[0] not in PACKED_VEC
         for b in range(gw):
             gp = gname + ('_reg[%d]' % b if gw > 1 else '_reg')
-            pairs.append((gp, ibase, ioff + b))
+            ip = base if scalar else '%s[%d]' % (base, ioff + b)
+            pairs.append((gp, ip))
 
     def field_in(struct_t, field, gname, gw, ibase):
+        """golden 寄存器 ↔ impl 的 packed struct 寄存器成员。Formality 对 struct 寄存器按成员名点名：
+        s2_s4_bits_reg\\[cfiUpdate]\\[afhob][5][1]（成员 \\[name]，数组下标 [k]，1 位叶子无位下标）。"""
         r = ty.resolve(struct_t, [], struct_path(field))
         if r is None:
             GC.die('%s：字段 %s 在 %s 里解析不到' % (gname, field, struct_t))
         off, w = lay.offset(struct_t, r[0])
-        emit(gname, gw, ibase, off, w)
+        if w != gw:
+            GC.die('%s: golden %d 位 vs impl 成员 %s %d 位' % (gname, gw, r[0], w))
+        mp = re.sub(r'\.(\w+)', r'\\[\1]', r[0])
+        base = reg_name(ibase) + mp
+        for b in range(gw):
+            gp = gname + ('_reg[%d]' % b if gw > 1 else '_reg')
+            ip = base if gw == 1 else '%s[%d]' % (base, b)
+            pairs.append((gp, ip))
 
     # 写回口字段 → generate 块里的寄存器
     WB_SIMPLE = {
@@ -148,7 +169,9 @@ def build_pairs(g, ty, table):
             base = 'g_wb[%d].' % lane
             md = re.match(r'data_(\d)$', f)
             me = re.match(r'exceptionVec_(\d+)$', f)
-            if f in WB_SIMPLE and not (table[lane]['has_redir_full'] and f.startswith('redirect_bits_cfiUpdate_')):
+            if f == 'robIdx_value' and not table[lane]['has_base']:
+                emit(gname, gw, base + 'g_std.robidx_value_q', 0)
+            elif f in WB_SIMPLE and not (table[lane]['has_redir_full'] and f.startswith('redirect_bits_cfiUpdate_')):
                 blk, reg = WB_SIMPLE[f]
                 emit(gname, gw, base + blk + '.' + reg, 0)
             elif md:
@@ -322,7 +345,7 @@ def build_pairs(g, ty, table):
             emit(gname, gw, 'g_old_pdest[%s].%s_bits_q' % (m.group(2), m.group(1)), 0); continue
         m = re.match(r'io_perf_(\d+)_value_REG(_1)?$', gname)
         if m:
-            emit(gname, gw, 'perf_q2' if m.group(2) else 'perf_q1', perf_pos[int(m.group(1))] * 6); continue
+            emit(gname, gw, ('perf_q2' if m.group(2) else 'perf_q1') + '[%d]' % perf_pos[int(m.group(1))], 0); continue
         m = re.match(r'io_error_0_REG(_1)?$', gname)
         if m:
             emit(gname, gw, 'error_q2' if m.group(1) else 'error_q1', 0); continue
@@ -346,46 +369,41 @@ def render_pre(pairs, total_bits):
          'set _want 0',
          'puts "CB_PIN_BEGIN CtrlBlock expect=%d"' % total_bits,
          'proc _cbpin {r i} { upvar _pinned p _want w; incr w; if {[set_user_match $r $i]} {incr p} }']
-    for gp, ibase, ioff in pairs:
-        # 非打包数组元素（dbuf_bits_q[1] / enq_bits_q[3] / enq_valid_q[2]）：Formality 点名是 name_reg[i][b]
-        um = re.match(r'^(.*?)\[(\d+)\]$', ibase)
-        if um and um.group(1).split('.')[-1] in UNPACKED_IMPL:
-            ip = '%s_reg[%s][%d]' % (um.group(1), um.group(2), ioff)
-            if um.group(1).split('.')[-1] in UNPACKED_SCALAR_IMPL:
-                ip = '%s_reg[%s]' % (um.group(1), um.group(2))
-        else:
-            ip = '%s_reg[%d]' % (ibase, ioff)
-            # 1 位、非数组的 impl 寄存器在 Formality 里没有 [0] 下标
-            if not gp.endswith(']') and ioff == 0 and ibase in SCALAR_IMPL:
-                ip = '%s_reg' % ibase
-        L.append('_cbpin r:/WORK/CtrlBlock/%s i:/WORK/CtrlBlock/u_core/%s' % (
-            gp.replace('[', '\\[').replace(']', '\\]'), ip.replace('[', '\\[').replace(']', '\\]')))
+    for gp, ip in pairs:
+        # Tcl 裸字里：数组下标 [k] 写成 \[k\]；struct 成员分隔符 \[name] 是对象名的一部分，写成 \\\[name\]
+        esc = lambda x: x.replace('\\[', '\x00').replace('[', '\\[').replace(']', '\\]').replace('\x00', '\\\\\\[')
+        L.append('_cbpin r:/WORK/CtrlBlock/%s i:/WORK/CtrlBlock/u_core/%s' % (esc(gp), esc(ip)))
     L.append('puts "CB_PIN_END CtrlBlock n=$_pinned miss=[expr {$_want - $_pinned}] expect=%d"' % total_bits)
     L.append('if {$_pinned != $_want} { error "CB_PINS_FAIL not every pin was accepted" }')
     L.append('if {$_want != %d} { error "CB_PINS_FAIL expected %d pins, built $_want" }' % (total_bits, total_bits))
     return '\n'.join(L) + '\n'
 
 
-# impl 侧声明为单个 1 位 logic（不是向量、不是数组）的寄存器：Formality 的点名没有 [0]
+# impl 侧声明为 1 位标量 logic 的寄存器名：Formality 的点名没有 [0]
 SCALAR_IMPL = set()
-# impl 侧的非打包数组寄存器（`type name [N]`）与其中 1 位元素的那几个
-UNPACKED_IMPL = {'dbuf_bits_q', 'enq_bits_q', 'enq_valid_q'}
-UNPACKED_SCALAR_IMPL = {'enq_valid_q'}
+# golden 1 位寄存器落在 impl 打包向量某一位上的那几个向量（要带位下标）
+PACKED_VEC = {'dbuf_valid_q', 'flush_vec_next_q', 'need_newest_q', 'nums_q'}   # nums_q 有 1 位宽的口（logic [0:0]），照样带 [0]
 
 
 def scan_scalar_impl(text):
-    """在可读核里找 `logic <name>;`（1 位标量）声明，含 generate 块里的；产出带作用域前缀的名字集合。
-    作用域前缀按本文件核的固定结构：g_wb[i].<blk>.name、g_commit[c].name、g_mdp[i].name、g_old_pdest[r].name。"""
+    """可读核里所有 1 位标量 `logic a, b;` 声明的名字（逐条语句拆，含 generate 块里的）。
+    同一名字若在别处声明成向量则剔除（各块里都叫 q 的寄存器有标量也有向量），用时按基名判。"""
     core = text[text.index('module xs_CtrlBlock_core'):]
     core = core[:core.index('endmodule')]
-    out = set()
-    # 顶层标量
-    for ln in core.split('\n'):
-        m = re.match(r'\s*logic\s+([\w, ]+);', ln)
-        if m and '[' not in ln:
-            for n in m.group(1).split(','):
-                out.add(n.strip())
-    return out
+    core = re.sub(r'//[^\n]*', '', core)
+    scal, vec = set(), set()
+    for st in core.split(';'):
+        m = re.match(r'\s*logic\s+(.*)$', st.strip(), re.S)
+        if not m:
+            continue
+        decl = m.group(1)
+        if '[' in decl:
+            for n in re.findall(r'\]\s*(\w+)', decl) + re.findall(r'(\w+)\s*\[', decl):
+                vec.add(n)
+        else:
+            for n in decl.split(','):
+                scal.add(n.strip())
+    return scal - vec
 
 
 def main():
@@ -396,25 +414,18 @@ def main():
     rtl = GC.RTL.read_text()
     ty = GC.Types(rtl)
     table, exu_lanes, csr_lanes = GC.lane_table(g)
+    global SCALAR_IMPL
+    SCALAR_IMPL = scan_scalar_impl(rtl)
     pairs = build_pairs(g, ty, table)
     total = sum(g.regs.values())
     if len(pairs) != total:
         GC.die('钉点位数 %d != golden 寄存器位数 %d' % (len(pairs), total))
-    # 1 位标量 impl 寄存器的名字（Formality 点名无下标）
-    scal = scan_scalar_impl(rtl)
-    global SCALAR_IMPL
-    SCALAR_IMPL = set()
-    for gp, ibase, ioff in pairs:
-        leaf = ibase.split('.')[-1]
-        if leaf in scal:
-            SCALAR_IMPL.add(ibase)
     # 双射：impl 位不许被两个 golden 位占用
     seen = {}
-    for gp, ibase, ioff in pairs:
-        k = (ibase, ioff)
-        if k in seen:
-            GC.die('impl 位 %s[%d] 被 %s 与 %s 同时钉住' % (ibase, ioff, seen[k], gp))
-        seen[k] = gp
+    for gp, ip in pairs:
+        if ip in seen:
+            GC.die('impl 位 %s 被 %s 与 %s 同时钉住' % (ip, seen[ip], gp))
+        seen[ip] = gp
     pre = render_pre(pairs, total)
     # Rob 钉点重定位
     rob = ROB_PINS.read_text()
