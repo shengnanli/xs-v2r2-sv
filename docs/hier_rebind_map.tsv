@@ -1507,6 +1507,14 @@ Composer	uftb	FauFTB	SAME_PATH	uftb	FauFTB		auto_same
 Composer	uftb_io_ctrl_delay	DelayN	SAME_PATH	uftb_io_ctrl_delay	DelayN		auto_same	
 DebugModule	debug	TLDebugModule	DEEPER	u_core.debug	TLDebugModule		auto_deeper	
 DebugModule	dtm	DebugTransportModuleJTAG	DEEPER	u_core.dtm	DebugTransportModuleJTAG		auto_deeper	
+DecodeStage	decoderComp	DecodeUnitComp	ONE_SITE	u_core.u_complex	DecodeUnitComp		auto_one_site	
+DecodeStage	decoders_0	DecodeUnit	GEN_SITE	u_core.g_simple[0].u_decoder	DecodeUnit		auto_gen_site_suffix	
+DecodeStage	decoders_1	DecodeUnit	GEN_SITE	u_core.g_simple[1].u_decoder	DecodeUnit		auto_gen_site_suffix	
+DecodeStage	decoders_2	DecodeUnit	GEN_SITE	u_core.g_simple[2].u_decoder	DecodeUnit		auto_gen_site_suffix	
+DecodeStage	decoders_3	DecodeUnit	GEN_SITE	u_core.g_simple[3].u_decoder	DecodeUnit		auto_gen_site_suffix	
+DecodeStage	decoders_4	DecodeUnit	GEN_SITE	u_core.g_simple[4].u_decoder	DecodeUnit		auto_gen_site_suffix	
+DecodeStage	decoders_5	DecodeUnit	GEN_SITE	u_core.g_simple[5].u_decoder	DecodeUnit		auto_gen_site_suffix	
+DecodeStage	vtypeGen	VTypeGen	ONE_SITE	u_core.u_vtype_gen	VTypeGen		auto_one_site	
 DecodeUnitComp	indexedLSRegOffset_1	indexedLSUopTable_1	UNRESOLVED				none	
 DecodeUnitComp	indexedLSRegOffset_2	indexedLSUopTable_2	UNRESOLVED				none	
 DecodeUnitComp	indexedLSRegOffset_3	indexedLSUopTable_3	UNRESOLVED				none	

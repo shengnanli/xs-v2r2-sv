@@ -20,14 +20,14 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED       19804
-# status GAP             4205
+# status MEASURED       19655
+# status GAP             4354
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock	new condition %d %d %d\n	A_FUNC_ASSERT	MEASURED	20	15	0	CtrlBlock	no	assert_is_cycle_visible_behavior	ePipeRenameModule_io_out_bits_ftqOffset); wire cond1 = data_0_probe & _ftqOffsetDiff_T == 4'h1; wire cond2 = …
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode.decoderComp	uop number %d is illegal, cannot be zero	A_FUNC_ASSERT	MEASURED	2	1	0	DecodeUnitComp	yes	assert_is_cycle_visible_behavior	是本模块端口（逃出模块 = FM 比较边界）
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	more then one fusion matched\n	A_FUNC_ASSERT	MEASURED	5	0	0	FusionDecoder	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	more then one fusion matched\n	A_FUNC_ASSERT	GAP	5	0	5	FusionDecoder	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rat	pdest for $0 should be 0\n	A_FUNC_ASSERT	MEASURED	12	0	0	RenameTableWrapper	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rat.fpRat.snapshots_snapshotGen	snapshots should not be empty when dequeue!\n	A_FUNC_ASSERT	GAP	1	0	1	SnapshotGenerator_5	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rat.intRat.snapshots_snapshotGen	snapshots should not be empty when dequeue!\n	A_FUNC_ASSERT	GAP	1	0	1	SnapshotGenerator_4	yes	assert_is_cycle_visible_behavior	
@@ -627,63 +627,63 @@ PERF	SimTop.cpu.l_soc.chi_openllc_opt.snLinkMonitor.LCredit2Decoupled_rxrsp	util
 PERF	SimTop.cpu.l_soc.chi_openllc_opt.topDown	LLCMissMatch_0	B_CONTROL	MEASURED	1	1	0	OpenLLC	yes	FC/read_by_logic:OpenLLC._probe	ugTopDown_addrMatch_0) ); wire _probe; assign _probe = _topDown_io_debugTopDown_addrMatch_0; Slice_4 slices_0…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner	cpu_cycle	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner	ref_cpu_cycle	B_CONTROL	MEASURED	1	1	0	Backend	no	FC/own_port:Backend.io_fromTop_clintTime_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	backend_stall_cycle	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage.last_1_probe	_probe = last_REG; reg last_REG_1; wire last_1_probe = last_REG_1; wire [2:0] _GEN_122 = 3'({1'h0, 2'({1'h0, …
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	frontend_stall_cycle	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage.last_probe	alid & io_out_0_ready; reg last_REG; wire last_probe = last_REG; reg last_REG_1; wire last_1_probe = last_REG…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_count	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_116	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_0_1	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_1_2	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_2_3	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_3_4	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_4_5	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_5_6	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_6_7	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_mean	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_overflow	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	backend_stall_cycle	B_CONTROL	GAP	1	1	1	DecodeStage	yes	FC/read_by_logic:DecodeStage.last_1_probe	_probe = last_REG; reg last_REG_1; wire last_1_probe = last_REG_1; wire [2:0] _GEN_122 = 3'({1'h0, 2'({1'h0, …
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	frontend_stall_cycle	B_CONTROL	GAP	1	1	1	DecodeStage	yes	FC/read_by_logic:DecodeStage.last_probe	alid & io_out_0_ready; reg last_REG; wire last_probe = last_REG; reg last_REG_1; wire last_1_probe = last_REG…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_count	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_116	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_0_1	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_1_2	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_2_3	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_3_4	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_4_5	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_5_6	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_6_7	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_mean	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_overflow	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_sampled	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_sum	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_sum	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_118	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_fire_range_underflow	D_CONST	BY_CONSTRUCTION	0	0	0		-	print_arg_is_literal	64'h0
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_count	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_107	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_not_ready_count	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_120
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_0_1	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_1_2	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_2_3	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_3_4	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_4_5	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_5_6	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_6_7	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_mean	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_overflow	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_count	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_107	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_not_ready_count	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_120
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_0_1	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_1_2	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_2_3	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_3_4	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_4_5	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_5_6	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_6_7	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_mean	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_overflow	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_sampled	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_sum	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_sum	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_108	Events_T_22)}); wire [2:0] _GEN_107; assign _GEN_107 = _GEN_106; wire [2:0] _GEN_108; assign _GEN_108 = _GEN_…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	in_valid_range_underflow	D_CONST	BY_CONSTRUCTION	0	0	0		-	print_arg_is_literal	64'h0
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	inst_spec	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_117	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_0_1	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_1_2	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_2_3	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_3_4	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_4_5	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_5_6	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_6_7	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_mean	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_overflow	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	inst_spec	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_117	+ _GEN_113))}); wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115; wire [2:0] _GEN_117; assign _GEN_117 = _GEN_…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_0_1	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_1_2	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_2_3	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_3_4	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_4_5	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_5_6	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_6_7	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_mean	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_overflow	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_sampled	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_sum	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_sum	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_123
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_fire_range_underflow	D_CONST	BY_CONSTRUCTION	0	0	0		-	print_arg_is_literal	64'h0
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_0_1	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_1_2	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_2_3	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_3_4	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_4_5	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_5_6	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_6_7	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_mean	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_overflow	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_0_1	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_1_2	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_2_3	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_3_4	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_4_5	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_5_6	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_6_7	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_mean	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_overflow	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_sampled	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_sum	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_sum	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_122
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	out_valid_range_underflow	D_CONST	BY_CONSTRUCTION	0	0	0		-	print_arg_is_literal	64'h0
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	recovery_bubble	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage.recoveryFlag_probe	ftqOffset; reg recoveryFlag; wire recoveryFlag_probe = recoveryFlag; wire [1:0] _perfEvents_T_18 = 2'({1'h0, …
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	stall_cycle	B_CONTROL	MEASURED	1	1	0	DecodeStage	no	FC/read_by_logic:DecodeStage._GEN_119	n_0_ready_0; wire [2:0] _GEN_120 = 3'({1'h0, 2'({1'h0, _GEN_119} + 2'({1'h0, io_in_1_valid & ~io_in_1_ready_0…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	wait_cycle	C_DIAG	MEASURED	1	0	0	DecodeStage	no	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_121
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	recovery_bubble	B_CONTROL	GAP	1	1	1	DecodeStage	yes	FC/read_by_logic:DecodeStage.recoveryFlag_probe	ftqOffset; reg recoveryFlag; wire recoveryFlag_probe = recoveryFlag; wire [1:0] _perfEvents_T_18 = 2'({1'h0, …
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	stall_cycle	B_CONTROL	MEASURED	1	1	0	DecodeStage	yes	FC/read_by_logic:DecodeStage._GEN_119	n_0_ready_0; wire [2:0] _GEN_120 = 3'({1'h0, 2'({1'h0, _GEN_119} + 2'({1'h0, io_in_1_valid & ~io_in_1_ready_0…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.decode	wait_cycle	C_DIAG	MEASURED	1	0	0	DecodeStage	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DecodeStage._GEN_121
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch	AtomicStall	C_DIAG	GAP	1	0	1	NewDispatch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	NewDispatch._GEN_194
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch	BTBMissBubble	C_DIAG	GAP	1	0	1	NewDispatch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	NewDispatch._GEN_176
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch	ControlRecoveryStall	C_DIAG	GAP	1	0	1	NewDispatch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	NewDispatch._GEN_197
@@ -777,152 +777,152 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.intBusy
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.v0BusyTable	busy_count	C_DIAG	GAP	1	0	1	BusyTable_3	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable_3._GEN
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.vecBusyTable	busy_count	C_DIAG	GAP	1	0	1	BusyTable_2	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable_2._GEN
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.vlBusyTable	busy_count	C_DIAG	GAP	1	0	1	VlBusyTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VlBusyTable._GEN_5
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_24
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_57
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_91
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_125
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_159
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_23
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_56
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_90
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_124
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_158
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_26
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_59
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_93
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_127
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_161
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_25
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_58
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_92
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_126
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_160
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_22
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_55
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_89
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_157
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_19
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_52
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_86
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_120
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_154
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_20
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_53
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_87
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_121
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_155
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_21
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_54
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_88
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_156
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_27
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_60
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_94
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_128
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_162
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_28
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_61
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_95
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_129
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_163
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_29
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_62
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_96
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_130
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_164
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_30
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_63
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_97
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_131
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_165
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_7
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_40
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_74
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_108
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_142
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_8
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_41
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_75
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_109
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_143
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_12
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_45
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_79
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_113
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_147
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_11
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_44
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_78
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_112
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_146
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_10
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_43
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_77
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_111
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_145
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_3
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_36
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_70
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_104
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_138
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_9
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_42
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_76
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_110
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_144
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_4
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_37
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_71
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_105
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_139
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_14
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_47
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_81
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_115
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_149
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_6
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_39
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_73
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_107
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_141
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_5
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_38
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_72
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_106
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_140
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_15
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_48
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_82
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_116
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_150
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_16
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_49
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_83
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_117
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_151
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_17
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_50
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_84
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_118
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_152
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_18
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_51
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_85
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_119
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_153
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_13
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_46
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_80
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_114
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_148
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_24
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_57
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_91
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_125
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_159
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_23
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_56
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_90
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_124
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi255_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_158
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_26
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_59
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_93
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_127
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_sexth_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_161
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_25
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_58
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_92
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_126
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_zexth_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_160
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_22
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_55
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_89
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi127_mulw_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_157
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_19
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_52
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_86
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_120
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_154
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_20
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_53
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_87
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_121
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi1_addw_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_155
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_21
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_54
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_88
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_andi_f00_or_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_156
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_27
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_60
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_94
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_128
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_andi1_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_162
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_28
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_61
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_95
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_129
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_logic_zexth_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_163
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_29
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_62
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_96
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_130
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addi_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_164
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_30
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_63
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_97
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_131
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_lui_addiw_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_165
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_7
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_40
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_74
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_108
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli1_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_142
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_8
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_41
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_75
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_109
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli2_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_143
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_12
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_45
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_79
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_113
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli29_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_147
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_11
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_44
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_78
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_112
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli30_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_146
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_10
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_43
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_77
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_111
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli31_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_145
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_3
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_36
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_70
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_104
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli32_srli32_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_138
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_9
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_42
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_76
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_110
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli3_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_144
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_4
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_37
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_71
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_105
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli48_srli48_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_139
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_14
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_47
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_81
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_115
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slli4_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_149
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_6
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_39
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_73
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_107
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_sraiw16_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_141
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_5
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_38
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_72
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_106
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_slliw16_srliw16_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_140
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_15
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_48
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_82
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_116
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli29_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_150
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_16
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_49
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_83
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_117
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli30_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_151
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_17
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_50
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_84
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_118
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli31_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_152
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_18
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_51
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_85
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_119
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli32_add_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_153
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_0	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_13
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_46
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_80
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_114
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_srli8_andi255_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_148
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_0	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_64
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_98
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_132
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_166
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	fused_instr	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_167
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_1	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_64
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_2	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_98
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_3	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_132
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_4	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_166
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	fused_instr	C_DIAG	GAP	1	0	1	FusionDecoder	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_167
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	reset_timeout	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lxsx	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4112
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lxsy	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4115
