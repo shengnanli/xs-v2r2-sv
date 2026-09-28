@@ -2,7 +2,7 @@
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/EntriesVfdivVidiv/fm_pins_pre.tcl（逐字复制其配对列表，9898 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位 0 对。
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 0 对。
 # 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 9898 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
@@ -9919,7 +9919,7 @@ if {$top eq "IssueQueueVfdivVidiv"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  # IQ 自身层钉点（不在条目阵列实例下）
+  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
   foreach _pair {
 
   } {

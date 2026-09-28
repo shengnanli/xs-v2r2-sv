@@ -2,15 +2,15 @@
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/EntriesLdu/fm_pins_pre.tcl（逐字复制其配对列表，12648 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位 0 对。
-# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 12648 都 error
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 4 对。
+# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 12652 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
 
 if {$top eq "IssueQueueLdu"} {
   set _n 0
   set _miss 0
-  puts "IQE_PIN_BEGIN IssueQueueLdu expect=12648"
+  puts "IQE_PIN_BEGIN IssueQueueLdu expect=12652"
   foreach _pair {
     {enqEntries_0/entryReg_payload_preDecodeInfo_valid_reg g_entry[0].u_e/r_payload_reg[32]}
     {enqEntries_0/entryReg_payload_preDecodeInfo_isRVC_reg g_entry[0].u_e/r_payload_reg[33]}
@@ -12669,9 +12669,12 @@ if {$top eq "IssueQueueLdu"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  # IQ 自身层钉点（不在条目阵列实例下）
+  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
   foreach _pair {
-
+    {fuBusyTableWrite_0/fuBusyTable_reg[0] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[0]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[1] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[2] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[2]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[3] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[3]}
   } {
     lassign $_pair _r _i
     if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]} {
@@ -12681,7 +12684,7 @@ if {$top eq "IssueQueueLdu"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "IQE_PIN_END IssueQueueLdu n=$_n miss=$_miss expect=12648"
+  puts "IQE_PIN_END IssueQueueLdu n=$_n miss=$_miss expect=12652"
   if {$_miss != 0} { error "IQE_PIN_MISS=IssueQueueLdu miss=$_miss" }
-  if {$_n != 12648} { error "IQE_PIN_COUNT=IssueQueueLdu n=$_n expect=12648" }
+  if {$_n != 12652} { error "IQE_PIN_COUNT=IssueQueueLdu n=$_n expect=12652" }
 }

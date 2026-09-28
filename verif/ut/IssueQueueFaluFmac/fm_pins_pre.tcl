@@ -2,15 +2,15 @@
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/EntriesFaluFmac/fm_pins_pre.tcl（逐字复制其配对列表，13166 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位 1 对。
-# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 13167 都 error
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 11 对。
+# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 13177 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
 
 if {$top eq "IssueQueueFaluFmac"} {
   set _n 0
   set _miss 0
-  puts "IQE_PIN_BEGIN IssueQueueFaluFmac expect=13167"
+  puts "IQE_PIN_BEGIN IssueQueueFaluFmac expect=13177"
   foreach _pair {
     {enqEntries_0/entryReg_payload_fuOpType_reg[0] g_entry[0].u_e/r_payload_reg[0]}
     {enqEntries_0/entryReg_payload_fuOpType_reg[1] g_entry[0].u_e/r_payload_reg[1]}
@@ -13187,9 +13187,19 @@ if {$top eq "IssueQueueFaluFmac"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  # IQ 自身层钉点（不在条目阵列实例下）
+  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
   foreach _pair {
     {io_validCntDeqVec_0_REG_1_reg[5] u_core/g_vcnt[0].g_on.vcnt_q_reg[5]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[0] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[0]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[1] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[2] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[2]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[3] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[3]}
+    {intWbBusyTableWrite_0/fuBusyTable_reg[0] intWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[0]}
+    {intWbBusyTableWrite_0/fuBusyTable_reg[1] intWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
+    {fpWbBusyTableWrite_0/fuBusyTable_reg[0] fpWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[0]}
+    {fpWbBusyTableWrite_0/fuBusyTable_reg[1] fpWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
+    {fpWbBusyTableWrite_0/fuBusyTable_reg[2] fpWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[2]}
+    {fpWbBusyTableWrite_0/fuBusyTable_reg[3] fpWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[3]}
   } {
     lassign $_pair _r _i
     if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]} {
@@ -13199,7 +13209,7 @@ if {$top eq "IssueQueueFaluFmac"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "IQE_PIN_END IssueQueueFaluFmac n=$_n miss=$_miss expect=13167"
+  puts "IQE_PIN_END IssueQueueFaluFmac n=$_n miss=$_miss expect=13177"
   if {$_miss != 0} { error "IQE_PIN_MISS=IssueQueueFaluFmac miss=$_miss" }
-  if {$_n != 13167} { error "IQE_PIN_COUNT=IssueQueueFaluFmac n=$_n expect=13167" }
+  if {$_n != 13177} { error "IQE_PIN_COUNT=IssueQueueFaluFmac n=$_n expect=13177" }
 }

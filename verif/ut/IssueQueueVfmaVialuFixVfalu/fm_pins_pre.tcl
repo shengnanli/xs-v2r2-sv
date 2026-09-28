@@ -2,15 +2,15 @@
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/EntriesVfmaVialuFixVfalu/fm_pins_pre.tcl（逐字复制其配对列表，14374 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位 0 对。
-# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 14374 都 error
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 27 对。
+# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 14401 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
 
 if {$top eq "IssueQueueVfmaVialuFixVfalu"} {
   set _n 0
   set _miss 0
-  puts "IQE_PIN_BEGIN IssueQueueVfmaVialuFixVfalu expect=14374"
+  puts "IQE_PIN_BEGIN IssueQueueVfmaVialuFixVfalu expect=14401"
   foreach _pair {
     {enqEntries_0/entryReg_payload_fuOpType_reg[0] g_entry[0].u_e/r_payload_reg[0]}
     {enqEntries_0/entryReg_payload_fuOpType_reg[1] g_entry[0].u_e/r_payload_reg[1]}
@@ -14395,9 +14395,35 @@ if {$top eq "IssueQueueVfmaVialuFixVfalu"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  # IQ 自身层钉点（不在条目阵列实例下）
+  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
   foreach _pair {
-
+    {fuBusyTableWrite_0/fuBusyTable_reg[0] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[0]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[1] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[2] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[2]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[3] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[3]}
+    {fuBusyTableWrite_0/fuBusyTable_reg[4] fuBusyTableWrite_0/u_core/fu_busy_table_q_reg[4]}
+    {fuBusyTableWrite_1/fuBusyTable_reg[0] fuBusyTableWrite_1/u_core/fu_busy_table_q_reg[0]}
+    {fuBusyTableWrite_1/fuBusyTable_reg[1] fuBusyTableWrite_1/u_core/fu_busy_table_q_reg[1]}
+    {fuBusyTableWrite_1/fuBusyTable_reg[2] fuBusyTableWrite_1/u_core/fu_busy_table_q_reg[2]}
+    {fpWbBusyTableWrite_1/fuBusyTable_reg[0] fpWbBusyTableWrite_1/u_core/fu_busy_table_q_reg[0]}
+    {fpWbBusyTableWrite_1/fuBusyTable_reg[1] fpWbBusyTableWrite_1/u_core/fu_busy_table_q_reg[1]}
+    {fpWbBusyTableWrite_1/fuBusyTable_reg[2] fpWbBusyTableWrite_1/u_core/fu_busy_table_q_reg[2]}
+    {vfWbBusyTableWrite_0/fuBusyTable_reg[0] vfWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[0]}
+    {vfWbBusyTableWrite_0/fuBusyTable_reg[1] vfWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
+    {vfWbBusyTableWrite_0/fuBusyTable_reg[2] vfWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[2]}
+    {vfWbBusyTableWrite_0/fuBusyTable_reg[3] vfWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[3]}
+    {vfWbBusyTableWrite_0/fuBusyTable_reg[4] vfWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[4]}
+    {vfWbBusyTableWrite_1/fuBusyTable_reg[0] vfWbBusyTableWrite_1/u_core/fu_busy_table_q_reg[0]}
+    {vfWbBusyTableWrite_1/fuBusyTable_reg[1] vfWbBusyTableWrite_1/u_core/fu_busy_table_q_reg[1]}
+    {vfWbBusyTableWrite_1/fuBusyTable_reg[2] vfWbBusyTableWrite_1/u_core/fu_busy_table_q_reg[2]}
+    {v0WbBusyTableWrite_0/fuBusyTable_reg[0] v0WbBusyTableWrite_0/u_core/fu_busy_table_q_reg[0]}
+    {v0WbBusyTableWrite_0/fuBusyTable_reg[1] v0WbBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
+    {v0WbBusyTableWrite_0/fuBusyTable_reg[2] v0WbBusyTableWrite_0/u_core/fu_busy_table_q_reg[2]}
+    {v0WbBusyTableWrite_0/fuBusyTable_reg[3] v0WbBusyTableWrite_0/u_core/fu_busy_table_q_reg[3]}
+    {v0WbBusyTableWrite_0/fuBusyTable_reg[4] v0WbBusyTableWrite_0/u_core/fu_busy_table_q_reg[4]}
+    {v0WbBusyTableWrite_1/fuBusyTable_reg[0] v0WbBusyTableWrite_1/u_core/fu_busy_table_q_reg[0]}
+    {v0WbBusyTableWrite_1/fuBusyTable_reg[1] v0WbBusyTableWrite_1/u_core/fu_busy_table_q_reg[1]}
+    {v0WbBusyTableWrite_1/fuBusyTable_reg[2] v0WbBusyTableWrite_1/u_core/fu_busy_table_q_reg[2]}
   } {
     lassign $_pair _r _i
     if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]} {
@@ -14407,7 +14433,7 @@ if {$top eq "IssueQueueVfmaVialuFixVfalu"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "IQE_PIN_END IssueQueueVfmaVialuFixVfalu n=$_n miss=$_miss expect=14374"
+  puts "IQE_PIN_END IssueQueueVfmaVialuFixVfalu n=$_n miss=$_miss expect=14401"
   if {$_miss != 0} { error "IQE_PIN_MISS=IssueQueueVfmaVialuFixVfalu miss=$_miss" }
-  if {$_n != 14374} { error "IQE_PIN_COUNT=IssueQueueVfmaVialuFixVfalu n=$_n expect=14374" }
+  if {$_n != 14401} { error "IQE_PIN_COUNT=IssueQueueVfmaVialuFixVfalu n=$_n expect=14401" }
 }

@@ -53,11 +53,19 @@ def gen(v):
         w, name, d = int(m.group(1)) + 1, m.group(2), int(m.group(3))
         for b in range(outw[d], w):
             iq_pairs.append(f'    {{{name}_reg[{b}] u_core/g_vcnt[{d}].g_on.vcnt_q_reg[{b}]}}')
+    # 忙表写模块（FuBusyTableWrite*）：golden 寄存器 fuBusyTable[W-1:0]，重写 u_core/fu_busy_table_q。
+    # 最低位在 IQ 父级里两侧都无人读（FuBusyTableRead 只看 [W-1:1]），名字不同就成了 unmatched unread
+    # （FaluFmac 诊断跑实测 1(1)）。整张表逐位钉上（钉点只消名差）。
+    for mod, bi in re.findall(r'^  (FuBusyTableWrite\w*) (\w+) \($', gsrc, re.M):
+        mt = pathlib.Path(f'/home/eda/xs-env/G1-canonical/golden-rtl/{mod}.sv').read_text()
+        w = int(re.search(r'^\s+reg\s+\[(\d+):0\]\s+fuBusyTable;', mt, re.M).group(1)) + 1
+        for b in range(w):
+            iq_pairs.append(f'    {{{bi}/fuBusyTable_reg[{b}] {bi}/u_core/fu_busy_table_q_reg[{b}]}}')
     out = f'''# {v} FM 匹配前钉点 —— 复用已签核 {ev} 的钉点表，两侧路径加实例前缀 "{inst}/"
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/{ev}/fm_pins_pre.tcl（逐字复制其配对列表，{exp} 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位 {len(iq_pairs)} 对。
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 {len(iq_pairs)} 对。
 # 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != {exp + len(iq_pairs)} 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
@@ -77,7 +85,7 @@ if {{$top eq "{v}"}} {{
       if {{$_miss <= 10}} {{ puts "IQE_PIN_FAIL: $_r <-> $_i" }}
     }}
   }}
-  # IQ 自身层钉点（不在条目阵列实例下）
+  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
   foreach _pair {{
 {chr(10).join(iq_pairs)}
   }} {{
