@@ -70,3 +70,33 @@ constant_reg 若与 32 不同，差额须由 receipt 指认，否则按失败查
 ---
 
 # 对账（跑完追加；上文各节未改一字）
+
+## A. 起止 commit
+
+| 项 | 值 |
+|---|---|
+| 跑前登记 / proof commit | `0053190b26f28846732c4e28af0c10fcfd3b9e0b`（登记与证明同一 commit；登记 commit 是 receipt impl_commit 的祖先，`fm_predict.py check` 已核） |
+| 证据目录 | `evidence/0053190b26f2/MutiLevelPrefetchFilter/` |
+| receipt sha256 | `adf6490f495784561c1e227cc130dcb5bb13d54e039b1664d37ac9d727cab844` |
+| impl_closure（rtl/memblock/MutiLevelPrefetchFilter.sv） | `381e14390c1dec928aa9b10fe8dcc7860369f4cf2b34b7480b84280487dd980a` |
+
+## B. 对账（`python3 scripts/fm_predict.py check MutiLevelPrefetchFilter` → 「全部对上」）
+
+| 预测 | 实测 passing | 差 | 指认 | failing/unverified/aborted/unread_nc | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|---|
+| 4288（预计实测 4256） | 4256 | 32 | constant_reg 32 | 0/0/0/0 | 全 0（`MLPF_PIN_END … n=1 expect=1`） | 无 | SUCCEEDED |
+
+mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify [] / elab147 [] / relaxed_appvars [] /
+failing_truncated false / fm.log 行首 `Error` 0 / impl_worktree_dirty false。§4 的两处「可能出错」都没发生。
+
+更正（不改上文）：§1 写的「impl 1,366 行」有误，实为 1,352 行。
+
+## C. 复跑
+
+```
+cd /home/eda/xs-env/wt-mlpf
+PROOF_COMMIT=0053190b26f28846732c4e28af0c10fcfd3b9e0b bash scripts/run_proof.sh MutiLevelPrefetchFilter MutiLevelPrefetchFilter < /dev/null
+python3 scripts/fm_predict.py check MutiLevelPrefetchFilter
+cd verif/ut/MutiLevelPrefetchFilter && make run SEED=1 INITREG=+vcs+initreg+0   # 另 +vcs+initreg+random；SEED=7/42
+python3 gen.py --check
+```
