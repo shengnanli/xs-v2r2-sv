@@ -6,7 +6,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 T = 'SinkC'
 # 地址：tag 取 0..1、set 取 0..1（让与 MSHR 的同地址比较能命中），其余位随机
 ADDR = "{30'h0, 1'($urandom), 8'h0, 1'($urandom), 8'($urandom)}"
-args = ['--target', T,
+# 翻转门限按 initreg 0 档实测 29 设：io_task_bits_* 里 82 个字段在 Release 路径上结构性恒 0（SinkC 只填
+# channel/opcode/param/size/sourceId/set/tag/off/bufIdx 等少数字段，其余 WireInit(0)），只有 taskBuf 表项上电初值非 0
+# 时才会翻一次（initreg random 档偶尔凑满 111）。FM 的 Constant reg 1232 就是这批位。
+args = ['--target', T, '--min-toggled', f'{T}:29',
         # opcode 偏向 4..7（ProbeAck/ProbeAckData/Release/ReleaseData），size 偏向 6（整块两拍）
         '--narrow', f"{T}:io_c_bits_opcode$=(($urandom % 8) != 0) ? 3'($urandom_range(4, 7)) : 3'($urandom)",
         '--narrow', f"{T}:io_c_bits_size$=(($urandom % 4) != 0) ? 3'h6 : 3'($urandom)",
