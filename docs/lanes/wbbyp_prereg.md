@@ -85,3 +85,59 @@ M3 ready 全取组首授权 ⇒ 112731；M4 int 出口 3 的 wen 接成 pdest[0]
 
 `fm_predict.py check` 全部逐位相等（rc=0）。§1.4 的两条风险都没发生：二维 int 参数 FM 照常 elaborate；
 常数 ready 计入 passing。receipt：`evidence/1d3825d96fc7/<target>/`。
+
+## 2. 向量 load 合并链：UIntToContLow1s / UIntToContLow0s → ByteMaskTailGen → VldMgu → VldMergeUnit
+
+### 2.1 结构与子模块处置
+
+- 这条链是 WbDataPath 的 child VldMergeUnit（×2）连同其全部未签孙级（盘点：VldMgu / ByteMaskTailGen /
+  UIntToContLow0s / UIntToContLow1s 均 MISSING/UNPROVEN；MaskExtractor 已 PROVEN_DIRECT，两侧白盒直接用）。
+- UIntToContLow1s/0s：温度计码，dataOut[i] = (i < n) / (i >= n)，255 位，每位一个比较（golden 为 firtool
+  展开的 ~475 行嵌套拼接）。
+- ByteMaskTailGen：`xs_ByteMaskTailGen_core`，按 Scala 分四步（元素号→字节号、body/tail 段、mask 展开、空区间清零）；
+  golden 的 prestart 段（dontTouch 调试线，无读者）不画，少一个 UIntToContLow1s 实例（无比较点）。
+- VldMgu：`xs_VldMgu_core`，按字节三选一；子模块 ByteMaskTailGen。
+- VldMergeUnit：`vldmergeunit_pkg`（写回字段嵌套结构体 vld_wb_t）+ `xs_VldMergeUnit_core`（needFlush、wbReg 打一拍、
+  合并、vlWen 例外）；wrapper 由 `scripts/gen_vldmergeunit.py` 生成（端口→结构体成员按前缀规则映射，单射断言）。
+  ★寄存器是一整个 packed struct（1134 位）+ valid★，与 golden 的 97 个逐字段寄存器名字不同。
+- 全部无黑盒：ref = golden 本体 + golden 子模块原件；impl = RTL_SRCS 全部重写件。
+
+### 2.2 UT（verif/ut/VldMergeUnit；五对同测，commit 38eef391 的字节）
+
+每拍比五对全部输出（UIntToContLow1s/0s 各 255、ByteMaskTailGen 32、VldMgu 128、VldMergeUnit 97 个端口；
+VldMergeUnit 前 5 拍灌 valid 不比）。seed × 三档 initreg × 200k 拍：
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=20399515 errors=0 | checks=20399515 errors=0 | (1017) checks=20399515 errors=0 |
+| 7  | checks=20399515 errors=0 | checks=20399515 errors=0 | (7017) checks=20399515 errors=0 |
+| 42 | checks=20399515 errors=0 | checks=20399515 errors=0 | (42017) checks=20399515 errors=0 |
+
+覆盖（seed 1 / 200k，tb 判据：active>0、agnostic>0、合并改写了数据>0、被冲刷吃掉>0）：
+vstart>=vl 空区间 34189 拍、activeEn 非零 64904、agnosticEn 非零 57002、合并后 data 与原 data 不同 25926、
+flush 吃掉 25173、vlWen 旁路 49787。
+
+mutant 自检（seed 7、20k 拍）：M1 Low1s `<`→`<=` ⇒ errors=21232；M2 Low0s `>=`→`>` ⇒ 24100；
+M3 ByteMaskTailGen 空区间 `>=`→`>` ⇒ 136；M4 tail agnostic 取 vma ⇒ 6984；M5 VldMgu 0xFF→0x00 ⇒ 9716；
+M6 VldMgu 索引访存元素宽互换 ⇒ 12111；M7 needFlush 去掉 level 门控 ⇒ 173；M8 去掉 vlWen 旁路 ⇒ 1380；
+M9 ta 去掉 isMasked ⇒ 491。九个全抓。
+
+复跑：`cd verif/ut/VldMergeUnit && make run SEED=<s> INITREG=<0|random|<s>017>`
+
+### 2.3 跑前预测（★跑完不许改本节★，登记 docs/fm_predictions/）
+
+| 目标 | passing 预测 | 构成 | 其余 |
+|---|---|---|---|
+| UIntToContLow1s | **255**  | 255 输出 | failing 0 / unverified 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |
+| UIntToContLow0s | **255**  | 255 输出 | 同上 |
+| ByteMaskTailGen | **32**   | 32 输出 | 同上 |
+| VldMgu          | **128**  | 128 输出 | 同上 |
+| VldMergeUnit    | **2270** | 1135 寄存器位 + 1135 输出位 | 同上 |
+
+### 2.4 明写可能出错的地方
+
+1. VldMergeUnit 的 impl 寄存器是 packed struct（FM 里叫 `u_core/wb_bits_reg[N]`），golden 是逐字段
+   `wbReg_bits_<f>_reg`。每个寄存器位都直接驱动一个输出端口，预期 FM 靠签名/拓扑配得上；若 Matching
+   卡住或出现 unmatched，改为生成 fm_pins_pre.tcl（逐位一一对应、字面计数），不改电路。
+2. golden ByteMaskTailGen 多一个无读者的 UIntToContLow1s 实例（prestart 段）：纯组合、无比较点，预期不影响计数。
+3. 本节没有做过任何 FM 试跑。

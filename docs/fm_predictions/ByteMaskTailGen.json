@@ -1,0 +1,9 @@
+{
+  "target": "ByteMaskTailGen",
+  "ut": "VldMergeUnit",
+  "regs": 0,
+  "outs": 32,
+  "expected": 32,
+  "merge_dup": "false",
+  "model_applicable": true
+}
