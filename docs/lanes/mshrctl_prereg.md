@@ -170,3 +170,32 @@ sourceB waitG[6:4] 两侧各 12 位 unmatched unread —— 10407 + 5238 + 25 + 
 
 可能出错处：constant_reg 25 里除仲裁器 5 位外的 20 位尚未逐个指认（推测为 16 个 MSHR 各 1 位常量——
 与 MSHR 单独证明的 constant_reg 1 对应 —— 外加 4 位本层/SourceB 常量），跑完从 receipt 核对。
+
+## 对账（跑完追加；上面各节数字未改）
+
+| 目标 | 证据 | passing 预测 / 实测 | constant_reg | failing / unverified / unmatched / unread | 黑盒 / dont_verify | verdict | fm_predict check |
+|---|---|---|---|---|---|---|---|
+| FastArbiter_3 | evidence/3dd22d50aac3/FastArbiter_3 | 144 / 144 | 1 | 0 / 0 / 0 / 0 | 无 / 无 | SUCCEEDED | 全部对上 |
+| FastArbiter_4 | evidence/3dd22d50aac3/FastArbiter_4 | 77 / 77 | 1 | 0 / 0 / 0 / 0 | 无 / 无 | SUCCEEDED | 全部对上 |
+| FastArbiter_5 | evidence/3dd22d50aac3/FastArbiter_5 | 59 / 59 | 1 | 0 / 0 / 0 / 0 | 无 / 无 | SUCCEEDED | 全部对上 |
+| FastArbiter_6 | evidence/3dd22d50aac3/FastArbiter_6 | 95 / 95 | 1 | 0 / 0 / 0 / 0 | 无 / 无 | SUCCEEDED | 全部对上 |
+| FastArbiter_7 | evidence/3dd22d50aac3/FastArbiter_7 | 329 / 329 | 1 | 0 / 0 / 0 / 0 | 无 / 无 | SUCCEEDED | 全部对上 |
+| SourceB | evidence/159b9c255274/SourceB | 530 / 530 | 13 | 0 / 0 / 0 / 0 | 无 / 无 | SUCCEEDED | 全部对上 |
+| MSHR | evidence/6b1afb3a80d7/MSHR | 1442 / 1442 | 1 | 0 / 0 / 0 / 0 | 无 / 无 | SUCCEEDED | 全部对上 |
+| MSHRCtl | evidence/ee02b7aba943/MSHRCtl | 15645 / 15645 | 37 | 0 / 0 / 0 / 0 | 无 / 无 | SUCCEEDED | 全部对上 |
+
+预测与实测逐项差 0。§3.3 列的两个风险（常量寄存器身份、merge 关后 blockRefill 合并）都没有发生：
+MSHR 差额 1 = constant_reg 1；MSHRCtl 差额 37 = constant_reg 37。常量寄存器的逐个身份仍未从报告里列出
+（receipt 只给计数），此处只是"计数对上"，不是"逐位指认"。
+
+UT 全矩阵（seed 1/7/42 × initreg 0 / random / <seed>017 × 200k 拍，全部 errors=0、覆盖闸全过）：
+FastArbiterL2 23.4M checks/档（commit 7a57e899 字节，与证明字节 RTL 相同）；MSHR 31.0M/档（ea8f5e84 字节，
+之后 MSHR.sv 未再改）；SourceB 1.2M/档（3dd22d50 之后的字节 = 证明字节）；MSHRCtl 173.4M/档
+（ee02b7ab 字节 = 证明字节，复跑一轮；第一轮跨了 SourceB 改宽前后，不作数）。
+
+变异自检（scratchpad/mshrctl/mut，30k 拍、seed 7，均先自证替换恰 1 处）：
+- MSHR 10 个：8 CAUGHT；MISSED 2 个 = M5 validCnt 去复位、M9 REG_1 恒 0（断言专用影子，综合视图无读者）
+  —— UT 结构上看不见，由 FM vmucp 把这 69 位作为 matched-unread 实比覆盖。
+- MSHRCtl 7 个：5 CAUGHT；MISSED 2 个 = C6 timers 复位值（只喂性能直方图，FM vmucp 覆盖）、
+  C5 long-miss 阈值 200→199（30k 拍里没打到 hpm_timer 恰为 200 的释放；io_perf_3 是顶层输出，FM 比较点覆盖）。
+注意：seed 1 × `+vcs+initreg+random` 按 CONVENTIONS 实为全 1 档，`<seed>017` 才是第三个真随机档。
