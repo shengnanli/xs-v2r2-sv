@@ -72,3 +72,32 @@ rrGrantMask=0 把它与掉）、M4 pendingMask 不去掉赢家位（赢家位被
 receipt.json sha256 = `860ebaf0744e514ed2ae599e71c4e04ecd72d9a5f7203261139634e974ea11bb`；
 `python3 scripts/fm_predict.py check FastArbiter_28` rc=0（"差额被指认"）。
 复跑：`bash scripts/run_proof.sh FastArbiter_28 FastArbiter_28 < /dev/null`
+
+## 2. Uncache（跑前登记，FM 起跑前提交）
+
+### 2.1 结构
+
+- `rtl/memblock/Uncache.sv`：`uncache_pkg`（常量、请求/idResp/结果 struct、优先编码/对齐掩码/Get 掩码函数）+
+  手写核 `xs_Uncache_core`（§1 状态 SoA、§2 e0 入队、§3 q0 发出、§4 D、§5 r0 交回、§6 前递、§7 状态更新）+
+  文末 GENERATED 区 wrapper（`scripts/gen_uncache.py`，--check，进 gate_all）。
+- 无子模块、无黑盒。钉点 `verif/ut/Uncache/fm_pins_pre.tcl`（同一生成器，fail-closed，字面 6757 = golden 寄存器位数）。
+
+### 2.2 UT（verif/ut/Uncache；3 seed × 3 initreg × 200k 拍）
+
+tb 手写 + 生成 DUT 区；合法 TileLink 从设备模型（乱序回 D）；预热 16 项写满后才开比（条目字段不复位）。
+覆盖 17 项计数写进 PASS 判据。结果见文末对账（跑完追加）。
+复跑：`cd verif/ut/Uncache && make run SEED=<s> INITREG=<0|random|<s>017>`
+
+### 2.3 跑前预测（★跑完不许改本节★，登记 docs/fm_predictions/Uncache.json）
+
+lane 内非正式试跑（commit 9621dbc8，vmucp 关，merge_dup=false）：native SUCCEEDED、passing 7416、failing 0、
+unmatched 0、钉点 6757/6757、unread 201（全部 matched_nc，明细见 verif/fm_target_config/Uncache.tcl）。
+
+| 项 | 预测 |
+|---|---|
+| expected（模型） | 7617（regs 6757 + outs 860） |
+| passing | **7617**（= 7416 + 201） |
+| constant_reg | 0 |
+| unread（vmucp 后） | 0 |
+| failing / unverified / aborted / unmatched / 黑盒 / dont_verify | 全 0 / 无 |
+| verdict | SUCCEEDED（signoff-strict） |
