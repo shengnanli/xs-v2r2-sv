@@ -585,6 +585,8 @@ module tb;
     if (u_g_L2DataStorage.selectedVec_0_3) cov_L2DataStorage_sel3++;
     if (u_g_L2DataStorage.renStretched == 2'b01) cov_L2DataStorage_holdTail++;
   endtask
+  task automatic preinit_L2DataStorage();
+  endtask
   task automatic sync_L2DataStorage();
   endtask
 
@@ -1156,6 +1158,8 @@ module tb;
     if (u_g_L2DataStorage_1.selectedVec_0) cov_L2DataStorage_1_sel0++;
     if (u_g_L2DataStorage_1.selectedVec_0_3) cov_L2DataStorage_1_sel3++;
     if (u_g_L2DataStorage_1.renStretched == 2'b01) cov_L2DataStorage_1_holdTail++;
+  endtask
+  task automatic preinit_L2DataStorage_1();
   endtask
   task automatic sync_L2DataStorage_1();
   endtask
@@ -1729,6 +1733,8 @@ module tb;
     if (u_g_L2DataStorage_2.selectedVec_0_3) cov_L2DataStorage_2_sel3++;
     if (u_g_L2DataStorage_2.renStretched == 2'b01) cov_L2DataStorage_2_holdTail++;
   endtask
+  task automatic preinit_L2DataStorage_2();
+  endtask
   task automatic sync_L2DataStorage_2();
   endtask
 
@@ -2301,6 +2307,8 @@ module tb;
     if (u_g_L2DataStorage_3.selectedVec_0_3) cov_L2DataStorage_3_sel3++;
     if (u_g_L2DataStorage_3.renStretched == 2'b01) cov_L2DataStorage_3_holdTail++;
   endtask
+  task automatic preinit_L2DataStorage_3();
+  endtask
   task automatic sync_L2DataStorage_3();
   endtask
 
@@ -2313,6 +2321,10 @@ module tb;
     drive_L2DataStorage_2();
     drive_L2DataStorage_3();
     #1;
+    preinit_L2DataStorage();
+    preinit_L2DataStorage_1();
+    preinit_L2DataStorage_2();
+    preinit_L2DataStorage_3();
     sync_L2DataStorage();
     sync_L2DataStorage_1();
     sync_L2DataStorage_2();

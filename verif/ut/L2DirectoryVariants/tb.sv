@@ -944,6 +944,8 @@ module tb;
     if (u_g_L2Directory_1.activated) cov_L2Directory_1_act++;
     if (u_g_L2Directory_1.selectedVec_0_6) cov_L2Directory_1_sel6++;
   endtask
+  task automatic preinit_L2Directory_1();
+  endtask
   task automatic sync_L2Directory_1();
   endtask
 
@@ -1874,6 +1876,8 @@ module tb;
   task automatic cover_L2Directory_2();
     if (u_g_L2Directory_2.activated) cov_L2Directory_2_act++;
     if (u_g_L2Directory_2.selectedVec_0_6) cov_L2Directory_2_sel6++;
+  endtask
+  task automatic preinit_L2Directory_2();
   endtask
   task automatic sync_L2Directory_2();
   endtask
@@ -2806,6 +2810,8 @@ module tb;
     if (u_g_L2Directory_3.activated) cov_L2Directory_3_act++;
     if (u_g_L2Directory_3.selectedVec_0_6) cov_L2Directory_3_sel6++;
   endtask
+  task automatic preinit_L2Directory_3();
+  endtask
   task automatic sync_L2Directory_3();
   endtask
 
@@ -2817,6 +2823,9 @@ module tb;
     drive_L2Directory_2();
     drive_L2Directory_3();
     #1;
+    preinit_L2Directory_1();
+    preinit_L2Directory_2();
+    preinit_L2Directory_3();
     sync_L2Directory_1();
     sync_L2Directory_2();
     sync_L2Directory_3();

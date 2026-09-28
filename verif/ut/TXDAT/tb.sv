@@ -744,6 +744,8 @@ module tb;
     if (u_g_TXDAT._inflightCnt_T_30 == u_g_TXDAT._queue_io_count && u_g_TXDAT.io_pipeStatusVec_1_valid && u_g_TXDAT.io_pipeStatusVec_2_valid && u_g_TXDAT.io_pipeStatusVec_3_valid && u_g_TXDAT.io_pipeStatusVec_4_valid && u_g_TXDAT.io_pipeStatusVec_2_bits_txChannel[2] && u_g_TXDAT.io_pipeStatusVec_3_bits_txChannel[2] && u_g_TXDAT.io_pipeStatusVec_4_bits_txChannel[2] && u_g_TXDAT.io_pipeStatusVec_2_bits_mshrTask && u_g_TXDAT.io_pipeStatusVec_3_bits_mshrTask && u_g_TXDAT.io_pipeStatusVec_4_bits_mshrTask) cov_TXDAT_pipe4++;
     if (u_g_TXDAT.io_toReqArb_blockMSHRReqEntrance && !u_g_TXDAT.io_toReqArb_blockSinkBReqEntrance) cov_TXDAT_blkMshrOnly++;
   endtask
+  task automatic preinit_TXDAT();
+  endtask
   task automatic sync_TXDAT();
     u_i_TXDAT.queue.ram_ext.Memory = u_g_TXDAT.queue.ram_ext.Memory;
     u_i_TXDAT.queueData0.ram_data_ext.Memory = u_g_TXDAT.queueData0.ram_data_ext.Memory;
@@ -756,6 +758,7 @@ module tb;
     reset = 1'b1;
     drive_TXDAT();
     #1;
+    preinit_TXDAT();
     sync_TXDAT();
     repeat (5) @(posedge clock);
     @(negedge clock) reset = 1'b0;

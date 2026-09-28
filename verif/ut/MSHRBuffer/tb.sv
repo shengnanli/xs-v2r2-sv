@@ -88,6 +88,8 @@ module tb;
     if (MSHRBuffer__io_w_0_valid && MSHRBuffer__io_w_1_valid && MSHRBuffer__io_w_0_bits_id == MSHRBuffer__io_w_1_bits_id && MSHRBuffer__io_w_0_bits_id < 16) cov_MSHRBuffer_collide++;
     if (MSHRBuffer__io_r_valid && MSHRBuffer__io_r_bits_id > 15) cov_MSHRBuffer_rdhigh++;
   endtask
+  task automatic preinit_MSHRBuffer();
+  endtask
   task automatic sync_MSHRBuffer();
     force u_i_MSHRBuffer.u_core.buffer[0][0] = u_g_MSHRBuffer.buffer_0_0;
     #0 release u_i_MSHRBuffer.u_core.buffer[0][0];
@@ -231,6 +233,8 @@ module tb;
     if (u_g_MSHRBuffer_1.io_r_valid) cov_MSHRBuffer_1_rd++;
     if (MSHRBuffer_1__io_w_1_valid && MSHRBuffer_1__io_w_2_valid && MSHRBuffer_1__io_w_1_bits_id == MSHRBuffer_1__io_w_2_bits_id && MSHRBuffer_1__io_w_1_bits_id < 16) cov_MSHRBuffer_1_collide3++;
   endtask
+  task automatic preinit_MSHRBuffer_1();
+  endtask
   task automatic sync_MSHRBuffer_1();
     force u_i_MSHRBuffer_1.u_core.buffer[0][0] = u_g_MSHRBuffer_1.buffer_0_0;
     #0 release u_i_MSHRBuffer_1.u_core.buffer[0][0];
@@ -305,6 +309,8 @@ module tb;
     drive_MSHRBuffer();
     drive_MSHRBuffer_1();
     #1;
+    preinit_MSHRBuffer();
+    preinit_MSHRBuffer_1();
     sync_MSHRBuffer();
     sync_MSHRBuffer_1();
     repeat (5) @(posedge clock);

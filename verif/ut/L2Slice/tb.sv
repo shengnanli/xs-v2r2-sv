@@ -349,6 +349,8 @@ module tb;
     if (u_g_L2Slice.selected_1) cov_L2Slice_sel1++;
     if (u_g_L2Slice.activated) cov_L2Slice_act++;
   endtask
+  task automatic preinit_L2Slice();
+  endtask
   task automatic sync_L2Slice();
     force u_i_L2Slice.u_core.g_node_return.pipelineDataOutReg = u_g_L2Slice.pipelineDataOutReg;
     #0 release u_i_L2Slice.u_core.g_node_return.pipelineDataOutReg;
@@ -686,6 +688,8 @@ module tb;
     if (u_g_L2Slice_1.selected) cov_L2Slice_1_sel0++;
     if (u_g_L2Slice_1.selected_1) cov_L2Slice_1_sel1++;
     if (u_g_L2Slice_1.activated) cov_L2Slice_1_act++;
+  endtask
+  task automatic preinit_L2Slice_1();
   endtask
   task automatic sync_L2Slice_1();
     force u_i_L2Slice_1.u_core.g_node_return.pipelineDataOutReg = u_g_L2Slice_1.pipelineDataOutReg;
@@ -1025,6 +1029,8 @@ module tb;
     if (u_g_L2Slice_2.selected_1) cov_L2Slice_2_sel1++;
     if (u_g_L2Slice_2.activated) cov_L2Slice_2_act++;
   endtask
+  task automatic preinit_L2Slice_2();
+  endtask
   task automatic sync_L2Slice_2();
     force u_i_L2Slice_2.u_core.g_node_return.pipelineDataOutReg = u_g_L2Slice_2.pipelineDataOutReg;
     #0 release u_i_L2Slice_2.u_core.g_node_return.pipelineDataOutReg;
@@ -1363,6 +1369,8 @@ module tb;
     if (u_g_L2Slice_3.selected_1) cov_L2Slice_3_sel1++;
     if (u_g_L2Slice_3.activated) cov_L2Slice_3_act++;
   endtask
+  task automatic preinit_L2Slice_3();
+  endtask
   task automatic sync_L2Slice_3();
     force u_i_L2Slice_3.u_core.g_node_return.pipelineDataOutReg = u_g_L2Slice_3.pipelineDataOutReg;
     #0 release u_i_L2Slice_3.u_core.g_node_return.pipelineDataOutReg;
@@ -1377,6 +1385,10 @@ module tb;
     drive_L2Slice_2();
     drive_L2Slice_3();
     #1;
+    preinit_L2Slice();
+    preinit_L2Slice_1();
+    preinit_L2Slice_2();
+    preinit_L2Slice_3();
     sync_L2Slice();
     sync_L2Slice_1();
     sync_L2Slice_2();

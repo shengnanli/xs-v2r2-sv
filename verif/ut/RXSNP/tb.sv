@@ -2107,6 +2107,8 @@ module tb;
     if (u_g_RXSNP.io_task_bits_snpHitRelease && u_g_RXSNP.io_task_bits_snpHitReleaseIdx != 0) cov_RXSNP_nestIdxNZ++;
     if (u_g_RXSNP.replaceBlockSnp) cov_RXSNP_replBlk++;
   endtask
+  task automatic preinit_RXSNP();
+  endtask
   task automatic sync_RXSNP();
     u_i_RXSNP.queue.ram_ext.Memory = u_g_RXSNP.queue.ram_ext.Memory;
     force u_i_RXSNP.u_core.replPrevForBlock[0] = u_g_RXSNP.replaceBlockSnpMask_REG;
@@ -2181,6 +2183,7 @@ module tb;
     reset = 1'b1;
     drive_RXSNP();
     #1;
+    preinit_RXSNP();
     sync_RXSNP();
     repeat (5) @(posedge clock);
     @(negedge clock) reset = 1'b0;

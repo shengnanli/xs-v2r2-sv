@@ -76,6 +76,8 @@ module tb;
   task automatic cover_MbistClockGateCell_93();
     if (MbistClockGateCell_93__dft_ram_aux_ckbp) cov_MbistClockGateCell_93_bypass++;
   endtask
+  task automatic preinit_MbistClockGateCell_93();
+  endtask
   task automatic sync_MbistClockGateCell_93();
   endtask
 
@@ -117,6 +119,8 @@ module tb;
   task automatic cover_ClockMux();
     if (ClockMux__sel) cov_ClockMux_sel++;
   endtask
+  task automatic preinit_ClockMux();
+  endtask
   task automatic sync_ClockMux();
   endtask
 
@@ -127,6 +131,8 @@ module tb;
     drive_MbistClockGateCell_93();
     drive_ClockMux();
     #1;
+    preinit_MbistClockGateCell_93();
+    preinit_ClockMux();
     sync_MbistClockGateCell_93();
     sync_ClockMux();
     repeat (5) @(posedge clock);

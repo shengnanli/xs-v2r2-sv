@@ -62,6 +62,8 @@ module tb;
     if (u_g_Queue16_DSBeat.do_deq) cov_Queue16_DSBeat_deq++;
     if (u_g_Queue16_DSBeat.empty && Queue16_DSBeat__io_enq_valid && Queue16_DSBeat__io_deq_ready) cov_Queue16_DSBeat_bypass++;
   endtask
+  task automatic preinit_Queue16_DSBeat();
+  endtask
   task automatic sync_Queue16_DSBeat();
     u_i_Queue16_DSBeat.ram_data_ext.Memory = u_g_Queue16_DSBeat.ram_data_ext.Memory;
   endtask
@@ -640,6 +642,8 @@ module tb;
     if (u_g_Queue16_TaskBundle.do_deq) cov_Queue16_TaskBundle_deq++;
     if (u_g_Queue16_TaskBundle.empty && Queue16_TaskBundle__io_enq_valid && Queue16_TaskBundle__io_deq_ready) cov_Queue16_TaskBundle_bypass++;
   endtask
+  task automatic preinit_Queue16_TaskBundle();
+  endtask
   task automatic sync_Queue16_TaskBundle();
     u_i_Queue16_TaskBundle.ram_ext.Memory = u_g_Queue16_TaskBundle.ram_ext.Memory;
   endtask
@@ -856,6 +860,8 @@ module tb;
   task automatic cover_Queue2_CHISNP();
     if (u_g_Queue2_CHISNP.maybe_full && u_g_Queue2_CHISNP.ptr_match) cov_Queue2_CHISNP_full++;
     if (u_g_Queue2_CHISNP.do_deq) cov_Queue2_CHISNP_deq++;
+  endtask
+  task automatic preinit_Queue2_CHISNP();
   endtask
   task automatic sync_Queue2_CHISNP();
     u_i_Queue2_CHISNP.ram_ext.Memory = u_g_Queue2_CHISNP.ram_ext.Memory;
@@ -1398,6 +1404,8 @@ module tb;
     if (u_g_Queue16_GrantQueueTask.maybe_full && u_g_Queue16_GrantQueueTask.ptr_match) cov_Queue16_GrantQueueTask_full++;
     if (u_g_Queue16_GrantQueueTask.do_deq) cov_Queue16_GrantQueueTask_deq++;
   endtask
+  task automatic preinit_Queue16_GrantQueueTask();
+  endtask
   task automatic sync_Queue16_GrantQueueTask();
     u_i_Queue16_GrantQueueTask.ram_ext.Memory = u_g_Queue16_GrantQueueTask.ram_ext.Memory;
   endtask
@@ -1446,6 +1454,8 @@ module tb;
     if (!u_g_Queue16_GrantQueueData.io_enq_ready) cov_Queue16_GrantQueueData_full++;
     if (u_g_Queue16_GrantQueueData.do_deq) cov_Queue16_GrantQueueData_deq++;
   endtask
+  task automatic preinit_Queue16_GrantQueueData();
+  endtask
   task automatic sync_Queue16_GrantQueueData();
     u_i_Queue16_GrantQueueData.ram_data_data_ext.Memory = u_g_Queue16_GrantQueueData.ram_data_data_ext.Memory;
   endtask
@@ -1460,6 +1470,11 @@ module tb;
     drive_Queue16_GrantQueueTask();
     drive_Queue16_GrantQueueData();
     #1;
+    preinit_Queue16_DSBeat();
+    preinit_Queue16_TaskBundle();
+    preinit_Queue2_CHISNP();
+    preinit_Queue16_GrantQueueTask();
+    preinit_Queue16_GrantQueueData();
     sync_Queue16_DSBeat();
     sync_Queue16_TaskBundle();
     sync_Queue2_CHISNP();
