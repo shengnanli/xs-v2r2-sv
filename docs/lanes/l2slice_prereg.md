@@ -213,3 +213,66 @@ cmoBlock 漏 !s_cmometaw errors=14005，均 CAUGHT。
 - 第一跑（commit 09829392，evidence/09829392463d/RXSNP）：native SUCCEEDED，passing **355**、unread **68**、failing 0、unmatched 0(0)
   ⇒ PARTIAL，与 §6.3 登记逐位相等；68 点 = stallCnt 64 + Memory[0..1][55:54] 4，与预测的两类完全一致。
 - 第二跑按 §6.3 登记（vmucp 开）：passing 423、unread 0、SUCCEEDED。
+
+## 7. DataStorage 子树（DataStorage ×4、GatedSplittedSRAM ×4）
+
+### 7.1 结构
+
+- `xs_DataStorage_core`：SECDED(128)=137 编码 ×4 bank、读回解码报 error（打两拍对齐 MCP2）、请求路由；
+  Scala 三条 MCP2 assert 用到的 5 个影子寄存器照 golden 保留（mcpEnPrev/enPrev/reqPrev/wrEnPrev/wdataPrev）。
+  ★Chisel `Cat(Vec)` 把第 0 片放最高位★：wdata[127:0] 的码字在阵列字 [547:411]，读回对称还原。
+- wrapper（DataStorage / _1.._3）由 gen_l2_datastorage.py 生成；GatedSplittedSRAM* 纯连线（4 个 137 位 bank +
+  4 个 MbistClockGateCell_93），由 gen_l2_gated_sram.py 逐实例逐端口比对 golden 后生成。
+- 子树两侧白盒：SRAMTemplate_155/166/178（PROVEN_DIRECT）、MbistClockGateCell_93/ClockMux/L2DataStorage*（§5 本 lane）；
+  两侧同源 golden：ClockGate、sram_array_1p4096x137m137s1h1l2b_l2_dat、array_18。
+  唯一黑盒：厂商叶子 array_18_ext（vendor_boundary.tsv 审定的 vendor_sram_leaf），每目标 4 个/侧 → assembly。
+
+### 7.2 UT（verif/ut/DataStorage；commit 6e5509c0 的 tb）
+
+四对同测，~1 小时/档；9 档矩阵在后台串行跑（写本节时完成 seed1×initreg0：checks=3200000 errors=0），
+全部读数在文末对账补齐。DFT 辅助时钟旁路（aux_ckbp/aux_clk）钉 0：随机翻转会在 tb 改输入的瞬间造出时钟沿，
+与同刻改变的地址构成仿真竞争（golden 与重写 delta 深度不同），首跑因此报过假失配，定位过程见 commit 6e5509c0 前的
+调试（两侧 SRAM 引脚逐拍相同、只有竞争相位不同）。
+
+### 7.3 跑前预测（★跑完不许改★）
+
+| 目标 | 模型 passing | 预计 unread（vmucp 关） | 第一跑 |
+|---|---|---|---|
+| GatedSplittedSRAM / _1 / _2 / _3 | 2272 各 | 0 | passing 2272，无 allow 声明 ⇒ assembly PARTIAL（缺 allow）|
+| DataStorage / _1 / _2 / _3 | 2532 / 2533 / 2534 / 2534 | **529**（影子寄存器 1+1+14+1+512） | passing = 模型 − 529 ⇒ PARTIAL |
+
+第二跑：按 declare_allow.py 由第一跑 black_boxes.rpt 生成 verif/allow/<T>.json（只允许 array_18_ext ×4/侧，
+class vendor_macro），DataStorage 另加 vmucp 配置 ⇒ 全部 passing = 模型值、unread 0、SUCCEEDED。
+（模型 passing 大于"寄存器位 + 输出位"是因为 assembly 下黑盒输入脚也是比较点。）
+
+## 8. Directory 子树（Directory ×4、SplittedSRAM_3..6、L2Directory_1..3）
+
+### 8.1 结构
+
+- `xs_Directory_core`（§0 SECDED(31)=38 / §1 读握手 / §2 s2-s3 请求寄存 / §3 8 路读出锁存与占用路 / §4 命中选路 /
+  §5 输出 / §6 DRRIP 集合决斗、next state、origin 位 HoldUnless、上电初始化）；wrapper 由 gen_l2_directory.py 生成
+  （golden 内部线按其自身 `wire x = 式子` 展开后映射，任何未映射的 golden 局部名即失败）。
+- SplittedSRAM_3..6：tag 阵列 2（way 组）×2（数据段）纯连线，gen_l2_splitted_sram.py 生成。
+- L2Directory_1..3：MBIST 普通叶子，gen_mbist_pipe_family.py EXTRA_MODS（slice 0 的 L2Directory 用已签核的
+  rtl/uncore/L2Directory.sv）。
+- 子树白盒：SRAMTemplate_148/150/152/153/154/159/162/163/164/165/181/185/186/187（全部 PROVEN_DIRECT）；
+  两侧同源 golden：sram_array_*_l2_{tag,meta,repl,orgb}、array_14..17；唯一黑盒 array_14..17_ext → assembly。
+- 自抓一个仿真语义坑：第一版 resp_meta 写成 `assign resp_meta = meta_of(way_s3)`，function 体内读模块级数组 ——
+  连续赋值只对实参敏感，数组变了不重算，UT 当场失配；改成 always_comb 直接索引（CONVENTIONS 已知坑的变体）。
+
+### 8.2 UT（verif/ut/Directory、verif/ut/L2DirectoryVariants；commit da880c55 / 919b6f88）
+
+Directory seed1 initreg0 20k 拍：checks=3040000 errors=0，覆盖 hit 2581 / miss 2239 / replResp 2451 / retry 42 /
+BRRIP 监视组 refill miss 239 / tag ECC error 2343 / 初始化完成。（激励：set ∈ {0,1,2,240}，0 与 240 分别是 SRRIP /
+BRRIP 监视组；每 4000 拍里 1000 拍把读与 MSHR 压到 set 0 制造 8 路全占 → retry；SRAM 行为级存储首沿前填同一套随机数。）
+9 档 200k 矩阵在后台串行跑，读数在文末对账补齐。L2DirectoryVariants seed1 random 200k：checks 全比 errors=0。
+
+### 8.3 跑前预测（★跑完不许改★）
+
+| 目标 | 模型 passing | 预计 unread（vmucp 关） | 第一跑 |
+|---|---|---|---|
+| SplittedSRAM_3..6 | 1286 各 | 0 | passing 1286，缺 allow ⇒ PARTIAL |
+| Directory / _1 / _2 / _3 | 1954 / 1955 / 1955 / 1956 | **16**（req_s2_wayMask / req_s3_wayMask：Scala 只在 perf 里读，两侧对称死位） | passing = 模型 − 16 ⇒ PARTIAL |
+| L2Directory_1 / _2 / _3（strict，无黑盒） | 911 / 914 / 922 | 0 | SUCCEEDED |
+
+第二跑：allow（array_14..17_ext，tag 阵列 4 块 + meta + repl + orgb = 7 个/侧）+ Directory 的 vmucp ⇒ 模型值、SUCCEEDED。

@@ -1,0 +1,17 @@
+{
+  "target": "SplittedSRAM_3",
+  "ut": "Directory",
+  "regs": 308,
+  "outs": 610,
+  "expected": 1286,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 368,
+  "bbox": {
+    "array_14_ext": {
+      "insts": 4,
+      "in_bits": 92,
+      "points": 368
+    }
+  }
+}

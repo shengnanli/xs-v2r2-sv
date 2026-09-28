@@ -1,0 +1,9 @@
+{
+  "target": "L2Directory_3",
+  "ut": "L2DirectoryVariants",
+  "regs": 142,
+  "outs": 780,
+  "expected": 922,
+  "merge_dup": "false",
+  "model_applicable": true
+}

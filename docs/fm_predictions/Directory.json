@@ -1,0 +1,32 @@
+{
+  "target": "Directory",
+  "ut": "Directory",
+  "regs": 1162,
+  "outs": 244,
+  "expected": 1954,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 548,
+  "bbox": {
+    "array_14_ext": {
+      "insts": 4,
+      "in_bits": 92,
+      "points": 368
+    },
+    "array_15_ext": {
+      "insts": 1,
+      "in_bits": 124,
+      "points": 124
+    },
+    "array_16_ext": {
+      "insts": 1,
+      "in_bits": 28,
+      "points": 28
+    },
+    "array_17_ext": {
+      "insts": 1,
+      "in_bits": 28,
+      "points": 28
+    }
+  }
+}
