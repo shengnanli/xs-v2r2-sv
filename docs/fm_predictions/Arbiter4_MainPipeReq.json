@@ -1,0 +1,10 @@
+{
+  "target": "Arbiter4_MainPipeReq",
+  "ut": "Arbiter4_MainPipeReq",
+  "regs": 0,
+  "outs": 986,
+  "expected": 986,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合：986 = 982 位载荷输出 + out_valid + 3 根 in_ready（io_in_2_ready 被 firtool 删掉）；无寄存器，无 unread/constant 预期"
+}

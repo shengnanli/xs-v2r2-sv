@@ -1,0 +1,10 @@
+{
+  "target": "MainPipe",
+  "ut": "MainPipe",
+  "regs": 4860,
+  "outs": 4177,
+  "expected": 9037,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 9037 = golden 寄存器位 4860 + 输出位 4177。lane 内 diagnostic 试跑(vmucp+钉点 16)实测 9036：差 1 = FM Constant reg 1（两侧各一个、assumed-to-toggle 折叠，receipt constant_reg=1 指认）。unread 应为 0（65 matched-unread + 16 钉点全部经 vmucp 实比）。"
+}
