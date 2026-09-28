@@ -209,3 +209,17 @@ cov_fail=0（checks 2196988..2197051）；DuplicatedTagArray @ b25ad3da 9/9 erro
 | DataSRAMBank_4 | **1205** | 同上 |
 
 依据：非正式试跑（DataSRAMBank/_1 vmucp 关 1204 + unread 1；_2/_4 vmucp 开 1205）；模型 1205（MODEL_NA，merge 开）。
+
+### 第三批对账（run_proof @ 754c1d99，evidence/754c1d99ea72/<目标>/）
+
+UT：DataSRAMBank（4 对同 tb）@ 8554930b 9/9 checks=6387104 errors=0 cov_fail=0。
+
+| 目标 | 预测 | 实测 passing | 差 | 其余 | receipt.json sha256 |
+|---|---|---|---|---|---|
+| DataSRAMBank | 1205 | 1205 | 0 | assembly；黑盒 8（array_7_ext）；unread 0（vmucp 实比 REG） | `43f1c0e1588bae9f8f321246e6d49a32c2700bc9ea680ec11ff25a398c150bb9` |
+| DataSRAMBank_1 | 1205 | 1205 | 0 | 同上 | `8f621beb05a9ba9f59e90c52e96160549a3a358dd7f06283599076281a4a6661` |
+| DataSRAMBank_2 | 1205 | 1205 | 0 | 同上 | `f87b2c0e2ad268f980621cc806faa1f43db92af94e580ea4acb6212fdee5f94f` |
+| DataSRAMBank_4 | 1205 | 1205 | 0 | 同上 | `b161aa8983f16c37b3a37725889601bdea113b130eb2059329ddcc0f371ccb21` |
+
+全部 verdict SUCCEEDED；`fm_predict.py check` 4/4「全部对上」。
+复跑：`PROOF_COMMIT=754c1d99 bash scripts/run_proof.sh DataSRAMBank DataSRAMBank DataSRAMBank_1 DataSRAMBank_2 DataSRAMBank_4 < /dev/null`
