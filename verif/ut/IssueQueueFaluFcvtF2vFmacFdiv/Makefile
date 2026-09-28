@@ -37,6 +37,9 @@ FM_REF_DEPS_IssueQueueFaluFcvtF2vFmacFdiv = EntriesFaluFcvtF2vFmacFdiv.sv EnqEnt
 
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：依据与六条证据见 verif/fm_target_config/IssueQueueFaluFcvtF2vFmacFdiv.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
