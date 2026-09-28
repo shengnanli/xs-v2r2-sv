@@ -1581,6 +1581,30 @@ FM_NOTES = {
         '# + othersEntriesSimp_N 1580 位的条目内死负载。\n'
         '# 加强后期望 passing 10879 -> 14039（恰好 +3160）、unread 归 0、failing 仍 0；\n'
         '# 不增即空转，按 fail 处理。',
+    'EntriesStaMou':
+        '# 本变体实测（2026-09-28，signoff-strict，impl 8c789148）：加强前 native SUCCEEDED\n'
+        '# passing 11440 / failing 0 / unmatched 六项全 0 / 黑盒输出 0，\n'
+        '# 余 3076 未读点**全部** matched_nc，两侧严格 1:1，且 3076/3076 都来自\n'
+        '# 钉点文件（12360 对，FM 自行猜配 0 对）——构成 = enqEntries_N 1538 位\n'
+        '# + othersEntriesSimp_N 1538 位的条目内死负载。\n'
+        '# 加强后期望 passing 11440 -> 14516（恰好 +3076）、unread 归 0、failing 仍 0；\n'
+        '# 不增即空转，按 fail 处理。',
+    'EntriesVlduVstu':
+        '# 本变体实测（2026-09-28，signoff-strict，impl 8c789148）：加强前 native SUCCEEDED\n'
+        '# passing 16162 / failing 0 / unmatched 六项全 0 / 黑盒输出 0，\n'
+        '# 余 2288 未读点**全部** matched_nc，两侧严格 1:1，且 2288/2288 都来自\n'
+        '# 钉点文件（15224 对，FM 自行猜配 0 对）——构成 = enqEntries_N 1144 位\n'
+        '# + othersEntriesSimp_N 1144 位的条目内死负载。\n'
+        '# 加强后期望 passing 16162 -> 18450（恰好 +2288）、unread 归 0、failing 仍 0；\n'
+        '# 不增即空转，按 fail 处理。',
+    'EntriesVlduVstuVseglduVsegstu':
+        '# 本变体实测（2026-09-28，signoff-strict，impl 8c789148）：加强前 native SUCCEEDED\n'
+        '# passing 16196 / failing 0 / unmatched 六项全 0 / 黑盒输出 0，\n'
+        '# 余 2288 未读点**全部** matched_nc，两侧严格 1:1，且 2288/2288 都来自\n'
+        '# 钉点文件（15224 对，FM 自行猜配 0 对）——构成 = enqEntries_N 1144 位\n'
+        '# + othersEntriesSimp_N 1144 位的条目内死负载。\n'
+        '# 加强后期望 passing 16196 -> 18484（恰好 +2288）、unread 归 0、failing 仍 0；\n'
+        '# 不增即空转，按 fail 处理。',
     'EntriesAluCsrFenceDiv':
         '# 本变体实测(2026-09-17, 钉点 20308 对)：native SUCCEEDED /\n'
         '# passing 18781 / failing 0 / unverified 0 / aborted 0 /\n'
@@ -1622,6 +1646,12 @@ FM_VMUCP_WHITELISTED = {
     #   这张表 + verif/fm_target_config/<top>.tcl，两者缺一 fm_eq.tcl 会 exit 3。★
     'EntriesLdu',
     'EntriesStdMoud',
+    # 2026-09-28 agent/entries-mem 加访存三变体（家族 14 个至此全员）：六条证据由
+    # vmucp_evidence.py 在**加强前**采齐（加强前 receipt 在 evidence/8c789148b150/），
+    # 依据与事前写死的期望值在 verif/fm_target_config/<top>.tcl 里逐条写明。
+    'EntriesStaMou',
+    'EntriesVlduVstu',
+    'EntriesVlduVstuVseglduVsegstu',
 }
 
 
