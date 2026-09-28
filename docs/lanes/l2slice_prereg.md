@@ -50,3 +50,31 @@ M2 child1 ID_LO 0x09→0x0A ⇒ elaborate 期 $fatal 拦下。
 
 无 vmucp、无 fm_pins。MbistPipe* 家族 24 变体用同一核已签，预期无意外。
 可能出错处：dataInReg 高 33 位只被 child1 读、beReg[7:1] 只被 child0 读——都被读，预期 unread=0。
+
+## 2. MSHRBuffer / MSHRBuffer_1
+
+### 2.1 结构
+
+- `coupledL2.MSHRBuffer(wPorts)` 的两个单态化：refillBuf（2 写口，w_0 带 beatMask）、releaseBuf（3 写口，
+  beatMask 被 firtool 折叠为常量 2'h3）。共用核 `xs_MSHRBuffer_core`（rtl/uncore/MSHRBuffer.sv），
+  MSHRBuffer_1.sv 为薄 wrapper。存储 16 槽 × 2 beat × 256 位不复位；读口 RegEnable 异步复位。
+- G0→G1 golden 两者均 0 行差异。0 子模块、0 黑盒。golden 的 assert 在 `ifndef SYNTHESIS 内。
+
+### 2.2 UT（verif/ut/MSHRBuffer，两对同测；commit 9d5de5be）
+
+| seed | initreg+0 | initreg+random | initreg+<seed>017 |
+|---|---|---|---|
+| 1/7/42 | checks=400000 errors=0 ×3 | errors=0 ×3 | errors=0 ×3 |
+
+覆盖（seed 1 random）：读 100168 拍；w_0 部分 beat 写 58927；两口同槽冲突 1944（_1 的 w1/w2 冲突 1894）；
+读 id 高位非 0 的 21273。变异：写口优先级反转 errors=781；id 只比低 4 位 errors=9305；忽略 beatMask errors=7577，均 CAUGHT。
+
+### 2.3 跑前预测（★跑完不许改★）
+
+| 目标 | passing | 其余 |
+|---|---|---|
+| MSHRBuffer   | **9216**（regs 8704 + outs 512） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |
+| MSHRBuffer_1 | **9216**（8704 + 512） | 同上 |
+
+可能出错处：golden 扁平名 `buffer_<i>_<b>` 与重写 `buffer[i][b]` 靠 FM 名字规整配对；若 matching 卡住或
+unmatched≠0，先生成 fm_pins_pre 再谈别的。未做任何 FM 试跑。
