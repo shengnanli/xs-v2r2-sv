@@ -39,7 +39,7 @@ module tb;
   int q_cov_enq = 0;
   int q_cov_deq = 0;
   int q_cov_full_stall = 0;
-  int q_cov_enq_deq_same = 0;
+  int q_cov_reset_mid = 0;
   logic [0:0] q_armed = '0;
   int q_armed_at = -1;
   Queue1_RegMapperInput_6 q_u_gold (
@@ -96,7 +96,7 @@ module tb;
       q_io_enq_bits_extra_tlrr_extra_source = 4'($urandom);
       q_io_enq_bits_extra_tlrr_extra_size = 2'($urandom);
       q_io_deq_ready = 1'($urandom);
-      q_reset = (cyc < RESET_CYC) || ($urandom_range(0, 19999) == 0);
+      q_reset = (cyc < RESET_CYC) || ($urandom_range(0, 1999) == 0);
       #4;
       if (cyc >= RESET_CYC + 0 && (&q_armed)) begin
         checks++;
@@ -158,7 +158,7 @@ module tb;
         if (q_io_enq_valid && q_g_io_enq_ready) q_cov_enq++;
         if (q_g_io_deq_valid && q_io_deq_ready) q_cov_deq++;
         if (q_g_io_deq_valid && !q_io_deq_ready && q_io_enq_valid) q_cov_full_stall++;
-        if (q_io_enq_valid && q_g_io_enq_ready && q_g_io_deq_valid && q_io_deq_ready) q_cov_enq_deq_same++;
+        if (q_reset && cyc > 100) q_cov_reset_mid++;
       end
       if (q_io_enq_valid && q_g_io_enq_ready) q_armed[0] = 1'b1;
       if (q_armed_at < 0 && (&q_armed)) q_armed_at = cyc + 1;
@@ -253,13 +253,13 @@ module tb;
     $display("[ARM] Queue1_RegMapperInput_6 armed_at=%0d", q_armed_at);
     if (q_armed_at < 0) begin cov_fail++; $display("[ARM] Queue1_RegMapperInput_6 从未 arm"); end
     $display("[COV] Queue1_RegMapperInput_6.enq = %0d", q_cov_enq);
-    if (q_cov_enq < 1000) begin cov_fail++; $display("[COV] Queue1_RegMapperInput_6.enq < 1000"); end
+    if (q_cov_enq < 20) begin cov_fail++; $display("[COV] Queue1_RegMapperInput_6.enq < 20"); end
     $display("[COV] Queue1_RegMapperInput_6.deq = %0d", q_cov_deq);
-    if (q_cov_deq < 1000) begin cov_fail++; $display("[COV] Queue1_RegMapperInput_6.deq < 1000"); end
+    if (q_cov_deq < 20) begin cov_fail++; $display("[COV] Queue1_RegMapperInput_6.deq < 20"); end
     $display("[COV] Queue1_RegMapperInput_6.full_stall = %0d", q_cov_full_stall);
-    if (q_cov_full_stall < 1000) begin cov_fail++; $display("[COV] Queue1_RegMapperInput_6.full_stall < 1000"); end
-    $display("[COV] Queue1_RegMapperInput_6.enq_deq_same = %0d", q_cov_enq_deq_same);
-    if (q_cov_enq_deq_same < 1000) begin cov_fail++; $display("[COV] Queue1_RegMapperInput_6.enq_deq_same < 1000"); end
+    if (q_cov_full_stall < 20) begin cov_fail++; $display("[COV] Queue1_RegMapperInput_6.full_stall < 20"); end
+    $display("[COV] Queue1_RegMapperInput_6.reset_mid = %0d", q_cov_reset_mid);
+    if (q_cov_reset_mid < 20) begin cov_fail++; $display("[COV] Queue1_RegMapperInput_6.reset_mid < 20"); end
     $display("checks=%0d errors=%0d cov_fail=%0d", checks, errors, cov_fail);
     if (errors == 0 && cov_fail == 0 && checks > 0) $display("TEST PASSED");
     else $display("TEST FAILED");

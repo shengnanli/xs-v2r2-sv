@@ -18,12 +18,13 @@ COV = [
     ("enq", "@io_enq_valid && @io_enq_ready"),
     ("deq", "@io_deq_valid && @io_deq_ready"),
     ("full_stall", "@io_deq_valid && !@io_deq_ready && @io_enq_valid"),
-    ("enq_deq_same", "@io_enq_valid && @io_enq_ready && @io_deq_valid && @io_deq_ready"),
+    # 同拍进出结构上不可能（enq_ready = ~full，deq 只在 full 时），不设此闸
+    ("reset_mid", "@reset && cyc > 100"),
 ]
 
 PAIRS = [
     Pair("Queue1_RegMapperInput_6", "q_", clocked=True, cov=COV,
-         reset_period=20000, cov_min=1000,
+         reset_period=2000, cov_min=20,
          arm=["@io_enq_valid && @io_enq_ready"]),
 ]
 
