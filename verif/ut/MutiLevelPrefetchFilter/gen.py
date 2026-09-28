@@ -190,9 +190,12 @@ TB_HEAD = '''\
 //   · l2 请求的 sink 取 L2/L3 为主，也给 L1 和非法值 3；io_l1_req_ready / io_enable 随机；
 //   · 偶发 3 拍复位脉冲（复位期间两侧都不比）。
 // 比较窗口：+vcs+initreg+random 下两侧的不复位寄存器初值各摇各的（双例化的已知性质），
-//   其中 s1_pf_bits_* 与 s1_tlb_req_bits_* 直接连输出、要等第一次发出才被覆盖。所以复位释放后
-//   先等 golden 各发出过一次 TLB 请求与一次 L1 预取（再加 4 拍），之后逐拍全比，直到结束。
-//   这段等待在 +0 档下同样生效，只影响开头几百拍。
+//   其中 s1_pf_bits_* 与 s1_tlb_req_bits_* 直接连输出、要等第一次发出才被覆盖；
+//   L2/L3 仲裁器在没有候选时照样把某一路（无效项）的地址摆在 io_l2_pf_addr_bits_* 上，
+//   那是没写过的表项内容（seed 7 实测：第 32 拍起 10 拍 io_l2_pf_addr_bits_addr 两侧不同）。
+//   所以复位释放后先等：golden 各发出过一次 TLB 请求与一次 L1 预取、且两张表的 32 项
+//   每一项都被 alloc 过（valid 曾经为 1），再加 4 拍，之后逐拍全比，直到结束。
+//   这段等待在 +0 档下同样生效，只影响开头几百～几千拍（checks 数照实打印）。
 // 覆盖判据：比较窗口内 L1 预取 / L2 预取 / TLB 请求 / 表命中(update) / TLB 回填作废 等事件
 //   每一类都必须发生过，否则本轮 errors=0 不作数（TEST FAILED）。
 // =============================================================================
@@ -243,7 +246,8 @@ def gen_tb():
                  % (n, n, n, n, n))
     L.append('  endtask')
     L.append('')
-    L.append(TB_BODY.rstrip('\n'))
+    gv = ', '.join('g_dut.%s_valids_%d' % (t, i) for t in ('l2', 'l1') for i in range(15, -1, -1))
+    L.append(TB_BODY.replace('{{g_valids}}', '{' + gv + '}').rstrip('\n'))
     return '\n'.join(L) + '\n'
 
 
@@ -338,6 +342,10 @@ TB_BODY = r'''
     if (io_l1_prefetch_req_valid && l1_req_is_alias && g_dut.s0_l1_can_accept) n_hash_alias++;
   endtask
 
+  // 两张表每一项是否被 alloc 过（热身判据，见文件头）
+  logic [31:0] ever_valid = '0;
+  always @(posedge clk) ever_valid <= ever_valid | {{g_valids}};
+
   initial begin
     bit warm_tlb, warm_l1;
     int warm_cnt;
@@ -361,7 +369,7 @@ TB_BODY = r'''
       #1;
       if (g_io_tlb_req_req_valid) warm_tlb = 1;
       if (g_io_l1_req_valid)      warm_l1  = 1;
-      if (warm_tlb && warm_l1 && !cmp_on) begin
+      if (warm_tlb && warm_l1 && (&ever_valid) && !cmp_on) begin
         warm_cnt++;
         if (warm_cnt > 4) cmp_on = 1;
       end
