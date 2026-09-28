@@ -95,3 +95,15 @@ vmucp 开 passing 132 / failing 0 / unmatched 0。可能出错：无已知风险
 | `fm_predict.py check` | 预期 418，实测 418，差 0，「全部对上」 |
 
 复跑：`cd /home/eda/xs-env/wt-missq && PROOF_COMMIT=bc1ed4b6 bash scripts/run_proof.sh Arbiter16_MainPipeReq Arbiter16_MainPipeReq < /dev/null`
+
+## B. CMOUnit
+
+| 项 | 值 |
+|---|---|
+| proof commit | `f9f232674f20`（预测登记在同一 commit，早于证明；RTL/UT/vmucp 配置在其父 `a9d9f37e`） |
+| 证据 | `evidence/f9f232674f20/CMOUnit/receipt.json` sha256 `6552e4431bc7f30ecc313fc64c663fe218a4a15b77f07d640d9398e44632fb17` |
+| impl_closure | `rtl/memblock/CMOUnit.sv` `f42240ccf3b6956900de1a89a4e762a0589091dae0b36042b80546a401442b9a` |
+| 结果 | native SUCCEEDED，passing **132** / failing 0 / unverified 0 / unread_notcompared 0 / unmatched 全 0 / 无黑盒 / signoff-strict / vmucp true / dirty false / fm.log 行首 `Error:` 0 |
+| `fm_predict.py check` | 预期 132，实测 132，差 0，「全部对上」 |
+
+复跑：`cd /home/eda/xs-env/wt-missq && PROOF_COMMIT=f9f23267 bash scripts/run_proof.sh CMOUnit CMOUnit < /dev/null`
