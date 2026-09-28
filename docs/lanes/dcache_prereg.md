@@ -162,3 +162,19 @@ UT 结构上恒 0 的输出位（行地址低 6 位、perf 高 5 位）豁免 0/
 | TagSRAMBank | **369** | assembly；黑盒 2（array_8_ext 两侧各 1）；unread 0；failing/unmatched 0 | 试跑（merge 默认）369 |
 | TagArray | **737** | assembly；黑盒 4；其余同上 | 试跑 737 |
 | DuplicatedTagArray | **2460** | assembly；黑盒 16；vmucp 开（10 对 MBIST 地址打拍死位）→ unread 0 | 试跑 2460 |
+
+### 第二批对账（run_proof @ b25ad3da，evidence/b25ad3da9f18/<目标>/）
+
+UT 9 档：LoadPipe @ bdd4281b 9/9 errors=0 cov_fail=0；TagArray（TagSRAMBank+TagArray 两对）@ b25ad3da 9/9 errors=0
+cov_fail=0（checks 2196988..2197051）；DuplicatedTagArray @ b25ad3da 9/9 errors=0 cov_fail=0（checks 3794851..3794908；
+跑时工作树有与本目标无关的未跟踪 rtl/memblock/DataSRAMBank*.sv，本目标闭包文件未改）。
+
+| 目标 | 预测 | 实测 | 差 | 其余 | receipt.json sha256 |
+|---|---|---|---|---|---|
+| LoadPipe | 1311 + const 1 | passing 1311，constant_reg 1 | 0 | signoff-strict；failing/unmatched/unread 0；无黑盒；vmucp 实比 61 | `ae13f8cd79300b0a2c7b8d5acc56fc6dac21b836b5e6dcd807f5e9de0aa934a7` |
+| TagSRAMBank | 369 | 369 | 0 | assembly；黑盒 2（array_8_ext）；unread 0 | `eb553b56f225776dc291f94c85884f7a288e8a715da9cb2c0694527dd8bbffac` |
+| TagArray | 737 | 737 | 0 | assembly；黑盒 4；unread 0 | `8d77bda801fa9880b6cca7cbfcd14786e681ff418566f5d428153e627c2126e3` |
+| DuplicatedTagArray | 2460 | 2460 | 0 | assembly；黑盒 16；vmucp 实比 10；unread 0 | `bd34b7bf457db0e62eef5da626050b62e0927f9c5f02c99089684a435fa8b12e` |
+
+全部 verdict SUCCEEDED；`fm_predict.py check` 4/4「全部对上」（后三者模型 MODEL_NA，按登记数字对账）。
+复跑：`PROOF_COMMIT=b25ad3da bash scripts/run_proof.sh {LoadPipe LoadPipe | TagArray TagSRAMBank TagArray | DuplicatedTagArray DuplicatedTagArray} < /dev/null`

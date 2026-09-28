@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/LoadPipe
+Implementation : i:/WORK/LoadPipe
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 15:21:56 2026
+**************************************************
+
+No aborted compare points.
+
+1
