@@ -28,6 +28,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/WbDataPath.sv $(addprefix $(GOLDEN_RTL)/,$(GOLDEN_CH
 
 FM_VARIANTS = WbDataPath
 FM_MERGE_DUP = false
+# 两个 VldMergeUnit 的对称死位（1904）靠 fm_pins_pre.tcl 配对后用 vmucp 加强比较；
+# 依据见 verif/fm_target_config/WbDataPath.tcl。golden-only 的 1365 位见 verif/dead_ref/WbDataPath.json。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_REF_DEPS_WbDataPath = RealWBCollideChecker.sv RealWBCollideChecker_1.sv RealWBCollideChecker_2.sv RealWBCollideChecker_3.sv RealWBCollideChecker_4.sv RealWBArbiter.sv RealWBArbiter_1.sv RealWBArbiter_2.sv RealWBArbiter_3.sv RealWBArbiter_14.sv RealWBArbiter_15.sv RealWBArbiter_20.sv RealWBArbiter_21.sv RealWBArbiter_26.sv VldMergeUnit.sv VldMgu.sv ByteMaskTailGen.sv UIntToContLow1s.sv UIntToContLow0s.sv MaskExtractor.sv
 
 PORTLINT_ORDER = fail

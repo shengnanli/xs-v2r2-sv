@@ -153,3 +153,78 @@ M9 ta 去掉 isMasked ⇒ 491。九个全抓。
 | VldMergeUnit | 2270 | 2270 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | 67d313895b64a53b5214fbd1a05b63ac7231c1788d2ae2bab1378a289ff68637 |
 
 `fm_predict.py check` 全部逐位相等（rc=0）。§2.4 风险 1 未发生：VldMergeUnit 的 packed struct 寄存器无需钉点即被 FM 全部配上（unmatched 0）。receipt：`evidence/1a087214915d/<target>/`。
+
+## 3. WbDataPath（本体，golden 21,416 行 / 2,537 端口）
+
+### 3.1 结构与子模块处置
+
+- 可读核 `rtl/backend/WbDataPath.sv`：`wbdatapath_pkg`（域编号、写口数、27 个 EXU 的配置表 EXU_WRITES /
+  EXU_DATA_SLOT / EXU_UNCERTAIN / INT_DELAY_EXU —— 配置表在 GENERATED(wbdatapath-config) 区，由生成器从 golden
+  实例连线读出）+ `xs_WbDataPath_core`（§1 分流、§2 VfExu_0_1 写整数晚一拍、§3 不定延迟口回压与 ROB fire、
+  §4 写口格式化）+ golden 同名 wrapper（GENERATED(wbdatapath-wrapper)：端口打包、5 个 RealWBCollideChecker*
+  与 2 个 VldMergeUnit 例化、toCtrlBlock 976 条 bits 直通）。生成器 `scripts/gen_wbdatapath.py`（`--check` 已进
+  gate_all）对 golden 逐条断言：976 条直通字段同名同源、每个仲裁器第 k 路的 E/wen/pdest/ready 同源、4 个不定延迟口
+  的 ready 形状、晚一拍 EXU 唯一、VldMergeUnit 除 vstart（= {1'h0, io_fromCSR_vstart}）外全部字段接同一 Mem 口。
+- 子模块全部两侧白盒：ref = golden WbDataPath + 20 个 golden 子模块原件（5 个 RealWBCollideChecker*、9 个
+  RealWBArbiter*、VldMergeUnit、VldMgu、ByteMaskTailGen、UIntToContLow0s/1s、MaskExtractor）；impl = 本 lane 重写件
+  + 已签 MaskExtractor + 共享件 xs_PriorityArbSelect。无黑盒。
+- 死位处置（两类，都不用 dont_verify）：
+  (a) **golden-only 1365 位** = VfExu_0_1 写整数那一拍 RegEnable 锁存的整条 ExuOutput 中无读者的部分；impl 只锁
+      被读的 73 位 → PASS_DEAD_REF，声明 `verif/dead_ref/WbDataPath.json`（1365 条，逐条 ref_path，由试跑 2 的
+      unread_points 生成，理由写在声明里）。
+  (b) **对称 1904 位** = 两个 VldMergeUnit 的 wbReg 在 WbDataPath 里无读者的位（每实例 952）。golden 逐字段寄存器、
+      impl packed struct，无扇出故签名配不上 → `verif/ut/WbDataPath/fm_pins_pre.tcl`（生成器产出，2268 位逐位
+      set_user_match，fail-closed 字面计数）配对后，按 vmucp 六条加强比较（`verif/fm_target_config/WbDataPath.tcl`，
+      Makefile `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true`）。
+
+### 3.2 非正式试跑（★声明：三次，均 diagnostic-full、不产 receipt，只用于定位死位与写声明★）
+
+| 试跑 | 字节 | 钉点 | vmucp | native | passing | Constant reg | unread（ref / impl / matched_nc） |
+|---|---|---|---|---|---|---|---|
+| 1 | commit 8afcd62f | 无 | 关 | SUCCEEDED | 未留存（fm.log 被覆盖；Matching 20718 name + 438 signature） | — | unmatched unread 3269(1904) |
+| 3 | 8afcd62f + 未提交的钉点生成 | 2268 | 关 | SUCCEEDED | 21156 | 2 | 1365 / 0 / 1904 |
+| 2 | 同上 | 2268 | 开 | SUCCEEDED | 23060 | 2 | 1365 / 0 / 0 |
+
+试跑 2 的日志用本仓 `fm_verdict.py --mode signoff-strict --dead-ref verif/dead_ref/WbDataPath.json` 离线判：
+PASS_DEAD_REF；不给声明：PARTIAL(strict_unread!=0)。
+
+### 3.3 UT（verif/ut/WbDataPath；commit 8afcd62f 的 rtl 字节 —— 其后只改生成器钉点产物与 FM 配置，rtl 未动）
+
+golden WbDataPath（连同 golden 子模块）vs WbDataPath_xs（连同重写子模块）逐拍比全部 1208 个输出端口；
+前 5 拍灌全 valid 不比（无复位寄存器）。seed × 三档 initreg × 200k 拍：
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=241593960 errors=0 | checks=241593960 errors=0 | (1017) checks=241593960 errors=0 |
+| 7  | checks=241593960 errors=0 | checks=241593960 errors=0 | (7017) checks=241593960 errors=0 |
+| 42 | checks=241593960 errors=0 | checks=241593960 errors=0 | (42017) checks=241593960 errors=0 |
+
+覆盖（tb 判据，未满足即 TEST FAILED）：5 个域共 30 个写口每个都真写过；4 个不定延迟口（IntExu_3_1 / FpExu_0_1 /
+FpExu_1_1 / VfExu_2_0）ready 取遍 0/1（seed 1 各被拒 12645 / 12603 / 12498 / 15430 拍）；晚一拍那一路在整数
+仲裁器里赢过。
+
+mutant 自检（scratchpad 副本、seed 7、3k 拍）：M1 不定延迟口去掉「不写即就绪」⇒ errors=7780；M2 ROB valid 不看
+ready ⇒ 821；M3 去掉晚一拍（整数 Write 用本拍值）⇒ 1402；M5 合并单元 vstart 改取 io 口 ⇒ 917；M6 IntExu_2_1 整数域
+data 份号 1→0 ⇒ 730；M0（不变）⇒ 0。★两个 UT 抓不到的★：M4 写口 wen 去掉「& 本域 wen」⇒ 0 —— 等价变异（仲裁出口
+valid=1 时赢家的 wen 必为 1，Scala 里这一 & 本就冗余，FM 也会判等价）；M7 晚一拍锁存去掉使能（每拍都锁）⇒ 0 ——
+输出等价（锁存值只在 dly_write=1 时被读，而那时上一拍必有 valid），但寄存器次态函数不同，FM 的寄存器比较点
+（dly_wen / dly_pdest / dly_data 与 golden r_intWen / r_pdest / r_data_1[63:0]）会判 failing。
+
+复跑：`cd verif/ut/WbDataPath && make run SEED=<s> INITREG=<0|random|<s>017>`
+
+### 3.4 跑前预测（★跑完不许改本节★，登记 docs/fm_predictions/WbDataPath.json，含 note）
+
+| 项 | 预测 |
+|---|---|
+| 模型 | 24427 = 寄存器 3709（顶层 1439 + VldMergeUnit 1135×2）+ 输出 20718 |
+| passing | **23060** = 24427 − Constant reg 2 − golden-only unread 1365 |
+| Constant reg | 2（推断为 vldMgu_{0,1} 的 wbReg vstart[7]：golden 接 {1'h0, io_fromCSR_vstart}，两侧同为常 0） |
+| unread | 1365，全在 ref 侧，与 verif/dead_ref/WbDataPath.json 逐条相等；impl 0、matched_nc 0 |
+| 其余 | failing 0 / unverified 0 / unmatched compare points 0(0) / 无黑盒 / 无 dont_verify / native SUCCEEDED |
+| 判决 | **PASS_DEAD_REF**（signoff-strict + vmucp + dead_ref 声明） |
+
+### 3.5 明写可能出错的地方
+
+1. 正式证明在 detached worktree 里跑，字节与试跑 2 仅差提交；若 passing 不等于 23060，先查钉点计数行
+   （WBDP_PIN_END ok=2268）与 vmucp 是否生效，不改声明迁就。
+2. Constant reg 2 的身份是推断，未用 report 核对；它不影响判决（常量寄存器两侧对称、不进比较点）。

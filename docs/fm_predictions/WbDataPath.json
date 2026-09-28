@@ -1,0 +1,10 @@
+{
+  "target": "WbDataPath",
+  "ut": "WbDataPath",
+  "regs": 3709,
+  "outs": 20718,
+  "expected": 24427,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预期 passing 23060 = 模型 24427 - Constant reg 2（vldMgu_{0,1} wbReg vstart[7]：golden 接 {1'h0, io_fromCSR_vstart}，两侧恒 0）- golden-only unread 1365（verif/dead_ref/WbDataPath.json）。VldMergeUnit 对称死位 1904 经 fm_pins_pre + vmucp 计入 passing。"
+}

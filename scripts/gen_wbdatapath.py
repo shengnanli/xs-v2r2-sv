@@ -33,6 +33,7 @@ GOLDEN = pathlib.Path(os.environ.get('G1_GOLDEN',
                                      '/home/eda/xs-env/G1-canonical/golden-rtl'))
 CORE = 'rtl/backend/WbDataPath.sv'
 TB = 'verif/ut/WbDataPath/tb.sv'
+PINS = 'verif/ut/WbDataPath/fm_pins_pre.tcl'
 CFG = ('  // BEGIN GENERATED(wbdatapath-config)\n', '  // END GENERATED\n')
 WRP = ('// BEGIN GENERATED(wbdatapath-wrapper)\n', '// END GENERATED\n')
 
@@ -531,6 +532,67 @@ def tb(g, E, delayed):
     return '\n'.join(L) + '\n'
 
 
+# ---------------------------------------------------------------------------
+# FM 匹配前钉点：两个 VldMergeUnit 实例的 wbReg（golden 逐字段寄存器 <-> 重写核的 packed struct）
+# ---------------------------------------------------------------------------
+def pins(vlds):
+    sys.path.insert(0, str(REPO / 'scripts'))
+    from gen_vldmergeunit import field_path
+    t = (GOLDEN / 'VldMergeUnit.sv').read_text()
+    regs = []
+    for m in re.finditer(r'\n  reg\s*(?:\[(\d+):0\])?\s*wbReg_bits_(\w+);', t):
+        regs.append((m[2], int(m[1]) + 1 if m[1] else 1))
+    if not regs:
+        die('VldMergeUnit golden 里没找到 wbReg_bits_* 寄存器')
+    rows = []
+    for f, w in regs:
+        path = field_path(f)                       # 例 vls.vpu.vmask / exceptionVec[3]
+        m = re.fullmatch(r'(\w+)\[(\d+)\]', path)
+        if m:                                      # exceptionVec_N：结构体里是 [23:0] 向量的第 N 位
+            if w != 1:
+                die('%s 宽度 %d != 1' % (f, w))
+            rows.append((f, '\\[%s][%s]' % (m[1], m[2]), 1, True))
+        else:
+            rows.append((f, ''.join('\\[%s]' % s for s in path.split('.')), w, False))
+    total = sum(w for _, _, w, _ in rows) * len(vlds)
+    L = []
+    L.append('# WbDataPath FM「匹配前」钉点 —— 自动生成：scripts/gen_wbdatapath.py（勿手改）')
+    L.append('#')
+    L.append('# 只消名差：两个 VldMergeUnit 实例里，golden 的 wbReg 是逐字段寄存器 wbReg_bits_<f>_reg，')
+    L.append('# 重写核是一个 packed struct 寄存器 u_core/wb_bits_reg\\[..]\\[..]。其中大部分位在 WbDataPath')
+    L.append('# 里没有读者（合并单元只把 valid/data/pdest/3 个 wen 交给仲裁器），FM 的签名分析配不上')
+    L.append('# 无扇出的寄存器 —— 不钉就是两侧各 1904 个 unmatched unread。')
+    L.append('# set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。')
+    L.append('# fail-closed：逐条数返回值，拒一条或总数不等于字面整数就 error。进 fm.log 的输出一律 ASCII。')
+    L.append('set ::WBDP_PIN_EXPECT %d' % total)
+    L.append('set ::WBDP_PIN_OK 0')
+    L.append('set ::WBDP_PIN_BAD 0')
+    L.append('proc wbdp_pin {inst g i w} {')
+    L.append('  set pairs {}')
+    L.append('  if {$w == 1} {')
+    L.append('    lappend pairs "r:/WORK/WbDataPath/$inst/wbReg_bits_${g}_reg" "i:/WORK/WbDataPath/$inst/u_core/wb_bits_reg$i"')
+    L.append('  } else {')
+    L.append('    for {set b 0} {$b < $w} {incr b} {')
+    L.append('      lappend pairs "r:/WORK/WbDataPath/$inst/wbReg_bits_${g}_reg\\[$b\\]" "i:/WORK/WbDataPath/$inst/u_core/wb_bits_reg$i\\[$b\\]"')
+    L.append('    }')
+    L.append('  }')
+    L.append('  foreach {r m} $pairs {')
+    L.append('    if {[set_user_match $r $m]} { incr ::WBDP_PIN_OK } else {')
+    L.append('      incr ::WBDP_PIN_BAD')
+    L.append('      if {$::WBDP_PIN_BAD <= 10} { puts "WBDP_PIN_FAIL: $r <-> $m" }')
+    L.append('    }')
+    L.append('  }')
+    L.append('}')
+    L.append('puts "WBDP_PIN_BEGIN WbDataPath expect=$::WBDP_PIN_EXPECT"')
+    for v in vlds:
+        for f, ipath, w, idx in rows:
+            L.append('wbdp_pin vldMgu_%d %s {%s} %d' % (v['i'], f, ipath, w))
+    L.append('puts "WBDP_PIN_END WbDataPath ok=$::WBDP_PIN_OK bad=$::WBDP_PIN_BAD"')
+    L.append('if {$::WBDP_PIN_BAD != 0} { error "WBDP_PIN_MISS=$::WBDP_PIN_BAD" }')
+    L.append('if {$::WBDP_PIN_OK != %d} { error "WBDP_PIN_COUNT=$::WBDP_PIN_OK expect=%d" }' % (total, total))
+    return '\n'.join(L) + '\n'
+
+
 def splice(text, marks, new):
     b, e = marks
     if text.count(b) != 1:
@@ -545,7 +607,7 @@ def build():
     text = (REPO / CORE).read_text()
     text = splice(text, CFG, config(E, delayed))
     text = splice(text, WRP, wrapper_text(g, E, chks, vlds, passthru))
-    return {CORE: text, TB: tb(g, E, delayed)}
+    return {CORE: text, TB: tb(g, E, delayed), PINS: pins(vlds)}
 
 
 def main():
