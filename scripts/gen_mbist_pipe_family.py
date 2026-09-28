@@ -47,7 +47,9 @@ MODS = sorted(os.path.basename(p)[:-3] for p in glob.glob(G + '/MbistPipe*.sv'))
 # verify_reduce 三道机器校验 + emit_variant，产物另放、UT 另立（verif/ut/L2Slice）。
 EXTRA_MODS = ['L2Slice', 'L2Slice_1', 'L2Slice_2', 'L2Slice_3',
               # extraHold 叶子：读/写使能用 2 位展宽寄存器，核是 rtl/dft/xs_mbist_hold_leaf_core.sv
-              'L2DataStorage', 'L2DataStorage_1', 'L2DataStorage_2', 'L2DataStorage_3']
+              'L2DataStorage', 'L2DataStorage_1', 'L2DataStorage_2', 'L2DataStorage_3',
+              # Directory_1..3 层的普通叶子（slice 0 的 L2Directory 另有已签核的手写件 rtl/uncore/L2Directory.sv，不在此列）
+              'L2Directory_1', 'L2Directory_2', 'L2Directory_3']
 
 # 每个变体服务哪个存储阵列：由 golden 的例化关系机械抓出来的（父模块 + 与本
 # pipe 的 toSRAM/toNextPipeline 网线相连的实例类型），写进薄文件头供读者定位。
@@ -83,6 +85,9 @@ SERVES = {
  'L2DataStorage_1':        ('DataStorage_1', 'L2 slice 1 数据阵列 GatedSplittedSRAM_1 的 4 个 bank（extraHold）'),
  'L2DataStorage_2':        ('DataStorage_2', 'L2 slice 2 数据阵列 GatedSplittedSRAM_2 的 4 个 bank（extraHold）'),
  'L2DataStorage_3':        ('DataStorage_3', 'L2 slice 3 数据阵列 GatedSplittedSRAM_3 的 4 个 bank（extraHold）'),
+ 'L2Directory_1':          ('Directory_1',   'L2 slice 1 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
+ 'L2Directory_2':          ('Directory_2',   'L2 slice 2 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
+ 'L2Directory_3':          ('Directory_3',   'L2 slice 3 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
  'L2Slice_3':              ('Slice_3',       'L2 slice 3 的 MBIST 子树：child0=Directory 层(L2Directory_3)、child1=DataStorage 层(L2DataStorage_3)'),
 }
 

@@ -143,6 +143,13 @@ def gen(a):
         for nm, ex in covs:
             A(f'    if ({ex}) cov_{T}_{nm}++;')
         A('  endtask')
+        A(f'  task automatic preinit_{T}();')
+        for path in per_target(a.preinit, T):
+            # 行为级存储（厂商 SRAM 宏的 ram / firtool ram 的 Memory）上电是 X：golden 的 ?: 会把 X
+            # 传开，而 if/for 写法把 X 当假 —— 两边对"读到未初始化行"的 X 语义不同，比出来的差异与 RTL
+            # 无关。这里给 golden 那份填同一套随机数（再由 --sync 'g=>i' 抄给重写侧），读未写行也有确定值。
+            A(f'    foreach (u_g_{T}.{path}[e]) u_g_{T}.{path}[e] = {{$urandom, $urandom, $urandom, $urandom, $urandom, $urandom, $urandom, $urandom}};')
+        A('  endtask')
         A(f'  task automatic sync_{T}();')
         for spec in per_target(a.sync, T):
             if '=>' in spec:
@@ -178,6 +185,8 @@ def gen(a):
     for T in a.target:
         A(f'    drive_{T}();')
     A('    #1;')
+    for T in a.target:
+        A(f'    preinit_{T}();')
     for T in a.target:
         A(f'    sync_{T}();')
     A('    repeat (5) @(posedge clock);')
@@ -215,6 +224,8 @@ def main():
     ap.add_argument('--narrow', action='append', default=[])
     ap.add_argument('--sync', action='append', default=[])
     ap.add_argument('--cover', action='append', default=[])
+    ap.add_argument('--preinit', action='append', default=[],
+                    help="'T:<golden 内存数组路径>'：首沿前给 golden 的行为级存储填随机数（配合 --sync 'g=>i' 抄给重写侧）")
     ap.add_argument('--min-toggled', action='append', default=[])
     ap.add_argument('--rst-period', type=int, default=5000)
     ap.add_argument('--both-phases', action='store_true',
