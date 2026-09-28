@@ -18,11 +18,16 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/CtrlUnit.sv \
               $(GOLDEN_RTL)/Queue1_RegMapperInput_6.sv \
               $(GOLDEN_RTL)/NewPipelineConnectPipe_27.sv
 
-FM_VARIANTS = Queue1_RegMapperInput_6 CtrlUnit
+FM_VARIANTS = CtrlUnit
 FM_REF_DEPS_CtrlUnit = Queue1_RegMapperInput_6.sv NewPipelineConnectPipe_27.sv
 
 FM_MERGE_DUP = false
 PORTLINT_ORDER = fail
+
+# vmucp（加强不是放宽）：Connect0（tag 通道）通道 1..7 的 455 位 payload 寄存器两侧对称死位，
+# 由 fm_pins_pre.tcl（scripts/gen_ctrlunit_pins.py 生成）钉成 matched 后真比较。
+# 依据与六条证据见 verif/fm_target_config/CtrlUnit.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 
@@ -33,3 +38,4 @@ SIM_ARGS += +vcs+initreg+$(INITREG)
 .PHONY: gencheck
 gencheck:
 	python3 gen.py --check
+	python3 ../../../scripts/gen_ctrlunit_pins.py --check
