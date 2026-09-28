@@ -46,6 +46,40 @@ tb 分辨力自测（20k 拍）：拼包下标 `k`→`k^1`（相邻两路互换�
 
 可能出错：无（纯组合、共享核已签核三次）。本节没有做过任何 FM 试跑。
 
+## 2. CMOUnit（golden 231 行 / 20 端口，无子模块）
+
+### 2.1 核与 golden 差异点
+
+- `rtl/memblock/CMOUnit.sv`：`xs_CMOUnit_core`（enum 四状态机 IDLE/SREQ/WRESP/LSQ_RESP + 锁存的请求 +
+  denied/corrupt/no_pending + wfiSafe 打拍）+ golden 同名 wrapper（只改名）。`_GEN_`/`_T_` 0。
+- 照 golden 端口表：nderr 寄存器 golden 已随 `resp_to_lsq.nderr/address` 输出一起被 DCE，核里不写；
+  `req_address` 保留 64 位（Scala CMOReq 原宽），[63:48] 两侧对称死位 → vmucp
+  （`verif/fm_target_config/CMOUnit.tcl`，16 对 FM 按名自动配上）。
+- 复位域照 golden：state/denied/corrupt/no_pending/wfiSafe 异步复位；req_opcode/req_address 不复位。
+
+### 2.2 UT（verif/ut/CMOUnit；3 档 initreg × 3 seed × 200k，串行）
+
+9/9 `errors=0 cov_fail=0` TEST PASSED（checks=200059/200060/200071，含随机异步复位期间的比较）。
++random 下 req_address 两实例初值不同，tb 暖机＝复位后第一拍强制接一条请求再开比较窗口。
+覆盖（seed 1）：req.fire 14546 / A.fire 14524 / D.fire 14504 / resp.fire 14499 / wfiReq 挡 A 39920 /
+D 带 denied|corrupt 6390 / 非 WRESP 态来 D 被忽略 35531 / 异步复位 59 次；每个输出位见过 0 和 1
+（A opcode 高两位结构恒 1，gen.py 显式豁免 toggle，仍逐位比较）。
+tb 分辨力自测（20k 拍）：去掉 A.valid 的 wfiReq 门控 errors=15555；D 收下时不置 no_pending errors=5110；
+接新请求不清 denied errors=3222；opcode 3 误映射成 Inval errors=2607。
+
+### 2.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/CMOUnit.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | **正好 132**（模型 = golden 寄存器 73 + 输出 59） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched 六项 | 全 0 |
+| 黑盒 | 无 |
+| mode / verdict / vmucp | signoff-strict / SUCCEEDED / true |
+
+lane 内 diagnostic-full 试跑（dirty，未出 receipt）两次：vmucp 关 passing 116 + matched-unread 16；
+vmucp 开 passing 132 / failing 0 / unmatched 0。可能出错：无已知风险。
+
 ---
 
 # 对账（跑完追加；上文各节未改一字）
