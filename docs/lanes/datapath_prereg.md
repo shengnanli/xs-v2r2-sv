@@ -231,3 +231,49 @@ impl 的 6 个是核里 always_ff 内组合临时量 `slot` 被 FM 当寄存器�
    总和不变；若总和变了，那是比较点被吞掉，按红处理。
 2. constant_reg 150 的分解（105 + 45）是按试跑推的，未逐点核对；若分解不同但总数相同，照实记。
 3. 本体是本 lane 第一次跑正式证明，FM 时长按试跑 ~31 分钟估；超过 3 小时按规范 30 分钟采样。
+
+### 对账 C：DataPath 本体（proof commit `19b1b6fa`，evidence/19b1b6fa6f10/DataPath/，signoff-strict，vmucp 开，dead_ref 21）
+
+| 项 | 预测（§C.4） | 实测 |
+|---|---|---|
+| verdict | PASS_DEAD_REF | **PASS_DEAD_REF**（native SUCCEEDED） |
+| passing | 138,108 | **138,108** |
+| failing / unverified / aborted | 0 / 0 / 0 | 0 / 0 / 0（failing_truncated=false） |
+| 比较点 unmatched | 0(0) | 0（unmatched_ref 0 / unmatched_impl 0） |
+| constant_reg | 150 | **150**（receipt 标 constant_reg_toggle_assumed=true：FM 的 "Constant registers … initialized by some objects that were assumed to toggle" 提示，golden 自比基线同样出现） |
+| unread | ref 21（dead_ref）/ impl 0 | **21**，与 verif/dead_ref/DataPath.json 逐条相等（dead_ref_points=21），impl 侧 0 —— 试跑里的 6 个 `slot` 伪影已消失 |
+| 钉点 | 57,191 | DP_PIN_END ok=57191 bad=0 |
+| 黑盒 / dont_verify / elab147 | 无 | 无 / false / false |
+
+`fm_predict check DataPath`：模型 138,279 − 实测 138,108 = 171 = constant_reg 150 + unread 21，差额被指认（rc=0）。
+vmucp 第 3 条：passing 137,627（试跑，vmucp 关）→ 138,108，正好 +481。FM 1,885 s / 3,780 MB。
+
+与 §C.4 逐项一致，差 +0。§C.5 第 1 条（vmucp 后部分点转常量）未发生。
+
+**UT 看不见的变异 M7，FM 覆盖**（scratchpad 独立 worktree，同一 commit + 变异，`FM_MODE=diagnostic-full FM_FAILING_LIMIT=0`，vmucp 开，不出 receipt）：
+int_regcache_tag 写入去掉"槽号 < 48"守卫、改成槽号对 48 取模 ⇒ **FAILED failing 128**（不截断，128 matched / 0 unmatched）=
+`int_regcache_tag_{0..15}_reg[0..7]` ↔ `u_core/rc_tag_q_reg[0..15][0..7]`；passing 138,108 → 137,980（正好 −128）。
+即这组只供 XSPerf 的寄存器在 vmucp 下确实是被比较的点，UT 看不见的改动由 FM 兜底。
+
+UT（verif/ut/DataPath，在 `beaf800a` 字节上跑 —— 与 proof commit 的 RTL 逐字节相同，差的只有 tb 热身：见下；9 档 × 200k 拍）：
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199959 errors=0 PASSED | checks=199959 errors=0 PASSED（★seed 1 的 random 档实为全 1 档★） | checks=199959 errors=0 PASSED |
+| 7  | checks=199969 errors=0 PASSED | checks=199969 errors=0 PASSED | checks=199969 errors=0 PASSED |
+| 42 | checks=199957 errors=0 PASSED | checks=199957 errors=0 PASSED | checks=199957 errors=0 PASSED |
+
+覆盖（各档同 seed 相同，激励只由 seed 决定）：
+
+| seed | s0cancel | rdblock | wbblock | flushkill | ldkill | og1fail | excpw | srcmux | exec_stall | anyload | store | l1 | l2 | l3 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1  | 10362 | 63470 | 61197 | 14422 | 18066 | 81085 | 68744 | 64423 | 88443 | 16571 | 31706 | 8354 | 4168 | 2113 |
+| 7  | 12727 | 75424 | 72518 | 14826 | 19484 | 90449 | 68724 | 72405 | 76594 | 14102 | 27872 | 7102 | 3566 | 1759 |
+| 42 | 10990 | 68275 | 65637 | 15111 | 19060 | 85928 | 68818 | 67841 | 80077 | 14371 | 29394 | 7106 | 3528 | 1771 |
+
+**tb 更正（照实记）**：第一轮 9 档在 `19b1b6fa` 的 tb 上跑，8 档 errors=0，**seed 1 × `+vcs+initreg+1017` errors=12**：
+全部是比对开头 12 拍（cyc 125..136）的 `io_toVecExcpMod_rdata_0_bits`。根因是 tb 违反契约 —— 向量异常读回选择寄存器
+`RegEnable(!isV0, r.valid)` 不复位，而热身期间 r.valid 恒 0，它一直是两侧各自的随机初值（golden 同样如此）。
+tb 改为热身最后 40 拍向量异常读口全开（`beaf800a`，只改 tb 与生成器，RTL 不变），重跑全部 9 档，上表即重跑结果。
+
+复跑：`cd verif/ut/DataPath && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`；FM：`bash scripts/run_proof.sh DataPath DataPath < /dev/null`。
