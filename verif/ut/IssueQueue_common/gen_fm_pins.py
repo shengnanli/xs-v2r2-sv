@@ -61,11 +61,64 @@ def gen(v):
         w = int(re.search(r'^\s+reg\s+\[(\d+):0\]\s+fuBusyTable;', mt, re.M).group(1)) + 1
         for b in range(w):
             iq_pairs.append(f'    {{{bi}/fuBusyTable_reg[{b}] {bi}/u_core/fu_busy_table_q_reg[{b}]}}')
+    # 推测唤醒队列（MultiWakeupQueue*）及其流水（PipeWithFlush*）：golden 逐字段寄存器
+    # （lastConnect_bits_<f> / bits_<s>_<f>）↔ 重写核的扁平载荷寄存器（last_bits / g_pipe.bits_q[s]）。
+    # IQ 父级里 fuType 只有少数位被读（lat / is0Lat 查表），其余位两侧都无人读，名字不同就成了
+    # unmatched unread（FaluFcvtF2vFmacFdiv 诊断跑实测 224(224)）。按载荷布局逐位钉上。
+    G = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
+    R = UT.parents[1] / 'rtl'
+    def gregs(mod):
+        t = (G / f'{mod}.sv').read_text()
+        return {m.group(2): int(m.group(1)) + 1 if m.group(1) else 1
+                for m in re.finditer(r'^\s+reg\s+(?:\[(\d+):0\]\s+)?(\w+);', t, re.M)}
+    def gport_w(mod):
+        t = (G / f'{mod}.sv').read_text()
+        return {m.group(2): int(m.group(1)) + 1 if m.group(1) else 1
+                for m in re.finditer(r'^\s*(?:input|output)\s+(?:\[(\d+):0\]\s+)?(\w+),?\s*$', t, re.M)}
+    def pin_field(pairs, gpath, ipath_fmt, gname, width, off, have):
+        if gname not in have:
+            return
+        if have[gname] != width:
+            raise SystemExit(f'{gname}: golden 位宽 {have[gname]} != 布局位宽 {width}')
+        for b in range(width):
+            gr = f'{gpath}{gname}_reg[{b}]' if width > 1 else f'{gpath}{gname}_reg'
+            pairs.append(f'    {{{gr} {ipath_fmt.format(off + b)}}}')
+    MWQ_LAYOUT = {   # 与 rtl/backend/MultiWakeupQueue*.sv 的 pipe_bits 拼包顺序一致（高位在前）
+        'MultiWakeupQueue':   [('fuType', 35), ('pdest', 8), ('rfWen', 1), ('loadDependency_2', 2),
+                               ('loadDependency_1', 2), ('loadDependency_0', 2)],
+        'MultiWakeupQueue_2': [('pdest', 8), ('rfWen', 1), ('loadDependency_2', 2), ('loadDependency_1', 2),
+                               ('loadDependency_0', 2)],
+        'MultiWakeupQueue_4': [('fuType', 35), ('pdest', 8), ('fpWen', 1), ('vecWen', 1), ('v0Wen', 1)],
+        'MultiWakeupQueue_5': [('pdest', 8), ('fpWen', 1)],
+    }
+    for mmod, mi in re.findall(r'^  (MultiWakeupQueue\w*) (\w+) \($', gsrc, re.M):
+        have = gregs(mmod)
+        off = sum(w for _, w in MWQ_LAYOUT[mmod])
+        for f, w in MWQ_LAYOUT[mmod]:
+            off -= w
+            pin_field(iq_pairs, f'{mi}/', f'{mi}/u_core/last_bits_reg[{{}}]', f'lastConnect_bits_{f}', w, off, have)
+        mt = (G / f'{mmod}.sv').read_text()
+        for pmod, pi in re.findall(r'^  (PipeWithFlush\w*) (\w+) \($', mt, re.M):
+            pw = gport_w(pmod)
+            rt = (R / 'common' / f'{pmod}.sv').read_text()
+            cat = re.search(r'assign payload_in =\s*\{(.*?)\};', rt, re.S).group(1)
+            fields = [x.strip()[len('io_enq_bits_'):] for x in cat.split(',')]
+            have_p = gregs(pmod)
+            stages = max([int(m) for m in re.findall(r'bits_(\d+)_', ' '.join(have_p))] or [0])
+            tot = sum(pw['io_enq_bits_' + f] for f in fields)
+            for st in range(1, stages + 1):
+                off = tot
+                for f in fields:
+                    w = pw['io_enq_bits_' + f]
+                    off -= w
+                    pin_field(iq_pairs, f'{mi}/{pi}/', f'{mi}/{pi}/u_core/g_pipe.bits_q_reg[{st}][{{}}]',
+                              f'bits_{st}_{f}', w, off, have_p)
     out = f'''# {v} FM 匹配前钉点 —— 复用已签核 {ev} 的钉点表，两侧路径加实例前缀 "{inst}/"
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/{ev}/fm_pins_pre.tcl（逐字复制其配对列表，{exp} 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 {len(iq_pairs)} 对。
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器、
+#            推测唤醒队列及其流水的载荷寄存器，共 {len(iq_pairs)} 对。
 # 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != {exp + len(iq_pairs)} 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
@@ -85,7 +138,7 @@ if {{$top eq "{v}"}} {{
       if {{$_miss <= 10}} {{ puts "IQE_PIN_FAIL: $_r <-> $_i" }}
     }}
   }}
-  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
+  # IQ 自身层、忙表写模块、推测唤醒队列的钉点（不在条目阵列实例下）
   foreach _pair {{
 {chr(10).join(iq_pairs)}
   }} {{

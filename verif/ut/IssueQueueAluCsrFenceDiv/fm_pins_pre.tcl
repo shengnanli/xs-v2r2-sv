@@ -2,15 +2,16 @@
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/EntriesAluCsrFenceDiv/fm_pins_pre.tcl（逐字复制其配对列表，20308 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 1 对。
-# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 20309 都 error
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器、
+#            推测唤醒队列及其流水的载荷寄存器，共 16 对。
+# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 20324 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
 
 if {$top eq "IssueQueueAluCsrFenceDiv"} {
   set _n 0
   set _miss 0
-  puts "IQE_PIN_BEGIN IssueQueueAluCsrFenceDiv expect=20309"
+  puts "IQE_PIN_BEGIN IssueQueueAluCsrFenceDiv expect=20324"
   foreach _pair {
     {enqEntries_0/entryReg_payload_preDecodeInfo_valid_reg g_entry[0].u_e/r_payload_reg[32]}
     {enqEntries_0/entryReg_payload_preDecodeInfo_isRVC_reg g_entry[0].u_e/r_payload_reg[33]}
@@ -20329,9 +20330,24 @@ if {$top eq "IssueQueueAluCsrFenceDiv"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
+  # IQ 自身层、忙表写模块、推测唤醒队列的钉点（不在条目阵列实例下）
   foreach _pair {
     {io_validCntDeqVec_0_REG_reg[5] u_core/g_vcnt[0].g_on.vcnt_q_reg[5]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[0] wakeUpQueues_0/u_core/last_bits_reg[7]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[1] wakeUpQueues_0/u_core/last_bits_reg[8]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[2] wakeUpQueues_0/u_core/last_bits_reg[9]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[3] wakeUpQueues_0/u_core/last_bits_reg[10]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[4] wakeUpQueues_0/u_core/last_bits_reg[11]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[5] wakeUpQueues_0/u_core/last_bits_reg[12]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[6] wakeUpQueues_0/u_core/last_bits_reg[13]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[7] wakeUpQueues_0/u_core/last_bits_reg[14]}
+    {wakeUpQueues_0/lastConnect_bits_rfWen_reg wakeUpQueues_0/u_core/last_bits_reg[6]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_2_reg[0] wakeUpQueues_0/u_core/last_bits_reg[4]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_2_reg[1] wakeUpQueues_0/u_core/last_bits_reg[5]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_1_reg[0] wakeUpQueues_0/u_core/last_bits_reg[2]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_1_reg[1] wakeUpQueues_0/u_core/last_bits_reg[3]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_0_reg[0] wakeUpQueues_0/u_core/last_bits_reg[0]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_0_reg[1] wakeUpQueues_0/u_core/last_bits_reg[1]}
   } {
     lassign $_pair _r _i
     if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]} {
@@ -20341,7 +20357,7 @@ if {$top eq "IssueQueueAluCsrFenceDiv"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "IQE_PIN_END IssueQueueAluCsrFenceDiv n=$_n miss=$_miss expect=20309"
+  puts "IQE_PIN_END IssueQueueAluCsrFenceDiv n=$_n miss=$_miss expect=20324"
   if {$_miss != 0} { error "IQE_PIN_MISS=IssueQueueAluCsrFenceDiv miss=$_miss" }
-  if {$_n != 20309} { error "IQE_PIN_COUNT=IssueQueueAluCsrFenceDiv n=$_n expect=20309" }
+  if {$_n != 20324} { error "IQE_PIN_COUNT=IssueQueueAluCsrFenceDiv n=$_n expect=20324" }
 }

@@ -2,15 +2,16 @@
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/EntriesFaluFmacFdiv/fm_pins_pre.tcl（逐字复制其配对列表，13180 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 12 对。
-# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 13192 都 error
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器、
+#            推测唤醒队列及其流水的载荷寄存器，共 93 对。
+# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 13273 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
 
 if {$top eq "IssueQueueFaluFmacFdiv"} {
   set _n 0
   set _miss 0
-  puts "IQE_PIN_BEGIN IssueQueueFaluFmacFdiv expect=13192"
+  puts "IQE_PIN_BEGIN IssueQueueFaluFmacFdiv expect=13273"
   foreach _pair {
     {enqEntries_0/entryReg_payload_fuOpType_reg[0] g_entry[0].u_e/r_payload_reg[0]}
     {enqEntries_0/entryReg_payload_fuOpType_reg[1] g_entry[0].u_e/r_payload_reg[1]}
@@ -13201,7 +13202,7 @@ if {$top eq "IssueQueueFaluFmacFdiv"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
+  # IQ 自身层、忙表写模块、推测唤醒队列的钉点（不在条目阵列实例下）
   foreach _pair {
     {io_validCntDeqVec_0_REG_reg[5] u_core/g_vcnt[0].g_on.vcnt_q_reg[5]}
     {io_validCntDeqVec_1_REG_reg[5] u_core/g_vcnt[1].g_on.vcnt_q_reg[5]}
@@ -13215,6 +13216,87 @@ if {$top eq "IssueQueueFaluFmacFdiv"} {
     {fpWbBusyTableWrite_0/fuBusyTable_reg[1] fpWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
     {fpWbBusyTableWrite_0/fuBusyTable_reg[2] fpWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[2]}
     {fpWbBusyTableWrite_0/fuBusyTable_reg[3] fpWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[3]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[0] wakeUpQueues_0/u_core/last_bits_reg[1]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[1] wakeUpQueues_0/u_core/last_bits_reg[2]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[2] wakeUpQueues_0/u_core/last_bits_reg[3]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[3] wakeUpQueues_0/u_core/last_bits_reg[4]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[4] wakeUpQueues_0/u_core/last_bits_reg[5]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[5] wakeUpQueues_0/u_core/last_bits_reg[6]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[6] wakeUpQueues_0/u_core/last_bits_reg[7]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[7] wakeUpQueues_0/u_core/last_bits_reg[8]}
+    {wakeUpQueues_0/lastConnect_bits_fpWen_reg wakeUpQueues_0/u_core/last_bits_reg[0]}
+    {wakeUpQueues_0/pipes_0/bits_1_pdest_reg[0] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][10]}
+    {wakeUpQueues_0/pipes_0/bits_1_pdest_reg[1] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][11]}
+    {wakeUpQueues_0/pipes_0/bits_1_pdest_reg[2] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][12]}
+    {wakeUpQueues_0/pipes_0/bits_1_pdest_reg[3] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][13]}
+    {wakeUpQueues_0/pipes_0/bits_1_pdest_reg[4] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][14]}
+    {wakeUpQueues_0/pipes_0/bits_1_pdest_reg[5] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][15]}
+    {wakeUpQueues_0/pipes_0/bits_1_pdest_reg[6] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][16]}
+    {wakeUpQueues_0/pipes_0/bits_1_pdest_reg[7] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][17]}
+    {wakeUpQueues_0/pipes_0/bits_1_fpWen_reg wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][9]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_flag_reg wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][8]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_value_reg[0] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][0]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_value_reg[1] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][1]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_value_reg[2] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][2]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_value_reg[3] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][3]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_value_reg[4] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][4]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_value_reg[5] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][5]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_value_reg[6] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][6]}
+    {wakeUpQueues_0/pipes_0/bits_1_robIdx_value_reg[7] wakeUpQueues_0/pipes_0/u_core/g_pipe.bits_q_reg[1][7]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][10]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][11]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][12]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][13]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][14]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][15]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][16]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][17]}
+    {wakeUpQueues_0/pipes_1/bits_1_fpWen_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][9]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_flag_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][8]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][0]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][1]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][2]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][3]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][4]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][5]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][6]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][7]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][10]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][11]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][12]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][13]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][14]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][15]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][16]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][17]}
+    {wakeUpQueues_0/pipes_1/bits_2_fpWen_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][9]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_flag_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][8]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][0]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][1]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][2]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][3]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][4]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][5]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][6]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][7]}
+    {wakeUpQueues_0/pipes_1/bits_3_pdest_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][10]}
+    {wakeUpQueues_0/pipes_1/bits_3_pdest_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][11]}
+    {wakeUpQueues_0/pipes_1/bits_3_pdest_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][12]}
+    {wakeUpQueues_0/pipes_1/bits_3_pdest_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][13]}
+    {wakeUpQueues_0/pipes_1/bits_3_pdest_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][14]}
+    {wakeUpQueues_0/pipes_1/bits_3_pdest_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][15]}
+    {wakeUpQueues_0/pipes_1/bits_3_pdest_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][16]}
+    {wakeUpQueues_0/pipes_1/bits_3_pdest_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][17]}
+    {wakeUpQueues_0/pipes_1/bits_3_fpWen_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][9]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_flag_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][8]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_value_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][0]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_value_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][1]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_value_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][2]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_value_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][3]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_value_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][4]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_value_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][5]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_value_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][6]}
+    {wakeUpQueues_0/pipes_1/bits_3_robIdx_value_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[3][7]}
   } {
     lassign $_pair _r _i
     if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]} {
@@ -13224,7 +13306,7 @@ if {$top eq "IssueQueueFaluFmacFdiv"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "IQE_PIN_END IssueQueueFaluFmacFdiv n=$_n miss=$_miss expect=13192"
+  puts "IQE_PIN_END IssueQueueFaluFmacFdiv n=$_n miss=$_miss expect=13273"
   if {$_miss != 0} { error "IQE_PIN_MISS=IssueQueueFaluFmacFdiv miss=$_miss" }
-  if {$_n != 13192} { error "IQE_PIN_COUNT=IssueQueueFaluFmacFdiv n=$_n expect=13192" }
+  if {$_n != 13273} { error "IQE_PIN_COUNT=IssueQueueFaluFmacFdiv n=$_n expect=13273" }
 }

@@ -2,15 +2,16 @@
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
 # 配对来源：verif/ut/EntriesAluMulBkuBrhJmp/fm_pins_pre.tcl（逐字复制其配对列表，20292 对）
-#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器，共 8 对。
-# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 20300 都 error
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位、忙表写模块的表寄存器、
+#            推测唤醒队列及其流水的载荷寄存器，共 176 对。
+# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 20468 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
 
 if {$top eq "IssueQueueAluMulBkuBrhJmp"} {
   set _n 0
   set _miss 0
-  puts "IQE_PIN_BEGIN IssueQueueAluMulBkuBrhJmp expect=20300"
+  puts "IQE_PIN_BEGIN IssueQueueAluMulBkuBrhJmp expect=20468"
   foreach _pair {
     {enqEntries_0/entryReg_payload_preDecodeInfo_valid_reg g_entry[0].u_e/r_payload_reg[32]}
     {enqEntries_0/entryReg_payload_preDecodeInfo_isRVC_reg g_entry[0].u_e/r_payload_reg[33]}
@@ -20313,7 +20314,7 @@ if {$top eq "IssueQueueAluMulBkuBrhJmp"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  # IQ 自身层与忙表写模块的钉点（不在条目阵列实例下）
+  # IQ 自身层、忙表写模块、推测唤醒队列的钉点（不在条目阵列实例下）
   foreach _pair {
     {io_validCntDeqVec_0_REG_reg[5] u_core/g_vcnt[0].g_on.vcnt_q_reg[5]}
     {io_validCntDeqVec_1_REG_reg[5] u_core/g_vcnt[1].g_on.vcnt_q_reg[5]}
@@ -20323,6 +20324,174 @@ if {$top eq "IssueQueueAluMulBkuBrhJmp"} {
     {intWbBusyTableWrite_0/fuBusyTable_reg[0] intWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[0]}
     {intWbBusyTableWrite_0/fuBusyTable_reg[1] intWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[1]}
     {intWbBusyTableWrite_0/fuBusyTable_reg[2] intWbBusyTableWrite_0/u_core/fu_busy_table_q_reg[2]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[0] wakeUpQueues_0/u_core/last_bits_reg[15]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[1] wakeUpQueues_0/u_core/last_bits_reg[16]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[2] wakeUpQueues_0/u_core/last_bits_reg[17]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[3] wakeUpQueues_0/u_core/last_bits_reg[18]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[4] wakeUpQueues_0/u_core/last_bits_reg[19]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[5] wakeUpQueues_0/u_core/last_bits_reg[20]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[6] wakeUpQueues_0/u_core/last_bits_reg[21]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[7] wakeUpQueues_0/u_core/last_bits_reg[22]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[8] wakeUpQueues_0/u_core/last_bits_reg[23]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[9] wakeUpQueues_0/u_core/last_bits_reg[24]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[10] wakeUpQueues_0/u_core/last_bits_reg[25]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[11] wakeUpQueues_0/u_core/last_bits_reg[26]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[12] wakeUpQueues_0/u_core/last_bits_reg[27]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[13] wakeUpQueues_0/u_core/last_bits_reg[28]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[14] wakeUpQueues_0/u_core/last_bits_reg[29]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[15] wakeUpQueues_0/u_core/last_bits_reg[30]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[16] wakeUpQueues_0/u_core/last_bits_reg[31]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[17] wakeUpQueues_0/u_core/last_bits_reg[32]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[18] wakeUpQueues_0/u_core/last_bits_reg[33]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[19] wakeUpQueues_0/u_core/last_bits_reg[34]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[20] wakeUpQueues_0/u_core/last_bits_reg[35]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[21] wakeUpQueues_0/u_core/last_bits_reg[36]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[22] wakeUpQueues_0/u_core/last_bits_reg[37]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[23] wakeUpQueues_0/u_core/last_bits_reg[38]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[24] wakeUpQueues_0/u_core/last_bits_reg[39]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[25] wakeUpQueues_0/u_core/last_bits_reg[40]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[26] wakeUpQueues_0/u_core/last_bits_reg[41]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[27] wakeUpQueues_0/u_core/last_bits_reg[42]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[28] wakeUpQueues_0/u_core/last_bits_reg[43]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[29] wakeUpQueues_0/u_core/last_bits_reg[44]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[30] wakeUpQueues_0/u_core/last_bits_reg[45]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[31] wakeUpQueues_0/u_core/last_bits_reg[46]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[32] wakeUpQueues_0/u_core/last_bits_reg[47]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[33] wakeUpQueues_0/u_core/last_bits_reg[48]}
+    {wakeUpQueues_0/lastConnect_bits_fuType_reg[34] wakeUpQueues_0/u_core/last_bits_reg[49]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[0] wakeUpQueues_0/u_core/last_bits_reg[7]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[1] wakeUpQueues_0/u_core/last_bits_reg[8]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[2] wakeUpQueues_0/u_core/last_bits_reg[9]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[3] wakeUpQueues_0/u_core/last_bits_reg[10]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[4] wakeUpQueues_0/u_core/last_bits_reg[11]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[5] wakeUpQueues_0/u_core/last_bits_reg[12]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[6] wakeUpQueues_0/u_core/last_bits_reg[13]}
+    {wakeUpQueues_0/lastConnect_bits_pdest_reg[7] wakeUpQueues_0/u_core/last_bits_reg[14]}
+    {wakeUpQueues_0/lastConnect_bits_rfWen_reg wakeUpQueues_0/u_core/last_bits_reg[6]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_2_reg[0] wakeUpQueues_0/u_core/last_bits_reg[4]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_2_reg[1] wakeUpQueues_0/u_core/last_bits_reg[5]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_1_reg[0] wakeUpQueues_0/u_core/last_bits_reg[2]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_1_reg[1] wakeUpQueues_0/u_core/last_bits_reg[3]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_0_reg[0] wakeUpQueues_0/u_core/last_bits_reg[0]}
+    {wakeUpQueues_0/lastConnect_bits_loadDependency_0_reg[1] wakeUpQueues_0/u_core/last_bits_reg[1]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][24]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][25]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][26]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][27]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][28]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][29]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][30]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][31]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[8] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][32]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[9] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][33]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[10] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][34]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[11] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][35]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[12] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][36]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[13] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][37]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[14] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][38]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[15] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][39]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[16] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][40]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[17] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][41]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[18] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][42]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[19] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][43]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[20] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][44]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[21] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][45]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[22] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][46]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[23] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][47]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[24] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][48]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[25] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][49]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[26] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][50]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[27] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][51]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[28] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][52]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[29] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][53]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[30] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][54]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[31] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][55]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[32] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][56]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[33] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][57]}
+    {wakeUpQueues_0/pipes_1/bits_1_fuType_reg[34] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][58]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][16]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][17]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][18]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][19]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][20]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][21]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][22]}
+    {wakeUpQueues_0/pipes_1/bits_1_pdest_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][23]}
+    {wakeUpQueues_0/pipes_1/bits_1_rfWen_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][15]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_flag_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][14]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][6]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][7]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][8]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][9]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][10]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][11]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][12]}
+    {wakeUpQueues_0/pipes_1/bits_1_robIdx_value_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][13]}
+    {wakeUpQueues_0/pipes_1/bits_1_loadDependency_2_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][4]}
+    {wakeUpQueues_0/pipes_1/bits_1_loadDependency_2_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][5]}
+    {wakeUpQueues_0/pipes_1/bits_1_loadDependency_1_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][2]}
+    {wakeUpQueues_0/pipes_1/bits_1_loadDependency_1_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][3]}
+    {wakeUpQueues_0/pipes_1/bits_1_loadDependency_0_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][0]}
+    {wakeUpQueues_0/pipes_1/bits_1_loadDependency_0_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[1][1]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][24]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][25]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][26]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][27]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][28]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][29]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][30]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][31]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[8] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][32]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[9] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][33]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[10] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][34]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[11] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][35]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[12] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][36]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[13] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][37]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[14] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][38]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[15] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][39]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[16] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][40]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[17] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][41]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[18] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][42]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[19] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][43]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[20] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][44]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[21] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][45]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[22] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][46]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[23] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][47]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[24] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][48]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[25] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][49]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[26] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][50]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[27] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][51]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[28] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][52]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[29] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][53]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[30] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][54]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[31] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][55]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[32] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][56]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[33] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][57]}
+    {wakeUpQueues_0/pipes_1/bits_2_fuType_reg[34] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][58]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][16]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][17]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][18]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][19]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][20]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][21]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][22]}
+    {wakeUpQueues_0/pipes_1/bits_2_pdest_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][23]}
+    {wakeUpQueues_0/pipes_1/bits_2_rfWen_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][15]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_flag_reg wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][14]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][6]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][7]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[2] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][8]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[3] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][9]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[4] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][10]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[5] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][11]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[6] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][12]}
+    {wakeUpQueues_0/pipes_1/bits_2_robIdx_value_reg[7] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][13]}
+    {wakeUpQueues_0/pipes_1/bits_2_loadDependency_2_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][4]}
+    {wakeUpQueues_0/pipes_1/bits_2_loadDependency_2_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][5]}
+    {wakeUpQueues_0/pipes_1/bits_2_loadDependency_1_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][2]}
+    {wakeUpQueues_0/pipes_1/bits_2_loadDependency_1_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][3]}
+    {wakeUpQueues_0/pipes_1/bits_2_loadDependency_0_reg[0] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][0]}
+    {wakeUpQueues_0/pipes_1/bits_2_loadDependency_0_reg[1] wakeUpQueues_0/pipes_1/u_core/g_pipe.bits_q_reg[2][1]}
   } {
     lassign $_pair _r _i
     if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]} {
@@ -20332,7 +20501,7 @@ if {$top eq "IssueQueueAluMulBkuBrhJmp"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "IQE_PIN_END IssueQueueAluMulBkuBrhJmp n=$_n miss=$_miss expect=20300"
+  puts "IQE_PIN_END IssueQueueAluMulBkuBrhJmp n=$_n miss=$_miss expect=20468"
   if {$_miss != 0} { error "IQE_PIN_MISS=IssueQueueAluMulBkuBrhJmp miss=$_miss" }
-  if {$_n != 20300} { error "IQE_PIN_COUNT=IssueQueueAluMulBkuBrhJmp n=$_n expect=20300" }
+  if {$_n != 20468} { error "IQE_PIN_COUNT=IssueQueueAluMulBkuBrhJmp n=$_n expect=20468" }
 }
