@@ -9,7 +9,8 @@
 //
 //  单态化 (firtool SourceB.sv): entries=4, grantBufInflightSize=16,
 //    SourceBReq = {tag[30:0], set[8:0], opcode[2:0], param[1:0], alias[1:0]}。
-//  FastArbiter_5 (4 入 1 出轮询仲裁) 为黑盒, 在 golden 同名 wrapper 内例化; 本核暴露
+//  FastArbiter_5 (4 入 1 出带挂起记忆的轮转仲裁) 在 golden 同名 wrapper 内例化 —— 用的是
+//    本仓重写件 rtl/uncore/FastArbiter_5.sv（核 rtl/common/xs_FastArbiter_core.sv）; 本核暴露
 //    与其对接的 in_k(valid/bits)/in_k_ready 端口, 出口 io_sourceB 由 wrapper 直接接仲裁器。
 //
 //  ===== X 铁律 =====
@@ -47,7 +48,7 @@ module xs_SourceB_core (
   input  logic        io_grantStatus_14_valid, input  logic [8:0] io_grantStatus_14_set, input  logic [30:0] io_grantStatus_14_tag,
   input  logic        io_grantStatus_15_valid, input  logic [8:0] io_grantStatus_15_set, input  logic [30:0] io_grantStatus_15_tag,
 
-  // ---- 与 FastArbiter_5 黑盒对接 ----
+  // ---- 与 FastArbiter_5 对接 ----
   input  logic        arb_in_0_ready, arb_in_1_ready, arb_in_2_ready, arb_in_3_ready,
   output logic        arb_in_0_valid, arb_in_1_valid, arb_in_2_valid, arb_in_3_valid,
   output logic [30:0] arb_in_0_tag, arb_in_1_tag, arb_in_2_tag, arb_in_3_tag,
@@ -62,12 +63,11 @@ module xs_SourceB_core (
   // probe 表项
   logic        probes_valid  [ENTRIES];
   logic        probes_rdy    [ENTRIES];
-  // waitG 只存真实需要的 4 位（索引 16 项 grantStatus）。
-  // golden 把它声明成 sourceIdBits(7) 位，但写入值是 {3'h0, OHToUInt(conflictMask)}
-  // —— 高 3 位由生成器恒写 0 且全模块只读 waitG[3:0]，是 golden 侧的 cone-dead 位。
-  // 这里按真实读取宽度建 4 位（class-3 缩尺寸），impl 侧不产生死位；golden 多出的
-  // 4 个未读位（probes_N_waitG_reg[4]）在 verif/dead_ref/SourceB.json 逐条声明。
-  logic [3:0]  probes_waitG  [ENTRIES];
+  // waitG：该表项在等哪一项 grantStatus（16 项，索引只用低 4 位）。
+  // golden 把它声明成 sourceIdBits(7) 位、写入 {3'h0, OHToUInt(conflictMask)}，只读 [3:0]
+  // —— 高 3 位恒写 0、没有读者。这里照 golden 宽度建 7 位（寄存器字段逐字照搬），
+  // 于是这几位在两侧是同一批死位（FM 里两侧对称，而不是 golden 独有）。
+  logic [6:0]  probes_waitG  [ENTRIES];
   logic [30:0] probes_tag    [ENTRIES];
   logic [8:0]  probes_set    [ENTRIES];
   logic [2:0]  probes_opcode [ENTRIES];
@@ -109,7 +109,7 @@ module xs_SourceB_core (
   assign conflict = |conflictMask;
 
   // OHToUInt(conflictMask): one-hot → 4-bit 索引 (assert PopCount<=1 保证 one-hot)
-  // 16 项 grantStatus 只需 4 位索引（golden 再零扩展到 7 位存进 waitG，见上）。
+  // 16 项 grantStatus 只需 4 位索引（再零扩展到 7 位存进 waitG，见上）。
   function automatic logic [3:0] oh16_to_idx(input logic [15:0] m);
     logic [3:0] r;
     r[0] = |(m & 16'b1010101010101010);
@@ -118,8 +118,8 @@ module xs_SourceB_core (
     r[3] = |(m & 16'b1111111100000000);
     oh16_to_idx = r;
   endfunction
-  logic [3:0] waitG_new;
-  assign waitG_new = oh16_to_idx(conflictMask);
+  logic [6:0] waitG_new;
+  assign waitG_new = {3'h0, oh16_to_idx(conflictMask)};
 
   // ===== 分配 =====
   logic full, alloc;
@@ -163,7 +163,7 @@ module xs_SourceB_core (
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int k = 0; k < ENTRIES; k++) begin
-        probes_valid[k] <= 1'b0; probes_rdy[k] <= 1'b0; probes_waitG[k] <= 4'h0;
+        probes_valid[k] <= 1'b0; probes_rdy[k] <= 1'b0; probes_waitG[k] <= 7'h0;
         probes_tag[k] <= '0; probes_set[k] <= '0; probes_opcode[k] <= '0;
         probes_param[k] <= '0; probes_alias[k] <= '0;
       end
@@ -172,7 +172,7 @@ module xs_SourceB_core (
         // valid: fire 清零; 否则 alloc 置位; 否则保持
         probes_valid[k] <= ~in_fire[k] & (allocOH[k] | probes_valid[k]);
         // rdy: 等待的 grantStatus 失效 → 置就绪(=1); 否则 alloc 时取 ~conflict, 否则保持
-        probes_rdy[k] <= (probes_valid[k] & ~gsValid[probes_waitG[k]]) |
+        probes_rdy[k] <= (probes_valid[k] & ~gsValid[probes_waitG[k][3:0]]) |
                          (allocOH[k] ? ~conflict : probes_rdy[k]);
         if (allocOH[k]) begin
           probes_waitG[k]  <= waitG_new;

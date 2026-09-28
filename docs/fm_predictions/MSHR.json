@@ -1,0 +1,10 @@
+{
+  "target": "MSHR",
+  "ut": "MSHR",
+  "regs": 655,
+  "outs": 788,
+  "expected": 1443,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额=constant_reg 1（身份待 receipt 指认）；69 个对称死位 vmucp 实比"
+}
