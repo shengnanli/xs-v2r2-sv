@@ -128,6 +128,66 @@ UT 看不见的：§9 死寄存器（无输出）—— 由 FM vmucp 逐位实�
 
 可能出错：run_proof 在 detached worktree 里跑，钉点叶名若格式不同钉点脚本会 `error` 早退（表现为 FM 早退）。
 
+## 4. MissQueue（本体，golden 9,125 行 / 212 端口；child = 16×MissEntry + CMOUnit + Arbiter16_MainPipeReq）
+
+### 4.1 核与 golden 差异点
+
+- `rtl/memblock/MissQueue.sv`（4,231 行：missqueue_pkg + xs_MissQueue_core 手写约 1,075 行；其余是生成的 wrapper，
+  `_GEN_`/`_T_` 0）：核 = 全部胶水（§1 s0 入队判定 / §2 resp 与流水寄存器 / §3 memset 检测 / §4 MSHR 数据前递 /
+  §5 D 通道·hint·MainPipe 回应分发 / §6 A 通道（流水寄存器直发 Acquire + 18 路 TLArbiter.lowest）/ §7 E 通道 16 路 /
+  §8 refill_info·阻挡·BtoT 占路 / §9 预取统计·WFI·topdown·性能事件·difftest / §10 断言与性能计数死寄存器）。
+- 新共享辅助件 `rtl/common/xs_TLArbiterLowest.sv`（rocket-chip TLArbiter.lowest 的可读实现，golden 里内联）。
+- wrapper（`scripts/gen_missq.py` 生成，fail-closed）：golden 端口表 + 核 + **与 golden 同名的实例**
+  entries_0..15 / cmo_unit / main_pipe_req_arb（子模块内部寄存器路径与 golden 对齐，FM 按名配对）；
+  核对 MissQueue 每个输出恰好驱动一次、每个输入至少用一次，三种 child 的每个端口恰好一条连线规则
+  （MissEntry 有 9 个输出 golden 父级不读，显式悬空）。
+- 子模块两侧白盒：ref = golden MissEntry/CMOUnit/Arbiter16_MainPipeReq，impl = 本 lane 已签核的重写件
+  （evidence/6d7db2615dbf、f9f232674f20、bc1ed4b6f3f9）。无黑盒。
+- 钉点 `verif/ut/MissQueue/fm_pins_pre.tcl`（4174 对：顶层 TLArbiter state/beatsLeft、性能事件打拍、前递寄存器、
+  流水寄存器标志与 addr[5:0] 死位、REG/max_inflight；16 个 MissEntry 各 229 对（同 MissEntry 签核）+ 各 2 对
+  在父级才变死的 refill_to_ldq data/error 锁存）+ vmucp（`verif/fm_target_config/MissQueue.tcl`）。
+- lane 内 diagnostic-full 试跑（dirty，未出 receipt）：
+  1. 无钉点：Matching 后 unmatched compare 159(149)、unmatched unread 3462(3472)，按自己 PID 停掉。
+  2. 钉点 4136 对 + vmucp：native SUCCEEDED passing **32571** / failing 0 / unmatched compare 0 /
+     unmatched unread 38(38)（= 16×2 个 refill_to_ldq data/error 锁存 + 流水寄存器 addr[5:0]）/ constant reg 10。
+     之后补上这 38 对（钉点共 4174 对，本 commit 的文件）。
+- constant reg 10 的身份（单独一次 FM：读同一组文件、source 同一份钉点、match 后 `report_potentially_constant_registers`）：
+  `entries_0` / `entries_1` 的 prefetch_slot_q[4:0] = RegNext(io_id >= 2)，io_id 在父级接常量 0/1 ⇒ 恒 0（golden 对应
+  last_REG..last_REG_4）。
+
+### 4.2 UT（verif/ut/MissQueue；3 档 initreg × 3 seed × 200k，串行）
+
+两侧例化同一份子模块重写件（RTL_GOLDEN_DEPS），只比 MissQueue 胶水。暖机 = 16 个 MSHR 各分配一次 store + 各回两拍 GrantData。
+首轮（tb 版本 = 本 commit 之前、仅 store 连发模式不同）9/9 `checks=200033 errors=0 cov_fail=0` TEST PASSED。
+覆盖（首轮 seed 1 / initreg 0，全部 ≥ COV_MIN=100）：分配 16572 / 合并进表项 6999 / 合并进流水寄存器 1108 / 拒绝 93195 /
+查询不 ready 149966 · ready 50390 / 流水寄存器发 Acquire 7542 / 表项发 Acquire 6352 / CMO 发 A 3769 / CBOAck 3741 / CMO 回 LSQ 3741 /
+越界 source 的 Grant not ready 3172 / A 被挡 7508 / E.fire 14795 / 回填请求 fire 29122 / refill_info 14914 / probe 阻挡 39543 /
+流水寄存器 replace 阻挡 2681 / BtoT 占路非零 18842 / occupy_fail 12014 / 前递命中 10260 / forward_mshr 159044 / memset 检测 40174 /
+difftest 有效 4476 / wfiReq 期间 wfiSafe=1 6929 / 异步复位 33；每个输出位见过 0 和 1（结构恒定位 gen.py 逐个豁免、仍逐位比较）。
+tb 分辨力自测（20k 拍）：primary_valid 去掉"只给最低空表项" errors=947054；流水寄存器允许 store 合并 store 28646；
+越界 source 当成 ready 13；前递高 8 字节选错 row 478117；A 仲裁第 3 路恒 ready 1070；occupy 门槛 >2→>1 1549；
+refill_info.valid 去掉 s2_valid 3025；性能事件 3/4 档边界 56；difftest valid 去掉 refill_done 426；
+memset 门槛 8→7：首版 tb 20k 与 200k 都是 0 —— store 连发模式里计数器一路冲过 8、从不停在 7；
+tb 改为 store/预取/少量 load 混合后 200k 拍 errors=170988（本 commit 的 tb）。
+A 仲裁 beats_left 装载值改 0：errors=0 且**是等价变异**——各路 beats1 = ~opcode[2]，而 CMO（12..14）与
+Acquire（6/7）的 opcode[2] 恒 1，本配置下永远装 0（FM 会把这条常量传播证明掉，UT 无从区分）。
+UT 看不见的：顶层 REG / max_inflight 与子模块死寄存器 —— 由 FM vmucp 逐位实比覆盖。
+本 commit 的 tb 9 档复跑结果在对账节追加。
+
+### 4.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/MissQueue.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | 模型 **32619**（golden 闭包寄存器 30416 + 输出 2203）；实测预计 **32609**，差 10 由 receipt `constant_reg`=10 指认 |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched 六项 | 全 0（`MQ_PREPIN_END MissQueue n=4174 expect=4174`） |
+| 黑盒 | 无（三种 child 两侧白盒） |
+| mode / verdict / vmucp | signoff-strict / SUCCEEDED / true |
+
+可能出错：新补的 38 对钉点没有在 FM 里单独试过（其中流水寄存器 addr[5:0] 用了结构体成员写法 `pipe_q_reg\[addr]`，
+与 MainPipe 钉点同写法；另一次 match-only 运行 `MQ_PREPIN_END n=4174` 已确认 4174 条全部被 FM 接受）。
+若 FM 没把它们当 matched-unread 计入，passing 会是 32571（差 38）而不是 32609。
+
 ---
 
 # 对账（跑完追加；上文各节未改一字）

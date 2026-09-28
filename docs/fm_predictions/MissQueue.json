@@ -1,0 +1,9 @@
+{
+  "target": "MissQueue",
+  "ut": "MissQueue",
+  "regs": 30416,
+  "outs": 2203,
+  "expected": 32619,
+  "merge_dup": "false",
+  "model_applicable": true
+}
