@@ -26,6 +26,7 @@ import argparse
 import pathlib
 import re
 import sys
+import tempfile
 
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 REPO = pathlib.Path(__file__).resolve().parents[1]
@@ -357,7 +358,9 @@ def gen(v):
     L.append('')
 
     # ---- 子模块输出线 ----
-    L.append('  // ---- 子模块输出线（名字 = <实例>_<端口>）----')
+    L.append('  // ' + '=' * 76)
+    L.append('  // §A 子模块输出线（名字 = <实例>_<端口>）')
+
     for wn, w in c.child_out_w.items():
         L.append(f'  logic {sv_w(w)}{wn};')
     L.append('')
@@ -374,8 +377,9 @@ def gen(v):
     mwq = [x for x in c.insts if x[0].startswith('MultiWakeupQueue')]
     mwq_ports = {n: w for _, w, n in c.child_ports[mwq[0][0]]} if mwq else {}
     LATW = mwq_ports.get('io_enq_bits_lat', 1)
-    decl = f'''  // ---- 核接口 ----
-  logic             core_enq_valid     [{NE}];
+    L.append('  // ' + '=' * 76)
+    L.append('  // §B 核接口（数组形式，下标含义见 xs_IssueQueue_core.sv 端口注释）')
+    decl = f'''  logic             core_enq_valid     [{NE}];
   logic             core_enq_ready     [{NE}];
   logic             core_enq_do        [{NE}];
   logic [3:0]       core_enq_src_type  [{NE}][{NS}];
@@ -517,7 +521,8 @@ def gen(v):
         A.append(f'  assign core_age_comp_out[{d}] = {comp_age}_io_out_{d};')
     for k in range(ND + NE):
         A.append(f'  assign core_age_simp_out[{k}] = {simp_age}_io_out_{k};')
-    L.append('  // ---- 核输入 ----')
+    L.append('  // ' + '=' * 76)
+    L.append('  // §C 核输入接线：顶层端口 / 条目阵列 / 忙表 / 年龄选择器 -> 核')
     L += A
     L.append('')
 
@@ -525,7 +530,8 @@ def gen(v):
     outs_done = set()
     for d in range(ND):
         parts = [c.res(f'deqBeforeDly_{d}_{f}', f'deqDelay_{d}_{f}') for f, _ in payload[d]]
-        L.append(f'  // ---- 口 {d} deqDelay 负载（golden 寄存器声明顺序，高位在前）----')
+        L.append('  // ' + '=' * 76)
+        L.append(f'  // §D{d} 口 {d} deqDelay 负载拼包/拆包（golden 寄存器声明顺序，高位在前）')
         L.append(f'  assign core_deq{d}_payload = {{')
         L.append(',\n'.join(f'    {p}' for p in parts))
         L.append('  };')
@@ -539,6 +545,8 @@ def gen(v):
         L.append("  assign core_deq1_payload = 1'h0;")
 
     # ---- 子模块例化 ----
+    L.append('  // ' + '=' * 76)
+    L.append('  // §E 子模块例化（golden 同名实例，均为已签核件）')
     for mod, inst, conns in c.insts:
         cp = {n: (dd, w) for dd, w, n in c.child_ports[mod]}
         L.append(f'  {mod} {inst} (')
@@ -567,6 +575,8 @@ def gen(v):
         L.append('')
 
     # ---- MWQ 胶合 ----
+    L.append('  // ' + '=' * 76)
+    L.append('  // §F 唤醒出口胶合输入（MultiWakeupQueue 出口 / og1 响应 -> 核）')
     WEN = ['rf', 'fp', 'vec', 'v0', 'vl']
     if mwq:
         mi = mwq[0][1]
@@ -588,6 +598,8 @@ def gen(v):
     L.append('')
 
     # ---- 核例化 ----
+    L.append('  // ' + '=' * 76)
+    L.append('  // §G 调度核例化')
     acc = ', '.join(f"35'h{a:X}" for a in P['ACCEPT'])
     hv = ', '.join(f"1'b{x}" for x in P['HAS_VCNT'])
     L.append(f'''  xs_IssueQueue_core #(
@@ -693,7 +705,8 @@ def gen(v):
 ''')
 
     # ---- 顶层输出 ----
-    L.append('  // ---- 顶层输出 ----')
+    L.append('  // ' + '=' * 76)
+    L.append('  // §H 顶层输出')
     driven_by_child = set()
     for mod, inst, conns in c.insts:
         cp = {n: dd for dd, _, n in c.child_ports[mod]}
@@ -726,7 +739,23 @@ def gen(v):
             continue
         L.append(f'  assign {n} = {c.res(e, n)};')
     L.append('endmodule')
-    return '\n'.join(L) + '\n'
+    return with_nav('\n'.join(L) + '\n')
+
+
+def with_nav(text):
+    """>1500 行的文件必须带「本文件导航」（readability_audit E 类）；复用 gen_file_nav.py 与闸同源。"""
+    if text.count('\n') + 1 <= 1500:
+        return text
+    sys.path.insert(0, str(REPO / 'scripts'))
+    import gen_file_nav
+    with tempfile.NamedTemporaryFile('w', suffix='.sv', delete=False) as fh:
+        fh.write(text)
+        tmp = pathlib.Path(fh.name)
+    try:
+        gen_file_nav.apply(tmp)
+        return tmp.read_text()
+    finally:
+        tmp.unlink()
 
 
 def main():

@@ -11,6 +11,17 @@
 //
 // 自动生成：scripts/gen_iq.py —— 勿手改
 // =============================================================================
+// 本文件导航（共 2627 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L662   §A 子模块输出线
+//   L943   §B 核接口
+//   L1016  §C 核输入接线：顶层端口 / 条目阵列 / 忙表 / 年龄选择器 -> 核
+//   L1265  §D0 口 0 deqDelay 负载拼包/拆包
+//   L1354  §D1 口 1 deqDelay 负载拼包/拆包
+//   L1465  §E 子模块例化
+//   L2411  §F 唤醒出口胶合输入
+//   L2420  §G 调度核例化
+//   L2523  §H 顶层输出
+//
 module IssueQueueAluCsrFenceDiv(
   input          clock,
   input          reset,
@@ -647,7 +658,8 @@ module IssueQueueAluCsrFenceDiv(
   output [23:0]  io_deqDelay_0_bits_addrOH
 );
 
-  // ---- 子模块输出线（名字 = <实例>_<端口>）----
+  // ============================================================================
+  // §A 子模块输出线（名字 = <实例>_<端口>）
   logic [23:0] entries_io_valid;
   logic [23:0] entries_io_issued;
   logic [23:0] entries_io_canIssue;
@@ -927,7 +939,8 @@ module IssueQueueAluCsrFenceDiv(
   logic [15:0] age_2_io_out_0;
   logic [15:0] age_2_io_out_1;
 
-  // ---- 核接口 ----
+  // ============================================================================
+  // §B 核接口（数组形式，下标含义见 xs_IssueQueue_core.sv 端口注释）
   logic             core_enq_valid     [2];
   logic             core_enq_ready     [2];
   logic             core_enq_do        [2];
@@ -999,7 +1012,8 @@ module IssueQueueAluCsrFenceDiv(
   logic             core_ldw_q_fp_wen_copy [6];
   logic [7:0]       core_ldw_q_pdest_copy  [6];
 
-  // ---- 核输入 ----
+  // ============================================================================
+  // §C 核输入接线：顶层端口 / 条目阵列 / 忙表 / 年龄选择器 -> 核
   assign core_enq_valid[0] = io_enq_0_valid;
   assign core_enq_src_type[0][0] = io_enq_0_bits_srcType_0;
   assign core_enq_psrc[0][0] = io_enq_0_bits_psrc_0;
@@ -1247,7 +1261,8 @@ module IssueQueueAluCsrFenceDiv(
   assign core_age_simp_out[2] = age_1_io_out_2;
   assign core_age_simp_out[3] = age_1_io_out_3;
 
-  // ---- 口 0 deqDelay 负载（golden 寄存器声明顺序，高位在前）----
+  // ============================================================================
+  // §D0 口 0 deqDelay 负载拼包/拆包（golden 寄存器声明顺序，高位在前）
   assign core_deq0_payload = {
     entries_io_deqEntry_0_bits_status_srcStatus_1_psrc,
     entries_io_deqEntry_0_bits_status_srcStatus_1_srcType[2:0],
@@ -1335,7 +1350,8 @@ module IssueQueueAluCsrFenceDiv(
   wire [7:0] dly0_bits_common_debug_seqNum_uopIdx = core_dly0_payload[31:24];
   wire [23:0] dly0_bits_addrOH = core_dly0_payload[23:0];
 
-  // ---- 口 1 deqDelay 负载（golden 寄存器声明顺序，高位在前）----
+  // ============================================================================
+  // §D1 口 1 deqDelay 负载拼包/拆包（golden 寄存器声明顺序，高位在前）
   assign core_deq1_payload = {
     entries_io_deqEntry_1_bits_status_srcStatus_1_psrc,
     entries_io_deqEntry_1_bits_status_srcStatus_1_srcType[2:0],
@@ -1445,6 +1461,8 @@ module IssueQueueAluCsrFenceDiv(
   wire [7:0] dly1_bits_common_debug_seqNum_uopIdx = core_dly1_payload[31:24];
   wire [23:0] dly1_bits_addrOH = core_dly1_payload[23:0];
 
+  // ============================================================================
+  // §E 子模块例化（golden 同名实例，均为已签核件）
   EntriesAluCsrFenceDiv entries (
     .clock                                                       (clock),
     .reset                                                       (reset),
@@ -2389,6 +2407,8 @@ module IssueQueueAluCsrFenceDiv(
     .io_out_1      (age_2_io_out_1)
   );
 
+  // ============================================================================
+  // §F 唤醒出口胶合输入（MultiWakeupQueue 出口 / og1 响应 -> 核）
   assign core_wk_enq_fu_type = {25'h0, entries_io_deqEntry_0_bits_status_fuType_9, entries_io_deqEntry_0_bits_status_fuType_8, 1'h0, entries_io_deqEntry_0_bits_status_fuType_6, entries_io_deqEntry_0_bits_status_fuType_5, 5'h0};
   assign core_wk_deq_valid = wakeUpQueues_0_io_deq_valid;
   assign core_wk_deq_fu_type = '0;
@@ -2396,6 +2416,8 @@ module IssueQueueAluCsrFenceDiv(
   assign core_wk_og1_valid = io_og1Resp_0_valid;
   assign core_wk_og1_resp = io_og1Resp_0_bits_resp;
 
+  // ============================================================================
+  // §G 调度核例化
   xs_IssueQueue_core #(
     .N_ENTRIES (24),
     .N_ENQ     (2),
@@ -2497,7 +2519,8 @@ module IssueQueueAluCsrFenceDiv(
     .ldw_q_pdest_copy (core_ldw_q_pdest_copy)
   );
 
-  // ---- 顶层输出 ----
+  // ============================================================================
+  // §H 顶层输出
   assign io_enq_0_ready = core_enq_ready[0];
   assign io_enq_1_ready = core_enq_ready[1];
   assign io_wakeupToIQ_0_valid = wakeUpQueues_0_io_deq_valid;

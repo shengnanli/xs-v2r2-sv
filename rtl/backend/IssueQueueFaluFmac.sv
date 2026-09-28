@@ -10,6 +10,16 @@
 //
 // 自动生成：scripts/gen_iq.py —— 勿手改
 // =============================================================================
+// 本文件导航（共 1962 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L483   §A 子模块输出线
+//   L661   §B 核接口
+//   L734   §C 核输入接线：顶层端口 / 条目阵列 / 忙表 / 年龄选择器 -> 核
+//   L930   §D0 口 0 deqDelay 负载拼包/拆包
+//   L1036  §E 子模块例化
+//   L1793  §F 唤醒出口胶合输入
+//   L1802  §G 调度核例化
+//   L1905  §H 顶层输出
+//
 module IssueQueueFaluFmac(
   input          clock,
   input          reset,
@@ -469,7 +479,8 @@ module IssueQueueFaluFmac(
   output [17:0]  io_deqDelay_0_bits_addrOH
 );
 
-  // ---- 子模块输出线（名字 = <实例>_<端口>）----
+  // ============================================================================
+  // §A 子模块输出线（名字 = <实例>_<端口>）
   logic [17:0] entries_io_valid;
   logic [17:0] entries_io_issued;
   logic [17:0] entries_io_canIssue;
@@ -646,7 +657,8 @@ module IssueQueueFaluFmac(
   logic [1:0] age_1_io_out_2;
   logic [13:0] age_2_io_out_0;
 
-  // ---- 核接口 ----
+  // ============================================================================
+  // §B 核接口（数组形式，下标含义见 xs_IssueQueue_core.sv 端口注释）
   logic             core_enq_valid     [2];
   logic             core_enq_ready     [2];
   logic             core_enq_do        [2];
@@ -718,7 +730,8 @@ module IssueQueueFaluFmac(
   logic             core_ldw_q_fp_wen_copy [6];
   logic [7:0]       core_ldw_q_pdest_copy  [6];
 
-  // ---- 核输入 ----
+  // ============================================================================
+  // §C 核输入接线：顶层端口 / 条目阵列 / 忙表 / 年龄选择器 -> 核
   assign core_enq_valid[0] = io_enq_0_valid;
   assign core_enq_src_type[0][0] = io_enq_0_bits_srcType_0;
   assign core_enq_psrc[0][0] = io_enq_0_bits_psrc_0;
@@ -913,7 +926,8 @@ module IssueQueueFaluFmac(
   assign core_age_simp_out[1] = age_1_io_out_1;
   assign core_age_simp_out[2] = age_1_io_out_2;
 
-  // ---- 口 0 deqDelay 负载（golden 寄存器声明顺序，高位在前）----
+  // ============================================================================
+  // §D0 口 0 deqDelay 负载拼包/拆包（golden 寄存器声明顺序，高位在前）
   assign core_deq0_payload = {
     entries_io_deqEntry_0_bits_status_srcStatus_2_psrc,
     entries_io_deqEntry_0_bits_status_srcStatus_2_srcType[2:0],
@@ -1018,6 +1032,8 @@ module IssueQueueFaluFmac(
   wire [17:0] dly0_bits_addrOH = core_dly0_payload[17:0];
 
   assign core_deq1_payload = 1'h0;
+  // ============================================================================
+  // §E 子模块例化（golden 同名实例，均为已签核件）
   EntriesFaluFmac entries (
     .clock                                                       (clock),
     .reset                                                       (reset),
@@ -1773,6 +1789,8 @@ module IssueQueueFaluFmac(
     .io_out_0      (age_2_io_out_0)
   );
 
+  // ============================================================================
+  // §F 唤醒出口胶合输入（MultiWakeupQueue 出口 / og1 响应 -> 核）
   assign core_wk_enq_fu_type = {22'h0, entries_io_deqEntry_0_bits_status_fuType_12, entries_io_deqEntry_0_bits_status_fuType_11, 11'h0};
   assign core_wk_deq_valid = wakeUpQueues_0_io_deq_valid;
   assign core_wk_deq_fu_type = '0;
@@ -1780,6 +1798,8 @@ module IssueQueueFaluFmac(
   assign core_wk_og1_valid = io_og1Resp_0_valid;
   assign core_wk_og1_resp = io_og1Resp_0_bits_resp;
 
+  // ============================================================================
+  // §G 调度核例化
   xs_IssueQueue_core #(
     .N_ENTRIES (18),
     .N_ENQ     (2),
@@ -1881,7 +1901,8 @@ module IssueQueueFaluFmac(
     .ldw_q_pdest_copy (core_ldw_q_pdest_copy)
   );
 
-  // ---- 顶层输出 ----
+  // ============================================================================
+  // §H 顶层输出
   assign io_enq_0_ready = core_enq_ready[0];
   assign io_enq_1_ready = core_enq_ready[1];
   assign io_wakeupToIQ_0_valid = wakeUpQueues_0_io_deq_valid;
