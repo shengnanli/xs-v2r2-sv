@@ -101,3 +101,33 @@ unmatched 0、钉点 6757/6757、unread 201（全部 matched_nc，明细见 veri
 | unread（vmucp 后） | 0 |
 | failing / unverified / aborted / unmatched / 黑盒 / dont_verify | 全 0 / 无 |
 | verdict | SUCCEEDED（signoff-strict） |
+
+## 3. VIntMisc64b（跑前登记，FM 起跑前提交）
+
+### 3.1 结构与子模块处置
+
+- `rtl/backend/VIntMisc64b.sv`：`vintmisc64b_pkg`（opcode 常量、元素右移闭式 shr_elem、反转/计数小函数）+
+  手写核 `xs_VIntMisc64b_core`（§1 译码 §2 扩展 §3 位逻辑 §4 移位/窄化/舍入位 §5 合并搬移 §6 Zvbb 反转
+  §7 Zvbb 计数 §8 旋转与 vwsll §9 输出 Mux1H）+ 手写 wrapper（15 个端口，不需生成器）。纯组合，0 寄存器。
+- child：CLZ_11 ×4、CLZ_7 ×2、CLZ_9、CLZ_6，coverage 第 3 列全 PROVEN_DIRECT → 两侧白盒
+  （ref = golden CLZ_*，impl = rtl/common/CLZ_* 重写件 + xs_CLZ_core）。无黑盒。
+- 对照 Scala：yunsuan@9559211 `VectorALU/VIntMisc64b.scala`。
+
+### 3.2 UT（verif/ut/VIntMisc64b；3 seed × 3 initreg × 200k 拍；无寄存器，initreg 档只为合规）
+
+结果见文末对账。变异（seed 7 random 30k 拍）：12 个里 10 个 CAUGHT；2 个 SURVIVED 都是**语义等价变异**
+（V1 pop16 截断改写：vcpop 时加数 <= 8 不会溢出；V6 vmask[i/8] ≡ vmask[0]（i<8）；——据 V1 更正了头注释）。
+复跑：`cd verif/ut/VIntMisc64b && make run SEED=<s> INITREG=<0|random|<s>017>`
+
+### 3.3 跑前预测（★跑完不许改本节★，登记 docs/fm_predictions/VIntMisc64b.json）
+
+lane 内非正式试跑（commit 8e7adcdb，`make fm-VIntMisc64b`）：native SUCCEEDED、passing 176、其余全 0。
+（此前两次试跑没进到比较：函数返回值位选 FMR_VLOG-481、变量下标 FMR_ELAB-147，均已改 RTL 解决，未压消息。）
+
+| 项 | 预测 |
+|---|---|
+| expected（模型） | 176（regs 0 + outs 176） |
+| passing | **176** |
+| constant_reg / unread | 0 / 0 |
+| failing / unverified / aborted / unmatched / 黑盒 / dont_verify | 全 0 / 无 |
+| verdict | SUCCEEDED（signoff-strict，不需要 vmucp） |
