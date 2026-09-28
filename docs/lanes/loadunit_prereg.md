@@ -76,3 +76,28 @@ constant_reg 11 / unread_notcompared 89 → strict PARTIAL。unread 89 的逐类
 
 可能出错：vmucp 打开后这 89 个死位若在两侧的次态函数不同（本应相同——同名同源照写）会以 failing 出现，
 那就是真差异，按修 RTL 处理。
+
+## 3. 对账（跑后追加，不改上面任何数字）
+
+| 目标 | proof commit | 预测 passing | 实测 | 差 | 其余 |
+|---|---|---|---|---|---|
+| MemTrigger | 99eadd4c | 70 | 70 | 0 | SUCCEEDED，failing/unmatched/unread 0，无黑盒 |
+| LoadUnit | 8443fb1a | 18749 | 18749 | 0 | SUCCEEDED，vmucp，constant_reg 11（= 预测），failing 0（未截断）/unmatched 六项 0/unread 0，无黑盒，171 s / 1164 MB |
+
+`python3 scripts/fm_predict.py check LoadUnit MemTrigger` rc=0（全部对上）。
+
+LoadUnit UT（全部 200k 拍，`checks=200000 errors=0 uncovered=0` TEST PASSED）：
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random`（本机实为全 1，两侧同值） | `+vcs+initreg+<seed*1000+17>`（真·各摇各的，warmup 3000） |
+|---|---|---|---|
+| 1 | PASS | PASS | PASS |
+| 7 | PASS | PASS | PASS |
+| 42 | PASS | PASS | PASS |
+
+seed 42 × initreg0 覆盖计数（其余档同量级）：11 路来源 fire 各 1549..29506（l2l 关闭为 0）；replay 原因
+mem_amb 3544 / tlb_miss 9585 / fwd_fail 4728 / dcache_rep 3411 / dcache_miss 8790 / bank_conflict 3482 /
+rar_nack 6665 / raw_nack 6174 / nuke 3195 / misalign_nack 2274（wpu_fail 本配置恒 0）；ldout 异常位
+3/4/5/13/19/21 = 501/1135/4723/1223/1210/985；快速重发 4608、进非对齐缓冲 1789、非对齐唤醒回送 3766、
+回滚 flush/flushAfter 6123/9380、MMIO 写回 2790、NC 写回 1297、向量写回 8468、D 通道前递 149、
+MSHR 前递 12201、全前递 28852、s1/s2 违例 7329/34、触发器命中 2689、16B 内非对齐 30744、跨 16B 19001。
+变异自检：rollback.level 去掉 frm_mis_flush 项 → 20k 拍内 34 拍起报 MISMATCH。
