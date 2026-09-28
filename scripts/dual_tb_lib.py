@@ -63,11 +63,14 @@ class Pair(object):
                表达式里 `@name` 替换为 golden 侧信号（输入即输入，输出为 g_ 侧）
     exempt     不要求见过 0/1 的输出位 ["端口名"] 或 ["端口名[3]"]
     warmup     开始比较前的拍数（不复位寄存器需要被写满时用）
+    arm        [SV 布尔表达式]：每一项都至少为真过一次（粘滞）之后才开始比较——
+               给"不复位的数据寄存器要先被写过一次，两侧初值才一致"的情形用；
+               表达式同 cov 的 @ 替换规则。arm 之前的拍数会打印出来。
     mode_period 每隔多少拍重抽一次 <pfx>mode（0..15），供 stim 做分阶段偏置
     """
 
     def __init__(self, top, pfx, clocked=False, stim="", cov=(), exempt=(),
-                 warmup=0, mode_period=4000, reset_period=40000, cov_min=100):
+                 warmup=0, mode_period=4000, reset_period=40000, cov_min=100, arm=()):
         self.top = top
         self.pfx = pfx
         self.clocked = clocked
@@ -78,6 +81,7 @@ class Pair(object):
         self.mode_period = mode_period
         self.reset_period = reset_period
         self.cov_min = cov_min
+        self.arm = list(arm)
         self.ports = golden_ports(top)
         names = [n for _, _, n in self.ports]
         if clocked and ("clock" not in names or "reset" not in names):
@@ -120,6 +124,8 @@ def render(pairs, header, ncycles=200000):
                 L.append(f"  logic {rng(w)}{x}s0_{n} = '0, {x}s1_{n} = '0;")
         for cn, _ in p.cov:
             L.append(f"  int {x}cov_{cn} = 0;")
+        L.append(f"  logic [{max(len(p.arm), 1) - 1}:0] {x}armed = '0;")
+        L.append(f"  int {x}armed_at = -1;")
         for inst, pre, mod in (("u_gold", "g_", p.top), ("u_impl", "i_", p.top + "_xs")):
             L.append(f"  {mod} {x}{inst} (")
             conns = []
@@ -157,7 +163,9 @@ def render(pairs, header, ncycles=200000):
     for p in P:
         x = p.pfx
         outs = [(w, n) for d, w, n in p.ports if d == "output"]
-        L.append(f"      if (cyc >= RESET_CYC + {p.warmup}) begin")
+        if not p.arm:
+            L.append(f"      {x}armed = 1'b1;")
+        L.append(f"      if (cyc >= RESET_CYC + {p.warmup} && (&{x}armed)) begin")
         for w, n in outs:
             L.append(f"        checks++;")
             L.append(f"        if ({x}g_{n} !== {x}i_{n}) begin")
@@ -169,6 +177,10 @@ def render(pairs, header, ncycles=200000):
         for cn, ce in p.cov:
             L.append(f"        if ({p.subst(ce)}) {x}cov_{cn}++;")
         L.append("      end")
+        # arm 在比较之后更新：本拍发生的写入要到下一个 posedge 才进寄存器
+        for k, a in enumerate(p.arm):
+            L.append(f"      if ({p.subst(a)}) {x}armed[{k}] = 1'b1;")
+        L.append(f"      if ({x}armed_at < 0 && (&{x}armed)) {x}armed_at = cyc + 1;")
     L.append("    end")
     L.append("")
     L.append("    // ---- 覆盖闸 ----")
@@ -184,6 +196,8 @@ def render(pairs, header, ncycles=200000):
                 sel = "" if w == 1 else f"[{b}]"
                 L.append(f"    if (!({x}s0_{n}{sel} && {x}s1_{n}{sel})) begin cov_fail++; "
                          f"$display(\"[COV] {p.top}.{tag} 未见过 0 和 1\"); end")
+        L.append(f"    $display(\"[ARM] {p.top} armed_at=%0d\", {x}armed_at);")
+        L.append(f"    if ({x}armed_at < 0) begin cov_fail++; $display(\"[ARM] {p.top} 从未 arm\"); end")
         for cn, _ in p.cov:
             L.append(f"    $display(\"[COV] {p.top}.{cn} = %0d\", {x}cov_{cn});")
             L.append(f"    if ({x}cov_{cn} < {p.cov_min}) begin cov_fail++; "

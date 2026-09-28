@@ -24,6 +24,8 @@ module tb;
   logic [3:0] atw_s0_io_out_bits_way_en = '0, atw_s1_io_out_bits_way_en = '0;
   wire  [35:0] atw_g_io_out_bits_tag, atw_i_io_out_bits_tag;
   logic [35:0] atw_s0_io_out_bits_tag = '0, atw_s1_io_out_bits_tag = '0;
+  logic [0:0] atw_armed = '0;
+  int atw_armed_at = -1;
   Arbiter1_TagWriteReq atw_u_gold (
     .io_in_0_valid(atw_io_in_0_valid),
     .io_in_0_bits_idx(atw_io_in_0_bits_idx),
@@ -77,6 +79,8 @@ module tb;
   logic [63:0] adw_s0_io_out_bits_data_6 = '0, adw_s1_io_out_bits_data_6 = '0;
   wire  [63:0] adw_g_io_out_bits_data_7, adw_i_io_out_bits_data_7;
   logic [63:0] adw_s0_io_out_bits_data_7 = '0, adw_s1_io_out_bits_data_7 = '0;
+  logic [0:0] adw_armed = '0;
+  int adw_armed_at = -1;
   Arbiter1_L1BankedDataWriteReq adw_u_gold (
     .io_in_0_valid(adw_io_in_0_valid),
     .io_in_0_bits_wmask(adw_io_in_0_bits_wmask),
@@ -133,6 +137,8 @@ module tb;
   logic [3:0] adc_s0_io_out_bits_way_en = '0, adc_s1_io_out_bits_way_en = '0;
   wire  [47:0] adc_g_io_out_bits_addr, adc_i_io_out_bits_addr;
   logic [47:0] adc_s0_io_out_bits_addr = '0, adc_s1_io_out_bits_addr = '0;
+  logic [0:0] adc_armed = '0;
+  int adc_armed_at = -1;
   Arbiter1_L1BankedDataWriteReqCtrl adc_u_gold (
     .io_in_0_valid(adc_io_in_0_valid),
     .io_in_0_bits_way_en(adc_io_in_0_bits_way_en),
@@ -250,6 +256,8 @@ module tb;
   int tra_cov_win3 = 0;
   int tra_cov_none = 0;
   int tra_cov_stall = 0;
+  logic [0:0] tra_armed = '0;
+  int tra_armed_at = -1;
   TreeArbiter tra_u_gold (
     .io_in_0_ready(tra_g_io_in_0_ready),
     .io_in_0_valid(tra_io_in_0_valid),
@@ -455,6 +463,8 @@ module tb;
   int mrg_cov_block1 = 0;
   int mrg_cov_block2 = 0;
   int mrg_cov_block3 = 0;
+  logic [0:0] mrg_armed = '0;
+  int mrg_armed_at = -1;
   MissReadyGen mrg_u_gold (
     .io_in_0_ready(mrg_g_io_in_0_ready),
     .io_in_0_valid(mrg_io_in_0_valid),
@@ -549,6 +559,8 @@ module tb;
   int pfm_cov_late_miss_masks_late_hit = 0;
   int pfm_cov_back_off_reset = 0;
   int pfm_cov_enable_off = 0;
+  logic [0:0] pfm_armed = '0;
+  int pfm_armed_at = -1;
   PrefetcherMonitor pfm_u_gold (
     .clock(clk),
     .reset(pfm_reset),
@@ -584,6 +596,8 @@ module tb;
   logic fdp_io_pollution_cache_pollution_0;
   logic fdp_io_pollution_cache_pollution_1;
   logic fdp_io_pollution_cache_pollution_2;
+  logic [0:0] fdp_armed = '0;
+  int fdp_armed_at = -1;
   FDPrefetcherMonitor fdp_u_gold (
     .io_accuracy_useful_prefetch_0(fdp_io_accuracy_useful_prefetch_0),
     .io_accuracy_useful_prefetch_1(fdp_io_accuracy_useful_prefetch_1),
@@ -751,7 +765,8 @@ module tb;
       fdp_io_pollution_cache_pollution_1 = 1'($urandom);
       fdp_io_pollution_cache_pollution_2 = 1'($urandom);
       #4;
-      if (cyc >= RESET_CYC + 0) begin
+      atw_armed = 1'b1;
+      if (cyc >= RESET_CYC + 0 && (&atw_armed)) begin
         checks++;
         if (atw_g_io_out_valid !== atw_i_io_out_valid) begin
           errors++;
@@ -781,7 +796,9 @@ module tb;
         atw_s1_io_out_bits_tag |= atw_g_io_out_bits_tag;
         atw_s0_io_out_bits_tag |= ~atw_g_io_out_bits_tag;
       end
-      if (cyc >= RESET_CYC + 0) begin
+      if (atw_armed_at < 0 && (&atw_armed)) atw_armed_at = cyc + 1;
+      adw_armed = 1'b1;
+      if (cyc >= RESET_CYC + 0 && (&adw_armed)) begin
         checks++;
         if (adw_g_io_out_valid !== adw_i_io_out_valid) begin
           errors++;
@@ -853,7 +870,9 @@ module tb;
         adw_s1_io_out_bits_data_7 |= adw_g_io_out_bits_data_7;
         adw_s0_io_out_bits_data_7 |= ~adw_g_io_out_bits_data_7;
       end
-      if (cyc >= RESET_CYC + 0) begin
+      if (adw_armed_at < 0 && (&adw_armed)) adw_armed_at = cyc + 1;
+      adc_armed = 1'b1;
+      if (cyc >= RESET_CYC + 0 && (&adc_armed)) begin
         checks++;
         if (adc_g_io_out_valid !== adc_i_io_out_valid) begin
           errors++;
@@ -876,7 +895,9 @@ module tb;
         adc_s1_io_out_bits_addr |= adc_g_io_out_bits_addr;
         adc_s0_io_out_bits_addr |= ~adc_g_io_out_bits_addr;
       end
-      if (cyc >= RESET_CYC + 0) begin
+      if (adc_armed_at < 0 && (&adc_armed)) adc_armed_at = cyc + 1;
+      tra_armed = 1'b1;
+      if (cyc >= RESET_CYC + 0 && (&tra_armed)) begin
         checks++;
         if (tra_g_io_in_0_ready !== tra_i_io_in_0_ready) begin
           errors++;
@@ -1038,7 +1059,9 @@ module tb;
         if (!tra_io_in_0_valid && !tra_io_in_1_valid && !tra_io_in_2_valid && !tra_io_in_3_valid) tra_cov_none++;
         if (tra_g_io_out_valid && !tra_io_out_ready) tra_cov_stall++;
       end
-      if (cyc >= RESET_CYC + 0) begin
+      if (tra_armed_at < 0 && (&tra_armed)) tra_armed_at = cyc + 1;
+      mrg_armed = 1'b1;
+      if (cyc >= RESET_CYC + 0 && (&mrg_armed)) begin
         checks++;
         if (mrg_g_io_in_0_ready !== mrg_i_io_in_0_ready) begin
           errors++;
@@ -1159,7 +1182,9 @@ module tb;
         if (mrg_io_queryMQ_2_ready && !mrg_io_in_0_valid && mrg_io_in_1_valid) mrg_cov_block2++;
         if (mrg_io_queryMQ_3_ready && !mrg_io_in_0_valid && !mrg_io_in_1_valid && mrg_io_in_2_valid) mrg_cov_block3++;
       end
-      if (cyc >= RESET_CYC + 0) begin
+      if (mrg_armed_at < 0 && (&mrg_armed)) mrg_armed_at = cyc + 1;
+      pfm_armed = 1'b1;
+      if (cyc >= RESET_CYC + 0 && (&pfm_armed)) begin
         checks++;
         if (pfm_g_io_pf_ctrl_enable !== pfm_i_io_pf_ctrl_enable) begin
           errors++;
@@ -1182,8 +1207,11 @@ module tb;
         if (pfm_u_gold.back_off_reset) pfm_cov_back_off_reset++;
         if (!pfm_g_io_pf_ctrl_enable) pfm_cov_enable_off++;
       end
-      if (cyc >= RESET_CYC + 0) begin
+      if (pfm_armed_at < 0 && (&pfm_armed)) pfm_armed_at = cyc + 1;
+      fdp_armed = 1'b1;
+      if (cyc >= RESET_CYC + 0 && (&fdp_armed)) begin
       end
+      if (fdp_armed_at < 0 && (&fdp_armed)) fdp_armed_at = cyc + 1;
     end
 
     // ---- 覆盖闸 ----
@@ -1236,6 +1264,8 @@ module tb;
     if (!(atw_s0_io_out_bits_tag[33] && atw_s1_io_out_bits_tag[33])) begin cov_fail++; $display("[COV] Arbiter1_TagWriteReq.io_out_bits_tag[33] 未见过 0 和 1"); end
     if (!(atw_s0_io_out_bits_tag[34] && atw_s1_io_out_bits_tag[34])) begin cov_fail++; $display("[COV] Arbiter1_TagWriteReq.io_out_bits_tag[34] 未见过 0 和 1"); end
     if (!(atw_s0_io_out_bits_tag[35] && atw_s1_io_out_bits_tag[35])) begin cov_fail++; $display("[COV] Arbiter1_TagWriteReq.io_out_bits_tag[35] 未见过 0 和 1"); end
+    $display("[ARM] Arbiter1_TagWriteReq armed_at=%0d", atw_armed_at);
+    if (atw_armed_at < 0) begin cov_fail++; $display("[ARM] Arbiter1_TagWriteReq 从未 arm"); end
     if (!(adw_s0_io_out_valid && adw_s1_io_out_valid)) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReq.io_out_valid 未见过 0 和 1"); end
     if (!(adw_s0_io_out_bits_wmask[0] && adw_s1_io_out_bits_wmask[0])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReq.io_out_bits_wmask[0] 未见过 0 和 1"); end
     if (!(adw_s0_io_out_bits_wmask[1] && adw_s1_io_out_bits_wmask[1])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReq.io_out_bits_wmask[1] 未见过 0 和 1"); end
@@ -1757,6 +1787,8 @@ module tb;
     if (!(adw_s0_io_out_bits_data_7[61] && adw_s1_io_out_bits_data_7[61])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReq.io_out_bits_data_7[61] 未见过 0 和 1"); end
     if (!(adw_s0_io_out_bits_data_7[62] && adw_s1_io_out_bits_data_7[62])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReq.io_out_bits_data_7[62] 未见过 0 和 1"); end
     if (!(adw_s0_io_out_bits_data_7[63] && adw_s1_io_out_bits_data_7[63])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReq.io_out_bits_data_7[63] 未见过 0 和 1"); end
+    $display("[ARM] Arbiter1_L1BankedDataWriteReq armed_at=%0d", adw_armed_at);
+    if (adw_armed_at < 0) begin cov_fail++; $display("[ARM] Arbiter1_L1BankedDataWriteReq 从未 arm"); end
     if (!(adc_s0_io_out_valid && adc_s1_io_out_valid)) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReqCtrl.io_out_valid 未见过 0 和 1"); end
     if (!(adc_s0_io_out_bits_way_en[0] && adc_s1_io_out_bits_way_en[0])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReqCtrl.io_out_bits_way_en[0] 未见过 0 和 1"); end
     if (!(adc_s0_io_out_bits_way_en[1] && adc_s1_io_out_bits_way_en[1])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReqCtrl.io_out_bits_way_en[1] 未见过 0 和 1"); end
@@ -1810,6 +1842,8 @@ module tb;
     if (!(adc_s0_io_out_bits_addr[45] && adc_s1_io_out_bits_addr[45])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReqCtrl.io_out_bits_addr[45] 未见过 0 和 1"); end
     if (!(adc_s0_io_out_bits_addr[46] && adc_s1_io_out_bits_addr[46])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReqCtrl.io_out_bits_addr[46] 未见过 0 和 1"); end
     if (!(adc_s0_io_out_bits_addr[47] && adc_s1_io_out_bits_addr[47])) begin cov_fail++; $display("[COV] Arbiter1_L1BankedDataWriteReqCtrl.io_out_bits_addr[47] 未见过 0 和 1"); end
+    $display("[ARM] Arbiter1_L1BankedDataWriteReqCtrl armed_at=%0d", adc_armed_at);
+    if (adc_armed_at < 0) begin cov_fail++; $display("[ARM] Arbiter1_L1BankedDataWriteReqCtrl 从未 arm"); end
     if (!(tra_s0_io_in_0_ready && tra_s1_io_in_0_ready)) begin cov_fail++; $display("[COV] TreeArbiter.io_in_0_ready 未见过 0 和 1"); end
     if (!(tra_s0_io_in_1_ready && tra_s1_io_in_1_ready)) begin cov_fail++; $display("[COV] TreeArbiter.io_in_1_ready 未见过 0 和 1"); end
     if (!(tra_s0_io_in_2_ready && tra_s1_io_in_2_ready)) begin cov_fail++; $display("[COV] TreeArbiter.io_in_2_ready 未见过 0 和 1"); end
@@ -2791,6 +2825,8 @@ module tb;
     if (!(tra_s0_io_out_bits_store_mask[61] && tra_s1_io_out_bits_store_mask[61])) begin cov_fail++; $display("[COV] TreeArbiter.io_out_bits_store_mask[61] 未见过 0 和 1"); end
     if (!(tra_s0_io_out_bits_store_mask[62] && tra_s1_io_out_bits_store_mask[62])) begin cov_fail++; $display("[COV] TreeArbiter.io_out_bits_store_mask[62] 未见过 0 和 1"); end
     if (!(tra_s0_io_out_bits_store_mask[63] && tra_s1_io_out_bits_store_mask[63])) begin cov_fail++; $display("[COV] TreeArbiter.io_out_bits_store_mask[63] 未见过 0 和 1"); end
+    $display("[ARM] TreeArbiter armed_at=%0d", tra_armed_at);
+    if (tra_armed_at < 0) begin cov_fail++; $display("[ARM] TreeArbiter 从未 arm"); end
     $display("[COV] TreeArbiter.win0 = %0d", tra_cov_win0);
     if (tra_cov_win0 < 1000) begin cov_fail++; $display("[COV] TreeArbiter.win0 < 1000"); end
     $display("[COV] TreeArbiter.win1 = %0d", tra_cov_win1);
@@ -3215,6 +3251,8 @@ module tb;
     if (!(mrg_s0_io_queryMQ_3_req_bits_vaddr[47] && mrg_s1_io_queryMQ_3_req_bits_vaddr[47])) begin cov_fail++; $display("[COV] MissReadyGen.io_queryMQ_3_req_bits_vaddr[47] 未见过 0 和 1"); end
     if (!(mrg_s0_io_queryMQ_3_req_bits_vaddr[48] && mrg_s1_io_queryMQ_3_req_bits_vaddr[48])) begin cov_fail++; $display("[COV] MissReadyGen.io_queryMQ_3_req_bits_vaddr[48] 未见过 0 和 1"); end
     if (!(mrg_s0_io_queryMQ_3_req_bits_vaddr[49] && mrg_s1_io_queryMQ_3_req_bits_vaddr[49])) begin cov_fail++; $display("[COV] MissReadyGen.io_queryMQ_3_req_bits_vaddr[49] 未见过 0 和 1"); end
+    $display("[ARM] MissReadyGen armed_at=%0d", mrg_armed_at);
+    if (mrg_armed_at < 0) begin cov_fail++; $display("[ARM] MissReadyGen 从未 arm"); end
     $display("[COV] MissReadyGen.rdy0 = %0d", mrg_cov_rdy0);
     if (mrg_cov_rdy0 < 1000) begin cov_fail++; $display("[COV] MissReadyGen.rdy0 < 1000"); end
     $display("[COV] MissReadyGen.rdy1 = %0d", mrg_cov_rdy1);
@@ -3231,6 +3269,8 @@ module tb;
     if (mrg_cov_block3 < 1000) begin cov_fail++; $display("[COV] MissReadyGen.block3 < 1000"); end
     if (!(pfm_s0_io_pf_ctrl_enable && pfm_s1_io_pf_ctrl_enable)) begin cov_fail++; $display("[COV] PrefetcherMonitor.io_pf_ctrl_enable 未见过 0 和 1"); end
     if (!(pfm_s0_io_pf_ctrl_confidence && pfm_s1_io_pf_ctrl_confidence)) begin cov_fail++; $display("[COV] PrefetcherMonitor.io_pf_ctrl_confidence 未见过 0 和 1"); end
+    $display("[ARM] PrefetcherMonitor armed_at=%0d", pfm_armed_at);
+    if (pfm_armed_at < 0) begin cov_fail++; $display("[ARM] PrefetcherMonitor 从未 arm"); end
     $display("[COV] PrefetcherMonitor.timely_reset = %0d", pfm_cov_timely_reset);
     if (pfm_cov_timely_reset < 1) begin cov_fail++; $display("[COV] PrefetcherMonitor.timely_reset < 1"); end
     $display("[COV] PrefetcherMonitor.validity_reset = %0d", pfm_cov_validity_reset);
@@ -3245,6 +3285,8 @@ module tb;
     if (pfm_cov_back_off_reset < 1) begin cov_fail++; $display("[COV] PrefetcherMonitor.back_off_reset < 1"); end
     $display("[COV] PrefetcherMonitor.enable_off = %0d", pfm_cov_enable_off);
     if (pfm_cov_enable_off < 1) begin cov_fail++; $display("[COV] PrefetcherMonitor.enable_off < 1"); end
+    $display("[ARM] FDPrefetcherMonitor armed_at=%0d", fdp_armed_at);
+    if (fdp_armed_at < 0) begin cov_fail++; $display("[ARM] FDPrefetcherMonitor 从未 arm"); end
     $display("checks=%0d errors=%0d cov_fail=%0d", checks, errors, cov_fail);
     if (errors == 0 && cov_fail == 0 && checks > 0) $display("TEST PASSED");
     else $display("TEST FAILED");
