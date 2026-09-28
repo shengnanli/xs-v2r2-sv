@@ -21,6 +21,7 @@
 //
 // 当前收录：
 //   plic_pkg —— PLIC 的设备/优先级/寄存器分块常量（PLICFanIn / TLPLIC 共用）
+//   directory_pkg —— L2 目录的 MetaEntry 与常量（xs_Directory_core 与 Directory / Directory_1..3 的 wrapper 共用）
 // 新增共享包时追加到本文件，不要再开第二个 uncore 公共包文件。
 // =============================================================================
 //  PLIC 类型/常量包 (plic_pkg)
@@ -89,4 +90,37 @@ package plic_pkg;
   // 使能寄存器分块: firstEnable = min(nDevices,7)=7, 之后每 8 个一块。
   //   65 = 7 + 8*7 + 2 ⇒ 9 块: [7,8,8,8,8,8,8,8,2] (每 hart)
   localparam int PLIC_EN_CHUNKS  = 9;
+endpackage
+
+// =============================================================================
+//  L2 目录类型/常量包 (directory_pkg)
+// -----------------------------------------------------------------------------
+//  CoupledL2 Directory（KunminghuV2Config）的目录项 MetaEntry 与路数/tag 编码宽度/opcode 常量。
+//  xs_Directory_core.sv 与四个 golden 变体 wrapper（Directory.sv / Directory_1..3.sv，gen_l2_directory.py 生成）共用。
+// =============================================================================
+package directory_pkg;
+  // MetaEntry（KunminghuV2Config 下的字段集）
+  typedef struct packed {
+    logic       dirty;
+    logic [1:0] state;
+    logic       clients;
+    logic [1:0] alias_;       // `alias` 是 SV 保留字
+    logic       prefetch;
+    logic [2:0] prefetchSrc;
+    logic       accessed;
+    logic       tagErr;
+    logic       dataErr;
+  } meta_t;
+
+  localparam int unsigned WAYS     = 8;
+  localparam int unsigned N_MSHR   = 16;
+  localparam int unsigned TAG_W    = 31;
+  localparam int unsigned ENC_W    = 38;   // SECDED(31)
+  localparam logic [1:0]  INVALID  = 2'd0;
+  // TileLink opcode（A 通道 / C 通道）
+  localparam logic [2:0]  A_Hint         = 3'd5;
+  localparam logic [2:0]  A_AcquireBlock = 3'd6;
+  localparam logic [2:0]  A_AcquirePerm  = 3'd7;
+  localparam logic [2:0]  C_Release      = 3'd6;
+  localparam logic [2:0]  C_ReleaseData  = 3'd7;
 endpackage

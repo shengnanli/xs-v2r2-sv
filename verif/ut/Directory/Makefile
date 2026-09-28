@@ -9,7 +9,7 @@ MODULE = Directory
 # 唯一抽象边界：厂商 SRAM 宏叶子 array_14/15/16/17_ext（verif/vendor_boundary.tsv 审定的 vendor_sram_leaf），
 # FM 不读 .v ⇒ 两侧对称未解析黑盒 → assembly 模式 + verif/allow/<T>.json 逐条声明。
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/uncore/xs_Directory_core.sv \
+RTL_SRCS = $(RTL_DIR)/uncore/uncore_common_pkg.sv $(RTL_DIR)/uncore/xs_Directory_core.sv \
            $(RTL_DIR)/uncore/Directory.sv $(RTL_DIR)/uncore/Directory_1.sv \
            $(RTL_DIR)/uncore/Directory_2.sv $(RTL_DIR)/uncore/Directory_3.sv \
            $(RTL_DIR)/uncore/SplittedSRAM_3.sv $(RTL_DIR)/uncore/SplittedSRAM_4.sv \

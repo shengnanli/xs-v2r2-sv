@@ -27,32 +27,7 @@
 // 上电初始化：resetIdx 从 511 递减到 0，期间每拍把替换状态写成 0xAAAA（每路 RRPV=2）、origin 写 0；
 // 初始化结束前读请求照样被接受（写优先的 ready 规则把读挡在写之后）。
 
-package directory_pkg;
-  // MetaEntry（KunminghuV2Config 下的字段集）
-  typedef struct packed {
-    logic       dirty;
-    logic [1:0] state;
-    logic       clients;
-    logic [1:0] alias_;       // `alias` 是 SV 保留字
-    logic       prefetch;
-    logic [2:0] prefetchSrc;
-    logic       accessed;
-    logic       tagErr;
-    logic       dataErr;
-  } meta_t;
-
-  localparam int unsigned WAYS     = 8;
-  localparam int unsigned N_MSHR   = 16;
-  localparam int unsigned TAG_W    = 31;
-  localparam int unsigned ENC_W    = 38;   // SECDED(31)
-  localparam logic [1:0]  INVALID  = 2'd0;
-  // TileLink opcode（A 通道 / C 通道）
-  localparam logic [2:0]  A_Hint         = 3'd5;
-  localparam logic [2:0]  A_AcquireBlock = 3'd6;
-  localparam logic [2:0]  A_AcquirePerm  = 3'd7;
-  localparam logic [2:0]  C_Release      = 3'd6;
-  localparam logic [2:0]  C_ReleaseData  = 3'd7;
-endpackage
+// directory_pkg（MetaEntry 等类型/常量）在 rtl/uncore/uncore_common_pkg.sv：Directory / Directory_1..3 的 wrapper 与本核共用。
 
 module xs_Directory_core
   import directory_pkg::*;

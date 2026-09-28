@@ -532,3 +532,22 @@ CustomL1Hint **268**：全部 SUCCEEDED，与登记逐个相等（CustomL1Hint �
 | 目标 | 模型 | 预测 |
 |---|---|---|
 | MainPipe_1 | 6666（regs 2473 + outs 4193） | failing 0 / unmatched 0 / unread 0 / Constant reg 0，passing **6666** SUCCEEDED（没找到对称死位：三级 task 寄存器的每个字段都进了出口仲裁器，data/perf 打拍也都有读者） |
+
+### 14.3 对账（commit 702d4569，evidence/702d456904d5/）
+
+- MainPipe_1：**SUCCEEDED passing 6666**（failing 0 / unmatched 0 / unread 0 / constant 0），与登记逐位相等。
+- 同一 commit 的 DataStorage 目录重跑（钉点守卫改字面数后）：GatedSplittedSRAM x4 2272、DataStorage x4 2532/2533/2534/2534 SUCCEEDED，与 §7 相同。
+- GrantBuffer / Queue10_GrantBuffer_Anon：**ERROR（未出 receipt）**，与 §12.2 预告一致但比预告更早：ram_10x89 inline 时
+  FMR_ELAB-147 是 Unsuppressed，`set_top` 当场失败（FM-156），连比较都进不去；唯一的 FM 放行手段 `set_mismatch_message_filter`
+  是禁用项。**两者都挂在 ram_10x89 的 reviewer 审定上**（审定后按 regimeA 两侧对称黑盒，Queue10 走 assembly）。
+
+## 15. Directory：directory_pkg 搬进 uncore_common_pkg.sv（package 作用域闸）+ 第四跑登记
+
+- 闸 check_pkg_scope 报 CROSS_FILE_PACKAGE：directory_pkg 定义在 xs_Directory_core.sv、被 Directory / Directory_1..3 引用。
+  按 CONVENTIONS 搬进 rtl/uncore/uncore_common_pkg.sv（包内容逐字不变），Directory 目录 RTL_SRCS 把公共包排在最前。
+  搬家前 Directory 9 档 UT 矩阵（seed 1/7/42 × initreg 0/random/<seed>017，200k）全 errors=0；搬家后 seed1 1017 20k 复验 errors=0。
+- fm_predict 登记更正：Directory x4 当初登记时 JSON 记的是 merge_dup=false（那时 Makefile 还显式关 merge），后来 Directory 目录改回
+  merge 默认，JSON 没有重登 —— check 因此对第三跑报"余额 1 指认不了"（1953 vs 模型 1954：正是 merge 合掉的 1 个重复寄存器，
+  §8.x 文字预测 1953/1954/1954/1955 是对的）。现按 merge_dup=true 重登（模型不适用、带状判定）。
+- 第四跑预测（★跑完不许改★，commit 在本登记之后）：SplittedSRAM_3..6 1286 x4，Directory / _1 / _2 / _3 **1953 / 1954 / 1954 / 1955**
+  SUCCEEDED（vmucp 开，与第三跑相同 —— 这次只搬了 package 与钉点守卫写法，比较点不该变）。
