@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/CustomL1Hint
+Implementation : i:/WORK/CustomL1Hint
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 18:01:28 2026
+**************************************************
+
+No aborted compare points.
+
+1

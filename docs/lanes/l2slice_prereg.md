@@ -504,3 +504,31 @@ pftRespQueue 的存储叶子 ram_10x89 深度 10、地址 4 位（10..15 越界�
 | Queue16_HintQueueEntry | 198（regs 185 + outs 13） | passing 198 SUCCEEDED |
 | Queue4_HintQueueEntry | 62（regs 49 + outs 13） | passing 62 SUCCEEDED |
 | CustomL1Hint | 268（regs 234 + outs 34） | failing 0 / unmatched 0 / unread 0，SUCCEEDED；passing 248..268 —— 两个队列存储里 opcode[2] 恒 1（入队的 opcode 只可能是 4/5/6），16 + 4 位可能被 FM 判常量 |
+
+### 13.3 对账（commit a7f4ef16，evidence/a7f4ef161492/）
+
+Arbiter3_CHIREQ 103 / Arbiter3_TaskBundle 71 / Arbiter3_TaskWithData 899 / Queue16_HintQueueEntry 198 / Queue4_HintQueueEntry 62 /
+CustomL1Hint **268**：全部 SUCCEEDED，与登记逐个相等（CustomL1Hint 取登记区间上端：FM 没有把 opcode[2] 判常量）。
+同一 commit 上 RequestBuffer 目录第三跑（vmucp）：FastArbiter_2 **153** / Queue1_ChosenQBundle **525** / RequestBuffer **1699** SUCCEEDED，与 §10.5 登记相等。
+
+## 14. MainPipe_1
+
+### 14.1 结构 / UT
+
+- 可读核 `xs_MainPipe_1_core`（§0 复位清目录 / §1 s3 分类 / §2 可嵌套目录视图 / §3 要不要 MSHR / §4 当场响应 sink_resp /
+  §5 DS、目录写、嵌套写回、预取训练 / §6 s3-s4-s5 出口 / §7 入口阻塞与状态 / §8 ECC 与 perf），约 800 行手写；
+  package l2mainpipe_pkg 的 task_t 与 wrapper（四个出口仲裁器 + customL1Hint 按 golden 实例名例化）由 `scripts/gen_l2_mainpipe.py` 生成。
+- golden 4368 行 / 重写 2964 行（其中 wrapper 生成约 2000 行：519 个端口 + 4 个仲裁器 × 3 路 × 95 字段的连线）；`_GEN_`/`_T_` 0。
+- UT（verif/ut/MainPipe_1）seed1 random 20k：checks=7540000 errors=0，377/377 输出翻转；覆盖：MSHR 分配 ~900-1400 / B 当场响应 ~800-1250 /
+  doRespData ~1500 / DCT 转发 ~600-850 / d 在 s3/s4/s5 发 1812/480/145 / txdat 在 s5 发 166 / txreq 在 s3 发 138 / txrsp 在 s3 发 1296 /
+  写 releaseBuf 412 / replResp retry 110 / 丢弃后报错 6790 / 目录写 B 89、C 573 / blockB 4967 / l1Hint 402。
+  **txrsp / txreq 在 s4/s5 发出是结构性不可达**（只会在 s3 输仲裁时顺延，而 s3 只会输给 s4/s5 上同一出口 —— 鸡生蛋；
+  要写 releaseBuf 而留到 s4 的又被 RegNext(chnl_fire_s3) 屏蔽），UT 不覆盖、照实记。
+- 变异（seed1 20k）：odOpGen 越界项给 CBOAck errors=288、丢弃后 s5 不更新地址 errors=9969、PassDirty 不看 snpHitRelease errors=7、
+  d_s3 不做 latch errors=29480、s5 不屏蔽 RegNextN(fire_s3,2) errors=7175、C 写目录 clients 恒 1 errors=649，均 CAUGHT。
+
+### 14.2 跑前预测（★跑完不许改★；vmucp 关，child 两侧白盒）
+
+| 目标 | 模型 | 预测 |
+|---|---|---|
+| MainPipe_1 | 6666（regs 2473 + outs 4193） | failing 0 / unmatched 0 / unread 0 / Constant reg 0，passing **6666** SUCCEEDED（没找到对称死位：三级 task 寄存器的每个字段都进了出口仲裁器，data/perf 打拍也都有读者） |
