@@ -103,3 +103,46 @@ native SUCCEEDED，passing **7516** / failing 0 / unmatched 0(0)，Not Compared�
 | constant_reg | 268 |
 | 黑盒 / dont_verify / elab147 / relaxed_appvars | 无 / 空 / 空 / 空 |
 | verdict | SUCCEEDED（signoff-strict） |
+
+## 对账（跑完追加，不改上文任何数字）
+
+### A. LoadMisalignBuffer 正式证明（proof commit 5462ffc6，evidence/5462ffc60d9f/LoadMisalignBuffer/）
+`bash scripts/run_proof.sh LoadMisalignBuffer LoadMisalignBuffer`（signoff-strict、vmucp 开、FM_MERGE_DUP=false）：
+native **SUCCEEDED**，passing **7661** / failing 0 / unverified 0 / aborted 0 / unread_notcompared 0 / unmatched 0(0)，
+constant_reg 268，dont_verify / elab147 / relaxed_appvars 皆空，黑盒 0，fm_target_config/LoadMisalignBuffer.tcl 在 script_closure 里。
+receipt.json sha256 `c597c5c24d9b1b0ea0b1128f4619ad2320a248082e814e56971f89192db5813e`；
+impl_closure `rtl/memblock/LoadMisalignBuffer.sv` sha256 `fca42b83…77dcb1b9`（= 提交字节）。
+
+| 项 | §1.3 预测（跑前） | §1.5 预测（诊断后） | 实测 | 差额指认 |
+|---|---|---|---|---|
+| passing | 7662 | 7661 | 7661 | §1.3 差 −1 = `lowResultShift[2]` 被 FM 识别为常量（§1.3 已列为 +1 风险项） |
+| constant_reg | 267（+1 风险） | 268 | 268 | 同上 |
+| unread（vmucp 前） | 145 | 145 | 145（诊断跑）→ 0（正式） | 三组集合逐位命中 |
+| failing / unmatched | 0 / 0 | 0 / 0 | 0 / 0 | — |
+
+`python3 scripts/fm_predict.py check LoadMisalignBuffer` rc=0：模型 7929 − 实测 7661 = 268 = receipt constant_reg 268。
+
+### C. LoadMisalignBuffer UT（在 48542675 的字节上跑；48542675..5462ffc6 之间 rtl/ 与 tb 无改动）
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=199999 errors=0 PASSED（= 全 1 档） | 1017：checks=199999 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=199998 errors=0 PASSED | 7017：checks=199998 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=199998 errors=0 PASSED | 42017：checks=199998 errors=0 PASSED |
+
+9 轮 cover_holes 全 0。覆盖读数（seed 1 / initreg 0）：状态 idle 34555 / split 9092 / req 20844 / resp 47195 /
+comb 6824 / wb 81490；跨 16B 拆分 H 2170、W/01 841、W/10 873、W/11 780、D/001..111 = 186 173 185 209 233 221 260；
+不跨 16B 进 s_split 2961；响应 成功 10550 / replay 1834 / 异常 1744 / uncache 916 / robIdx 不符 4104；
+唤醒请求 fire 3860；写回 标量正常 3066 / 标量异常 1860 / 向量 2319；flush 空闲 122 / 非空闲 1942；入队 9214 / 入队被 redirect 拦 140。
+（random / <seed>017 档从第一次入队下一拍起比，所以 checks 比 200000 少 1~2。）
+
+### D. 变异自检（scratchpad，不进库；UT：seed1/initreg0 与 seed7/initreg7017 各 20k 拍）
+16 个变异，UT 抓到 13 个（M1 resp 不核对 robIdx、M2 isFinalSplit 不看唤醒、M3 跨 16B 判错位、M4 拆分表 D/011 宽度、
+M5 写回异常不门控、M6 fp lh 不做 NaN-boxing、M8 flush 不清 MMIO 标志、M9 replay 也推进指针、M10 入队优先级、
+M11 向量 fuOpType 取错源、M12 拼接不回绕、M13 写回不让路 loadOutValid、M14 异常不看 vecActive，errors 21..1455306）。
+UT 结构上看不见的 3 个，全部由 FM 覆盖（scratch detached worktree @5462ffc6，diagnostic-full、FAILING_LIMIT=0，不出 receipt）：
+
+| 变异 | UT | FM |
+|---|---|---|
+| M7 uncache 时不清其它累计异常位（s_resp 里 exceptionVec 结构上恒 0，UT 造不出差异） | errors=0 | **FAILED failing 5**（不截断）= exceptionVec_{3,5,13,19,21} |
+| M15 给 req_uop_pc 加异步复位（复位域；req 在首次入队前不比） | errors=0 | **FAILED failing 50** = req_uop_pc[49:0] |
+| M16 去掉 data_select 的复位（复位域；首次入队前不比） | errors=0 | **FAILED failing 9** = data_select[8:0] |
