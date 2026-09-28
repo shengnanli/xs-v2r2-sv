@@ -1,0 +1,9 @@
+{
+  "target": "TXDAT",
+  "ut": "TXDAT",
+  "regs": 9872,
+  "outs": 392,
+  "expected": 10264,
+  "merge_dup": "false",
+  "model_applicable": true
+}

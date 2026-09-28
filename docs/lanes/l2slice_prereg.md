@@ -78,3 +78,63 @@ M2 child1 ID_LO 0x09→0x0A ⇒ elaborate 期 $fatal 拦下。
 
 可能出错处：golden 扁平名 `buffer_<i>_<b>` 与重写 `buffer[i][b]` 靠 FM 名字规整配对；若 matching 卡住或
 unmatched≠0，先生成 fm_pins_pre 再谈别的。未做任何 FM 试跑。
+
+## 3. L2 Queue 单态化 ×5（TXDAT / RXSNP / GrantBuffer 的 child）
+
+### 3.1 结构
+
+- 共享控制核 `rtl/common/xs_ChiselQueue_core.sv`（chisel3 Queue：指针/空满/flow 旁路/count，手写），
+  薄文件 `rtl/uncore/Queue*.sv` 由 `scripts/gen_l2_queues.py`（带 --check，已进 gate_all）从 golden 生成：
+  解析 W0_data 拼接顺序推每个字段 [hi:lo]，与 golden 每条 io_deq_bits_* 切片逐字段比对，对不上即失败。
+- 存储 = golden `ram_<D>x<W>` 行为级叶子，按 D60 两侧同源 inline（RTL_GOLDEN_DEPS + FM_REF_DEPS），无黑盒。
+  五者深度都是 2 的幂（16/16/2/16/16），不触发 ELAB-147。
+- Queue10_GrantBuffer_Anon（ram_10x89，深度 10 非 2 的幂）**不在本批**：见 §6 阻塞说明。
+
+### 3.2 UT（verif/ut/L2Queues，五对同测；commit f4328c53）
+
+| seed | initreg+0 | initreg+random | initreg+<seed>017 |
+|---|---|---|---|
+| 1/7/42 | checks=7000000 errors=0 ×3 | errors=0 ×3 | errors=0 ×3 |
+
+覆盖（seed 1）：各队列满 48050~63272 拍、出队 50929~75784；flow 直通（空队列同拍进出）DSBeat 24136 / TaskBundle 24467。
+变异：去掉 flow 直通时的 do_enq 压制 errors=56741 CAUGHT；TaskBundle resp 切片错位 errors=11679 CAUGHT；
+maybe_full 改成"入置 1、出清 0（同拍进出时置 1）"UT 存活 —— 经分析为**等价变异**（maybe_full 只在
+ptr_match 时有意义，而同拍进出不改变 ptr 差值、不会让指针相遇），不是漏检。
+
+### 3.3 跑前预测（★跑完不许改★）
+
+| 目标 | passing | 其余 |
+|---|---|---|
+| Queue16_DSBeat         | **4361**（regs 4105 + outs 256） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |
+| Queue16_TaskBundle     | **1155**（1081 + 74） | 同上 |
+| Queue2_CHISNP          | **299**（199 + 100） | 同上 |
+| Queue16_GrantQueueTask | **441**（409 + 32） | 同上 |
+| Queue16_GrantQueueData | **4361**（4105 + 256） | 同上 |
+
+可能出错处：Queue2_CHISNP 的 golden 指针名是 `wrap`/`wrap_1`（深度 2 的 Counter 命名），重写叫 enq_ptr/deq_ptr，
+靠 FM 签名配对；若 unmatched≠0 先查这里。
+
+## 4. TXDAT
+
+### 4.1 结构
+
+- 可读核 `xs_TXDAT_core`（§1 反压在飞计数 / §2 两拍发送寄存器 / §3 CHI DAT 报文组装），wrapper 例化三个队列
+  （实例名 queue/queueData0/queueData1 与 golden 一致）。child 两侧白盒：ref golden、impl 本 lane 重写件（§3）。
+- ★bug-for-bug★：golden 的流水线在飞数只有 2 位（Chisel `PopCount(3)+PopCount(1)` 不扩位），4 路同时在飞算成 0。
+  第一版按"最大 20、5 位不溢出"写成 3 位，UT 当场 blockSinkBReqEntrance 失配，改为照搬 2 位截断。
+
+### 4.2 UT（verif/ut/TXDAT；commit f4328c53）
+
+| seed | initreg+0 | initreg+random | initreg+<seed>017 |
+|---|---|---|---|
+| 1/7/42 | checks=3800000 errors=0 ×3 | errors=0 ×3 | errors=0 ×3 |
+
+覆盖（seed 1）：取任务 38414、发第二拍 38361、deassertBE 报文 65137、挡 SinkB 163006、不挡 2648、仅挡 MSHR 34346、
+流水线 4 路同时在飞（截断场景）115。变异：在飞计数改 3 位 errors=16；dataID 第二拍 2→1 errors=11816；
+去掉 WriteDataCancel 判据 errors=15993，均 CAUGHT。
+
+### 4.3 跑前预测（★跑完不许改★）
+
+| 目标 | passing | 其余 |
+|---|---|---|
+| TXDAT | **10264**（regs 9872 + outs 392；含三个队列与其 ram） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |

@@ -1,0 +1,9 @@
+{
+  "target": "Queue16_GrantQueueData",
+  "ut": "L2Queues",
+  "regs": 4105,
+  "outs": 256,
+  "expected": 4361,
+  "merge_dup": "false",
+  "model_applicable": true
+}
