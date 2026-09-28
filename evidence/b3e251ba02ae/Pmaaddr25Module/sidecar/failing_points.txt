@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Pmaaddr25Module
+Implementation : i:/WORK/Pmaaddr25Module
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 09:02:24 2026
+**************************************************
+
+No failing compare points.
+
+1
