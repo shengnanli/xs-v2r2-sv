@@ -40,10 +40,10 @@
 //   L501 §1 寄存器（MSHR.scala:70-116, 724, 815）。名字与 golden 一一相同。
 //   L628 §2 派生判断（MSHR.scala:117-262）：请求是什么、snoop 该怎么回
 //   L749 §3 四路发请求：何时 valid、发什么（MSHR.scala:264-296, 340-452, 454-988）
-//   L1209 §4 状态更新。Chisel 的 when 在同一拍内按书写顺序执行、后写覆盖先写；
-//   L1660 §5 状态与信息输出（MSHR.scala:128-130, 1320-1370, 1431）
-//   L1727 §6 性能计数与断言影子的组合部分
-//   L1782 BEGIN GENERATED(wrapper)
+//   L1212 §4 状态更新。Chisel 的 when 在同一拍内按书写顺序执行、后写覆盖先写；
+//   L1663 §5 状态与信息输出（MSHR.scala:128-130, 1320-1370, 1431）
+//   L1730 §6 性能计数与断言影子的组合部分
+//   L1785 BEGIN GENERATED(wrapper)
 // END GENERATED(nav)
 // =============================================================================
 package mshr_pkg;
@@ -992,6 +992,9 @@ module xs_MSHR_core
   assign merge_param     = io_aMergeTask_valid ? io_aMergeTask_bits_param     : mp_grant_task_merge_task_r_param;
   assign merge_sourceId  = io_aMergeTask_valid ? io_aMergeTask_bits_sourceId  : mp_grant_task_merge_task_r_sourceId;
 
+  logic [3:0] merge_grant_opcode;   // 合并 Acquire 的回复 opcode（FM 不支持函数返回值直接取位段，先落线）
+  assign merge_grant_opcode = od_op_gen(merge_opcode);
+
   logic [1:0] aliasFinal;   // Get/Prefetch 保留目录里的 alias，否则用请求带来的
   assign aliasFinal = (req_get || req_prefetch) ? dirResult_meta_alias : req_alias;
   logic [2:0] grant_pfsrc;  // PfSource.fromMemReqSource：MemReqSource → 预取来源编号
@@ -1051,7 +1054,7 @@ module xs_MSHR_core
     mp_grant.am_alias     = merge_alias;
     mp_grant.am_vaddr     = merge_vaddr;
     mp_grant.am_isKeyword = merge_isKeyword;
-    mp_grant.am_opcode    = od_op_gen(merge_opcode)[2:0];
+    mp_grant.am_opcode    = merge_grant_opcode[2:0];
     mp_grant.am_param     = grant_param(merge_param, req_promoteT);
     mp_grant.am_sourceId  = merge_sourceId;
     mp_grant.am_meta_dirty   = gotDirty || dirResult_hit && dirResult_meta_dirty;

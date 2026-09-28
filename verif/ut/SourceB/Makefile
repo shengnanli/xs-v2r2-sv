@@ -15,6 +15,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/SourceB.sv $(GOLDEN_RTL)/FastArbiter_5.sv
 # 老战役审计声明继承: vmucp=加强证明(FM 实比 matched-unread, 非 waiver)
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = SourceB
+# 关 merge_dup：fm_predict 的 passing 模型只在它关闭时成立
+FM_MERGE_DUP = false
 
 include ../../../scripts/ut_common.mk
 
