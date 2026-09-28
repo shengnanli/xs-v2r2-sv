@@ -1,0 +1,17 @@
+{
+  "target": "BankedDataArray",
+  "ut": "BankedDataArray",
+  "regs": 6757,
+  "outs": 987,
+  "expected": 10400,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 2656,
+  "bbox": {
+    "array_7_ext": {
+      "insts": 32,
+      "in_bits": 83,
+      "points": 2656
+    }
+  }
+}

@@ -12,6 +12,21 @@
   · MbistPipeDCacheData 的 toSRAM_n_rdata 接的是 bank n/4 的整行读输出（golden 里的 ecc_data_delayed_{32+n/4}）；
   · childBd_n_* 的位宽取 golden MbistPipeDCacheData 的 toSRAM_n_* 端口位宽。
 
+另生成 verif/ut/BankedDataArray/fm_pins_pre.tcl（FM「匹配前」钉点，fail-closed、一一对应、字面计数）：
+  · ecc_data_delayed：golden 平铺 ecc_data_delayed{_k}_reg[bit]（k = 4b+w，k=0 无后缀）
+    <-> 重写 ecc_data_delayed_reg[b][w][bit]，32 × 72 = 2304 对；
+  · ecc_data_delayed_REG：golden ecc_data_delayed_REG{_k}_reg <-> 重写 ecc_data_delayed_REG_reg[b][w]，32 对。
+  实测（2026-09-28 非正式试跑）：不钉时 FM 按"末段名"把前者 1792 位留成两侧 unmatched、
+  把后者按 Name(Last) 配成错位的对子，native FAILED。
+  · 两侧对称的无读者寄存器（FM 不给无扇出的点做签名配对，钉上才能进 vmucp 真比较）：
+      每个 SRAMTemplate 的 MBIST 回读寄存器 rdataReg[71:0]：golden data_banks_0_b/data_bank_w/rdataReg_reg[bit]
+        <-> 重写 data_banks_0_b/data_bank_w/u_core/rdataReg_reg[bit]（32 × 72 = 2304 对；BankedDataArray 的
+        MBIST 回读借用整行读寄存器，这条 bore_rdata 在两侧都悬空）；
+      它的采样使能 golden respReg <-> 重写 u_core/g_nomcp.rdata_last_REG（32 对；共享核里 respReg 与
+        rdata_last_REG 同方程 RegNext(rckEn)，merge_dup 把前者并进后者，幸存的是后者这个名字）；
+      MbistPipeDCacheData 的 addrReg[8:0] / addrRdReg[8] / beReg（11 对，同 DuplicatedTagArray 的那批死位）。
+  只消命名鸿沟，不约束 ref。
+
 用法：python3 scripts/gen_bankeddataarray.py [--check]
 """
 import os
@@ -133,6 +148,58 @@ def splice(txt, tag, body):
     return txt[:i] + b + "\n// 由 scripts/gen_bankeddataarray.py 从 golden 生成 —— 勿手改\n" + body + "\n" + txt[j:]
 
 
+PINS = os.path.join(REPO, "verif", "ut", "BankedDataArray", "fm_pins_pre.tcl")
+
+
+def pins():
+    top = "BankedDataArray"
+    L = ["# BankedDataArray FM「匹配前」钉点 —— 由 scripts/gen_bankeddataarray.py 生成，勿手改。",
+         "# 只消命名鸿沟（golden 平铺 _k 后缀 vs 重写 [b][w] 二维数组）：不约束 ref、不放宽 appvar、",
+         "# 不扩黑盒、不 dont_verify。依据见生成器文件头。",
+         f'if {{$top ne "{top}"}} {{ error "BDA_PREPIN_WRONG_TOP=$top" }}',
+         "set _bda_n 0",
+         "for {set _b 0} {$_b < 8} {incr _b} {",
+         "    for {set _w 0} {$_w < 4} {incr _w} {",
+         "        set _k [expr {$_b * 4 + $_w}]",
+         '        if {$_k == 0} { set _sfx "" } else { set _sfx "_$_k" }',
+         '        set _r "r:/WORK/' + top + '/ecc_data_delayed_REG${_sfx}_reg"',
+         '        set _i "i:/WORK/' + top + '/ecc_data_delayed_REG_reg\\[$_b\\]\\[$_w\\]"',
+         '        if {![set_user_match $_r $_i]} { puts "BDA_PREPIN_FAIL: $_r <-> $_i"; error "BDA_PREPIN_MISS=$_r" }',
+         "        incr _bda_n",
+         "        for {set _bit 0} {$_bit < 72} {incr _bit} {",
+         '            set _r "r:/WORK/' + top + '/ecc_data_delayed${_sfx}_reg\\[$_bit\\]"',
+         '            set _i "i:/WORK/' + top + '/ecc_data_delayed_reg\\[$_b\\]\\[$_w\\]\\[$_bit\\]"',
+         '            if {![set_user_match $_r $_i]} { puts "BDA_PREPIN_FAIL: $_r <-> $_i"; error "BDA_PREPIN_MISS=$_r" }',
+         "            incr _bda_n",
+         "        }",
+         "    }",
+         "}",
+         "for {set _b 0} {$_b < 8} {incr _b} {",
+         "    for {set _w 0} {$_w < 4} {incr _w} {",
+         '        set _p "data_banks_0_$_b/data_bank_$_w"',
+         '        set _r "r:/WORK/' + top + '/$_p/respReg_reg"',
+         '        set _i "i:/WORK/' + top + '/$_p/u_core/g_nomcp.rdata_last_REG_reg"',
+         '        if {![set_user_match $_r $_i]} { puts "BDA_PREPIN_FAIL: $_r <-> $_i"; error "BDA_PREPIN_MISS=$_r" }',
+         "        incr _bda_n",
+         "        for {set _bit 0} {$_bit < 72} {incr _bit} {",
+         '            set _r "r:/WORK/' + top + '/$_p/rdataReg_reg\\[$_bit\\]"',
+         '            set _i "i:/WORK/' + top + '/$_p/u_core/rdataReg_reg\\[$_bit\\]"',
+         '            if {![set_user_match $_r $_i]} { puts "BDA_PREPIN_FAIL: $_r <-> $_i"; error "BDA_PREPIN_MISS=$_r" }',
+         "            incr _bda_n",
+         "        }",
+         "    }",
+         "}",
+    ] + [
+        f'if {{![set_user_match "r:/WORK/{top}/mbistPl/{rn}" "i:/WORK/{top}/mbistPl/u_core/{im}"]}} '
+        f'{{ error "BDA_PREPIN_MISS=mbistPl/{rn}" }} ; incr _bda_n'
+        for rn, im in ([(f"addrReg_reg\\[{k}\\]", f"addrReg_reg\\[{k}\\]") for k in range(9)] +
+                       [("addrRdReg_reg\\[8\\]", "addrRdReg_reg\\[8\\]"), ("beReg_reg", "beReg_reg\\[0\\]")])
+    ] + [
+         'puts "BDA_PREPIN_END n=$_bda_n expect=4683"',
+         'if {$_bda_n != 4683} { error "BDA_PREPIN_COUNT=$_bda_n" }']
+    return "\n".join(L) + "\n"
+
+
 def main():
     ports, insts = gen()
     old = open(OUT).read()
@@ -140,15 +207,19 @@ def main():
         if old.count(f"// BEGIN GENERATED({tag})") != 1:
             raise SystemExit(f"GENERATED({tag}) 标记不是恰好一个")
     new = splice(splice(old, "bda_ports", ports), "bda_insts", insts)
-    if "--check" in sys.argv:
-        if new != old:
-            print(f"[gencheck] {OUT} 与生成结果不一致"); return 1
-        print(f"[gencheck] {OUT} OK"); return 0
-    if new != old:
-        open(OUT, "w").write(new); print(f"wrote {OUT}")
-    else:
-        print(f"unchanged {OUT}")
-    return 0
+    rc = 0
+    for path, txt in ((OUT, new), (PINS, pins())):
+        cur = open(path).read() if os.path.exists(path) else None
+        if "--check" in sys.argv:
+            if cur != txt:
+                print(f"[gencheck] {path} 与生成结果不一致"); rc = 1
+            else:
+                print(f"[gencheck] {path} OK")
+        elif cur != txt:
+            open(path, "w").write(txt); print(f"wrote {path}")
+        else:
+            print(f"unchanged {path}")
+    return rc
 
 
 if __name__ == "__main__":

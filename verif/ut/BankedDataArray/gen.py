@@ -9,7 +9,9 @@ golden BankedDataArray vs 重写 BankedDataArray_xs（scripts/dual_tb_lib.py，�
   · 之后读写/整行读随机，所有 set 下标（含 MBIST 地址）压到 0..7；bankMask 按地址与 is128 取真实值
     （一半概率），一半全随机（覆盖读-读冲突选最老）；lqIdx 值压到 0..3 让新老比较频繁翻转；
   · MBIST 在 mode 12..15 全随机，否则关；CtrlUnit 伪错误 1/8 概率。
-arm：整行读输出寄存器写过（can_resp 或 MBIST）、3 个读口各读过、整行读读过所有 bank 之后再等 3 拍。
+第 300..309 拍只做整行读、can_go/stall/can_resp 全开，把 SRAM 读出锁存与整行读两级寄存写成确定值
+（种子 1 × +vcs+initreg+1017 实测：不这样做时 readline 保持寄存器的随机初值会在第一次 can_resp 时漏出去）。
+arm：310 拍之后、3 个读口各读过一次，再等 3 拍。
 
 用法：python3 gen.py [--check]
 """
@@ -53,7 +55,14 @@ for b in range(8):
     L += [f"  @io_write_dup_{b}_valid = 1'b1;",
           f"  @io_write_dup_{b}_bits_addr[13:6] = 8'((cyc / 4) % 8);",
           f"  @io_write_dup_{b}_bits_way_en = 4'b0001 << (cyc % 4);"]
-L += ["end"]
+L += ["end",
+      # 300..309：只做整行读、三级握手全开——把 SRAM 读出锁存、ecc_data_delayed、readline 两级寄存全部写成确定值
+      "if (cyc >= 300 && cyc < 310) begin",
+      "  @io_read_0_valid = 1'b0; @io_read_1_valid = 1'b0; @io_read_2_valid = 1'b0;",
+      "  @io_write_valid = 1'b0;"] + [f"  @io_write_dup_{b}_valid = 1'b0;" for b in range(8)] + [
+      "  @io_readline_valid = 1'b1; @io_readline_bits_addr[13:6] = 8'(cyc % 8);",
+      "  @io_readline_can_go = 1'b1; @io_readline_stall = 1'b1; @io_readline_can_resp = 1'b1;",
+      "end"]
 STIM = "\n".join(L)
 
 G = "bda_u_gold."
@@ -74,8 +83,7 @@ EXEMPT = []
 PAIRS = [
     Pair(TOP, "bda_", clocked=True, stim=STIM, cov=COV, exempt=EXEMPT,
          mode_period=3000, reset_period=60000, cov_min=100, arm_delay=3,
-         arm=["cyc >= 300", "@io_readline_valid && @io_readline_ready",
-              "@io_readline_can_resp || " + G + "_mbistPl_mbist_ack",
+         arm=["cyc >= 310",
               "@io_read_0_valid && @io_read_0_ready", "@io_read_1_valid && @io_read_1_ready",
               "@io_read_2_valid && @io_read_2_ready"]),
 ]

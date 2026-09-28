@@ -406,7 +406,7 @@ module tb;
   int bda_cov_pseudo_ready = 0;
   int bda_cov_mbist_ack = 0;
   int bda_cov_is128_read = 0;
-  logic [5:0] bda_armed = '0;
+  logic [3:0] bda_armed = '0;
   int bda_armed_at = -1;
   BankedDataArray bda_u_gold (
     .clock(clk),
@@ -1529,6 +1529,20 @@ module tb;
           bda_io_write_dup_7_bits_addr[13:6] = 8'((cyc / 4) % 8);
           bda_io_write_dup_7_bits_way_en = 4'b0001 << (cyc % 4);
         end
+        if (cyc >= 300 && cyc < 310) begin
+          bda_io_read_0_valid = 1'b0; bda_io_read_1_valid = 1'b0; bda_io_read_2_valid = 1'b0;
+          bda_io_write_valid = 1'b0;
+          bda_io_write_dup_0_valid = 1'b0;
+          bda_io_write_dup_1_valid = 1'b0;
+          bda_io_write_dup_2_valid = 1'b0;
+          bda_io_write_dup_3_valid = 1'b0;
+          bda_io_write_dup_4_valid = 1'b0;
+          bda_io_write_dup_5_valid = 1'b0;
+          bda_io_write_dup_6_valid = 1'b0;
+          bda_io_write_dup_7_valid = 1'b0;
+          bda_io_readline_valid = 1'b1; bda_io_readline_bits_addr[13:6] = 8'(cyc % 8);
+          bda_io_readline_can_go = 1'b1; bda_io_readline_stall = 1'b1; bda_io_readline_can_resp = 1'b1;
+        end
       end
       #4;
       if (cyc >= RESET_CYC + 0 && bda_armed_at >= 0 && cyc >= bda_armed_at) begin
@@ -1781,12 +1795,10 @@ module tb;
         if (bda_u_gold._mbistPl_mbist_ack) bda_cov_mbist_ack++;
         if (bda_io_read_0_valid && bda_io_is128Req_0 && bda_g_io_read_0_ready) bda_cov_is128_read++;
       end
-      if (cyc >= 300) bda_armed[0] = 1'b1;
-      if (bda_io_readline_valid && bda_g_io_readline_ready) bda_armed[1] = 1'b1;
-      if (bda_io_readline_can_resp || bda_u_gold._mbistPl_mbist_ack) bda_armed[2] = 1'b1;
-      if (bda_io_read_0_valid && bda_g_io_read_0_ready) bda_armed[3] = 1'b1;
-      if (bda_io_read_1_valid && bda_g_io_read_1_ready) bda_armed[4] = 1'b1;
-      if (bda_io_read_2_valid && bda_g_io_read_2_ready) bda_armed[5] = 1'b1;
+      if (cyc >= 310) bda_armed[0] = 1'b1;
+      if (bda_io_read_0_valid && bda_g_io_read_0_ready) bda_armed[1] = 1'b1;
+      if (bda_io_read_1_valid && bda_g_io_read_1_ready) bda_armed[2] = 1'b1;
+      if (bda_io_read_2_valid && bda_g_io_read_2_ready) bda_armed[3] = 1'b1;
       if (bda_armed_at < 0 && (&bda_armed)) bda_armed_at = cyc + 1 + 3;
     end
 

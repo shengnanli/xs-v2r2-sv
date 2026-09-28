@@ -36,6 +36,10 @@ FM_REF_DEPS_BankedDataArray = $(BDA_CHILDREN) $(SRAM_DEPS)
 FM_MODE = assembly
 PORTLINT_ORDER = fail
 
+# vmucp（加强不是放宽）：2358 个两侧对称死位（断言寄存器、SRAM 的 MBIST 回读寄存器、MBIST 地址打拍），
+# 由 fm_pins_pre.tcl 钉成 matched 后真比较；依据见 verif/fm_target_config/BankedDataArray.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 VCS      += +define+SYNTHESIS +vcs+initreg+random

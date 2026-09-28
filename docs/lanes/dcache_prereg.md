@@ -223,3 +223,39 @@ UT：DataSRAMBank（4 对同 tb）@ 8554930b 9/9 checks=6387104 errors=0 cov_fai
 
 全部 verdict SUCCEEDED；`fm_predict.py check` 4/4「全部对上」。
 复跑：`PROOF_COMMIT=754c1d99 bash scripts/run_proof.sh DataSRAMBank DataSRAMBank DataSRAMBank_1 DataSRAMBank_2 DataSRAMBank_4 < /dev/null`
+
+## 4. 第四批：BankedDataArray（跑前登记，FM 起跑前提交）
+
+### 4.1 结构与子模块处置
+
+- rtl/memblock/BankedDataArray.sv：bankeddataarray_pkg（SECDED(72,64) 编码/检错、LqPtr 比较、OHToUInt）+
+  手写功能区 §1..§9（地址预处理 / 读-读·读-写·读-整行读冲突与最老放行 / bank 读使能与读地址 / 伪错误注入与
+  ECC 延迟检错 / load 读响应 / 整行读三级寄存 / pseudo_error.ready / 写打拍 / 断言寄存器）；
+  端口表与 8 个 DataSRAMBank_* + MbistPipeDCacheData 例化、MBIST 穿线在 GENERATED 区（scripts/gen_bankeddataarray.py，--check，
+  fail-closed 核对 golden 的 bank 类型、bore/sig 连接编号、toSRAM rdata 来源）。
+- child：DataSRAMBank/_1/_2/_4（本 lane，第三批已签）、SRAMTemplate_84..100、MbistPipeDCacheData（PROVEN_DIRECT）两侧白盒；
+  唯一黑盒 array_7_ext ×32（vendor_boundary 已审定）。verif/allow/BankedDataArray.json 由 declare_allow.py 从试跑生成：
+  80 个对象 = ref 32 + impl 32 个层次路径 + impl 侧 16 个 FM 唯一化出来的设计副本路径
+  （i:/WORK/DataSRAMBank_2_0 / DataSRAMBank_4_0..2 下各 4 个 array_7_ext；推测由钉点指向具体实例内部对象触发唯一化，
+  均为同一厂商叶子 array_7_ext，class=vendor_macro）。
+- FM：assembly、merge_dup 默认、钉点 verif/ut/BankedDataArray/fm_pins_pre.tcl（4683 对，见生成器文件头）、
+  vmucp 开（2358 个对称死位，verif/fm_target_config/BankedDataArray.tcl）。
+
+### 4.2 UT（verif/ut/BankedDataArray）
+
+前 300 拍顺序写满 8 bank × 4 路 × set 0..7；300..309 拍只做整行读、三级握手全开（把读出锁存与整行读寄存写成确定值）；
+之后随机读写/整行读/MBIST/伪错误，set 下标（含 MBIST 地址）压到 0..7。
+86337753 上 9 档里 seed 1 × +vcs+initreg+1017 报 9 个失配（第 309 拍整行读输出 / MBIST outdata）：定位为 readline
+保持寄存器（stall 那一级，不复位）的随机初值在第一次 can_resp 时漏出——tb 预处理不足，不是 RTL 差异；改 tb 后该档
+errors=0（试跑 checks=6789052）。9 档结果见对账。
+覆盖（seed 7）：读-读冲突 44247、最老放行作废 60118、读-写冲突 25823、读-整行读冲突 24985、整行读被写挡 12430、
+load 读 ECC 错 33922、整行读 ECC 错 80877、pseudo_error.ready 105451、MBIST ack 25477、128 位读 40295。
+
+### 4.3 跑前预测（★跑完不许改本节★）
+
+| 目标 | passing 预测 | 其余 |
+|---|---|---|
+| BankedDataArray | **10342** | assembly；黑盒声明 80 对象（array_7_ext）；钉点 4683/4683；vmucp 后 unread 0；failing / unverified / unmatched 0 |
+
+依据：非正式试跑（钉点全、vmucp 关）passing 7984 + unread 2358（11 matched_nc + 2347 对钉后 matched）；
+vmucp 开试跑 10342 = 7984 + 2358。模型 10400（MODEL_NA，merge 开）——差 58 不作对账依据。
