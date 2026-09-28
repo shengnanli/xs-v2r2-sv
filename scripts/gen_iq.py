@@ -37,10 +37,22 @@ PORT_RE = re.compile(r'^\s*(input|output)\s+(?:\[(\d+):0\]\s+)?(\w+),?\s*$')
 # 每个变体的"表外事实"：golden 端口表里读不出、必须从 Chisel 配置核对的参数。
 # 其余参数（条目数、分段、口数、源数、FuType 保留位、接受掩码……）全部从 golden 量。
 #   lat: MultiWakeupQueue 的 getDeqLat 表 [(FuType 位, 延迟)]；无 lat 端口的变体为 []
-#   wk_wen: MWQ 出口的写使能端口名（wakeupToIQ 的 xxWen = valid && wen）
 # -----------------------------------------------------------------------------
 VARIANTS = {
-    'IssueQueueAluCsrFenceDiv': dict(lat=[], wk_wen='rfWen'),
+    'IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v': dict(lat=[]),
+    'IssueQueueAluCsrFenceDiv': dict(lat=[]),
+    'IssueQueueAluMulBkuBrhJmp': dict(lat=[(7, 2), (10, 2)]),            # mul / bku：2 拍
+    'IssueQueueFaluFcvtF2vFmacFdiv': dict(lat=[(11, 1), (13, 2), (12, 3)]),  # falu 1 / fcvt 2 / fmac 3
+    'IssueQueueFaluFmac': dict(lat=[(11, 1), (12, 3)]),
+    'IssueQueueFaluFmacFdiv': dict(lat=[(11, 1), (12, 3)]),
+    'IssueQueueLdu': dict(lat=[]),
+    'IssueQueueStaMou': dict(lat=[]),
+    'IssueQueueStdMoud': dict(lat=[]),
+    'IssueQueueVfdivVidiv': dict(lat=[]),
+    'IssueQueueVfmaVialuFixVfalu': dict(lat=[]),
+    'IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf': dict(lat=[]),
+    'IssueQueueVlduVstu': dict(lat=[]),
+    'IssueQueueVlduVstuVseglduVsegstu': dict(lat=[]),
 }
 
 
@@ -227,6 +239,9 @@ def measure(c):
     vc = [d for d in range(P['N_DEQ']) if f'io_validCntDeqVec_{d}' in c.pw]
     P['HAS_VCNT'] = [1 if d in vc else 0 for d in range(P['N_DEQ'])]
     P['VCNT_OUT_W'] = c.pw[f'io_validCntDeqVec_{vc[0]}'] if vc else 1
+    P['LDW_ON'] = int('io_memIO_loadWakeUp_0_valid' in c.pw)
+    P['VECMEM_BLOCKED'] = int(f'io_enq_0_bits_status_blocked' in ep)
+    P['LQ_W'] = c.pw.get('io_memIO_lqDeqPtr_value', 7)
     return P, en
 
 
@@ -260,6 +275,23 @@ def build_glue(c, P, en):
         g[f'|_deqCanIssue_{d}_{hi}to{lo}'] = f'core_comp_oldest_valid[{d}]'
         if P['HAS_VCNT'][d]:
             g[f'@out:io_validCntDeqVec_{d}'] = f'core_valid_cnt[{d}]'
+    WEN = ['rf', 'fp', 'vec', 'v0', 'vl']
+    for d in range(P['N_DEQ']):
+        for k, w in enumerate(WEN):
+            g[f'deqBeforeDly_{d}_valid & deqBeforeDly_{d}_bits_common_{w}Wen'] = f'core_deq_wen_valid[{d}][{k}]'
+    g["io_og1Resp_0_valid & io_og1Resp_0_bits_resp == 2'h0"] = 'core_wk_og1_fail'
+    if P['VECMEM_BLOCKED']:
+        for e in range(P['N_ENQ']):
+            g[f'{en}.io_enq_{e}_bits_status_blocked'] = f'core_st_blocked[{e}]'
+    if P['LDW_ON']:
+        g['io_wakeupToIQ_0_valid_REG'] = 'core_ldw_q_valid'
+        g['io_wakeupToIQ_0_bits_rfWen_REG'] = 'core_ldw_q_rf_wen'
+        g['io_wakeupToIQ_0_bits_fpWen_REG'] = 'core_ldw_q_fp_wen'
+        g['io_wakeupToIQ_0_bits_pdest_REG'] = 'core_ldw_q_pdest'
+        for k in range(6):
+            g[f'io_wakeupToIQ_0_bits_rfWenCopy_{k}_REG'] = f'core_ldw_q_rf_wen_copy[{k}]'
+            g[f'io_wakeupToIQ_0_bits_fpWenCopy_{k}_REG'] = f'core_ldw_q_fp_wen_copy[{k}]'
+            g[f'io_wakeupToIQ_0_bits_pdestCopy_{k}_REG'] = f'core_ldw_q_pdest_copy[{k}]'
     for k in range(P['N_DEQ'], P['N_DEQ'] + P['N_ENQ']):
         g[f'simpAgeDetectRequest_{k}'] = f'core_age_simp_req[{k}]'
     # 条目阵列入队状态里由核翻译的字段（按端口名）
@@ -339,6 +371,9 @@ def gen(v):
         if m:
             busy[int(m.group(1))].append(f'{inst}_io_out_fuBusyTableMask')
     NB = max(1, max(len(b) for b in busy.values()))
+    mwq = [x for x in c.insts if x[0].startswith('MultiWakeupQueue')]
+    mwq_ports = {n: w for _, w, n in c.child_ports[mwq[0][0]]} if mwq else {}
+    LATW = mwq_ports.get('io_enq_bits_lat', 1)
     decl = f'''  // ---- 核接口 ----
   logic             core_enq_valid     [{NE}];
   logic             core_enq_ready     [{NE}];
@@ -384,10 +419,32 @@ def gen(v):
   logic             core_dly_ready     [{ND}];
   logic [{P["VCNT_OUT_W"] - 1}:0]       core_valid_cnt     [{ND}];
   logic [34:0]      core_wk_enq_fu_type;
-  logic             core_wk_enq_lat;
+  logic [{LATW - 1}:0]       core_wk_enq_lat;
+  logic             core_wk_og1_valid;
+  logic [1:0]       core_wk_og1_resp;
+  logic             core_wk_og1_fail;
   logic             core_wk_deq_valid;
-  logic             core_wk_deq_wen;
-  logic             core_wk_out_wen;
+  logic [34:0]      core_wk_deq_fu_type;
+  logic [4:0]       core_wk_deq_wen;
+  logic [4:0]       core_wk_out_wen;
+  logic             core_wk_is0lat;
+  logic [{P["LQ_W"]}:0]       core_enq_lq_idx    [{NE}];
+  logic             core_enq_is_vleff  [{NE}];
+  logic [{P["LQ_W"]}:0]       core_lq_deq_ptr;
+  logic             core_st_blocked    [{NE}];
+  logic [4:0]       core_deq_wen       [{ND}];
+  logic [4:0]       core_deq_wen_valid [{ND}];
+  logic             core_ldw_valid;
+  logic             core_ldw_rf_wen;
+  logic             core_ldw_fp_wen;
+  logic [7:0]       core_ldw_pdest;
+  logic             core_ldw_q_valid;
+  logic             core_ldw_q_rf_wen;
+  logic             core_ldw_q_fp_wen;
+  logic [7:0]       core_ldw_q_pdest;
+  logic             core_ldw_q_rf_wen_copy [6];
+  logic             core_ldw_q_fp_wen_copy [6];
+  logic [7:0]       core_ldw_q_pdest_copy  [6];
 '''
     L.append(decl)
 
@@ -423,6 +480,31 @@ def gen(v):
         for b in range(NB):
             A.append(f'  assign core_busy_mask[{d}][{b}] = ' + (busy[d][b] + ';' if b < len(busy[d]) else "'0;"))
         A.append(f'  assign core_dly_ready[{d}] = io_deqDelay_{d}_ready;')
+    for e in range(NE):
+        if P['VECMEM_BLOCKED']:
+            A.append(f'  assign core_enq_lq_idx[{e}] = {{io_enq_{e}_bits_lqIdx_flag, io_enq_{e}_bits_lqIdx_value}};')
+            A.append(f'  assign core_enq_is_vleff[{e}] = io_enq_{e}_bits_vpu_isVleff;')
+        else:
+            A.append(f"  assign core_enq_lq_idx[{e}] = '0;")
+            A.append(f"  assign core_enq_is_vleff[{e}] = 1'h0;")
+    A.append('  assign core_lq_deq_ptr = ' + ('{io_memIO_lqDeqPtr_flag, io_memIO_lqDeqPtr_value};'
+                                            if P['VECMEM_BLOCKED'] else "'0;"))
+    for d in range(ND):
+        ws = []
+        for w in ['vl', 'v0', 'vec', 'fp', 'rf']:
+            n = f'deqBeforeDly_{d}_bits_common_{w}Wen'
+            ws.append(c.res(n, n) if (n in c.child_out or n in c.wires) else "1'h0")
+        A.append(f'  assign core_deq_wen[{d}] = {{{", ".join(ws)}}};   // {{vl, v0, vec, fp, rf}}Wen')
+    if P['LDW_ON']:
+        A.append('  assign core_ldw_valid = io_memIO_loadWakeUp_0_valid;')
+        A.append('  assign core_ldw_rf_wen = io_memIO_loadWakeUp_0_bits_rfWen;')
+        A.append('  assign core_ldw_fp_wen = io_memIO_loadWakeUp_0_bits_fpWen;')
+        A.append('  assign core_ldw_pdest = io_memIO_loadWakeUp_0_bits_pdest;')
+    else:
+        A.append("  assign core_ldw_valid = 1'h0;")
+        A.append("  assign core_ldw_rf_wen = 1'h0;")
+        A.append("  assign core_ldw_fp_wen = 1'h0;")
+        A.append("  assign core_ldw_pdest = '0;")
     # 年龄选择器输出
     ages = {m: inst for m, inst, _ in c.insts if 'AgeDetector' in m}
     enq_age = [i for m, i in ages.items() if m.startswith('NewAgeDetector')][0]
@@ -485,16 +567,23 @@ def gen(v):
         L.append('')
 
     # ---- MWQ 胶合 ----
-    mwq = [x for x in c.insts if x[0].startswith('MultiWakeupQueue')]
+    WEN = ['rf', 'fp', 'vec', 'v0', 'vl']
     if mwq:
         mi = mwq[0][1]
-        fe = [e for p, e in mwq[0][2] if p == 'io_enq_bits_uop_fuType']
-        A2 = [f'  assign core_wk_enq_fu_type = {c.res(fe[0], "wk fuType") if fe else chr(39) + "0"};',
+        wens = [f'{mi}_io_deq_bits_{w}Wen' if f'io_deq_bits_{w}Wen' in mwq_ports else "1'h0"
+                for w in reversed(WEN)]
+        # lat 查表的输入 = 口 0 出队的 fuType（与 MWQ 有没有 fuType 端口无关）
+        A2 = [f"  assign core_wk_enq_fu_type = {c.res('deqBeforeDly_0_bits_common_fuType', 'wk fuType')};",
               f'  assign core_wk_deq_valid = {mi}_io_deq_valid;',
-              f'  assign core_wk_deq_wen = {mi}_io_deq_bits_{extra["wk_wen"]};']
+              '  assign core_wk_deq_fu_type = ' +
+              (f'{mi}_io_deq_bits_fuType;' if 'io_deq_bits_fuType' in mwq_ports else "'0;"),
+              f'  assign core_wk_deq_wen = {{{", ".join(wens)}}};   // {{vl, v0, vec, fp, rf}}']
     else:
         A2 = ["  assign core_wk_enq_fu_type = '0;", "  assign core_wk_deq_valid = 1'h0;",
-              "  assign core_wk_deq_wen = 1'h0;"]
+              "  assign core_wk_deq_fu_type = '0;", "  assign core_wk_deq_wen = '0;"]
+    A2.append('  assign core_wk_og1_valid = ' + ('io_og1Resp_0_valid;' if 'io_og1Resp_0_valid' in c.pw else "1'h0;"))
+    A2.append('  assign core_wk_og1_resp = ' + ('io_og1Resp_0_bits_resp;' if 'io_og1Resp_0_bits_resp' in c.pw
+                                              else "2'h0;"))
     L += A2
     L.append('')
 
@@ -518,7 +607,14 @@ def gen(v):
     .HAS_VCNT  ('{{{hv}}}),
     .VCNT_OUT_W({P["VCNT_OUT_W"]}),
     .W0        ({W[0]}),
-    .W1        ({W[1] if ND > 1 else 1})
+    .W1        ({W[1] if ND > 1 else 1}),
+    .LDW_ON    (1'b{P["LDW_ON"]}),
+    .VECMEM_BLOCKED(1'b{P["VECMEM_BLOCKED"]}),
+    .LQ_W      ({P["LQ_W"]}),
+    .N_LAT     ({max(1, len(extra['lat']))}),
+    .LAT_FU    ('{{{', '.join(str(b) for b, _ in extra['lat']) or '0'}}}),
+    .LAT_VAL   ('{{{', '.join(str(l) for _, l in extra['lat']) or '0'}}}),
+    .LAT_W     ({LATW})
   ) u_core (
     .clock            (clock),
     .reset            (reset),
@@ -530,6 +626,10 @@ def gen(v):
     .enq_psrc         (core_enq_psrc),
     .enq_src_state    (core_enq_src_state),
     .enq_src_ld       (core_enq_src_ld),
+    .enq_lq_idx       (core_enq_lq_idx),
+    .enq_is_vleff     (core_enq_is_vleff),
+    .lq_deq_ptr       (core_lq_deq_ptr),
+    .st_blocked       (core_st_blocked),
     .st_src_state     (core_st_src_state),
     .st_data_src      (core_st_data_src),
     .st_src_ld        (core_st_src_ld),
@@ -559,6 +659,8 @@ def gen(v):
     .deq_ld_dep       (core_deq_ld_dep),
     .deq_select_time  (core_deq_select_time),
     .deq_issue_time   (core_deq_issue_time),
+    .deq_wen          (core_deq_wen),
+    .deq_wen_valid    (core_deq_wen_valid),
     .deq0_payload     (core_deq0_payload),
     .deq1_payload     (core_deq1_payload),
     .dly_valid        (core_dly_valid),
@@ -568,9 +670,25 @@ def gen(v):
     .valid_cnt        (core_valid_cnt),
     .wk_enq_fu_type   (core_wk_enq_fu_type),
     .wk_enq_lat       (core_wk_enq_lat),
+    .wk_og1_valid     (core_wk_og1_valid),
+    .wk_og1_resp      (core_wk_og1_resp),
+    .wk_og1_fail      (core_wk_og1_fail),
     .wk_deq_valid     (core_wk_deq_valid),
+    .wk_deq_fu_type   (core_wk_deq_fu_type),
     .wk_deq_wen       (core_wk_deq_wen),
-    .wk_out_wen       (core_wk_out_wen)
+    .wk_out_wen       (core_wk_out_wen),
+    .wk_is0lat        (core_wk_is0lat),
+    .ldw_valid        (core_ldw_valid),
+    .ldw_rf_wen       (core_ldw_rf_wen),
+    .ldw_fp_wen       (core_ldw_fp_wen),
+    .ldw_pdest        (core_ldw_pdest),
+    .ldw_q_valid      (core_ldw_q_valid),
+    .ldw_q_rf_wen     (core_ldw_q_rf_wen),
+    .ldw_q_fp_wen     (core_ldw_q_fp_wen),
+    .ldw_q_pdest      (core_ldw_q_pdest),
+    .ldw_q_rf_wen_copy(core_ldw_q_rf_wen_copy),
+    .ldw_q_fp_wen_copy(core_ldw_q_fp_wen_copy),
+    .ldw_q_pdest_copy (core_ldw_q_pdest_copy)
   );
 ''')
 
@@ -599,8 +717,12 @@ def gen(v):
         if mm:
             L.append(f'  assign {n} = dly{mm.group(1)}_{mm.group(2)};')
             continue
-        if re.fullmatch(r'io_wakeupToIQ_\d+_bits_(rf|fp|vec|v0|vl)Wen', n):
-            L.append(f'  assign {n} = core_wk_out_wen;')
+        mw = re.fullmatch(r'io_wakeupToIQ_0_bits_(rf|fp|vec|v0|vl)Wen', n)
+        if mw and mwq:
+            L.append(f'  assign {n} = core_wk_out_wen[{WEN.index(mw.group(1))}];')
+            continue
+        if n == 'io_wakeupToIQ_0_bits_is0Lat' and mwq:
+            L.append(f'  assign {n} = core_wk_is0lat;')
             continue
         L.append(f'  assign {n} = {c.res(e, n)};')
     L.append('endmodule')

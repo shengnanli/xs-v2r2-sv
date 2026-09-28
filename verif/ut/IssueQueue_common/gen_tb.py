@@ -69,6 +69,7 @@ def gen(v):
     outs = [(w, n) for d, w, n in c.ports if d == 'output']
     keep = [b for b in range(35) if any(a >> b & 1 for a in P['ACCEPT'])]
     has_mwq = any(m.startswith('MultiWakeupQueue') for m, _, _ in c.insts)
+    has_cancel = 'deqSelValidVec_0' in c.wires   # 只有带 load 取消网络的变体才有 cancelDeqVec
     ND, N = P['N_DEQ'], P['N_ENTRIES']
     L = []
     L.append(f'// {v} UT —— golden {v} 与重写 {v}_xs 双例化，逐拍比对全部 {len(outs)} 个输出。')
@@ -129,7 +130,8 @@ def gen(v):
     L.append('      if (errors <= 40) $display("[ERR] t=%0t %s golden=%h impl=%h", $time, nm, g, i);')
     L.append('    end')
     L.append('  endtask')
-    cov = ['enq_fire', 'flush', 'sel_comp', 'sel_simp', 'sel_enq', 'cancel_deq', 'dly_not_ready'] + \
+    cov = ['enq_fire', 'flush', 'sel_comp', 'sel_simp', 'sel_enq', 'dly_not_ready'] + \
+          (['cancel_deq'] if has_cancel else []) + \
           [f'deq{d}' for d in range(ND)] + (['wk_out'] if has_mwq else [])
     for k in cov:
         L.append(f'  longint cov_{k} = 0;')
@@ -153,7 +155,8 @@ def gen(v):
         L.append(f'        else if (|u_g.deqBeforeDly_{d}_bits_addrOH[{lo_c - 1}:{lo_s}]) cov_sel_simp++;')
         L.append('        else cov_sel_enq++;')
         L.append('      end')
-        L.append(f'      if (u_g.deqSelValidVec_{d} && !u_g.deqBeforeDly_{d}_valid) cov_cancel_deq++;')
+        if has_cancel:
+            L.append(f'      if (u_g.deqSelValidVec_{d} && !u_g.deqBeforeDly_{d}_valid) cov_cancel_deq++;')
         L.append(f'      if (g_io_deqDelay_{d}_valid && !io_deqDelay_{d}_ready) cov_dly_not_ready++;')
     if has_mwq:
         L.append('      if (g_io_wakeupToIQ_0_valid) cov_wk_out++;')
@@ -201,7 +204,7 @@ def makefile(v):
         for s in gdeps(m, []):
             if s not in gold:
                 gold.append(s)
-    impl = RTL_CLOSURE[v]
+    impl = rtl_closure(v)
     rtl_list = (' \\\n' + ' ' * 11).join('$(RTL_DIR)/' + x for x in impl)
     return f'''MODULE = {v}
 
@@ -233,17 +236,31 @@ SIM_ARGS += +vcs+initreg+$(INITREG) $(if $(filter 0,$(INITREG)),+cmp_all,)
 '''
 
 
-RTL_CLOSURE = {
-    'IssueQueueAluCsrFenceDiv': [
-        'backend/xs_IssueQueue_core.sv', 'backend/IssueQueueAluCsrFenceDiv.sv',
-        'backend/xs_iq_entries_core.sv', 'backend/EntriesAluCsrFenceDiv.sv',
-        'backend/FuBusyTableRead.sv', 'backend/FuBusyTableRead_23.sv',
-        'backend/xs_MultiWakeupQueue_core.sv', 'backend/MultiWakeupQueue_2.sv',
-        'common/xs_PipeWithFlush_core.sv', 'common/PipeWithFlush.sv',
-        'backend/xs_NewAgeDetector_core.sv', 'backend/NewAgeDetector.sv',
-        'backend/xs_AgeDetector_core.sv', 'backend/AgeDetector.sv', 'backend/AgeDetector_1.sv',
-    ],
-}
+_MODIDX = None
+
+
+def rtl_closure(v):
+    """impl 侧文件闭包：从 wrapper 出发，按例化关系在 rtl/ 里传递地找声明文件（机械，不手列）。"""
+    global _MODIDX
+    if _MODIDX is None:
+        _MODIDX = {}
+        for f in sorted((REPO / 'rtl').rglob('*.sv')):
+            for m in re.findall(r'^module\s+(\w+)', f.read_text(errors='replace'), re.M):
+                _MODIDX.setdefault(m, f.relative_to(REPO / 'rtl').as_posix())
+    order, todo = [], [v]
+    while todo:
+        m = todo.pop(0)
+        f = _MODIDX.get(m)
+        if f is None:
+            raise SystemExit(f'gen_tb: rtl/ 里找不到模块 {m}')
+        if f in order:
+            continue
+        order.append(f)
+        txt = (REPO / 'rtl' / f).read_text()
+        for sub in re.findall(r'^\s*(\w+)\s+(?:#\s*\(.*?\)\s*)?\w+\s*\(', txt, re.M | re.S):
+            if sub in _MODIDX and sub not in ('module',) and _MODIDX[sub] not in order:
+                todo.append(sub)
+    return order
 
 
 def main():

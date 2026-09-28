@@ -972,10 +972,32 @@ module IssueQueueAluCsrFenceDiv(
   logic             core_dly_ready     [2];
   logic [4:0]       core_valid_cnt     [2];
   logic [34:0]      core_wk_enq_fu_type;
-  logic             core_wk_enq_lat;
+  logic [0:0]       core_wk_enq_lat;
+  logic             core_wk_og1_valid;
+  logic [1:0]       core_wk_og1_resp;
+  logic             core_wk_og1_fail;
   logic             core_wk_deq_valid;
-  logic             core_wk_deq_wen;
-  logic             core_wk_out_wen;
+  logic [34:0]      core_wk_deq_fu_type;
+  logic [4:0]       core_wk_deq_wen;
+  logic [4:0]       core_wk_out_wen;
+  logic             core_wk_is0lat;
+  logic [7:0]       core_enq_lq_idx    [2];
+  logic             core_enq_is_vleff  [2];
+  logic [7:0]       core_lq_deq_ptr;
+  logic             core_st_blocked    [2];
+  logic [4:0]       core_deq_wen       [2];
+  logic [4:0]       core_deq_wen_valid [2];
+  logic             core_ldw_valid;
+  logic             core_ldw_rf_wen;
+  logic             core_ldw_fp_wen;
+  logic [7:0]       core_ldw_pdest;
+  logic             core_ldw_q_valid;
+  logic             core_ldw_q_rf_wen;
+  logic             core_ldw_q_fp_wen;
+  logic [7:0]       core_ldw_q_pdest;
+  logic             core_ldw_q_rf_wen_copy [6];
+  logic             core_ldw_q_fp_wen_copy [6];
+  logic [7:0]       core_ldw_q_pdest_copy  [6];
 
   // ---- 核输入 ----
   assign core_enq_valid[0] = io_enq_0_valid;
@@ -1205,6 +1227,17 @@ module IssueQueueAluCsrFenceDiv(
   assign core_ent_cancel_deq[1] = entries_io_cancelDeqVec_1;
   assign core_busy_mask[1][0] = '0;
   assign core_dly_ready[1] = io_deqDelay_1_ready;
+  assign core_enq_lq_idx[0] = '0;
+  assign core_enq_is_vleff[0] = 1'h0;
+  assign core_enq_lq_idx[1] = '0;
+  assign core_enq_is_vleff[1] = 1'h0;
+  assign core_lq_deq_ptr = '0;
+  assign core_deq_wen[0] = {1'h0, 1'h0, 1'h0, 1'h0, entries_io_deqEntry_0_bits_payload_rfWen};   // {vl, v0, vec, fp, rf}Wen
+  assign core_deq_wen[1] = {1'h0, 1'h0, 1'h0, 1'h0, entries_io_deqEntry_1_bits_payload_rfWen};   // {vl, v0, vec, fp, rf}Wen
+  assign core_ldw_valid = 1'h0;
+  assign core_ldw_rf_wen = 1'h0;
+  assign core_ldw_fp_wen = 1'h0;
+  assign core_ldw_pdest = '0;
   assign core_age_enq_out[0] = age_io_out_0;
   assign core_age_comp_out[0] = age_2_io_out_0;
   assign core_age_enq_out[1] = age_io_out_1;
@@ -2358,7 +2391,10 @@ module IssueQueueAluCsrFenceDiv(
 
   assign core_wk_enq_fu_type = {25'h0, entries_io_deqEntry_0_bits_status_fuType_9, entries_io_deqEntry_0_bits_status_fuType_8, 1'h0, entries_io_deqEntry_0_bits_status_fuType_6, entries_io_deqEntry_0_bits_status_fuType_5, 5'h0};
   assign core_wk_deq_valid = wakeUpQueues_0_io_deq_valid;
-  assign core_wk_deq_wen = wakeUpQueues_0_io_deq_bits_rfWen;
+  assign core_wk_deq_fu_type = '0;
+  assign core_wk_deq_wen = {1'h0, 1'h0, 1'h0, 1'h0, wakeUpQueues_0_io_deq_bits_rfWen};   // {vl, v0, vec, fp, rf}
+  assign core_wk_og1_valid = io_og1Resp_0_valid;
+  assign core_wk_og1_resp = io_og1Resp_0_bits_resp;
 
   xs_IssueQueue_core #(
     .N_ENTRIES (24),
@@ -2377,7 +2413,14 @@ module IssueQueueAluCsrFenceDiv(
     .HAS_VCNT  ('{1'b1, 1'b0}),
     .VCNT_OUT_W(5),
     .W0        (994),
-    .W1        (1063)
+    .W1        (1063),
+    .LDW_ON    (1'b0),
+    .VECMEM_BLOCKED(1'b0),
+    .LQ_W      (7),
+    .N_LAT     (1),
+    .LAT_FU    ('{0}),
+    .LAT_VAL   ('{0}),
+    .LAT_W     (1)
   ) u_core (
     .clock            (clock),
     .reset            (reset),
@@ -2389,6 +2432,10 @@ module IssueQueueAluCsrFenceDiv(
     .enq_psrc         (core_enq_psrc),
     .enq_src_state    (core_enq_src_state),
     .enq_src_ld       (core_enq_src_ld),
+    .enq_lq_idx       (core_enq_lq_idx),
+    .enq_is_vleff     (core_enq_is_vleff),
+    .lq_deq_ptr       (core_lq_deq_ptr),
+    .st_blocked       (core_st_blocked),
     .st_src_state     (core_st_src_state),
     .st_data_src      (core_st_data_src),
     .st_src_ld        (core_st_src_ld),
@@ -2418,6 +2465,8 @@ module IssueQueueAluCsrFenceDiv(
     .deq_ld_dep       (core_deq_ld_dep),
     .deq_select_time  (core_deq_select_time),
     .deq_issue_time   (core_deq_issue_time),
+    .deq_wen          (core_deq_wen),
+    .deq_wen_valid    (core_deq_wen_valid),
     .deq0_payload     (core_deq0_payload),
     .deq1_payload     (core_deq1_payload),
     .dly_valid        (core_dly_valid),
@@ -2427,16 +2476,32 @@ module IssueQueueAluCsrFenceDiv(
     .valid_cnt        (core_valid_cnt),
     .wk_enq_fu_type   (core_wk_enq_fu_type),
     .wk_enq_lat       (core_wk_enq_lat),
+    .wk_og1_valid     (core_wk_og1_valid),
+    .wk_og1_resp      (core_wk_og1_resp),
+    .wk_og1_fail      (core_wk_og1_fail),
     .wk_deq_valid     (core_wk_deq_valid),
+    .wk_deq_fu_type   (core_wk_deq_fu_type),
     .wk_deq_wen       (core_wk_deq_wen),
-    .wk_out_wen       (core_wk_out_wen)
+    .wk_out_wen       (core_wk_out_wen),
+    .wk_is0lat        (core_wk_is0lat),
+    .ldw_valid        (core_ldw_valid),
+    .ldw_rf_wen       (core_ldw_rf_wen),
+    .ldw_fp_wen       (core_ldw_fp_wen),
+    .ldw_pdest        (core_ldw_pdest),
+    .ldw_q_valid      (core_ldw_q_valid),
+    .ldw_q_rf_wen     (core_ldw_q_rf_wen),
+    .ldw_q_fp_wen     (core_ldw_q_fp_wen),
+    .ldw_q_pdest      (core_ldw_q_pdest),
+    .ldw_q_rf_wen_copy(core_ldw_q_rf_wen_copy),
+    .ldw_q_fp_wen_copy(core_ldw_q_fp_wen_copy),
+    .ldw_q_pdest_copy (core_ldw_q_pdest_copy)
   );
 
   // ---- 顶层输出 ----
   assign io_enq_0_ready = core_enq_ready[0];
   assign io_enq_1_ready = core_enq_ready[1];
   assign io_wakeupToIQ_0_valid = wakeUpQueues_0_io_deq_valid;
-  assign io_wakeupToIQ_0_bits_rfWen = core_wk_out_wen;
+  assign io_wakeupToIQ_0_bits_rfWen = core_wk_out_wen[0];
   assign io_wakeupToIQ_0_bits_rcDest = io_replaceRCIdx_0;
   assign io_validCntDeqVec_0 = core_valid_cnt[0];
   assign io_deqDelay_1_valid = core_dly_valid[1];

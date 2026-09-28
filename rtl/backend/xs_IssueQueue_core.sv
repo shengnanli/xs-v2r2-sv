@@ -24,7 +24,10 @@
 //   §5 deqDelay：出队负载打一拍（使能 = 队里有任一有效条目，不复位）；负载按变体由
 //      wrapper 拼包（Entries 出口字段 + §4 算出的字段），本核不关心字段语义。
 //   §6 validCntDeqVec：每口"能进本口的有效条目数 - 本拍 deqDelay.fire"打一拍。
-//   §7 wakeupToIQ：MultiWakeupQueue 的 lat 查表（FuType → 唤醒延迟）与写使能门控。
+//   §7 wakeupToIQ：MultiWakeupQueue 的 lat 查表（FuType → 唤醒延迟）、is0Lat、og1 失败冲刷、
+//      写使能门控；Ldu 没有 MWQ，load 流水的唤醒直接打一拍送出（LDW_ON）。
+//   另有两处只属于个别变体的开关：写回忙表的 deqResp.valid（出队 valid && 写使能）、
+//      向量访存 IQ 入队时的 blocked（VECMEM_BLOCKED）。
 //
 // ★三处容易写错、已对着 golden 核过的地方★
 //   (a) 三段选择是"comp 优先"，不是"enq 优先"：老条目在 comp 段（Chisel 注释：
@@ -56,6 +59,11 @@ module xs_IssueQueue_core #(
   parameter int LAT_FU  [N_LAT] = '{0},
   parameter int LAT_VAL [N_LAT] = '{0},
   parameter int LAT_W      = 1,
+  // 访存 IQ 的两个专属开关
+  parameter bit LDW_ON     = 1'b0,  // Ldu：load 唤醒打一拍送 wakeupToIQ（Chisel: RegNext(uop.fire) 一族）
+  parameter int LDW_COPY   = 6,     //       唤醒复制件份数
+  parameter bit VECMEM_BLOCKED = 1'b0,  // VlduVstu*：入队时 vleff 且不是最老 load → blocked
+  parameter int LQ_W       = 7,     //       lqIdx.value 位宽
   // 零长度数组占位
   localparam int LD_SLOTS  = (LD_CNT > 0) ? LD_CNT : 1,
   localparam int EXU_SLOTS = (N_EXU  > 0) ? N_EXU  : 1,
@@ -77,6 +85,10 @@ module xs_IssueQueue_core #(
   input  logic [PSRC_W-1:0]      enq_psrc      [N_ENQ][N_SRC],
   input  logic                   enq_src_state [N_ENQ][N_SRC],
   input  logic [1:0]             enq_src_ld    [N_ENQ][N_SRC][LD_SLOTS],
+  input  logic [LQ_W:0]          enq_lq_idx    [N_ENQ],    // {flag, value}（VECMEM_BLOCKED）
+  input  logic                   enq_is_vleff  [N_ENQ],
+  input  logic [LQ_W:0]          lq_deq_ptr,
+  output logic                   st_blocked    [N_ENQ],
   output logic                   st_src_state  [N_ENQ][N_SRC],
   output logic [3:0]             st_data_src   [N_ENQ][N_SRC],
   output logic [1:0]             st_src_ld     [N_ENQ][N_SRC][LD_SLOTS],
@@ -112,6 +124,9 @@ module xs_IssueQueue_core #(
   output logic [1:0]             deq_ld_dep    [N_DEQ][LD_SLOTS],
   output logic [63:0]            deq_select_time [N_DEQ],
   output logic [63:0]            deq_issue_time  [N_DEQ],
+  // 出队口的写使能（rfWen, fpWen, vecWen, v0Wen, vlWen；本变体没有的接 0）与 valid 相与：写回忙表的 deqResp.valid
+  input  logic [4:0]             deq_wen       [N_DEQ],
+  output logic [4:0]             deq_wen_valid [N_DEQ],
 
   // ---- §5 deqDelay ----
   input  logic [W0-1:0]          deq0_payload,
@@ -127,9 +142,26 @@ module xs_IssueQueue_core #(
   // ---- §7 wakeupToIQ（口 0 的 MultiWakeupQueue）----
   input  logic [34:0]            wk_enq_fu_type,   // 送进 MWQ 的 fuType（= 口 0 出队 fuType）
   output logic [LAT_W-1:0]       wk_enq_lat,
+  input  logic                   wk_og1_valid,     // 口 0 的 og1 响应
+  input  logic [1:0]             wk_og1_resp,
+  output logic                   wk_og1_fail,      // og1 响应为 block → MWQ 里 lat=2 的流水出口冲刷
   input  logic                   wk_deq_valid,
-  input  logic                   wk_deq_wen,       // MWQ 出口的写使能（rfWen / fpWen …）
-  output logic                   wk_out_wen        // valid && wen
+  input  logic [34:0]            wk_deq_fu_type,   // MWQ 出口的 fuType（算 is0Lat）
+  input  logic [4:0]             wk_deq_wen,       // MWQ 出口的写使能 {vl, v0, vec, fp, rf}
+  output logic [4:0]             wk_out_wen,       // valid && wen
+  output logic                   wk_is0lat,        // getDeqLat(出口 fuType) == 0
+  // Ldu 的 load 唤醒（LDW_ON）
+  input  logic                   ldw_valid,
+  input  logic                   ldw_rf_wen,
+  input  logic                   ldw_fp_wen,
+  input  logic [7:0]             ldw_pdest,
+  output logic                   ldw_q_valid,
+  output logic                   ldw_q_rf_wen,
+  output logic                   ldw_q_fp_wen,
+  output logic [7:0]             ldw_q_pdest,
+  output logic                   ldw_q_rf_wen_copy [LDW_COPY],
+  output logic                   ldw_q_fp_wen_copy [LDW_COPY],
+  output logic [7:0]             ldw_q_pdest_copy  [LDW_COPY]
 );
 
   localparam int ENQ_LO  = 0;
@@ -199,6 +231,15 @@ module xs_IssueQueue_core #(
         for (int k = 0; k < LD_SLOTS; k++)
           st_src_ld[e][s][k] = (LD_CNT > 0) ? (enq_src_ld[e][s][k] << 1) : 2'h0;
       end
+
+  // 向量访存 IQ：vleff（fault-only-first）load 若不是当前最老的 load（lqIdx 在 lqDeqPtr 之后），
+  // 入队即 blocked，等它变成最老再放行（Chisel: blocked := !isFirstLoad && isVleff，
+  // isFirstLoad = lqIdx <= lqDeqPtr；环形指针比较 = flag^flag'^(value > value')）。
+  always_comb
+    for (int e = 0; e < N_ENQ; e++)
+      st_blocked[e] = VECMEM_BLOCKED &
+                      (enq_lq_idx[e][LQ_W] ^ lq_deq_ptr[LQ_W] ^ (enq_lq_idx[e][LQ_W-1:0] > lq_deq_ptr[LQ_W-1:0])) &
+                      enq_is_vleff[e];
 
   // ===========================================================================
   // §2 可发射请求
@@ -320,6 +361,11 @@ module xs_IssueQueue_core #(
       end
     end
 
+  // 写回忙表（FuBusyTableWrite: int/fp/vf/v0/vlWbBusyTable）的 deqResp.valid = 出队 valid && 对应写使能
+  always_comb
+    for (int d = 0; d < N_DEQ; d++)
+      deq_wen_valid[d] = {5{deq_valid[d]}} & deq_wen[d];
+
   always_comb
     for (int d = 0; d < N_DEQ; d++) begin
       deq_select_time[d] = select_timer[d];
@@ -386,13 +432,48 @@ module xs_IssueQueue_core #(
   // ===========================================================================
   // §7 wakeupToIQ（口 0 的 MultiWakeupQueue）
   // ===========================================================================
-  // getDeqLat = Mux1H(fuType 位 → 该 FU 的唤醒延迟)，按位或
-  always_comb begin
-    wk_enq_lat = '0;
+  // getDeqLat(fuType) = Mux1H(fuType 位 → 该 FU 的唤醒延迟)，按位或
+  function automatic logic [LAT_W-1:0] deq_lat(input logic [34:0] fu);
+    logic [LAT_W-1:0] lat;
+    lat = '0;
     for (int k = 0; k < N_LAT; k++)
-      wk_enq_lat |= wk_enq_fu_type[LAT_FU[k]] ? LAT_W'(LAT_VAL[k]) : '0;
-  end
+      lat |= fu[LAT_FU[k]] ? LAT_W'(LAT_VAL[k]) : '0;
+    return lat;
+  endfunction
 
-  assign wk_out_wen = wk_deq_valid & wk_deq_wen;
+  localparam logic [1:0] RESP_BLOCK = 2'h0;   // RespType.block
+
+  assign wk_enq_lat  = deq_lat(wk_enq_fu_type);
+  assign wk_is0lat   = (deq_lat(wk_deq_fu_type) == '0);
+  assign wk_og1_fail = wk_og1_valid & (wk_og1_resp == RESP_BLOCK);
+  assign wk_out_wen  = {5{wk_deq_valid}} & wk_deq_wen;
+
+  // Ldu：load 流水的唤醒直接打一拍送出（不经 MultiWakeupQueue）。不复位。
+  //   valid / pdest 直接打拍；写使能先与 valid 相与再打拍；复制件各自独立寄存器（照 golden）。
+  if (LDW_ON) begin : g_ldw
+    always_ff @(posedge clock) begin
+      ldw_q_valid  <= ldw_valid;
+      ldw_q_rf_wen <= ldw_rf_wen & ldw_valid;
+      ldw_q_fp_wen <= ldw_fp_wen & ldw_valid;
+      ldw_q_pdest  <= ldw_pdest;
+      for (int k = 0; k < LDW_COPY; k++) begin
+        ldw_q_rf_wen_copy[k] <= ldw_rf_wen & ldw_valid;
+        ldw_q_fp_wen_copy[k] <= ldw_fp_wen & ldw_valid;
+        ldw_q_pdest_copy[k]  <= ldw_pdest;
+      end
+    end
+  end else begin : g_no_ldw
+    always_comb begin
+      ldw_q_valid  = 1'b0;
+      ldw_q_rf_wen = 1'b0;
+      ldw_q_fp_wen = 1'b0;
+      ldw_q_pdest  = '0;
+      for (int k = 0; k < LDW_COPY; k++) begin
+        ldw_q_rf_wen_copy[k] = 1'b0;
+        ldw_q_fp_wen_copy[k] = 1'b0;
+        ldw_q_pdest_copy[k]  = '0;
+      end
+    end
+  end
 
 endmodule

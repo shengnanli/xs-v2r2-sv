@@ -4,21 +4,21 @@ MODULE = IssueQueueAluCsrFenceDiv
 #   EntriesAluCsrFenceDiv EnqEntry_6 UIntCompressor_27_000011100000000000001010101 OthersEntry_66 OthersEntry_72 EnqPolicy FuBusyTableRead_23 MultiWakeupQueue_2 PipeWithFlush NewAgeDetector AgeDetector AgeDetector_1
 # 自动生成：verif/ut/IssueQueue_common/gen_tb.py —— 勿手改
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/xs_IssueQueue_core.sv \
-           $(RTL_DIR)/backend/IssueQueueAluCsrFenceDiv.sv \
-           $(RTL_DIR)/backend/xs_iq_entries_core.sv \
+RTL_SRCS = $(RTL_DIR)/backend/IssueQueueAluCsrFenceDiv.sv \
            $(RTL_DIR)/backend/EntriesAluCsrFenceDiv.sv \
-           $(RTL_DIR)/backend/FuBusyTableRead.sv \
            $(RTL_DIR)/backend/FuBusyTableRead_23.sv \
-           $(RTL_DIR)/backend/xs_MultiWakeupQueue_core.sv \
            $(RTL_DIR)/backend/MultiWakeupQueue_2.sv \
-           $(RTL_DIR)/common/xs_PipeWithFlush_core.sv \
-           $(RTL_DIR)/common/PipeWithFlush.sv \
-           $(RTL_DIR)/backend/xs_NewAgeDetector_core.sv \
            $(RTL_DIR)/backend/NewAgeDetector.sv \
-           $(RTL_DIR)/backend/xs_AgeDetector_core.sv \
            $(RTL_DIR)/backend/AgeDetector.sv \
-           $(RTL_DIR)/backend/AgeDetector_1.sv
+           $(RTL_DIR)/backend/AgeDetector_1.sv \
+           $(RTL_DIR)/backend/xs_IssueQueue_core.sv \
+           $(RTL_DIR)/backend/xs_iq_entries_core.sv \
+           $(RTL_DIR)/backend/FuBusyTableRead.sv \
+           $(RTL_DIR)/common/PipeWithFlush.sv \
+           $(RTL_DIR)/backend/xs_MultiWakeupQueue_core.sv \
+           $(RTL_DIR)/backend/xs_NewAgeDetector_core.sv \
+           $(RTL_DIR)/backend/xs_AgeDetector_core.sv \
+           $(RTL_DIR)/common/xs_PipeWithFlush_core.sv
 TB_SRCS  = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
