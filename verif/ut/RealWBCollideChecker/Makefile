@@ -15,7 +15,9 @@ GOLDEN_ARBS = RealWBArbiter RealWBArbiter_1 RealWBArbiter_2 RealWBArbiter_3 \
               RealWBArbiter_14 RealWBArbiter_15 RealWBArbiter_20 RealWBArbiter_21 \
               RealWBArbiter_26
 GOLDEN_SRCS = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(VARIANTS) $(GOLDEN_ARBS)))
-FM_VARIANTS = $(VARIANTS)
+FM_VARIANTS = RealWBCollideChecker RealWBCollideChecker_1 RealWBCollideChecker_2 RealWBCollideChecker_3 RealWBCollideChecker_4
+# 模型严格适用（fm_predict.py）：不合并重复寄存器（本族纯组合，本就没有寄存器）
+FM_MERGE_DUP = false
 
 # FM ref 侧依赖：golden 子仲裁器原件（impl 侧不例化 RealWBArbiter_*，直接用共享法则
 # xs_PriorityArbSelect；FM 比的是展平后的组合锥，无黑盒）

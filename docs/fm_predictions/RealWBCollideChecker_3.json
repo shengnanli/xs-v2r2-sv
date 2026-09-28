@@ -1,0 +1,9 @@
+{
+  "target": "RealWBCollideChecker_3",
+  "ut": "RealWBCollideChecker",
+  "regs": 0,
+  "outs": 816,
+  "expected": 816,
+  "merge_dup": "false",
+  "model_applicable": true
+}
