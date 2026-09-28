@@ -684,9 +684,9 @@ LoadQueue	MISSING	UNPROVEN	-
 LoadQueueRAR	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadQueueRAR.sv
 LoadQueueRAW	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadQueueRAW.sv
 LoadQueueReplay	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadQueueReplay.sv
-LoadQueueUncache	MISSING	UNPROVEN	-
+LoadQueueUncache	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadQueueUncache.sv
 LoadUnit	PARTIAL_DRIVE	PROVEN_DIRECT	rtl/memblock/LoadUnit.sv
-LqExceptionBuffer	MISSING	UNPROVEN	-
+LqExceptionBuffer	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LqExceptionBuffer.sv
 LqMaskModule	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LqMaskModule.sv
 LqPAddrModule	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LqPAddrModule.sv
 LqPAddrModule_1	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LqPAddrModule_1.sv
@@ -956,9 +956,9 @@ PipeWithFlush_8	REWRITTEN	PROVEN_DIRECT	rtl/common/PipeWithFlush_8.sv
 PipeWithFlush_9	REWRITTEN	PROVEN_DIRECT	rtl/common/PipeWithFlush_9.sv
 Pipeline	REWRITTEN	PROVEN_DIRECT	rtl/memblock/Pipeline.sv
 PipelineConnectPipe	REWRITTEN	PROVEN_DIRECT	rtl/backend/PipelineConnectPipe.sv
-PipelineRegModule	MISSING	UNPROVEN	-
-PipelineRegModule_1	MISSING	UNPROVEN	-
-PipelineRegModule_2	MISSING	UNPROVEN	-
+PipelineRegModule	REWRITTEN	PROVEN_DIRECT	rtl/memblock/PipelineRegModule.sv
+PipelineRegModule_1	REWRITTEN	PROVEN_DIRECT	rtl/memblock/PipelineRegModule_1.sv
+PipelineRegModule_2	REWRITTEN	PROVEN_DIRECT	rtl/memblock/PipelineRegModule_2.sv
 PipelineRegModule_6	MISSING	UNPROVEN	-
 Pipeline_1	MISSING	UNPROVEN	-
 Pipeline_10	MISSING	UNPROVEN	-

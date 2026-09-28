@@ -296,7 +296,9 @@ LoadMisalignBuffer	SUCCEEDED	p7661 f0 um0 unread=? const_reg=268 mode=signoff-st
 LoadQueueRAR	SUCCEEDED	p3590 f0 um0 unread=? const_reg=216 mode=signoff-strict vmucp=true @c80893ce57ec evidence/c80893ce57ec/LoadQueueRAR/receipt.json
 LoadQueueRAW	SUCCEEDED	p7230 f0 um0 unread=? const_reg=96 mode=signoff-strict vmucp=true @9d8eede3b9f3 evidence/9d8eede3b9f3/LoadQueueRAW/receipt.json
 LoadQueueReplay	SUCCEEDED	p114160 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @7e8081ff298c evidence/7e8081ff298c/LoadQueueReplay/receipt.json
+LoadQueueUncache	SUCCEEDED	p43321 f0 um0 unread=? const_reg=1616 mode=signoff-strict vmucp=true @ff3b73fa4b35 evidence/ff3b73fa4b35/LoadQueueUncache/receipt.json
 LoadUnit	SUCCEEDED	p18749 f0 um0 unread=? const_reg=11 mode=signoff-strict vmucp=true @8443fb1afa04 evidence/8443fb1afa04/LoadUnit/receipt.json
+LqExceptionBuffer	SUCCEEDED	p1267 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @e268a54e29da evidence/e268a54e29da/LqExceptionBuffer/receipt.json
 LqMaskModule	SUCCEEDED	p1080 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @341d7e6f14cf evidence/341d7e6f14cf/LqMaskModule/receipt.json
 LqPAddrModule	SUCCEEDED	p1440 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @2fdc00c890e0 evidence/2fdc00c890e0/LqPAddrModule/receipt.json
 LqPAddrModule_1	SUCCEEDED	p1528 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @341d7e6f14cf evidence/341d7e6f14cf/LqPAddrModule_1/receipt.json
@@ -396,6 +398,9 @@ PipeWithFlush_8	SUCCEEDED	p47 f0 um0 unread=? const_reg=? mode=signoff-strict vm
 PipeWithFlush_9	SUCCEEDED	p224 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @1f82ef7a6c7a evidence/1f82ef7a6c7a/PipeWithFlush_9/receipt.json
 Pipeline	SUCCEEDED	p113 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/Pipeline/receipt.json
 PipelineConnectPipe	SUCCEEDED	p1071 f0 um0 unread=? const_reg=166 mode=signoff-strict vmucp=false @e47e713399e0 evidence/e47e713399e0/PipelineConnectPipe/receipt.json
+PipelineRegModule	SUCCEEDED	p389 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @48fbfd801873 evidence/48fbfd801873/PipelineRegModule/receipt.json
+PipelineRegModule_1	SUCCEEDED	p2859 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @48fbfd801873 evidence/48fbfd801873/PipelineRegModule_1/receipt.json
+PipelineRegModule_2	SUCCEEDED	p3137 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @48fbfd801873 evidence/48fbfd801873/PipelineRegModule_2/receipt.json
 Pmaaddr0Module	SUCCEEDED	p128 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @400717601f67 evidence/400717601f67/Pmaaddr0Module/receipt.json
 Pmaaddr10Module	SUCCEEDED	p128 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @b3e251ba02ae evidence/b3e251ba02ae/Pmaaddr10Module/receipt.json
 Pmaaddr11Module	SUCCEEDED	p128 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @b3e251ba02ae evidence/b3e251ba02ae/Pmaaddr11Module/receipt.json
