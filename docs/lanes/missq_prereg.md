@@ -45,3 +45,19 @@ tb 分辨力自测（20k 拍）：拼包下标 `k`→`k^1`（相邻两路互换�
 | mode / verdict / vmucp | signoff-strict / SUCCEEDED / false |
 
 可能出错：无（纯组合、共享核已签核三次）。本节没有做过任何 FM 试跑。
+
+---
+
+# 对账（跑完追加；上文各节未改一字）
+
+## A. Arbiter16_MainPipeReq
+
+| 项 | 值 |
+|---|---|
+| proof commit | `bc1ed4b6f3f9`（预测登记在同一 commit，早于证明；RTL/UT 在其父 `38852b39`） |
+| 证据 | `evidence/bc1ed4b6f3f9/Arbiter16_MainPipeReq/receipt.json` sha256 `c836ebed8a2787117f33e57bf26b93320d42cd2723d8b1c33cabb42c07b63dd4` |
+| impl_closure | `rtl/memblock/Arbiter16_MainPipeReq.sv` `f7bf16c1abd39ee8d6839545a49e5d6fd6fd98500146b3f79835b5d819fd3ba3`；`rtl/frontend/xs_FixedPriorityArbiter_core.sv` `e7c8526c…a5618`（未改） |
+| 结果 | native SUCCEEDED，passing **418** / failing 0 / unverified 0 / unread_notcompared 0 / unmatched 全 0 / 无黑盒 / signoff-strict / dirty false / fm.log 行首 `Error:` 0 |
+| `fm_predict.py check` | 预期 418，实测 418，差 0，「全部对上」 |
+
+复跑：`cd /home/eda/xs-env/wt-missq && PROOF_COMMIT=bc1ed4b6 bash scripts/run_proof.sh Arbiter16_MainPipeReq Arbiter16_MainPipeReq < /dev/null`
