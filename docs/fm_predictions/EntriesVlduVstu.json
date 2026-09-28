@@ -1,0 +1,9 @@
+{
+  "target": "EntriesVlduVstu",
+  "ut": "EntriesVlduVstu",
+  "regs": 16762,
+  "outs": 1808,
+  "expected": 18570,
+  "merge_dup": "false",
+  "model_applicable": true
+}

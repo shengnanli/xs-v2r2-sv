@@ -1,0 +1,9 @@
+{
+  "target": "MutiLevelPrefetchFilter",
+  "ut": "MutiLevelPrefetchFilter",
+  "regs": 3995,
+  "outs": 293,
+  "expected": 4288,
+  "merge_dup": "false",
+  "model_applicable": true
+}

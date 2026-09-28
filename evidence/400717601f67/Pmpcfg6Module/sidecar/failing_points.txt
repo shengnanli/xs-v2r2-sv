@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Pmpcfg6Module
+Implementation : i:/WORK/Pmpcfg6Module
+Version        : V-2023.12-SP3
+Date           : Sun Sep 27 23:16:07 2026
+**************************************************
+
+No failing compare points.
+
+1

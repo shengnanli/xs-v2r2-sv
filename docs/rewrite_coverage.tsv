@@ -21,15 +21,15 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	554	561	98.8
-unique_design_written	263	1191	22.1
-unique_design_proven	236	1191	19.8
-golden_lines_written	2326426	3902283	59.6
-golden_lines_proven	1929156	3902283	49.4
+fm_targets_configured	648	655	98.9
+unique_design_written	283	1191	23.8
+unique_design_proven	268	1191	22.5
+golden_lines_written	2486837	3902283	63.7
+golden_lines_proven	2090040	3902283	53.6
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2157626	3349905	64.4
-incore_golden_lines_proven	1764608	3349905	52.7
+incore_golden_lines_written	2318037	3349905	69.2
+incore_golden_lines_proven	1925492	3349905	57.5
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	168800	552378	30.6
@@ -38,7 +38,7 @@ outcore_golden_lines_proven	164548	552378	29.8
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	18	628	2.9
+legacy_proven_unanchored	18	660	2.7
 #   合计 7776 golden 行
 #   DuplicatedTagArray                            651 行
 #   ITTageTable                                   336 行
@@ -60,33 +60,21 @@ legacy_proven_unanchored	18	628	2.9
 #   TageBTable                                    396 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
+#   AddModule                                          98 行
+#   ClosePathAdder                                    190 行
+#   ClosePathAdderF16Pipeline                         190 行
+#   ClosePathF32WidenF16MixedPipelineAdder            190 行
+#   ConditionalZeroModule                              97 行
 #   CtrlBlock                                       57635 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
 #   OpenLLC                                          4252 行
-#   Pmpaddr33Module                                    95 行
-#   Pmpaddr34Module                                    95 行
-#   Pmpaddr35Module                                    95 行
-#   Pmpaddr36Module                                    95 行
-#   Pmpaddr37Module                                    95 行
-#   Pmpaddr38Module                                    95 行
-#   Pmpaddr39Module                                    95 行
-#   Pmpaddr40Module                                    95 行
-#   Pmpaddr41Module                                    95 行
-#   Pmpaddr42Module                                    95 行
-#   Pmpaddr43Module                                    95 行
-#   Pmpaddr44Module                                    95 行
-#   Pmpaddr45Module                                    95 行
-#   Pmpaddr46Module                                    95 行
-#   Pmpaddr47Module                                    95 行
-#   Pmpaddr48Module                                    95 行
-#   Pmpaddr49Module                                    95 行
-#   Pmpaddr50Module                                    95 行
-#   Pmpaddr51Module                                    95 行
-#   Pmpaddr52Module                                    95 行
 #   PtwCache                                        45308 行
 #   Rob                                            266227 行
 #   StorePipe                                          93 行
+#   SubModule                                          95 行
+#   UIntCompressor_27                                 188 行
+#   UIntExtractor_27                                  189 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 # ★只列核内★：核外的另列在本表末尾，不要从那里接活
@@ -95,32 +83,32 @@ Backend	79590	1	REWRITE_L
 LoadQueueUncache	59051	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
 Slice	45020	5	REWRITE_L
-EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
-EntriesVlduVstu	39935	1	REWRITE_L
 Scheduler	33927	4	REWRITE_L
-EntriesStaMou	29558	1	-
 DataPath	25618	1	REWRITE_L
 DCache	23854	1	REWRITE_L
 WbDataPath	21416	1	REWRITE_L
 NewCSR	15945	1	REWRITE_L
 ExeUnit	15312	13	REWRITE_L
 MSHRCtl	14590	1	REWRITE_M
-VLMergeBufferImp	14173	1	-
 XSCore	13423	1	REWRITE_L
 LoadUnit	13028	1	REWRITE_L
 Directory	11098	5	REWRITE_M
 Frontend	10940	1	REWRITE_L
 LsqWrapper	10584	1	REWRITE_L
-MutiLevelPrefetchFilter	10466	1	-
-LoadQueueRAW	10261	1	REWRITE_L
-MainPipe	9208	3	REWRITE_L
 MissQueue	9125	1	REWRITE_L
 LoadQueue	8336	1	REWRITE_L
 OthersEntryVecMem	8182	4	-
-VSMergeBufferImp	8007	1	-
 Tage_SC	7767	1	REWRITE_L
 TL2CHICoupledL2	7663	1	REWRITE_L
 LoadQueueRAR	7566	1	REWRITE_L
+IntRegFilePart3	7012	1	-
+IntRegFilePart2	7012	1	-
+IntRegFilePart1	7012	1	-
+IntRegFilePart0	7012	1	REWRITE_L
+FauFTB	6885	1	REWRITE_L
+EnqEntryVecMem	6486	2	-
+LoadMisalignBuffer	6203	1	REWRITE_L
+IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	5819	1	-
 #
 # ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
 #   让人看得见它们的存在，别当成"还没人接的活"★  合计 354445 行

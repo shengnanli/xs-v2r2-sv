@@ -1,0 +1,9 @@
+{
+  "target": "EntriesAluCsrFenceDiv",
+  "ut": "EntriesAluCsrFenceDiv",
+  "regs": 22326,
+  "outs": 2687,
+  "expected": 25013,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -85,6 +85,21 @@ endmodule
    与 `SIM_ARGS += +vcs+initreg+$(INITREG)`（选取值）。
 
    所以「两轮」= **同一个 simv 跑两次**，不是编两次。
+
+   ★`+vcs+initreg+random` 的种子来自 `+ntb_random_seed`，seed 0/1 退化（2026-09-28 实测）★：
+   同一个 simv、两个同构实例、各一个 32 位不复位寄存器，`./simv +ntb_random_seed=<s> +vcs+initreg+random`：
+
+       s=0  -> A=00000000 B=00000000      （等于 +vcs+initreg+0）
+       s=1  -> A=ffffffff B=ffffffff      （等于 +vcs+initreg+1，两实例相同）
+       s=7  -> A=466c4b8c B=80076200      （真随机，两实例不同）
+       s=42 -> A=2684734d B=802c4400
+
+   `scripts/ut_common.mk` 的 run 目标恒带 `+ntb_random_seed=$(SEED)`，而全仓 UT 的 seed 集合是
+   1/7/42 —— 所以**每个 UT 的「seed 1 × random」档实际是全 1 档**，只有 seed 7/42 在随机。
+   第二个实例的熵也偏低（高字节恒 0x80、低字节常为 0）。不影响 FM 签核（FM 是证明，UT 是回归），
+   但报告里「3 seed × random」应理解为「2 个真随机 + 1 个全 1」。要第三个真随机档，
+   显式给数值种子 `+vcs+initreg+<n>`（n 非 0/1，如 `<seed>017`），它不受 ntb 种子影响。
+   复现：`scratchpad/initreg-probe-q7/t.sv`（两实例、`always_ff x<=x`、#1 打印）。
    编译带 `+define+SYNTHESIS +vcs+initreg+random`；
    VCS 环境：`VCS_ARCH_OVERRIDE=linux` 必配 `-full64`。
 

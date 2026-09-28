@@ -1,0 +1,9 @@
+{
+  "target": "EntriesFaluFmac",
+  "ut": "EntriesFaluFmac",
+  "regs": 14374,
+  "outs": 1634,
+  "expected": 16008,
+  "merge_dup": "false",
+  "model_applicable": true
+}

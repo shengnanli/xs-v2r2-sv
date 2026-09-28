@@ -1,0 +1,9 @@
+{
+  "target": "EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf",
+  "ut": "EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf",
+  "regs": 16272,
+  "outs": 2617,
+  "expected": 18889,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "EntriesVfmaVialuFixVfalu",
+  "ut": "EntriesVfmaVialuFixVfalu",
+  "regs": 15928,
+  "outs": 2575,
+  "expected": 18503,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,7 +1,7 @@
 // Reject disallowed user accesses to supervisor counters and state-enable CSRs.
 // The small semantic core makes the architectural transform explicit;
 // the outer module preserves the generated RTL interface exactly.
-module SLevelPermitModule(
+module SLevelPermitModule (
   input  logic [11:0] io_in_csrAccess_addr,
   input  logic [1:0]  io_in_privState_PRVM,
   input  logic        io_in_privState_V,

@@ -1,0 +1,9 @@
+{
+  "target": "EntriesVfdivVidiv",
+  "ut": "EntriesVfdivVidiv",
+  "regs": 10860,
+  "outs": 1404,
+  "expected": 12264,
+  "merge_dup": "false",
+  "model_applicable": true
+}
