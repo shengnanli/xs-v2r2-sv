@@ -101,6 +101,11 @@ def outputs():
          'probes_<字段>[k]。活位靠签名也能配上，但 waitG[6:4]（恒写 0、没有读者）两侧都是',
          '死位，签名配不上 —— 所以全部表项寄存器逐位钉死（4 x 56 = 224 位），不依赖签名。',
          'issueArb（FastArbiter_5）内部同名，FM 自动配对，不钉。'])
+    out[REPO / 'verif/ut/MSHRCtl/fm_pins_pre.tcl'] = render(
+        'mshrctl', 'MSHRCtl', sourceb_pins('sourceB/', 'u_core/sourceB/u_core/'),
+        ['只钉 sourceB 实例里的 probe 表项（理由同 verif/ut/SourceB/fm_pins_pre.tcl：waitG[6:4]',
+         '两侧都是死位，签名配不上）。16 个 MSHR、4 个仲裁器、本层 timers/perf 寄存器 FM 按名',
+         '自动配上（commit 159b9c25 试跑：除这 12 位外 unmatched 0(0)），不钉。'])
     return out
 
 
