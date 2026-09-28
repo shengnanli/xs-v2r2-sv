@@ -61,3 +61,51 @@ M3 payload 加复位 ⇒ 22；M4 valid 改同步复位 ⇒ 21；M5 payload 锁�
    没有 FM 试跑过；若有钉点被拒，fail-closed 会让整跑报错而不是静默退回自动匹配。
 2. payload 里若有两侧都判为常量的位（本家族没有常量输入），passing 会少恰好 constant_reg 个。
 3. 本节没有做过任何 FM 试跑。
+
+## 2. LoadQueueUncache（本体，golden 59,051 行 / 1425 端口）
+
+### 2.1 结构与子模块处置
+
+- 可读核 `rtl/memblock/LoadQueueUncache.sv`：package loadqueueuncache_pkg（配置常量、redirect_t、RobPtr 比较、
+  needFlush，及 9 个 bundle 结构体 —— 字段表逐字取 golden 端口表，GENERATED）+ xs_LoadQueueUncache_core
+  （§1 s1 HwSort / §2 s2 入队判定 / §3 FreeList 分配与写条目 / §4 条目阵列 / §5 MMIO 独占 + NC 轮转发请求 /
+  §6 MMIO 与奇偶组 NC 写回 / §7 释放 / §8 ParallelPriorityMux 异常 / §9 ROB 通知 / §10 满了就回滚，手写）
+  + golden 同名 wrapper（GENERATED）。`scripts/gen_lquncache.py`（--check，已登记 gate_all）生成全部 GENERATED 区、
+  钉点与 tb；生成前核对 bundle 字段表在各端口表之间逐项相同、每个端口/实例端口恰命中一条接线规则。
+- golden 直接 child 23 实例 / 21 种，全部白盒：UncacheEntry×16（PROVEN_DIRECT，xs_UncacheEntry_core）、
+  FreeList_6（PROVEN_DIRECT）、RRArbiterInit_11（PROVEN_DIRECT）、PipelineRegModule/_1/_2×3（本 lane §1 签核，
+  evidence/48fbfd801873）。无黑盒。
+- 钉点 `verif/ut/LoadQueueUncache/fm_pins_pre.tcl`：golden 顶层 651 个寄存器（5037 位）逐位钉到核的结构体数组
+  （`s2_req_q_reg[k]\[字段][b]` 等），5 个流水寄存器实例的 payload/valid（6327 位）钉到 `u_core/<实例>/u_core/bits_q_reg`；
+  共 **11364** 条，fail-closed。条目 / FreeList / 仲裁器内部不钉（名字只差 u_core 一层）。
+
+### 2.2 UT（verif/ut/LoadQueueUncache；commit 76235b85 的字节）
+
+- 冒烟（跑前）：seed 1 × `+vcs+initreg+0` × 20k 拍：checks=20000 errors=0；覆盖 enq 3654 / 同拍多条入队 332 /
+  MMIO 请求 788 / NC 请求 1599 / MMIO 写回 772 / NC 写回 1 口 776、2 口 792 / 回滚 5066 / 异常 2330 / denied 92 /
+  条目 flush 2649 / idResp 2592 / resp 2614。
+- 激励调试中实测到的两个 **golden 自身的死锁形状**（不是重写的问题，是激励违反了真实环境的约束，已改激励并写进
+  tb 文件头）：robIdx 重复 或 mmio/nc 同置 或 pendingPtr 在 MMIO 完成前跳走 ⇒ 多个 MMIO 条目同时进 S_REQ、
+  都看到广播的 mmioReq.ready 一起进 S_RESP、只有一条请求真的发出，其余永远等不到 resp。
+- 全矩阵（3 seed × {0, random, <seed>017} × 200k）在同一 commit 上**正在跑**，结果记入文末对账，不改本节。
+
+### 2.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/LoadQueueUncache.json）
+
+| 目标 | passing 模型 | 其余 |
+|---|---|---|
+| LoadQueueUncache | **45241**（fm_predict 模型：闭包寄存器位 + 顶层 output 位 6671） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |
+
+预期差额（若出现，须由 receipt 的 constant_reg 逐位指认）：
+- 16 条目 × {req_uop_flushPipe, req_uop_replayInst} = 32 位：UncacheEntry 单独签核时两侧各 2 个 `Constant reg`；
+- pipelineReg_2（ncOut(0)，in_valid 恒 0）的 valid 与 1567 位 payload 可能被判常量（最多 1568 位）。
+所以 passing 的可接受区间是 45241 − constant_reg，constant_reg 预计在 {32, 33, 1600} 之一附近；
+若差额不能被 constant_reg + unread 精确解释，判红并查。
+
+### 2.4 明写可能出错的地方
+
+1. 结构体数组寄存器的 FM 名字形状（`s2_req_q_reg[0]\[uop_pc][3]`、`mmio_raw_q_reg\[lqData][3]`、
+   1 位字段无位下标）照 LoadQueueReplay / InstrUncache matched.rpt 记下的形状写，没有 FM 试跑过；
+   若被拒，fail-closed 整跑报错。
+2. 条目内部寄存器靠 FM 自动按名配对（多一层 u_core）；LoadQueueRAW 同法已过，但规模大 16 倍。
+3. match 规模：闭包约 38570 位寄存器，O(N²) 签名分析若没被钉点/名字消掉会很慢；3 小时不收敛按规范 30 分钟采样。
+4. 本节没有做过任何 FM 试跑。
