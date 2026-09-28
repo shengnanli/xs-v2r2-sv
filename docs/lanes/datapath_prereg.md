@@ -130,3 +130,42 @@ R4 读不打拍 ⇒ 1981901；R5 debug 读口改用打拍地址 ⇒ 19208。
 2. Vf 128 项 × 32 位 × 12 读口是本族最大的读视图多路选择，若 FM 时长显著超过 Fp（试跑 120 秒、931 MB），按规范 30 分钟采样。
 
 ## 对账（跑完追加，不改上文任何数字）
+
+### 对账 A：族 A/B（proof commit `833a2017`，evidence/833a201786eb/，signoff-strict，vmucp 开）
+
+| 目标 | passing 预测 → 实测 | constant_reg 预测 → 实测 | 钉点（fm_pins.tcl 日志） | 其余 |
+|---|---|---|---|---|
+| IntRFWBCollideChecker | 91 → **91** | 12 → 12 | 20（cancelCounter 12 / hasFull 4 / isFull 4） | failing / unmatched / unread 全 0 |
+| FpRFWBCollideChecker | 80 → **80** | 3 → 3 | 5 | 同上 |
+| VfRFWBCollideChecker | 66 → **66** | 9 → 9 | 15 | 同上 |
+| V0RFWBCollideChecker | 66 → **66** | 9 → 9 | 15 | 同上 |
+| VlRFWBCollideChecker | 39 → **39** | 12 → 12 | 20 | 同上 |
+| IntRFReadArbiter | 264 → **264** | 9 → 9 | 15 | 同上 |
+| FpRFReadArbiter | 220 → **220** | 21 → 21 | 35 | 同上 |
+| VfRFReadArbiter | 245 → **245** | 18 → 18 | 30 | 同上 |
+| V0RFReadArbiter | 121 → **121** | 6 → 6 | 10 | 同上 |
+| VlRFReadArbiter | 121 → **121** | 6 → 6 | 10 | 同上 |
+
+全部 native SUCCEEDED，黑盒 0，dont_verify / elab147 / relaxed_appvars 皆空。`fm_predict check` rc=0（差额 = constant_reg，逐个指认）。
+与 §A.3 逐项一致，差 +0。
+
+### 对账 B：族 C/D/E（同一 proof commit / 证据目录）
+
+| 目标 | passing 预测 → 实测 | 其余 |
+|---|---|---|
+| VlRegFile | 316 → **316** | failing / unmatched / unread / constant 全 0 |
+| V0RegFilePart0 / 1 | 3092 → **3092** / **3092** | 同上 |
+| VfRegFilePart0..3 | 8660 → **8660** ×4 | 同上 |
+| FpRegFilePart0..3 | 6408 → **6408** ×4 | 同上 |
+
+全部 native SUCCEEDED，逐位相等（`fm_predict check` rc=0）。FpRegFilePart0 128 s / 931 MB，VfRegFilePart0 128 s / 952 MB。
+
+UT（verif/ut/RegfileVariants，在 `f7fdd6cb` 字节上跑，9 档 × 200k 拍）：
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200117 errors=0 PASSED | checks=200117 errors=0 PASSED | checks=200117 errors=0 PASSED |
+| 7  | checks=200143 errors=0 PASSED | checks=200143 errors=0 PASSED | checks=200143 errors=0 PASSED |
+| 42 | checks=200129 errors=0 PASSED | checks=200129 errors=0 PASSED | checks=200129 errors=0 PASSED |
+
+覆盖（seed 1 / initreg 0）：同址多写 samewrite 12862..38155 拍/变体，越界 oob（Fp/V0）66487..82047，同拍读写同址 rawsame 30325..33164。
