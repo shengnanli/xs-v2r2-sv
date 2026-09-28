@@ -28,9 +28,12 @@
 //
 // 复位域：pending_q 异步复位到 s_idle；其余（5 份 isStore 打拍、70 个 perf 打拍）不复位。
 //
-// 文件结构：lsqwrapper_pkg（总线结构体、状态常量）→ xs_LsqWrapper_core（手写胶水）→ golden 同名
-//   wrapper LsqWrapper（端口表、两个子队列例化与全部连线由 scripts/gen_lsq.py 从 golden 机械生成；
-//   子队列输出线统一叫 lq_ / sq_ + 端口名去掉 io_）。
+// 本文件导航：
+//   lsqwrapper_pkg       uncache 请求 / 异常地址结构体、M_XWR、仲裁状态常量、robIdx 比较
+//   xs_LsqWrapper_core   §1 入队拆分  §2 TLB 重放延迟常数  §3 uncache 总线仲裁  §4 异常地址  §5 性能事件
+//   LsqWrapper           golden 同名 wrapper（GENERATED，scripts/gen_lsq.py）：端口表 → 子队列输出线
+//                        （lq_ / sq_ + 端口名去掉 io_）→ 结构体拆装 → 胶水核例化 → loadQueue / storeQueue
+//                        例化（实例名、端口顺序同 golden）→ 本层输出 assign
 // =============================================================================
 
 package lsqwrapper_pkg;

@@ -26,9 +26,11 @@
 //
 // 复位域：本层只有 54 个不复位的 perf 打拍寄存器（与 golden 的 io_perf_*_value_REG / _REG_1 一一对应）。
 //
-// 文件结构：xs_LoadQueue_core（手写胶水）→ golden 同名 wrapper LoadQueue（端口表、子队列例化与全部
-//   连线由 scripts/gen_lsq.py 从 golden 机械生成，实例名与 golden 相同；子队列输出线统一叫
-//   <简称>_<端口名去掉 io_>：rar_ / raw_ / replay_ / vlq_ / excbuf_ / uncache_）。
+// 本文件导航：
+//   xs_LoadQueue_core    §1 入口过滤（异常缓冲 / uncache 缓冲）  §2 性能事件（27 个，两拍打出）
+//   LoadQueue            golden 同名 wrapper（GENERATED，scripts/gen_lsq.py）：端口表 → 子队列输出线
+//                        （<简称>_<端口名去掉 io_>：rar_ / raw_ / replay_ / vlq_ / excbuf_ / uncache_）
+//                        → 胶水核例化 → 6 个子队列例化（实例名、端口顺序同 golden）→ 本层输出 assign
 // =============================================================================
 
 module xs_LoadQueue_core (

@@ -1,0 +1,9 @@
+{
+  "target": "LoadQueue",
+  "ut": "LoadQueue",
+  "regs": 168204,
+  "outs": 11364,
+  "expected": 179568,
+  "merge_dup": "false",
+  "model_applicable": true
+}
