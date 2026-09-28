@@ -1496,6 +1496,71 @@ Bku	clmulModule	ClmulModule	DEEPER	u_core.clmulModule	ClmulModule		auto_deeper
 Bku	countModule	CountModule	DEEPER	u_core.countModule	CountModule		auto_deeper	
 Bku	cryptoModule	CryptoModule	DEEPER	u_core.cryptoModule	CryptoModule		auto_deeper	
 Bku	miscModule	MiscModule	DEEPER	u_core.miscModule	MiscModule		auto_deeper	
+BypassNetwork	forwardOrBypassValidVec3_ext	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_1	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_10	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_11	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_12	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_13	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_14	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_15	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_16	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_17	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_18	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_19	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_2	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_20	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_21	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_22	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_23	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_24	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_25	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_26	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_27	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_28	UIntExtractor_27_000000000000001010100000000	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_29	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_3	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_30	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_31	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_32	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_33	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_34	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_35	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_4	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_5	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_6	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_7	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_8	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	forwardOrBypassValidVec3_ext_9	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
+BypassNetwork	imm_mod	ImmExtractor	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor		auto_gen_site	
+BypassNetwork	imm_mod_1	ImmExtractor	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor		auto_gen_site	
+BypassNetwork	imm_mod_10	ImmExtractor	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor		auto_gen_site	
+BypassNetwork	imm_mod_11	ImmExtractor	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor		auto_gen_site	
+BypassNetwork	imm_mod_12	ImmExtractor_12	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_12		auto_gen_site	
+BypassNetwork	imm_mod_13	ImmExtractor_12	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_12		auto_gen_site	
+BypassNetwork	imm_mod_14	ImmExtractor_12	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_12		auto_gen_site	
+BypassNetwork	imm_mod_15	ImmExtractor	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor		auto_gen_site	
+BypassNetwork	imm_mod_16	ImmExtractor	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor		auto_gen_site	
+BypassNetwork	imm_mod_2	ImmExtractor_2	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_2		auto_gen_site	
+BypassNetwork	imm_mod_3	ImmExtractor_2	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_2		auto_gen_site	
+BypassNetwork	imm_mod_37	ImmExtractor_37	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_37		auto_gen_site	
+BypassNetwork	imm_mod_38	ImmExtractor_37	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_37		auto_gen_site	
+BypassNetwork	imm_mod_39	ImmExtractor_37	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_37		auto_gen_site	
+BypassNetwork	imm_mod_4	ImmExtractor_2	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_2		auto_gen_site	
+BypassNetwork	imm_mod_40	ImmExtractor_37	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_37		auto_gen_site	
+BypassNetwork	imm_mod_41	ImmExtractor_37	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_37		auto_gen_site	
+BypassNetwork	imm_mod_5	ImmExtractor	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor		auto_gen_site	
+BypassNetwork	imm_mod_57	ImmExtractor_57	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_57		auto_gen_site	
+BypassNetwork	imm_mod_58	ImmExtractor_57	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_57		auto_gen_site	
+BypassNetwork	imm_mod_6	ImmExtractor	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor		auto_gen_site	
+BypassNetwork	imm_mod_7	ImmExtractor_2	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_2		auto_gen_site	
+BypassNetwork	imm_mod_8	ImmExtractor_2	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_2		auto_gen_site	
+BypassNetwork	imm_mod_9	ImmExtractor_2	GEN_SITE_UNINDEXED	u_core.g_exu[e].g_imm.u_imm	ImmExtractor_2		auto_gen_site	
+ByteMaskTailGen	bodyEn_uintToContTail0sMod128Bits	UIntToContLow0s	UNRESOLVED				none	
+ByteMaskTailGen	bodyEn_uintToContTail1sMod128Bits	UIntToContLow1s	ONE_SITE	u_core.u_body_hi	UIntToContLow1s		auto_one_site	
+ByteMaskTailGen	maskEn_maskExtractor	MaskExtractor	ONE_SITE	u_core.u_mask	MaskExtractor		auto_one_site	
+ByteMaskTailGen	prestartEn_uintToContTail1sMod128Bits	UIntToContLow1s	ONE_SITE	u_core.u_body_hi	UIntToContLow1s		auto_one_site	
+ByteMaskTailGen	tailEn_uintToContTail0sMod128Bits	UIntToContLow0s	UNRESOLVED				none	
 Composer	ftb	FTB	SAME_PATH	ftb	FTB		auto_same	
 Composer	ftb_io_ctrl_delay	DelayN	SAME_PATH	ftb_io_ctrl_delay	DelayN		auto_same	
 Composer	ittage	ITTage	SAME_PATH	ittage	ITTage		auto_same	
@@ -2649,6 +2714,36 @@ RNXbar	txrspArbs_0	FastArbiter_35	GEN_SITE	u_core.g_txrsp[0].txrspArbs	FastArbit
 RNXbar	txrspArbs_1	FastArbiter_35	GEN_SITE	u_core.g_txrsp[1].txrspArbs	FastArbiter_35		auto_gen_site_suffix	
 RNXbar	txrspArbs_2	FastArbiter_35	GEN_SITE	u_core.g_txrsp[2].txrspArbs	FastArbiter_35		auto_gen_site_suffix	
 RNXbar	txrspArbs_3	FastArbiter_35	GEN_SITE	u_core.g_txrsp[3].txrspArbs	FastArbiter_35		auto_gen_site_suffix	
+RealWBCollideChecker	arbiters_0	RealWBArbiter	UNRESOLVED				none	
+RealWBCollideChecker	arbiters_1	RealWBArbiter_1	UNRESOLVED				none	
+RealWBCollideChecker	arbiters_2	RealWBArbiter_2	UNRESOLVED				none	
+RealWBCollideChecker	arbiters_3	RealWBArbiter_3	UNRESOLVED				none	
+RealWBCollideChecker	arbiters_4	RealWBArbiter_2	UNRESOLVED				none	
+RealWBCollideChecker	arbiters_5	RealWBArbiter_3	UNRESOLVED				none	
+RealWBCollideChecker	arbiters_6	RealWBArbiter_3	UNRESOLVED				none	
+RealWBCollideChecker	arbiters_7	RealWBArbiter_3	UNRESOLVED				none	
+RealWBCollideChecker_1	arbiters_0	RealWBArbiter_2	UNRESOLVED				none	
+RealWBCollideChecker_1	arbiters_1	RealWBArbiter_2	UNRESOLVED				none	
+RealWBCollideChecker_1	arbiters_2	RealWBArbiter_2	UNRESOLVED				none	
+RealWBCollideChecker_1	arbiters_3	RealWBArbiter_2	UNRESOLVED				none	
+RealWBCollideChecker_1	arbiters_4	RealWBArbiter_2	UNRESOLVED				none	
+RealWBCollideChecker_1	arbiters_5	RealWBArbiter_3	UNRESOLVED				none	
+RealWBCollideChecker_2	arbiters_0	RealWBArbiter_14	UNRESOLVED				none	
+RealWBCollideChecker_2	arbiters_1	RealWBArbiter_15	UNRESOLVED				none	
+RealWBCollideChecker_2	arbiters_2	RealWBArbiter_14	UNRESOLVED				none	
+RealWBCollideChecker_2	arbiters_3	RealWBArbiter_14	UNRESOLVED				none	
+RealWBCollideChecker_2	arbiters_4	RealWBArbiter_15	UNRESOLVED				none	
+RealWBCollideChecker_2	arbiters_5	RealWBArbiter_15	UNRESOLVED				none	
+RealWBCollideChecker_3	arbiters_0	RealWBArbiter_20	UNRESOLVED				none	
+RealWBCollideChecker_3	arbiters_1	RealWBArbiter_21	UNRESOLVED				none	
+RealWBCollideChecker_3	arbiters_2	RealWBArbiter_20	UNRESOLVED				none	
+RealWBCollideChecker_3	arbiters_3	RealWBArbiter_20	UNRESOLVED				none	
+RealWBCollideChecker_3	arbiters_4	RealWBArbiter_21	UNRESOLVED				none	
+RealWBCollideChecker_3	arbiters_5	RealWBArbiter_21	UNRESOLVED				none	
+RealWBCollideChecker_4	arbiters_0	RealWBArbiter_26	UNRESOLVED				none	
+RealWBCollideChecker_4	arbiters_1	RealWBArbiter_26	UNRESOLVED				none	
+RealWBCollideChecker_4	arbiters_2	RealWBArbiter_26	UNRESOLVED				none	
+RealWBCollideChecker_4	arbiters_3	RealWBArbiter_26	UNRESOLVED				none	
 RegCache	IntRegCache	RegCacheDataModule	DEEPER	u_core.IntRegCache	RegCacheDataModule		auto_deeper	
 RegCache	IntRegCacheAgeTimer	RegCacheAgeTimer	ONE_SITE	u_core.IntRegCache_age_timer	RegCacheAgeTimer		auto_one_site	
 RegCache	IntRegCacheRepRCIdx_age	RegCacheAgeDetector	ONE_SITE	u_core.IntRegCache_rep	RegCacheAgeDetector		auto_one_site	
@@ -3066,6 +3161,15 @@ VSMergeBufferImp	freeCount_freeList	FreeList_1	ONE_SITE	u_core.g_freelist_vl.fre
 VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。
 VSetRvfWvf	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	同上
 VTypeGen	vsetModule	VsetModule	UNRESOLVED				none	
+VldMergeUnit	mgu	VldMgu	ONE_SITE	u_core.u_mgu	VldMgu		auto_one_site	
+VldMgu	maskTailGen	ByteMaskTailGen	ONE_SITE	u_core.u_mask_tail	ByteMaskTailGen		auto_one_site	
+WbDataPath	fpWbArbiter	RealWBCollideChecker_1	SAME_PATH	fpWbArbiter	RealWBCollideChecker_1		auto_same	
+WbDataPath	intWbArbiter	RealWBCollideChecker	SAME_PATH	intWbArbiter	RealWBCollideChecker		auto_same	
+WbDataPath	v0WbArbiter	RealWBCollideChecker_3	SAME_PATH	v0WbArbiter	RealWBCollideChecker_3		auto_same	
+WbDataPath	vfWbArbiter	RealWBCollideChecker_2	SAME_PATH	vfWbArbiter	RealWBCollideChecker_2		auto_same	
+WbDataPath	vlWbArbiter	RealWBCollideChecker_4	SAME_PATH	vlWbArbiter	RealWBCollideChecker_4		auto_same	
+WbDataPath	vldMgu_0	VldMergeUnit	SAME_PATH	vldMgu_0	VldMergeUnit		auto_same	
+WbDataPath	vldMgu_1	VldMergeUnit	SAME_PATH	vldMgu_1	VldMergeUnit		auto_same	
 WrBypass	data_mem_0_ext	data_mem_0_8x3	INLINE_REG_ARRAY	u_core	-	data_mem	declared	rtl/frontend/WrBypass.sv:124-126「对应 golden 的 data_mem_*_ext 寄存器堆」logic [NUM_ENTRIES][NUM_WAYS][DATA_WIDTH] data_mem。
 WrBypass	idx_tag_cam	IndexableCAMTemplate	DEEPER	u_core.idx_tag_cam	xs_IndexableCAMTemplate_core		auto_deeper	
 WrBypass_32	data_mem_ext	data_mem_8x4	INLINE_REG_ARRAY	u_core	-	data_mem	declared	同上
