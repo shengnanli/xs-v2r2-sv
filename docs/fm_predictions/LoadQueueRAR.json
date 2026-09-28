@@ -1,0 +1,10 @@
+{
+  "target": "LoadQueueRAR",
+  "ut": "LoadQueueRAR",
+  "regs": 3784,
+  "outs": 22,
+  "expected": 3806,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预期差额 216 = constant_reg（FreeList_3 freeSlotOH 4 bank x 54 恒零位，两侧对称）；vmucp 开后 release2Cycle_bits_paddr[5:0] 的 6 个对称 unread 点进 passing"
+}
