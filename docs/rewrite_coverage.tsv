@@ -21,15 +21,15 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	747	753	99.2
-unique_design_written	338	1191	28.4
-unique_design_proven	332	1191	27.9
-golden_lines_written	2621790	3902283	67.2
-golden_lines_proven	2284055	3902283	58.5
+fm_targets_configured	769	775	99.2
+unique_design_written	360	1191	30.2
+unique_design_proven	354	1191	29.7
+golden_lines_written	2679494	3902283	68.7
+golden_lines_proven	2341759	3902283	60.0
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2452990	3349905	73.2
-incore_golden_lines_proven	2119507	3349905	63.3
+incore_golden_lines_written	2510694	3349905	74.9
+incore_golden_lines_proven	2177211	3349905	65.0
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	168800	552378	30.6
@@ -38,7 +38,7 @@ outcore_golden_lines_proven	164548	552378	29.8
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	17	746	2.3
+legacy_proven_unanchored	17	768	2.2
 #   合计 7206 golden 行
 #   DuplicatedTagArray                            651 行
 #   ITTageTable                                   336 行
@@ -74,7 +74,6 @@ CtrlBlock	57635	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
 Slice	45020	5	REWRITE_L
 Scheduler	33927	4	REWRITE_L
-DataPath	25618	1	REWRITE_L
 DCache	23854	1	REWRITE_L
 NewCSR	15945	1	REWRITE_L
 ExeUnit	15312	13	REWRITE_L
@@ -99,6 +98,7 @@ PMPChecker	5070	3	REWRITE_L
 IssueQueueVfmaVialuFixVfalu	4916	1	-
 IssueQueueAluCsrFenceDiv	4767	1	REWRITE_L
 RequestBuffer	4750	2	-
+PTWFilterEntry	4736	2	-
 #
 # ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
 #   让人看得见它们的存在，别当成"还没人接的活"★  合计 354445 行
