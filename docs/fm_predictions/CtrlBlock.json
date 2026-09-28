@@ -1,9 +1,9 @@
 {
   "target": "CtrlBlock",
   "ut": "CtrlBlock",
-  "regs": 266268,
+  "regs": 265820,
   "outs": 57119,
-  "expected": 328422,
+  "expected": 327974,
   "merge_dup": "false",
   "model_applicable": true,
   "bbin": 5035,
@@ -24,5 +24,5 @@
       "points": 95
     }
   },
-  "note": "第 2 轮登记（合入 main 231b615d 后）：assembly 边界 = Rob 两侧白盒（golden Rob.sv vs rtl/backend/Rob.sv）；原 12 个 green_child 实例（pcMem/snpt/DelayN×3/PCP×6/PGC）改为两侧白盒（ref golden / impl 重写件，snpt 两侧 golden）；9 个 child + Rob 的 8 个 child 两侧同源 golden 白盒；只剩 8 个存储叶子实例接口黑盒（bbin 5035 计入）。merge_dup=false + vmucp=true。可指认扣减：−448 golden Rob debug_otherPdest 悬空（两侧都不是比较点，receipt 不记）；−16 verif/dead_ref/CtrlBlock.json 的 ref 侧 unread（Rob walkCycle/waitRabWalkCycle）；−constant_reg（receipt 直读；第 1 轮 7235，本轮白盒展开的 PCP/PGC/pcMem/DelayN 内若有常量寄存器会使它增加，逐位按 receipt 指认）。"
+  "note": "第 3 轮登记（commit 365a5902 pcMem 450 位读地址钉点 + 合入 main 0cbe4f8c 之后）：边界同第 2 轮——Rob 两侧白盒；pcMem/DelayN×3/PCP×6/PGC 两侧白盒（ref golden / impl 重写件）；snpt 与 9 个 child（DecodeStage/FusionDecoder/Rename/RenameTableWrapper/RedirectGenerator/Trace/MemCtrl/GPAMem/NewDispatch）及 Rob 的 8 个 child 两侧同源 golden；8 个存储叶子实例接口黑盒（bbin 5035）。merge_dup=false + vmucp=true。模型已按判据 3 扣掉 golden Rob 无驱动的 debug_otherPdest 448 位（328422→327974）。可指认扣减只剩：−16 = verif/dead_ref/CtrlBlock.json 的 ref 侧 unread（Rob walkCycle/waitRabWalkCycle，receipt.unread 读得到）；−constant_reg（receipt 直读，≥ 第 1 轮 7235）。预期 native SUCCEEDED、failing/unverified/unmatched 0、unread ref 16/impl 0、黑盒对象 16、validator PASS_DEAD_REF。"
 }

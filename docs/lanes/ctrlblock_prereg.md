@@ -121,3 +121,59 @@ unread impl 114 = decodeBuf 6×{异常位 3,22} + enqRob 6×(ENQ_EXC_KEEP 之外
 - unmatched 落在 `decodePipeRenameModule*/`、`pcMem/`、`renamePipeDispatch/`、`s5_*`/`io_toTop_cpuHalt_delay`：重写件内部名在 CtrlBlock 上下文按名/签名对不上 → 照各自签核时的点名补钉点，不放宽。
 - `PCP_PIN_END … miss≠0`：字段映射的 golden 点名与层次不符，证明中止，先修名字。
 - 已知条件项（不是失配，照实报）：dt_pcTransType_160x2 的 APPROVED_MEMORY_MACRO_MODEL 类别未经 codex 入表；9 个 child 仍同源 golden。
+
+## 6. 第 3 轮登记（起跑前提交；★跑完不许改本节★）
+
+### 6.1 第 2 轮现场（e8c9b2fb，`/tmp/xsv2-proof-cGJP0H`，fm_shell_exec PID 54656，仍在 verify，结果另见第 7 节）
+
+match 结束（08:16）即可读到的事实，已足以判定第 2 轮**不可能**出绿 receipt：
+
+| 项 | 第 2 轮预测 | 第 2 轮 match 实测 |
+|---|---|---|
+| unmatched compare 点 | 0/0 | **12(12)**：全在 pcMem，ref `raddr_dup_2{,_1,_3}_reg[3:0]` ↔ impl `g_bank[{0,1,3}].raddr_dup_reg[2][3:0]` |
+| unread | ref 16 / impl 0 | **ref 168 / impl 152**：16 条 Rob（已声明）+ 152 对 pcMem 读地址复制寄存器 |
+
+根因：pcMem 改两侧白盒后，golden 4 bank × 15 口的读地址复制寄存器 `raddr_dup_P[_b]` 与出口选 bank 的
+`raddr_dup / raddr_dup_15..28` 互为按位复制、签名相同，FM 签名匹配把 bank 配错/配不上。
+★这是第 5 节反向出口「unmatched 落在 pcMem/ → 补钉点，不放宽」的情形★。修法：commit 365a5902
+（`render_pcmem`，450 位匹配前一一钉死，fail-closed）。RTL 未改。
+
+### 6.2 边界与模型
+
+边界与第 5 节第 2 轮完全相同（pcMem 多了 450 位钉点，别无变化）。main 0cbe4f8c 合入（28ef638f）对证明闭包与证明链脚本零差异。
+9 个 child 的重写件均已 PROVEN_DIRECT，但本轮仍两侧同源 golden（下移 9 套钉点/fixture 属下一步，见 Makefile 注释）。
+
+模型改进（commit 见 git log，早于本登记）：`fm_passing_model` 判据 3——无驱动的 `reg` 不算触发器。全 golden 仅命中
+Rob `debug_otherPdest` 56×8 = 448 位，正是第 1 轮差额里那 448；其余 155 份登记 recompute 不变。
+
+| 项 | 值 |
+|---|---|
+| 白盒闭包寄存器位 | 265,820（= 266,268 − 448） |
+| 顶层输出端口位 | 57,119 |
+| 黑盒输入引脚位（8 实例） | 5,035 |
+| **模型 passing（上界）** | **327,974** |
+| failing / unverified / aborted | 0 / 0 / 0 |
+| unmatched ref / impl | 0 / 0 |
+| unread | ref 16（= verif/dead_ref/CtrlBlock.json 16 条）/ impl 0 |
+| 黑盒对象 | 16，与 allow 精确相等 |
+| 钉点 | CB_PIN 25,852、PCP_PIN 3,702、PCMEM_PIN 450、Rob 168,720，miss 全 0 |
+| native / validator | SUCCEEDED / PASS_DEAD_REF，receipt 出得来 |
+
+**passing 必须 = 327,974 − 16 − receipt.constant_reg**（`fm_predict.py check` 的 EXPLAINED 判据）；constant_reg ≥ 7,235，
+超出第 1 轮的部分须能落到本轮新展开的 pcMem/DelayN/PCP/PGC 内。其他任何差额都算失配。
+
+### 6.3 UT（本轮 RTL 与 e8c9b2fb 逐字节相同）
+
+`derive_ut_impl.py` 重派生与 `verif/ut/CtrlBlock/ut_gen` diff 为空，simv 未重编；第 2 轮 UT 即本轮 UT：
+3 seed × {`+vcs+initreg+0`, `+vcs+initreg+1`} × 200k 拍，每档 checks=1,345,793,271 errors=0。
+
+`+vcs+initreg+random`（seed 7）与 `+vcs+initreg+7017` 两档**对双例化 UT 不适用**，实测对照：
+
+| 3000 拍冒烟 seed 7 | golden vs 重写 | golden vs golden（对照，CtrlBlock_xs 只是 `CtrlBlock u(.*)` 壳） |
+|---|---|---|
+| `+vcs+initreg+0` | errors 0 | errors 0 |
+| `+vcs+initreg+random` | 4,035,982 | 3,945,288 |
+| `+vcs+initreg+7017` | 3,537,768 | 3,633,694 |
+
+两个 golden 实例彼此都对不上 ⇒ 失配来自两实例各摇各的未复位存储初值（Rob/pcMem 等 payload），与重写无关；
+这正是 ut_common.mk / 本 Makefile 注明「双例化只用 +0/+1 常量档」的原因。
