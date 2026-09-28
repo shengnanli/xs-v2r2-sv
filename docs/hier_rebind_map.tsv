@@ -1997,9 +1997,15 @@ LqVAddrModule	sx_writeData_resp_pipMod_7	DelayNWithValid_155	GEN_SITE_UNINDEXED	
 LqVAddrModule	sx_writeData_resp_pipMod_8	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
 LqVAddrModule	sx_writeData_resp_pipMod_9	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
 MEFreeList	snapshots_snapshotGen	SnapshotGenerator	DEEPER	u_core.snapshots_snapshotGen	xs_SnapshotGenerator_core		auto_deeper	
+MainPipe	amoalu	AMOALU	DEEPER	u_core.amoalu	AMOALU		auto_deeper	
+MainPipe	main_pipe_req_arb	Arbiter4_MainPipeReq	DEEPER	u_core.main_pipe_req_arb	Arbiter4_MainPipeReq		auto_deeper	
 MemCtrl	ssit	SSIT	DEEPER	u_core.ssit	SSIT		auto_deeper	
 MemCtrl	waittable	WaitTable	DEEPER	u_core.waittable	WaitTable		auto_deeper	
 MulUnit	mulDataModule	ArrayMulDataModule	DEEPER	u_core.mulDataModule	ArrayMulDataModule		auto_deeper	
+MutiLevelPrefetchFilter	l1_pf_req_arb	RRArbiterInit_8	DEEPER	u_core.l1_pf_req_arb	RRArbiterInit_8		auto_deeper	
+MutiLevelPrefetchFilter	l2_pf_req_arb	RRArbiterInit_9	DEEPER	u_core.l2_pf_req_arb	RRArbiterInit_9		auto_deeper	
+MutiLevelPrefetchFilter	l3_pf_req_arb	RRArbiterInit_6	DEEPER	u_core.l3_pf_req_arb	RRArbiterInit_6		auto_deeper	
+MutiLevelPrefetchFilter	tlb_req_arb	RRArbiterInit_7	DEEPER	u_core.tlb_req_arb	RRArbiterInit_7		auto_deeper	
 NewDispatch	fpBusyTable	BusyTable_1	SAME_PATH	fpBusyTable	BusyTable_1		auto_same	
 NewDispatch	intBusyTable	BusyTable	SAME_PATH	intBusyTable	BusyTable		auto_same	
 NewDispatch	lsqEnqCtrl	LsqEnqCtrl	SAME_PATH	lsqEnqCtrl	LsqEnqCtrl		auto_same	

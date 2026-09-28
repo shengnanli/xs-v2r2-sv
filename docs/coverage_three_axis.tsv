@@ -1,6 +1,6 @@
 # 三轴覆盖（分母 = docs/g1_configured_universe.tsv 的 in_universe=yes，共 1814）
 # module	rewrite_coverage	formal_coverage	impl_file
-AMOALU	REWRITTEN	PROVEN_DIRECT	rtl/memblock/AMOALU.sv
+AMOALU	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/AMOALU.sv
 APLIC	MISSING	UNPROVEN	-
 AXI4APLIC	MISSING	UNPROVEN	-
 AXI4Buffer	MISSING	UNPROVEN	-
@@ -73,7 +73,7 @@ Arbiter3_bitmapReqBundle	GOLDEN_REUSE	UNPROVEN	-
 Arbiter4_L2CacheErrorInfo	MISSING	UNPROVEN	-
 Arbiter4_L2TlbMemReqBundle	GOLDEN_REUSE	UNPROVEN	-
 Arbiter4_L2ToL1Hint	MISSING	UNPROVEN	-
-Arbiter4_MainPipeReq	MISSING	UNPROVEN	-
+Arbiter4_MainPipeReq	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/Arbiter4_MainPipeReq.sv
 Arbiter4_PrefetchReq	MISSING	UNPROVEN	-
 Arbiter5_L2TlbWithHptwIdBundle	GOLDEN_REUSE	UNPROVEN	-
 Arbiter5_MSHRAcquire	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/Arbiter5_MSHRAcquire.sv
@@ -709,7 +709,7 @@ MSHRBuffer_1	MISSING	UNPROVEN	-
 MSHRCtl	MISSING	UNPROVEN	-
 MSHRSelector	REWRITTEN	PROVEN_DIRECT	rtl/uncore/MSHRSelector.sv
 MStatusModule	MISSING	UNPROVEN	-
-MainPipe	MISSING	UNPROVEN	-
+MainPipe	REWRITTEN	PROVEN_DIRECT	rtl/memblock/MainPipe.sv
 MainPipe_1	MISSING	UNPROVEN	-
 MainPipe_5	MISSING	UNPROVEN	-
 MaskExtractor	REWRITTEN	PROVEN_DIRECT	rtl/backend/MaskExtractor.sv
@@ -830,7 +830,7 @@ MultiWakeupQueue	MISSING	UNPROVEN	-
 MultiWakeupQueue_2	MISSING	UNPROVEN	-
 MultiWakeupQueue_4	MISSING	UNPROVEN	-
 MultiWakeupQueue_5	MISSING	UNPROVEN	-
-MutiLevelPrefetchFilter	MISSING	UNPROVEN	-
+MutiLevelPrefetchFilter	REWRITTEN	PROVEN_DIRECT	rtl/memblock/MutiLevelPrefetchFilter.sv
 MuxBundle	GOLDEN_REUSE	PROVEN_IN_CONE	rtl/frontend/MuxBundle.sv
 MvienModule	MISSING	UNPROVEN	-
 MvipModule	MISSING	UNPROVEN	-
