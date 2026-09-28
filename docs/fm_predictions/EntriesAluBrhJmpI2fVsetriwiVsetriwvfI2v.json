@@ -1,0 +1,9 @@
+{
+  "target": "EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v",
+  "ut": "EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v",
+  "regs": 22606,
+  "outs": 2706,
+  "expected": 25312,
+  "merge_dup": "false",
+  "model_applicable": true
+}

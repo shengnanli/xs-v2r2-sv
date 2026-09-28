@@ -1,0 +1,9 @@
+{
+  "target": "EntriesAluMulBkuBrhJmp",
+  "ut": "EntriesAluMulBkuBrhJmp",
+  "regs": 22334,
+  "outs": 2688,
+  "expected": 25022,
+  "merge_dup": "false",
+  "model_applicable": true
+}
