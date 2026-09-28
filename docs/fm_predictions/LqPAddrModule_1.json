@@ -1,0 +1,9 @@
+{
+  "target": "LqPAddrModule_1",
+  "ut": "LqRawCam",
+  "regs": 1464,
+  "outs": 64,
+  "expected": 1528,
+  "merge_dup": "false",
+  "model_applicable": true
+}
