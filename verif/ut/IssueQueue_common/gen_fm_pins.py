@@ -42,18 +42,30 @@ def gen(v):
     if len(inst) != 1:
         raise SystemExit(f'{v}: {ev} 实例数 != 1')
     inst = inst[0]
+    # IQ 自身层：validCntDeqVec 打拍寄存器比端口宽的那几位（端口只取低位）两侧都无人读，
+    # 名字不同（golden io_validCntDeqVec_<d>_REG[_k]，重写 g_vcnt[<d>].g_on.vcnt_q），
+    # FM 配不上就成了 unmatched unread。逐位钉上。
+    outw = {}
+    for m in re.finditer(r'output\s+\[(\d+):0\]\s+io_validCntDeqVec_(\d+)', gsrc):
+        outw[int(m.group(2))] = int(m.group(1)) + 1
+    iq_pairs = []
+    for m in re.finditer(r'^\s+reg\s+\[(\d+):0\]\s+(io_validCntDeqVec_(\d+)_REG(?:_\d+)?);', gsrc, re.M):
+        w, name, d = int(m.group(1)) + 1, m.group(2), int(m.group(3))
+        for b in range(outw[d], w):
+            iq_pairs.append(f'    {{{name}_reg[{b}] u_core/g_vcnt[{d}].g_on.vcnt_q_reg[{b}]}}')
     out = f'''# {v} FM 匹配前钉点 —— 复用已签核 {ev} 的钉点表，两侧路径加实例前缀 "{inst}/"
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
-# 配对来源：verif/ut/{ev}/fm_pins_pre.tcl（逐字复制其配对列表，{exp} 对）。
-# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != {exp} 都 error
+# 配对来源：verif/ut/{ev}/fm_pins_pre.tcl（逐字复制其配对列表，{exp} 对）
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位 {len(iq_pairs)} 对。
+# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != {exp + len(iq_pairs)} 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
 
 if {{$top eq "{v}"}} {{
   set _n 0
   set _miss 0
-  puts "IQE_PIN_BEGIN {v} expect={exp}"
+  puts "IQE_PIN_BEGIN {v} expect={exp + len(iq_pairs)}"
   foreach _pair {{
 {chr(10).join(pairs)}
   }} {{
@@ -65,9 +77,21 @@ if {{$top eq "{v}"}} {{
       if {{$_miss <= 10}} {{ puts "IQE_PIN_FAIL: $_r <-> $_i" }}
     }}
   }}
-  puts "IQE_PIN_END {v} n=$_n miss=$_miss expect={exp}"
+  # IQ 自身层钉点（不在条目阵列实例下）
+  foreach _pair {{
+{chr(10).join(iq_pairs)}
+  }} {{
+    lassign $_pair _r _i
+    if {{[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]}} {{
+      incr _n
+    }} else {{
+      incr _miss
+      if {{$_miss <= 10}} {{ puts "IQE_PIN_FAIL: $_r <-> $_i" }}
+    }}
+  }}
+  puts "IQE_PIN_END {v} n=$_n miss=$_miss expect={exp + len(iq_pairs)}"
   if {{$_miss != 0}} {{ error "IQE_PIN_MISS={v} miss=$_miss" }}
-  if {{$_n != {exp}}} {{ error "IQE_PIN_COUNT={v} n=$_n expect={exp}" }}
+  if {{$_n != {exp + len(iq_pairs)}}} {{ error "IQE_PIN_COUNT={v} n=$_n expect={exp + len(iq_pairs)}" }}
 }}
 '''
     return out

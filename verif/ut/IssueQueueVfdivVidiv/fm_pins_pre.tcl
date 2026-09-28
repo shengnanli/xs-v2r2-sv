@@ -1,7 +1,8 @@
 # IssueQueueVfdivVidiv FM 匹配前钉点 —— 复用已签核 EntriesVfdivVidiv 的钉点表，两侧路径加实例前缀 "entries/"
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
-# 配对来源：verif/ut/EntriesVfdivVidiv/fm_pins_pre.tcl（逐字复制其配对列表，9898 对）。
+# 配对来源：verif/ut/EntriesVfdivVidiv/fm_pins_pre.tcl（逐字复制其配对列表，9898 对）
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位 0 对。
 # 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 9898 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
@@ -9912,6 +9913,18 @@ if {$top eq "IssueQueueVfdivVidiv"} {
   } {
     lassign $_pair _r _i
     if {[set_user_match "r:/WORK/$top/entries/$_r" "i:/WORK/$top/entries/u_core/$_i"]} {
+      incr _n
+    } else {
+      incr _miss
+      if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
+    }
+  }
+  # IQ 自身层钉点（不在条目阵列实例下）
+  foreach _pair {
+
+  } {
+    lassign $_pair _r _i
+    if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]} {
       incr _n
     } else {
       incr _miss

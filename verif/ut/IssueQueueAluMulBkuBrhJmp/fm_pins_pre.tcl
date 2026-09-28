@@ -1,15 +1,16 @@
 # IssueQueueAluMulBkuBrhJmp FM 匹配前钉点 —— 复用已签核 EntriesAluMulBkuBrhJmp 的钉点表，两侧路径加实例前缀 "entries/"
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
-# 配对来源：verif/ut/EntriesAluMulBkuBrhJmp/fm_pins_pre.tcl（逐字复制其配对列表，20292 对）。
-# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 20292 都 error
+# 配对来源：verif/ut/EntriesAluMulBkuBrhJmp/fm_pins_pre.tcl（逐字复制其配对列表，20292 对）
+#          + IQ 自身层 validCntDeqVec 打拍寄存器的无人读高位 2 对。
+# 计数守卫：用 set_user_match 的**返回值**数（它从不抛异常），失败一条或总数 != 20294 都 error
 # （用 error 不用 exit：sidecar 模式下本文件在 safe interp 里执行，exit 被隐藏）。
 # ============================================================================
 
 if {$top eq "IssueQueueAluMulBkuBrhJmp"} {
   set _n 0
   set _miss 0
-  puts "IQE_PIN_BEGIN IssueQueueAluMulBkuBrhJmp expect=20292"
+  puts "IQE_PIN_BEGIN IssueQueueAluMulBkuBrhJmp expect=20294"
   foreach _pair {
     {enqEntries_0/entryReg_payload_preDecodeInfo_valid_reg g_entry[0].u_e/r_payload_reg[32]}
     {enqEntries_0/entryReg_payload_preDecodeInfo_isRVC_reg g_entry[0].u_e/r_payload_reg[33]}
@@ -20312,7 +20313,20 @@ if {$top eq "IssueQueueAluMulBkuBrhJmp"} {
       if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "IQE_PIN_END IssueQueueAluMulBkuBrhJmp n=$_n miss=$_miss expect=20292"
+  # IQ 自身层钉点（不在条目阵列实例下）
+  foreach _pair {
+    {io_validCntDeqVec_0_REG_reg[5] u_core/g_vcnt[0].g_on.vcnt_q_reg[5]}
+    {io_validCntDeqVec_1_REG_reg[5] u_core/g_vcnt[1].g_on.vcnt_q_reg[5]}
+  } {
+    lassign $_pair _r _i
+    if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]} {
+      incr _n
+    } else {
+      incr _miss
+      if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
+    }
+  }
+  puts "IQE_PIN_END IssueQueueAluMulBkuBrhJmp n=$_n miss=$_miss expect=20294"
   if {$_miss != 0} { error "IQE_PIN_MISS=IssueQueueAluMulBkuBrhJmp miss=$_miss" }
-  if {$_n != 20292} { error "IQE_PIN_COUNT=IssueQueueAluMulBkuBrhJmp n=$_n expect=20292" }
+  if {$_n != 20294} { error "IQE_PIN_COUNT=IssueQueueAluMulBkuBrhJmp n=$_n expect=20294" }
 }
