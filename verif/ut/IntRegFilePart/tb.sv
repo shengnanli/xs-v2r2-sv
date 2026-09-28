@@ -2,7 +2,8 @@
 // =============================================================================
 // 结构：4 对 DUT（u_gold_<v> = G1 golden IntRegFilePart<v>，u_impl_<v> = 重写 wrapper 派生的 _xs），
 //   每对独立激励；DUT 例化接线在 GENERATED(intrf-duts) 区，由 scripts/gen_intregfile.py 从 golden 端口表生成。
-// 时序：posedge 上 DUT 与 tb 影子模型同时更新；negedge 先比对（输出已稳定），再驱动下一拍激励。
+// 时序：posedge 上 DUT 与 tb 影子模型同时更新；negedge 先驱动下一拍激励，#1 后比对
+//   （输出只应取决于寄存器；此时输入已换新，偷看当拍输入的实现会露馅）。
 // 比对两层：
 //   (a) golden vs 重写：11 个读口 + 223 路 debug，逐拍逐位；
 //   (b) golden vs tb 影子模型（Mux1H 按位或写、x0/越界读 0、地址打一拍）：把文件头写的语义钉死，
@@ -2403,9 +2404,12 @@ module tb;
     repeat (3) @(negedge clock);
     reset = 1'b0;
     for (int cyc = 1; cyc <= ncycles; cyc++) begin
+      // 先驱动下一拍激励、再比对：golden 的输出只取决于寄存器，此刻输入已换成新值，
+      // 任何"输出偷看了当拍输入"（如读口不打拍、组合旁路）都会在这里露出来。
       @(negedge clock);
-      check_outputs(cyc);
       drive_inputs(cyc);
+      #1;
+      check_outputs(cyc);
     end
     $display("coverage: collide2=%0d collide3=%0d wr_x0=%0d wr_oob=%0d rd_x0=%0d rd_oob=%0d rd_written=%0d raw_same_cycle=%0d cmp_all=%0d",
              cov_collide, cov_collide3, cov_wr_x0, cov_wr_oob, cov_rd_x0, cov_rd_oob, cov_rd_written, cov_raw_same, cmp_all);
