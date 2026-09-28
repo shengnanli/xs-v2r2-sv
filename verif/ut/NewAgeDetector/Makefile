@@ -13,6 +13,9 @@ GOLDEN_SRCS  = $(GOLDEN_RTL)/NewAgeDetector.sv $(GOLDEN_RTL)/NewAgeDetector_6.sv
 
 FM_VARIANTS = NewAgeDetector NewAgeDetector_6
 
+# fm_predict 的 passing 模型只在 merge_dup=false 时严格适用（加强不是放宽）。
+FM_MERGE_DUP = false
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
