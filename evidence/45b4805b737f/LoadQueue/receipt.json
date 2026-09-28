@@ -1,0 +1,659 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "LoadQueue",
+ "run_id": "LoadQueue-20260928T211524Z-45b4805b",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/LoadQueue.sv",
+   "kind": "golden",
+   "sha256": "70e5dd3079ff26977d12bc1a4cf46d5670ffe1d1a51cba8e443cd7473ea5472d"
+  },
+  {
+   "path": "golden-rtl/AgeDetector_38.sv",
+   "kind": "golden",
+   "sha256": "d1d862e80cfa37beca49e9db637af624567208996bdaa59910e3d0ba4b1c8165"
+  },
+  {
+   "path": "golden-rtl/DelayN_13.sv",
+   "kind": "golden",
+   "sha256": "b09d6e57c14d5dc9eb188e426e6cdf66d58027d5112a622e7ec2e69215227515"
+  },
+  {
+   "path": "golden-rtl/DelayN_225.sv",
+   "kind": "golden",
+   "sha256": "2cb3250f548014021f3439e359e19d202a514c02eb8e700af3dd120ff9766078"
+  },
+  {
+   "path": "golden-rtl/DelayN_297.sv",
+   "kind": "golden",
+   "sha256": "a8c1b32dfec4e5d69542b1ce2ace4553b9beecccc878d62004b77d98715fb21e"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_103.sv",
+   "kind": "golden",
+   "sha256": "94f9ecde0f53b3d4544674eb206a6dfe02d84a090bb9be97608b27ca4f566b7b"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_148.sv",
+   "kind": "golden",
+   "sha256": "fbb84dc2163d106460c444dba359dec96d15f48b9ddc592d7cd4da1723ef7ccf"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_149.sv",
+   "kind": "golden",
+   "sha256": "7126e3d2aa83c103005ae5f0cea7a05b0b0150ebacc8155c521fad89cc4cd9c7"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_152.sv",
+   "kind": "golden",
+   "sha256": "9ed6573dc4402e19861cc543d97d9937a2cf2d965c495525419fb9cc6dd6ea7f"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_155.sv",
+   "kind": "golden",
+   "sha256": "2a3f4da3299f3bdd44b80163eedce9345ac6f4ce679bd869ee6d58adde82d481"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_4.sv",
+   "kind": "golden",
+   "sha256": "d9f2600cdb06c5c058669c91981252860ca0ecc1b86843ffb3dd0ccf125abbbc"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_52.sv",
+   "kind": "golden",
+   "sha256": "34c2ed6a5ee0cff5dc82c5822b0aaec9f2e195af66a64b12280395ffceab2ce9"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_55.sv",
+   "kind": "golden",
+   "sha256": "2ed62b5e64124f8337cd6bd2ccf715cba4ae1ea764a9d34208084343d14bd682"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_7.sv",
+   "kind": "golden",
+   "sha256": "a4b7c0a1e1ecd3fcd2453b22bda0e949532a72b370c3362f72c1131f2a1e756a"
+  },
+  {
+   "path": "golden-rtl/FreeList_3.sv",
+   "kind": "golden",
+   "sha256": "4a8318bdcbd2b521789c0643c7d5fd88e758147fa200dd702617b3d105483b45"
+  },
+  {
+   "path": "golden-rtl/FreeList_4.sv",
+   "kind": "golden",
+   "sha256": "c4b37bf38ecef99e88aba663f0d110ea474024ba6892ac1b04465c949969f95c"
+  },
+  {
+   "path": "golden-rtl/FreeList_5.sv",
+   "kind": "golden",
+   "sha256": "fef738761fb622690e05a894682d98b9b930fdc03c1f7dc9c2bd86e0a28cd546"
+  },
+  {
+   "path": "golden-rtl/FreeList_6.sv",
+   "kind": "golden",
+   "sha256": "98399b8d8ef68de5438d9efce6a5a6eda9c577965fd12ede077700a66ecc20da"
+  },
+  {
+   "path": "golden-rtl/LoadQueueRAR.sv",
+   "kind": "golden",
+   "sha256": "c83959f39e129d068de3e1da653bf8d6e1031088f2bd83306d530fa56cfeda32"
+  },
+  {
+   "path": "golden-rtl/LoadQueueRAW.sv",
+   "kind": "golden",
+   "sha256": "8284f95c1d2f4265e00a29e9e4550715065c1909498f9952b711d83abbb177ce"
+  },
+  {
+   "path": "golden-rtl/LoadQueueReplay.sv",
+   "kind": "golden",
+   "sha256": "ccdcf9d3dc28c7b07ae489ea0e892685807535a33a831a378cc49d80c5a3400a"
+  },
+  {
+   "path": "golden-rtl/LoadQueueUncache.sv",
+   "kind": "golden",
+   "sha256": "a6c25020618ff45746fbea2c344d4ac9fe331a63744bb9585109177e59f9597c"
+  },
+  {
+   "path": "golden-rtl/LqExceptionBuffer.sv",
+   "kind": "golden",
+   "sha256": "eb97b3b9c6f1727da33c85c5cb965dcb8116d0563c0ca786e8289ed894b88f05"
+  },
+  {
+   "path": "golden-rtl/LqMaskModule.sv",
+   "kind": "golden",
+   "sha256": "c382ade6d01d323a81e5a7416885471587b000eda4137bc6186f9baa449f86f3"
+  },
+  {
+   "path": "golden-rtl/LqPAddrModule.sv",
+   "kind": "golden",
+   "sha256": "6dbcf0fa646ebfb7b9323321be79ddfe836fa3d3da87e3142af91aef63ec011d"
+  },
+  {
+   "path": "golden-rtl/LqPAddrModule_1.sv",
+   "kind": "golden",
+   "sha256": "16f516aa378f58ff2a8f806b3888f0ed97d862fcf496062f076716726230256f"
+  },
+  {
+   "path": "golden-rtl/LqVAddrModule.sv",
+   "kind": "golden",
+   "sha256": "a37b88d5d99ed4f4f7f546e7e9036b25f1014bffd2f0aae29c55e7a9eca28587"
+  },
+  {
+   "path": "golden-rtl/PipelineRegModule.sv",
+   "kind": "golden",
+   "sha256": "aee350ecb6bc213ccd834ebecccec7b10643c4af9e196db08c329c208146e917"
+  },
+  {
+   "path": "golden-rtl/PipelineRegModule_1.sv",
+   "kind": "golden",
+   "sha256": "002f00f9ef3e01db56c8db5d8e94ec4c63ace27ce8ce1eba4bb8561bccb20588"
+  },
+  {
+   "path": "golden-rtl/PipelineRegModule_2.sv",
+   "kind": "golden",
+   "sha256": "aab7d99e31d22e4462b4295e6a4a44daaf70c08dcb358f28d367a7308f7dacf5"
+  },
+  {
+   "path": "golden-rtl/RRArbiterInit_11.sv",
+   "kind": "golden",
+   "sha256": "e9b7dacd2ce43f02dbe0878f1084dce8769c28eb1bf403223638871c71b57d61"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry.sv",
+   "kind": "golden",
+   "sha256": "d6ae67c45f69e1294426a3de5d0e40ac2bfb78cc982587ffda84693a937146cb"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_1.sv",
+   "kind": "golden",
+   "sha256": "18f5e41f13459c7a2395e9c1bc0a9435b94d141a08d3b5ba8c9977e42fa84e37"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_10.sv",
+   "kind": "golden",
+   "sha256": "393a4f65f1252c34f8b9d90eb84674566c09c0283c7d7d456cec4a98395b6d62"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_11.sv",
+   "kind": "golden",
+   "sha256": "d1180b483c32f775fc447545b918402aac979ffdb6ede01164c7ba31cd49761a"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_12.sv",
+   "kind": "golden",
+   "sha256": "d3b9c73daf0c97269401824672c7142a2da9d11b8aadd9042fb5655ce9011785"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_13.sv",
+   "kind": "golden",
+   "sha256": "7c3415b0a4e21ed5c9fd4560ca0189f9266e9e7589728042030ffe39aaa7ae58"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_14.sv",
+   "kind": "golden",
+   "sha256": "6a5edf1626328efba7119bb66320dc33eca178105598f0eb14de04e89c33e40d"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_15.sv",
+   "kind": "golden",
+   "sha256": "53c484335bccf541b0de17d9ac31a3195155bb57d791d850b4f1ca7b4496059b"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_2.sv",
+   "kind": "golden",
+   "sha256": "43a6437e078d3aeb90eb86fc20ef3b280d924ea02e7f7defa471da7d6f57872f"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_3.sv",
+   "kind": "golden",
+   "sha256": "3fa37844d1bda32da1137c6aa848a59a1a78f1e2379d78ff94c53d45bf45384d"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_4.sv",
+   "kind": "golden",
+   "sha256": "969ce930cb2ac94f94619bc874ffecacc5e816a0a8d878c30536cd4a2e5bfb5f"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_5.sv",
+   "kind": "golden",
+   "sha256": "1a9604fda6772ca9c0f5abcb052982e8535a8bbfd0652d23e8635d5a81b88399"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_6.sv",
+   "kind": "golden",
+   "sha256": "b819737344a358246de1a4f0dfacd19d59d8d1b47421e254e9398bec51156ab6"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_7.sv",
+   "kind": "golden",
+   "sha256": "66b79519cc9d49bea39e96456ecb8c70c357de6cce34436232f3fcec4db91d5a"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_8.sv",
+   "kind": "golden",
+   "sha256": "8afae2f568cdbf0d834bce093f38160ff49d27d1181d5d8ded053bbe1a35b61c"
+  },
+  {
+   "path": "golden-rtl/UncacheEntry_9.sv",
+   "kind": "golden",
+   "sha256": "2fee97f49d4d2a0b6a5cd34af56eb97207b2ca9d07c03656fe1146b6e14cca6b"
+  },
+  {
+   "path": "golden-rtl/VirtualLoadQueue.sv",
+   "kind": "golden",
+   "sha256": "e530c5027a532ed9bf9526a8d95261e9a67b8b662e5c9bd4ae6184fa2defe9e8"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/memblock/LoadQueue.sv",
+   "kind": "repo",
+   "sha256": "88d48657e26b2d6e8a2bdb86986376b29e1c35d4550db6ea9080fc820d136141"
+  },
+  {
+   "path": "rtl/common/DelayN_13.sv",
+   "kind": "repo",
+   "sha256": "c5bfb22beb4ad4d4500bb107fc257c5118e2139244efa92092332c99be2812f4"
+  },
+  {
+   "path": "rtl/common/DelayN_225.sv",
+   "kind": "repo",
+   "sha256": "fcb1cbae9350959c6d815a461ff996418cb71f5fc9d997c253617a35cc677fb3"
+  },
+  {
+   "path": "rtl/common/DelayN_297.sv",
+   "kind": "repo",
+   "sha256": "41e46678608d62142c9c785a0b059926f8aed593bbd64f5272cfc42ce26b041e"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_103.sv",
+   "kind": "repo",
+   "sha256": "19e53001d4a768c3dcb28f2f0cf93aea60391b8bb74316b142bba6ff7adfd237"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_148.sv",
+   "kind": "repo",
+   "sha256": "ccdd0d0a58f1cffc0d354ff6a42c86efbf7dfe40525576bab3ffb69b5e40a201"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_149.sv",
+   "kind": "repo",
+   "sha256": "2aa38db05bd5cd1691f082943fdfe8e7b42645a4d5ae3b2f8627084cd650f13c"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_152.sv",
+   "kind": "repo",
+   "sha256": "416ee313af001d0123eb0021a98849629da653c0a69ecd6e22222792e999e0bc"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_155.sv",
+   "kind": "repo",
+   "sha256": "943605ce4cf18a109fa6b4f70999aaf44f194769862a55924e6dbfdf4fc3d00a"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_4.sv",
+   "kind": "repo",
+   "sha256": "4ebbc3b3c875b5df7420e5d9037e7393c1ddc7228b444a9ce39467ce99de0ded"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_52.sv",
+   "kind": "repo",
+   "sha256": "d68eebdb551d969281338f6404f7b28202b9f3bb8461d65b87092fdb4fb77b20"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_55.sv",
+   "kind": "repo",
+   "sha256": "15660f2728857431fd130b6f8104e1253f223ffcaa067224312253844b9ca07c"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_7.sv",
+   "kind": "repo",
+   "sha256": "52ff8f8f4b9aaecd5bc68ab811021be804522c4a29533d81e24e551ad7fbc26f"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit_11.sv",
+   "kind": "repo",
+   "sha256": "7eef1a2b769cc894075f1eb30aea89e256377d3899082bc874f10c7efe0b983e"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit.sv",
+   "kind": "repo",
+   "sha256": "b6a3406112df63bc1ec77562e11b7fcabaf9ee6ae3e5d90a0edc89034b964bac"
+  },
+  {
+   "path": "rtl/common/xs_DelayN_core.sv",
+   "kind": "repo",
+   "sha256": "59f58808b76e143acdd35544d695b434758002779d502eccc0a757eb5ac27d15"
+  },
+  {
+   "path": "rtl/common/xs_DelayNWithValid_core.sv",
+   "kind": "repo",
+   "sha256": "f072929ebfd5e9f177ffce4fb971ababefc4fa8f61b8eeb83843d5a74386cd88"
+  },
+  {
+   "path": "rtl/memblock/AgeDetector_38.sv",
+   "kind": "repo",
+   "sha256": "cb6524113070d6c063cb66ff068b6c34c839db53037cf90630ed13a2e6eb0feb"
+  },
+  {
+   "path": "rtl/memblock/FreeList_3.sv",
+   "kind": "repo",
+   "sha256": "fd752ef3b415701cc13fb1ac87fa3016b117cc433c6af383432feb95838e1222"
+  },
+  {
+   "path": "rtl/memblock/FreeList_4.sv",
+   "kind": "repo",
+   "sha256": "bfceaf9fcac6a82af312e95fba80ad10083e31a41a559837e97fe606cddf1784"
+  },
+  {
+   "path": "rtl/memblock/FreeList_5.sv",
+   "kind": "repo",
+   "sha256": "c428a2714882e822ef1172294765904849e55d4703cd371388bea35d82f2270b"
+  },
+  {
+   "path": "rtl/memblock/FreeList_6.sv",
+   "kind": "repo",
+   "sha256": "0b1db7e4ecb6105b02f1f3393e4a68b0cc99bf994328dbb9a66719876adf7326"
+  },
+  {
+   "path": "rtl/memblock/FreeList.sv",
+   "kind": "repo",
+   "sha256": "717c99ad39351155b5325b8928caed3675adf59ccccac701b81a4e7ba7ee2506"
+  },
+  {
+   "path": "rtl/memblock/LoadQueueRAR.sv",
+   "kind": "repo",
+   "sha256": "1471867b6bb5196400de5fd3fc16ebc4bd29e225456fb6e8ad6eb7efce7f3e5b"
+  },
+  {
+   "path": "rtl/memblock/LoadQueueRAW.sv",
+   "kind": "repo",
+   "sha256": "116c1cea6362baab3a4aadfb14a4bb7ef831041aea2173bbcdee6764bd3e0c4d"
+  },
+  {
+   "path": "rtl/memblock/LoadQueueReplay.sv",
+   "kind": "repo",
+   "sha256": "b3f0aac04ad7aa4faa4dd3f79647fb892a350f3c6da646896ca1aa156794a35e"
+  },
+  {
+   "path": "rtl/memblock/LoadQueueUncache.sv",
+   "kind": "repo",
+   "sha256": "52dd6e0eb7ca30f53bedaf749c24708c9d7557d68cb3a7527a03464a457e27bc"
+  },
+  {
+   "path": "rtl/memblock/LqExceptionBuffer.sv",
+   "kind": "repo",
+   "sha256": "3fb5bf2f224337ea676b66e20c69a0a266f96c2082fc479837b7b690d63b0126"
+  },
+  {
+   "path": "rtl/memblock/LqMaskModule.sv",
+   "kind": "repo",
+   "sha256": "c47a78c1edad89334a857c0caeced767fc66d87fe2dbb8510ef58101e047c3d3"
+  },
+  {
+   "path": "rtl/memblock/LqPAddrModule_1.sv",
+   "kind": "repo",
+   "sha256": "7ceb0bd289aaabaf292a80467c2125746a3427a5f1e2ba07adc070ed470df5f6"
+  },
+  {
+   "path": "rtl/memblock/LqPAddrModule.sv",
+   "kind": "repo",
+   "sha256": "7ec88945fa18b5b24c16c3e21b506aed0f6c5673290c72a84dc52fd87a43ff48"
+  },
+  {
+   "path": "rtl/memblock/LqVAddrModule.sv",
+   "kind": "repo",
+   "sha256": "cc084edba873860ca3161348d16b6b91286706e8bd894ba367cc54328c1a8411"
+  },
+  {
+   "path": "rtl/memblock/PipelineRegModule_1.sv",
+   "kind": "repo",
+   "sha256": "2e705810ba8e360f8c36f57af0fde7128300617f5f743b81b381dd3ecd8bc69f"
+  },
+  {
+   "path": "rtl/memblock/PipelineRegModule_2.sv",
+   "kind": "repo",
+   "sha256": "9c9cfc5b5942c2f6aacf4aa1a72fc895be1fed603ee87c7a554150b45789ff7c"
+  },
+  {
+   "path": "rtl/memblock/PipelineRegModule.sv",
+   "kind": "repo",
+   "sha256": "bd2571ac83909d01afb5edff2d3668269d9fd069e9fdc3a8b3f1ba47d935ec4c"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_10.sv",
+   "kind": "repo",
+   "sha256": "d2b5da598e9947ce6afcb98dd6ce79c9b50d05860251ee9586d43981ae8066f2"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_11.sv",
+   "kind": "repo",
+   "sha256": "3f5cbe5633141c9c588854967ac9d587421aa63caae63d345229c871b3d874f1"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_12.sv",
+   "kind": "repo",
+   "sha256": "874d74eab2bfc1ea10cba5b540b661191661cfb4316fa9e996ca297d15e3e632"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_13.sv",
+   "kind": "repo",
+   "sha256": "936f5b87f2464378e66065a3523a6a9e02dbecb369ba041f04673d01588d034a"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_14.sv",
+   "kind": "repo",
+   "sha256": "988681b54a1c3dc19e78091a06c390e0e108629add85faed3cc27f4f3e891f96"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_15.sv",
+   "kind": "repo",
+   "sha256": "e620d1646c4dce3fef7766a578ef5d730b120b8eb45a5243fad7c83ffbddce51"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_1.sv",
+   "kind": "repo",
+   "sha256": "43840d3c5ab0c0af782612e57e6906823c84263fdbc71b55436a05b02da81090"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_2.sv",
+   "kind": "repo",
+   "sha256": "0067668fd18cd6da484d5de30db87616ad8f6ca5e98f5544f80e212f2b5183e1"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_3.sv",
+   "kind": "repo",
+   "sha256": "a8f1b23e03ed74430a8794a06298ebee943fceabc6ccea6ddf92eb046c6b0b34"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_4.sv",
+   "kind": "repo",
+   "sha256": "2e253bdf53df256622c4f97fb9cfc2d38da8ffd6334621156d10e6a0e5cbf084"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_5.sv",
+   "kind": "repo",
+   "sha256": "1efced2f232c38c24b9aabca7658f8fa5e2344a8452e2df90638df739653bbae"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_6.sv",
+   "kind": "repo",
+   "sha256": "a2ff827e03d35f624b9e0ef2094690d10b953cabefc18535dc0fd3c16e085906"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_7.sv",
+   "kind": "repo",
+   "sha256": "b9bf85b114772910244c15eb275c49398ad4fc1bb59b5cc8ddc060266b228929"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_8.sv",
+   "kind": "repo",
+   "sha256": "8fef8facb727d9dfbaad20901ad7c9b9414b09c5fba213c6ddcd483a52bc8e7f"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry_9.sv",
+   "kind": "repo",
+   "sha256": "73600be20d9fd5d7731fd075b04736a70df05cf4058050e5aa76bdf5d89e9c31"
+  },
+  {
+   "path": "rtl/memblock/UncacheEntry.sv",
+   "kind": "repo",
+   "sha256": "8bb995913aec013d481fec39e03092df16d9eaad19d83ceb961e48d3735d92f2"
+  },
+  {
+   "path": "rtl/memblock/VirtualLoadQueue.sv",
+   "kind": "repo",
+   "sha256": "611a3441f22b8e943b5464db9cee97b841381a67de57b407164aaad5f4b7788d"
+  },
+  {
+   "path": "rtl/memblock/xs_LqRawDataCam_core.sv",
+   "kind": "repo",
+   "sha256": "4eede2b1be3ba68131f8a13b342e4ac7929832eede5ba8d7b46a0d7fcb229474"
+  },
+  {
+   "path": "rtl/memblock/xs_UncacheEntry_core.sv",
+   "kind": "repo",
+   "sha256": "40e5bc468512ec7189979fb69bdbd3ecbd0ac13f0705206384b6c84f382d6200"
+  }
+ ],
+ "impl_commit": "45b4805b737fd3654e40c7db6905dd7fbb7a462b",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "4ca67b15d448bffa76823cbc97f64319051fc66e389da95d65dba87e64336efc"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "LoadQueue-20260928T211524Z-45b4805b",
+  "top": "LoadQueue",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 177137,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 177137,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 2431,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "LoadQueue",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
