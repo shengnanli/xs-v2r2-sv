@@ -7,6 +7,10 @@ TB_SRCS  = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/MSHR.sv
 FM_VARIANTS = MSHR
+FM_MERGE_DUP = false
+# 69 个对称死位（validCnt 64 + 断言影子 REG/REG_1..3 + state_w_pprobeackfirst）按 vmucp 实比，
+# 依据见 verif/fm_target_config/MSHR.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail
 
