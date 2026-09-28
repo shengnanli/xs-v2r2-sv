@@ -14,7 +14,8 @@
 //   §7 Zvbb 计数 vclz/vctz/vcpop（8 个 CLZ 子模块，按元素宽度复用）
 //   §8 Zvbb 旋转 vrol/vror，宽化左移 vwsll
 // 怪癖（照 golden 保留）：
-//   · vcpop 的 16 位部分和 pop_16 只有 5 位宽，两个 8 位计数相加后截断到 5 位；
+//   · vcpop 的 16 位部分和 pop_16 只有 5 位宽（两个 8 位计数相加后截断）—— 照写；
+//     它只在 vcpop 时被选到输出，此时每个加数 <= 8，截断不改变结果（UT 变异 V1 实测不可观测）；
 //   · 计数用的 CLZ 输入在短元素时低位补一个"哨兵 1"（如 {byte, 8'h80}），
 //     让 16/32/64 位的 CLZ 在全零字节上正好数到 8；
 //   · 一切 Mux1H 都是"按位或"语义：没有选中任何一路时结果为 0。
@@ -318,17 +319,20 @@ module xs_VIntMisc64b_core
   //    字节 0..3 各一个 8 位 CLZ；两个 16 位 CLZ 管字节 4/5（SEW=8）或半字 0/1（SEW=16）；
   //    32 位 CLZ 管字节 6 / 半字 2 / 字 0；64 位 CLZ 管字节 7 / 半字 3 / 字 1 / 双字。
   //    短元素放进宽 CLZ 时左对齐，并在紧挨着的下一位放一个哨兵 1，全零时正好数到元素宽。
-  //    vcpop 走逐字节 popcount 再逐级相加（pop_16 只有 5 位，照 golden 截断）。
+  //    vcpop 走逐字节 popcount 再逐级相加（pop_16 只有 5 位，照 golden 宽度；vcpop 下不会溢出）。
   // ===========================================================================
   // 取 x（clz）或 x 的按位反转（ctz）
   logic [7:0]  cz_byte [8];
   logic [15:0] cz_half [4];
   logic [31:0] cz_word [2];
   logic [63:0] cz_dword;
+  logic [63:0] vs2_rev_in16, vs2_rev_in32;    // 每 16 / 32 位元素内按位反转
+  assign vs2_rev_in16 = bitrev_each(vs2, 16);
+  assign vs2_rev_in32 = bitrev_each(vs2, 32);
   always_comb begin
     for (int k = 0; k < 8; k++) cz_byte[k] = op_is_clz ? vs2[8*k +: 8] : rev8b(vs2[8*k +: 8]);
-    for (int k = 0; k < 4; k++) cz_half[k] = op_is_clz ? vs2[16*k +: 16] : bitrev_each({48'h0, vs2[16*k +: 16]}, 16)[15:0];
-    for (int k = 0; k < 2; k++) cz_word[k] = op_is_clz ? vs2[32*k +: 32] : bitrev_each({32'h0, vs2[32*k +: 32]}, 32)[31:0];
+    for (int k = 0; k < 4; k++) cz_half[k] = op_is_clz ? vs2[16*k +: 16] : vs2_rev_in16[16*k +: 16];
+    for (int k = 0; k < 2; k++) cz_word[k] = op_is_clz ? vs2[32*k +: 32] : vs2_rev_in32[32*k +: 32];
     cz_dword = op_is_clz ? vs2 : rev64(vs2);
   end
 
@@ -363,7 +367,7 @@ module xs_VIntMisc64b_core
 
   logic        is_cpop;
   logic [7:0]  cnt8 [8];
-  logic [4:0]  pop16 [4];      // ★5 位：两个 8 位计数之和截断到 5 位（golden 同）
+  logic [4:0]  pop16 [4];      // 5 位：两个 8 位计数之和截断到 5 位（golden 同宽；vcpop 时 <= 16 不溢出）
   logic [5:0]  pop32 [2];
   logic [6:0]  pop64;
   logic [63:0] count_result;
