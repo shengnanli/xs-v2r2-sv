@@ -41,6 +41,12 @@ OUT_DIR = os.path.join(REPO, 'rtl', 'dft')
 
 MODS = sorted(os.path.basename(p)[:-3] for p in glob.glob(G + '/MbistPipe*.sv'))
 
+# 家族外、但由 --scan-adjacent 机器判定"可原样套本核"的同总线节点（agent/l2slice 并入）。
+# 它们**不进** MODS：gen_mbist_ut.py 的 24 变体 tb 与 docs/mbist_pipe_family.json 都按 MODS
+# 生成，混进去会改动已出证 UT 的字节。这里只借用 parse_golden / check_invariants /
+# verify_reduce 三道机器校验 + emit_variant，产物另放、UT 另立（verif/ut/L2Slice）。
+EXTRA_MODS = ['L2Slice', 'L2Slice_1', 'L2Slice_2', 'L2Slice_3']
+
 # 每个变体服务哪个存储阵列：由 golden 的例化关系机械抓出来的（父模块 + 与本
 # pipe 的 toSRAM/toNextPipeline 网线相连的实例类型），写进薄文件头供读者定位。
 SERVES = {
@@ -68,6 +74,10 @@ SERVES = {
  'MbistPipeSc_3':          ('SCTable_3',     'TAGE-SC 统计校正表 3 的 SRAMTemplate_68 x2'),
  'MbistPipeSms':           ('MemBlock',      'SMS 空间访存流预取器的表'),
  'MbistPipeTage':          ('Tage_SC',       'TAGE 4 张预测表 + TageBTable 基础表 + us 表'),
+ 'L2Slice':                ('Slice',         'L2 slice 0 的 MBIST 子树：child0=Directory 层(L2Directory)、child1=DataStorage 层(L2DataStorage)'),
+ 'L2Slice_1':              ('Slice_1',       'L2 slice 1 的 MBIST 子树：child0=Directory 层(L2Directory_1)、child1=DataStorage 层(L2DataStorage_1)'),
+ 'L2Slice_2':              ('Slice_2',       'L2 slice 2 的 MBIST 子树：child0=Directory 层(L2Directory_2)、child1=DataStorage 层(L2DataStorage_2)'),
+ 'L2Slice_3':              ('Slice_3',       'L2 slice 3 的 MBIST 子树：child0=Directory 层(L2Directory_3)、child1=DataStorage 层(L2DataStorage_3)'),
 }
 
 
@@ -562,17 +572,31 @@ def main():
     nleaf = sum(1 for R in Rs if R['kind'] == 'leaf')
     print('   叶子 %d 个 / 中间节点 %d 个；child 总数 %d'
           % (nleaf, len(Rs) - nleaf, sum(R['nchild'] for R in Rs)))
+    Xs = []
+    for m in EXTRA_MODS:
+        R = parse_golden(m)
+        check_invariants(R)
+        nx = verify_reduce(R) + verify_selected_oh(R)
+        Xs.append(R)
+        print('   家族外节点 %-10s 同样套进模板（%d 次逐位符号执行/穷举通过）' % (m, nx))
     if a.check:
+        # 产物漂移也算失败：磁盘上的薄文件必须逐字节等于本次生成结果。
+        drift = [R['module'] for R in Rs + Xs
+                 if not os.path.exists(os.path.join(OUT_DIR, R['module'] + '.sv'))
+                 or open(os.path.join(OUT_DIR, R['module'] + '.sv')).read() != emit_variant(R)]
+        if drift:
+            print('DRIFT: %s 与生成结果不一致（重跑本脚本）' % ' '.join(drift))
+            return 1
         return 0
     os.makedirs(OUT_DIR, exist_ok=True)
-    for R in Rs:
+    for R in Rs + Xs:
         path = os.path.join(OUT_DIR, R['module'] + '.sv')
         txt = emit_variant(R)
         if not os.path.exists(path) or open(path).read() != txt:
             open(path, 'w').write(txt)
     json.dump([{k: v for k, v in R.items() if not k.startswith('_')} for R in Rs],
               open(os.path.join(REPO, 'docs', 'mbist_pipe_family.json'), 'w'), indent=1)
-    print('\n生成 %d 个变体薄文件 -> %s' % (len(Rs), OUT_DIR))
+    print('\n生成 %d 个变体薄文件 -> %s' % (len(Rs) + len(Xs), OUT_DIR))
     return 0
 
 

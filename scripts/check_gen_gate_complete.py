@@ -40,6 +40,7 @@ NO_CHECK = {
     'gen_g1_manifest.py':  '产物是 golden 清单快照，输入是只读的 G1-canonical，幂等性由 G1 的 chmod a-w 保证',
     'gen_mbist_ut.py':     '产出 UT 脚手架，已由 scripts/test_gen_idempotent.py 在 verif/ut/* 那一层统一重跑验过',
     'gen_zj_ut.py':        '同上：产出 UT 脚手架，归 test_gen_idempotent.py 那一层管',
+    'gen_l2slice_ut.py':   '同上：UT 脚手架，参数在各 verif/ut/<D>/gen.py 里，由 test_gen_idempotent.py 逐目录重跑验',
 }
 
 
