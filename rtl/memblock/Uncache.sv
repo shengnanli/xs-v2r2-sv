@@ -252,20 +252,24 @@ module xs_Uncache_core
       if (merge_mask[j]) merge_offset = 3'(j);
   end
 
-  // e1：下一拍告诉 LSQ 分到了哪一项
-  logic     id_resp_valid_q;
-  id_resp_t id_resp_q;
+  // e1：下一拍告诉 LSQ 分到了哪一项（四个字段各一个寄存器，与 golden 的 RegEnable 一一对应）
+  logic             id_resp_valid_q;
+  logic [6:0]       id_resp_mid_q;
+  logic [IDX_W-1:0] id_resp_sid_q;
+  logic             id_resp_is2lq_q;
+  logic             id_resp_nc_q;
   always_ff @(posedge clock) begin
     id_resp_valid_q <= e0_fire;
     if (e0_fire) begin
-      id_resp_q.mid   <= req.id;
-      id_resp_q.sid   <= e0_can_merge ? e0_merge_idx : e0_alloc_idx;
-      id_resp_q.is2lq <= req.cmd != M_XWR;
-      id_resp_q.nc    <= req.nc;
+      id_resp_mid_q   <= req.id;
+      id_resp_sid_q   <= e0_can_merge ? e0_merge_idx : e0_alloc_idx;
+      id_resp_is2lq_q <= req.cmd != M_XWR;
+      id_resp_nc_q    <= req.nc;
     end
   end
   assign id_resp_valid = id_resp_valid_q;
-  assign id_resp       = id_resp_q;
+  assign id_resp       = '{mid: id_resp_mid_q, sid: id_resp_sid_q,
+                           is2lq: id_resp_is2lq_q, nc: id_resp_nc_q};
 
   // ===========================================================================
   // §3 q0 发出：可发 = 占用且不在路上、不等同块、不等交回；关 outstanding 时还要

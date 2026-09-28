@@ -82,8 +82,7 @@ ARRAY_PORTS = {
 }
 
 # ---------------------------------------------------------------------------
-# golden 寄存器 → 核寄存器（u_core 下，FM 的 _reg 命名）。fn(match) -> 核寄存器名（不含 _reg 前缀位）
-#   返回 (impl_base, is_vector_bits)：impl_base 是 FM 名去掉位下标的部分。
+# golden 寄存器 → 核寄存器（u_core 下，FM 的 _reg 命名）。多位寄存器按位追加 [b]。
 # ---------------------------------------------------------------------------
 ENTRY_FIELDS = {'cmd': 'entry_cmd', 'addr': 'entry_addr', 'vaddr': 'entry_vaddr',
                 'data': 'entry_data', 'mask': 'entry_mask', 'nc': 'entry_nc',
@@ -99,7 +98,7 @@ def port_suffix(s):
 
 
 def reg_rule(name):
-    """golden 寄存器名 → [(impl 名模板, 位下标是否追加)]。返回 impl 名（不含位下标）。"""
+    """golden 寄存器名 → impl 寄存器名（u_core 下 FM 的 _reg 命名，不含位下标）；无规则返回 None。"""
     m = re.fullmatch(r'entries_(\d+)_(\w+)', name)
     if m and m.group(2) in ENTRY_FIELDS:
         return '%s_reg[%s]' % (ENTRY_FIELDS[m.group(2)], m.group(1))
@@ -119,7 +118,7 @@ def reg_rule(name):
         return fixed[name]
     m = re.fullmatch(r'io_lsq_idResp_bits_(mid|sid|is2lq|nc)_r', name)
     if m:
-        return 'id_resp_q_reg[%s]' % m.group(1)   # struct 成员：特殊处理（见 pin_pairs）
+        return 'id_resp_%s_q_reg' % m.group(1)
     m = re.fullmatch(r'f1_fwd(Mask|Data)Candidates_r(_\d+)?', name)
     if m:
         return 'f1_cand_%s_reg[%d]' % (m.group(1).lower(), port_suffix(m.group(2)))
@@ -143,9 +142,6 @@ def reg_rule(name):
         field = 'f1_vtag_match' if k % 2 == 0 else 'f1_valid_mask'
         return '%s_reg[%d][%d]' % (field, p, k // 2)
     return None
-
-
-ID_RESP_LAYOUT = [('mid', 7), ('sid', 4), ('is2lq', 1), ('nc', 1)]   # id_resp_t 高位在前
 
 
 class Golden:
@@ -236,19 +232,6 @@ def pin_pairs(g):
         impl = reg_rule(name)
         if impl is None:
             missing.append(name)
-            continue
-        m = re.fullmatch(r'id_resp_q_reg\[(\w+)\]', impl)
-        if m:
-            # packed struct 寄存器：FM 看到的是一个 13 位向量 id_resp_q_reg[12:0]
-            off = 0
-            lsb = {}
-            for f, fw in reversed(ID_RESP_LAYOUT):
-                lsb[f] = off
-                off += fw
-            f = m.group(1)
-            for b in range(w):
-                pairs.append(('%s_reg%s' % (name, '[%d]' % b if w > 1 else ''),
-                              'id_resp_q_reg[%d]' % (lsb[f] + b)))
             continue
         if w == 1:
             pairs.append(('%s_reg' % name, impl))
