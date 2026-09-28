@@ -65,3 +65,30 @@
 1. 钉点路径名（见 §1 末条）。
 2. `reset` 两侧都无负载：预期为 unread 输入端口而非比较点，不计入模型；若 FM 把它报成 unread 点并判 PARTIAL，按实测处理、不改本节。
 3. 若 passing 少了 16 的整倍数，先查 debug 输出/ mem 行的配对，而不是改 RTL。
+
+## 对账（跑完追加；以上各节未改）
+
+### A. UT（tb/rtl 字节 = commit `063b2caa`，rtl 与证明 commit `acb5985e` 逐字节相同）
+
+每拍 936 个 golden-vs-重写比较（4 对 × (11 读 + 223 debug)），另有 golden-vs-影子模型比较。200k 拍：
+
+| seed | `+vcs+initreg+0`（+cmp_all 全比） | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=187200000 errors=0 | checks=187154555 errors=0（本档实为全 1） | 1017: checks=187154555 errors=0 |
+| 7  | checks=187200000 errors=0 | checks=187116471 errors=0 | 7017: checks=187116471 errors=0 |
+| 42 | checks=187200000 errors=0 | checks=186934267 errors=0 | 42017: checks=186934267 errors=0 |
+
+覆盖（seed 1，4 个变体合计）：同址 2 口写 225332 拍、3 口写 45606、写 x0 145032、写越界 219246、读 x0 351327、
+读越界 527657、读已写行 7919934、同拍写后读 1617571。seed 7/42 同量级（见 scratchpad 日志）。
+
+### B. FM（`PROOF_COMMIT=acb5985e bash scripts/run_proof.sh IntRegFilePart <T> < /dev/null`，signoff-strict）
+
+| 目标 | 预测 | 实测 passing | failing | unmatched | unread | constant_reg | 黑盒 | 钉点 | verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| IntRegFilePart0 | 7400 | 7400（3744 Port + 3656 DFF） | 0 | 0(0) | 0 | 0 | 0 | 3656/3656 | SUCCEEDED |
+| IntRegFilePart1 | 7400 | 7400 | 0 | 0(0) | 0 | 0 | 0 | 3656/3656 | SUCCEEDED |
+| IntRegFilePart2 | 7400 | 7400 | 0 | 0(0) | 0 | 0 | 0 | 3656/3656 | SUCCEEDED |
+| IntRegFilePart3 | 7400 | 7400 | 0 | 0(0) | 0 | 0 | 0 | 3656/3656 | SUCCEEDED |
+
+差额全部 0。§4 所列三处风险均未发生（钉点按推的路径名全部被接受；reset 未成为比较点）。
+`fm_predict.py check` rc=0（逐位相等 ×4）；`check_lane_receipts.py` rc=0。证据 `evidence/acb5985e4bee/`。
