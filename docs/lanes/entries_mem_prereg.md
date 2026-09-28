@@ -111,3 +111,33 @@ UT（3 seed × `+vcs+initreg+random`/`+vcs+initreg+0` × 200k 拍，同一目标
 一起记在文末「对账」。UT 任一档非零 = 先修 RTL，FM 重跑。
 
 启跑时点：本文件所在 commit 之后才起第一个 FM。
+
+---
+
+## 对账（跑后追加；上方数字未改）
+
+### A. 三个新目标
+
+| 目标 | 首跑（impl 8c789148，vmucp 关） | 终跑（impl cfd09082，vmucp 开） | 模型 | 差额 = constant_reg |
+|---|---|---|---|---|
+| EntriesStaMou | native SUCCEEDED，passing 11440 / unread 3076（预测 3072，+4 与 Ldu 同形）/ failing 0 / unmatched 0 | **SUCCEEDED 14516**（恰 +3076），failing 0，unread 0，unmatched 0 | 14530 | 14 ✔ |
+| EntriesVlduVstu | native SUCCEEDED，16162 / 2288（预测 2284，+4）/ 0 / 0 | **SUCCEEDED 18450**（+2288） | 18570 | 120 ✔ |
+| EntriesVlduVstuVseglduVsegstu | native SUCCEEDED，16196 / 2288 / 0 / 0 | **SUCCEEDED 18484**（+2288） | 18604 | 120 ✔ |
+
+constant_reg 预测（StaMou≈14 / VecMem≈120–134）落在带内。`fm_predict.py check` 41 个全部对上，rc=0。
+首跑没有任何 failing —— 核改动一次到位，没有中途改核。
+
+### B. 38 个重证（impl cfd09082，核字节与 5d2fbd21 相同）
+
+38/38 SUCCEEDED，passing **逐一等于** §2.2 旧值（0 个不等），failing/unread/unmatched 全 0。
+
+### C. UT（3 seed × 2 initreg × 200k，seed 串行，全部 errors=0 + TEST PASSED）
+
+| 目标 | checks（seed 1 / 7 / 42，两档 initreg 各自相同） |
+|---|---|
+| EntriesStaMou | 26975700 / 26943300 / 26963685 |
+| EntriesVlduVstu | 36389990 / 36390718 / 36390718 |
+| EntriesVlduVstuVseglduVsegstu | 36794664 / 36785832 / 36792824 |
+
+变异靶子：StaMou 12/12 适用行为型抓住（M12 在本变体是空变异，已更正判据）；
+VlduVstu 5/5（M18–M22 全抓住，含 M19「按位或 vs 覆盖」errors=33）。
