@@ -1,7 +1,7 @@
 // Read hcontext and forward a masked write to the shared mcontext storage.
 // The small semantic core makes the architectural transform explicit;
 // the outer module preserves the generated RTL interface exactly.
-module HcontextModule(
+module HcontextModule (
   input  logic        w_wen,
   input  logic [63:0] w_wdata,
   output logic [13:0] rdata,

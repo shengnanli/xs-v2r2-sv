@@ -1,7 +1,7 @@
 // Decode the architectural type, debug-mode, and payload fields of tdata1.
 // The small semantic core makes the architectural transform explicit;
 // the outer module preserves the generated RTL interface exactly.
-module Tdata1Module(
+module Tdata1Module (
   output logic [63:0] rdata,
   output logic [3:0]  regOut_TYPE,
   output logic        regOut_DMODE,

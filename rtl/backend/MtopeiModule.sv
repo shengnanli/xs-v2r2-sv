@@ -1,7 +1,7 @@
 // Pack the machine top-external-interrupt identity and priority CSR fields.
 // The small semantic core makes the architectural transform explicit;
 // the outer module preserves the generated RTL interface exactly.
-module xs_MtopeiModule_core(
+module xs_MtopeiModule_core (
   input  logic [10:0] interrupt_id,
   input  logic [10:0] interrupt_priority,
   output logic [63:0] read_value
@@ -9,7 +9,7 @@ module xs_MtopeiModule_core(
   assign read_value = {37'b0, interrupt_id, 5'b0, interrupt_priority};
 endmodule
 
-module MtopeiModule(
+module MtopeiModule (
   output logic [63:0] rdata,
   output logic [10:0] regOut_IID,
   output logic [10:0] regOut_IPRIO,

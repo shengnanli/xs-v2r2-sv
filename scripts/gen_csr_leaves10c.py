@@ -17,7 +17,7 @@ def banner(summary: str) -> str:
 
 
 OUTPUTS = {
-    "Pmpcfg6Module": banner("Expose the decoded PMP configuration word through both CSR views.") + r'''module xs_Pmpcfg6Module_core(
+    "Pmpcfg6Module": banner("Expose the decoded PMP configuration word through both CSR views.") + r'''module xs_Pmpcfg6Module_core (
   input  logic [63:0] cfg,
   output logic [63:0] read_value,
   output logic [63:0] mirror_value
@@ -26,17 +26,19 @@ OUTPUTS = {
   assign mirror_value = cfg;
 endmodule
 
-module Pmpcfg6Module(
+module Pmpcfg6Module (
   output logic [63:0] rdata,
   output logic [63:0] regOut_ALL,
   input  logic [63:0] cfgRData
 );
   xs_Pmpcfg6Module_core u_core (
-    .cfg(cfgRData), .read_value(rdata), .mirror_value(regOut_ALL)
+    .cfg(cfgRData),
+    .read_value(rdata),
+    .mirror_value(regOut_ALL)
   );
 endmodule
 ''',
-    "MtopeiModule": banner("Pack the machine top-external-interrupt identity and priority CSR fields.") + r'''module xs_MtopeiModule_core(
+    "MtopeiModule": banner("Pack the machine top-external-interrupt identity and priority CSR fields.") + r'''module xs_MtopeiModule_core (
   input  logic [10:0] interrupt_id,
   input  logic [10:0] interrupt_priority,
   output logic [63:0] read_value
@@ -44,7 +46,7 @@ endmodule
   assign read_value = {37'b0, interrupt_id, 5'b0, interrupt_priority};
 endmodule
 
-module MtopeiModule(
+module MtopeiModule (
   output logic [63:0] rdata,
   output logic [10:0] regOut_IID,
   output logic [10:0] regOut_IPRIO,
@@ -60,7 +62,7 @@ module MtopeiModule(
   assign regOut_IPRIO = aiaToCSR_mtopei_IPRIO;
 endmodule
 ''',
-    "StopeiModule": banner("Pack the supervisor top-external-interrupt identity and priority CSR fields.") + r'''module xs_StopeiModule_core(
+    "StopeiModule": banner("Pack the supervisor top-external-interrupt identity and priority CSR fields.") + r'''module xs_StopeiModule_core (
   input  logic [10:0] interrupt_id,
   input  logic [10:0] interrupt_priority,
   output logic [63:0] read_value
@@ -68,7 +70,7 @@ endmodule
   assign read_value = {37'b0, interrupt_id, 5'b0, interrupt_priority};
 endmodule
 
-module StopeiModule(
+module StopeiModule (
   output logic [63:0] rdata,
   output logic [10:0] regOut_IID,
   output logic [10:0] regOut_IPRIO,
@@ -84,7 +86,7 @@ module StopeiModule(
   assign regOut_IPRIO = aiaToCSR_stopei_IPRIO;
 endmodule
 ''',
-    "VStopeiModule": banner("Pack the virtual-supervisor top-external-interrupt identity and priority fields.") + r'''module xs_VStopeiModule_core(
+    "VStopeiModule": banner("Pack the virtual-supervisor top-external-interrupt identity and priority fields.") + r'''module xs_VStopeiModule_core (
   input  logic [10:0] interrupt_id,
   input  logic [10:0] interrupt_priority,
   output logic [63:0] read_value
@@ -92,7 +94,7 @@ endmodule
   assign read_value = {37'b0, interrupt_id, 5'b0, interrupt_priority};
 endmodule
 
-module VStopeiModule(
+module VStopeiModule (
   output logic [63:0] rdata,
   output logic [10:0] regOut_IID,
   output logic [10:0] regOut_IPRIO,
@@ -108,7 +110,7 @@ module VStopeiModule(
   assign regOut_IPRIO = aiaToCSR_vstopei_IPRIO;
 endmodule
 ''',
-    "Tdata1Module": banner("Decode the architectural type, debug-mode, and payload fields of tdata1.") + r'''module Tdata1Module(
+    "Tdata1Module": banner("Decode the architectural type, debug-mode, and payload fields of tdata1.") + r'''module Tdata1Module (
   output logic [63:0] rdata,
   output logic [3:0]  regOut_TYPE,
   output logic        regOut_DMODE,
@@ -121,7 +123,7 @@ endmodule
   assign regOut_DATA = tdataRead_tdata1[58:0];
 endmodule
 ''',
-    "HcontextModule": banner("Read hcontext and forward a masked write to the shared mcontext storage.") + r'''module HcontextModule(
+    "HcontextModule": banner("Read hcontext and forward a masked write to the shared mcontext storage.") + r'''module HcontextModule (
   input  logic        w_wen,
   input  logic [63:0] w_wdata,
   output logic [13:0] rdata,
@@ -136,7 +138,7 @@ endmodule
   assign toMcontext_bits_HCONTEXT = w_wdata[13:0];
 endmodule
 ''',
-    "SLevelPermitModule": banner("Reject disallowed user accesses to supervisor counters and state-enable CSRs.") + r'''module SLevelPermitModule(
+    "SLevelPermitModule": banner("Reject disallowed user accesses to supervisor counters and state-enable CSRs.") + r'''module SLevelPermitModule (
   input  logic [11:0] io_in_csrAccess_addr,
   input  logic [1:0]  io_in_privState_PRVM,
   input  logic        io_in_privState_V,
@@ -165,7 +167,7 @@ endmodule
     (accesses_supervisor_state && host_user_mode && !io_in_xstateen_sstateen0_C);
 endmodule
 ''',
-    "ScountovfModule": banner("Expose counter-overflow bits allowed by the current privilege and virtualization mode.") + r'''module ScountovfModule(
+    "ScountovfModule": banner("Expose counter-overflow bits allowed by the current privilege and virtualization mode.") + r'''module ScountovfModule (
   output logic [31:0] rdata,
   input  logic [28:0] ofVec,
   input  logic [1:0]  privState_PRVM,
@@ -197,7 +199,7 @@ endmodule
   assign rdata = {visible_overflows, 3'b0};
 endmodule
 ''',
-    "Pmaaddr0Module": banner("Expose PMA address slot zero through the CSR and mirror views.") + r'''module Pmaaddr0Module(
+    "Pmaaddr0Module": banner("Expose PMA address slot zero through the CSR and mirror views.") + r'''module Pmaaddr0Module (
   output logic [63:0] rdata,
   output logic [63:0] regOut_ALL,
   input  logic [63:0] addrRData_0
@@ -206,7 +208,7 @@ endmodule
   assign regOut_ALL = addrRData_0;
 endmodule
 ''',
-    "Pmpaddr32Module": banner("PMP address slot 32 is outside the implemented range and reads as zero.") + r'''module Pmpaddr32Module(
+    "Pmpaddr32Module": banner("PMP address slot 32 is outside the implemented range and reads as zero.") + r'''module Pmpaddr32Module (
   output logic [63:0] rdata,
   output logic [63:0] regOut_ALL
 );
