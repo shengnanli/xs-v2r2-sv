@@ -41,12 +41,12 @@
 //   L86    每-EXU 配置类型与 EXU_CFG 表（生成区）
 //   L150   xs_BypassNetwork_core —— 可读核
 //   L182   1. 旁路源：forward 直出 / bypass 寄存一拍
-//   L207   2. 每个 EXU：立即数还原 + 逐源选择
-//   L212   2a. 立即数（ImmExtractor 各变体 / load U 型）
-//   L237   2b. 逐源按 dataSources 码选择
-//   L269   2c. BJU：imm + ftqOffset、nextPcOffset
-//   L283   3. RegCache 写口
-//   L301   golden 同名 wrapper（生成区：端口表 / 打包 / 拆包 / 直连）
+//   L217   2. 每个 EXU：立即数还原 + 逐源选择
+//   L222   2a. 立即数（ImmExtractor 各变体 / load U 型）
+//   L247   2b. 逐源按 dataSources 码选择
+//   L279   2c. BJU：imm + ftqOffset、nextPcOffset
+//   L293   3. RegCache 写口
+//   L311   golden 同名 wrapper（生成区：端口表 / 打包 / 拆包 / 直连）
 // =============================================================================
 package bypassnetwork_pkg;
 
@@ -193,14 +193,24 @@ module xs_BypassNetwork_core
   end
 
   // 从旁路组里按 exuSources 的序号取一路；序号 0 表示"无"，给 0。
+  // 写成"逐个比较序号"而不是 d[GRP[v-1]]：后者的下标在 v=0 时越界（虽被守卫），
+  // Formality 会报 ELAB-147 拒绝 elaborate（CONVENTIONS「ELAB 四条硬约束」）。
   function automatic logic [XLEN-1:0] pick_int(input logic [NUM_PROD-1:0][XLEN-1:0] d,
                                                input logic [2:0] v);
-    return (v == 3'd0) ? '0 : d[INT_GRP[v - 3'd1]];
+    logic [XLEN-1:0] r;
+    r = '0;
+    for (int k = 0; k < INT_GRP_N; k++)
+      if (v == 3'(k + 1)) r = d[INT_GRP[k]];
+    return r;
   endfunction
 
   function automatic logic [XLEN-1:0] pick_fp(input logic [NUM_PROD-1:0][XLEN-1:0] d,
                                               input logic [1:0] v);
-    return (v == 2'd0) ? '0 : d[FP_GRP[v - 2'd1]];
+    logic [XLEN-1:0] r;
+    r = '0;
+    for (int k = 0; k < FP_GRP_N; k++)
+      if (v == 2'(k + 1)) r = d[FP_GRP[k]];
+    return r;
   endfunction
 
   // ---------------------------------------------------------------------------

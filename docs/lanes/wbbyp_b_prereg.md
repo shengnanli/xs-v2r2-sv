@@ -111,3 +111,11 @@ M7 load U 型立即数改零扩展 3280；M8 浮点组恒取第 0 路 28672。
 1. 寄存器名差（golden `bypassDataVec_r_<pos>` vs impl `u_core/byp_data_reg[p][b]`）：只有 17 个寄存器、各自独立使能，
    预期签名分析能配上，**不预置 fm_pins**；若出现 unmatched，先补 fail-closed 钉点再重跑，并在对账里写明。
 2. 本节没有做过任何 FM 试跑。
+
+## 3. BypassNetwork 第一次起跑失败（ERROR，未产生比较数字）与修正
+
+- 第一跑（commit bf6e2d48，evidence/bf6e2d485f03/BypassNetwork）：FM 在 elaborate 阶段报 FMR_ELAB-147 ×2 并拒绝设 top
+  （make_rc=3，verdict=ERROR，无 passing/failing 数字）。原因：`pick_int`/`pick_fp` 写成 `d[INT_GRP[v-1]]`，v=0 时下标越界
+  （虽然被 `v==0 ? 0 :` 守卫）。按 CONVENTIONS「ELAB 硬约束」只改 RTL：改为逐个比较序号 `if (v == k+1) r = d[GRP[k]]`，
+  下标全为常量。功能不变（v=0 给 0，v=k+1 取第 k 路）。不压消息、不改 appvar。
+- 修正后 UT 重跑整张 3×3 矩阵（结果在对账节）；本节不改 2.3 的任何预测数字。
