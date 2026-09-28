@@ -1,0 +1,9 @@
+{
+  "target": "MemTrigger",
+  "ut": "MemTrigger",
+  "regs": 0,
+  "outs": 70,
+  "expected": 70,
+  "merge_dup": "false",
+  "model_applicable": true
+}
