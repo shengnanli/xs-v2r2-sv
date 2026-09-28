@@ -1,0 +1,9 @@
+{
+  "target": "RXSNP",
+  "ut": "RXSNP",
+  "regs": 295,
+  "outs": 128,
+  "expected": 423,
+  "merge_dup": "false",
+  "model_applicable": true
+}

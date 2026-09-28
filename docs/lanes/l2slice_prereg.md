@@ -182,3 +182,29 @@ errors=316，均 CAUGHT。★自抓★：第一次 mcp_hold 变异"存活"，查
 | L2DataStorage_3 | **1010**（176 + 834） | 同上 |
 | MbistClockGateCell_93 | **2**（ClockGate 锁存器 1 + out 1） | 同上；锁存器在 FM 里的归类没把握，若不是 1 个比较点就指认差额 |
 | ClockMux | **1**（outs 1） | 同上 |
+
+## 6. RXSNP
+
+### 6.1 结构
+
+- 可读核 `xs_RXSNP_core`（§1 地址拆分 / §2 与 16 个 MSHR 逐个比对：reqBlock、cmoBlock、replaceBlock、replaceNest /
+  §3 放行 / §4 嵌套信息：优先编码与 meta 按位或 / §5 死锁计数器），wrapper 例化 Queue2_CHISNP（实例名 queue）。
+  MetaEntry 用包内私有 struct（`alias` 是 SV 保留字，字段名 alias_）。child Queue2_CHISNP 两侧白盒（§3 已签）。
+- 寄存器：两组 16 个 RegNext(w_replResp)（golden 就是两份，不合并）+ 64 位 stallCnt（只被 assert 读）。
+
+### 6.2 UT（verif/ut/RXSNP；commit 038ea1b3）
+
+| seed 1/7/42 × initreg {0, random, <seed>017} | checks=5200000 errors=0 ×9 |
+|---|---|
+
+覆盖（seed 1 random）：stall 86196、snoop 出队 67829、嵌套放行 5301、嵌套命中号非 0 12764、replaceBlock 7998。
+变异：replaceBlock 去掉 !RegNext(w_replResp) 项 errors=1949；优先编码缺省值 15→0 errors=18632；
+cmoBlock 漏 !s_cmometaw errors=14005，均 CAUGHT。
+
+### 6.3 跑前预测（★跑完不许改★）
+
+模型 passing 上限 **423**（regs 295 + outs 128）。预计有两类两侧对称的未读寄存器位（vmucp 关时不进 passing）：
+  * stallCnt[63:0]：只被 `ifndef SYNTHESIS 的 assert 读，自身 +1 回路之外无读者 → 64 位；
+  * 队列 ram_2x98 里 addr[4:3]（slice bank 位，parseAddress 丢掉）：2 项 × 2 位 → 4 位。
+第一跑（vmucp 关）登记：passing **355**、unread **68**、failing 0、unmatched 0 ⇒ strict 判 PARTIAL（预期内）；
+随后按 vmucp standing rule 加 verif/fm_target_config/RXSNP.tcl 第二跑：passing **423**、unread 0、SUCCEEDED。
