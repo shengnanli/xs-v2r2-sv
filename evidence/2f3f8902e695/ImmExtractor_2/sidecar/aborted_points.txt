@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ImmExtractor_2
+Implementation : i:/WORK/ImmExtractor_2
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 11:47:02 2026
+**************************************************
+
+No aborted compare points.
+
+1
