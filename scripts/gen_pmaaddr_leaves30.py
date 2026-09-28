@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Generate the ten implemented PMA-address CSR leaves (slots 1..10)."""
+"""Generate the thirty implemented PMA-address CSR leaves (slots 1..30)."""
 
 import argparse
 from pathlib import Path
 
 
 RTL_DIR = Path(__file__).resolve().parents[1] / "rtl/backend"
-SLOTS = range(1, 11)
+SLOTS = range(1, 31)
 
 
 def module_text(slot: int) -> str:
@@ -41,10 +41,10 @@ def main() -> None:
             path.write_text(expected)
 
     if drift:
-        print("gen_pmaaddr_leaves10 --check: DRIFT: " + " ".join(drift))
+        print("gen_pmaaddr_leaves30 --check: DRIFT: " + " ".join(drift))
         raise SystemExit(1)
     if args.check:
-        print(f"gen_pmaaddr_leaves10 --check: OK ({len(tuple(SLOTS))} files)")
+        print(f"gen_pmaaddr_leaves30 --check: OK ({len(tuple(SLOTS))} files)")
 
 
 if __name__ == "__main__":
