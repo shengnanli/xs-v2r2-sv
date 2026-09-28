@@ -674,22 +674,25 @@ module LoadPipe
   // ===========================================================================
   //  §6 仿真检查寄存器（golden 同样保留；综合口径下没有读者）
   // ===========================================================================
-  logic chk_s0_cmd_ok_q;       // RegNext(!(s0_valid && cmd ∉ {XRD, PFR, PFW}))
-  logic chk_s1_single_hit_q;   // RegNext(!s1_valid || PopCount(命中路) <= 1)
-  logic chk_never_blocked_q;   // RegNext(s1_ready && s2_ready)，本配置恒 1
+  //  名字沿用 golden 的 REG_1 / REG_2 / REG_4（Chisel 给 assert(RegNext(..)) 自动起的名）：
+  //  这三个寄存器两侧都没有读者，FM 不给无扇出的点做签名配对，只能靠同名配上
+  //  （见 verif/fm_target_config/LoadPipe.tcl）。
+  logic REG_1;   // RegNext(!(s0_valid && cmd ∉ {XRD, PFR, PFW}))：LoadPipe 只收 load/软件预取
+  logic REG_2;   // RegNext(!s1_valid || PopCount(命中路) <= 1)：tag 不应多路命中
+  logic REG_4;   // RegNext(s1_ready && s2_ready)：流水永不阻塞，本配置恒 1
   wire [2:0] s1_hit_way_count = 3'(s1_tag_match_way_dup_dc[0]) + 3'(s1_tag_match_way_dup_dc[1]) +
                                 3'(s1_tag_match_way_dup_dc[2]) + 3'(s1_tag_match_way_dup_dc[3]);
   always_ff @(posedge clock) begin
-    chk_s0_cmd_ok_q     <= ~(s0_valid & io_lsu_req_bits_cmd != M_XRD & io_lsu_req_bits_cmd != M_PFR &
-                             io_lsu_req_bits_cmd != M_PFW);
-    chk_s1_single_hit_q <= ~s1_valid | (s1_hit_way_count < 3'd2);
-    chk_never_blocked_q <= 1'b1;
+    REG_1 <= ~(s0_valid & io_lsu_req_bits_cmd != M_XRD & io_lsu_req_bits_cmd != M_PFR &
+               io_lsu_req_bits_cmd != M_PFW);
+    REG_2 <= ~s1_valid | (s1_hit_way_count < 3'd2);
+    REG_4 <= 1'b1;
   end
 `ifndef SYNTHESIS
   always @(posedge clock) begin
-    if (!reset && !chk_s0_cmd_ok_q)
+    if (!reset && !REG_1)
       $error("LoadPipe only accepts load req / softprefetch read or write!");
-    if (!reset && !chk_s1_single_hit_q)
+    if (!reset && !REG_2)
       $error("tag should not match with more than 1 way");
   end
 `endif
