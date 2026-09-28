@@ -519,6 +519,88 @@ class Variant:
         self.deq_rc     = 'io_deqEntry_0_bits_status_srcStatus_0_regCacheIdx' in self.pmap
         self.deq_lddep  = ('io_deqEntry_0_bits_status_srcStatus_0_srcLoadDependency_0'
                            in self.pmap)
+        # tb 的 srcType 激励形态（见 gen_tb 的「E1 专门激励」）。只对本轮新接入的
+        # 访存变体打开：已签核变体的 tb 逐字不变。
+        self.tb_mix_src_type = top in ('EntriesStaMou', 'EntriesVlduVstu',
+                                       'EntriesVlduVstuVseglduVsegstu')
+
+        # ---- 访存向量状态组(核的 HAS_VEC_MEM,见核 §2.6c) ----
+        # 判据取**条目模块**里有没有 entryReg_status_vecMem_* 寄存器,
+        # 并要求三种条目一致(共享核给三种条目同一个 HAS_VEC_MEM)。
+        vm_in = ['entryReg_status_vecMem_sqIdx_flag' in read(m)
+                 for m in (self.enq_mod, self.simp_mod, self.comp_mod)]
+        assert len(set(vm_in)) == 1, (
+            f'{top}: 三种条目的 status.vecMem 有无不一致 {vm_in} —— 核只有一个 HAS_VEC_MEM')
+        self.has_vec_mem = vm_in[0]
+        self.vm_sq_w = self.vm_lq_w = self.vm_nlse_w = 1
+        self.vr_mask_w = self.vr_mbidx_w = 1
+        if self.has_vec_mem:
+            def w_of(n):
+                assert n in self.pmap, f'{top}: 访存向量变体缺端口 {n}'
+                return self.pmap[n][1]
+            self.vm_sq_w   = 1 + w_of('io_enq_0_bits_status_vecMem_sqIdx_value')
+            self.vm_lq_w   = 1 + w_of('io_enq_0_bits_status_vecMem_lqIdx_value')
+            self.vm_nlse_w = w_of('io_enq_0_bits_status_vecMem_numLsElem')
+            self.vr_mask_w  = w_of('io_og0Resp_0_bits_vecReplayMask')
+            self.vr_mbidx_w = w_of('io_og0Resp_0_bits_vecReplayMbIdx')
+            assert w_of('io_vecMemIn_lqDeqPtr_value') + 1 == self.vm_lq_w
+            # og 响应里的三样:核假设 og0..og2 三档都是真端口、timer==3 档恒 0。
+            # 逐张核对 golden 的查找表形状，不对就当场失败而不是生成错的 RTL。
+            for fld in ('isVecPartReplay', 'vecReplayMask', 'vecReplayMbIdx'):
+                tabs = re.findall(r'wire \[3:0\](?:\[\d+:0\])?\s+_GEN_\d+\s*=\s*'
+                                  r'(\{[^;]*?io_og0Resp_0_bits_%s[^;]*?\});' % fld, txt, re.S)
+                assert len(tabs) == 1, f'{top}: og 表 {fld} 找到 {len(tabs)} 张'
+                slots = [x.strip() for x in re.findall(r'\{([^{}]*)\}', tabs[0])][::-1]
+                want = [f'io_og{k}Resp_0_bits_{fld}' for k in range(3)]
+                assert slots[:3] == want and re.fullmatch(r"\d+'h0", slots[3]), (
+                    f'{top}: og 表 {fld} 形状不是 {{0, og2, og1, og0}}: {slots}')
+        # isVleff 在负载里的位置(blocked 的判据要读它;comp 条目只存 DEQ 子集)
+        self.plb_is_vleff = 0
+        if self.has_vec_mem:
+            off, w = self.pl_off['vpu_isVleff']
+            assert w == 1 and off < self.pl_deq_w, 'vpu_isVleff 不在 DEQ 负载里'
+            self.plb_is_vleff = off
+
+        # ---- needFeedBack:阵列层的访存响应(核的 MEM_RESP_MODE,见核 §5a) ----
+        # 从 golden enqEntries_0 实例的 issueResp_valid 连线表达式判形态：
+        #   `…issueTimerRead[1] ? …`        -> 1 (StaMou)
+        #   `(&…issueTimerRead) ? hitRespsVec…` -> 2 (访存向量)
+        m = re.search(r'\.io_commonIn_issueResp_valid\s*\((.*?)\),\n\s*\.io_commonIn_issueResp_bits_resp',
+                      txt, re.S)
+        assert m, f'{top}: 找不到 enqEntries_0 的 issueResp_valid 连线'
+        rv = re.sub(r'\s+', ' ', m.group(1))
+        self.mem_srcs = []
+        self.plb_sq_flag = self.plb_sq_value = self.plb_lq_flag = self.plb_lq_value = 0
+        self.sq_val_w = self.lq_val_w = 1
+        if 'issueTimerRead[1] ?' in rv:
+            self.mem_resp_mode = 1
+            src = re.findall(r'(io_\w+)_valid &', rv)
+            assert len(src) == 1, f'{top}: StaMou 形响应来源不唯一 {src}'
+            self.mem_srcs = src
+        elif re.search(r'\(&_enqEntries_0_io_commonOut_issueTimerRead\) \? hitRespsVec', rv):
+            self.mem_resp_mode = 2
+            hs = sorted((int(k), s) for k, s in re.findall(
+                r'wire\s+hitRespsVec_(\d) =\s*(io_\w+)_valid &', txt))
+            assert [k for k, _ in hs] == list(range(len(hs))) and hs, f'{top}: hitRespsVec 解析失败'
+            self.mem_srcs = [s for _, s in hs]
+        else:
+            self.mem_resp_mode = 0
+        if self.mem_resp_mode:
+            for s in self.mem_srcs:
+                assert f'{s}_bits_sqIdx_flag' in self.pmap, f'{top}: {s} 没有 sqIdx'
+            self.sq_val_w = self.pmap[f'{self.mem_srcs[0]}_bits_sqIdx_value'][1]
+            self.plb_sq_flag  = self.pl_off['sqIdx_flag'][0]
+            self.plb_sq_value = self.pl_off['sqIdx_value'][0]
+            assert self.pl_off['sqIdx_value'][1] == self.sq_val_w
+            if self.mem_resp_mode == 2:
+                self.lq_val_w = self.pmap[f'{self.mem_srcs[0]}_bits_lqIdx_value'][1]
+                self.plb_lq_flag  = self.pl_off['lqIdx_flag'][0]
+                self.plb_lq_value = self.pl_off['lqIdx_value'][0]
+                assert self.pl_off['lqIdx_value'][1] == self.lq_val_w
+            for f in ('sqIdx_flag', 'sqIdx_value', 'lqIdx_flag', 'lqIdx_value'):
+                if f in self.pl_off:
+                    assert self.pl_off[f][0] + self.pl_off[f][1] <= self.pl_deq_w, (
+                        f'{top}: payload.{f} 不在 DEQ 负载里,comp 条目读不到')
 
 
     # -- 小工具 --
@@ -561,6 +643,11 @@ def cov_names(v):
         nms.append('cancel_deq')
     if v.out_lddep:
         nms.append('lddep_nz')
+    if v.mem_resp_mode:
+        # 访存流水的响应真的在它那一档打回过条目（且命中）
+        nms += ['mem_resp', 'mem_resp_succ']
+    if v.has_vec_mem:
+        nms += ['vec_blocked', 'vec_part_replay', 'vec_replay_mask']
     return nms
 
 
@@ -599,6 +686,15 @@ def gen_rtl(v):
     A(f'//   issueResp 4 档（按 issueTimer）：'
       + ', '.join(f'timer{k}=' + ('真 resp' if v.og_has_bits[k] else f"常量 2'h{v.og_const[k]:x}")
                   for k in range(4)))
+    if v.mem_resp_mode:
+        A(f'//   needFeedBack：MEM_RESP_MODE={v.mem_resp_mode}，访存响应来源 '
+          + ' / '.join(s[len('io_'):] for s in v.mem_srcs)
+          + ('（issueTimer[1] 时改用，按 sqIdx 命中）' if v.mem_resp_mode == 1
+             else '（issueTimer==3 时各路按位或，按 sqIdx 与 lqIdx 同时命中）'))
+    if v.has_vec_mem:
+        A(f'//   访存向量状态组：vecMem = {{numLsElem {v.vm_nlse_w}, lqIdx {v.vm_lq_w}, '
+          f'sqIdx {v.vm_sq_w}}} 位，vecReplayMask {v.vr_mask_w} 位 / MbIdx {v.vr_mbidx_w} 位，'
+          'blocked 为真逻辑（三种条目都有）')
     A(f'//   负载：发射口可见 {len(v.pl_deq)} 个字段 / {v.pl_deq_w} 位；'
       f'转移包另带 {len(v.pl_extra)} 个字段，共 {v.pl_trans_w} 位')
     A(f'//   golden 层次：{v.enq_mod} ×{v.n_enq} + {v.simp_mod} ×{v.n_simp}'
@@ -649,6 +745,12 @@ def gen_rtl(v):
       + ('deq_rc_idx;' if v.deq_rc else 'unused_deq_rc_idx;'))
     if not v.out_cancel:
         A(f'  logic [{v.n_deq-1}:0] unused_cancel_deq;')
+    if v.has_vec_mem:
+        A(f'  logic [{v.n_deq-1}:0][{v.vm_sq_w + v.vm_lq_w + v.vm_nlse_w - 1}:0] deq_vm;'
+          '   // {numLsElem, lqIdx, sqIdx}')
+        A(f'  logic [{v.n_deq-1}:0] deq_vpr;')
+        A(f'  logic [{v.n_deq-1}:0][{v.vr_mask_w-1}:0] deq_vr_mask;')
+        A(f'  logic [{v.n_deq-1}:0][{v.vr_mbidx_w-1}:0] deq_vr_mbidx;')
     A('')
     # ---- 核例化 ----
     A('  xs_iq_entries_core #(')
@@ -697,7 +799,20 @@ def gen_rtl(v):
         A(f'    .{pl}({v.pl_off[fld][0]}),')
     # issueResp 的 4 档:哪档带真 resp、哪档是常量,都从 golden 的查找表量出来
     A("    .OG_HAS_BITS(4'b" + ''.join(str(b) for b in reversed(v.og_has_bits)) + '),')
-    A("    .OG_CONST_RESP({" + ', '.join(f"2'h{c:x}" for c in reversed(v.og_const)) + '})')
+    if v.has_vec_mem or v.mem_resp_mode:
+        A("    .OG_CONST_RESP({" + ', '.join(f"2'h{c:x}" for c in reversed(v.og_const)) + '}),')
+    else:
+        A("    .OG_CONST_RESP({" + ', '.join(f"2'h{c:x}" for c in reversed(v.og_const)) + '})')
+    if v.has_vec_mem:
+        A(f'    .HAS_VEC_MEM(1), .VM_SQ_W({v.vm_sq_w}), .VM_LQ_W({v.vm_lq_w}),'
+          f' .VM_NLSE_W({v.vm_nlse_w}),')
+        A(f'    .VR_MASK_W({v.vr_mask_w}), .VR_MBIDX_W({v.vr_mbidx_w}),'
+          f' .PLB_IS_VLEFF({v.plb_is_vleff})' + (',' if v.mem_resp_mode else ''))
+    if v.mem_resp_mode:
+        A(f'    .MEM_RESP_MODE({v.mem_resp_mode}), .NUM_MEM_SRC({len(v.mem_srcs)}),'
+          f' .SQ_VAL_W({v.sq_val_w}), .LQ_VAL_W({v.lq_val_w}),')
+        A(f'    .PLB_SQ_FLAG({v.plb_sq_flag}), .PLB_SQ_VALUE({v.plb_sq_value}),'
+          f' .PLB_LQ_FLAG({v.plb_lq_flag}), .PLB_LQ_VALUE({v.plb_lq_value})')
     A('  ) u_core (')
     c = []
     c.append('.clock(clock), .reset(reset)')
@@ -746,6 +861,16 @@ def gen_rtl(v):
             for i in reversed(range(v.n_enq)) for sx in reversed(range(v.n_regsrc))))
     else:
         c.append(".enq_use_rc('0), .enq_rc_idx('0)")
+    if v.has_vec_mem:
+        c.append('.enq_blocked({%s})' % ', '.join(
+            f'io_enq_{i}_bits_status_blocked' for i in reversed(range(v.n_enq))))
+        # status.vecMem 打包成 {numLsElem, lqIdx{flag,value}, sqIdx{flag,value}}
+        c.append('.enq_vm({%s})' % ', '.join(
+            f'io_enq_{i}_bits_status_vecMem_{f}' for i in reversed(range(v.n_enq))
+            for f in ('numLsElem', 'lqIdx_flag', 'lqIdx_value', 'sqIdx_flag', 'sqIdx_value')))
+        c.append('.lq_deq_ptr({io_vecMemIn_lqDeqPtr_flag, io_vecMemIn_lqDeqPtr_value})')
+    else:
+        c.append(".enq_blocked('0), .enq_vm('0), .lq_deq_ptr('0)")
 
     if v.n_wk_iq:
         for pfx, tag in (('io_wakeUpFromIQ', 'iq'), ('io_wakeUpFromIQDelayed', 'iqd')):
@@ -812,6 +937,34 @@ def gen_rtl(v):
                    if (bp % 0) in v.pmap else "%d'h0" % (2 * v.n_deq))
     c.append('.og_valid({%s})' % ', '.join(ogv))
     c.append('.og_resp({%s})' % ', '.join(ogr))
+    if v.has_vec_mem:
+        for tag, fld in (('og_vpr', 'isVecPartReplay'), ('og_vr_mask', 'vecReplayMask'),
+                         ('og_vr_mbidx', 'vecReplayMbIdx')):
+            c.append('.%s({%s})' % (tag, ', '.join(
+                '{%s}' % ', '.join(f'io_og{k}Resp_{d}_bits_{fld}'
+                                   for d in reversed(range(v.n_deq)))
+                for k in reversed(range(3)))))
+    else:
+        c.append(".og_vpr('0), .og_vr_mask('0), .og_vr_mbidx('0)")
+    if v.mem_resp_mode:
+        # 下标 m = golden hitRespsVec_m 的来源顺序（高位在前拼接）
+        ms = list(reversed(v.mem_srcs))
+        c.append('.mem_valid({%s})' % ', '.join(f'{s}_valid' for s in ms))
+        c.append('.mem_resp({%s})' % ', '.join(f'{s}_bits_resp' for s in ms))
+        c.append('.mem_sq_idx({%s})' % ', '.join(
+            f'{{{s}_bits_sqIdx_flag, {s}_bits_sqIdx_value}}' for s in ms))
+        if v.mem_resp_mode == 2:
+            c.append('.mem_lq_idx({%s})' % ', '.join(
+                f'{{{s}_bits_lqIdx_flag, {s}_bits_lqIdx_value}}' for s in ms))
+            c.append('.mem_vpr({%s})' % ', '.join(f'{s}_bits_isVecPartReplay' for s in ms))
+            c.append('.mem_vr_mask({%s})' % ', '.join(f'{s}_bits_vecReplayMask' for s in ms))
+            c.append('.mem_vr_mbidx({%s})' % ', '.join(f'{s}_bits_vecReplayMbIdx' for s in ms))
+        else:
+            # StaMou 形：命中只比 sqIdx，响应只带 resp
+            c.append(".mem_lq_idx('0), .mem_vpr('0), .mem_vr_mask('0), .mem_vr_mbidx('0)")
+    else:
+        c.append(".mem_valid('0), .mem_resp('0), .mem_sq_idx('0), .mem_lq_idx('0)")
+        c.append(".mem_vpr('0), .mem_vr_mask('0), .mem_vr_mbidx('0)")
     for tag, port in (('deq_ready', 'io_deqReady_%d'),
                       ('deq_sel_oh_valid', 'io_deqSelOH_%d_valid'),
                       ('deq_sel_oh', 'io_deqSelOH_%d_bits'),
@@ -842,6 +995,9 @@ def gen_rtl(v):
     c.append('.o_deq_rob_flag(deq_rob_flag), .o_deq_rob_value(deq_rob_value)')
     c.append('.o_deq_fu_type(deq_fu_type), .o_deq_psrc(deq_psrc)')
     c.append('.o_deq_src_type(deq_src_type), .o_deq_payload(deq_payload)')
+    if v.has_vec_mem:
+        c.append('.o_deq_vm(deq_vm), .o_deq_vpr(deq_vpr)')
+        c.append('.o_deq_vr_mask(deq_vr_mask), .o_deq_vr_mbidx(deq_vr_mbidx)')
     c.append('.o_simp_enq_sel_vec({%s})' % ', '.join(
         f'io_simpEntryEnqSelVec_{i}' for i in reversed(range(v.n_enq))))
     c.append('.o_comp_enq_sel_vec({%s})' % ', '.join(
@@ -900,10 +1056,41 @@ def gen_rtl(v):
                 for q in range(v.ld_pipes):
                     A(f'  assign io_deqEntry_{d}_bits_status_srcStatus_{s}'
                       f'_srcLoadDependency_{q} = deq_ld_dep[{d}][{s}][{q}];')
+        if v.has_vec_mem:
+            sq, lq, ne = v.vm_sq_w, v.vm_lq_w, v.vm_nlse_w
+            pre = f'io_deqEntry_{d}_bits_status_'
+            A(f'  assign {pre}vecMem_sqIdx_value = deq_vm[{d}][{sq-2}:0];')
+            A(f'  assign {pre}vecMem_sqIdx_flag  = deq_vm[{d}][{sq-1}];')
+            A(f'  assign {pre}vecMem_lqIdx_value = deq_vm[{d}][{sq+lq-2}:{sq}];')
+            A(f'  assign {pre}vecMem_lqIdx_flag  = deq_vm[{d}][{sq+lq-1}];')
+            A(f'  assign {pre}vecMem_numLsElem   = deq_vm[{d}][{sq+lq+ne-1}:{sq+lq}];')
+            A(f'  assign {pre}isVecPartReplay    = deq_vpr[{d}];')
+            A(f'  assign {pre}vecReplayMask      = deq_vr_mask[{d}];')
+            A(f'  assign {pre}vecReplayMbIdx     = deq_vr_mbidx[{d}];')
         for n, w in v.pl_deq:
             port = v.deq_pl_port(d, n)
             if port in v.pmap:          # 顶层把用不到的负载字段继续 DCE 掉了
                 A(f'  assign {port} = deq_payload[{d}]{v.plslice(n)};')
+    # ---- golden 顶层自己也不读的输入 ----
+    # firtool 保留了这些端口（契约要求同名同宽），但 golden Entries<V> 里除了端口声明
+    # 再没有任何读者（例：vecLdIn.resp 的 robIdx/fuType/uopIdx —— 命中只比 sqIdx/lqIdx）。
+    # 这里把它们显式收进一根无人读的线：表示"逐个查过、确实不用"，而不是漏接。
+    # 判据是机械的：golden 源文件里该名字只出现 1 次（= 端口声明本身）。
+    body_so_far = '\n'.join(L)
+    body_so_far = body_so_far.split(');', 1)[1] if ');' in body_so_far else body_so_far
+    gtxt = read(v.top)
+    dead_in = [n for d, w, n, _ in v.ports if d == 'input'
+               and not re.search(r'\b%s\b' % re.escape(n), body_so_far)]
+    for n in dead_in:
+        cnt = len(re.findall(r'\b%s\b' % re.escape(n), gtxt))
+        assert cnt == 1, f'{v.top}: 输入 {n} 在 golden 里有读者（出现 {cnt} 次）却没接'
+    if dead_in:
+        A('')
+        A('  // golden 顶层也不读的输入（golden 源里只有端口声明、没有读者）：')
+        A('  // 显式收拢在这里，表示逐个查过、确实不用，而不是漏接。')
+        A('  wire unused_golden_dead_inputs = ^{')
+        A(',\n'.join('    ' + n for n in dead_in))
+        A('  };')
     A('  // END GENERATED(core-inst)')
     A('')
     A('endmodule')
@@ -998,6 +1185,8 @@ def gen_tb(v):
     A('')
     A('  localparam int POOL = 8;   // pdest/psrc 共用的小池，保证唤醒能打中')
     A('  function automatic int rnd_reg(); return $urandom_range(0, POOL-1); endfunction')
+    if v.mem_resp_mode or v.has_vec_mem:
+        A('  localparam int IDXPOOL = 4;  // sqIdx/lqIdx/lqDeqPtr 的小池，让访存响应与 blocked 打得中')
     if v.has_rc:
         A('  localparam int RCPOOL = 4;  // regCacheIdx 的小池，让 replaceRC 打得中')
         A('  function automatic int rnd_rc(); return $urandom_range(0, RCPOOL-1); endfunction')
@@ -1018,9 +1207,23 @@ def gen_tb(v):
         for s in range(v.n_regsrc):
             tb_ = v.src_tbit[s]
             A(f"    io_enq_{i}_bits_status_srcStatus_{s}_psrc <= {v.psrc_w}'(rnd_reg());")
-            A(f'    // src{s} 的唤醒门控位是 srcType[{tb_}]，绝大多数时候给对')
-            A(f"    io_enq_{i}_bits_status_srcStatus_{s}_srcType <= "
-              f"($urandom_range(0,99) < 88) ? 4'h{1<<tb_:x} : 4'($urandom_range(0,15));")
+            if v.tb_mix_src_type:
+                # ★E1 专门激励★：一个源的匹配种类（MK_GP/MK_V0/MK_VL）决定它听哪几对
+                #   (srcType 位, wen)。只给"对"的那一位，永远打不到「srcType 与 wen
+                #   种类交叉」的情形——而把三张对表并成一张的错法恰恰只在交叉时才露。
+                #   所以：70% 在本源的合法位里均匀挑，30% 给 4 位全随机（含交叉/多位）。
+                bits = sorted(b for b, wn in KIND_PAIRS[v.src_kind[s]]
+                              if wn in v.wen_present['wb'])
+                assert bits == list(range(bits[0], bits[-1] + 1)), bits
+                pick = (f"4'h{1 << bits[0]:x}" if len(bits) == 1 else
+                        f"(4'h1 << $urandom_range({bits[0]}, {bits[-1]}))")
+                A(f'    // src{s} 的匹配种类 kind={v.src_kind[s]}，合法门控位 {bits}')
+                A(f"    io_enq_{i}_bits_status_srcStatus_{s}_srcType <= "
+                  f"($urandom_range(0,99) < 70) ? {pick} : 4'($urandom_range(0,15));")
+            else:
+                A(f'    // src{s} 的唤醒门控位是 srcType[{tb_}]，绝大多数时候给对')
+                A(f"    io_enq_{i}_bits_status_srcStatus_{s}_srcType <= "
+                  f"($urandom_range(0,99) < 88) ? 4'h{1<<tb_:x} : 4'($urandom_range(0,15));")
             A(f'    io_enq_{i}_bits_status_srcStatus_{s}_srcState <= ($urandom_range(0, 99) < 72);')
             A(f'    io_enq_{i}_bits_status_srcStatus_{s}_dataSources_value <= '
               f"($urandom_range(0,1)) ? 4'h2 : 4'h8;")
@@ -1045,6 +1248,15 @@ def gen_tb(v):
             # ignoreOldVd 判定要用的几位单独加权，否则那条通路几乎打不中
             bias = {'vpu_isDependOldVd': 12, 'vpu_vm': 60, 'vpu_vma': 60,
                     'vpu_vta': 60, 'vpu_isWritePartVd': 20}.get(n)
+            if v.has_vec_mem and n == 'vpu_isVleff':
+                bias = 40
+            if v.mem_resp_mode and n in ('sqIdx_value', 'lqIdx_value'):
+                # 访存响应按 sqIdx/lqIdx 命中条目：两侧共用小池，否则永远打不中
+                A(f"    {p} <= {pw}'($urandom_range(0, IDXPOOL-1));")
+                continue
+            if v.mem_resp_mode and n in ('sqIdx_flag', 'lqIdx_flag'):
+                A(f"    {p} <= ($urandom_range(0, 99) < 20);")
+                continue
             if bias is not None:
                 A(f'    {p} <= ($urandom_range(0, 99) < {bias});')
             elif pw == 1:
@@ -1052,6 +1264,38 @@ def gen_tb(v):
             else:
                 nw = (pw + 31) // 32
                 A(f"    {p} <= {pw}'({{" + ', '.join(['$urandom'] * nw) + '});')
+    if v.has_vec_mem:
+        A('    // 访存向量状态组的派遣值：lqIdx 与 lqDeqPtr 共用小池，blocked 才有真次态可测')
+        for i in range(v.n_enq):
+            pre = f'io_enq_{i}_bits_status_'
+            A(f'    {pre}blocked <= ($urandom_range(0, 99) < 10);')
+            A(f"    {pre}vecMem_sqIdx_flag  <= ($urandom_range(0, 99) < 20);")
+            A(f"    {pre}vecMem_sqIdx_value <= {v.vm_sq_w-1}'($urandom_range(0, IDXPOOL-1));")
+            A(f"    {pre}vecMem_lqIdx_flag  <= ($urandom_range(0, 99) < 20);")
+            A(f"    {pre}vecMem_lqIdx_value <= {v.vm_lq_w-1}'($urandom_range(0, IDXPOOL-1));")
+            A(f"    {pre}vecMem_numLsElem   <= {v.vm_nlse_w}'($urandom);")
+        A("    io_vecMemIn_lqDeqPtr_flag  <= ($urandom_range(0, 99) < 20);")
+        A(f"    io_vecMemIn_lqDeqPtr_value <= {v.vm_lq_w-1}'($urandom_range(0, IDXPOOL-1));")
+    if v.mem_resp_mode:
+        A('    // 访存流水的响应：sqIdx/lqIdx 与条目负载共用小池')
+        for s in v.mem_srcs:
+            A(f'    {s}_valid <= ($urandom_range(0, 99) < 45);')
+            for n, (d, w) in sorted((n, v.pmap[n]) for n in v.pmap
+                                    if n.startswith(s + '_bits_')):
+                f = n[len(s) + 6:]
+                if f in ('sqIdx_value', 'lqIdx_value'):
+                    A(f"    {n} <= {w}'($urandom_range(0, IDXPOOL-1));")
+                elif f in ('sqIdx_flag', 'lqIdx_flag'):
+                    A(f"    {n} <= ($urandom_range(0, 99) < 20);")
+                elif f == 'resp':
+                    A(f"    {n} <= ($urandom_range(0,99) < 60) ? 2'b11 :"
+                      " (($urandom_range(0,1)) ? 2'b00 : 2'b01);")
+                elif f == 'isVecPartReplay':
+                    A(f"    {n} <= ($urandom_range(0, 99) < 30);")
+                elif w == 1:
+                    A(f'    {n} <= $urandom_range(0, 1);')
+                else:
+                    A(f"    {n} <= {w}'({{" + ', '.join(['$urandom'] * ((w + 31) // 32)) + '});')
     A('    // 唤醒总线：pdest 取自小池，写使能高概率有效')
     for w in range(v.n_wk):
         A(f'    io_wakeUpFromWB_{w}_valid <= ($urandom_range(0, 99) < 35);')
@@ -1133,6 +1377,10 @@ def gen_tb(v):
             if f'io_og{k}Resp_{d}_bits_resp' in v.pmap:
                 A(f"    io_og{k}Resp_{d}_bits_resp = ($urandom_range(0,99) < 65) ? 2'b11 :"
                   " (($urandom_range(0,1)) ? 2'b00 : 2'b01);")
+            if v.has_vec_mem:
+                A(f'    io_og{k}Resp_{d}_bits_isVecPartReplay = ($urandom_range(0, 99) < 25);')
+                A(f"    io_og{k}Resp_{d}_bits_vecReplayMask = {v.vr_mask_w}'($urandom);")
+                A(f"    io_og{k}Resp_{d}_bits_vecReplayMbIdx = {v.vr_mbidx_w}'($urandom);")
     for d in range(v.n_deq):
         A(f"    io_enqEntryOldestSel_{d}_bits   = {v.n_enq}'(1) << "
           f"$urandom_range(0, {v.n_enq-1});")
@@ -1231,6 +1479,33 @@ def gen_tb(v):
     if v.out_cancel:
         A('    if (|{%s}) cov_cancel_deq++;' % ', '.join(
             f'g_io_cancelDeqVec_{d}' for d in range(v.n_deq)))
+    ents_all = ([f'u_g.enqEntries_{i}' for i in range(v.n_enq)]
+                + [f'u_g.othersEntriesSimp_{j}' for j in range(v.n_simp)]
+                + [f'u_g.othersEntriesComp_{j}' for j in range(v.n_comp)])
+    if v.mem_resp_mode:
+        win = ('io_commonOut_issueTimerRead[1]' if v.mem_resp_mode == 1
+               else '(&{e}.io_commonOut_issueTimerRead)')
+        def w_of(e):
+            return (f'{e}.' + win) if v.mem_resp_mode == 1 else win.format(e=e)
+        A('    // 访存响应窗口里条目真的收到了（命中的）响应')
+        A('    if (%s) cov_mem_resp++;' % ' || '.join(
+            f"({e}.io_commonIn_issueResp_valid === 1'b1 && {w_of(e)} === 1'b1)"
+            for e in ents_all))
+        A('    if (%s) cov_mem_resp_succ++;' % ' || '.join(
+            f"({e}.io_commonIn_issueResp_valid === 1'b1 && {w_of(e)} === 1'b1 && "
+            f"{e}.io_commonIn_issueResp_bits_resp === 2'b11)"
+            for e in ents_all))
+    if v.has_vec_mem:
+        A('    // 访存向量状态组：blocked 真的挡过、isVecPartReplay / mask 真的被响应改写过')
+        A('    if (%s) cov_vec_blocked++;' % ' || '.join(
+            f"({e}.validReg_last_REG === 1'b1 && {e}.entryReg_status_blocked === 1'b1)"
+            for e in ents_all))
+        A('    if (%s) cov_vec_part_replay++;' % ' || '.join(
+            f"({e}.validReg_last_REG === 1'b1 && {e}.entryReg_status_isVecPartReplay === 1'b1)"
+            for e in ents_all))
+        A('    if (%s) cov_vec_replay_mask++;' % ' || '.join(
+            f"({e}.validReg_last_REG === 1'b1 && {e}.io_commonIn_issueResp_bits_isVecPartReplay === 1'b1)"
+            for e in ents_all))
     if v.out_lddep:
         A('    // 影子非零：ldCancel 那条通路真的有东西可撤')
         A('    if (|{%s}) cov_lddep_nz++;' % ', '.join(
