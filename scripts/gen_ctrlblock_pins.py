@@ -466,6 +466,52 @@ def render_pcp():
     return '\n'.join(L) + '\n'
 
 
+def render_pcmem():
+    """pcMem（SyncDataModuleTemplate_BackendPC_64entry，4 bank × 15 读口）两侧白盒：读地址寄存器族在 golden 里是
+    扁平复制名（bank b 的口 P = raddr_dup_P[_b]，出口选 bank 用的 = raddr_dup / raddr_dup_{14+P}），重写件是
+    g_bank[b].raddr_dup[P] / g_rport[P].raddr_q。这 450 位互为按位复制、签名一致，第 2 轮实测签名匹配配错/配不上：
+    12(12) 个 compare 点 unmatched（raddr_dup_2{,_1,_3}）+ 152(152) 个 unread 点 unmatched（CtrlBlock 用不到的读口/高位）。
+    所以整族在首次 match 前钉死。★fail-closed★：golden 寄存器名/宽度按源码逐条核对。"""
+    graw = (GC.GOLDEN.parent / 'SyncDataModuleTemplate_BackendPC_64entry.sv').read_text()
+    gregs = {}
+    for m in re.finditer(r'^\s*reg\s+(?:\[(\d+):0\]\s+)?(\w+);', graw, re.M):
+        gregs[m.group(2)] = int(m.group(1)) + 1 if m.group(1) else 1
+    NB, NR, AW = 4, 15, 6
+    pairs = []
+    for b in range(NB):
+        for p in range(NR):
+            gn = 'raddr_dup_%d%s' % (p, '' if b == 0 else '_%d' % b)
+            if gregs.get(gn) != AW:
+                GC.die('golden pcMem 缺寄存器 %s[%d:0]' % (gn, AW - 1))
+            m = re.search(r'^\s*%s <= io_raddr_(\d+);' % gn, graw, re.M)
+            if not m or int(m.group(1)) != p:
+                GC.die('golden pcMem %s 不是读口 %d 的地址寄存器' % (gn, p))
+            for k in range(AW):
+                pairs.append(('%s_reg\\[%d\\]' % (gn, k), 'u_core/g_bank\\[%d\\].raddr_dup_reg\\[%d\\]\\[%d\\]' % (b, p, k)))
+    for p in range(NR):
+        gn = 'raddr_dup' if p == 0 else 'raddr_dup_%d' % (14 + p)
+        if gregs.get(gn) != AW:
+            GC.die('golden pcMem 缺寄存器 %s[%d:0]' % (gn, AW - 1))
+        m = re.search(r'^\s*%s <= io_raddr_(\d+);' % gn, graw, re.M)
+        if not m or int(m.group(1)) != p:
+            GC.die('golden pcMem %s 不是读口 %d 的出口地址寄存器' % (gn, p))
+        for k in range(AW):
+            pairs.append(('%s_reg\\[%d\\]' % (gn, k), 'u_core/g_rport\\[%d\\].raddr_q_reg\\[%d\\]' % (p, k)))
+    n = len(pairs)
+    L = ['',
+         '# ---- pcMem (SyncDataModuleTemplate_BackendPC_64entry, white-box on both sides): read-address register family',
+         '#      golden raddr_dup_P[_b] / raddr_dup{,_15.._28}  <->  u_core/g_bank[b].raddr_dup[P] / u_core/g_rport[P].raddr_q',
+         'set _pinned 0',
+         'set _want 0',
+         'puts "PCMEM_PIN_BEGIN CtrlBlock expect=%d"' % n]
+    for gp, ip in pairs:
+        L.append('_cbpin r:/WORK/CtrlBlock/pcMem/%s i:/WORK/CtrlBlock/pcMem/%s' % (gp, ip))
+    L.append('puts "PCMEM_PIN_END CtrlBlock n=$_pinned miss=[expr {$_want - $_pinned}] expect=%d"' % n)
+    L.append('if {$_pinned != $_want} { error "PCMEM_PINS_FAIL not every pin was accepted" }')
+    L.append('if {$_want != %d} { error "PCMEM_PINS_FAIL expected %d pins, built $_want" }' % (n, n))
+    return '\n'.join(L) + '\n'
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true')
@@ -486,7 +532,7 @@ def main():
         if ip in seen:
             GC.die('impl 位 %s 被 %s 与 %s 同时钉住' % (ip, seen[ip], gp))
         seen[ip] = gp
-    pre = render_pre(pairs, total) + render_pcp()
+    pre = render_pre(pairs, total) + render_pcp() + render_pcmem()
     # Rob 钉点重定位
     rob = ROB_PINS.read_text()
     n_r = rob.count('r:/WORK/Rob/')
