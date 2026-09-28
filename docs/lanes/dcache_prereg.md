@@ -259,3 +259,49 @@ load 读 ECC 错 33922、整行读 ECC 错 80877、pseudo_error.ready 105451、M
 
 依据：非正式试跑（钉点全、vmucp 关）passing 7984 + unread 2358（11 matched_nc + 2347 对钉后 matched）；
 vmucp 开试跑 10342 = 7984 + 2358。模型 10400（MODEL_NA，merge 开）——差 58 不作对账依据。
+
+### 第四批对账（run_proof @ 986d477e，未出绿，照实记录）
+
+f58f4332 的第一次 run_proof 被 readability_audit 拦下（E 类：2254 行大文件缺"本文件导航"），986d477e 补导航后重跑：
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| native | SUCCEEDED | SUCCEEDED |
+| passing | 10342 | **10342**（差 0） |
+| failing / unverified / unmatched | 0 | 0 / 0 / 0 |
+| unread（vmucp 后） | 0 | 0 |
+| verdict | SUCCEEDED | **PARTIAL**：`assembly_bbox_not_symmetric:array_7_ext(ref=32,impl=48)` |
+
+receipt（PARTIAL，未 git add）：evidence/986d477ee782/BankedDataArray/receipt.json，
+sha256 `f3b5fdd71a67cece9ec4aeac33fdd77d29b47932edd39d3d9cef4ad7ec5b4b4b`。
+
+**阻塞根因（lane 内试验定位，均为非正式试跑）**：impl 侧 FM 在 match 阶段把重复例化的 DataSRAMBank_2（×2）/
+DataSRAMBank_4（×4）唯一化出 4 个设计副本（DataSRAMBank_2_0、DataSRAMBank_4_0..2），report_black_boxes 按设计把副本里的
+16 个 array_7_ext 也列出来，于是按设计计数的黑盒两侧 32 vs 48。逐项排除：
+  · 去掉全部钉点、只留顶层钉点、钉点改按设计钉、bank 端口改平铺线、去掉 DataSRAMBank_2 的 `ifndef SYNTHESIS 段、
+    去掉 xs_DataSRAMBank_core 例化——副本都还在；
+  · **只有关掉 merge_duplicated_registers 副本才消失**（FM_MERGE_DUP=false 试跑：黑盒 32/32）。
+  但 merge 关掉后，共享核 xs_SRAMTemplate_core 的 rdata_last_REG（holdRead 关时与 respReg 同方程、golden 无此寄存器）
+  变成 32 个 impl 独有 unread（每个 SRAM 一个），strict 口径不收。
+两条出路都不在本 lane 权限内：(1) 改共享核 xs_SRAMTemplate_core，holdRead 关时不生成 rdata_last_REG（会改动全部
+~40 个已签 SRAMTemplate_* 目标的 impl 闭包，需要集成者统一重签）；(2) 审定 fm_verdict 对"唯一化设计副本"的计数口径。
+BankedDataArray 暂列未签；本批功能逻辑已由 UT（9 档）与 native SUCCEEDED/差 0 的 FM 支撑，但按规则不计绿。
+
+UT（BankedDataArray @ 986d477e）：9/9 errors=0 cov_fail=0（checks 6789052..6789324）。
+
+### 变异自检（第二、四批；scratch 沙箱，seed 7 random 30k 拍，只看 errors）
+
+LoadPipe 5 个：4 CAUGHT（权限表 wr×Trunk 命中后状态、SECDED 校验子掩码、s2_valid_dup 丢 s1_kill、miss cancel 丢 BtoT 占路失败）；
+P5（断言寄存器 REG_2 阈值改 3）SURVIVED——该寄存器无读者，UT 结构上看不见，FM 经 vmucp 真比较它。
+BankedDataArray 5 个：5 CAUGHT（最老放行比较取反、bank 读地址位段、readline stall 丢 MBIST 使能、SECDED 编码矩阵一位、
+read_error_delayed 丢 bank_conflict 屏蔽）。
+
+## 5. 剩余项（本 lane 未完成，照实列）
+
+- **BankedDataArray**：FM native SUCCEEDED、passing 10342 = 预测，但 verdict PARTIAL（见第四批对账，阻塞在共享核 /
+  判定口径，需集成者裁定）。
+- **DCache 本体（golden 23,854 行 / 629 端口行 / 376 寄存器 / ~4000 条 wire）**：未开工。其 child 除 BankedDataArray、
+  StorePipe、FDPrefetcherMonitor 外均已有签核件（本 lane 签 20 个 + 既有 PROVEN_DIRECT 件）。
+- **FDPrefetcherMonitor / StorePipe**：golden 0 输出，按 §1.4 处置，不出 receipt。
+- 未做 mutant 自检的目标：TagSRAMBank / TagArray / DuplicatedTagArray / DataSRAMBank 家族 / Queue1_RegMapperInput_6
+  （结构简单，UT 覆盖与 FM 为主）。
