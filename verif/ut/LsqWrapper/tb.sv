@@ -20,7 +20,8 @@
 //     (2) *_bits_* 另外只在 golden 的同组 *_valid 为 1 时比。
 //   这两条只在随机初值档生效；它们会漏掉"两侧从来不相等"的端口 —— 那类错误由 cmp_all 档
 //   （全 0 / 全 1 初值，逐拍全比）负责抓，且报告里逐个列出从未上膛的端口（NEVER ARMED）。
-// ★覆盖★ 报告从未翻转过的输出位（TOGGLE 行）。
+// ★覆盖★ 报告从未翻转过的输出位（TOGGLE 行）；手写区另计若干有判别力的事件（COVERAGE 行），
+//   任何一项为 0 本轮判红。
 // 生成区由 scripts/gen_lsq.py 维护；手写区是本文件其余部分。
 // ===========================================================================
 `timescale 1ns/1ps
@@ -29528,6 +29529,39 @@ module tb;
     rob_of((rob_seq > back) ? rob_seq - back : 0, io_rob_pendingPtr_flag, io_rob_pendingPtr_value);
   endtask
 
+
+  // ---- 覆盖事件（golden 侧计数，含 golden 内部胶水信号；任何一项为 0 本轮判红）----
+  localparam int NCOV = 16;
+  string  cov_name [NCOV] = '{"enq_lq_only", "enq_sq_only", "enq_both", "canAccept_0",
+                              "unc_lq_valid", "unc_sq_valid", "unc_both_valid", "unc_both_lq_wins",
+                              "unc_fire_lq", "unc_fire_sq", "unc_fire_nc_outstanding", "pending_busy",
+                              "unc_resp_to_lq", "unc_resp_to_sq", "exc_isStore_switch", "ldout_mmio_fire"};
+  longint cov [NCOV];
+  // 必须命中的事件（1）/ 只报告的事件（0）。只报告的 5 项都要 StoreQueue 真发出 uncache 请求
+  // （MMIO/NC store 要走完 入队→地址→数据→ROB 提交→队头 的完整协议），本 tb 的随机激励走不到；
+  // 对应的仲裁分支（两边同时请求时比 robIdx、s_store 等回应、outstanding 下 NC 不等回应）由 FM 覆盖。
+  bit     cov_req [NCOV] = '{1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1};
+  logic   last_is_store;
+  task automatic cover_sample();
+    cov[0] += (io_enq_req_0_valid && io_enq_needAlloc_0 == 2'b01);
+    cov[1] += (io_enq_req_0_valid && io_enq_needAlloc_0 == 2'b10);
+    cov[2] += (io_enq_req_0_valid && io_enq_needAlloc_0 == 2'b11);
+    cov[3] += !g_io_enq_canAccept;
+    cov[4] += u_gold._loadQueue_io_uncache_req_valid;
+    cov[5] += u_gold._storeQueue_io_uncache_req_valid;
+    cov[6] += u_gold._loadQueue_io_uncache_req_valid & u_gold._storeQueue_io_uncache_req_valid;
+    cov[7] += u_gold._loadQueue_io_uncache_req_valid & u_gold._storeQueue_io_uncache_req_valid & u_gold.selectLq;
+    cov[8] += g_io_uncache_req_valid & io_uncache_req_ready & u_gold.selectLq;
+    cov[9] += g_io_uncache_req_valid & io_uncache_req_ready & ~u_gold.selectLq;
+    cov[10] += g_io_uncache_req_valid & io_uncache_req_ready & io_uncacheOutstanding & g_io_uncache_req_bits_nc;
+    cov[11] += (u_gold.pendingstate != 2'h0);
+    cov[12] += io_uncache_resp_valid & io_uncache_resp_bits_is2lq;
+    cov[13] += io_uncache_resp_valid & ~io_uncache_resp_bits_is2lq;
+    cov[14] += (io_exceptionAddr_isStore !== last_is_store);
+    last_is_store = io_exceptionAddr_isStore;
+    cov[15] += g_io_ldout_2_valid & io_ldout_2_ready;
+  endtask
+
   initial begin
     string ir;
     int seed;
@@ -29548,8 +29582,17 @@ module tb;
       constrain_inputs();
       #2;
       compare_outputs();
+      cover_sample();
     end
     void'(report_toggle());
+    begin int zero = 0;
+      foreach (cov[k]) begin
+        $display("COVERAGE %-26s %0d", cov_name[k], cov[k]);
+        if (cov[k] == 0 && cov_req[k]) zero++;
+      end
+      if (zero != 0) begin $display("COVERAGE FAIL: %0d events never hit", zero); errors++; end
+    end
+
     $display("checks=%0d errors=%0d", checks, errors);
     if (errors == 0) $display("TEST PASSED"); else $display("TEST FAILED");
     $finish;

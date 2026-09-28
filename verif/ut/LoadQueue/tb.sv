@@ -20,7 +20,8 @@
 //     (2) *_bits_* 另外只在 golden 的同组 *_valid 为 1 时比。
 //   这两条只在随机初值档生效；它们会漏掉"两侧从来不相等"的端口 —— 那类错误由 cmp_all 档
 //   （全 0 / 全 1 初值，逐拍全比）负责抓，且报告里逐个列出从未上膛的端口（NEVER ARMED）。
-// ★覆盖★ 报告从未翻转过的输出位（TOGGLE 行）。
+// ★覆盖★ 报告从未翻转过的输出位（TOGGLE 行）；手写区另计若干有判别力的事件（COVERAGE 行），
+//   任何一项为 0 本轮判红。
 // 生成区由 scripts/gen_lsq.py 维护；手写区是本文件其余部分。
 // ===========================================================================
 `timescale 1ns/1ps
@@ -24130,6 +24131,36 @@ module tb;
     rob_of((rob_seq > back) ? rob_seq - back : 0, io_rob_pendingPtr_flag, io_rob_pendingPtr_value);
   endtask
 
+
+  // ---- 覆盖事件（golden 侧计数；任何一项为 0 本轮判红）----
+  localparam int NCOV = 14;
+  string  cov_name [NCOV] = '{"ldin_scalar", "vecfb_flush", "ldin_to_uncache", "uncache_req_fire",
+                              "ldout_mmio_fire", "ncOut_valid", "replay_valid", "nuke_rollback",
+                              "nack_rollback", "lqFull_replay", "rob_loadMmio", "exc_vaddr_change",
+                              "redirect", "reset_pulse"};
+  longint cov [NCOV];
+  bit     cov_req [NCOV] = '{default: 1};
+  logic [63:0] last_exc_vaddr;
+  task automatic cover_sample();
+    cov[0] += (io_ldu_ldin_0_valid & ~io_ldu_ldin_0_bits_isvec) + (io_ldu_ldin_1_valid & ~io_ldu_ldin_1_bits_isvec)
+            + (io_ldu_ldin_2_valid & ~io_ldu_ldin_2_bits_isvec);
+    cov[1] += (io_vecFeedback_0_valid & io_vecFeedback_0_bits_feedback_0) + (io_vecFeedback_1_valid & io_vecFeedback_1_bits_feedback_0);
+    cov[2] += (io_ldu_ldin_0_valid & ~io_ldu_ldin_0_bits_nc_with_data) + (io_ldu_ldin_1_valid & ~io_ldu_ldin_1_bits_nc_with_data)
+            + (io_ldu_ldin_2_valid & ~io_ldu_ldin_2_bits_nc_with_data);
+    cov[3] += g_io_uncache_req_valid & io_uncache_req_ready;
+    cov[4] += g_io_ldout_2_valid & io_ldout_2_ready;
+    cov[5] += g_io_ncOut_0_valid + g_io_ncOut_1_valid + g_io_ncOut_2_valid;
+    cov[6] += g_io_replay_0_valid + g_io_replay_1_valid + g_io_replay_2_valid;
+    cov[7] += g_io_nuke_rollback_0_valid + g_io_nuke_rollback_1_valid;
+    cov[8] += g_io_nack_rollback_0_valid;
+    cov[9] += u_gold._loadQueueReplay_io_lqFull;
+    cov[10] += g_io_rob_loadMmio_0 + g_io_rob_loadMmio_1 + g_io_rob_loadMmio_2;
+    cov[11] += (g_io_exceptionAddr_vaddr !== last_exc_vaddr);
+    last_exc_vaddr = g_io_exceptionAddr_vaddr;
+    cov[12] += io_redirect_valid;
+    cov[13] += reset;
+  endtask
+
   initial begin
     string ir;
     int seed;
@@ -24150,8 +24181,17 @@ module tb;
       constrain_inputs();
       #2;
       compare_outputs();
+      cover_sample();
     end
     void'(report_toggle());
+    begin int zero = 0;
+      foreach (cov[k]) begin
+        $display("COVERAGE %-26s %0d", cov_name[k], cov[k]);
+        if (cov[k] == 0 && cov_req[k]) zero++;
+      end
+      if (zero != 0) begin $display("COVERAGE FAIL: %0d events never hit", zero); errors++; end
+    end
+
     $display("checks=%0d errors=%0d", checks, errors);
     if (errors == 0) $display("TEST PASSED"); else $display("TEST FAILED");
     $finish;
