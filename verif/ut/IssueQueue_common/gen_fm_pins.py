@@ -158,13 +158,58 @@ if {{$top eq "{v}"}} {{
     return out
 
 
+def gen_sched(v):
+    """Scheduler*：把每个 IQ 实例自己的钉点表（verif/ut/<IQ>/fm_pins_pre.tcl，已随 IQ 签核）加上实例前缀汇总。"""
+    gsrc = pathlib.Path(f'/home/eda/xs-env/G1-canonical/golden-rtl/{v}.sv').read_text()
+    pairs = []
+    for mod, inst in re.findall(r'^  (IssueQueue\w+) (\w+) \($', gsrc, re.M):
+        t = (UT / mod / 'fm_pins_pre.tcl').read_text()
+        blocks = re.findall(r'foreach _pair \{\n(.*?)\n  \} \{\n    lassign \$_pair _r _i\n    if \{\[set_user_match "(.*?)" "(.*?)"\]\}',
+                            t, re.S)
+        if len(blocks) != 2:
+            raise SystemExit(f'{mod}: 钉点文件结构异常')
+        for body, rt, it in blocks:
+            rpre = rt.replace('r:/WORK/$top/', '').replace('$_r', '')
+            ipre = it.replace('i:/WORK/$top/', '').replace('$_i', '')
+            for r, i in re.findall(r'\{(\S+) (\S+)\}', body):
+                pairs.append(f'    {{{inst}/{rpre}{r} {inst}/{ipre}{i}}}')
+    n = len(pairs)
+    return f'''# {v} FM 匹配前钉点 —— 汇总各 IssueQueue 实例已签核的钉点表，加实例前缀
+# ============================================================================
+# ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
+# 来源：verif/ut/<IssueQueue*>/fm_pins_pre.tcl（每条配对原样，两侧路径各加 "<IQ 实例>/"），共 {n} 对。
+# 计数守卫同 IQ：用 set_user_match 的返回值数，失败一条或总数 != {n} 都 error。
+# ============================================================================
+
+if {{$top eq "{v}"}} {{
+  set _n 0
+  set _miss 0
+  puts "IQE_PIN_BEGIN {v} expect={n}"
+  foreach _pair {{
+{chr(10).join(pairs)}
+  }} {{
+    lassign $_pair _r _i
+    if {{[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/$_i"]}} {{
+      incr _n
+    }} else {{
+      incr _miss
+      if {{$_miss <= 10}} {{ puts "IQE_PIN_FAIL: $_r <-> $_i" }}
+    }}
+  }}
+  puts "IQE_PIN_END {v} n=$_n miss=$_miss expect={n}"
+  if {{$_miss != 0}} {{ error "IQE_PIN_MISS={v} miss=$_miss" }}
+  if {{$_n != {n}}} {{ error "IQE_PIN_COUNT={v} n=$_n expect={n}" }}
+}}
+'''
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('variant')
     ap.add_argument('--check', action='store_true')
     a = ap.parse_args()
     dst = UT / a.variant / 'fm_pins_pre.tcl'
-    txt = gen(a.variant)
+    txt = gen_sched(a.variant) if a.variant.startswith('Scheduler') else gen(a.variant)
     if a.check:
         ok = dst.exists() and dst.read_text() == txt
         print(f'gen_fm_pins --check: {a.variant} ' + ('OK' if ok else '不一致'))
