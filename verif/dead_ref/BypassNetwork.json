@@ -1,0 +1,265 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "BypassNetwork",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "golden-only cone-dead（golden 冗余存储，impl 按真实读取宽度定宽）。★本声明在 FM 起跑之前按分析写定（跑前登记），不是从观测抄来的★。golden BypassNetwork.sv 把旁路源 fp_0_0 的结果按端口全宽锁存：reg [127:0] bypassDataVec_r_8 <= io_fromExus_fp_0_0_bits_data（128 位，RegEnable(valid)）；但它的全部读者只取低 64 位——13 个浮点消费源操作数的 BYPASS 项都是 bypassDataVec_r_8[63:0]（grep 实测该寄存器 13 处带 [63:0] 切片、另 3 处仅为声明/赋值/初始化，无任何不带切片的读）；它不是 RegCache 写口源（RegCache 只收整数组 int0..3/mem2..4）。故 [127:64] 共 64 位写入但永不被读。来源：Scala 里 bypassDataVec = ZeroExt(RegEnable(x.bits.data, x.valid), RegDataMaxWidth) 按源位宽建寄存器，而 fp_0_0 的 ExuOutput data 宽度取自该 EXU 的 destDataBitsMax(128，因为 fp_0_0 可写向量)，消费者在 Mux1H 里按自身 64 位截取。可读核 rtl/backend/BypassNetwork.sv 的 byp_data 每路统一 XLEN=64（wrapper 对 fp0 输入取 [63:0]），因此 impl 侧无对应寄存器、无 unread。非 waiver：低 64 位与其余全部可达比对点仍被 FM 证明等价。",
+ "observed_points": 64,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[100]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[101]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[102]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[103]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[104]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[105]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[106]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[107]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[108]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[109]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[110]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[111]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[112]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[113]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[114]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[115]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[116]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[117]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[118]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[119]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[120]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[121]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[122]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[123]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[124]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[125]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[126]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[127]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[64]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[65]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[66]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[67]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[68]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[69]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[70]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[71]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[72]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[73]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[74]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[75]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[76]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[77]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[78]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[79]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[80]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[81]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[82]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[83]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[84]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[85]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[86]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[87]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[88]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[89]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[90]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[91]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[92]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[93]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[94]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[95]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[96]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[97]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[98]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[99]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  }
+ ]
+}

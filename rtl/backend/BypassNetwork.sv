@@ -36,6 +36,17 @@
 // 文件结构：bypassnetwork_pkg（参数/编码/每-EXU 配置表）→ xs_BypassNetwork_core（手写）
 //           → golden 同名 wrapper BypassNetwork（由 scripts/gen_bypassnetwork.py 从 G1 golden
 //           端口表生成；配置表也由它从 golden 的逐源表达式解析得到，带 --check）。
+// 本文件导航（按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L51    bypassnetwork_pkg：宽度参数 / DataSource 编码 / 旁路源与旁路组
+//   L86    每-EXU 配置类型与 EXU_CFG 表（生成区）
+//   L150   xs_BypassNetwork_core —— 可读核
+//   L182   1. 旁路源：forward 直出 / bypass 寄存一拍
+//   L207   2. 每个 EXU：立即数还原 + 逐源选择
+//   L212   2a. 立即数（ImmExtractor 各变体 / load U 型）
+//   L237   2b. 逐源按 dataSources 码选择
+//   L269   2c. BJU：imm + ftqOffset、nextPcOffset
+//   L283   3. RegCache 写口
+//   L301   golden 同名 wrapper（生成区：端口表 / 打包 / 拆包 / 直连）
 // =============================================================================
 package bypassnetwork_pkg;
 

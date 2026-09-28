@@ -1,0 +1,10 @@
+{
+  "target": "BypassNetwork",
+  "ut": "BypassNetwork",
+  "regs": 711,
+  "outs": 27072,
+  "expected": 27783,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 27783 = 寄存器 711 + 输出 27072；预期实测 passing=27719，差 64 = golden-only unread（bypassDataVec_r_8[127:64]，见 verif/dead_ref/BypassNetwork.json，跑前写定）"
+}

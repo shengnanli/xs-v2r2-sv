@@ -50,3 +50,64 @@ M3 `_37` 去掉 VSETVLI（0x2000）⇒ errors=12819。M2（`_37` DATA_BITS 改 6
 | ImmExtractor_37 | **128** | 同上（高 64 位是常量 0 输出，仍按输出比较点计） |
 
 无 vmucp、无 fm_pins、无 allow/dead_ref 声明。本节未做任何 FM 试跑。
+
+## 2. BypassNetwork（本体，golden 5,503 行 / 2,110 端口：1,137 入 / 973 出）
+
+### 2.1 结构与子模块处置
+
+- 可读核 `xs_BypassNetwork_core`（`rtl/backend/BypassNetwork.sv`，手写 146 行）：§1 旁路源 forward/bypass 两份数据
+  （bypass = RegEnable(valid)，无复位）；§2 每 EXU：立即数还原 + 逐源按 dataSources 码 `unique case` 选择
+  （码互斥，与 golden 的 Mux1H 按位或等价）+ BJU 的 imm/nextPcOffset；§3 RegCache 写口（wen 异步复位）。
+- 每-EXU 配置表 `EXU_CFG`（27 行）与 wrapper 由 `scripts/gen_bypassnetwork.py` 从 G1 golden 解析生成（`--check` 已进 gate_all）：
+  逐个解析 71 个 `io_toExus_*_bits_src_*` 的展开式，每一项归类并要求同一 EXU 服从同一行配置；旁路组的位置集合、
+  one-hot 来源于本源 exuSources、bypass 寄存器与 RegCache wen 寄存器原文、855 条直连与 27 条 ready 反向直连全部逐条核对。
+- 子模块：ImmExtractor/_2/_12/_37/_57 两侧白盒（impl 用本仓重写件：_2/_37 本 lane §1，余在 main 已签）。
+  golden 的 36 个 UIntExtractor_27_*（exuSources→27 位 one-hot 展开件）在 impl 侧不例化——核直接按序号从旁路组取数
+  （`pick_int`/`pick_fp`，序号 0 给 0），两侧均为纯组合，FM 在展平后比较。golden 每个源各例化一份 ImmExtractor
+  （输入相同），impl 每个 EXU 一份。无黑盒。
+- 寄存器：golden 711 位（bypassDataVec_r* 9×64 + 1×128，bypassIntWenVec_last_REG* 7×1）；
+  impl 647 位（byp_data 10×64 + rcw_wen 7）。差的 64 位 = fp0 旁路寄存器 [127:64]，golden 写而无读者，见 2.4。
+
+### 2.2 UT（verif/ut/BypassNetwork，tb 由生成器产出；3 seed × 3 档 × 200k 拍，比全部 973 个输出口）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=194596108 errors=0 | checks=194596108 errors=0 | checks=194596108 errors=0 |
+| 7  | checks=194596108 errors=0 | checks=194596108 errors=0 | checks=194596108 errors=0 |
+| 42 | checks=194596108 errors=0 | checks=194596108 errors=0 | checks=194596108 errors=0 |
+
+覆盖（seed 1，命中且 golden 输出非零的源操作数拍数；任一为 0 判失败）：fwd_int=440998 byp_int=439307 fwd_fp=213878
+byp_fp=212514 v0=50857 rc=502400 imm=109461 loadu=65967 jalr=149952 nojalr=450036 rcw_wen=348969。
+暖机 4 拍所有旁路源 valid=1，使两侧不复位的 bypass 寄存器同值后再开始比（双例化 initreg random 各摇各的）。
+UT 跑在 7ac0102c 的 RTL 上（其后对 BypassNetwork.sv 只加了"本文件导航"注释 11 行，逻辑字节未变）。
+
+变异自检（seed 1、20k 拍，改完 git checkout 复原）：8/8 抓到——
+M1 整数组序号差一 88231；M2 bypass 寄存器去掉 valid 使能 102928；M3 v0 取未选的原始 src3 40889；
+M4 JALR 判定丢 is_jump 14021；M5 RegCache wen 丢 intWen 34819；M6 nextPcOffset 的 RVC 1/2 对调 59988；
+M7 load U 型立即数改零扩展 3280；M8 浮点组恒取第 0 路 28672。
+
+复跑：`cd verif/ut/BypassNetwork && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 2.3 跑前预测（★跑完不许改本节★，docs/fm_predictions/BypassNetwork.json）
+
+| 项 | 预测 |
+|---|---|
+| 模型 expected | 27783 = 寄存器 711 + 输出 27072 |
+| passing 实测预测 | **27719**（= 27783 − 64，差额全部由 golden-only unread 指认） |
+| failing / unverified / aborted | 0 / 0 / 0 |
+| unmatched（ref/impl） | 0 / 0 |
+| unread | ref 64（bypassDataVec_r_8_reg[127:64]）、impl 0、matched_nc 0 |
+| 黑盒 / dont_verify | 无 / 无 |
+| 判决 | **PASS_DEAD_REF**（native SUCCEEDED） |
+
+### 2.4 PASS_DEAD_REF 声明（跑前写定）
+
+`verif/dead_ref/BypassNetwork.json`：64 条 `r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[64..127]`。理由：golden 把 fp_0_0 的
+128 位结果全宽锁存，但 13 个读点全是 `[63:0]` 切片，fp0 也不是 RegCache 写口源；impl 按 64 位存。
+声明在证明之前由分析写出（不是抄观测）；若实测集合与之有任何出入，判决退 PARTIAL，我照实记录，不改声明去凑。
+
+### 2.5 明写可能出错的地方
+
+1. 寄存器名差（golden `bypassDataVec_r_<pos>` vs impl `u_core/byp_data_reg[p][b]`）：只有 17 个寄存器、各自独立使能，
+   预期签名分析能配上，**不预置 fm_pins**；若出现 unmatched，先补 fail-closed 钉点再重跑，并在对账里写明。
+2. 本节没有做过任何 FM 试跑。
