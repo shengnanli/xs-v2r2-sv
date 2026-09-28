@@ -109,3 +109,28 @@ M3 payload 加复位 ⇒ 22；M4 valid 改同步复位 ⇒ 21；M5 payload 锁�
 2. 条目内部寄存器靠 FM 自动按名配对（多一层 u_core）；LoadQueueRAW 同法已过，但规模大 16 倍。
 3. match 规模：闭包约 38570 位寄存器，O(N²) 签名分析若没被钉点/名字消掉会很慢；3 小时不收敛按规范 30 分钟采样。
 4. 本节没有做过任何 FM 试跑。
+
+## 3. LqExceptionBuffer（golden 1,215 行 / 100 端口，叶子）
+
+### 3.1 结构
+
+- 可读核 `rtl/memblock/LqExceptionBuffer.sv`：6 入口打一拍 → s2 候选（有效 & 未被冲 & 带 LduCfg 异常位）→
+  7 选手锦标赛（树形照抄 Scala selectOldest 的递归切分 1+2 / 2+2，`pick_oldest` 逐字照 length==2 分支，
+  含"都无效取第二个"的规则）→ req 每拍无条件写胜者。口 3/4 的 isHyper、口 5 的 vaNeedExt 在 golden 里无端口无寄存器，
+  核只在 generate 里为真有该字段的口建寄存器（其余读常数）。`scripts/gen_lqexcbuf.py` 生成结构体/wrapper/钉点/tb，
+  生成前逐口核对字段表与 HAS_* 掩码、逐个核对 golden 寄存器表。叶子，无黑盒。
+- 钉点 **1136** 条（= golden 121 个寄存器全部位），fail-closed。
+
+### 3.2 UT
+
+- 冒烟（commit 04dd0c83）：seed 1 × random × 20k：checks=20000 errors=0；覆盖 候选 17749 / 同拍多候选 4436 /
+  换记 6236 / 保持 5154 / 同龄比 uopIdx 426 / 已记者被冲 827。全矩阵在跑，结果记入对账。
+
+### 3.3 跑前预测（★跑完不许改本节★）
+
+| 跑次 | passing | 其余 |
+|---|---|---|
+| 第 1 跑（vmucp 关，signoff-strict） | **1266** = 模型 1267 − 1 | unread **1**（golden `REG` = RegNext(req_valid)，只供 perf，无读者；impl `req_valid_last_q` 照抄，两侧对称死位）→ 判 PARTIAL(strict_unread) |
+| 第 2 跑（按 vmucp standing rule 加 verif/fm_target_config/LqExceptionBuffer.tcl） | **1267**（正好 +1） | unread 0 / failing 0 / unmatched 0 / SUCCEEDED |
+
+若第 1 跑的 unread 不是恰好这一个点，或出现别的 unread / constant_reg，先诊断，不加 vmucp。
