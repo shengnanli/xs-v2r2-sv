@@ -230,3 +230,27 @@ UT 看不见的：顶层 REG / max_inflight 与子模块死寄存器 —— 由 
 
 复跑：`cd /home/eda/xs-env/wt-missq && PROOF_COMMIT=6d7db261 bash scripts/run_proof.sh MissEntry MissEntry < /dev/null`；
 UT：`cd verif/ut/MissEntry && make run SEED=<1|7|42> INITREG=+vcs+initreg+<0|random|<seed>017>`（串行）。
+
+## D. MissQueue
+
+| 项 | 值 |
+|---|---|
+| proof commit | `a3f3ce7858c4`（预测登记在同一 commit，早于证明；RTL/UT/钉点/vmucp 在其父 `707e558b`），`PROOF_COMMIT=a3f3ce78` |
+| 证据 | `evidence/a3f3ce7858c4/MissQueue/receipt.json` sha256 `e97c389731663482ab9bfcbd9d8642ab71c76cddb28157ff125224d01a4b19d7` |
+| impl_closure | `rtl/memblock/MissQueue.sv` `0ba98c0577eb14a16855557ff6a28046b8e990325c54fea2bdca4f616d98c271`；`rtl/common/xs_TLArbiterLowest.sv` `8085498d3f078e687af79046a84714167dd052f23f696361eaef8354e67cd6f2`；子模块 MissEntry.sv / CMOUnit.sv / Arbiter16_MainPipeReq.sv / xs_FixedPriorityArbiter_core.sv 与各自签核时同字节 |
+| 结果 | native SUCCEEDED，passing **32609** / failing 0 / unverified 0 / unread_notcompared 0 / unmatched 全 0（含 unread）/ constant_reg 10 / 无黑盒对（black_boxes.rpt 只列出两个 0 实例的参数化模板 xs_FixedPriorityArbiter_core / xs_TLArbiterLowest，与 MainPipe 证据同形）/ signoff-strict / vmucp true / dirty false / fm.log 行首 `Error:` 0 / `MQ_PREPIN_END n=4174` / 606 s、峰值 1623 MB |
+| `fm_predict.py check` | 模型 32619，实测 32609，差 10 = constant_reg 10，「全部对上」 |
+
+§4.3 的"可能出错"没有发生（新补的 38 对全部被计入）。
+
+UT 复跑（本 commit 的 tb，9 档串行）：9/9 `errors=0 cov_fail=0` TEST PASSED（checks 200036 / 200037 / 200037）。
+★一次基础设施事故，照实记★：复跑的第一档（seed 1 / +0）起初报 errors=170988 —— 与刚跑完的 memset 变异体
+200k 拍读数逐位相同。原因：我的变异脚本恢复源文件用了 `cp -p`（保留旧 mtime），于是 make 认为 ut_gen 不旧、没有重编，
+这一档跑的是**变异体的 simv**（derive 随后才把正确内容写回 ut_gen，下一档起重编）。ut_common.mk 注释里警告过的
+"mtime 倒退"同一类坑。处置：脚本改为恢复后 touch；核对当前 ut_gen/MissQueue.sv 与已提交 RTL 派生结果逐字节相同；
+单独重跑该档 → `checks=200036 errors=0 cov_fail=0`（坏日志另存为 sim_1_0.STALE_SIMV.log，不计入）。
+覆盖（复跑 seed 1 / +0）：分配 16596 / 合并进表项 7753 / 合并进流水寄存器 1336 / 拒绝 92213 / memset 检测 2173 /
+BtoT 占路 20878 / occupy_fail 13946 / difftest 4566 / 异步复位 36（其余量级同 §4.2）。
+
+复跑：`cd /home/eda/xs-env/wt-missq && PROOF_COMMIT=a3f3ce78 bash scripts/run_proof.sh MissQueue MissQueue < /dev/null`；
+UT：`cd verif/ut/MissQueue && make run SEED=<1|7|42> INITREG=+vcs+initreg+<0|random|<seed>017>`（串行）。
