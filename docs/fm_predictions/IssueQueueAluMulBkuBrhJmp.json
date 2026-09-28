@@ -1,0 +1,10 @@
+{
+  "target": "IssueQueueAluMulBkuBrhJmp",
+  "ut": "IssueQueueAluMulBkuBrhJmp",
+  "regs": 25118,
+  "outs": 2240,
+  "expected": 27358,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "iqfam：模型 = golden 闭包寄存器位 + output 位；诊断跑(834fdd40) constant_reg=14，开 vmucp 后预期实测 27344"
+}
