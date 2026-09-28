@@ -1,0 +1,9 @@
+{
+  "target": "UIntToContLow0s",
+  "ut": "VldMergeUnit",
+  "regs": 0,
+  "outs": 255,
+  "expected": 255,
+  "merge_dup": "false",
+  "model_applicable": true
+}

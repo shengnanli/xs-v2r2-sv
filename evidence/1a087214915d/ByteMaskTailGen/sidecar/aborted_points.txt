@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ByteMaskTailGen
+Implementation : i:/WORK/ByteMaskTailGen
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 12:36:48 2026
+**************************************************
+
+No aborted compare points.
+
+1
