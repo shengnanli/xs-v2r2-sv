@@ -13,6 +13,11 @@
       ExuInput 字段直连（toExus.X = fromDataPath.X），ready 反向直连——这两类也逐条核对
       golden 的 assign 原文，不是按名字猜。
   (3) verif/ut/BypassNetwork/tb.sv：双例化 UT（golden vs BypassNetwork_xs）。
+  (4) verif/ut/BypassNetwork/fm_pins_pre.tcl：FM「匹配前」钉点，只消寄存器名差
+      （golden bypassDataVec_r_<pos> / bypassIntWenVec_last_REG_<k> vs 核 byp_data[p][b] / rcw_wen[k]）。
+      依据（实测）：不钉时 FM 签名分析把 byp_data[1]/[3] 配错（evidence/876a9668*，unmatched 128(128)、
+      至少 20 个 failing 全落在 byp_data_reg[2]）。fail-closed：逐条数 set_user_match 返回值，
+      拒一条或总数 != 字面 647 即 error。fp0 的 golden 高 64 位无 impl 对应（golden-only 死位），不钉。
 
 用法: python3 scripts/gen_bypassnetwork.py [--check]
       --check 只比对、不写盘，有漂移即非零退出（gate_all.sh 的幂等闸）。
@@ -27,6 +32,7 @@ REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path(os.environ.get('G1_GOLDEN', '/home/eda/xs-env/G1-canonical/golden-rtl'))
 RTL = REPO / 'rtl' / 'backend' / 'BypassNetwork.sv'
 TB = REPO / 'verif' / 'ut' / 'BypassNetwork' / 'tb.sv'
+PINS = REPO / 'verif' / 'ut' / 'BypassNetwork' / 'fm_pins_pre.tcl'
 
 GROUP_ORDER = ['int', 'fp', 'vf', 'mem']
 # 旁路源：核里 P_* 的顺序 -> golden fromExus 名；以及 forwardOrBypassValidVec3 的 27 位位置
@@ -595,12 +601,57 @@ def emit_tb(G):
     return '\n'.join(o) + '\n'
 
 
+def emit_pins(G):
+    body = load_golden()[0]
+    width = dict((n, int(w) + 1) for w, n in
+                 re.findall(r'\n  reg\s+\[(\d+):0\]\s+(bypassDataVec_r\w*);', body))
+    pairs = []
+    for pn, ex, pos in PRODUCERS:
+        g = 'bypassDataVec_r' + ('' if pos == 0 else '_%d' % pos)
+        if g not in width:
+            die('golden 缺旁路寄存器 ' + g)
+        p = [x[0] for x in PRODUCERS].index(pn)
+        for bit in range(64):
+            pairs.append(('%s_reg\\[%d\\]' % (g, bit), 'u_core/byp_data_reg\\[%d\\]\\[%d\\]' % (p, bit)))
+    if len(width) != len(PRODUCERS):
+        die('golden 旁路寄存器数 %d != %d' % (len(width), len(PRODUCERS)))
+    for k in range(len(RCW_PROD)):
+        g = 'bypassIntWenVec_last_REG' + ('' if k == 0 else '_%d' % k)
+        if not re.search(r'\n  reg\s+%s;' % g, body):
+            die('golden 缺 ' + g)
+        pairs.append(('%s_reg' % g, 'u_core/rcw_wen_reg\\[%d\\]' % k))
+    if len({i for _, i in pairs}) != len(pairs) or len({r for r, _ in pairs}) != len(pairs):
+        die('钉点不是双射')
+    n = len(pairs)
+    o = ['# BypassNetwork FM「匹配前」钉点 —— 自动生成：scripts/gen_bypassnetwork.py（勿手改）',
+         '#',
+         '# 只消 golden 扁平寄存器名与核数组名之间的命名差（依据见生成器文件头 (4)）。',
+         '# set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。',
+         '# fail-closed：逐条数返回值；拒一条或总数 != 字面整数即 error。输出一律 ASCII。',
+         'set ::BN_PIN_OK 0',
+         'set ::BN_PIN_BAD 0',
+         'proc bn_pin {r i} {',
+         '  set rr "r:/WORK/BypassNetwork/$r"',
+         '  set ii "i:/WORK/BypassNetwork/$i"',
+         '  if {[set_user_match $rr $ii]} { incr ::BN_PIN_OK } else {',
+         '    incr ::BN_PIN_BAD',
+         '    if {$::BN_PIN_BAD <= 10} { puts "BN_PIN_FAIL: $rr <-> $ii" }',
+         '  }',
+         '}',
+         'puts "BN_PIN_BEGIN BypassNetwork expect=%d"' % n]
+    o += ['bn_pin %s %s' % (r, i) for r, i in pairs]
+    o += ['puts "BN_PIN_END BypassNetwork ok=$::BN_PIN_OK bad=$::BN_PIN_BAD"',
+          'if {$::BN_PIN_BAD != 0} { error "BN_PIN_MISS=$::BN_PIN_BAD" }',
+          'if {$::BN_PIN_OK != %d} { error "BN_PIN_COUNT=$::BN_PIN_OK expect=%d" }' % (n, n)]
+    return '\n'.join(o) + '\n'
+
+
 def targets():
     G = build()
     text = RTL.read_text()
     text = replace_block(text, 'bypassnetwork_cfg', emit_cfg(G))
     text = replace_block(text, 'bypassnetwork_wrapper', emit_wrapper(G))
-    return {RTL: text, TB: emit_tb(G)}
+    return {RTL: text, TB: emit_tb(G), PINS: emit_pins(G)}
 
 
 def main():

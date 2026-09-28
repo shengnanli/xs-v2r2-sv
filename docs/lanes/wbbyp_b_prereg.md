@@ -119,3 +119,8 @@ M7 load U 型立即数改零扩展 3280；M8 浮点组恒取第 0 路 28672。
   （虽然被 `v==0 ? 0 :` 守卫）。按 CONVENTIONS「ELAB 硬约束」只改 RTL：改为逐个比较序号 `if (v == k+1) r = d[GRP[k]]`，
   下标全为常量。功能不变（v=0 给 0，v=k+1 取第 k 路）。不压消息、不改 appvar。
 - 修正后 UT 重跑整张 3×3 矩阵（结果在对账节）；本节不改 2.3 的任何预测数字。
+- 第二跑（commit 876a9668，evidence/876a9668*/BypassNetwork）：native FAILED——failing 至少 20（截断）、unverified 3307、
+  unmatched 128(128)、unread 64。unmatched 为 impl `byp_data_reg[1]`/`[3]` 与 ref `bypassDataVec_r_12`/`_21` 各 64 位，
+  20 个 failing 全在 `u_core/byp_data_reg[2][*]` —— 签名分析把旁路寄存器配错了对。按 2.5 第 1 条预案：生成器新增
+  fail-closed 钉点 `verif/ut/BypassNetwork/fm_pins_pre.tcl`（647 条 = 10×64 旁路寄存器 + 7 个 RegCache wen，双射、
+  逐条数返回值、字面总数），只消名差。RTL 未改。若钉后仍有 failing，按失配处理（改 RTL 对齐 golden），不找解释。
