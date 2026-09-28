@@ -43,7 +43,7 @@
 //     口 1 只在至少两个条目完成时才有效；没有条目完成时条目号取 0。
 //   · 本单元只有 16 条目，条目号 4 位恰好覆盖，可以直接用信号下标访问条目数组；
 //     但宽度 < 4 位的"口号"一律用 for + 比较选择（避免 Formality 的越界下标告警）。
-// 本文件导航（共 2442 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 2445 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L271   xs_VMergeBuffer_core —— 合并缓冲的可读核
 //   L299   §1 小工具：异常向量的"按功能单元挑选"
 //   L301   条目里只存本单元会产生的那 6 个异常位
@@ -55,15 +55,15 @@
 //   L498   mergePortMatrix[i][j]：口 j 与口 i 写同一条目且 j 在 i 之后
 //   L612   §6 异常写回：同一条目的多个异常 flow 里挑元素号最小的
 //   L614   口 i 负责它所写条目
-//   L693   §7 计数写回
-//   L726   §8 load 版数据合并：flow 数据先在当拍拼好、打一拍后写回条目
-//   L728   两条路径，由 alignedType[2] 选：
-//   L845   §9 完成与出队选择
-//   L888   §10 出队输出：写回
-//   L1193  §11 条目寄存器更新
-//   L1195  控制位：入队置位 -> redirect 作废 -> 没命中置 needRSReplay -> 完成置 uopFinish ->
-//   L1557  VLMergeBufferImp —— golden 同名 wrapper
-//   L1559  BEGIN GENERATED(wrapper_VLMergeBufferImp)
+//   L694   §7 计数写回
+//   L727   §8 load 版数据合并：flow 数据先在当拍拼好、打一拍后写回条目
+//   L729   两条路径，由 alignedType[2] 选：
+//   L846   §9 完成与出队选择
+//   L889   §10 出队输出：写回
+//   L1196  §11 条目寄存器更新
+//   L1198  控制位：入队置位 -> redirect 作废 -> 没命中置 needRSReplay -> 完成置 uopFinish ->
+//   L1560  VLMergeBufferImp —— golden 同名 wrapper
+//   L1562  BEGIN GENERATED(wrapper_VLMergeBufferImp)
 //
 
 package vmergebuffer_pkg;
