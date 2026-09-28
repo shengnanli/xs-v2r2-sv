@@ -1,0 +1,9 @@
+{
+  "target": "PrefetcherMonitor",
+  "ut": "DCacheLeaves",
+  "regs": 94,
+  "outs": 2,
+  "expected": 96,
+  "merge_dup": "false",
+  "model_applicable": true
+}

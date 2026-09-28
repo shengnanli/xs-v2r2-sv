@@ -1,0 +1,9 @@
+{
+  "target": "CtrlUnit",
+  "ut": "CtrlUnit",
+  "regs": 1830,
+  "outs": 663,
+  "expected": 2493,
+  "merge_dup": "false",
+  "model_applicable": true
+}
