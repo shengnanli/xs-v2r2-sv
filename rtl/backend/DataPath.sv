@@ -537,7 +537,7 @@ module xs_DataPath_core
   //   ready = 所有要读寄存器堆的源都拿到了 5 类读口仲裁（没配置的那几类恒给 1）
   //         & 5 类写口都没撞
   //         & 不需要 s0_cancel。
-  //   s0_cancel（只对 IQ 唤醒的接收方 WAKE_SINK）：某个源走的是 0 拍旁路（DS_FORWARD），而它的
+  //   s0_cancel（只看配置了唤醒源的那些源，WAKE_SRC 表）：某个源走的是 0 拍旁路（DS_FORWARD），而它的
   //   生产者 EXU 上一拍恰好在 og0 失败（og0_cancel_delay），那这个源的值不会到，本 uop 也得取消。
   //   生产者用"本 IQ 局部的唤醒源编号"给出（exuSources），经 UIntExtractor 转成全局 EXU 独热，
   //   再按 NO_LOAD_EXU 表抽出非访存载入的 24 个 EXU，与 og0_cancel_delay 相与。
@@ -811,7 +811,7 @@ module xs_DataPath_core
   // §9 向量异常模块读回
   //   它在 og0 借读口（§6），读数在下一拍出来：valid 打一拍；数据取借用的 Vf 读口，
   //   i%4==0 的那两路还可能借的是 V0 读口——用打拍保存的"读的是 Vf"（RegEnable(!isV0, valid)）选。
-  //   golden 里其余路直接是 Vf 读数（没有选择器，也没有对应的打拍寄存器）。
+  //   其余路 golden 没有 isV0 端口（恒读 Vf），读数直接是 Vf 读口，没有选择器也没有对应的打拍寄存器。
   // ===========================================================================
   logic [EXCP_RVALID-1:0]  excp_rdata_valid_q;
   logic [EXCP_R/4-1:0]     excp_read_vf_q;      // 第 0 / 4 路：读的是 Vf（否则是 V0）
@@ -835,8 +835,9 @@ module xs_DataPath_core
 
   // ===========================================================================
   // §10 性能与 TopDown
-  //   IQsFireDelay：各 EXU 上一拍是否发射成功。上拍发射数 < 4（fewUops）而 0 条 ⇒ 疑似卡在 load；
-  //   有发射但上上拍没有 store ⇒ 疑似卡在 store。结合 TopDown 信号得 6 个事件，打两拍输出。
+  //   IQsFireDelay：各 EXU 上一拍是否发射成功。上一拍发射少于 4 条（fewUops）时：一条都没发 ⇒
+  //   记"卡在 load"，发了但其中没有 store（地址/数据单元）⇒ 记"卡在 store"；这两个标记再打一拍，
+  //   与 TopDown 信号（replay 分配 / sq、sb 满 / L1、L2、L3 缺失）相与得 6 个事件，输出前再打两拍。
   //   int_regcache_tag：48 项整数写回物理号的环形记录（只供 XSPerf 统计"若有 RegCache 会命中多少"，
   //   golden 里无负载，照写）。
   // ===========================================================================
@@ -887,7 +888,7 @@ module xs_DataPath_core
       rc_tag_q     <= '0;
       rc_enq_ptr_q <= '0;
     end else begin
-      // 逐项看有没有写口落在自己身上（槽号 48..63 没有对应项，写被丢弃）；同项多口时口号大的覆盖
+      // 逐项看有没有写口落在自己身上（槽号 48..63 没有对应项，写被丢弃；同一拍各口的槽号互不相同）
       for (int j = 0; j < RC_TAG_N; j++)
         for (int p = 0; p < INT_WR; p++)
           if (int_wen_q[p] && rc_slot[p] == 6'(j)) rc_tag_q[j] <= int_waddr_q[p];
