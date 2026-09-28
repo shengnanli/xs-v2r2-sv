@@ -155,3 +155,18 @@ UT 看不见的：§9 死寄存器（无输出）—— 由 FM vmucp 逐位实�
 | `fm_predict.py check` | 预期 132，实测 132，差 0，「全部对上」 |
 
 复跑：`cd /home/eda/xs-env/wt-missq && PROOF_COMMIT=f9f23267 bash scripts/run_proof.sh CMOUnit CMOUnit < /dev/null`
+
+## C. MissEntry
+
+| 项 | 值 |
+|---|---|
+| proof commit | `6d7db2615dbf`（预测登记在同一 commit，早于证明；RTL/UT/钉点/vmucp 在其父 `2afe33a6`）；因工作树里有未跟踪的 MissQueue 在写，用 `PROOF_COMMIT=6d7db261` 钉住 |
+| 证据 | `evidence/6d7db2615dbf/MissEntry/receipt.json` sha256 `64174b1f377ed3539537ebc7f8b50bc614678d975fa830b731c7a5ce7883e1e7` |
+| impl_closure | `rtl/memblock/MissEntry.sv` `f3443c48a0e8e5769a845ac0744e479bc0cb0dc67cb9ce6ac323baf16bda5a60` |
+| 结果 | native SUCCEEDED，passing **4319** / failing 0 / unverified 0 / unread_notcompared 0 / unmatched 全 0 / constant_reg 6 / 无黑盒 / signoff-strict / vmucp true / dirty false / fm.log 行首 `Error:` 0 / `ME_PREPIN_END n=229` |
+| `fm_predict.py check` | 模型 4325，实测 4319，差 6 = constant_reg 6，「全部对上」 |
+
+§3.3 的"可能出错"没有发生。
+
+复跑：`cd /home/eda/xs-env/wt-missq && PROOF_COMMIT=6d7db261 bash scripts/run_proof.sh MissEntry MissEntry < /dev/null`；
+UT：`cd verif/ut/MissEntry && make run SEED=<1|7|42> INITREG=+vcs+initreg+<0|random|<seed>017>`（串行）。
