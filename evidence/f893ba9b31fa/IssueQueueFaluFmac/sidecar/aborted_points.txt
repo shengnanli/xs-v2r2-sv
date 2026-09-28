@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/IssueQueueFaluFmac
+Implementation : i:/WORK/IssueQueueFaluFmac
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 14:56:07 2026
+**************************************************
+
+No aborted compare points.
+
+1
