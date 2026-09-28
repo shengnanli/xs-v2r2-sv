@@ -1,6 +1,6 @@
 // Expose PMA address slot 26 through the CSR and mirror views.
-// This leaf is combinational: both architectural views observe the same value.
-// Keeping the slot-named wrapper preserves the generated CSR-bank interface.
+// This leaf is combinational: both architectural views observe the same
+// address value supplied by the shared PMA register bank.
 module Pmaaddr26Module (
   output logic [63:0] rdata,
   output logic [63:0] regOut_ALL,

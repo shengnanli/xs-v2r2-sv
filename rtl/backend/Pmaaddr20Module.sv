@@ -1,6 +1,6 @@
 // Expose PMA address slot 20 through the CSR and mirror views.
-// This leaf sits at the backend CSR boundary and contains no architectural state.
-// Both output views are combinational aliases of the selected 64-bit slot.
+// This leaf is combinational: both architectural views observe the same
+// address value supplied by the shared PMA register bank.
 module Pmaaddr20Module (
   output logic [63:0] rdata,
   output logic [63:0] regOut_ALL,
