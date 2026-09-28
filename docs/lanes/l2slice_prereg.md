@@ -427,3 +427,80 @@ RequestBuffer 的 1708 − 1592 = 116 ≠ 119（差 3）我现在指认不了，
 | 目标 | passing | 其余 |
 |---|---|---|
 | SinkC | **6868**（regs 4887 + outs 1981） | failing 0 / unmatched 0 / unread 0（我没找到对称死位）/ 无黑盒 / SUCCEEDED |
+
+### 11.3 对账（SinkC 第一跑，commit 4a2638fc，evidence/4a2638fcec95/SinkC）
+
+- SinkC：**SUCCEEDED** passing **5636** / failing 0 / unmatched 0 / unread 0，Constant reg **1232**。登记 6868 − 5636 = 1232 = Constant reg，
+  逐位指认完毕。我登记时写"passing 6868"是把模型值直接当成了 passing，漏减常量寄存器（taskBuf / 缓冲里 Release 路径上恒 0 的字段位，
+  receipt 的 constant_reg 直接给出）—— 这是预测口径错误，不是设计差异。
+
+### 10.5 对账（第二跑，commit 4a2638fc，evidence/4a2638fcec95/）
+
+| 目标 | 登记 | 实测 | 差额指认 |
+|---|---|---|---|
+| RequestBuffer（vmucp 开） | 1699 SUCCEEDED | **1699 SUCCEEDED** | 0 |
+| FastArbiter_2（vmucp 关） | 153 PARTIAL | **152** PARTIAL，unread 1 | 我漏减 Constant reg 1（rrGrantMask[0]，与 FastArbiter_28 同）；154 = 152 + 1 + 1 |
+| Queue1_ChosenQBundle（vmucp 关） | 765 PARTIAL | **503** PARTIAL，unread 22 | 我漏减 Constant reg **262**：golden 的 ram 写口对 RequestBuffer 出口不带的字段直接写常量 0（`211'h0`/`31'h0`/`13'h0`/…），这些位恒 0；787 = 503 + 22 + 262 |
+
+第三跑登记（vmucp 开，依据 verif/fm_target_config/FastArbiter_2.tcl / Queue1_ChosenQBundle.tcl）：
+FastArbiter_2 passing **153** SUCCEEDED；Queue1_ChosenQBundle passing **525** SUCCEEDED。
+
+### 8.x 对账（Directory ×4 第三跑，vmucp 开，commit 4e3aa2c9，evidence/4e3aa2c94341/）
+
+Directory / _1 / _2 / _3：**1953 / 1954 / 1954 / 1955 SUCCEEDED**，与登记逐个相等。
+
+## 12. GrantBuffer 子树（GrantBuffer、Queue10_GrantBuffer_Anon）
+
+### 12.1 结构 / UT
+
+- 可读核 `xs_GrantBuffer_core`（mergeA 还原 / inflightGrant 记账 / 两拍出队 + grantBuf / 入口阻塞 / perf 计时器），TaskBundle 结构体、
+  wrapper 与 32 个 perf 1 位寄存器的钉点由 `scripts/gen_l2_grantbuf.py` 生成。child：Queue16_GrantQueueTask / Queue16_GrantQueueData ×2
+  （§3 已签）两侧白盒；Queue10_GrantBuffer_Anon（pftRespQueue，10 项 flow）本 lane 新增，`scripts/gen_l2_queues.py` 薄文件 + 共享核。
+- golden 1596 行 / 重写 978 行（核约 330 行手写）；`_GEN_`/`_T_` 0。
+- UT（verif/ut/GrantBuffer）seed1 random 20k：GrantBuffer 与 Queue10 均 PASS，errors=0，66/66、7/7 输出翻转；覆盖：第二拍 4162 /
+  blockA 9353 / blockB 11143 / blockC 6217 / blockMSHR 11079 / 预取队列门槛 883 / inflight 全满 5018 / isKeyword 出队 7421 /
+  计时器清零 271；Queue10 满 4880 / flow 直通 2497。
+- 变异（seed1 20k，initreg 0）：预取门槛 9→10 errors=19、keyword 拍次序 errors=2158、空项优先级反向 errors=419814、GrantAck 用整 8 位
+  sink errors=71374，均 CAUGHT；mergeA corrupt 不并 denied **SURVIVED** —— 等价变异：D 通道出口本来就输出 corrupt|denied，
+  denied 也一起入队，出口不可区分（队列存储里那一位不同，FM 会比到）。
+
+### 12.2 ★FM 阻塞：ram_10x89 不在 vendor_boundary 审定表★
+
+pftRespQueue 的存储叶子 ram_10x89 深度 10、地址 4 位（10..15 越界），inline 会触发 FMR_ELAB-147；它**不在** verif/vendor_boundary.tsv
+审定表里，而表头写明"一次性人工审定、declare_allow 不得自动批准"，本 lane 无权自行登记。审定工具的机器复算：
+`python3 scripts/audit_ram_memory_model.py ram_10x89 --parent-ref Queue10_GrantBuffer_Anon.sv --parent-impl rtl/uncore/Queue10_GrantBuffer_Anon.sv`
+→ M1 PASS、M2 PASS、M3 ref PASS、M3 impl **MANUAL**（重写件的指针在共享核 u_core 里，工具在薄文件上找不到 deq_ptr 的非阻塞赋值）
+⇒ AUDIT_INCOMPLETE。重写侧指针的归纳论证与 golden 相同：xs_ChiselQueue_core 的 enq/deq 指针只有复位赋 0 与 "==DEPTH-1 回卷到 0，
+否则 +1" 两种赋值，∈[0,9]。**需要 reviewer 审定 ram_10x89 后**，两个目标才可能判 SUCCEEDED。
+
+### 12.3 跑前预测（★跑完不许改★；vmucp 关，ram_10x89 两侧 inline）
+
+| 目标 | 模型 | 预测 |
+|---|---|---|
+| Queue10_GrantBuffer_Anon | 994（regs 899 + outs 95） | native 等价（failing 0 / unmatched 0），但 elab147 ⇒ 判 PARTIAL（FAILED 也可能：取决于 FM 对越界读的处理，照实记） |
+| GrantBuffer | 12545（regs 11512 + outs 1033） | failing 0 / unmatched 0；unread ≥ 1056（timers 1024 + REG 16 + enable_REG 16，钉点 GB_PIN ok=32）；Constant reg ≥ 68（grantQueue 存储里 grantid 高 4 位 16×4 + grantBuf_grantid 高 4 位）；elab147 ⇒ PARTIAL |
+
+## 13. MainPipe_1 的 child（Arbiter3_CHIREQ / Arbiter3_TaskBundle / Arbiter3_TaskWithData / CustomL1Hint / Queue16_HintQueueEntry / Queue4_HintQueueEntry）
+
+### 13.1 结构 / UT
+
+- Arbiter3_*：`scripts/gen_l2_arbiter3.py` 从 golden 端口表生成薄文件，核是已签核的 xs_FixedPriorityArbiter_core（未改动）。
+  CHIREQ / TaskBundle 两个变体 firtool 删了 io_out_ready 与 io_in_0_ready（MainPipe 那一路 out.ready 恒 1），核 out_ready 接 1。
+  golden 206/190/935 行 → 重写 177/157/998 行（TaskWithData 95 个字段 × 4 组，一个字段一行）。
+- Queue16_HintQueueEntry / Queue4_HintQueueEntry：`scripts/gen_l2_queues.py` 薄文件 + 共享核（ram_16x11 / ram_4x11 两侧 inline，2 的幂）。
+- CustomL1Hint：手写（golden 193 行 → 约 150 行），两个队列按 golden 实例名例化。
+- UT（verif/ut/L2MainPipeLeaves）seed1 random 20k：6 个目标全 PASS、errors=0、输出全翻转；覆盖：仲裁器"只有末路" ~2450 /"三路齐请求" ~2500；
+  CustomL1Hint 提示 3216 / s3 抢先 273 / hint_s1Queue 满 6619 / hintQueue 满 8732 / mergeA Grant 520。
+- 变异（seed1 20k）：s1 队列不给 s3 让路 errors=5025、ParallelPriorityMux 次序 errors=587、s3 不看 need_mshr errors=18838、
+  仲裁器 out_ready 接 0 errors=14858，均 CAUGHT。
+
+### 13.2 跑前预测（★跑完不许改★；vmucp 关）
+
+| 目标 | 模型 | 预测 |
+|---|---|---|
+| Arbiter3_CHIREQ | 103（纯组合） | passing 103 SUCCEEDED |
+| Arbiter3_TaskBundle | 71 | passing 71 SUCCEEDED |
+| Arbiter3_TaskWithData | 899 | passing 899 SUCCEEDED |
+| Queue16_HintQueueEntry | 198（regs 185 + outs 13） | passing 198 SUCCEEDED |
+| Queue4_HintQueueEntry | 62（regs 49 + outs 13） | passing 62 SUCCEEDED |
+| CustomL1Hint | 268（regs 234 + outs 34） | failing 0 / unmatched 0 / unread 0，SUCCEEDED；passing 248..268 —— 两个队列存储里 opcode[2] 恒 1（入队的 opcode 只可能是 4/5/6），16 + 4 位可能被 FM 判常量 |

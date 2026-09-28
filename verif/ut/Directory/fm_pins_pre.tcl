@@ -25,7 +25,7 @@ if {$top eq "Directory"} {
   }
   dir_pin "r:/WORK/$top/mbistPl/addrRdReg_reg\[9\]" "i:/WORK/$top/mbistPl/u_core/u_ctrl/addrRdReg_reg\[9\]"
   puts "DIR_PIN_END $top ok=$::DIR_PIN_OK bad=$::DIR_PIN_BAD"
-  if {$::DIR_PIN_BAD != 0 || $::DIR_PIN_OK != $::DIR_PIN_EXPECT} {
+  if {$::DIR_PIN_BAD != 0 || $::DIR_PIN_OK != 11} {
     error "DIR_PIN_MISMATCH ok=$::DIR_PIN_OK bad=$::DIR_PIN_BAD expect=$::DIR_PIN_EXPECT"
   }
 }

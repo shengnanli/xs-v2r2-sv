@@ -221,7 +221,8 @@ def emit_pins(A):
     for r, i in pins:
         L.append('rb_pin r:/WORK/RequestBuffer/%s_reg i:/WORK/RequestBuffer/%s' % (r, i))
     L += ['puts "RB_PIN_END ok=$::RB_PIN_OK bad=$::RB_PIN_BAD expect=$::RB_PIN_EXPECT"',
-          'if {$::RB_PIN_BAD != 0 || $::RB_PIN_OK != $::RB_PIN_EXPECT} {',
+          # 期望数量用字面整数（结构闸 P3 只认字面量 / `set <var> <整数>`，不认 $::var）
+          'if {$::RB_PIN_BAD != 0 || $::RB_PIN_OK != %d} {' % len(pins),
           '  error "RB_PIN_MISMATCH ok=$::RB_PIN_OK bad=$::RB_PIN_BAD expect=$::RB_PIN_EXPECT"',
           '}',
           '}']

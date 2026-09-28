@@ -32,7 +32,7 @@ rb_pin r:/WORK/RequestBuffer/REG_6_reg i:/WORK/RequestBuffer/u_core/validPrev_re
 rb_pin r:/WORK/RequestBuffer/REG_7_reg i:/WORK/RequestBuffer/u_core/timerClear_reg\[3\]
 rb_pin r:/WORK/RequestBuffer/enable_REG_3_reg i:/WORK/RequestBuffer/u_core/histValidPrev_reg\[3\]
 puts "RB_PIN_END ok=$::RB_PIN_OK bad=$::RB_PIN_BAD expect=$::RB_PIN_EXPECT"
-if {$::RB_PIN_BAD != 0 || $::RB_PIN_OK != $::RB_PIN_EXPECT} {
+if {$::RB_PIN_BAD != 0 || $::RB_PIN_OK != 12} {
   error "RB_PIN_MISMATCH ok=$::RB_PIN_OK bad=$::RB_PIN_BAD expect=$::RB_PIN_EXPECT"
 }
 }

@@ -31,7 +31,7 @@ if {[string match {DataStorage*} $top]} {
   }
   ds_pin "r:/WORK/$top/mbistPl/beReg_reg" "i:/WORK/$top/mbistPl/u_core/beReg_reg\[0\]"
   puts "DS_PIN_END $top ok=$::DS_PIN_OK bad=$::DS_PIN_BAD"
-  if {$::DS_PIN_BAD != 0 || $::DS_PIN_OK != $::DS_PIN_EXPECT} {
+  if {$::DS_PIN_BAD != 0 || $::DS_PIN_OK != 530} {
     error "DS_PIN_MISMATCH ok=$::DS_PIN_OK bad=$::DS_PIN_BAD expect=$::DS_PIN_EXPECT"
   }
 }

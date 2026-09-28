@@ -22,6 +22,10 @@ include ../../../scripts/ut_common.mk
 
 # vmucp 按目标开：RequestBuffer 107 个对称死位（依据见 verif/fm_target_config/RequestBuffer.tcl）。
 fm-RequestBuffer: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+# FastArbiter_2：pendingMask[0] 1 个结构死位；Queue1_ChosenQBundle：ram 整字里 22 个无出口字段位
+# （依据见 verif/fm_target_config/FastArbiter_2.tcl / Queue1_ChosenQBundle.tcl）。
+fm-FastArbiter_2: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+fm-Queue1_ChosenQBundle: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 INITREG  ?= random
 VCS      += +define+SYNTHESIS +vcs+initreg+random

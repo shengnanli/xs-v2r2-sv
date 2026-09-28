@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter3_CHIREQ",
+  "ut": "L2MainPipeLeaves",
+  "regs": 0,
+  "outs": 103,
+  "expected": 103,
+  "merge_dup": "false",
+  "model_applicable": true
+}

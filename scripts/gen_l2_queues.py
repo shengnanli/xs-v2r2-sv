@@ -29,6 +29,9 @@ QUEUES = {
     'Queue2_CHISNP':          ('RXSNP',       'RXSNP 入口的 2 项 snoop 缓冲'),
     'Queue16_GrantQueueTask': ('GrantBuffer', 'GrantBuffer 的 grant 任务队列（D 通道报文头）'),
     'Queue16_GrantQueueData': ('GrantBuffer', 'GrantBuffer 的 grant 数据队列（两份，各存一个 beat）'),
+    'Queue10_GrantBuffer_Anon': ('GrantBuffer', 'GrantBuffer 的预取响应队列 pftRespQueue（10 项，非 2 的幂），flow'),
+    'Queue16_HintQueueEntry': ('CustomL1Hint', 'CustomL1Hint 的 hintQueue（给 L1 的 GrantData 提前唤醒提示）'),
+    'Queue4_HintQueueEntry':  ('CustomL1Hint', 'CustomL1Hint 的 hint_s1Queue（s1 级提示的暂存，flow）'),
 }
 
 

@@ -21,7 +21,9 @@ for v in ('DataStorage', 'DataStorage_1', 'DataStorage_2', 'DataStorage_3'):
         base = f'array.array_0_0_{k}.array.array.array_18_ext'
         args += ['--sync', f'{v}:{base}.ram=>{base}.ram',
                  '--sync', f'{v}:{base}.reg_RW0_addr=>{base}.reg_RW0_addr',
-                 '--sync', f'{v}:{base}.reg_RW0_ren=>{base}.reg_RW0_ren']
+                 '--sync', f'{v}:{base}.reg_RW0_ren=>{base}.reg_RW0_ren',
+                 # MBIST 读数据寄存器不复位：initreg 按实例各摇，不抄就在首次 MBIST 读前的几拍 bore_outdata 两侧不同
+                 '--sync', f'{v}:array.array_0_0_{k}.rdataReg=array.array_0_0_{k}.u_core.rdataReg']
     args += ['--sync', f'{v}:error_REG=u_core.error_REG',
              '--sync', f'{v}:error_REG_1=u_core.error_REG_1']
 GEN = os.path.join(HERE, '../../../scripts/gen_l2slice_ut.py')
