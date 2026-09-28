@@ -33,6 +33,10 @@ FM_REF_DEPS_DataSRAMBank_4 = SRAMTemplate_100.sv $(SRAM_DEPS)
 FM_MODE = assembly
 PORTLINT_ORDER = fail
 
+# vmucp（加强不是放宽）：唯一的 unread 是断言寄存器 REG（两侧同名同为无读者），
+# 依据见 verif/fm_target_config/DataSRAMBank*.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 VCS      += +define+SYNTHESIS +vcs+initreg+random

@@ -1,0 +1,17 @@
+{
+  "target": "DataSRAMBank",
+  "ut": "DataSRAMBank",
+  "regs": 297,
+  "outs": 576,
+  "expected": 1205,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 332,
+  "bbox": {
+    "array_7_ext": {
+      "insts": 4,
+      "in_bits": 83,
+      "points": 332
+    }
+  }
+}

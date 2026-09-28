@@ -178,3 +178,34 @@ cov_fail=0（checks 2196988..2197051）；DuplicatedTagArray @ b25ad3da 9/9 erro
 
 全部 verdict SUCCEEDED；`fm_predict.py check` 4/4「全部对上」（后三者模型 MODEL_NA，按登记数字对账）。
 复跑：`PROOF_COMMIT=b25ad3da bash scripts/run_proof.sh {LoadPipe LoadPipe | TagArray TagSRAMBank TagArray | DuplicatedTagArray DuplicatedTagArray} < /dev/null`
+
+## 3. 第三批：DataSRAMBank 家族（DataSRAMBank / _1 / _2 / _4）（跑前登记，FM 起跑前提交）
+
+### 3.1 结构与子模块处置
+
+- 可读核 `xs_DataSRAMBank_core`（写使能按路译码 + "写最多一路"检查）在 rtl/memblock/DataSRAMBank.sv；
+  4 个 wrapper 由 `scripts/gen_datasrambank.py`（--check）从 golden 端口表与 golden 的 SRAMTemplate 例化生成
+  （DataSRAMBank.sv 里是 GENERATED 区，_1/_2/_4 整文件）。变体差别只有"每路例化哪个 SRAMTemplate_N"
+  （84/86、88、92、100——MBIST array id 位宽不同）与 bore*_array 端口位宽。
+- child：SRAMTemplate_84/86/88/92/100（PROVEN_DIRECT）两侧白盒；其下 sram_array_1p256x72m72s1h0l1b_dcsh_dat /
+  array_7 / MbistClockGateCell / ClockGate 两侧同源；唯一黑盒 array_7_ext ×4（vendor_boundary 已审定），
+  声明 verif/allow/DataSRAMBank*.json（declare_allow.py 由试跑生成，各 8 个对象 = 两侧各 4）。
+- FM：assembly、merge_dup 默认、vmucp 开（唯一 unread = 断言寄存器 REG，verif/fm_target_config/DataSRAMBank*.tcl）。
+
+### 3.2 UT（verif/ut/DataSRAMBank，4 对同 tb）
+
+阵列无上电清零：tb 前 400 拍把 0..7 组各路写满、MBIST 关，读写地址（含 MBIST 地址）压到 0..7，
+之后才比（arm）。试跑中 seed 7 random 曾报失配，定位为 tb 的 MBIST 随机地址读到**没写过**的组
+（两侧厂商宏行为模型各自随机初值），把 MBIST 地址也压到 0..7 后消失——不是 RTL 差异。
+9 档结果见对账。
+
+### 3.3 跑前预测（★跑完不许改本节★）
+
+| 目标 | passing 预测 | 其余 |
+|---|---|---|
+| DataSRAMBank | **1205** | assembly；黑盒 8（array_7_ext 两侧各 4）；vmucp 后 unread 0；failing/unmatched 0 |
+| DataSRAMBank_1 | **1205** | 同上 |
+| DataSRAMBank_2 | **1205** | 同上 |
+| DataSRAMBank_4 | **1205** | 同上 |
+
+依据：非正式试跑（DataSRAMBank/_1 vmucp 关 1204 + unread 1；_2/_4 vmucp 开 1205）；模型 1205（MODEL_NA，merge 开）。
