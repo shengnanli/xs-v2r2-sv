@@ -15,6 +15,10 @@ FM_REF_DEPS_LoadMisalignBuffer =
 # 关掉 merge_duplicated_registers：让 fm_predict 的 passing 模型严格适用（加强不是放宽）。
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：145 个两侧对称的死位（REG / splitLoadReqs_*_uop_fuOpType[8:2] /
+# splitLoadResp_*_data[128:64]），依据与六条证据见 verif/fm_target_config/LoadMisalignBuffer.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

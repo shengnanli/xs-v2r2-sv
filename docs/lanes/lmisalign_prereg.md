@@ -84,3 +84,22 @@ tb 扮演 LoadUnit（激励 / 比对口径 / 覆盖判据见 `verif/ut/LoadMisal
    写反了 UT 会抓到（变异 M1 已验证，见 §对账 D）。
 3. `split_plan` 表里 lb / 对齐的 lw、ld 三类"非法组合"在跨 16B 时结构上不可达（跨 16B 必不对齐），UT 打不到；
    其行为（地址 / 掩码 0、fuOpType 保持、四个移位宽度寄存器不写）只能由 FM 证等价。
+
+### 1.5 正式证明前的补充登记（诊断跑之后；上面 §1.3 的数字不动）
+
+诊断跑（commit `f2d5a5d2` 同字节，`FM_MODE=diagnostic-full FM_FAILING_LIMIT=0 make fm-LoadMisalignBuffer`，vmucp 关，不出正式 receipt）：
+native SUCCEEDED，passing **7516** / failing 0 / unmatched 0(0)，Not Compared：Constant reg **268** + Unread **145**。
+7929 − 7516 = 413 = 268 + 145，全部可指认：
+- constant_reg 268 = §1.3 预测的 267 + 风险项 `lowResultShift[2]`（ref 标 DFF0X、impl 标 DFF0，两侧同一位）；
+- unread 145 逐位等于 §1.3 预测的三组集合，全部 matched_nc、两侧独占 0。
+
+据此按 standing rule 加 `verif/fm_target_config/LoadMisalignBuffer.tcl` + Makefile 开 vmucp。正式 run_proof 预测：
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **7661**（= 7929 − 268 = 7516 + 145） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 268 |
+| 黑盒 / dont_verify / elab147 / relaxed_appvars | 无 / 空 / 空 / 空 |
+| verdict | SUCCEEDED（signoff-strict） |
