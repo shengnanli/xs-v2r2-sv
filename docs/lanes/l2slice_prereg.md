@@ -208,3 +208,8 @@ cmoBlock 漏 !s_cmometaw errors=14005，均 CAUGHT。
   * 队列 ram_2x98 里 addr[4:3]（slice bank 位，parseAddress 丢掉）：2 项 × 2 位 → 4 位。
 第一跑（vmucp 关）登记：passing **355**、unread **68**、failing 0、unmatched 0 ⇒ strict 判 PARTIAL（预期内）；
 随后按 vmucp standing rule 加 verif/fm_target_config/RXSNP.tcl 第二跑：passing **423**、unread 0、SUCCEEDED。
+
+### 6.4 对账（第一跑）
+- 第一跑（commit 09829392，evidence/09829392463d/RXSNP）：native SUCCEEDED，passing **355**、unread **68**、failing 0、unmatched 0(0)
+  ⇒ PARTIAL，与 §6.3 登记逐位相等；68 点 = stallCnt 64 + Memory[0..1][55:54] 4，与预测的两类完全一致。
+- 第二跑按 §6.3 登记（vmucp 开）：passing 423、unread 0、SUCCEEDED。
