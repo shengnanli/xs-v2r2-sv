@@ -1,12 +1,25 @@
 #!/usr/bin/env python3
 """Generate fifteen tiny readable arithmetic/bit-map leaves and their UT harness."""
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RTL = ROOT / "rtl/backend"
+# --check：内存里重生成，与仓内现文件逐字比对，不写盘；有差异非零退出（进 gate_all 幂等闸）
+CHECK = "--check" in sys.argv[1:]
+_DRIFT = []
+_COUNT = [0]
+
+def _put(path: Path, text: str) -> None:
+    _COUNT[0] += 1
+    if CHECK:
+        if not path.exists() or path.read_text() != text:
+            _DRIFT.append(str(path.relative_to(ROOT)))
+    else:
+        path.write_text(text)
 
 def emit(name: str, text: str) -> None:
-    (RTL / f"{name}.sv").write_text(text)
+    _put(RTL / f"{name}.sv", text)
 
 def modular_sub(name: str, width: int) -> None:
     emit(name, f"""// {width}-bit modular subtractor used by compact datapath/index arithmetic.
@@ -127,3 +140,9 @@ close_sub("ClosePathAdderF16Pipeline", 11, False)
 close_sub("ClosePathAdderF16Pipeline_2", 11, True)
 close_sub("ClosePathF32WidenF16MixedPipelineAdder", 24, False)
 close_sub("ClosePathF32WidenF16MixedPipelineAdder_2", 24, True)
+
+if CHECK:
+    if _DRIFT:
+        print("gen_readable_leaves15 --check: DRIFT " + " ".join(_DRIFT))
+        sys.exit(1)
+    print(f"gen_readable_leaves15 --check: OK ({_COUNT[0]} files)")
