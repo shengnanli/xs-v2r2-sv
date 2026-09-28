@@ -14,6 +14,9 @@ FM_VARIANTS = ImmExtractor_2 ImmExtractor_37
 
 PORTLINT_ORDER = fail
 
+# 关掉重复寄存器合并，让 fm_predict 的 passing 模型严格适用（纯组合，本就无寄存器）。
+FM_MERGE_DUP = false
+
 include ../../../scripts/ut_common.mk
 
 # 纯组合叶子：跑 initreg 各档是为了钉住"没有隐藏状态"。
