@@ -55,3 +55,20 @@ rrGrantMask=0 把它与掉）、M4 pendingMask 不去掉赢家位（赢家位被
 
 可能出错处：W=1 占位载荷与 out_bits 悬空在 impl 侧只产生无扇出的线，预期不产生任何 impl-only 比较点；
 若出现 impl 独有 unmatched/unread，先查这里。
+
+## 对账
+
+### FastArbiter_28（run_proof @ bc3a0c0b，evidence/bc3a0c0b69ba/FastArbiter_28）
+
+| 项 | 预测 | 实测 | 差 |
+|---|---|---|---|
+| native | SUCCEEDED | SUCCEEDED | — |
+| passing | 240 | 240 | 0 |
+| constant_reg | 1 | 1 | 0 |
+| failing / unverified / aborted / unread_notcompared | 0 | 0 / 0 / 0 / 0 | 0 |
+| unmatched（ref/impl compare、unread、bbout） | 0 | 全 0 | 0 |
+| 黑盒 / dont_verify / elab147 | 无 | 无 / false / false | — |
+
+receipt.json sha256 = `860ebaf0744e514ed2ae599e71c4e04ecd72d9a5f7203261139634e974ea11bb`；
+`python3 scripts/fm_predict.py check FastArbiter_28` rc=0（"差额被指认"）。
+复跑：`bash scripts/run_proof.sh FastArbiter_28 FastArbiter_28 < /dev/null`
