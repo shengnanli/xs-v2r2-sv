@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/OthersEntry_66
+Implementation : i:/WORK/OthersEntry_66
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 02:53:21 2026
+**************************************************
+
+No failing compare points.
+
+1

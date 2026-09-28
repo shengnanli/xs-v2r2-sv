@@ -26,41 +26,36 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
-// 本文件导航（共 2006 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L38    设计源:XiangShan src/main/scala/xiangshan/backend/issue/{Entries,En
-//   L63    导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
-//   L67    §1 与变体无关的编码
-//   L84    唤醒总线上的写使能字段(IssueQueueWakeUpBundle 的 rfWen/fpWen/vecWen/v0Wen/vl
-//   L117   §2 xs_iq_entry —— 单条目
-//   L174   IQ 即时唤醒(hasIQWakeUp 子族:INT/MEM 6 个 + FP 3 个变体)
-//   L407   §2.1 冲刷判定
-//   L419   §2.2 唤醒的「类型匹配」—— WB 与 IQ 共用这一个函数
-//   L449   §2.2a WB 唤醒匹配
-//   L479   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
-//   L596   §2.3 ignoreOldVd(向量专属)
-//   L601   ★ 这 5 个 vpu 控制位的比特位置是按**转移包**布局算的
-//   L647   §2.3b currentStatus —— 入队条目在「入队后那一拍」用延迟唤醒总线打的补丁
-//   L718   §2.4 valid / enqReady / clear
-//   L734   §2.5 entryUpdate —— 不装载时条目的次态,同时也是 transEntry 的内容
-//   L802   §2.6 时序
-//   L842   §2.6a blocked / deqPortIdx —— 这两个状态位 golden 只在**部分**条目类型里
-//   L910   §2.6b IQ 唤醒子族专属的三组状态
-//   L945   §2.7 组合输出
-//   L1053  §2.8 debug / perf 出口
-//   L1114  §3 xs_iq_entries_core —— 条目阵列顶层(golden Entries<变体> 的可读核体)
-//   L1286  本核对家族做的两条形状假设 —— 实测 14/14 成立(见字段矩阵 numEnq / numDeq 两列)
-//   L1302  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1306  同样按 enq 条目分份(理由见上)
-//   L1374  §4 条目例化
-//   L1542  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1585  §6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne("circ", …, 2))
-//   L1616  §7 转移策略
-//   L1693  §8 othersEntryEnq 数据通路
-//   L1844  §9 发射出口
-//   L1912  §10 阵列状态汇聚输出
-//   L1953  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+// 本文件导航（共 2327 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L62    §1 与变体无关的编码
+//   L112   §2 xs_iq_entry
+//   L449   §2.1 冲刷判定
+//   L461   §2.2 唤醒的「类型匹配」
+//   L491   §2.2a WB 唤醒匹配
+//   L521   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
+//   L638   §2.3 ignoreOldVd(向量专属)
+//   L689   §2.3b currentStatus
+//   L760   §2.4 valid / enqReady / clear
+//   L782   §2.5 entryUpdate
+//   L850   §2.6 时序
+//   L890   §2.6a blocked / deqPortIdx
+//   L975   §2.6b IQ 唤醒子族专属的三组状态
+//   L998   §2.6c 访存向量状态组(HAS_VEC_MEM)
+//   L1043  §2.7 组合输出
+//   L1164  §2.8 debug / perf 出口
+//   L1225  §3 xs_iq_entries_core
+//   L1472  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1544  §4 条目例化
+//   L1749  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1800  §5a needFeedBack:访存流水回来的响应按 sqIdx(/lqIdx)匹配回条目
+//   L1854  §6 EnqPolicy
+//   L1885  §7 转移策略
+//   L1962  §8 othersEntryEnq 数据通路
+//   L2141  §9 发射出口
+//   L2234  §10 阵列状态汇聚输出
+//   L2275  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+// 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
 // -----------------------------------------------------------------------------
@@ -231,6 +226,25 @@ module xs_iq_entry
   parameter int PLB_IS_DEPEND_OLDVD = 0,
   parameter int PLB_IS_WRITE_PARTVD = 0,
 
+  // ---------------------------------------------------------------------------
+  // 访存向量专属状态组(isVecMemIQ:只有 VlduVstu / VlduVstuVseglduVsegstu 两个变体)。
+  // 默认 0 = 一个寄存器都不产出,已签核变体的电路与加这组参数之前逐门相同。
+  //   status.vecMem      = {numLsElem, lqIdx, sqIdx}   入队装载、之后原样保持
+  //                        (golden 把它当一个 Bundle 存,这里也打成一根向量 r_vm)
+  //   isVecPartReplay    : 发射响应落在 timer==3 那一拍时,记下响应带回的值
+  //   vecReplayMask/MbIdx: 响应里 isVecPartReplay 置位的那一拍,记下响应带回的值
+  //   blocked            : 真逻辑 —— isVleff 的 uop 在它的 lqIdx 还不是
+  //                        LSQ 的 lqDeqPtr 时不许发射(见 §2.6a)
+  // golden 出处:EnqEntryVecMem_2.sv:908-920(寄存器)/ :2017-2020(isVecPartReplay)/
+  //              :2058-2062(blocked)/ :2398-2400(vecReplayMask/MbIdx)。
+  parameter bit HAS_VEC_MEM   = 1'b0,
+  parameter int VM_SQ_W       = 1,   // sqIdx {flag, value} 的位宽
+  parameter int VM_LQ_W       = 1,   // lqIdx {flag, value} 的位宽
+  parameter int VM_NLSE_W     = 1,   // numLsElem 的位宽
+  parameter int VR_MASK_W     = 1,   // vecReplayMask 的位宽
+  parameter int VR_MBIDX_W    = 1,   // vecReplayMbIdx 的位宽
+  parameter int PLB_IS_VLEFF  = 0,   // payload.vpu.isVleff 在负载里的比特位置
+
   // ★ debug/perf 出口开关。默认 0 = 一个门都不产出 ★
   //   golden 的 CommonOutBundle 里有 7 组 debug/perf 输出
   //   (EntryBundles.scala:155-161,赋值在 :476-483)。它们在 Entries<变体> 这一层
@@ -271,6 +285,14 @@ module xs_iq_entry
   input  logic [NUM_REGSRC-1:0][EXU_W-1:0]    enq_exu_src,
   input  logic [NUM_REGSRC-1:0]               enq_use_rc,
   input  logic [NUM_REGSRC-1:0][RC_IDX_W-1:0] enq_rc_idx,
+  // 访存向量状态组的入口(HAS_VEC_MEM=0 时不读)。status.vecMem 打包成
+  // {numLsElem, lqIdx, sqIdx},下标布局见本模块体里的 VM_* localparam。
+  input  logic [VM_SQ_W+VM_LQ_W+VM_NLSE_W-1:0] enq_vm,
+  input  logic                                 enq_vpr,       // isVecPartReplay
+  input  logic [VR_MASK_W-1:0]                 enq_vr_mask,   // vecReplayMask
+  input  logic [VR_MBIDX_W-1:0]                enq_vr_mbidx,  // vecReplayMbIdx
+  // LSQ 当前的 lqDeqPtr {flag, value}:blocked 的判据
+  input  logic [VM_LQ_W-1:0]                   lq_deq_ptr,
 
   // 唤醒总线:当拍 + 入队延迟 1 拍(后者只有 IS_ENQ 用)
   input  logic [NUM_WK_WB-1:0]              wk_valid,
@@ -317,6 +339,10 @@ module xs_iq_entry
   input  logic       deq_port_idx_write,
   input  logic       resp_valid,
   input  logic [1:0] resp_bits,
+  // 发射响应里访存向量专属的三样(HAS_VEC_MEM=0 时不读)
+  input  logic                  resp_vpr,
+  input  logic [VR_MASK_W-1:0]  resp_vr_mask,
+  input  logic [VR_MBIDX_W-1:0] resp_vr_mbidx,
   input  logic       trans_sel,
 
   // 状态输出(给阵列汇聚 / 上层年龄选择)
@@ -344,6 +370,11 @@ module xs_iq_entry
   output logic [NUM_REGSRC-1:0][RC_IDX_W-1:0]               o_ety_rc_idx,
   // commonOut.exuSources(comp 条目会把本拍 IQ 唤醒算进去,enq/simp 露寄存值)
   output logic [NUM_REGSRC-1:0][EXU_W-1:0]                  o_exu_src,
+  // commonOut.entry 的访存向量状态组(寄存值;HAS_VEC_MEM=0 时恒 0)
+  output logic [VM_SQ_W+VM_LQ_W+VM_NLSE_W-1:0]              o_ety_vm,
+  output logic                                              o_ety_vpr,
+  output logic [VR_MASK_W-1:0]                              o_ety_vr_mask,
+  output logic [VR_MBIDX_W-1:0]                             o_ety_vr_mbidx,
 
   // commonOut.transEntry:交给下一级的整包(= entryUpdate)
   output logic                              o_trans_valid,
@@ -364,6 +395,10 @@ module xs_iq_entry
   output logic [NUM_REGSRC-1:0][EXU_W-1:0]                  o_trans_exu_src,
   output logic [NUM_REGSRC-1:0]                             o_trans_use_rc,
   output logic [NUM_REGSRC-1:0][RC_IDX_W-1:0]               o_trans_rc_idx,
+  output logic [VM_SQ_W+VM_LQ_W+VM_NLSE_W-1:0]              o_trans_vm,
+  output logic                                              o_trans_vpr,
+  output logic [VR_MASK_W-1:0]                              o_trans_vr_mask,
+  output logic [VR_MBIDX_W-1:0]                             o_trans_vr_mbidx,
 
   // -------- debug / perf 出口(HAS_DBG_OUT=0 时全为常数 0,见 §2.8)--------
   output logic                            o_dbg_entry_in_valid,
@@ -400,6 +435,13 @@ module xs_iq_entry
   logic [NUM_REGSRC-1:0][EXU_W-1:0]    r_exu_src;
   logic [NUM_REGSRC-1:0]               r_use_rc;
   logic [NUM_REGSRC-1:0][RC_IDX_W-1:0] r_rc_idx;
+  // 只有 HAS_VEC_MEM 变体真有这四组寄存器(否则恒 0,见 §2.6c)
+  localparam int VM_W      = VM_SQ_W + VM_LQ_W + VM_NLSE_W;
+  localparam int VM_LQ_LSB = VM_SQ_W;               // r_vm = {numLsElem, lqIdx, sqIdx}
+  logic [VM_W-1:0]                     r_vm;         // status.vecMem
+  logic                                r_vpr;        // status.isVecPartReplay
+  logic [VR_MASK_W-1:0]                r_vr_mask;    // status.vecReplayMask
+  logic [VR_MBIDX_W-1:0]               r_vr_mbidx;   // status.vecReplayMbIdx
 
   localparam int IQW = (NUM_WK_IQ > 0) ? NUM_WK_IQ : 1;   // 数组下标用的安全宽度
 
@@ -723,7 +765,13 @@ module xs_iq_entry
   logic deq_success, enq_ready, clear, load_now, valid_reg_next;
   always_comb begin
     // ★ 本拍若有源被 load 撤销,即使收到 SUCCESS 也不算发射成功(条目不清)
-    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS) & ~(|cur_ld_cancel);
+    // ★ 访存向量变体还要求「本条目确实已发射」(r_issued):它的 timer==3 响应是按
+    //   {sqIdx, lqIdx} 从 LSQ 回来的,可以打中一条**还没发射**的条目
+    //   (golden EnqEntryVecMem_2.sv:1475 / OthersEntryVecMem_16.sv:886 的
+    //    `entryReg_status_issued & io_commonIn_issueResp_valid & (&resp)`)。
+    //   其余变体没有这一项(EnqEntry_20.sv:963),HAS_VEC_MEM=0 时该项恒 1。
+    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS) & ~(|cur_ld_cancel)
+                   & (~HAS_VEC_MEM | r_issued);
     enq_ready      = ~valid_reg | trans_sel;
     clear          = flushed | deq_success | trans_sel;
     load_now       = IS_ENQ ? (enq_valid & enq_ready) : enq_valid;
@@ -877,13 +925,30 @@ module xs_iq_entry
   //   作用域声明:以上数字是**这 24 个 OthersEntry 变体 + 14 个 Entries 变体**
   //   的实测,OthersEntryVecMem* 那 4 个没量,别当成全家族不变量。
   // ---------------------------------------------------------------------------
+  //   ★ 访存向量变体(HAS_VEC_MEM)是例外:blocked 有真次态,三种条目都有寄存器,
+  //     连 enq 条目也有(EnqEntryVecMem_2.sv:908 / :2403-2406)——
+  //       blocked 次态 = (status.vecMem.lqIdx != LSQ 的 lqDeqPtr) & payload.vpu.isVleff
+  //     即 vleff(fault-only-first)load 要等到自己成为 LSQ 最老的那条才许发射。
+  //     入队装载时吃派遣给的 status.blocked(其余变体的 enq 恒 0,见上)。
+  // ---------------------------------------------------------------------------
+  localparam int B_VLEFF = (PLB_IS_VLEFF < PL_W) ? PLB_IS_VLEFF : 0;
+  logic u_blocked;   // entryUpdate.status.blocked(也是 transEntry 的那一位)
+  always_comb
+    u_blocked = HAS_VEC_MEM & (r_vm[VM_LQ_LSB +: VM_LQ_W] != lq_deq_ptr)
+                            & r_payload[B_VLEFF];
+  // entryUpdate.status.isVecPartReplay(也是 transEntry 的那一位,见 §2.6c)
+  logic u_vpr;
+  always_comb
+    u_vpr = (resp_valid & (&r_issue_timer)) ? resp_vpr : r_vpr;
+
   generate
-    if (IS_ENQ) begin : g_no_blocked
+    if (IS_ENQ && !HAS_VEC_MEM) begin : g_no_blocked
       assign r_blocked = 1'b0;
     end else begin : g_blocked
       always_ff @(posedge clock)
-        // 装载吃上一级的 transEntry.blocked;不装载时 entryUpdate 把它钉成 0。
-        r_blocked <= load_now ? enq_blocked : 1'b0;
+        // 装载吃上一级的 transEntry.blocked(enq 条目吃派遣给的);
+        // 不装载时走 entryUpdate —— 非访存向量变体里它恒 0。
+        r_blocked <= load_now ? enq_blocked : u_blocked;
     end
 
     if (KEEP_WIDE || NUM_DEQ_PORTS > 1) begin : g_deq_port_idx
@@ -926,6 +991,39 @@ module xs_iq_entry
       always_comb begin
         r_use_rc = '0;
         r_rc_idx = '0;
+      end
+    end
+
+    // ---------------------------------------------------------------------------
+    // §2.6c 访存向量状态组(HAS_VEC_MEM)。三种条目都有,逐句对照 golden:
+    //   vecMem          装载吃入口值,之后原样保持(EnqEntryVecMem_2.sv:2133-2139)
+    //   isVecPartReplay 装载:enq 条目清 0,simp/comp 吃入口值;
+    //                   否则在「响应有效且 issueTimer==3」那一拍记下响应带回的值
+    //                   (:2017-2020 与 :2410-2411)
+    //   vecReplayMask / vecReplayMbIdx
+    //                   装载:enq 条目清 0(:2140-2141),simp/comp 吃入口值;
+    //                   否则只要响应的 isVecPartReplay 位置起就记下 ——
+    //                   ★这一条**不看** resp.valid 也不看 issueTimer★(:2398-2400),
+    //                   与 isVecPartReplay 的门控不对称,是 golden 的,照搬。
+    // ---------------------------------------------------------------------------
+    if (HAS_VEC_MEM) begin : g_vec_mem
+      always_ff @(posedge clock) begin
+        if (load_now) begin
+          r_vm       <= enq_vm;
+          r_vr_mask  <= IS_ENQ ? '0 : enq_vr_mask;
+          r_vr_mbidx <= IS_ENQ ? '0 : enq_vr_mbidx;
+        end else if (resp_vpr) begin
+          r_vr_mask  <= resp_vr_mask;
+          r_vr_mbidx <= resp_vr_mbidx;
+        end
+        r_vpr <= load_now ? (IS_ENQ ? 1'b0 : enq_vpr) : u_vpr;
+      end
+    end else begin : g_no_vec_mem
+      always_comb begin
+        r_vm       = '0;
+        r_vpr      = 1'b0;
+        r_vr_mask  = '0;
+        r_vr_mbidx = '0;
       end
     end
   endgenerate
@@ -1011,6 +1109,11 @@ module xs_iq_entry
   assign o_ety_src_type  = r_src_type;
   assign o_ety_payload   = r_payload[PL_DEQ_W-1:0];
   assign o_ety_rc_idx    = cur_rc_idx;
+  // 访存向量状态组:entry 出口露寄存值(EnqEntryVecMem_2.sv:2729-2741)
+  assign o_ety_vm        = r_vm;
+  assign o_ety_vpr       = r_vpr;
+  assign o_ety_vr_mask   = r_vr_mask;
+  assign o_ety_vr_mbidx  = r_vr_mbidx;
 
   // ★ entry 出口的影子露的是**次态**:comp 条目要把本拍 IQ 唤醒带来的影子算进去,
   //   enq/simp 则只是"自己左移一拍"(= u_ld_dep 在没有 IQ 唤醒时的值)。
@@ -1035,7 +1138,8 @@ module xs_iq_entry
   assign o_trans_src_type     = u_src_type;
   assign o_trans_src_state    = u_src_state;
   assign o_trans_data_src     = u_data_src;
-  assign o_trans_blocked      = 1'b0;
+  // 非访存向量变体里 u_blocked 恒 0(entryUpdate.status.blocked := false.B)
+  assign o_trans_blocked      = u_blocked;
   assign o_trans_issued       = u_issued;
   assign o_trans_first_issue  = u_first_issue;
   assign o_trans_issue_timer  = u_issue_timer;
@@ -1044,6 +1148,13 @@ module xs_iq_entry
   assign o_trans_exu_src      = u_exu_src;
   assign o_trans_use_rc       = u_use_rc;
   assign o_trans_rc_idx       = u_rc_idx;
+  // 访存向量状态组的 transEntry(EnqEntryVecMem_2.sv:2922-2941):
+  //   vecMem 原样;isVecPartReplay 用次态;mask/mbIdx 在响应 isVecPartReplay 置起时
+  //   直接换成响应带回的值(同样不看 resp.valid)。
+  assign o_trans_vm           = r_vm;
+  assign o_trans_vpr          = u_vpr;
+  assign o_trans_vr_mask      = resp_vpr ? resp_vr_mask  : r_vr_mask;
+  assign o_trans_vr_mbidx     = resp_vpr ? resp_vr_mbidx : r_vr_mbidx;
   generate
     if (KEEP_WIDE) assign o_trans_payload = r_payload;
     else           assign o_trans_payload = PL_TRANS_W'(r_payload);
@@ -1176,7 +1287,40 @@ module xs_iq_entries_core
   // VfdivVidiv 的 og0/og1 都是常量、og2 才是真 resp)——所以做成参数:
   //   OG_HAS_BITS[k]=1 表示第 k 档用输入 og_resp[k],否则用常量 OG_CONST_RESP[k]。
   parameter logic [3:0]      OG_HAS_BITS   = 4'b0100,
-  parameter logic [3:0][1:0] OG_CONST_RESP = {2'h0, 2'h0, RESP_UNCERTAIN, RESP_BLOCK}
+  parameter logic [3:0][1:0] OG_CONST_RESP = {2'h0, 2'h0, RESP_UNCERTAIN, RESP_BLOCK},
+
+  // ---------------------------------------------------------------------------
+  // 访存向量状态组(条目侧,见 xs_iq_entry 的同名参数)。
+  // ---------------------------------------------------------------------------
+  parameter bit HAS_VEC_MEM  = 1'b0,
+  parameter int VM_SQ_W      = 1,
+  parameter int VM_LQ_W      = 1,
+  parameter int VM_NLSE_W    = 1,
+  parameter int VR_MASK_W    = 1,
+  parameter int VR_MBIDX_W   = 1,
+  parameter int PLB_IS_VLEFF = 0,
+
+  // ---------------------------------------------------------------------------
+  // needFeedBack:发射响应不全来自 og0/og1/og2,晚到的那一档来自访存流水,
+  // 按 uop 的 sqIdx(/lqIdx)在阵列层匹配回条目(golden Entries.scala
+  // §issueRespVec 的 if 分支;见 §5)。
+  //   MEM_RESP_MODE = 0 : 没有(其余 12 个变体)
+  //                 = 1 : StaMou 形 —— issueTimer[1] 置起时改用 fromMem.slowResp,
+  //                       命中判据 = sqIdx 相等(EntriesStaMou.sv:19340-19349)
+  //                 = 2 : 访存向量形 —— issueTimer==3 时在 NUM_MEM_SRC 路来源里
+  //                       ★按位或★(不是优先选择),命中判据 = sqIdx 与 lqIdx 同时相等
+  //                       (EntriesVlduVstu.sv:21228-21260 / :22966-22993)
+  // 条目的 sqIdx / lqIdx 取自 entry 出口的负载(payload.sqIdx / payload.lqIdx),
+  // 比特位置由下面几个 PLB_* 给(flag 与 value 在负载里未必相邻,故分开给)。
+  // ---------------------------------------------------------------------------
+  parameter int MEM_RESP_MODE = 0,
+  parameter int NUM_MEM_SRC   = 1,
+  parameter int SQ_VAL_W      = 1,
+  parameter int LQ_VAL_W      = 1,
+  parameter int PLB_SQ_FLAG   = 0,
+  parameter int PLB_SQ_VALUE  = 0,
+  parameter int PLB_LQ_FLAG   = 0,
+  parameter int PLB_LQ_VALUE  = 0
 ) (
   input  logic clock,
   input  logic reset,
@@ -1204,6 +1348,12 @@ module xs_iq_entries_core
   // / _regCacheIdx)。exuSources 在派遣侧不存在,入队恒 0。
   input  logic [NUM_ENQ-1:0][NUM_REGSRC-1:0]               enq_use_rc,
   input  logic [NUM_ENQ-1:0][NUM_REGSRC-1:0][RC_IDX_W-1:0] enq_rc_idx,
+  // 派遣带过来的 status.blocked 与 status.vecMem(只有 HAS_VEC_MEM 变体读;
+  // 其余变体的 enq 条目根本没有 blocked 寄存器,薄层钉 0)
+  input  logic [NUM_ENQ-1:0]                                 enq_blocked,
+  input  logic [NUM_ENQ-1:0][VM_SQ_W+VM_LQ_W+VM_NLSE_W-1:0]  enq_vm,
+  // LSQ 的 lqDeqPtr {flag, value}(io.vecMemIn.lqDeqPtr)
+  input  logic [VM_LQ_W-1:0]                                 lq_deq_ptr,
 
   // 写回唤醒总线:当拍 + 延迟 1 拍
   input  logic [NUM_WK_WB-1:0]              wk_valid,
@@ -1240,6 +1390,21 @@ module xs_iq_entries_core
   // 发射响应(按发射口 × issueTimer 档位)。哪一档带真 resp 见 OG_HAS_BITS。
   input  logic [2:0][NUM_DEQ-1:0]      og_valid,
   input  logic [2:0][NUM_DEQ-1:0][1:0] og_resp,
+  // og 响应里访存向量专属的三样(HAS_VEC_MEM 变体三档都是真端口)
+  input  logic [2:0][NUM_DEQ-1:0]                  og_vpr,
+  input  logic [2:0][NUM_DEQ-1:0][VR_MASK_W-1:0]   og_vr_mask,
+  input  logic [2:0][NUM_DEQ-1:0][VR_MBIDX_W-1:0]  og_vr_mbidx,
+  // 访存流水回来的响应(needFeedBack,MEM_RESP_MODE != 0 才读)。
+  //   StaMou   :1 路 = fromMem.slowResp
+  //   访存向量 :3 路 = {vecLdIn.finalIssueResp, fromMem.slowResp, vecLdIn.resp}
+  //             (下标 0/1/2 = golden hitRespsVec_0/1/2 的顺序)
+  input  logic [NUM_MEM_SRC-1:0]                   mem_valid,
+  input  logic [NUM_MEM_SRC-1:0][1:0]              mem_resp,
+  input  logic [NUM_MEM_SRC-1:0][SQ_VAL_W:0]       mem_sq_idx,   // {flag, value}
+  input  logic [NUM_MEM_SRC-1:0][LQ_VAL_W:0]       mem_lq_idx,   // {flag, value}
+  input  logic [NUM_MEM_SRC-1:0]                   mem_vpr,
+  input  logic [NUM_MEM_SRC-1:0][VR_MASK_W-1:0]    mem_vr_mask,
+  input  logic [NUM_MEM_SRC-1:0][VR_MBIDX_W-1:0]   mem_vr_mbidx,
 
   // 发射选择(上层 IssueQueue 的年龄选择结果)
   input  logic [NUM_DEQ-1:0]                deq_ready,
@@ -1276,6 +1441,11 @@ module xs_iq_entries_core
   output logic [NUM_DEQ-1:0][NUM_REGSRC-1:0][RC_IDX_W-1:0]               o_deq_rc_idx,
   // io.cancelDeqVec:本拍这个发射口选中的那条条目要不要撤回发射
   output logic [NUM_DEQ-1:0]                             o_cancel_deq,
+  // 发射出口的访存向量状态组(HAS_VEC_MEM=0 时恒 0)
+  output logic [NUM_DEQ-1:0][VM_SQ_W+VM_LQ_W+VM_NLSE_W-1:0] o_deq_vm,
+  output logic [NUM_DEQ-1:0]                             o_deq_vpr,
+  output logic [NUM_DEQ-1:0][VR_MASK_W-1:0]              o_deq_vr_mask,
+  output logic [NUM_DEQ-1:0][VR_MBIDX_W-1:0]             o_deq_vr_mbidx,
 
   // 转移选择回报(上层用它维护年龄矩阵)
   output logic [NUM_ENQ-1:0][NUM_SIMP-1:0] o_simp_enq_sel_vec,
@@ -1391,6 +1561,12 @@ module xs_iq_entries_core
   logic [NUM_ENTRIES-1:0][PL_DEQ_W-1:0]                y_payload;
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] y_ld_dep;
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][RC_IDX_W-1:0]               y_rc_idx;
+  // 访存向量状态组(三种出口共用这一套位宽;HAS_VEC_MEM=0 时全恒 0)
+  localparam int VM_W = VM_SQ_W + VM_LQ_W + VM_NLSE_W;
+  logic [NUM_ENTRIES-1:0][VM_W-1:0]                    y_vm;
+  logic [NUM_ENTRIES-1:0]                              y_vpr;
+  logic [NUM_ENTRIES-1:0][VR_MASK_W-1:0]               y_vr_mask;
+  logic [NUM_ENTRIES-1:0][VR_MBIDX_W-1:0]              y_vr_mbidx;
 
   // commonOut.transEntry(整包,只有 enq / simp 段有意义)
   logic [NUM_ENTRIES-1:0]                              t_valid, t_rob_flag;
@@ -1407,6 +1583,10 @@ module xs_iq_entries_core
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][EXU_W-1:0]                  t_exu_src;
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0]                             t_use_rc;
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][RC_IDX_W-1:0]               t_rc_idx;
+  logic [NUM_ENTRIES-1:0][VM_W-1:0]                    t_vm;
+  logic [NUM_ENTRIES-1:0]                              t_vpr;
+  logic [NUM_ENTRIES-1:0][VR_MASK_W-1:0]               t_vr_mask;
+  logic [NUM_ENTRIES-1:0][VR_MBIDX_W-1:0]              t_vr_mbidx;
 
   // 条目输入线(由 §7/§8 驱动)
   logic [NUM_ENTRIES-1:0]                              x_enq_valid, x_rob_flag;
@@ -1423,10 +1603,17 @@ module xs_iq_entries_core
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][EXU_W-1:0]                  x_exu_src;
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0]                             x_use_rc;
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][RC_IDX_W-1:0]               x_rc_idx;
+  logic [NUM_ENTRIES-1:0][VM_W-1:0]                    x_vm;
+  logic [NUM_ENTRIES-1:0]                              x_vpr;
+  logic [NUM_ENTRIES-1:0][VR_MASK_W-1:0]               x_vr_mask;
+  logic [NUM_ENTRIES-1:0][VR_MBIDX_W-1:0]              x_vr_mbidx;
   logic [NUM_ENTRIES-1:0]                              x_trans_sel;
   logic [NUM_ENTRIES-1:0]                              x_deq_sel, x_deq_port_idx_w;
   logic [NUM_ENTRIES-1:0]                              x_resp_valid;
   logic [NUM_ENTRIES-1:0][1:0]                         x_resp_bits;
+  logic [NUM_ENTRIES-1:0]                              x_resp_vpr;
+  logic [NUM_ENTRIES-1:0][VR_MASK_W-1:0]               x_resp_vr_mask;
+  logic [NUM_ENTRIES-1:0][VR_MBIDX_W-1:0]              x_resp_vr_mbidx;
 
   generate
     for (genvar i = 0; i < NUM_ENTRIES; i++) begin : g_entry
@@ -1459,7 +1646,11 @@ module xs_iq_entries_core
         .WB_VL_INT(WB_VL_INT), .WB_VL_VF(WB_VL_VF),
         .PLB_VM(PLB_VM), .PLB_VMA(PLB_VMA), .PLB_VTA(PLB_VTA),
         .PLB_IS_DEPEND_OLDVD(PLB_IS_DEPEND_OLDVD),
-        .PLB_IS_WRITE_PARTVD(PLB_IS_WRITE_PARTVD)
+        .PLB_IS_WRITE_PARTVD(PLB_IS_WRITE_PARTVD),
+        .HAS_VEC_MEM(HAS_VEC_MEM),
+        .VM_SQ_W(VM_SQ_W), .VM_LQ_W(VM_LQ_W), .VM_NLSE_W(VM_NLSE_W),
+        .VR_MASK_W(VR_MASK_W), .VR_MBIDX_W(VR_MBIDX_W),
+        .PLB_IS_VLEFF(PLB_IS_VLEFF)
       ) u_e (
         .clock, .reset,
         .flush_valid, .flush_rob_flag, .flush_rob_value, .flush_level,
@@ -1481,6 +1672,11 @@ module xs_iq_entries_core
         .enq_exu_src    (x_exu_src      [i]),
         .enq_use_rc     (x_use_rc       [i]),
         .enq_rc_idx     (x_rc_idx       [i]),
+        .enq_vm         (x_vm           [i]),
+        .enq_vpr        (x_vpr          [i]),
+        .enq_vr_mask    (x_vr_mask      [i]),
+        .enq_vr_mbidx   (x_vr_mbidx     [i]),
+        .lq_deq_ptr,
         .wk_valid, .wk_wen, .wk_pdest, .wkd_valid, .wkd_wen, .wkd_pdest,
         .iq_wen, .iq_pdest, .iq_ld_dep, .iq_rc_dest, .iq_cancel,
         .iqd_wen, .iqd_pdest, .iqd_ld_dep, .iqd_rc_dest,
@@ -1497,6 +1693,9 @@ module xs_iq_entries_core
         .deq_port_idx_write(x_deq_port_idx_w[i]),
         .resp_valid        (x_resp_valid    [i]),
         .resp_bits         (x_resp_bits     [i]),
+        .resp_vpr          (x_resp_vpr      [i]),
+        .resp_vr_mask      (x_resp_vr_mask  [i]),
+        .resp_vr_mbidx     (x_resp_vr_mbidx [i]),
         .trans_sel         (x_trans_sel     [i]),
         .o_valid          (e_valid         [i]),
         .o_issued         (e_issued        [i]),
@@ -1516,6 +1715,10 @@ module xs_iq_entries_core
         .o_ety_ld_dep     (y_ld_dep        [i]),
         .o_ety_rc_idx     (y_rc_idx        [i]),
         .o_exu_src        (e_exu_src       [i]),
+        .o_ety_vm         (y_vm            [i]),
+        .o_ety_vpr        (y_vpr           [i]),
+        .o_ety_vr_mask    (y_vr_mask       [i]),
+        .o_ety_vr_mbidx   (y_vr_mbidx      [i]),
         .o_trans_valid       (t_valid       [i]),
         .o_trans_rob_flag    (t_rob_flag    [i]),
         .o_trans_rob_value   (t_rob_value   [i]),
@@ -1533,7 +1736,11 @@ module xs_iq_entries_core
         .o_trans_ld_dep      (t_ld_dep      [i]),
         .o_trans_exu_src     (t_exu_src     [i]),
         .o_trans_use_rc      (t_use_rc      [i]),
-        .o_trans_rc_idx      (t_rc_idx      [i])
+        .o_trans_rc_idx      (t_rc_idx      [i]),
+        .o_trans_vm          (t_vm          [i]),
+        .o_trans_vpr         (t_vpr         [i]),
+        .o_trans_vr_mask     (t_vr_mask     [i]),
+        .o_trans_vr_mbidx    (t_vr_mbidx    [i])
       );
     end
   endgenerate
@@ -1573,12 +1780,74 @@ module xs_iq_entries_core
       resp_bits_tab[d][3]  = OG_CONST_RESP[3];
     end
 
+  // 访存向量专属的三样也按 [口][timer] 查表;timer==3 那档恒 0(被访存响应顶替)
+  logic [NUM_DEQ-1:0][3:0]                 resp_vpr_tab;
+  logic [NUM_DEQ-1:0][3:0][VR_MASK_W-1:0]  resp_vr_mask_tab;
+  logic [NUM_DEQ-1:0][3:0][VR_MBIDX_W-1:0] resp_vr_mbidx_tab;
+  always_comb
+    for (int d = 0; d < NUM_DEQ; d++) begin
+      resp_vpr_tab[d]      = '0;
+      resp_vr_mask_tab[d]  = '0;
+      resp_vr_mbidx_tab[d] = '0;
+      for (int k = 0; k < 3; k++) begin
+        resp_vpr_tab[d][k]      = og_vpr[k][d];
+        resp_vr_mask_tab[d][k]  = og_vr_mask[k][d];
+        resp_vr_mbidx_tab[d][k] = og_vr_mbidx[k][d];
+      end
+    end
+
+  // ---------------------------------------------------------------------------
+  // §5a needFeedBack:访存流水回来的响应按 sqIdx(/lqIdx)匹配回条目。
+  //   命中判据用的是 entry 出口的**负载** payload.sqIdx / payload.lqIdx
+  //   (golden `_enqEntries_0_io_commonOut_entry_bits_payload_sqIdx_flag`),
+  //   不是访存向量那组 status.vecMem —— 两者入队值相同,但结构上是两组寄存器。
+  //   ★MEM_RESP_MODE=2 时各路按位或★:golden 这里是 Mux1H(hitRespsVec, …),
+  //   而 hitRespsVec 不保证 one-hot(三路来源可以同拍打中同一条目),
+  //   所以 resp / mask / mbIdx 都要写成「命中则或进来」,不能写成优先选择。
+  // ---------------------------------------------------------------------------
+  logic [NUM_ENTRIES-1:0][NUM_MEM_SRC-1:0] mem_hit;
   always_comb
     for (int i = 0; i < NUM_ENTRIES; i++) begin
-      logic p;
-      p = (NUM_DEQ > 1) ? e_deq_port_idx[i] : 1'b0;
-      x_resp_valid[i] = resp_valid_tab[p][e_issue_timer[i]];
-      x_resp_bits [i] = resp_bits_tab [p][e_issue_timer[i]];
+      logic [SQ_VAL_W:0] ety_sq;
+      logic [LQ_VAL_W:0] ety_lq;
+      ety_sq = {y_payload[i][PLB_SQ_FLAG], y_payload[i][PLB_SQ_VALUE +: SQ_VAL_W]};
+      ety_lq = {y_payload[i][PLB_LQ_FLAG], y_payload[i][PLB_LQ_VALUE +: LQ_VAL_W]};
+      for (int m = 0; m < NUM_MEM_SRC; m++)
+        mem_hit[i][m] = mem_valid[m] & (mem_sq_idx[m] == ety_sq)
+                      & ((MEM_RESP_MODE != 2) | (mem_lq_idx[m] == ety_lq));
+    end
+
+  always_comb
+    for (int i = 0; i < NUM_ENTRIES; i++) begin
+      logic       p;
+      logic [1:0] tm;
+      p  = (NUM_DEQ > 1) ? e_deq_port_idx[i] : 1'b0;
+      tm = e_issue_timer[i];
+      x_resp_valid[i]    = resp_valid_tab[p][tm];
+      x_resp_bits [i]    = resp_bits_tab [p][tm];
+      x_resp_vpr[i]      = resp_vpr_tab[p][tm];
+      x_resp_vr_mask[i]  = resp_vr_mask_tab[p][tm];
+      x_resp_vr_mbidx[i] = resp_vr_mbidx_tab[p][tm];
+      if (MEM_RESP_MODE == 1 && tm[1]) begin
+        // StaMou:timer 2/3 两档都走 slowResp;resp 本身不经命中门控
+        // (golden 的 bits_resp 分支就是裸的 io_fromMem_slowResp_0_bits_resp)
+        x_resp_valid[i] = mem_hit[i][0];
+        x_resp_bits [i] = mem_resp[0];
+      end
+      if (MEM_RESP_MODE == 2 && (&tm)) begin
+        x_resp_valid[i]    = |mem_hit[i];
+        x_resp_bits [i]    = '0;
+        x_resp_vpr[i]      = 1'b0;
+        x_resp_vr_mask[i]  = '0;
+        x_resp_vr_mbidx[i] = '0;
+        for (int m = 0; m < NUM_MEM_SRC; m++)
+          if (mem_hit[i][m]) begin
+            x_resp_bits [i]    |= mem_resp[m];
+            x_resp_vpr[i]      |= mem_vpr[m];
+            x_resp_vr_mask[i]  |= mem_vr_mask[m];
+            x_resp_vr_mbidx[i] |= mem_vr_mbidx[m];
+          end
+      end
     end
 
   // ---------------------------------------------------------------------------
@@ -1716,6 +1985,10 @@ module xs_iq_entries_core
   logic [NUM_ENQ-1:0][NUM_REGSRC-1:0][EXU_W-1:0]  c_exu_src;
   logic [NUM_ENQ-1:0][NUM_REGSRC-1:0]             c_use_rc;
   logic [NUM_ENQ-1:0][NUM_REGSRC-1:0][RC_IDX_W-1:0] c_rc_idx;
+  logic [NUM_ENQ-1:0][VM_W-1:0]                   c_vm;
+  logic [NUM_ENQ-1:0]                             c_vpr;
+  logic [NUM_ENQ-1:0][VR_MASK_W-1:0]              c_vr_mask;
+  logic [NUM_ENQ-1:0][VR_MBIDX_W-1:0]             c_vr_mbidx;
 
   always_comb
     for (int i = 0; i < NUM_ENQ; i++) begin
@@ -1738,6 +2011,10 @@ module xs_iq_entries_core
         c_exu_src[i]      = t_exu_src[i];
         c_use_rc[i]       = t_use_rc[i];
         c_rc_idx[i]       = t_rc_idx[i];
+        c_vm[i]           = t_vm[i];
+        c_vpr[i]          = t_vpr[i];
+        c_vr_mask[i]      = t_vr_mask[i];
+        c_vr_mbidx[i]     = t_vr_mbidx[i];
       end else begin
         `IQE_MUX1H(c_valid[i],        simp_deq_sel_vec[i][k], t_valid[SIMP_BASE+k],        NUM_SIMP)
         `IQE_MUX1H(c_rob_flag[i],     simp_deq_sel_vec[i][k], t_rob_flag[SIMP_BASE+k],     NUM_SIMP)
@@ -1757,6 +2034,10 @@ module xs_iq_entries_core
         `IQE_MUX1H(c_exu_src[i],      simp_deq_sel_vec[i][k], t_exu_src[SIMP_BASE+k],      NUM_SIMP)
         `IQE_MUX1H(c_use_rc[i],       simp_deq_sel_vec[i][k], t_use_rc[SIMP_BASE+k],       NUM_SIMP)
         `IQE_MUX1H(c_rc_idx[i],       simp_deq_sel_vec[i][k], t_rc_idx[SIMP_BASE+k],       NUM_SIMP)
+        `IQE_MUX1H(c_vm[i],           simp_deq_sel_vec[i][k], t_vm[SIMP_BASE+k],           NUM_SIMP)
+        `IQE_MUX1H(c_vpr[i],          simp_deq_sel_vec[i][k], t_vpr[SIMP_BASE+k],          NUM_SIMP)
+        `IQE_MUX1H(c_vr_mask[i],      simp_deq_sel_vec[i][k], t_vr_mask[SIMP_BASE+k],      NUM_SIMP)
+        `IQE_MUX1H(c_vr_mbidx[i],     simp_deq_sel_vec[i][k], t_vr_mbidx[SIMP_BASE+k],     NUM_SIMP)
       end
     end
 
@@ -1772,7 +2053,9 @@ module xs_iq_entries_core
       x_src_type[i]     = enq_src_type[i];
       x_src_state[i]    = enq_src_state[i];
       x_data_src[i]     = enq_data_src[i];
-      x_blocked[i]      = 1'b0;
+      // 派遣给的 status.blocked:只有访存向量变体的 enq 条目真有 blocked 寄存器,
+      // 其余变体 enq 条目不读它(且薄层钉 0),与原先的常数 0 等价。
+      x_blocked[i]      = enq_blocked[i];
       x_issued[i]       = 1'b0;
       x_first_issue[i]  = 1'b0;
       x_issue_timer[i]  = 2'h0;
@@ -1784,6 +2067,12 @@ module xs_iq_entries_core
       x_exu_src[i]      = '0;
       x_use_rc[i]       = enq_use_rc[i];
       x_rc_idx[i]       = enq_rc_idx[i];
+      // status.vecMem 由派遣给;isVecPartReplay / vecReplayMask / MbIdx 派遣侧没有
+      // (golden 顶层 io_enq 无这三组端口),enq 条目装载时自己清 0。
+      x_vm[i]           = enq_vm[i];
+      x_vpr[i]          = 1'b0;
+      x_vr_mask[i]      = '0;
+      x_vr_mbidx[i]     = '0;
       x_trans_sel[i]    = (enq_can_trans2simp & simp_sel_v[i])
                         | (enq_can_trans2comp & comp_sel_v[i]);
     end
@@ -1808,6 +2097,10 @@ module xs_iq_entries_core
       `IQE_MUX1H(x_exu_src[e],      final_simp_sel[k][j], t_exu_src[k],      NUM_ENQ)
       `IQE_MUX1H(x_use_rc[e],       final_simp_sel[k][j], t_use_rc[k],       NUM_ENQ)
       `IQE_MUX1H(x_rc_idx[e],       final_simp_sel[k][j], t_rc_idx[k],       NUM_ENQ)
+      `IQE_MUX1H(x_vm[e],           final_simp_sel[k][j], t_vm[k],           NUM_ENQ)
+      `IQE_MUX1H(x_vpr[e],          final_simp_sel[k][j], t_vpr[k],          NUM_ENQ)
+      `IQE_MUX1H(x_vr_mask[e],      final_simp_sel[k][j], t_vr_mask[k],      NUM_ENQ)
+      `IQE_MUX1H(x_vr_mbidx[e],     final_simp_sel[k][j], t_vr_mbidx[k],     NUM_ENQ)
       x_trans_sel[e] = 1'b0;
       for (int i = 0; i < NUM_ENQ; i++)
         x_trans_sel[e] |= simp_deq_sel_vec[i][j] & simp_can_trans2comp[i];
@@ -1836,6 +2129,10 @@ module xs_iq_entries_core
       `IQE_MUX1H(x_exu_src[e],      final_comp_sel[k][j], c_exu_src[k],      NUM_ENQ)
       `IQE_MUX1H(x_use_rc[e],       final_comp_sel[k][j], c_use_rc[k],       NUM_ENQ)
       `IQE_MUX1H(x_rc_idx[e],       final_comp_sel[k][j], c_rc_idx[k],       NUM_ENQ)
+      `IQE_MUX1H(x_vm[e],           final_comp_sel[k][j], c_vm[k],           NUM_ENQ)
+      `IQE_MUX1H(x_vpr[e],          final_comp_sel[k][j], c_vpr[k],          NUM_ENQ)
+      `IQE_MUX1H(x_vr_mask[e],      final_comp_sel[k][j], c_vr_mask[k],      NUM_ENQ)
+      `IQE_MUX1H(x_vr_mbidx[e],     final_comp_sel[k][j], c_vr_mbidx[k],     NUM_ENQ)
       x_trans_sel[e] = 1'b0;
     end
   end
@@ -1855,6 +2152,10 @@ module xs_iq_entries_core
       logic [NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] q_ld, s_ld, p_ld;
       logic [NUM_REGSRC-1:0][RC_IDX_W-1:0]               q_rc, s_rc, p_rc;
       logic                              q_cx,        s_cx,        p_cx;
+      logic [VM_W-1:0]                   q_vm,        s_vm,        p_vm;
+      logic                              q_vpr,       s_vpr,       p_vpr;
+      logic [VR_MASK_W-1:0]              q_vrm,       s_vrm,       p_vrm;
+      logic [VR_MBIDX_W-1:0]             q_vrb,       s_vrb,       p_vrb;
 
       // enq 段最老
       `IQE_MUX1H(q_rob_flag,  enq_oldest_sel[d][k], y_rob_flag[k],  NUM_ENQ)
@@ -1866,6 +2167,10 @@ module xs_iq_entries_core
       `IQE_MUX1H(q_ld,        enq_oldest_sel[d][k], y_ld_dep[k],    NUM_ENQ)
       `IQE_MUX1H(q_rc,        enq_oldest_sel[d][k], y_rc_idx[k],    NUM_ENQ)
       `IQE_MUX1H(q_cx,        enq_oldest_sel[d][k], e_cancel_bypass[k], NUM_ENQ)
+      `IQE_MUX1H(q_vm,        enq_oldest_sel[d][k], y_vm[k],        NUM_ENQ)
+      `IQE_MUX1H(q_vpr,       enq_oldest_sel[d][k], y_vpr[k],       NUM_ENQ)
+      `IQE_MUX1H(q_vrm,       enq_oldest_sel[d][k], y_vr_mask[k],   NUM_ENQ)
+      `IQE_MUX1H(q_vrb,       enq_oldest_sel[d][k], y_vr_mbidx[k],  NUM_ENQ)
       // simp 段最老
       `IQE_MUX1H(s_rob_flag,  simp_oldest_sel[d][k], y_rob_flag[SIMP_BASE+k],  NUM_SIMP)
       `IQE_MUX1H(s_rob_value, simp_oldest_sel[d][k], y_rob_value[SIMP_BASE+k], NUM_SIMP)
@@ -1876,6 +2181,10 @@ module xs_iq_entries_core
       `IQE_MUX1H(s_ld,        simp_oldest_sel[d][k], y_ld_dep[SIMP_BASE+k],    NUM_SIMP)
       `IQE_MUX1H(s_rc,        simp_oldest_sel[d][k], y_rc_idx[SIMP_BASE+k],    NUM_SIMP)
       `IQE_MUX1H(s_cx,        simp_oldest_sel[d][k], e_cancel_bypass[SIMP_BASE+k], NUM_SIMP)
+      `IQE_MUX1H(s_vm,        simp_oldest_sel[d][k], y_vm[SIMP_BASE+k],       NUM_SIMP)
+      `IQE_MUX1H(s_vpr,       simp_oldest_sel[d][k], y_vpr[SIMP_BASE+k],      NUM_SIMP)
+      `IQE_MUX1H(s_vrm,       simp_oldest_sel[d][k], y_vr_mask[SIMP_BASE+k],  NUM_SIMP)
+      `IQE_MUX1H(s_vrb,       simp_oldest_sel[d][k], y_vr_mbidx[SIMP_BASE+k], NUM_SIMP)
       // comp 段最老
       `IQE_MUX1H(p_rob_flag,  comp_oldest_sel[d][k], y_rob_flag[COMP_BASE+k],  NUM_COMP)
       `IQE_MUX1H(p_rob_value, comp_oldest_sel[d][k], y_rob_value[COMP_BASE+k], NUM_COMP)
@@ -1886,6 +2195,10 @@ module xs_iq_entries_core
       `IQE_MUX1H(p_ld,        comp_oldest_sel[d][k], y_ld_dep[COMP_BASE+k],    NUM_COMP)
       `IQE_MUX1H(p_rc,        comp_oldest_sel[d][k], y_rc_idx[COMP_BASE+k],    NUM_COMP)
       `IQE_MUX1H(p_cx,        comp_oldest_sel[d][k], e_cancel_bypass[COMP_BASE+k], NUM_COMP)
+      `IQE_MUX1H(p_vm,        comp_oldest_sel[d][k], y_vm[COMP_BASE+k],       NUM_COMP)
+      `IQE_MUX1H(p_vpr,       comp_oldest_sel[d][k], y_vpr[COMP_BASE+k],      NUM_COMP)
+      `IQE_MUX1H(p_vrm,       comp_oldest_sel[d][k], y_vr_mask[COMP_BASE+k],  NUM_COMP)
+      `IQE_MUX1H(p_vrb,       comp_oldest_sel[d][k], y_vr_mbidx[COMP_BASE+k], NUM_COMP)
 
       o_deq_rob_flag [d] = comp_oldest_valid[d] ? p_rob_flag
                          : simp_oldest_valid[d] ? s_rob_flag  : q_rob_flag;
@@ -1906,6 +2219,15 @@ module xs_iq_entries_core
       // cancelDeqVec 走的是与 deqEntry **同一个**三级选择(Entries.scala §deq else 分支)
       o_cancel_deq   [d] = comp_oldest_valid[d] ? p_cx
                          : simp_oldest_valid[d] ? s_cx        : q_cx;
+      // 访存向量状态组走同一个三级选择
+      o_deq_vm       [d] = comp_oldest_valid[d] ? p_vm
+                         : simp_oldest_valid[d] ? s_vm        : q_vm;
+      o_deq_vpr      [d] = comp_oldest_valid[d] ? p_vpr
+                         : simp_oldest_valid[d] ? s_vpr       : q_vpr;
+      o_deq_vr_mask  [d] = comp_oldest_valid[d] ? p_vrm
+                         : simp_oldest_valid[d] ? s_vrm       : q_vrm;
+      o_deq_vr_mbidx [d] = comp_oldest_valid[d] ? p_vrb
+                         : simp_oldest_valid[d] ? s_vrb       : q_vrb;
     end
 
   // ---------------------------------------------------------------------------
@@ -1955,23 +2277,21 @@ module xs_iq_entries_core
   //   VEC 族最小的 VfdivVidiv 与 INT 族的 AluCsrFenceDiv 都已经落在本核上,
   //   两者合起来覆盖了「有/无 IQ 唤醒」这条最大的分界。剩下的:
   //
-  //   (a) isVecMemIQ:status.vecMem(sqIdx/lqIdx/numLsElem)、blocked 的真逻辑
-  //       (!isFirstLoad && isVleff)、按 sqIdx/lqIdx 匹配的 mem 响应。
-  //       VlduVstu / VlduVstuVseglduVsegstu 两个变体需要。
-  //       本核 blocked 只做「入队装载 + 次态恒 0」。
-  //   (b) needFeedBackSqIdx/LqIdx:issueResp 要在 datapath 响应和 mem 响应之间
-  //       按 issueTimer 高位切换(Entries.scala §issueRespVec 的 if 分支)。
-  //       StaMou / VlduVstu* 需要。
+  //   (a) isVecMemIQ:status.vecMem / isVecPartReplay / vecReplayMask/MbIdx 与 blocked
+  //       的真逻辑 —— ★已实现★(HAS_VEC_MEM,§2.6a/§2.6c),VlduVstu* 两个变体用。
+  //   (b) needFeedBackSqIdx/LqIdx —— ★已实现★(MEM_RESP_MODE,§5a),
+  //       StaMou 与 VlduVstu* 用。
   //   (c) deqFuSame:numDeq=2 且两个口功能相同时,走 subDeqPolicy 的双取
   //       (Entries.scala §deq 的 if (params.deqFuSame))。G1 的 14 个变体顶层
   //       都没有 io_subDeq* 端口,说明这一支当前配置下用不到 —— 但真要用到时
   //       cancelDeqVec 的选择方式也跟着变,不要照抄本核的三级选择。
   //   (d) isAllComp / isAllSimp:单一 othersTransPolicy 的转移分支。
   //       G1 的 14 个变体全是 hasCompAndSimp,故暂不需要。
-  //   (e) inVfSchd/inMemSchd 的 dataSources=bypass2 分支
-  //       (EntryBundles §srcStatusNext.dataSources 的前两个 if)。
-  //       向量/访存族里 readVfRf && hasIQWakeUp 的变体需要;
-  //       本核只实现了第三个 else 分支(INT/FP 族走的那条)。
+  //   (e) ★已划掉★ inVfSchd/inMemSchd 的 dataSources=bypass2 分支:
+  //       14 个变体实测都不走(docs/lanes/entries-mem-coverage-judgment.md E6)——
+  //         EnqEntry_6.sv:2897-2902 / EnqEntry_24.sv:2359-2364 走 IQ 那条,
+  //         EnqEntryVecMem_2.sv:2834-2837 是 `T ? 4'h8 : reg`,
+  //       都是本核已实现的那条 else 分支。留着行号当依据,别再为它写逻辑。
   //   (f) needImm 之外的 SrcStatus 选配项(useRegCache/regCacheIdx 已实现)。
   //
   // ★ 动本核之前先跑 verif/ut/Entries_field_matrix/gen_matrix.py --check ★

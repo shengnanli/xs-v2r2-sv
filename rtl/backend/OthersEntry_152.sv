@@ -368,6 +368,8 @@ module OthersEntry_152 (
     .deq_port_idx_write(io_commonIn_deqPortIdxWrite),
     .resp_valid(io_commonIn_issueResp_valid),
     .resp_bits(io_commonIn_issueResp_bits_resp),
+    .enq_vm('0), .enq_vpr('0), .enq_vr_mask('0), .enq_vr_mbidx('0),
+    .lq_deq_ptr('0), .resp_vpr('0), .resp_vr_mask('0), .resp_vr_mbidx('0),
     .trans_sel(1'b0),
     .o_valid(io_commonOut_valid), .o_issued(io_commonOut_issued),
     .o_can_issue(io_commonOut_canIssue),

@@ -113,6 +113,21 @@ def array_delay_pins(v):
     return pins
 
 
+def vm_layout(v):
+    """status.vecMem 在核 r_vm 里的布局：golden 寄存器名 -> (lsb, 位宽)。
+
+    必须与 entries_gen.py 里 `.enq_vm({…numLsElem, lqIdx_flag, lqIdx_value,
+    sqIdx_flag, sqIdx_value})` 的拼接顺序一致（高位在前）。
+    """
+    sqv, lqv = v.vm_sq_w - 1, v.vm_lq_w - 1
+    pre = 'entryReg_status_vecMem_'
+    return {pre + 'sqIdx_value': (0, sqv),
+            pre + 'sqIdx_flag':  (sqv, 1),
+            pre + 'lqIdx_value': (v.vm_sq_w, lqv),
+            pre + 'lqIdx_flag':  (v.vm_sq_w + lqv, 1),
+            pre + 'numLsElem':   (v.vm_sq_w + v.vm_lq_w, v.vm_nlse_w)}
+
+
 def build(v):
     """返回 [(ref_leaf, impl_leaf, entry_index)]，已按条目分段展开。"""
     segs = ([('enqEntries_%d' % i, v.enq_mod, True) for i in range(v.n_enq)] +
@@ -169,6 +184,28 @@ def build(v):
                     for leaf, b in ref_bits(gname, w):
                         pins.append((f'{inst}/{leaf}',
                                      f'g_entry[{k}].u_e/{isig}[{s}][{b}]'))
+        # --- 访存向量状态组（核 §2.6c）：golden 逐字段，核是 r_vm 一根向量 + 三个寄存器 ---
+        #     r_vm = {numLsElem, lqIdx{flag,value}, sqIdx{flag,value}}，布局与
+        #     entries_gen.py 给 .enq_vm 的拼接顺序是同一张表（vm_layout）。
+        if v.has_vec_mem:
+            for gname, (lsb, w) in vm_layout(v).items():
+                if gname not in regs:
+                    sys.exit(f'ERROR: {mod} 缺访存向量寄存器 {gname}')
+                if regs[gname] != w:
+                    sys.exit(f'ERROR: {mod}.{gname} 位宽 {regs[gname]} != {w}')
+                for leaf, b in ref_bits(gname, w):
+                    pins.append((f'{inst}/{leaf}', f'g_entry[{k}].u_e/r_vm_reg[{lsb + b}]'))
+            for gname, iname in (('entryReg_status_isVecPartReplay', 'r_vpr_reg'),
+                                 ('entryReg_status_vecReplayMask', 'r_vr_mask_reg'),
+                                 ('entryReg_status_vecReplayMbIdx', 'r_vr_mbidx_reg')):
+                if gname not in regs:
+                    sys.exit(f'ERROR: {mod} 缺访存向量寄存器 {gname}')
+                w = regs[gname]
+                if w == 1:
+                    pins.append((f'{inst}/{gname}_reg', f'g_entry[{k}].u_e/{iname}'))
+                else:
+                    for leaf, b in ref_bits(gname, w):
+                        pins.append((f'{inst}/{leaf}', f'g_entry[{k}].u_e/{iname}[{b}]'))
     # 阵列级打拍寄存器（两侧无共同词干，签名分析配不齐，必须钉名）
     for r, i in array_delay_pins(v):
         pins.append((r, i))
@@ -212,8 +249,12 @@ def check_reg_bijection(v):
         ('条目 blocked(simp/comp)', True,
          'entryReg_status_blocked' in simp_regs and
          'entryReg_status_blocked' in comp_regs),
-        ('条目 blocked(enq) —— 核**不**生成', False,
+        # 访存向量变体的 enq 条目也有 blocked（核 §2.6a 的例外），其余变体没有
+        ('条目 blocked(enq) —— 只有 HAS_VEC_MEM 才生成', v.has_vec_mem,
          'entryReg_status_blocked' in enq_regs),
+        ('条目 访存向量状态组(三种条目)', v.has_vec_mem,
+         all('entryReg_status_isVecPartReplay' in r
+             for r in (enq_regs, simp_regs, comp_regs))),
         ('条目 srcLoadDependency(comp)', v.comp_has_ld_dep,
          'entryReg_status_srcStatus_0_srcLoadDependency_0' in comp_regs),
         ('条目 exuSources', v.n_wk_iq > 0,

@@ -1,0 +1,9 @@
+{
+  "target": "EntriesStdMoud",
+  "ut": "EntriesStdMoud",
+  "regs": 12638,
+  "outs": 1415,
+  "expected": 14053,
+  "merge_dup": "false",
+  "model_applicable": true
+}
