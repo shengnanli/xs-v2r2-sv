@@ -1,7 +1,7 @@
 // Expose counter-overflow bits allowed by the current privilege and virtualization mode.
 // The small semantic core makes the architectural transform explicit;
 // the outer module preserves the generated RTL interface exactly.
-module ScountovfModule(
+module ScountovfModule (
   output logic [31:0] rdata,
   input  logic [28:0] ofVec,
   input  logic [1:0]  privState_PRVM,
