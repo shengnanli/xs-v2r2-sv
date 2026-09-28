@@ -1,0 +1,10 @@
+{
+  "target": "IssueQueueVlduVstuVseglduVsegstu",
+  "ut": "IssueQueueVlduVstuVseglduVsegstu",
+  "regs": 18767,
+  "outs": 1779,
+  "expected": 20546,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "iqfam：模型 = golden 闭包寄存器位 + output 位；诊断跑(b8385b7f) constant_reg=120，开 vmucp 后预期实测 20426"
+}

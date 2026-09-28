@@ -152,3 +152,4 @@ FM 在本父级里把 PipeWithFlush_1 的那几位也计成了比较点（两侧
 | IssueQueueVfmaVialuFixVfalu | 23236 | 062e0583：passing 20739 / unread 2356（全 matched_nc，全在钉点表）/ constant_reg 141 | **23095**（差 141，应 = constant_reg 141） |
 | IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf | 23603 | 2fed422e：passing 21113 / unread 2347（全 matched_nc，全在钉点表）/ constant_reg 143 | **23460**（差 143，应 = constant_reg 143） |
 | IssueQueueVlduVstu | 20514 | 8a2333a6：passing 18090 / unread 2304（全 matched_nc，全在钉点表）/ constant_reg 120 | **20394**（差 120，应 = constant_reg 120） |
+| IssueQueueVlduVstuVseglduVsegstu | 20546 | b8385b7f：passing 18122 / unread 2304（全 matched_nc，全在钉点表）/ constant_reg 120 | **20426**（差 120，应 = constant_reg 120） |
