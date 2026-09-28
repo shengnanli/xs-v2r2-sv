@@ -396,3 +396,34 @@ FastArbiter_2 io_chosen 低位接错 errors=162415，均 CAUGHT。9 档矩阵后
 | RequestBuffer | 1708 | 119（bufferTimer 64 + chosenQ.ram 30 + issueArb.pendingMask[0] 1 + perf 1 位 12 + …）| 1592（取自诊断跑） |
 RequestBuffer 的 1708 − 1592 = 116 ≠ 119（差 3）我现在指认不了，第一跑后逐点对账。
 第二跑：三者按 vmucp standing rule 开 vmucp，passing = 第一跑 + unread，SUCCEEDED。
+
+### 10.4 对账（第一跑，commit 4e3aa2c9，evidence/4e3aa2c94341/）与后续登记
+
+- FastArbiter_2 / Queue1_ChosenQBundle：**ERROR**（未出 receipt）—— RequestBuffer 目录的钉点文件对目录里每个 FM 目标都会
+  source，而它写死了 RequestBuffer 的路径，另两个目标一进来就钉点失败报错。已给钉点加 `if {$top eq "RequestBuffer"}` 守卫。
+- RequestBuffer：passing **1592**（= 诊断跑，= 登记）、Constant reg 9、unread **107**（我登记的 119 算重了 12：perf 的 12 位
+  已含在"诊断跑里 12 个落单"里）。逐点：bufferTimer 64 + perf 1 位 12（钉点配对，RB_PIN ok=12）+ chosenQ.ram 30 +
+  issueArb.pendingMask[0] 1，全部 matched_nc。模型差 116 = 107 + Constant reg 9，逐位指认完毕（我登记时说"差 3 指认不了"，
+  那 3 是我把 unread 数错算成 119 造成的）。
+- 后续登记：
+  | 目标 | 预测 |
+  |---|---|
+  | FastArbiter_2（vmucp 关） | passing 153、unread 1（pendingMask[0]）⇒ PARTIAL；再开 vmucp ⇒ 154 SUCCEEDED |
+  | Queue1_ChosenQBundle（vmucp 关） | passing 765、unread 22（ram 的 valid/rdy/waitMP/waitMS）⇒ PARTIAL；再开 vmucp ⇒ 787 SUCCEEDED |
+  | RequestBuffer（vmucp 开，verif/fm_target_config/RequestBuffer.tcl） | passing **1699**、unread 0、SUCCEEDED |
+
+## 11. SinkC
+
+### 11.1 结构 / UT
+
+- 可读核 `xs_SinkC_core`（§1 beat 计数 / §2 4 项缓冲与分配 / §3 ProbeAck 应答与 releaseBuf 写 / §4 出队后数据读出与新数据嵌套），
+  TaskBundle 结构体与 wrapper 由 `scripts/gen_l2_sinkc.py` 生成；child RRArbiterInit_16（PROVEN_DIRECT）两侧白盒。
+- UT（verif/ut/SinkC，commit 1ad5331b）seed1 random 20k：checks=2220000 errors=0，111/111 输出翻转；覆盖 满 11278 / 反压 2222 /
+  出任务 2092 / 新数据嵌套写 refillBuf 245 / ProbeAckData 写 releaseBuf 885 / 两拍报文第二拍 4676。变异：beat 号不看 beats1
+  errors=10841、第二拍也反压 errors=202594、refillBuf 两拍次序颠倒 errors=19963，均 CAUGHT。9 档矩阵后台跑。
+
+### 11.2 跑前预测（★跑完不许改★）
+
+| 目标 | passing | 其余 |
+|---|---|---|
+| SinkC | **6868**（regs 4887 + outs 1981） | failing 0 / unmatched 0 / unread 0（我没找到对称死位）/ 无黑盒 / SUCCEEDED |

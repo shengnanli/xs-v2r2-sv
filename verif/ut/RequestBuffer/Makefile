@@ -20,6 +20,9 @@ PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
 
+# vmucp 按目标开：RequestBuffer 107 个对称死位（依据见 verif/fm_target_config/RequestBuffer.tcl）。
+fm-RequestBuffer: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 INITREG  ?= random
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)

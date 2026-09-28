@@ -1,0 +1,618 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "RequestBuffer",
+ "run_id": "RequestBuffer-20260928T211431Z-4e3aa2c9",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/RequestBuffer.sv",
+   "kind": "golden",
+   "sha256": "1b5c73aa39cf6cc16fadfab3316ca1459384a3386a365ef4030cb300946f4022"
+  },
+  {
+   "path": "golden-rtl/FastArbiter_2.sv",
+   "kind": "golden",
+   "sha256": "512c806b1f1e9d73a8715b7854aa02237200a7289f096dadee0f518bbf8517c3"
+  },
+  {
+   "path": "golden-rtl/Queue1_ChosenQBundle.sv",
+   "kind": "golden",
+   "sha256": "0c8c5477ac5ea4a0ca081d090f7768ff85b290607fedccd0612278e87dc23f5e"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/uncore/RequestBuffer.sv",
+   "kind": "repo",
+   "sha256": "ad4321c227811fe39f1d8e7b9f1ad78f80476c2c76e1dd7015c8345bf6801dc2"
+  },
+  {
+   "path": "rtl/common/xs_FastArbiter_core.sv",
+   "kind": "repo",
+   "sha256": "589e52634821c1701e1567bd5ce921eca305f26513303c055dad40fe8cefd804"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_2.sv",
+   "kind": "repo",
+   "sha256": "6c32548b3060a48da9a33bcb92f371565f6fbdf7c83b29064937a6ef1649b0c1"
+  },
+  {
+   "path": "rtl/common/xs_ChiselQueue1_core.sv",
+   "kind": "repo",
+   "sha256": "8c12ab1b2180d56e2c80d07cd66a488272a41b455496e87d7f097e15e87e3fa1"
+  },
+  {
+   "path": "rtl/uncore/Queue1_ChosenQBundle.sv",
+   "kind": "repo",
+   "sha256": "6c5e2c907147420b2f953148b3899bea191e15c2c0f2d7d9186c27f1de7eb2db"
+  }
+ ],
+ "impl_commit": "4e3aa2c94341678bacff18817c6d6e34a8e24e42",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "4d9854ada37dbe257312b39599c48a7a45e03062d86e44539454fb75e10d8771"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "RequestBuffer-20260928T211431Z-4e3aa2c9",
+  "top": "RequestBuffer",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 1592,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 107
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [
+    {
+     "ref_path": "r:/WORK/RequestBuffer/REG_1_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/timerClear_reg[0]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/REG_2_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/validPrev_reg[1]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/REG_3_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/timerClear_reg[1]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/REG_4_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/validPrev_reg[2]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/REG_5_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/timerClear_reg[2]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/REG_6_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/validPrev_reg[3]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/REG_7_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/timerClear_reg[3]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/REG_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/validPrev_reg[0]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[0]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][0]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[10]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][10]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[11]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][11]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[12]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][12]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[13]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][13]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[14]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][14]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[15]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][15]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[1]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][1]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[2]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][2]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[3]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][3]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[4]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][4]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[5]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][5]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[6]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][6]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[7]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][7]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[8]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][8]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_0_reg[9]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[0][9]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[0]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][0]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[10]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][10]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[11]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][11]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[12]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][12]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[13]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][13]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[14]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][14]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[15]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][15]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[1]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][1]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[2]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][2]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[3]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][3]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[4]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][4]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[5]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][5]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[6]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][6]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[7]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][7]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[8]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][8]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_1_reg[9]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[1][9]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[0]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][0]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[10]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][10]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[11]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][11]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[12]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][12]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[13]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][13]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[14]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][14]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[15]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][15]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[1]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][1]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[2]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][2]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[3]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][3]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[4]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][4]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[5]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][5]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[6]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][6]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[7]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][7]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[8]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][8]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_2_reg[9]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[2][9]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[0]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][0]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[10]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][10]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[11]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][11]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[12]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][12]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[13]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][13]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[14]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][14]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[15]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][15]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[1]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][1]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[2]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][2]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[3]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][3]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[4]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][4]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[5]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][5]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[6]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][6]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[7]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][7]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[8]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][8]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/bufferTimer_3_reg[9]",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/bufferTimer_reg[3][9]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[0]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[0]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[158]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[158]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[159]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[159]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[160]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[160]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[161]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[161]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[162]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[162]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[163]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[163]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[164]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[164]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[165]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[165]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[1]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[1]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[385]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[385]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[386]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[386]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[387]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[387]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[388]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[388]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[389]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[389]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[390]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[390]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[391]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[391]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[392]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[392]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[393]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[393]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[394]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[394]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[395]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[395]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[396]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[396]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[397]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[397]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[398]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[398]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[399]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[399]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[400]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[400]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[401]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[401]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[402]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[402]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[403]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[403]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/chosenQ/ram_reg[404]",
+     "impl_path": "i:/WORK/RequestBuffer/chosenQ/u_core/ram_reg[404]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/enable_REG_1_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/histValidPrev_reg[1]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/enable_REG_2_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/histValidPrev_reg[2]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/enable_REG_3_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/histValidPrev_reg[3]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/enable_REG_reg",
+     "impl_path": "i:/WORK/RequestBuffer/u_core/histValidPrev_reg[0]"
+    },
+    {
+     "ref_path": "r:/WORK/RequestBuffer/issueArb/pendingMask_reg[0]",
+     "impl_path": "i:/WORK/RequestBuffer/issueArb/u_core/pendingMask_reg[0]"
+    }
+   ],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "PARTIAL",
+ "verdict_detail": {
+  "passing": 1592,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": 107,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 9,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "RequestBuffer",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": "strict_unread!=0",
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
