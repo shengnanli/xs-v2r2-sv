@@ -181,6 +181,7 @@ def gen(v):
         L.append('')
     L.append('  // ' + '=' * 76)
     L.append('  // §E 顶层输出')
+    zeros = []
     driven = set()
     for mod, inst, conns in c.insts:
         cp = {n: dd for dd, _, n in c.child_ports[mod]}
@@ -196,7 +197,16 @@ def gen(v):
         e = c.wires.get(n)
         if e is None:
             die(f'{v}: 输出 {n} 没有驱动')
-        L.append(f'  assign {n} = {c.res(e, n)};')
+        r = c.res(e, n)
+        if re.fullmatch(r"\d+'h0+", r):
+            zeros.append(n)
+            continue
+        L.append(f'  assign {n} = {r};')
+    if zeros:
+        L.append('  // 下列输出在 golden 里恒为 0：对应的 IQ 没有这类写回忙表 / 该字段被 Chisel 置 0')
+        L.append('  assign {')
+        L.append(',\n'.join(f'    {n}' for n in zeros))
+        L.append("  } = '0;")
     L.append('endmodule')
     return gen_iq.with_nav('\n'.join(L) + '\n')
 
