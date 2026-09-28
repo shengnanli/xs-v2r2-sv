@@ -214,6 +214,21 @@ def replace_region(txt, tag, body):
     return txt[:b.start()] + b.group(1) + body + '\n' + indent + b.group(3) + txt[b.end():]
 
 
+def with_nav(txt):
+    """>1500 行的文件必须带「本文件导航」（readability_audit E 类）；复用 gen_file_nav 的同一份实现。"""
+    if txt.count('\n') + 1 <= 1500:
+        return txt
+    import tempfile
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import gen_file_nav
+    with tempfile.TemporaryDirectory() as d:
+        import pathlib
+        tmp = pathlib.Path(d) / 'RequestArb.sv'
+        tmp.write_text(txt)
+        gen_file_nav.apply(tmp)
+        return tmp.read_text()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true')
@@ -222,6 +237,7 @@ def main():
     cur = open(RTL).read()
     new = replace_region(cur, 'task_t', emit_struct(F))
     new = replace_region(new, 'wrapper', emit_wrapper(P, F))
+    new = with_nav(new)
     pins = emit_pins(F)
     curp = open(PINS).read() if os.path.exists(PINS) else None
     if a.check:
