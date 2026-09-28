@@ -659,6 +659,86 @@ def gen_tb():
 
 
 # ---------------------------------------------------------------------------
+# FM 匹配前钉点：写回口流水缓冲（NewPipelineConnectPipe_29）的 payload 逐位双射
+# ---------------------------------------------------------------------------
+PIPE29_MAP = REPO / 'verif' / 'ut' / 'NewPipelineConnectPipe_29_34_35' / 'fm_map' / 'NewPipelineConnectPipe_29.txt'
+PINS_PRE = REPO / 'verif' / 'ut' / 'VMergeBuffer' / 'fm_pins_pre.tcl'
+
+
+def gen_pins_pre():
+    rows = []
+    for ln in PIPE29_MAP.read_text().splitlines():
+        m = re.match(r'^(\S+)\s+(\d+)\s+(\d+)$', ln)
+        if m:
+            rows.append((m.group(1), int(m.group(2)), int(m.group(3))))
+    total = sum(w for _, _, w in rows)
+    # 与 golden 对账：字段名 = golden 的 data_<suf> 寄存器，位宽逐个相等，总宽 = 1023
+    gold = dict((n, int(w) + 1 if w else 1) for w, n in re.findall(
+        r'^\s*reg\s+(?:\[(\d+):0\]\s+)?data_(\w+);',
+        (GOLDEN / 'NewPipelineConnectPipe_29.sv').read_text(), re.M))
+    assert gold == {s: w for s, _, w in rows}, 'fm_map 与 golden NewPipelineConnectPipe_29 的 data_* 寄存器不一致'
+    ndeq = {m: v['deq'] for m, v in VARIANTS.items()}
+    out = [
+        f'# VMergeBuffer FM「匹配前」钉点 —— 由 {TAG} 生成，勿手改。',
+        '# 只消命名鸿沟：不约束 ref、不放宽 appvar、不扩黑盒、不 dont_verify。',
+        '# ---------------------------------------------------------------------------',
+        '# 对象：每个出队口的写回流水缓冲 NewPipelineConnectPipe_29 的 payload 寄存器。',
+        '# golden 每字段一个寄存器 data_<字段>_reg[b]，重写件（rtl/uncore/NewPipelineConnectPipe_29.sv）',
+        '# 把整个 payload 存在一个扁平的 u_core/data_reg。★实测（2026-09-28 VSMergeBufferImp 首次试跑）★：',
+        '# 不钉的话 FM 按"末段名"把 data_data_reg[0] 配到 data_reg[6] 这类错位的对子（Name(Last)），',
+        '# 整片 payload 错位 —— 与该模块单独签核时遇到的是同一个坑，这里沿用它的字段映射',
+        '# verif/ut/NewPipelineConnectPipe_29_34_35/fm_map/NewPipelineConnectPipe_29.txt',
+        '# （<字段> <起始位> <宽度>，生成时已与 golden 的 data_* 寄存器逐个对过名字与位宽）。',
+        '# 路径：ref  r:/WORK/<top>/VMergebufferPipelineConnect<d>/data_<字段>_reg[b]（1 位字段无 [b]）',
+        '#       impl i:/WORK/<top>/u_core/g_deq_pipe[<d>].VMergebufferPipelineConnect/u_core/data_reg[起始+b]',
+        f'# fail-closed：每次 set_user_match 必须返回 1；配对数必须等于 {total} × 出队口数',
+        '# （VLMergeBufferImp 2 口 = %d，VSMergeBufferImp 1 口 = %d）。' % (2 * total, total),
+        '# 跑在 sidecar 的 safe child interp 里：只用 set_user_match / puts / error。',
+        '# ---------------------------------------------------------------------------',
+        'set _mb_pipe29_fields {',
+    ]
+    for s, lo, w in rows:
+        out.append(f'    {{{s} {lo} {w}}}')
+    out += [
+        '}',
+        '',
+        'proc _mb_prepin {top fields} {',
+        '    switch -exact -- $top {',
+        f'        VLMergeBufferImp {{ set ndeq {ndeq["VLMergeBufferImp"]} }}',
+        f'        VSMergeBufferImp {{ set ndeq {ndeq["VSMergeBufferImp"]} }}',
+        '        default { error "MB_PREPIN_BAD_TOP=$top" }',
+        '    }',
+        f'    set expect [expr {{{total} * $ndeq}}]',
+        '    puts "MB_PREPIN_BEGIN top=$top expect=$expect"',
+        '    set n 0',
+        '    for {set d 0} {$d < $ndeq} {incr d} {',
+        '        foreach f $fields {',
+        '            lassign $f suf lo w',
+        '            for {set b 0} {$b < $w} {incr b} {',
+        '                if {$w == 1} {',
+        '                    set rpath "r:/WORK/$top/VMergebufferPipelineConnect$d/data_${suf}_reg"',
+        '                } else {',
+        '                    set rpath "r:/WORK/$top/VMergebufferPipelineConnect$d/data_${suf}_reg\[$b\]"',
+        '                }',
+        '                set ipath "i:/WORK/$top/u_core/g_deq_pipe\[$d\].VMergebufferPipelineConnect/u_core/data_reg\[[expr {$lo + $b}]\]"',
+        '                if {![set_user_match $rpath $ipath]} {',
+        '                    puts "MB_PREPIN_FAIL: set_user_match returned 0 for $rpath <-> $ipath"',
+        '                    error "MB_PREPIN_MISS=$rpath"',
+        '                }',
+        '                incr n',
+        '            }',
+        '        }',
+        '    }',
+        '    puts "MB_PREPIN_END top=$top n=$n expect=$expect"',
+        '    if {$n != $expect} { error "MB_PREPIN_COUNT=$n" }',
+        '}',
+        '',
+        '_mb_prepin $top $_mb_pipe29_fields',
+    ]
+    return out
+
+
+# ---------------------------------------------------------------------------
 def replace_region(text, tag, lines, path):
     pat = re.compile(r'(^[ \t]*// BEGIN GENERATED\(' + re.escape(tag) + r'\)[^\n]*\n)(.*?)(^[ \t]*// END GENERATED)',
                      re.S | re.M)
@@ -682,6 +762,7 @@ def main():
     t = replace_region(t, 'wrapper_VSMergeBufferImp', gen_wrapper('VSMergeBufferImp', uop, groups), RTL_VS)
     outputs[RTL_VS] = t
     outputs[TB] = '\n'.join(gen_tb()) + '\n'
+    outputs[PINS_PRE] = '\n'.join(gen_pins_pre()) + '\n'
     bad = 0
     for p, txt in outputs.items():
         old = p.read_text() if p.exists() else None

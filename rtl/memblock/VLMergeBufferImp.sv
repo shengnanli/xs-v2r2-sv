@@ -662,6 +662,7 @@ module xs_VMergeBuffer_core
       for (int j = 0; j < PIPE_W; j++) portHasExcp = portHasExcp | wbv_hasExcp[i][j];
 
       exc_idx[i] = idx;
+      addrOffset = '0;
       exc_elemIdx[i] = '0;  exc_vec[i] = '0;  exc_trigger[i] = '0;  exc_vaNeedExt[i] = 1'b0;
       exc_isForVSnonLeafPTE[i] = 1'b0;  exc_vaddr[i] = '0;  exc_gpaddr[i] = '0;  exc_vstart[i] = '0;
       for (int j = 0; j < PIPE_W; j++) begin
@@ -1135,25 +1136,27 @@ module xs_VMergeBuffer_core
   logic [MB_IDX_W-1:0] fb_r_vecReplayMbIdx      [DEQ_W];
   logic                fb_r_flushState          [DEQ_W];  // 只有 load 版有
 
+  logic                feedbackValid            [DEQ_W];
+
+  always_comb begin
+    for (int d = 0; d < DEQ_W; d++) feedbackValid[d] = deq_fire[d] && allocated[deq_idx[d]];
+  end
+
   always_ff @(posedge clock) begin
     for (int d = 0; d < DEQ_W; d++) begin
-      logic [MB_IDX_W-1:0] idx;
-      logic                feedbackValid;
-      idx           = deq_idx[d];
-      feedbackValid = deq_fire[d] && allocated[idx];
-      fb_valid_REG[d] <= feedbackValid;
-      if (feedbackValid) begin
-        fb_r_robIdx_flag[d]     <= entries_uop[idx].robIdx_flag;
-        fb_r_robIdx_value[d]    <= entries_uop[idx].robIdx_value;
-        fb_r_hit[d]             <= !needRSReplay[idx];
-        fb_r_sourceType[d]      <= {1'b0, entries_sourceType[idx]};
-        fb_r_sqIdx_flag[d]      <= entries_uop[idx].sqIdx_flag;
-        fb_r_sqIdx_value[d]     <= entries_uop[idx].sqIdx_value;
-        fb_r_lqIdx_flag[d]      <= entries_uop[idx].lqIdx_flag;
-        fb_r_lqIdx_value[d]     <= entries_uop[idx].lqIdx_value;
+      fb_valid_REG[d] <= feedbackValid[d];
+      if (feedbackValid[d]) begin
+        fb_r_robIdx_flag[d]     <= entries_uop[deq_idx[d]].robIdx_flag;
+        fb_r_robIdx_value[d]    <= entries_uop[deq_idx[d]].robIdx_value;
+        fb_r_hit[d]             <= !needRSReplay[deq_idx[d]];
+        fb_r_sourceType[d]      <= {1'b0, entries_sourceType[deq_idx[d]]};
+        fb_r_sqIdx_flag[d]      <= entries_uop[deq_idx[d]].sqIdx_flag;
+        fb_r_sqIdx_value[d]     <= entries_uop[deq_idx[d]].sqIdx_value;
+        fb_r_lqIdx_flag[d]      <= entries_uop[deq_idx[d]].lqIdx_flag;
+        fb_r_lqIdx_value[d]     <= entries_uop[deq_idx[d]].lqIdx_value;
         fb_r_isVecPartReplay[d] <= deq_partial[d];
-        fb_r_vecReplayMask[d]   <= entries_replayFlowMask[idx];
-        fb_r_vecReplayMbIdx[d]  <= idx;
+        fb_r_vecReplayMask[d]   <= entries_replayFlowMask[deq_idx[d]];
+        fb_r_vecReplayMbIdx[d]  <= deq_idx[d];
       end
     end
   end
@@ -1162,7 +1165,7 @@ module xs_VMergeBuffer_core
     if (!IS_VSTORE) begin : g_fb_flushstate
       always_ff @(posedge clock) begin
         for (int d = 0; d < DEQ_W; d++) begin
-          if (deq_fire[d] && allocated[deq_idx[d]]) fb_r_flushState[d] <= entries_flushState[deq_idx[d]];
+          if (feedbackValid[d]) fb_r_flushState[d] <= entries_flushState[deq_idx[d]];
         end
       end
     end else begin : g_no_fb_flushstate
