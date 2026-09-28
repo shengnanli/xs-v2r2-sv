@@ -1,0 +1,9 @@
+{
+  "target": "V0RegFilePart0",
+  "ut": "RegfileVariants",
+  "regs": 1428,
+  "outs": 1664,
+  "expected": 3092,
+  "merge_dup": "false",
+  "model_applicable": true
+}

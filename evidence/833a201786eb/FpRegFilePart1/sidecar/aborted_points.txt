@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FpRegFilePart1
+Implementation : i:/WORK/FpRegFilePart1
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 10:18:16 2026
+**************************************************
+
+No aborted compare points.
+
+1

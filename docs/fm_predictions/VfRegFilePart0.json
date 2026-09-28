@@ -1,0 +1,9 @@
+{
+  "target": "VfRegFilePart0",
+  "ut": "RegfileVariants",
+  "regs": 4180,
+  "outs": 4480,
+  "expected": 8660,
+  "merge_dup": "false",
+  "model_applicable": true
+}
