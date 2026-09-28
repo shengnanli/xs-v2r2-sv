@@ -167,7 +167,7 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_l2_mshr_pins.py scripts/gen_lmisalign.py \
          scripts/gen_bypassnetwork.py scripts/gen_fastarbiter_28.py \
          scripts/gen_lqexcbuf.py scripts/gen_lqrar.py \
-         scripts/gen_lquncache.py scripts/gen_missq.py \
+         scripts/gen_lquncache.py scripts/gen_lsq.py scripts/gen_missq.py \
          scripts/gen_mshr.py scripts/gen_mshrctl.py \
          scripts/gen_pipelinereg.py scripts/gen_realwbcc.py \
          scripts/gen_smisalign.py scripts/gen_uncache.py \
