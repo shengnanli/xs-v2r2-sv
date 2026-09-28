@@ -67,10 +67,12 @@ class Pair(object):
                给"不复位的数据寄存器要先被写过一次，两侧初值才一致"的情形用；
                表达式同 cov 的 @ 替换规则。arm 之前的拍数会打印出来。
     mode_period 每隔多少拍重抽一次 <pfx>mode（0..15），供 stim 做分阶段偏置
+    decls      模块级 SV 声明（stim 要用的辅助 function / 变量），原样放进 tb 模块体
     """
 
     def __init__(self, top, pfx, clocked=False, stim="", cov=(), exempt=(),
-                 warmup=0, mode_period=4000, reset_period=40000, cov_min=100, arm=()):
+                 warmup=0, mode_period=4000, reset_period=40000, cov_min=100, arm=(),
+                 decls=""):
         self.top = top
         self.pfx = pfx
         self.clocked = clocked
@@ -82,6 +84,7 @@ class Pair(object):
         self.reset_period = reset_period
         self.cov_min = cov_min
         self.arm = list(arm)
+        self.decls = decls
         self.ports = golden_ports(top)
         names = [n for _, _, n in self.ports]
         if clocked and ("clock" not in names or "reset" not in names):
@@ -114,6 +117,8 @@ def render(pairs, header, ncycles=200000):
         L.append("")
         L.append(f"  // ================= {p.top} =================")
         L.append(f"  int unsigned {x}mode = 0;")
+        for d in p.decls.strip().splitlines():
+            L.append("  " + d)
         for d, w, n in p.ports:
             if d == "input":
                 if p.clocked and n == "clock":
