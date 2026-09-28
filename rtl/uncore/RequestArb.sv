@@ -16,7 +16,7 @@
 //       s2 还决定要不要读 MSHR 数据缓冲：refillBuf（回填数据要送上去 / 写回 DS）、releaseBuf（probe 回来的
 //       数据、snoop 命中正在 release 的块）。
 // 上电：resetIdx 从 511 数到 0（与目录初始化同步），这期间通道任务一律不收（MSHR 任务不受限）。
-// golden 里的 assert 在 `ifndef SYNTHESIS 内；perf 计数器是 firtool 生成的 _GEN_*，只被 perf 打印读，不属于电路。
+// golden 里的 assert 在 `ifndef SYNTHESIS 内；perf 计数器（XSPerfAccumulate）只被 perf 打印读，不属于电路。
 
 package requestarb_pkg;
   // BEGIN GENERATED(task_t) —— scripts/gen_l2_requestarb.py 从 golden 端口表生成
