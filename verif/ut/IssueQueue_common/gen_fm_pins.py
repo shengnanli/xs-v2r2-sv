@@ -53,6 +53,40 @@ def gen(v):
         w, name, d = int(m.group(1)) + 1, m.group(2), int(m.group(3))
         for b in range(outw[d], w):
             iq_pairs.append(f'    {{{name}_reg[{b}] u_core/g_vcnt[{d}].g_on.vcnt_q_reg[{b}]}}')
+    # 条目状态寄存器（srcStatus 的 psrc/srcType/srcState/dataSources、robIdx、issued/firstIssue/issueTimer）：
+    # 单签 Entries 时靠签名就配上了，没进钉点表；IQ 父级里入队翻译把部分 dataSources 位变成常量
+    # （如向量源 3/4 的 dataSources 只可能是 imm/reg，bit1 恒 0），签名失效 -> unmatched + 连带 failing
+    # （VfdivVidiv 诊断跑实测 23(23) unmatched / 99 failing）。按 golden 条目实例逐字段钉上。
+    have_ent = {(r, i) for r, i in (re.findall(r'\{(\S+) (\S+)\}', src))}
+    ep_src = pathlib.Path(f'/home/eda/xs-env/G1-canonical/golden-rtl/{ev}.sv').read_text()
+    ent_insts = re.findall(r'^  ((?:EnqEntry|OthersEntry)\w*) (\w+) \($', ep_src, re.M)
+    nenq = sum(1 for _, n in ent_insts if n.startswith('enqEntries_'))
+    nsimp = sum(1 for _, n in ent_insts if n.startswith('othersEntriesSimp_'))
+    for emod, en in ent_insts:
+        k = int(en.rsplit('_', 1)[1])
+        idx = k if en.startswith('enqEntries_') else (nenq + k if 'Simp' in en else nenq + nsimp + k)
+        er = {m.group(2): int(m.group(1)) + 1 if m.group(1) else 1 for m in re.finditer(
+            r'^\s+reg\s+(?:\[(\d+):0\]\s+)?(\w+);',
+            pathlib.Path(f'/home/eda/xs-env/G1-canonical/golden-rtl/{emod}.sv').read_text(), re.M)}
+        def add(gname, ifmt):
+            if gname not in er:
+                return
+            w = er[gname]
+            for b in range(w):
+                g_r = f'{en}/{gname}_reg[{b}]' if w > 1 else f'{en}/{gname}_reg'
+                i_r = f'g_entry[{idx}].u_e/' + (ifmt.format(b) if w > 1 else ifmt.replace('[{}]', ''))
+                if (g_r, i_r) not in have_ent:
+                    iq_pairs.append(f'    {{{inst}/{g_r} {inst}/u_core/{i_r}}}')
+        for sidx in range(5):
+            add(f'entryReg_status_srcStatus_{sidx}_psrc', f'r_psrc_reg[{sidx}][{{}}]')
+            add(f'entryReg_status_srcStatus_{sidx}_srcType', f'r_src_type_reg[{sidx}][{{}}]')
+            add(f'entryReg_status_srcStatus_{sidx}_srcState', f'r_src_state_reg[{sidx}]')
+            add(f'entryReg_status_srcStatus_{sidx}_dataSources_value', f'r_data_src_reg[{sidx}][{{}}]')
+        add('entryReg_status_robIdx_flag', 'r_rob_flag_reg')
+        add('entryReg_status_robIdx_value', 'r_rob_value_reg[{}]')
+        add('entryReg_status_issued', 'r_issued_reg')
+        add('entryReg_status_firstIssue', 'r_first_issue_reg')
+        add('entryReg_status_issueTimer', 'r_issue_timer_reg[{}]')
     # 忙表写模块（FuBusyTableWrite*）：golden 寄存器 fuBusyTable[W-1:0]，重写 u_core/fu_busy_table_q。
     # 最低位在 IQ 父级里两侧都无人读（FuBusyTableRead 只看 [W-1:1]），名字不同就成了 unmatched unread
     # （FaluFmac 诊断跑实测 1(1)）。整张表逐位钉上（钉点只消名差）。
