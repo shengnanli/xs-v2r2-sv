@@ -206,6 +206,9 @@ def makefile(v):
             if s not in gold:
                 gold.append(s)
     impl = rtl_closure(v)
+    vm = ('\n# vmucp（加强不是放宽）：依据与六条证据见 verif/fm_target_config/' + v + '.tcl\n'
+          'FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true\n') \
+        if (REPO / 'verif' / 'fm_target_config' / f'{v}.tcl').exists() else ''
     rtl_list = (' \\\n' + ' ' * 11).join('$(RTL_DIR)/' + x for x in impl)
     return f'''MODULE = {v}
 
@@ -224,7 +227,7 @@ FM_VARIANTS = {v}
 FM_REF_DEPS_{v} = {' '.join(g + '.sv' for g in gold)}
 
 FM_MERGE_DUP = false
-
+{vm}
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

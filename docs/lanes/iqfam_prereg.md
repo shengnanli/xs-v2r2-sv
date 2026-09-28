@@ -102,3 +102,32 @@ NewAgeDetector：两条目同拍进队 ≈59k 拍、canIssue=11 时选 0 号 ≈
 `python3 scripts/fm_predict.py check <6 个目标>` → 全部逐位相等（差 0）。
 §2.4 第 1 条的担心（constant_reg 3 位 / unread）**没有发生**：passing 与模型逐位相等，说明
 FM 在本父级里把 PipeWithFlush_1 的那几位也计成了比较点（两侧同构），不是常量寄存器。
+
+## 5. IssueQueue 家族（14 变体，共享核 xs_IssueQueue_core）
+
+### 5.1 结构与子模块处置
+- 可读核 `rtl/backend/xs_IssueQueue_core.sv`（手写）：入队翻译/ready、三段选最老（comp>simp>enq）、
+  Mux1H、OHToUInt(Chisel 递归二分)、deqDelay 打拍、性能计时器、validCntDeqVec、wakeupToIQ 胶合
+  （MWQ lat 查表 / is0Lat / og1 失败冲刷 / 写使能门控；Ldu load 唤醒打拍；VecMem blocked；写回忙表 deqResp.valid）。
+- wrapper `rtl/backend/IssueQueue<V>.sv` 由 `scripts/gen_iq.py` 从 golden 端口表与实例连线机械生成（`--check`）；
+  规则 fail-closed：子模块输入只许接顶层端口/常量/子模块输出/纯拼接，或胶合规则表里列出的核输出。
+- child 全部两侧白盒：Entries<V>（PROVEN）、FuBusyTable*（PROVEN）、MultiWakeupQueue*/NewAgeDetector*（本 lane §1–§4 已签）、
+  AgeDetector*（PROVEN）、PipeWithFlush*（PROVEN），以及 golden Entries 内部的 EnqEntry/OthersEntry/EnqPolicy/UIntCompressor
+  （ref 侧依赖闭包；impl 侧 Entries 重写是扁平的）。无黑盒。
+- FM 钉点 `verif/ut/<V>/fm_pins_pre.tcl`（`gen_fm_pins.py`）：原样复用 Entries<V> 已签核的钉点表加实例前缀，
+  另加 IQ 层 validCntDeqVec 打拍寄存器无人读高位的配对；计数 fail-closed。
+- vmucp：只在一次未开 vmucp 的诊断跑（diagnostic-full，不产 receipt）经 `vmucp_check.py` 核定
+  "unread 全是 matched_nc 且逐对都是钉点"之后，由 `gen_vmucp_cfg.py` 写 `verif/fm_target_config/<V>.tcl`。
+
+### 5.2 IssueQueueAluCsrFenceDiv（canary）跑前预测（★跑完不许改本节★）
+- 非正式试跑（全部是 diagnostic-full，不产 receipt，如实列出）：
+  (a) 57deb048 字节（核扩展前）、无 vcnt 钉点：native SUCCEEDED，passing 20833 / failing 0 / unmatched compare 0，
+      unread 6220 matched_nc + 1(1) unmatched（io_validCntDeqVec_0_REG[5] ↔ vcnt_q[5]）→ 于是补了 vcnt 钉点；
+  (b) 821b5475 字节（当前 RTL）：native SUCCEEDED，passing 20833 / failing 0 / unmatched 0 / unread 6221（全 matched_nc，
+      vmucp_check：不在钉点表 0、未配对 0）/ constant_reg 12；1851 s，2704 MB。
+- 登记（fm_predict model，merge_dup=false）：**27066** = golden 闭包寄存器位 24889 + output 位 2177。
+- 预期实测（开 vmucp）：passing = 20833 + 6221 = **27054**，与模型差 12，应恰好被 constant_reg 12 指认；
+  failing 0 / unverified 0 / unmatched 0 / unread 0 / 黑盒 0 / 无 dont_verify / SUCCEEDED。
+- 变异自检（scratchpad，seed 7 × 5k 拍，`+cmp_all`，全部 CAUGHT）：simp 段不被 comp 屏蔽 82939；入队 ready 不看已发射 60820；
+  x0 不翻 zero 47；srcLoadDependency 不左移 85875；OHToUInt 改式 821；deqDelay 负载不看使能 27；validCnt 不减 fire 639；
+  issueTime 不 +1 9996；转移请求不看 issued 89854；deq valid 不看 cancelDeq 976。
