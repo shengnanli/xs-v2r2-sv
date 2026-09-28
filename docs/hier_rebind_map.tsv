@@ -3050,6 +3050,14 @@ TlbStorageWrapper_3	page_pftlb_storage_fa	TLBFA_3	SAME_PATH	page_pftlb_storage_f
 Trace	traceBuffer	TraceBuffer	DEEPER	u_core.traceBuffer	TraceBuffer		auto_deeper	
 UopInfoGen	indexedLSTable	indexedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	rtl/backend/UopInfoGen.sv:88「可读核把这两张表用 function 内联(语义等价),故 wrapper 无子模块」。
 UopInfoGen	stridedLSTable	strdiedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	同上
+VIntMisc64b	cnt16_0_tmp_clz	CLZ_7	DEEPER	u_core.cnt16_0_tmp_clz	CLZ_7		auto_deeper	
+VIntMisc64b	cnt16_1_tmp_clz	CLZ_7	DEEPER	u_core.cnt16_1_tmp_clz	CLZ_7		auto_deeper	
+VIntMisc64b	cnt32_tmp_clz	CLZ_9	DEEPER	u_core.cnt32_tmp_clz	CLZ_9		auto_deeper	
+VIntMisc64b	cnt64_tmp_clz	CLZ_6	DEEPER	u_core.cnt64_tmp_clz	CLZ_6		auto_deeper	
+VIntMisc64b	cnt8_0_clz	CLZ_11	DEEPER	u_core.cnt8_0_clz	CLZ_11		auto_deeper	
+VIntMisc64b	cnt8_1_clz	CLZ_11	DEEPER	u_core.cnt8_1_clz	CLZ_11		auto_deeper	
+VIntMisc64b	cnt8_2_clz	CLZ_11	DEEPER	u_core.cnt8_2_clz	CLZ_11		auto_deeper	
+VIntMisc64b	cnt8_3_clz	CLZ_11	DEEPER	u_core.cnt8_3_clz	CLZ_11		auto_deeper	
 VLMergeBufferImp	VMergebufferPipelineConnect0	NewPipelineConnectPipe_29	GEN_SITE_UNINDEXED	u_core.g_deq_pipe[d].VMergebufferPipelineConnect	NewPipelineConnectPipe_29		auto_gen_site	
 VLMergeBufferImp	VMergebufferPipelineConnect1	NewPipelineConnectPipe_29	GEN_SITE_UNINDEXED	u_core.g_deq_pipe[d].VMergebufferPipelineConnect	NewPipelineConnectPipe_29		auto_gen_site	
 VLMergeBufferImp	freeCount_freeList	FreeList	ONE_SITE	u_core.g_freelist_vl.freeCount_freeList	FreeList		auto_one_site	

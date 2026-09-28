@@ -20,8 +20,8 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED       14631
-# status GAP             9378
+# status MEASURED       14616
+# status GAP             9393
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -19329,22 +19329,22 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	alloc
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush	B_CONTROL	GAP	1	1	1	StoreMisalignBuffer	yes	FC/read_by_logic:StoreMisalignBuffer.flush_probe	EG_1; wire _GEN_19 = REG_1 & req_valid; wire _GEN_20 = flush_probe & ~(|bufferState); wire _GEN_21 = flush_pr…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush_idle	C_DIAG	GAP	1	0	1	StoreMisalignBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	StoreMisalignBuffer._GEN_20
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush_non_idle	C_DIAG	GAP	1	0	1	StoreMisalignBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	StoreMisalignBuffer._GEN_21
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_alloc_simple	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_79
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_alloc_wait_same	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_80
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_merge	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_77
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_reject	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_76
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_total_enter	B_CONTROL	MEASURED	1	1	0	Uncache	no	FC/read_by_logic:Uncache.e0_fire_probe	ameVec_15_T & ~canMerge1_15; wire _GEN = e0_canMerge & e0_fire_probe; wire [15:0][47:0] _GEN_0 = {{entries_15…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	forward_count	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_91
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	forward_vaddr_match_failed	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_92
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	q0_acquire	B_CONTROL	MEASURED	1	1	0	Uncache	no	FC/read_by_logic:Uncache.q0_canSent_probe	q0_canSentIdx] == 5'h1; assign clientNodeOut_a_valid = q0_canSent_probe & ~io_wfi_wfiReq; wire difftest_uncac…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	q0_acquire_load	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_82
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	q0_acquire_store	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_81
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_memBackTypeMM	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_83
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_mmio_load	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_87
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_mmio_store	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_85
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_nc_load	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_89
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_nc_store	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_88
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_outstanding	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_90
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_alloc_simple	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_79
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_alloc_wait_same	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_80
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_merge	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_77
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_reject	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_76
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_total_enter	B_CONTROL	GAP	1	1	1	Uncache	yes	FC/read_by_logic:Uncache.e0_fire_probe	ameVec_15_T & ~canMerge1_15; wire _GEN = e0_canMerge & e0_fire_probe; wire [15:0][47:0] _GEN_0 = {{entries_15…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	forward_count	C_DIAG	MEASURED	1	0	0	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_91
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	forward_vaddr_match_failed	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_92
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	q0_acquire	B_CONTROL	GAP	1	1	1	Uncache	yes	FC/read_by_logic:Uncache.q0_canSent_probe	q0_canSentIdx] == 5'h1; assign clientNodeOut_a_valid = q0_canSent_probe & ~io_wfi_wfiReq; wire difftest_uncac…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	q0_acquire_load	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_82
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	q0_acquire_store	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_81
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_memBackTypeMM	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_83
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_mmio_load	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_87
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_mmio_store	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_85
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_nc_load	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_89
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_nc_store	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_88
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	uncache_outstanding	C_DIAG	GAP	1	0	1	Uncache	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_90
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.vlMergeBuffer	empty	B_CONTROL	MEASURED	1	1	0	VLMergeBufferImp	yes	FC/read_by_logic:VLMergeBufferImp.empty_probe	dCount == 5'h0; wire empty_probe; assign empty_probe = empty; wire empty_probe_0; assign empty_probe_0 = empt…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.vlMergeBuffer	exHalf	C_DIAG	MEASURED	1	0	0	VLMergeBufferImp	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VLMergeBufferImp.exHalf_probe
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.vlMergeBuffer	full	B_CONTROL	MEASURED	1	1	0	VLMergeBufferImp	yes	FC/read_by_logic:VLMergeBufferImp.empty_probe_0	dCount == 5'h0; wire empty_probe; assign empty_probe = empty; wire empty_probe_0; assign empty_probe_0 = empt…

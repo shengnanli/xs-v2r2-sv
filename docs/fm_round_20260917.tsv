@@ -177,6 +177,7 @@ FMA	SUCCEEDED	p4101 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false 
 FPDecoder	SUCCEEDED	p10 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f40deba9439d evidence/f40deba9439d/FPDecoder/receipt.json
 FTBBank	PASS_DEAD_REF	p3276 f0 um0 unread=50 const_reg=? mode=assembly vmucp=true @f40deba9439d evidence/f40deba9439d/FTBBank/receipt.json
 FTBEntryGen	SUCCEEDED	p72 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f40deba9439d evidence/f40deba9439d/FTBEntryGen/receipt.json
+FastArbiter_28	SUCCEEDED	p240 f0 um0 unread=? const_reg=1 mode=signoff-strict vmucp=true @bc3a0c0b69ba evidence/bc3a0c0b69ba/FastArbiter_28/receipt.json
 FastArbiter_3	SUCCEEDED	p144 f0 um0 unread=? const_reg=1 mode=signoff-strict vmucp=true @3dd22d50aac3 evidence/3dd22d50aac3/FastArbiter_3/receipt.json
 FastArbiter_30	SUCCEEDED	p423 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @7a881579fe64 evidence/7a881579fe64/FastArbiter_30/receipt.json
 FastArbiter_35	SUCCEEDED	p41 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @7a881579fe64 evidence/7a881579fe64/FastArbiter_35/receipt.json
@@ -650,6 +651,7 @@ UIntCompressor_27_000000000000001010100000000	SUCCEEDED	p3 f0 um0 unread=? const
 UIntCompressor_27_000011100000000000001010101	SUCCEEDED	p7 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @45cf2620708e evidence/45cf2620708e/UIntCompressor_27_000011100000000000001010101/receipt.json
 UIntExtractor_27_000000000000001010100000000	SUCCEEDED	p27 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @45cf2620708e evidence/45cf2620708e/UIntExtractor_27_000000000000001010100000000/receipt.json
 UIntExtractor_27_000011100000000000001010101	SUCCEEDED	p27 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @45cf2620708e evidence/45cf2620708e/UIntExtractor_27_000011100000000000001010101/receipt.json
+Uncache	SUCCEEDED	p7617 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @c39a3334ba26 evidence/c39a3334ba26/Uncache/receipt.json
 UncacheEntry	SUCCEEDED	p5020 f0 um0 unread=? const_reg=2 mode=signoff-strict vmucp=false @8532d10539e3 evidence/8532d10539e3/UncacheEntry/receipt.json
 UncacheEntry_1	SUCCEEDED	p5020 f0 um0 unread=? const_reg=2 mode=signoff-strict vmucp=false @8532d10539e3 evidence/8532d10539e3/UncacheEntry_1/receipt.json
 UncacheEntry_10	SUCCEEDED	p5020 f0 um0 unread=? const_reg=2 mode=signoff-strict vmucp=false @8532d10539e3 evidence/8532d10539e3/UncacheEntry_10/receipt.json
@@ -669,6 +671,7 @@ UncacheEntry_9	SUCCEEDED	p5020 f0 um0 unread=? const_reg=2 mode=signoff-strict v
 UopInfoGen	SUCCEEDED	p19 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f40deba9439d evidence/f40deba9439d/UopInfoGen/receipt.json
 VIAluSrcTypeModule	SUCCEEDED	p15 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @20d19bc5cd93 evidence/20d19bc5cd93/VIAluSrcTypeModule/receipt.json
 VIMacSrcTypeModule	SUCCEEDED	p8 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @1b6da7421248 evidence/1b6da7421248/VIMacSrcTypeModule/receipt.json
+VIntMisc64b	SUCCEEDED	p176 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @837949eaffbf evidence/837949eaffbf/VIntMisc64b/receipt.json
 VLMergeBufferImp	SUCCEEDED	p24360 f0 um0 unread=? const_reg=76 mode=signoff-strict vmucp=true @0282c93b52b4 evidence/0282c93b52b4/VLMergeBufferImp/receipt.json
 VPermSrcTypeModule	SUCCEEDED	p8 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @a6592249b2e0 evidence/a6592249b2e0/VPermSrcTypeModule/receipt.json
 VSMergeBufferImp	SUCCEEDED	p20042 f0 um0 unread=? const_reg=10 mode=signoff-strict vmucp=true @0282c93b52b4 evidence/0282c93b52b4/VSMergeBufferImp/receipt.json
