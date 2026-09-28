@@ -14,6 +14,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/TXDAT.sv $(GOLDEN_RTL)/Queue16_TaskBundle.sv $(GOLDE
 FM_VARIANTS = TXDAT
 FM_REF_DEPS_TXDAT = Queue16_TaskBundle.sv Queue16_DSBeat.sv ram_16x67.sv ram_data_16x256.sv
 FM_MERGE_DUP = false
+# 68 个对称死位（TaskBundle.off[3:0]：队列 ram 64 位 + taskR 4 位）vmucp 实比，
+# 依据与六条证据见 verif/fm_target_config/TXDAT.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail
 

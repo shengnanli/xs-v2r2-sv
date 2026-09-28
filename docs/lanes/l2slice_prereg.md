@@ -138,3 +138,12 @@ ptr_match 时有意义，而同拍进出不改变 ptr 差值、不会让指针�
 | 目标 | passing | 其余 |
 |---|---|---|
 | TXDAT | **10264**（regs 9872 + outs 392；含三个队列与其 ram） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |
+
+### 4.4 对账（第一跑，vmucp 关）+ 第二跑登记
+
+- 第一跑（commit b1167e89，evidence/b1167e89e520/TXDAT）：native SUCCEEDED，passing **10196**，failing 0，unmatched 0(0)，
+  **unread 68** ⇒ strict 判 PARTIAL。预测 10264，差 68 = unread 68，逐点指认：
+  TaskBundle.off[3:0] 的对称死位（队列 ram 16×4 位 + taskR 4 位；TXDAT 只用 off[5:4] 作 CCID）。
+  §4.3 登记的"unread 0"**预测错了**——我没把 Bundle 里只被部分读的字段算进去。
+- 第二跑（本节提交后）：按 vmucp standing rule 六条加 verif/fm_target_config/TXDAT.tcl + Makefile 开 vmucp。
+  登记：passing **10264**（= 10196 + 68），unread 0，failing/unmatched 0，SUCCEEDED。
