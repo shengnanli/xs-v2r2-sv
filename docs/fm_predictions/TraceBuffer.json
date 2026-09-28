@@ -1,0 +1,9 @@
+{
+  "target": "TraceBuffer",
+  "ut": "Trace",
+  "regs": 197,
+  "outs": 70,
+  "expected": 267,
+  "merge_dup": "false",
+  "model_applicable": true
+}

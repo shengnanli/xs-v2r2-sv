@@ -20,7 +20,9 @@ RTL_SRCS = $(RTL_DIR)/common/xs_DataModule.sv \
            $(RTL_DIR)/common/SyncDataModuleTemplate__64entry_1.sv \
            $(RTL_DIR)/common/SyncDataModuleTemplate__64entry_2.sv \
            $(RTL_DIR)/common/SyncDataModuleTemplate__64entry_3.sv \
-           $(RTL_DIR)/common/SyncDataModuleTemplate__64entry_4.sv
+           $(RTL_DIR)/common/SyncDataModuleTemplate__64entry_4.sv \
+           $(RTL_DIR)/common/DataModule__16entry_20.sv \
+           $(RTL_DIR)/common/SyncDataModuleTemplate__64entry_5.sv
 TB_SRCS = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/DataModule_BackendPC_16entry.sv \
@@ -40,7 +42,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/DataModule_BackendPC_16entry.sv \
               $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_1.sv \
               $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_2.sv \
               $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_3.sv \
-              $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_4.sv
+              $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_4.sv \
+              $(GOLDEN_RTL)/DataModule__16entry_20.sv \
+              $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_5.sv
 
 FM_REF_DEPS_SyncDataModuleTemplate_BackendPC_64entry = DataModule_BackendPC_16entry.sv
 FM_REF_DEPS_SyncDataModuleTemplate_FtqPC_64entry = DataModule_FtqPC_16entry.sv
@@ -51,10 +55,22 @@ FM_REF_DEPS_SyncDataModuleTemplate__64entry_1 = DataModule__16entry_4.sv
 FM_REF_DEPS_SyncDataModuleTemplate__64entry_2 = DataModule__16entry_8.sv
 FM_REF_DEPS_SyncDataModuleTemplate__64entry_3 = DataModule__16entry_12.sv
 FM_REF_DEPS_SyncDataModuleTemplate__64entry_4 = DataModule__16entry_16.sv
+# agent/cb-rename 追加：GPAMem 的 64 项 gpaddr 表（G1 例化 4 个 DataModule__16entry_20）
+FM_REF_DEPS_SyncDataModuleTemplate__64entry_5 = DataModule__16entry_20.sv
 
-FM_VARIANTS = DataModule_BackendPC_16entry DataModule_FtqPC_16entry DataModule__64entry DataModule__64entry_16 DataModule__16entry DataModule__16entry_4 DataModule__16entry_8 DataModule__16entry_12 DataModule__16entry_16 SyncDataModuleTemplate_BackendPC_64entry SyncDataModuleTemplate_FtqPC_64entry SyncDataModuleTemplate__1024entry SyncDataModuleTemplate__1024entry_1 SyncDataModuleTemplate__64entry SyncDataModuleTemplate__64entry_1 SyncDataModuleTemplate__64entry_2 SyncDataModuleTemplate__64entry_3 SyncDataModuleTemplate__64entry_4
+FM_VARIANTS = DataModule_BackendPC_16entry DataModule_FtqPC_16entry DataModule__64entry DataModule__64entry_16 DataModule__16entry DataModule__16entry_4 DataModule__16entry_8 DataModule__16entry_12 DataModule__16entry_16 SyncDataModuleTemplate_BackendPC_64entry SyncDataModuleTemplate_FtqPC_64entry SyncDataModuleTemplate__1024entry SyncDataModuleTemplate__1024entry_1 SyncDataModuleTemplate__64entry SyncDataModuleTemplate__64entry_1 SyncDataModuleTemplate__64entry_2 SyncDataModuleTemplate__64entry_3 SyncDataModuleTemplate__64entry_4 DataModule__16entry_20 SyncDataModuleTemplate__64entry_5
 
 include ../../../scripts/ut_common.mk
+
+# 两档 initreg（agent/cb-rename 补齐）：编译期打开机制，运行期 +vcs+initreg+random（默认）
+# 或 +0（run-initreg0）。家族全部数据寄存器与地址/写数据复制寄存器都无复位；tb 的
+# WARMUP=3000 拍、写使能 75% 已把 16/64/1024 项全部写定后才开比对窗口。
+VCS      += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+random
+
+.PHONY: run-initreg0
+run-initreg0:
+	$(MAKE) run SEED=$(SEED) SIM_ARGS="+ncycles=$(NCYCLES) +vcs+initreg+0"
 
 # ---------------------------------------------------------------------------
 # negtest：xs_SyncDataModule 分 bank 不变式的必失败负测（codex 0145 决策三）。

@@ -1,0 +1,9 @@
+{
+  "target": "StdFreeList_2",
+  "ut": "StdFreeListVariants",
+  "regs": 263,
+  "outs": 73,
+  "expected": 336,
+  "merge_dup": "false",
+  "model_applicable": true
+}

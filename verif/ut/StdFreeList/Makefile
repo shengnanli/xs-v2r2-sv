@@ -15,7 +15,10 @@ RTL_SRCS = $(RTL_DIR)/backend/StdFreeList.sv \
 TB_SRCS = tb.sv
 
 FM_REF_DEPS_StdFreeList = SnapshotGenerator.sv
-FM_MERGE_DUP = true
+# 关掉 merge_duplicated_registers(2026-09-27 由 true 改 false)：让 fm_predict 的 passing 模型严格适用，
+# 与家族里另外三个变体(verif/ut/StdFreeListVariants)同一口径；上一轮 true 下实测 1593 = 模型值，
+# 说明本家族没有会被 merge 掉的重复寄存器，改 false 不改变结论、只让登记可逐位对账。
+FM_MERGE_DUP = false
 GOLDEN_SRCS = $(GOLDEN_RTL)/StdFreeList.sv \
               $(GOLDEN_RTL)/SnapshotGenerator.sv
 FM_VARIANTS = StdFreeList
@@ -23,4 +26,10 @@ FM_VARIANTS = StdFreeList
 include ../../../scripts/ut_common.mk
 
 # golden 含 XSError/XSPerf 等非综合断言；UT 关掉以免随机激励触发 $fatal
-VCS += +define+SYNTHESIS
+# ★两轮 initreg★(2026-09-27 补)：原先这里没有 SIM_ARGS += $(INITREG)，`make run INITREG=...`
+# 传什么都被忽略，"两档"从来没真跑过(磁盘上只有 sim_<seed>.log 一种名字)。
+# 本目标两轮真有区别：redirect 两级打拍 / snpt 第二级 / freeRegCntReg / perf 两级 /
+# 快照槽 payload 都不复位；tb 用暖机窗口保证快照槽在被读前写过。
+VCS += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += $(INITREG)
+INITREG ?= +vcs+initreg+random

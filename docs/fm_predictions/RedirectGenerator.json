@@ -1,0 +1,9 @@
+{
+  "target": "RedirectGenerator",
+  "ut": "RedirectGenerator",
+  "regs": 615,
+  "outs": 601,
+  "expected": 1216,
+  "merge_dup": "false",
+  "model_applicable": true
+}

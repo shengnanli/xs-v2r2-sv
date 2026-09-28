@@ -53,6 +53,25 @@ M3 是一条**归纳证明**的机器复核，不是随机仿真观察：
     python3 scripts/audit_ram_memory_model.py --check
 
 退出码：0 全过；1 有 FAIL/MANUAL；2 用法错/输入缺失（fail-closed）。
+
+## 2026-09-27 扩展（DiffRatStateBuffer 的两个叶子逼出来的，判据强度不降）
+
+M1 模板支持 **N 个写口**（firtool 对多写口 RAM 的形状：同一个 `always @(posedge W0_clk)`
+   里 W0..W{N-1} 顺序非阻塞写，后口赢；每口 addr/en/clk/data 四个端口）。写口数从模块
+   端口现读，模板仍是逐字重建 + 逐字比对，不是放宽。
+M2 支持 **每侧多于 1 个例化**：按「设计名的**展开后**实例数」比（impl 用 generate-for
+   数组时，把 `for (genvar k = A; k < B; k++)` 的次数乘进去，嵌套相乘，B-A 必须能由
+   localparam 静态求值，否则 MANUAL），并要求两侧「每个实例的常量连接签名」多重集相等。
+M3 新增形态 B「输入偏移地址」（形态 A 环形指针归纳证明原样保留，先试 A 再试 B）：
+   地址口经纯组合线/纯函数内联后**逐字**匹配 `{1'b0, V} + (F ? K : 0)`，V/F 必须是被审
+   模块的 **input 端口**（或 input struct 端口的字段，宽度从 typedef 现读），表达式里
+   除 V/F/常量外不得含任何别的标识符（即没有任何内部状态参与地址）。这种形态里
+   「不越界」在模块内部**不可证**（V 是外部给的），只能是接口契约：所以形态 B 要求
+   parent 对照表第 4 列显式写 `value<Vmax`，脚本核 `Vmax + K <= depth` 且 `2^w <= depth`
+   （w = V 的位宽，保证 F=0 时任何 V 都不越界），并把每个 V/F 的名字打印出来供人核对
+   那个契约到底指的是什么。结论标 **PASS_INPUT_CONTRACT**，不冒充无条件 PASS；
+   没写契约 -> MANUAL。这满足 codex 0158 M3 的原话「父级控制不会**有意**依赖越界地址值」
+   ——地址是输入的纯函数，没有任何逻辑去利用越界值。
 """
 from __future__ import print_function
 
@@ -98,24 +117,28 @@ def clog2(n):
 # ---------------------------------------------------------------------------
 # M1 —— memory-only：精确模板等价
 # ---------------------------------------------------------------------------
-def build_expected_body(design, aw, dw, depth, randw, jw):
-    """重建 firtool 行为级 RAM 叶子的**完整**正文（module 头到 endmodule）。"""
+def build_expected_body(design, aw, dw, depth, randw, jw, nw=1):
+    """重建 firtool 行为级 RAM 叶子的**完整**正文（module 头到 endmodule）。
+
+    nw = 写口数。firtool 对多写口的形状：全部写口共用 W0_clk 的一个 always 块，
+    W0..W{nw-1} 顺序非阻塞赋值（同址后口赢）。"""
     p = [f'module {design}(',
          f"input [{aw - 1}:0] R0_addr,",
          'input R0_en,',
          'input R0_clk,',
-         f'output [{dw - 1}:0] R0_data,',
-         f'input [{aw - 1}:0] W0_addr,',
-         'input W0_en,',
-         'input W0_clk,',
-         f'input [{dw - 1}:0] W0_data',
-         ');']
+         f'output [{dw - 1}:0] R0_data,']
+    for i in range(nw):
+        p += [f'input [{aw - 1}:0] W{i}_addr,',
+              f'input W{i}_en,',
+              f'input W{i}_clk,',
+              f'input [{dw - 1}:0] W{i}_data' + (',' if i < nw - 1 else '')]
+    p += [');']
     body = [
         f'reg [{dw - 1}:0] Memory[0:{depth - 1}];',
-        'always @(posedge W0_clk) begin',
-        "if (W0_en & 1'h1)",
-        'Memory[W0_addr] <= W0_data;',
-        'end',
+        'always @(posedge W0_clk) begin']
+    for i in range(nw):
+        body += [f"if (W{i}_en & 1'h1)", f'Memory[W{i}_addr] <= W{i}_data;']
+    body += ['end',
         '`ifdef ENABLE_INITIAL_MEM_',
         f'reg [{randw - 1}:0] _RANDOM_MEM;',
         'initial begin',
@@ -166,9 +189,14 @@ def m1_memory_only(path, design):
                        '不是 firtool 行为级 RAM 叶子的形状（fail-closed）'), {}
     dw, depth, aw, randw = int(m.group(1)) + 1, int(m.group(2)) + 1, int(a.group(1)) + 1, int(r.group(1)) + 1
     jw = clog2(randw + 1) if randw > 32 else 0
+    # 写口数从端口现读：W<i>_addr 必须恰好是 0..nw-1 连续编号，否则认不出（fail-closed）。
+    widx = sorted({int(x) for x in re.findall(r'input\s*\[\d+:0\]\s*W(\d+)_addr', txt)})
+    if not widx or widx != list(range(len(widx))):
+        return False, f'M1 FAIL: 写口编号 {widx} 不是 0..N-1 连续（fail-closed）', {}
+    nw = len(widx)
 
-    exp = build_expected_body(design, aw, dw, depth, randw, jw)
-    facts = {'addr_width': aw, 'data_width': dw, 'depth': depth,
+    exp = build_expected_body(design, aw, dw, depth, randw, jw, nw)
+    facts = {'addr_width': aw, 'data_width': dw, 'depth': depth, 'n_write': nw,
              'rand_width': randw, 'header_sha256': hdr_sha,
              'oob_headroom': (1 << aw) - depth}
     if actual != exp:
@@ -181,7 +209,8 @@ def m1_memory_only(path, design):
                        f'        golden: ...{actual[max(0, i - 40):i + 60]}...\n'
                        f'        模板  : ...{exp[max(0, i - 40):i + 60]}...'), facts
     return True, ('M1 PASS: 正文与 firtool 行为级 RAM 模板**逐字相等** —— '
-                  '只有 1 个存储数组、1 个时钟写支路、1 个组合读 assign，'
+                  f'只有 1 个存储数组、1 个时钟写 always（{nw} 个写口顺序非阻塞赋值'
+                  + ('，同址后口赢' if nw > 1 else '') + '）、1 个组合读 assign，'
                   '外加仿真专用随机初始化（SYNTHESIS 下不存在）；无状态机/无算术/'
                   '无其它功能逻辑。'), facts
 
@@ -193,19 +222,66 @@ INST_RE_T = r'\b{d}\s+(\w+)\s*\((.*?)\)\s*;'
 
 
 def parse_inst(text, design):
-    """抓 design 的例化，返回 [(实例名, {端口: 连接表达式})]。"""
+    """抓 design 的例化，返回 [(实例名, {端口: 连接表达式})]（文本序；不含 generate 倍数）。"""
+    return [(n, c) for n, c, _ in parse_inst_pos(text, design)]
+
+
+def parse_inst_pos(text, design):
+    """同 parse_inst，但多返回例化在**去注释文本**里的起始位置（供 generate 倍数与所属模块定位）。"""
     out = []
     for m in re.finditer(INST_RE_T.format(d=re.escape(design)), strip_comments(text), re.S):
         conns = {}
         for pm in re.finditer(r'\.(\w+)\s*\(([^()]*(?:\([^()]*\)[^()]*)*)\)', m.group(2)):
             conns[pm.group(1)] = norm(pm.group(2))
-        out.append((m.group(1), conns))
+        out.append((m.group(1), conns, m.start()))
     return out
+
+
+def _block_end(text, begin_pos):
+    """text[begin_pos:] 以 `begin` 开头；返回与之配对的 `end` 之后的位置；配不上返回 None。"""
+    depth_ = 0
+    for m in re.finditer(r'\b(begin|end)\b', text[begin_pos:]):
+        depth_ += 1 if m.group(1) == 'begin' else -1
+        if depth_ == 0:
+            return begin_pos + m.end()
+    return None
+
+
+def generate_multiplicity(text, pos, env):
+    """pos 处的例化被几层 `for (genvar i = A; i < B; i++) begin ... end` 包住，返回各层次数之积。
+
+    B-A 必须能由 localparam 静态求值；认不出返回 None（fail-closed）。
+    只认 `<` 与 `i++`/`i = i + 1` 的最简形态。"""
+    src = strip_comments(text)
+    mult = 1
+    for m in re.finditer(r'for\s*\(\s*genvar\s+(\w+)\s*=\s*([^;]+);\s*\1\s*<\s*([^;]+);'
+                         r'\s*(?:\1\s*\+\+|\1\s*=\s*\1\s*\+\s*1)\s*\)\s*begin', src):
+        e = _block_end(src, m.end() - len('begin'))
+        if e is None:
+            return None
+        if m.start() < pos < e:
+            lo, hi = const_val(m.group(2), env), const_val(m.group(3), env)
+            if lo is None or hi is None or hi <= lo:
+                return None
+            mult *= hi - lo
+    return mult
+
+
+def module_region(text, pos):
+    """返回包住 pos 的 `module NAME ... endmodule` 区段 (name, 区段文本)；找不到返回 (None, 全文)。"""
+    src = strip_comments(text)
+    for m in re.finditer(r'\bmodule\s+(\w+)', src):
+        e = src.find('endmodule', m.end())
+        if e < 0:
+            break
+        if m.start() <= pos < e:
+            return m.group(1), src[m.start():e]
+    return None, src
 
 
 def localparam_env(text):
     """扫本文件的 `localparam [int] NAME = <整型表达式>;`，迭代到不动点。"""
-    env, pend = {}, dict(re.findall(r'localparam\s+(?:int\s+)?(\w+)\s*=\s*([^;]+);',
+    env, pend = {}, dict(re.findall(r'localparam\s+(?:int\s+(?:unsigned\s+)?|integer\s+)?(\w+)\s*=\s*([^;]+);',
                                     strip_comments(text)))
     for _ in range(8):
         for k, v in list(pend.items()):
@@ -302,42 +378,105 @@ def is_inc1(e, sig, env):
     return bool(m) and const_val(m.group(1) or m.group(2), env) == 1
 
 
+def _inst_signature(conns, ports, env=None):
+    """一个实例的「常量连接签名」：((端口, 常量值或 None), …)。"""
+    return tuple((p, const_val(conns[p], env)) for p in sorted(ports))
+
+
 def m2_boundary_parity(design, ref_text, impl_text, ports):
-    ri, ii = parse_inst(ref_text, design), parse_inst(impl_text, design)
-    if len(ri) != 1 or len(ii) != 1:
-        return False, (f'M2 MANUAL: ref 侧 {len(ri)} 个例化 / impl 侧 {len(ii)} 个 —— '
-                       f'本脚本只判「两侧各恰好 1 个」的简单情形（fail-closed）')
-    (rn, rc), (inm, ic) = ri[0], ii[0]
-    if set(rc) != set(ports):
-        return False, f'M2 FAIL: ref 侧例化端口集 {sorted(rc)} != 模块端口集 {sorted(ports)}'
-    if set(ic) != set(ports):
-        return False, f'M2 FAIL: impl 侧例化端口集 {sorted(ic)} != 模块端口集 {sorted(ports)}'
-    diffs = []
-    for p in sorted(ports):
-        rv, iv = const_val(rc[p]), const_val(ic[p])
-        if (rv is None) != (iv is None):
-            diffs.append(f'{p}: ref={rc[p]!r} impl={ic[p]!r}（一侧是常量一侧不是）')
-        elif rv is not None and rv != iv:
-            diffs.append(f'{p}: ref 常量 {rc[p]} != impl 常量 {ic[p]}')
-    if diffs:
-        return False, 'M2 FAIL: 常量连接不一致 —— ' + '; '.join(diffs)
-    return True, (f'M2 PASS: 两侧各 1 个例化（ref {rn} / impl {inm}），端口集合与模块声明'
-                  f'逐名相同（{len(ports)} 个），常量连接逐口相同 '
-                  + ', '.join(f'{p}={rc[p]}' for p in sorted(ports) if const_val(rc[p]) is not None))
+    """两侧按设计名的**展开后**实例数相等，每个实例端口集 == 模块端口集，
+    且两侧「每实例常量连接签名」的多重集相等。返回 (ok, 结论串, ref_insts, impl_insts)，
+    insts = [(实例名, conns, 倍数)]。"""
+    sides = {}
+    for side, text in (('ref', ref_text), ('impl', impl_text)):
+        env = localparam_env(text)
+        insts = []
+        for name, conns, pos in parse_inst_pos(text, design):
+            mult = generate_multiplicity(text, pos, env)
+            if mult is None:
+                return False, (f'M2 MANUAL: {side} 侧例化 {name} 所在 generate-for 的次数无法静态求值'
+                               f'（fail-closed）'), [], []
+            if set(conns) != set(ports):
+                return False, (f'M2 FAIL: {side} 侧例化 {name} 端口集 {sorted(conns)} '
+                               f'!= 模块端口集 {sorted(ports)}'), [], []
+            insts.append((name, conns, mult))
+        if not insts:
+            return False, f'M2 MANUAL: {side} 侧找不到 {design} 的例化（fail-closed）', [], []
+        sides[side] = (env, insts)
+    (renv, ri), (ienv, ii) = sides['ref'], sides['impl']
+    nr, ni = sum(m for _, _, m in ri), sum(m for _, _, m in ii)
+    if nr != ni:
+        return False, (f'M2 FAIL: 展开后实例数不等 —— ref {nr} 个 / impl {ni} 个'
+                       f'（ref {[(n, m) for n, _, m in ri]}，impl {[(n, m) for n, _, m in ii]}）'), ri, ii
+    from collections import Counter
+    rsig = Counter()
+    for _, c, m in ri:
+        rsig[_inst_signature(c, ports, renv)] += m
+    isig = Counter()
+    for _, c, m in ii:
+        isig[_inst_signature(c, ports, ienv)] += m
+    if rsig != isig:
+        only_r = [k for k in rsig if rsig[k] != isig.get(k, 0)]
+        only_i = [k for k in isig if isig[k] != rsig.get(k, 0)]
+        show = lambda sig: '{' + ', '.join(f'{p}={v}' for p, v in sig if v is not None) + '}'  # noqa: E731
+        return False, ('M2 FAIL: 两侧「每实例常量连接签名」多重集不等 —— '
+                       f'ref 独有 {[show(k) + "x" + str(rsig[k]) for k in only_r]}；'
+                       f'impl 独有 {[show(k) + "x" + str(isig[k]) for k in only_i]}'), ri, ii
+    consts = sorted({f'{p}={v}' for sig in rsig for p, v in sig if v is not None})
+    return True, (f'M2 PASS: 两侧展开后各 {nr} 个例化'
+                  f'（ref {[(n, m) for n, _, m in ri]} / impl {[(n, m) for n, _, m in ii]}），'
+                  f'每个实例端口集合与模块声明逐名相同（{len(ports)} 个），'
+                  f'两侧每实例常量连接签名多重集相等；出现的常量连接 {consts}'), ri, ii
 
 
 # ---------------------------------------------------------------------------
 # M3 —— 父级控制不会有意依赖越界地址值（归纳证明的机器复核）
 # ---------------------------------------------------------------------------
-def inline_functions(text):
-    """把 `function automatic T f(input T p); return EXPR; endfunction` 的调用内联。"""
+def _split_top(s, sep=','):
+    out, d, cur = [], 0, []
+    for c in s:
+        if c in '([{':
+            d += 1
+        elif c in ')]}':
+            d -= 1
+        if c == sep and d == 0:
+            out.append(''.join(cur))
+            cur = []
+        else:
+            cur.append(c)
+    out.append(''.join(cur))
+    return [norm(x) for x in out]
+
+
+def inline_functions(text, defs=None):
+    """把 `function automatic T f(input T1 p1, input T2 p2, …); return EXPR; endfunction` 的调用内联。
+
+    只认「单条 return 表达式」的纯函数；实参可以是任意不含顶层逗号的表达式。
+    defs：函数定义所在文本（默认就是 text；可读核常把函数放在 package 里，
+    与例化它的 module 区段不在一处，这时传整文件）。"""
     out = text
-    for fm in re.finditer(r'function\s+automatic\s+[^;]*?\b(\w+)\s*\(\s*input\s+[^;]*?\b(\w+)\s*\)\s*;'
-                          r'\s*return\s+(.*?);\s*endfunction', text, re.S):
-        fname, pname, expr = fm.group(1), fm.group(2), norm(fm.group(3))
-        out = re.sub(r'\b' + re.escape(fname) + r'\s*\(\s*([A-Za-z_]\w*)\s*\)',
-                     lambda m: '(' + re.sub(r'\b' + re.escape(pname) + r'\b', m.group(1), expr) + ')',
-                     out)
+    for fm in re.finditer(r'function\s+automatic\s+[^;(]*?\b(\w+)\s*\(([^()]*)\)\s*;'
+                          r'\s*return\s+(.*?);\s*endfunction', defs if defs is not None else text, re.S):
+        fname, expr = fm.group(1), norm(fm.group(3))
+        pnames = []
+        for prm in _split_top(fm.group(2)):
+            mm = re.search(r'(\w+)\s*$', prm)
+            if not mm:
+                pnames = None
+                break
+            pnames.append(mm.group(1))
+        if not pnames:
+            continue
+
+        def _repl(m, pnames=pnames, expr=expr):
+            args = _split_top(m.group(1))
+            if len(args) != len(pnames):
+                return m.group(0)
+            e = expr
+            for pn, av in zip(pnames, args):
+                e = re.sub(r'\b' + re.escape(pn) + r'\b', lambda _m, av=av: av, e)
+            return '(' + e + ')'
+        out = re.sub(r'\b' + re.escape(fname) + r'\s*\(([^()]*(?:\([^()]*\)[^()]*)*)\)', _repl, out)
     return out
 
 
@@ -442,7 +581,132 @@ def m3_addr_in_range(side, text, sig, depth, width):
 
 
 # ---------------------------------------------------------------------------
-def audit(design, golden_rtl, parent_ref, parent_impl):
+# M3 形态 B —— 输入偏移地址：addr = {1'b0, V} + (F ? K : 0)，V/F 为 input 端口
+# ---------------------------------------------------------------------------
+def _strip_shell(e):
+    """剥掉最外层成对括号与 `<w>'( … )` 位宽转换壳（可多层）。"""
+    e = norm(e)
+    for _ in range(6):
+        m = re.fullmatch(r"(?:[\w]+')?\((.*)\)", e)
+        if m and _balanced(m.group(1)):
+            e = norm(m.group(1))
+        else:
+            break
+    return e
+
+
+def resolve_comb_driver(region, expr, depth_=0):
+    """把 expr（信号名 / 信号名[idx]）沿**纯组合**驱动链解析成最终表达式。
+
+    认三种驱动：`wire [..] NAME = EXPR;`、`assign NAME = EXPR;`、always_comb 里的
+    `NAME = EXPR;` / `NAME[i] = EXPR;`（阻塞赋值）。只要发现该名字有非阻塞赋值 `<=`，
+    说明它是寄存器，立刻返回 (None, 原因)。驱动必须唯一（多条即 MANUAL）。
+    不是纯名字（已经是表达式）就原样返回。"""
+    e = _strip_shell(expr)
+    m = re.fullmatch(r'([A-Za-z_]\w*)(?:\s*\[\s*(\w+)\s*\])?', e)
+    if not m or depth_ > 6:
+        return e, None
+    name = m.group(1)
+    if re.search(r'\b' + re.escape(name) + r'\b(?:\s*\[[^\]]*\])?\s*<=', region):
+        return None, f'{name} 有非阻塞赋值（是寄存器，不是输入的纯函数）'
+    drv = re.findall(r'(?:\bwire\b[^;=]*?|\bassign\b\s*)\b' + re.escape(name) + r'\s*=\s*([^;]+);', region)
+    drv += re.findall(r'(?<![\w.])' + re.escape(name) + r'(?:\s*\[\s*\w+\s*\])?\s*=\s*([^;=][^;]*);',
+                      # always_comb 阻塞赋值；排除 `==` 与声明行（声明行已被上一条抓走）
+                      re.sub(r'\b(?:wire|logic|reg)\b[^;]*;', '', region))
+    drv = sorted({norm(d) for d in drv})
+    if not drv:
+        return e, None          # 没有驱动 —— 大概率是端口，交给上层判
+    if len(drv) > 1:
+        return None, f'{name} 的组合驱动不唯一 {drv}'
+    return resolve_comb_driver(region, drv[0], depth_ + 1)
+
+
+def input_width(region, whole_text, name, env):
+    """name 是本模块 input 端口（或 input struct 端口的字段 `X.f` / `X[i].f`）时返回位宽，否则 None。"""
+    m = re.fullmatch(r'([A-Za-z_]\w*)(?:\s*\[\s*\w+\s*\])?(?:\.(\w+))?', name)
+    if not m:
+        return None
+    base, field = m.group(1), m.group(2)
+    pm = re.search(r'\binput\b\s*(?:logic\s+|wire\s+)?(?:(\w+)\s+)?(?:\[\s*([^\]]+?)\s*:\s*0\s*\]\s*)?'
+                   + re.escape(base) + r'\s*[,)]', region)
+    if not pm:
+        return None
+    if field is None:
+        if pm.group(1) and pm.group(1) not in ('logic', 'wire'):
+            return None          # 类型化端口却没取字段
+        return const_val(pm.group(2), env) + 1 if pm.group(2) else 1
+    tname = pm.group(1)
+    if not tname:
+        return None
+    tm = re.search(r'typedef\s+struct\s+packed\s*\{(.*?)\}\s*' + re.escape(tname) + r'\s*;',
+                   strip_comments(whole_text), re.S)
+    if not tm:
+        return None
+    fm = re.search(r'\blogic\s*(?:\[\s*([^\]]+?)\s*:\s*0\s*\]\s*)?\b' + re.escape(field) + r'\b',
+                   tm.group(1))
+    if not fm:
+        return None
+    return const_val(fm.group(1), env) + 1 if fm.group(1) else 1
+
+
+def m3_input_offset(side, text, region, expr, depth, contract):
+    """形态 B。返回 (ok, 结论串, facts)。facts = {'V':…, 'F':…, 'K':…, 'w':…}。"""
+    env = localparam_env(text)
+    reg_i = inline_functions(region, strip_comments(text))
+    final, why = resolve_comb_driver(reg_i, expr)
+    if final is None:
+        return False, f'M3 MANUAL[{side}]: 地址 {expr!r} —— {why}（fail-closed）', {}
+    core = _strip_shell(final)
+    m = re.fullmatch(r"\{\s*1'[bh]0\s*,\s*([^{}]+?)\s*\}\s*\+\s*\(\s*(.+?)\s*\?\s*(.+?)\s*:\s*(.+?)\s*\)", core)
+    if not m:
+        return False, (f'M3 MANUAL[{side}]: 地址 {expr!r} 解析到 {core!r}，既不是环形指针也不是 '
+                       "`{1'b0, V} + (F ? K : 0)` 形态（fail-closed）"), {}
+    V, F, k1, k0 = norm(m.group(1)), _strip_shell(m.group(2)), m.group(3), m.group(4)
+    K, K0 = const_val(k1, env), const_val(k0, env)
+    if K is None or K0 != 0:
+        return False, f'M3 MANUAL[{side}]: 偏移常量认不出（K={k1!r}, K0={k0!r}）（fail-closed）', {}
+    w = input_width(region, text, V, env)
+    fw = input_width(region, text, F, env)
+    if w is None or fw != 1:
+        return False, (f'M3 MANUAL[{side}]: V={V!r}（宽 {w}）/ F={F!r}（宽 {fw}）不是本模块 input 端口'
+                       f'或 input struct 端口字段（fail-closed）'), {}
+    facts = {'V': V, 'F': F, 'K': K, 'w': w}
+    if not contract:
+        return False, (f'M3 MANUAL[{side}]: 地址 = {{1\'b0,{V}}} + ({F} ? {K} : 0)，V 是外部输入，'
+                       f'不越界在模块内不可证；须在 parent 对照表第 4 列写明接口契约 `value<Vmax`'
+                       f'（fail-closed）'), facts
+    cm = re.match(r'value<(\d+)', contract)
+    if not cm:
+        return False, f'M3 MANUAL[{side}]: 契约 {contract!r} 不是 `value<Vmax…` 形态（fail-closed）', facts
+    vmax = int(cm.group(1))
+    if (1 << w) > depth:
+        return False, (f'M3 FAIL[{side}]: F=0 时 V[{w - 1}:0] 可达 {(1 << w) - 1} >= depth {depth}，'
+                       f'契约管不住 F=0 支路'), facts
+    if vmax + K > depth:
+        return False, (f'M3 FAIL[{side}]: 契约 value<{vmax} 下 F=1 时地址可达 {vmax - 1 + K} '
+                       f'>= depth {depth}，契约不充分'), facts
+    return True, (f'M3 PASS_INPUT_CONTRACT[{side}]: 地址 = {{1\'b0,{V}}} + ({F} ? {K} : 0)，'
+                  f'V/F 均为本模块 input（V 宽 {w}），表达式不含任何内部状态；'
+                  f'F=0 时最大 {(1 << w) - 1} < {depth}；F=1 时在契约 `{contract}` 下最大 '
+                  f'{vmax - 1 + K} < {depth}。★这是接口契约下的结论，不是模块内的无条件证明★'), facts
+
+
+def m3_any(side, text, region, expr, depth, width, contract):
+    """先试形态 A（环形指针归纳），认不出再试形态 B（输入偏移 + 契约）。"""
+    if re.fullmatch(r'[A-Za-z_]\w*', expr):
+        okA, msgA = m3_addr_in_range(side, text, expr, depth, width)
+        if okA:
+            return True, msgA
+    else:
+        msgA = f'M3 MANUAL[{side}]: {expr!r} 不是单个信号名，形态 A 不适用'
+    okB, msgB, _ = m3_input_offset(side, text, region, expr, depth, contract)
+    if okB:
+        return True, msgB
+    return False, msgA + '\n  ' + msgB
+
+
+# ---------------------------------------------------------------------------
+def audit(design, golden_rtl, parent_ref, parent_impl, contract=None):
     g = pathlib.Path(golden_rtl)
     path = g / f'{design}.sv'
     if not path.is_file():
@@ -458,7 +722,7 @@ def audit(design, golden_rtl, parent_ref, parent_impl):
     ok1, msg1, facts = m1_memory_only(path, design)
     if facts:
         print(f'  形状    : addr {facts["addr_width"]} 位 / data {facts["data_width"]} 位 / '
-              f'depth {facts["depth"]} / 随机化 {facts["rand_width"]} 位')
+              f'depth {facts["depth"]} / 写口 {facts["n_write"]} / 随机化 {facts["rand_width"]} 位')
         print(f'  越界余量: 2^{facts["addr_width"]}={1 << facts["addr_width"]} - {facts["depth"]} '
               f'= {facts["oob_headroom"]} 个地址落在数组之外'
               + ('（★这正是 FMR_ELAB-147 的来源★）' if facts['oob_headroom'] else ''))
@@ -474,27 +738,35 @@ def audit(design, golden_rtl, parent_ref, parent_impl):
     print('  ' + msg1)
 
     rc = 0 if ok1 else 1
-    ports = ['R0_addr', 'R0_en', 'R0_clk', 'R0_data', 'W0_addr', 'W0_en', 'W0_clk', 'W0_data']
+    if not facts:
+        print('  => AUDIT_INCOMPLETE（M1 认不出形状，M2/M3 无从做）')
+        return 1
+    ports = ['R0_addr', 'R0_en', 'R0_clk', 'R0_data']
+    for i in range(facts['n_write']):
+        ports += [f'W{i}_addr', f'W{i}_en', f'W{i}_clk', f'W{i}_data']
     if parent_ref and parent_impl:
         rtxt = pathlib.Path(parent_ref).read_text()
         itxt = pathlib.Path(parent_impl).read_text()
-        ok2, msg2 = m2_boundary_parity(design, rtxt, itxt, ports)
+        ok2, msg2, ri, ii = m2_boundary_parity(design, rtxt, itxt, ports)
         print('  ' + msg2)
         rc = rc or (0 if ok2 else 1)
         if ok2:
             rc3 = 0
-            for side, txt in (('ref', rtxt), ('impl', itxt)):
-                conns = parse_inst(txt, design)[0][1]
-                for port in ('R0_addr', 'W0_addr'):
-                    sig = conns[port]
-                    if not re.fullmatch(r'[A-Za-z_]\w*', sig):
-                        print(f'  M3 MANUAL[{side}]: {port} 连的不是单个信号名（{sig!r}）')
-                        rc3 = 1
-                        continue
-                    ok3, msg3 = m3_addr_in_range(side, txt, sig, facts['depth'],
-                                                 facts['addr_width'])
-                    print(f'  {msg3}')
-                    rc3 = rc3 or (0 if ok3 else 1)
+            addr_ports = [p for p in ports if p.endswith('_addr')]
+            for side, txt, insts in (('ref', rtxt, ri), ('impl', itxt, ii)):
+                seen = {}
+                for name, conns, pos in parse_inst_pos(txt, design):
+                    modname, region = module_region(txt, pos)
+                    for port in addr_ports:
+                        sig = conns[port]
+                        key = (modname, sig)
+                        if key in seen:
+                            continue      # 同一表达式已判过（多个实例共用读地址等）
+                        ok3, msg3 = m3_any(side, txt, region, sig, facts['depth'],
+                                           facts['addr_width'], contract)
+                        seen[key] = ok3
+                        print(f'  [{modname}.{name}.{port} <- {sig}] {msg3}')
+                        rc3 = rc3 or (0 if ok3 else 1)
             rc = rc or rc3
     else:
         print('  M2/M3 SKIPPED: 未给 --parent-ref/--parent-impl —— '
@@ -511,6 +783,7 @@ def main():
     ap.add_argument('--golden-rtl', default=str(pathlib.Path(DEFAULT_G1) / 'golden-rtl'))
     ap.add_argument('--parent-ref', help='golden 侧例化该 RAM 的父文件（相对 --golden-rtl 或绝对路径）')
     ap.add_argument('--parent-impl', help='重写侧例化该 RAM 的父文件（相对仓库根或绝对路径）')
+    ap.add_argument('--contract', help='M3 形态 B 的接口契约，形如 `value<160@…`；形态 A 不需要')
     ap.add_argument('--check', action='store_true',
                     help='复算模式：对 --parent-map 里登记的每一条重跑全部三项审查')
     ap.add_argument('--parent-map', default=str(REPO / 'verif' / 'ram_model_parents.tsv'))
@@ -535,16 +808,17 @@ def main():
             if len(f) < 3:
                 print(f'ERROR: parent-map 行格式错: {ln!r}', file=sys.stderr)
                 return 2
+            contract = f[3].strip() if len(f) > 3 and f[3].strip() not in ('', '-', 'none') else None
             rc |= audit(f[0], a.golden_rtl,
                         resolve(f[1], pathlib.Path(a.golden_rtl)),
-                        resolve(f[2], REPO))
+                        resolve(f[2], REPO), contract)
         print('=== audit --check: ' + ('全部 AUDIT_PASS ===' if rc == 0 else '★有条目未过★ ==='))
         return rc
     if not a.design:
         ap.error('须给 design 名，或用 --check')
     return audit(a.design, a.golden_rtl,
                  resolve(a.parent_ref, pathlib.Path(a.golden_rtl)),
-                 resolve(a.parent_impl, REPO))
+                 resolve(a.parent_impl, REPO), a.contract)
 
 
 if __name__ == '__main__':

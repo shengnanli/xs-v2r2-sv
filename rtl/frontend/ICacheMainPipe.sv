@@ -287,7 +287,11 @@ module xs_ICacheMainPipe
   output logic [PORT_NUM-1:0]                    io_errors_valid,
   output error_info_t [PORT_NUM-1:0]             io_errors_bits,
   output perf_info_t                             io_perfInfo,
-  output difftest_refill_t [PORT_NUM-1:0]        difftest_refill
+  output difftest_refill_t [PORT_NUM-1:0]        difftest_refill,
+  // perf 探针：golden 里是 ICacheMainPipe 内部的 `cntFtqFireInterval_probe` 线，SimTop 用
+  // 绝对层次引用（XSPerfHistogram ftq2icache_fire 的样本值）。scripts/perf_rebind.py 的
+  // T0/T1 判据是「golden 信号名在 impl 侧同一层模块里声明过」，所以导到 wrapper 同名线。
+  output logic [31:0]                            cntFtqFireInterval_probe
 );
 
   // ---------------------------------------------------------------------------
@@ -331,6 +335,7 @@ module xs_ICacheMainPipe
     else if (io_fetch_req_valid & s0_can_go)  cntFtqFireInterval <= 32'd1;
     else                                      cntFtqFireInterval <= cntFtqFireInterval + 32'd1;
   end
+  assign cntFtqFireInterval_probe = cntFtqFireInterval;
 
   // ===========================================================================
   // s1：锁存 WayLookup 信息；收 data SRAM 回应；PMP；监听 MSHR 回填；meta ECC
@@ -988,6 +993,8 @@ module ICacheMainPipe
   error_info_t [PORT_NUM-1:0]                          errors_bits;
   perf_info_t                                          perf;
   difftest_refill_t [PORT_NUM-1:0]                     difftest_refill;
+  // golden 同名 perf 探针（SimTop XMR 观测点；不是对外端口）
+  wire [31:0]                                          cntFtqFireInterval_probe;
 
   xs_ICacheMainPipe u_core (
     .clock(clock), .reset(reset), .io_hartId(io_hartId),
@@ -1008,7 +1015,8 @@ module ICacheMainPipe
     .io_pmp_req_valid(pmp_req_valid), .io_pmp_req_addr(pmp_req_addr), .io_pmp_resp(pmp_resp),
     .io_respStall(io_respStall),
     .io_errors_valid(errors_valid), .io_errors_bits(errors_bits),
-    .io_perfInfo(perf), .difftest_refill(difftest_refill)
+    .io_perfInfo(perf), .difftest_refill(difftest_refill),
+    .cntFtqFireInterval_probe(cntFtqFireInterval_probe)
   );
 
   // ---- struct → flat ----

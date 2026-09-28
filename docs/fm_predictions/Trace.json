@@ -1,0 +1,9 @@
+{
+  "target": "Trace",
+  "ut": "Trace",
+  "regs": 408,
+  "outs": 73,
+  "expected": 481,
+  "merge_dup": "false",
+  "model_applicable": true
+}

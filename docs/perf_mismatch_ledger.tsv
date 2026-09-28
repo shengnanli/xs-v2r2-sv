@@ -11,105 +11,44 @@
 #   保证：它每次跑闸都拿**当前**台账重算 tier/owner_rewritten/verdict，
 #   与这里记的对不上就红。
 #
-# commit            30ed8935671e3ca8073a49505d61abea5903d383
+# commit            bf92f1f0f0787d5e766055aff7d73a0afae189b0
 # golden_log        /home/eda/xs-env/sim-work/perfbind-runs/golden_cm20k/assert.log
 # golden_log_sha256 6ceb4c0d99a048ad622035f392194dd1212dedff8457a42074e9371ea930ae39
-# impl_log          /home/eda/xs-env/sim-work-perfbind2/diag2/run/cm20k/assert.log
-# impl_log_sha256   e1db3126e649b1bec24a6ac6101ddd0b06d979b8658bc6cbe408a2ba7dbceabf
-# tier_ledger_sha256 9969d81eadf96e84efcc0f82920ffe03241fc60d0d5bc9bd80dda88646481dc5
-# gap_ledger_sha256  24073dca3618c05495995060318a24836cbe81b5b2b976bf9393279130da6e01
+# impl_log          /home/eda/xs-env/sim-work-perfbind2/icperf/run/cm20k/assert.log
+# impl_log_sha256   cbf9696e196e80b1f954544e6bc31d39cfd8950f253549e37241c7cf67a2263d
+# tier_ledger_sha256 9c3324905ed02f50333a59e2c55a88e86e05287e087ab9603d4021fcff531007
+# gap_ledger_sha256  52da7591292bec73a738f8425794f15a9393a1c1b8b14291caafad047e6749aa
 # dump_times_equal  True
 # compared          25427
-# MATCH 21336 / MISMATCH 85 / EXCLUDED 4006 / MISSING 0
-# WAIVED 26 / BLOCKING 59
+# MATCH 21358 / MISMATCH 24 / EXCLUDED 4045 / MISSING 0
+# WAIVED 22 / BLOCKING 2
 # 复跑:
 #   python3 scripts/perf_compare.py \
 #     /home/eda/xs-env/sim-work/perfbind-runs/golden_cm20k/assert.log \
-#     /home/eda/xs-env/sim-work-perfbind2/diag2/run/cm20k/assert.log --all --emit-mismatch docs/perf_mismatch_ledger.tsv
+#     /home/eda/xs-env/sim-work-perfbind2/icperf/run/cm20k/assert.log --all --emit-mismatch docs/perf_mismatch_ledger.tsv
 #
 tier	scope	name	golden	impl	delta	owner_modules	owner_rewritten	verdict	criterion
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob	robHeadPC	1085605803699317447	1595410252034041781	+509804448334724334	CtrlBlock	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_0_tage_table_0_provided_at_pred	2304	1275	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_0_tage_table_1_provided_at_pred	1188	2217	+1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_1_tage_provided_at_pred	1244	215	-1029	Tage_SC	no	BLOCKING	B_CONTROL 档必须相等
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_1_tage_table_3_provided_at_pred	1037	8	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_1_tage_use_bim_at_pred	18756	19785	+1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_agree_at_pred	3950	2921	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_conf_at_pred	5032	4003	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_disagree_at_pred	1082	53	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_used_at_pred	5280	4251	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	tage_bank_0_alt_differs	617	618	+1	Tage_SC	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_10_11	6	0	-6	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_113_114	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_114_115	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_117_118	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_11_12	6	0	-6	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_120_121	4	0	-4	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_121_122	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_12_13	6	0	-6	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_13_14	3	0	-3	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_14_15	3	0	-3	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_15_16	20	0	-20	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_16_17	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_17_18	9	0	-9	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_18_19	5	0	-5	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_1_2	6345	7702	+1357	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_20_21	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_22_23	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_24_25	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_25_26	3	0	-3	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_26_27	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_27_28	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_28_29	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_29_30	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_2_3	393	0	-393	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_30_31	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_31_32	3	0	-3	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_32_33	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_39_40	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_3_4	68	0	-68	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_44_45	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_45_46	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_4_5	124	0	-124	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_50_51	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_51_52	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_52_53	6	0	-6	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_54_55	3	0	-3	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_56_57	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_57_58	4	0	-4	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_5_6	255	0	-255	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_60_61	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_64_65	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_65_66	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_68_69	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_6_7	217	0	-217	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_75_76	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_77_78	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_7_8	101	0	-101	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_8_9	54	0	-54	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_90_91	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_95_96	1	0	-1	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_9_10	22	0	-22	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_mean	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_overflow	2	0	-2	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_sum	19973	0	-19973	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	ftq2icache_fire_underflow	0	7702	+7702	ICacheMainPipe	no	BLOCKING	B_CONTROL 档必须相等
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	icache_bubble_s2_miss	4171	0	-4171	ICacheMainPipe	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.prefetcher	bpu_s1_flush	23	0	-23	IPrefetchPipe	no	BLOCKING	B_CONTROL 档必须相等
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.prefetcher	prefetch_req_send_hw	1020	0	-1020	IPrefetchPipe	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.missQueue.entries_0	load_miss_penalty_to_use	924	925	+1	MissEntry	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.missQueue.entries_1	load_miss_penalty_to_use	52	53	+1	MissEntry	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.missQueue.entries_2	load_miss_penalty_to_use	1	0	-1	MissEntry	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.missQueue.entries_4	load_miss_penalty_to_use	1	0	-1	MissEntry	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_5_6	0	1952	+1952	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_6_7	3739	13567	+9828	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_7_8	4071	4480	+409	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.missQueue.entries_3	load_miss_penalty_to_use	1	0	-1	MissEntry	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_3_4	0	1952	+1952	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_4_5	0	5732	+5732	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_5_6	0	5999	+5999	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_6_7	3739	1734	-2005	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_7_8	4071	4582	+511	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_8_9	7764	0	-7764	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_9_10	4425	0	-4425	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_mean	7	6	-1	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_sum	152868	122522	-30346	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_mean	7	5	-2	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_sum	152868	101257	-51611	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
 C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_0_1	14440	12785	-1655	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_1_2	5559	772	-4787	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_2_3	0	126	+126	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_3_4	0	6316	+6316	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_sum	5559	19972	+14413	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.storeQueue	vaddr_match_failed	24	87	+63	StoreQueue	yes	BLOCKING	C_DIAG，但持有模块已重写(yes) —— 豁免不再成立
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_1_2	5559	7214	+1655	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_sum	5559	7214	+1655	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.storeQueue	vaddr_match_failed	24	14	-10	StoreQueue	yes	BLOCKING	C_DIAG，但持有模块已重写(yes) —— 豁免不再成立

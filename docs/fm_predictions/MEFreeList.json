@@ -1,0 +1,9 @@
+{
+  "target": "MEFreeList",
+  "ut": "MEFreeList",
+  "regs": 2643,
+  "outs": 73,
+  "expected": 2716,
+  "merge_dup": "false",
+  "model_applicable": true
+}

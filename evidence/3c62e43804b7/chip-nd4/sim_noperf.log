@@ -1,0 +1,23 @@
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+Please use '-no_save' simv switch to avoid re-execution or '-suppress=ASLR_DETECTED_INFO' to suppress this message.
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 24 02:43 2026
+ram image:/home/eda/xs-env/XiangShan/ready-to-run/coremark-2-iteration.bin
+diff-test ref so:/home/eda/xs-env/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+set max cycles:                20000
+Core  x's Commit SHA is: b36a1a2a57, dirty: 1
+simv compiled at Sep 24 2026, 02:43:02
+Using simulated 8386560MB RAM
+The image is /home/eda/xs-env/XiangShan/ready-to-run/coremark-2-iteration.bin
+Using simulated 1048576B flash
+The reference model is /home/eda/xs-env/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+The first instruction of core 0 has commited. Difftest enabled. 
+Running CoreMark for 2 iterations
+EXCEEDED MAX CYCLE:                20000
+$finish called from file "/home/eda/xs-env/sim-work-perfbind-difftest/src/test/vsrc/vcs/DifftestEndpoint.sv", line 256.
+$finish at simulation time                40101
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 40101 ns
+CPU Time:    467.660 seconds;       Data structure size:  83.6Mb
+Thu Sep 24 02:51:02 2026
