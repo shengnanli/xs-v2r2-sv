@@ -131,3 +131,12 @@ FM 在本父级里把 PipeWithFlush_1 的那几位也计成了比较点（两侧
 - 变异自检（scratchpad，seed 7 × 5k 拍，`+cmp_all`，全部 CAUGHT）：simp 段不被 comp 屏蔽 82939；入队 ready 不看已发射 60820；
   x0 不翻 zero 47；srcLoadDependency 不左移 85875；OHToUInt 改式 821；deqDelay 负载不看使能 27；validCnt 不减 fire 639；
   issueTime 不 +1 9996；转移请求不看 issued 89854；deq valid 不看 cancelDeq 976。
+
+### 5.3 其余 13 个变体跑前预测（★跑完不许改本节★；每行在该变体 proof 之前提交）
+
+口径同 5.2：登记值 = fm_predict 模型（merge_dup=false）；诊断跑 = diagnostic-full、不产 receipt、未开 vmucp；
+开 vmucp 后预期实测 = 诊断 passing + 诊断 unread，与模型之差应恰好被 constant_reg 指认。
+其余项预期全部为：failing 0 / unverified 0 / unmatched 0 / unread 0 / 黑盒 0 / 无 dont_verify / SUCCEEDED。
+
+| 目标 | 登记 passing（模型） | 诊断跑 | 预期实测 |
+|---|---|---|---|
