@@ -5,7 +5,9 @@
 //   寄存器堆与 RegCache 的数据阵列都不复位，+vcs+initreg+random / +<n> 档两侧初值不同，
 //   先把每一项写成确定值再开始比对。热身最后 40 拍发射口全开、源全走 RegCache：RegCache 读口的
 //   地址寄存器只在 ren 时更新（不复位），也要先写一次（+vcs+initreg+<n> 档实测：不这样做，
-//   比对开头 3 拍 RegCache 读数两侧不同）。
+//   比对开头 3 拍 RegCache 读数两侧不同）。同理热身最后 40 拍向量异常模块的读口也全开：
+//   读回选择寄存器 RegEnable(!isV0, r.valid) 不复位（seed 1 × +vcs+initreg+1017 实测：不这样做，
+//   比对开头 12 拍 toVecExcpMod.rdata_0 两侧不同）。
 // 随机阶段：发射 valid 60%、dataSources 在 reg/regcache/forward/bypass/zero/imm/v0 里挑、
 //   （发射 valid 每 500 拍在 60/20/3% 三档间换，低档才打得到 TopDown 的"发射少"事件）、
 //   redirect 5%（robIdx 随机，约一半的 uop 会被判 isAfter）、ld2Cancel 5%、EXU ready 85%、
@@ -8177,23 +8179,23 @@ module tb;
       io_fromVfIQ_0_0_bits_common_dataSources_4_value <= 4'b0110;
       io_fromVfIQ_0_0_bits_common_debug_seqNum_seqNum <= 56'({$urandom, $urandom});
       io_fromVfIQ_0_0_bits_common_debug_seqNum_uopIdx <= 8'($urandom);
-      io_fromVecExcpMod_r_0_valid <= 1'b0;
+      io_fromVecExcpMod_r_0_valid <= (cyc >= WARMUP - 40);
       io_fromVecExcpMod_r_0_bits_isV0 <= 1'($urandom);
       io_fromVecExcpMod_r_0_bits_addr <= 7'($urandom);
-      io_fromVecExcpMod_r_1_valid <= 1'b0;
+      io_fromVecExcpMod_r_1_valid <= (cyc >= WARMUP - 40);
       io_fromVecExcpMod_r_1_bits_addr <= 7'($urandom);
-      io_fromVecExcpMod_r_2_valid <= 1'b0;
+      io_fromVecExcpMod_r_2_valid <= (cyc >= WARMUP - 40);
       io_fromVecExcpMod_r_2_bits_addr <= 7'($urandom);
-      io_fromVecExcpMod_r_3_valid <= 1'b0;
+      io_fromVecExcpMod_r_3_valid <= (cyc >= WARMUP - 40);
       io_fromVecExcpMod_r_3_bits_addr <= 7'($urandom);
-      io_fromVecExcpMod_r_4_valid <= 1'b0;
+      io_fromVecExcpMod_r_4_valid <= (cyc >= WARMUP - 40);
       io_fromVecExcpMod_r_4_bits_isV0 <= 1'($urandom);
       io_fromVecExcpMod_r_4_bits_addr <= 7'($urandom);
-      io_fromVecExcpMod_r_5_valid <= 1'b0;
+      io_fromVecExcpMod_r_5_valid <= (cyc >= WARMUP - 40);
       io_fromVecExcpMod_r_5_bits_addr <= 7'($urandom);
-      io_fromVecExcpMod_r_6_valid <= 1'b0;
+      io_fromVecExcpMod_r_6_valid <= (cyc >= WARMUP - 40);
       io_fromVecExcpMod_r_6_bits_addr <= 7'($urandom);
-      io_fromVecExcpMod_r_7_valid <= 1'b0;
+      io_fromVecExcpMod_r_7_valid <= (cyc >= WARMUP - 40);
       io_fromVecExcpMod_r_7_bits_addr <= 7'($urandom);
       io_fromVecExcpMod_w_0_valid <= 1'b0;
       io_fromVecExcpMod_w_0_bits_isV0 <= 1'($urandom);

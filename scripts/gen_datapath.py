@@ -1041,7 +1041,9 @@ def stim(n, w, g):
         return "1'b0", "($urandom_range(0, 99) < 5)"
     if re.fullmatch(r'io_to\w+Exu_\d+_\d+_ready', n):
         return "1'b1", "($urandom_range(0, 99) < 85)"
-    if re.fullmatch(r'io_fromVecExcpMod_[rw]_\d+_valid', n):
+    if re.fullmatch(r'io_fromVecExcpMod_r_\d+_valid', n):
+        return "(cyc >= WARMUP - 40)", "($urandom_range(0, 99) < 10)"
+    if re.fullmatch(r'io_fromVecExcpMod_w_\d+_valid', n):
         return "1'b0", "($urandom_range(0, 99) < 10)"
     return rnd(w), rnd(w)
 
@@ -1056,7 +1058,9 @@ def gen_tb(g, M):
     A('//   寄存器堆与 RegCache 的数据阵列都不复位，+vcs+initreg+random / +<n> 档两侧初值不同，')
     A('//   先把每一项写成确定值再开始比对。热身最后 40 拍发射口全开、源全走 RegCache：RegCache 读口的')
     A('//   地址寄存器只在 ren 时更新（不复位），也要先写一次（+vcs+initreg+<n> 档实测：不这样做，')
-    A('//   比对开头 3 拍 RegCache 读数两侧不同）。')
+    A('//   比对开头 3 拍 RegCache 读数两侧不同）。同理热身最后 40 拍向量异常模块的读口也全开：')
+    A('//   读回选择寄存器 RegEnable(!isV0, r.valid) 不复位（seed 1 × +vcs+initreg+1017 实测：不这样做，')
+    A('//   比对开头 12 拍 toVecExcpMod.rdata_0 两侧不同）。')
     A('// 随机阶段：发射 valid 60%、dataSources 在 reg/regcache/forward/bypass/zero/imm/v0 里挑、')
     A('//   （发射 valid 每 500 拍在 60/20/3% 三档间换，低档才打得到 TopDown 的"发射少"事件）、')
     A('//   redirect 5%（robIdx 随机，约一半的 uop 会被判 isAfter）、ld2Cancel 5%、EXU ready 85%、')
