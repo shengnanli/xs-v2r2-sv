@@ -116,6 +116,92 @@ def gen_arb16_file():
     return path, text
 
 
+# ---------------------------------------------------------------------------
+#  UT testbench 公共生成片段（verif/ut/<T>/gen.py 调用；本文件自己不写 tb）
+# ---------------------------------------------------------------------------
+def _rng(w):
+    return "[%d:0] " % (w - 1) if w > 1 else ""
+
+
+def tb_ports(module, skip_inputs=("clock", "reset")):
+    """tb 的端口声明 + golden / _xs 两个实例。输入两侧共用，输出 g_/i_ 前缀。"""
+    ps = port_table(module)
+    L = ["  // ---- 输入（两侧共用；clock/reset 由 tb 手写区驱动）----"]
+    for d, w, n, _ in ps:
+        if d == "input" and n not in skip_inputs:
+            L.append("  logic %s%s;" % (_rng(w), n))
+    L.append("  // ---- 输出（g_ = golden，i_ = 重写）----")
+    for d, w, n, _ in ps:
+        if d == "output":
+            L.append("  wire  %sg_%s, i_%s;" % (_rng(w), n, n))
+    for inst, pre, mod in (("u_gold", "g_", module), ("u_impl", "i_", module + "_xs")):
+        L.append("  %s %s (" % (mod, inst))
+        conns = ["    .%s(%s)" % (n, n if d == "input" else pre + n) for d, w, n, _ in ps]
+        L.append(",\n".join(conns))
+        L.append("  );")
+    return L
+
+
+def tb_compare(module, toggle_exempt=None):
+    """每拍逐位比较**全部**输出端口；同时记每个输出位是否见过 0 和 1（toggle 覆盖）。
+
+    toggle_exempt = {端口名: 位掩码}：结构上恒定、不可能翻转的位（调用方逐个写明理由）。
+    只豁免 toggle 覆盖，不豁免比较。"""
+    toggle_exempt = toggle_exempt or {}
+    for n in toggle_exempt:
+        if n not in [p[2] for p in port_table(module) if p[0] == "output"]:
+            raise SystemExit("gen_missq: toggle 豁免的端口 %s 不是 %s 的输出" % (n, module))
+    outs = [(w, n) for d, w, n, _ in port_table(module) if d == "output"]
+    L = []
+    for w, n in outs:
+        L.append("  logic %sseen1_%s = '0, seen0_%s = '0;" % (_rng(w), n, n))
+    L.append("  task automatic compare_outputs();")
+    for w, n in outs:
+        L.append("    if (g_%s !== i_%s) begin" % (n, n))
+        L.append("      errors++;")
+        L.append("      if (errors <= 20) $display(\"MISMATCH cyc=%%0d %s: g=%%h i=%%h\", cyc, g_%s, i_%s);" % (n, n, n))
+        L.append("    end")
+        L.append("    seen1_%s |= g_%s;" % (n, n))
+        L.append("    seen0_%s |= ~g_%s;" % (n, n))
+    L.append("    checks++;")
+    L.append("  endtask")
+    L.append("  // 返回从未翻转过的输出端口个数（逐个打印）")
+    L.append("  function automatic int report_toggle();")
+    L.append("    int bad = 0;")
+    for w, n in outs:
+        m = toggle_exempt.get(n)
+        keep = "" if m is None else " & ~%d'h%x" % (w, m)
+        L.append("    if (((~seen1_%s | ~seen0_%s)%s) != '0) begin bad++; $display(\"TOGGLE MISS %s 1=%%h 0=%%h\", seen1_%s, seen0_%s); end" % (n, n, keep, n, n, n))
+    L.append("    return bad;")
+    L.append("  endfunction")
+    return L
+
+
+def gen_tb_regions(tb_path, module, toggle_exempt=None):
+    text = open(tb_path).read()
+    text = replace_region(text, "tb-ports", "\n".join(tb_ports(module)))
+    text = replace_region(text, "tb-compare", "\n".join(tb_compare(module, toggle_exempt)))
+    return text
+
+
+def tb_main(tb_path, module, toggle_exempt=None):
+    """verif/ut/<T>/gen.py 的公共入口：python3 gen.py [--check]"""
+    text = gen_tb_regions(tb_path, module, toggle_exempt)
+    old = open(tb_path).read()
+    if "--check" in sys.argv:
+        if old != text:
+            print("GEN CHECK FAILED: %s 与生成器输出不一致" % tb_path)
+            return 1
+        print("GEN CHECK OK")
+        return 0
+    if old != text:
+        open(tb_path, "w").write(text)
+        print("wrote %s" % tb_path)
+    else:
+        print("unchanged")
+    return 0
+
+
 GENERATORS = [gen_arb16_file]
 
 
