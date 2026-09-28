@@ -27,6 +27,25 @@
 // 下方 GENERATED 区（端口表、8 个 DataSRAMBank_* 与 MbistPipeDCacheData 的例化和 MBIST 穿线）由
 // scripts/gen_bankeddataarray.py 从 golden 机械生成；手写区是全部功能逻辑。
 // =============================================================================
+// 本文件导航（共 2272 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L25    组织】一行 64B 按 8B 切成 8 个 bank
+//   L27    三类访问
+//   L39    伪错误注入】CtrlUnit 的数据通道
+//   L42    MBIST】MbistPipeDCacheData 把 32 个 SRAM
+//   L44    复位】只有 8 份 wen_reg_REG
+//   L542   §1 load 读口地址：bank 号
+//   L559   §2 冲突判定
+//   L561   写数据打一拍
+//   L648   §3 每个 bank 的读使能与读地址
+//   L650   bank b 被 load 口 i 读 = 口有效、访问的
+//   L679   §4 bank 读结果：注入伪错误、ECC 延迟一拍检错
+//   L709   §5 load 读响应：按打一拍的 bank/路号选数据，打两拍的选 ECC 结果
+//   L746   §6 整行读：路号打一拍 → 8 个 bank 选同一路 → can_go / stall / can_resp 三级寄存 → 
+//   L748   MBIST ack 时这条通路被 MBIST 借用：路号取 MBIST 正在读的那一路，各级寄存无条件前进
+//   L806   §7 伪错误注入"已生效"：真的读到了被注入的 bank
+//   L826   §8 写：第一拍锁存数据并算 SECDED，第二拍写进 bank
+//   L865   §9 仿真检查寄存器：assert(!(RegNext(read.fire && PopCount(way_en) > 1)))
+//
 
 package bankeddataarray_pkg;
 
