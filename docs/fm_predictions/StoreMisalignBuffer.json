@@ -1,0 +1,9 @@
+{
+  "target": "StoreMisalignBuffer",
+  "ut": "StoreMisalignBuffer",
+  "regs": 2723,
+  "outs": 2031,
+  "expected": 4754,
+  "merge_dup": "false",
+  "model_applicable": true
+}

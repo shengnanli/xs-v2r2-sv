@@ -1,0 +1,9 @@
+{
+  "target": "LoadMisalignBuffer",
+  "ut": "LoadMisalignBuffer",
+  "regs": 5154,
+  "outs": 2775,
+  "expected": 7929,
+  "merge_dup": "false",
+  "model_applicable": true
+}
