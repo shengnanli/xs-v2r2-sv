@@ -1,0 +1,63 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "DataSRAMBank_1",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "objects": [
+  {
+   "side": "i",
+   "design": "array_7_ext",
+   "path": "i:/WORK/DataSRAMBank_1/data_bank_0/array/array/array_7_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_7_ext",
+   "path": "i:/WORK/DataSRAMBank_1/data_bank_1/array/array/array_7_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_7_ext",
+   "path": "i:/WORK/DataSRAMBank_1/data_bank_2/array/array/array_7_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_7_ext",
+   "path": "i:/WORK/DataSRAMBank_1/data_bank_3/array/array/array_7_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_7_ext",
+   "path": "r:/WORK/DataSRAMBank_1/data_bank_0/array/array/array_7_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_7_ext",
+   "path": "r:/WORK/DataSRAMBank_1/data_bank_1/array/array/array_7_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_7_ext",
+   "path": "r:/WORK/DataSRAMBank_1/data_bank_2/array/array/array_7_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_7_ext",
+   "path": "r:/WORK/DataSRAMBank_1/data_bank_3/array/array/array_7_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  }
+ ]
+}

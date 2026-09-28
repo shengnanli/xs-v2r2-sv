@@ -1,0 +1,9 @@
+{
+  "target": "Queue1_RegMapperInput_6",
+  "ut": "Queue1_RegMapperInput_6",
+  "regs": 84,
+  "outs": 85,
+  "expected": 169,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -5,7 +5,7 @@
 //   class DuplicatedTagArray / class TagArray / class TagSRAMBank。
 //
 // 本包仅提供 DuplicatedTagArray 顶层自身要用到的「Tag ECC 编码」纯函数与位宽常量。
-// 真正的存储体（TagSRAMBank → SRAMTemplate → 厂商宏）与 Mbist 流水当 golden 黑盒，
+// 真正的存储体（TagArray → TagSRAMBank → SRAMTemplate_116 → 厂商宏）与 Mbist 分发树是独立签核的子模块，
 // 由 wrapper 例化；可读核只负责「副本管理 + 读写路由 + 写入时算 Tag ECC」。
 //
 // 关于 Tag ECC（SECDED 单纠错双检错，rocket-chip SECDEDCode）：
@@ -62,13 +62,13 @@ endpackage
 //   · 写（refill 填入新 tag）：必须**同时写进全部 4 份副本**，保证多份内容一致。
 //   · 4 份副本存的是**同一张 256 组 × 4 路的 tag 表**，差异仅在“谁来读”。
 //
-// 本核负责的“设计逻辑”（其余存储体/ DFT 为 golden 黑盒）：
+// 本核负责的“设计逻辑”（存储体 TagArray / DFT 分发 MbistPipeDcacheTag 是各自独立签核的子模块）：
 //   1) 写入时计算 Tag 的 SECDED 校验码（7bit），与 36bit tag 拼成 43bit encTag；
 //   2) 把写请求（idx/way_en/encTag）扇出到全部副本；
 //   3) 把每个读端口路由到对应副本，并把副本的 resp 透传回对应输出口；
-//   4) 暴露 readPorts 份 TagArray 黑盒接口（wrapper 例化 golden TagArray 后回连）。
+//   4) 暴露 readPorts 份 TagArray 子模块接口（wrapper 例化 TagArray 后回连）。
 //
-// TagArray 黑盒内部（仅作背景，不在本核实现）：
+// TagArray 内部（rtl/memblock/TagArray.sv / TagSRAMBank.sv，不在本核实现）：
 //   每个 TagArray = nWays/DCacheWayDiv = 2 个 TagSRAMBank，每 bank 管 DCacheWayDiv=2 路；
 //   bank 内是单口 SRAMTemplate（深 256、宽 43），上电有逐组清零（rst_cnt）。
 //   读延迟 1 拍：本核给出 read_valid/idx，下一拍 resp 出现在 tarr_resp。
@@ -96,7 +96,7 @@ module xs_DuplicatedTagArray_core import dtagarray_pkg::*; (
   input  logic [N_WAYS-1:0]          io_write_way_en,
   input  logic [TAG_W-1:0]           io_write_tag,
 
-  // ---- 与 READ_PORTS 份 TagArray 黑盒的接口（wrapper 例化后回连）----
+  // ---- 与 READ_PORTS 份 TagArray 子模块的接口（wrapper 例化后回连）----
   // 读
   output logic                       tarr_read_valid [READ_PORTS],
   output logic [IDX_W-1:0]           tarr_read_idx   [READ_PORTS],
@@ -145,8 +145,8 @@ endmodule
 // DuplicatedTagArray_wrapper —— golden 同名顶层（FM 对比 / ST 替换用）
 // -----------------------------------------------------------------------------
 // 端口与 golden DuplicatedTagArray 完全一致（扁平）。本 wrapper 是机械适配层：
-//   · 例化 4 个 golden TagArray 黑盒（array_0..3，每副本一套读口）；
-//   · 例化 golden MbistPipeDcacheTag 黑盒，按 golden 拓扑把 8 条 childBd bore 链
+//   · 例化 4 个 TagArray（rtl/memblock/TagArray.sv，array_0..3，每副本一套读口）；
+//   · 例化 MbistPipeDcacheTag（rtl/dft/MbistPipeDcacheTag.sv），按 golden 拓扑把 8 条 childBd bore 链
 //     连到 4 个副本（每副本 2 个 bore 子口，对应其 2 个 TagSRAMBank）；
 //   · 把读/写/resp 路由与 Tag-ECC 计算交给可读核 xs_DuplicatedTagArray_core
 //     （golden 在顶层内联算 ecc 并扇出，此处改由核统一处理）。
@@ -403,7 +403,7 @@ module DuplicatedTagArray import dtagarray_pkg::*; (
   end
 
   // ---------------------------------------------------------------------------
-  // MbistPipeDcacheTag：把顶层 bd_* 信号驱动 8 条 childBd（黑盒，结构同 golden）
+  // MbistPipeDcacheTag：把顶层 bd_* 信号驱动 8 条 childBd（子模块，结构同 golden）
   // ---------------------------------------------------------------------------
   MbistPipeDcacheTag mbistPl (
     .clock(clock), .reset(reset),

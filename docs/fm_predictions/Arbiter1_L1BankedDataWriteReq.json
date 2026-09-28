@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter1_L1BankedDataWriteReq",
+  "ut": "DCacheLeaves",
+  "regs": 0,
+  "outs": 521,
+  "expected": 521,
+  "merge_dup": "false",
+  "model_applicable": true
+}
