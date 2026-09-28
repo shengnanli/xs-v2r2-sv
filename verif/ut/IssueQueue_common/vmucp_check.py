@@ -20,7 +20,6 @@ UT = pathlib.Path(__file__).resolve().parent.parent
 
 def pins(v):
     t = (UT / v / 'fm_pins_pre.tcl').read_text()
-    inst = re.search(r'"r:/WORK/\$top/(\w+)/\$_r"', t).group(1)
     blocks = re.findall(r'foreach _pair \{\n(.*?)\n  \} \{\n    lassign \$_pair _r _i\n    if \{\[set_user_match "(.*?)" "(.*?)"\]\}',
                         t, re.S)
     out = set()
@@ -31,7 +30,7 @@ def pins(v):
             if (rp, ip) in out:
                 raise SystemExit(f'重复钉点 {rp} {ip}')
             out.add((rp, ip))
-    return out, inst
+    return out, None
 
 
 def main():

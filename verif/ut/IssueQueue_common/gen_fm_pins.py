@@ -207,11 +207,32 @@ def gen_sched(v):
             ipre = it.replace('i:/WORK/$top/', '').replace('$_i', '')
             for r, i in re.findall(r'\{(\S+) (\S+)\}', body):
                 pairs.append(f'    {{{inst}/{rpre}{r} {inst}/{ipre}{i}}}')
+        # IQ 自身的出队打拍负载（deqDelay_<d>_*）与性能计时器：单签 IQ 时它们都直接驱动输出、按名/签名
+        # 就配上了；在调度器里大多数字段没有出口（Scheduler_1 诊断跑实测 4962 个 unmatched unread），
+        # 按 gen_iq.py 同一张负载布局逐位钉上。
+        sys.path.insert(0, str(UT.parents[1] / 'scripts'))
+        import gen_iq
+        c = gen_iq.Ctx(mod)
+        P, _ = gen_iq.measure(c)
+        for d in range(P['N_DEQ']):
+            fields = [(m.group(1), w) for r, w in c.regs for m in [re.fullmatch(r'deqDelay_%d_(\w+)' % d, r)]
+                      if m and m.group(1) != 'valid']
+            off = sum(w for _, w in fields)
+            for f, w in fields:
+                off -= w
+                for b in range(w):
+                    g_r = f'deqDelay_{d}_{f}_reg[{b}]' if w > 1 else f'deqDelay_{d}_{f}_reg'
+                    pairs.append(f'    {{{inst}/{g_r} {inst}/u_core/dly{d}_q_reg[{off + b}]}}')
+            for tname, iname in (('selectTime', 'select_timer'), ('issueTime', 'issue_timer')):
+                for b in range(64):
+                    pairs.append(f'    {{{inst}/deqBeforeDly_{d}_bits_common_perfDebugInfo_{tname}_c_reg[{b}] '
+                                 f'{inst}/u_core/{iname}_reg[{d}][{b}]}}')
     n = len(pairs)
     return f'''# {v} FM 匹配前钉点 —— 汇总各 IssueQueue 实例已签核的钉点表，加实例前缀
 # ============================================================================
 # ★自动生成：verif/ut/IssueQueue_common/gen_fm_pins.py —— 勿手改★
-# 来源：verif/ut/<IssueQueue*>/fm_pins_pre.tcl（每条配对原样，两侧路径各加 "<IQ 实例>/"），共 {n} 对。
+# 来源：verif/ut/<IssueQueue*>/fm_pins_pre.tcl（每条配对原样，两侧路径各加 "<IQ 实例>/"）
+#       + 各 IQ 的 deqDelay 负载寄存器与性能计时器（按 gen_iq.py 的负载布局），共 {n} 对。
 # 计数守卫同 IQ：用 set_user_match 的返回值数，失败一条或总数 != {n} 都 error。
 # ============================================================================
 
