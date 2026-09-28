@@ -44,3 +44,19 @@ seed 1/7/42 × {`+vcs+initreg+0`, `+vcs+initreg+random`} 6/6 `checks=200000 erro
 
 可能出错：无寄存器、纯组合，唯一风险是某路常量抄错 —— 那会是 failing 而不是计数偏差
 （UT 已在 4 路各 2 万次以上胜出上逐位比过全部输出）。
+
+---
+
+# 对账（跑完追加；上文各节未改一字）
+
+## A. Arbiter4_MainPipeReq
+
+| 项 | 值 |
+|---|---|
+| proof commit | `5c140d96a3fb`（`git rev-parse 5c140d96`；预测登记在同一 commit，早于证明） |
+| 证据 | `evidence/5c140d96a3fb/Arbiter4_MainPipeReq/receipt.json` sha256 `f4b728be7ce323960e6e6d8e6fc2e33955f3b2327d2a254a596d97865508ec5c` |
+| impl_closure | `rtl/memblock/Arbiter4_MainPipeReq.sv` `8a3c7ce1ce7d418bf72fb7402ef166672a76d5a4dd1a2cc549617acf72a85d88`；`rtl/frontend/xs_FixedPriorityArbiter_core.sv` `e7c8526c…a5618`（未改） |
+| 结果 | native SUCCEEDED，passing **986** / failing 0 / unverified 0 / aborted 0 / unread_notcompared 0 / unmatched 六项 0 / 无黑盒 / signoff-strict / dirty false / fm.log 行首 `Error:` 0 |
+| `fm_predict.py check` | 预期 986，实测 986，差 0，「全部对上」 |
+
+复跑：`cd /home/eda/xs-env/wt-dmainpipe && PROOF_COMMIT=5c140d96 bash scripts/run_proof.sh Arbiter4_MainPipeReq Arbiter4_MainPipeReq < /dev/null`
