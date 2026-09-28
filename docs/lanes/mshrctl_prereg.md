@@ -66,3 +66,71 @@ elab147 / relaxed_appvars 空、无黑盒；(6) 配置文件进 script_closure�
 
 1. merge_dup 由缺省改为 false：仲裁器内无重复寄存器，预期对 passing 无影响；若差出来，先查 merge。
 2. 试跑是 vmucp 关、merge 缺省；正式跑两处都变，数字以上表为准。
+
+## 2. SourceB（已有重写件；本 lane 改 child 处置 + waitG 宽度 + 钉点）
+
+### 2.1 改动与子模块处置
+
+- child FastArbiter_5：原先两侧同一份 golden（GOLDEN_REUSE），改为两侧白盒 —— ref golden、
+  impl 本 lane 重写件（§1）。
+- `probes_waitG` 从 4 位改回 golden 的 7 位（写入 {3'h0, idx}、只读 [3:0]），撤掉
+  `verif/dead_ref/SourceB.json`（它声明的是 golden 独有死位；merge_dup=false 下实测 12 位而非 4 位，
+  声明已不成立）。
+- `verif/ut/SourceB/fm_pins_pre.tcl`（scripts/gen_l2_mshr_pins.py 生成，fail-closed，224 位）：
+  golden `probes_<k>_<字段>` ↔ impl `u_core/probes_<字段>_reg[k]`。不钉时 waitG 死位两侧都配不上
+  （ref/impl 各 12 个 unmatched unread，实测 commit 3dd22d50 试跑）。
+- FM_MERGE_DUP=false（新加，模型适用）。
+
+### 2.2 UT（verif/ut/SourceB；SourceB_xs 例化 FastArbiter_5_xs；3 seed × 3 initreg × 200k）
+
+结果见文末对账（跑完追加）。复跑：`cd verif/ut/SourceB && make run SEED=<s> INITREG=<0|random|<s>017>`
+
+### 2.3 跑前预测（★跑完不许改本节★，登记 docs/fm_predictions/SourceB.json）
+
+模型 expected = 543（regs 232 + outs 311）。lane 内非正式试跑（commit 60257697 前的工作树、钉点与
+本节相同，vmucp 开）：passing 530 / constant_reg 13 / unread 0。
+
+| 项 | 预测 |
+|---|---|
+| passing | **530**（= 543 − constant_reg 13） |
+| constant_reg | 13 = issueArb.rrGrantMask[0] 1 + probes_<k>_waitG[6:4] 4×3（恒写 0，两侧对称） |
+| unread（vmucp 后） | 0（issueArb.pendingMask[0] 1 位 matched_nc 实比进 passing） |
+| failing / unverified / unmatched / 黑盒 / dont_verify | 全 0 / 无 |
+| verdict | SUCCEEDED（signoff-strict） |
+
+## 3. MSHR（child ×16）
+
+### 3.1 结构
+
+- `rtl/uncore/MSHR.sv`：package mshr_pkg（编码常量、MetaEntry / MainPipe 任务 struct、odOpGen 等）+
+  手写核 xs_MSHR_core（§1 寄存器，与 golden 同名 → FM 按名配对，不需钉点；§2 派生判断；§3 四路发请求，
+  六种 MainPipe 任务各拼一份 struct 再按优先级选；§4 状态更新，一个 always_ff 按 Chisel when 顺序写；
+  §5 输出；§6 性能/断言影子）+ 生成的端口表与 wrapper（scripts/gen_mshr.py，--check，进 gate）。
+- 无子模块、无黑盒。
+
+### 3.2 UT（verif/ut/MSHR；3 seed × 3 initreg × 200k 拍；31M checks/档）
+
+commit 3edb0f92 与 ea8f5e84 的字节上各跑过一轮全矩阵，均 errors=0（ea8f5e84 只改一处函数取位段写法）。
+覆盖：21 个 golden 内部判断（release_valid1/2、mp_grant/cbwrdata/probeack/dct、rcompack/wcompack、
+嵌套写回两种匹配、doRespData、promoteT、三种写回类型、CMO、事务结束、period、nestedwbData、PCrd 查询）
+每档都非 0（seed 42 random 档：事务结束 337 次、probeack 720 拍、dct 846 拍）。
+变异自检（scratchpad，30k 拍，seed 7）：10 个里 8 个抓到；**UT 看不见的 2 个**：M5 validCnt 去掉复位、
+M9 REG_1 恒 0 —— 两者都是断言专用影子（综合视图无读者），归 FM：vmucp 把它们作为 matched-unread 实比。
+
+### 3.3 跑前预测（★跑完不许改本节★，登记 docs/fm_predictions/MSHR.json）
+
+模型 expected = 1443（regs 655 + outs 788）。lane 内非正式试跑（commit ea8f5e84，vmucp 关，merge_dup 缺省=true）：
+native SUCCEEDED passing 1372 / failing 0 / unmatched 0(0)，Constant reg 1，Unread 69（全 matched_nc：
+validCnt[63:0]、REG、REG_1..3、state_w_pprobeackfirst）。1443 − 1 − 69 = 1373，与 1372 差 1 ——
+推断为 merge_dup 合并了一对重复寄存器（io_msInfo_bits_blockRefill_REG 与 _REG_1 同源同值）。
+
+| 项 | 预测（正式 run_proof：merge_dup=false、vmucp 开） |
+|---|---|
+| passing | **1442**（= 1443 − constant_reg 1） |
+| constant_reg | 1 |
+| unread | 0（69 位全部 vmucp 实比） |
+| failing / unverified / unmatched / 黑盒 / dont_verify | 全 0 / 无 |
+| verdict | SUCCEEDED |
+
+可能出错处：(1) 那 1 个常量寄存器的身份未查明（试跑报告只给计数）——若 constant_reg≠1，差额按 receipt 指认；
+(2) 若 merge 关闭后 blockRefill_REG/_REG_1 仍被合并，passing 会是 1441。
