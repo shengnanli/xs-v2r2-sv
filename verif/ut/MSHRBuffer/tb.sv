@@ -8,6 +8,7 @@ module tb;
   always #5 clock = ~clock;
   logic reset;
   longint checks = 0, errors = 0;
+  longint cyc = 0;   // 复位释放后的拍号（--narrow 表达式可用它做分相激励）
   function automatic logic [4095:0] rnd(input int w);
     logic [4095:0] v;
     v = '0;
@@ -297,7 +298,6 @@ module tb;
     #0 release u_i_MSHRBuffer_1.u_core.buffer[15][1];
   endtask
 
-  longint cyc = 0;
   bit covfail = 0;
   initial begin
     void'($value$plusargs("ncycles=%d", NCYCLES));

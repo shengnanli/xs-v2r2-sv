@@ -66,6 +66,7 @@ def gen(a):
     A('  always #5 clock = ~clock;')
     A('  logic reset;')
     A('  longint checks = 0, errors = 0;')
+    A('  longint cyc = 0;   // 复位释放后的拍号（--narrow 表达式可用它做分相激励）')
     A('  function automatic logic [4095:0] rnd(input int w);')
     A('    logic [4095:0] v;')
     A("    v = '0;")
@@ -144,6 +145,12 @@ def gen(a):
         A('  endtask')
         A(f'  task automatic sync_{T}();')
         for spec in per_target(a.sync, T):
+            if '=>' in spec:
+                # 'gpath=>ipath'：目标变量由普通 always（非 always_ff）驱动，可直接过程赋值
+                # （firtool 行为级 ram 的 Memory 数组就是这种；整数组 force 不被支持）
+                gp, ip = spec.split('=>', 1)
+                A(f'    u_i_{T}.{ip} = u_g_{T}.{gp};')
+                continue
             gp, ip = spec.split('=', 1)
             # always_ff 变量不许有第二个过程驱动 -> 用 force/release：release 之后变量保持
             # 被 force 的值，直到下一次自身时钟沿赋值。只在 t=1（首沿之前）做一次。
@@ -164,7 +171,6 @@ def gen(a):
         fin.append('    end')
         finals.append((T, fin))
         A('')
-    A('  longint cyc = 0;')
     A('  bit covfail = 0;')
     A('  initial begin')
     A('    void\'($value$plusargs("ncycles=%d", NCYCLES));')
