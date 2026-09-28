@@ -72,3 +72,33 @@
 3. 本节未做任何 FM 试跑，数字纯按模型登记。
 
 ## 3. UT 汇总（跑完追加）
+
+（以下为跑完后追加，§1–§2 未改）
+
+| UT | 字节所在 commit | seed 1 / 7 / 42 × initreg `0` / `random` / `<seed>017`，各 200k 拍 |
+|---|---|---|
+| NewAgeDetector（2 变体同测） | 15deab32（RTL 同 857e9d0b） | 9 档全部 errors=0 TEST PASSED；checks 197999 / 197905 / 198023 |
+| MultiWakeupQueue（4 变体同测） | 1338bdb2（RTL 同 15deab32） | 9 档全部 errors=0 TEST PASSED；checks 196916 / 196793 / 196975 |
+
+覆盖（seed 42, initreg 42017）：MWQ 各变体 deq 有效 44014 / 137964 / 73771 / 36492 拍；出口冲刷杀掉
+5818 / – / 13432 / 8839 次；多流水同拍汇合 2504 / – / 11557 / 2099 次；lat=2 出口仅因 ld2Cancel 被杀 1619 次；
+中途复位 1016 次（"–" = 该变体结构上无此事件：MWQ_2 只有一条 lat=0 流水）。
+NewAgeDetector：两条目同拍进队 ≈59k 拍、canIssue=11 时选 0 号 ≈74k / 选 1 号 ≈25k、中途复位 ≈2k 次。
+
+复跑：`bash <scratchpad>/iqfam/ut9.sh <NewAgeDetector|MultiWakeupQueue>`，
+即 `cd verif/ut/<UT> && make run SEED=<s> INITREG=<0|random|<s>017>`。
+
+## 4. 对账（FM，run_proof.sh，证明 commit 1338bdb2，evidence/1338bdb28432/）
+
+| 目标 | 预测 passing | 实测 | failing | unmatched | unread | 黑盒 | dont_verify | verdict |
+|---|---|---|---|---|---|---|---|---|
+| NewAgeDetector     | 5   | 5   | 0 | 0 | 0 | 0 | 否 | SUCCEEDED |
+| NewAgeDetector_6   | 3   | 3   | 0 | 0 | 0 | 0 | 否 | SUCCEEDED |
+| MultiWakeupQueue   | 402 | 402 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED |
+| MultiWakeupQueue_2 | 212 | 212 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED |
+| MultiWakeupQueue_4 | 430 | 430 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED |
+| MultiWakeupQueue_5 | 96  | 96  | 0 | 0 | 0 | 0 | 否 | SUCCEEDED |
+
+`python3 scripts/fm_predict.py check <6 个目标>` → 全部逐位相等（差 0）。
+§2.4 第 1 条的担心（constant_reg 3 位 / unread）**没有发生**：passing 与模型逐位相等，说明
+FM 在本父级里把 PipeWithFlush_1 的那几位也计成了比较点（两侧同构），不是常量寄存器。
