@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/VfRegFilePart1
+Implementation : i:/WORK/VfRegFilePart1
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 10:09:49 2026
+**************************************************
+
+No unverified compare points.
+
+1
