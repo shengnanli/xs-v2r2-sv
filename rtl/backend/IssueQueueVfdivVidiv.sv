@@ -711,7 +711,7 @@ module IssueQueueVfdivVidiv(
   logic             core_enq_ready     [2];
   logic             core_enq_do        [2];
   logic [3:0]       core_enq_src_type  [2][5];
-  logic [6:0]       core_enq_psrc      [2][5];
+  logic [7:0]       core_enq_psrc      [2][5];
   logic             core_enq_src_state [2][5];
   logic [1:0]       core_enq_src_ld    [2][5][1];
   logic             core_st_src_state  [2][5];
@@ -1802,7 +1802,7 @@ module IssueQueueVfdivVidiv(
     .N_COMP    (6),
     .N_DEQ     (1),
     .N_SRC     (5),
-    .PSRC_W    (7),
+    .PSRC_W    (8),
     .LD_CNT    (0),
     .N_EXU     (0),
     .EXU_W     (1),

@@ -108,7 +108,11 @@ def gen(v):
         L.append(',\n'.join('    ' + x for x in items))
         L.append('  );')
     L.append('  function automatic logic pct(int p); return $urandom_range(0, 99) < p; endfunction')
-    L.append("  function automatic logic [7:0] pick_preg(); return 8'($urandom_range(0, 7)); endfunction")
+    L.append('  // 物理寄存器号小池：85% 取 0..7（唤醒才打得中），15% 取 0x80..0x83'
+             '（最高位为 1：检验 psrc==0 按端口全宽判）')
+    L.append('  function automatic logic [7:0] pick_preg();')
+    L.append("    return pct(85) ? 8'($urandom_range(0, 7)) : 8'($urandom_range(128, 131));")
+    L.append('  endfunction')
     L.append('  function automatic int pick_of(int list [], int n); return list[$urandom_range(0, n - 1)]; endfunction')
     L.append('  function automatic logic [3:0] pick_src_type();')
     L.append('    int r = $urandom_range(0, 9);')

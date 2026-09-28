@@ -1529,7 +1529,10 @@ module tb;
   );
 
   function automatic logic pct(int p); return $urandom_range(0, 99) < p; endfunction
-  function automatic logic [7:0] pick_preg(); return 8'($urandom_range(0, 7)); endfunction
+  // 物理寄存器号小池：85% 取 0..7（唤醒才打得中），15% 取 0x80..0x83（最高位为 1：检验 psrc==0 按端口全宽判）
+  function automatic logic [7:0] pick_preg();
+    return pct(85) ? 8'($urandom_range(0, 7)) : 8'($urandom_range(128, 131));
+  endfunction
   function automatic logic [3:0] pick_src_type();
     int r = $urandom_range(0, 9);
     case (r) 0: return 4'h0; 1, 2, 3: return 4'h1; 4: return 4'h2; 5: return 4'h4;

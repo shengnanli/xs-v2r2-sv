@@ -219,7 +219,10 @@ def measure(c):
     P['N_SIMP'] = ep['io_simpEntryOldestSel_0_bits'][1]
     P['N_COMP'] = ep['io_compEntryOldestSel_0_bits'][1]
     P['N_SRC'] = len([n for n in ep if re.fullmatch(r'io_enq_0_bits_status_srcStatus_\d+_srcType', n)])
-    P['PSRC_W'] = ep['io_enq_0_bits_status_srcStatus_0_psrc'][1]
+    # 核里 psrc 只用来判 "psrc == 0"（x0 / v0 特判），必须按 **IQ 端口**的位宽判：
+    # 向量 IQ 的条目只存 7 位 psrc，但 Dispatch 送来的是 8 位，golden 比的是 8 位
+    # （VlduVstu 诊断跑实测：按 7 位判 -> psrc=0x80 时 srcState/dataSources 24 个 failing）。
+    P['PSRC_W'] = c.pw['io_enq_0_bits_psrc_0']
     P['LD_CNT'] = len([n for n in ep if re.fullmatch(r'io_enq_0_bits_status_srcStatus_0_srcLoadDependency_\d+', n)])
     P['N_EXU'] = len([n for n in ep if re.fullmatch(r'io_exuSources_0_\d+_value', n)])
     P['EXU_W'] = ep['io_exuSources_0_0_value'][1] if P['N_EXU'] else 1
