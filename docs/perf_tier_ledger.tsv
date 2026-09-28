@@ -20,8 +20,8 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED       18674
-# status GAP             5335
+# status MEASURED       18665
+# status GAP             5344
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -234,7 +234,7 @@ ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlb_prefetch_tlb_prefe
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlb_st_tlb_st	sttlb port 0 is non-block, resp.ready must be true.B	A_FUNC_ASSERT	MEASURED	0	0	0		-	assert_cond_no_bore	golden 里这条断言的条件不依赖任何 bore（如恒 0），两侧同样不会响
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlb_st_tlb_st	sttlb port 1 is non-block, resp.ready must be true.B	A_FUNC_ASSERT	MEASURED	0	0	0		-	assert_cond_no_bore	golden 里这条断言的条件不依赖任何 bore（如恒 0），两侧同样不会响
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlb_st_tlb_st.entries.page_sttlb_storage_fa	sttlb_storage refill, duplicate with existing entries	A_FUNC_ASSERT	GAP	1	0	1	TLBFA_2	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	data selector must be One-Hot!\n	A_FUNC_ASSERT	MEASURED	1	0	0	LoadMisalignBuffer	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	data selector must be One-Hot!\n	A_FUNC_ASSERT	GAP	1	0	1	LoadMisalignBuffer	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.loadQueue.loadQueueRAR	LoadQueueRAR: You can not write an valid entry! check: ldu 0, robIdx %d	A_FUNC_ASSERT	MEASURED	2	1	0	LoadQueueRAR	no	assert_is_cycle_visible_behavior	lue) & ~(io_redirect_valid & (io_redirect_bits_level & data_0_probe == _needFlush_flushItself_T_286 | io_quer…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.loadQueue.loadQueueRAR	LoadQueueRAR: You can not write an valid entry! check: ldu 1, robIdx %d	A_FUNC_ASSERT	MEASURED	2	1	0	LoadQueueRAR	no	assert_is_cycle_visible_behavior	lue) & ~(io_redirect_valid & (io_redirect_bits_level & data_0_1_probe == _needFlush_flushItself_T_286 | io_qu…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.loadQueue.loadQueueRAR	LoadQueueRAR: You can not write an valid entry! check: ldu 2, robIdx %d	A_FUNC_ASSERT	MEASURED	2	1	0	LoadQueueRAR	no	assert_is_cycle_visible_behavior	lue) & ~(io_redirect_valid & (io_redirect_bits_level & data_0_2_probe == _needFlush_flushItself_T_286 | io_qu…
@@ -18472,10 +18472,10 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_tr
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_train_filter	stride_train_filter_raw_enq_pattern_11	C_DIAG	MEASURED	1	0	0	TrainFilter	no	FC/no_reader:全部 1 条 bore 都不馈入控制	TrainFilter._GEN_40
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_train_filter	stride_train_filter_raw_enq_pattern_110	C_DIAG	MEASURED	1	0	0	TrainFilter	no	FC/no_reader:全部 1 条 bore 都不馈入控制	TrainFilter._GEN_49
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_train_filter	stride_train_filter_raw_enq_pattern_111	C_DIAG	MEASURED	1	0	0	TrainFilter	no	FC/no_reader:全部 1 条 bore 都不馈入控制	TrainFilter._GEN_52
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	alloc	C_DIAG	MEASURED	1	0	0	LoadMisalignBuffer	no	FC/no_reader:全部 1 条 bore 都不馈入控制	LoadMisalignBuffer._GEN_16
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	flush	B_CONTROL	MEASURED	1	1	0	LoadMisalignBuffer	no	FC/read_by_logic:LoadMisalignBuffer.flush_probe	eg REG; wire _GEN_16 = REG & req_valid; wire _GEN_17 = flush_probe & ~(|bufferState); wire _GEN_18 = flush_pr…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	flush_idle	C_DIAG	MEASURED	1	0	0	LoadMisalignBuffer	no	FC/no_reader:全部 1 条 bore 都不馈入控制	LoadMisalignBuffer._GEN_17
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	flush_non_idle	C_DIAG	MEASURED	1	0	0	LoadMisalignBuffer	no	FC/no_reader:全部 1 条 bore 都不馈入控制	LoadMisalignBuffer._GEN_18
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	alloc	C_DIAG	GAP	1	0	1	LoadMisalignBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	LoadMisalignBuffer._GEN_16
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	flush	B_CONTROL	GAP	1	1	1	LoadMisalignBuffer	yes	FC/read_by_logic:LoadMisalignBuffer.flush_probe	eg REG; wire _GEN_16 = REG & req_valid; wire _GEN_17 = flush_probe & ~(|bufferState); wire _GEN_18 = flush_pr…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	flush_idle	C_DIAG	GAP	1	0	1	LoadMisalignBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	LoadMisalignBuffer._GEN_17
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.loadMisalignBuffer	flush_non_idle	C_DIAG	GAP	1	0	1	LoadMisalignBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	LoadMisalignBuffer._GEN_18
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.loadQueue	full_mask_000	B_CONTROL	MEASURED	1	1	0	LoadQueue	no	FC/read_by_logic:LoadQueue.perfEvents_17_2_probe	REG_1 <= io_perf_16_value_REG; io_perf_17_value_REG <= perfEvents_17_2_probe; io_perf_17_value_REG_1 <= io_pe…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.loadQueue	full_mask_001	B_CONTROL	MEASURED	1	1	0	LoadQueue	no	FC/read_by_logic:LoadQueue.perfEvents_18_2_probe	REG_1 <= io_perf_17_value_REG; io_perf_18_value_REG <= perfEvents_18_2_probe; io_perf_18_value_REG_1 <= io_pe…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.loadQueue	full_mask_010	B_CONTROL	MEASURED	1	1	0	LoadQueue	no	FC/read_by_logic:LoadQueue.perfEvents_19_2_probe	REG_1 <= io_perf_18_value_REG; io_perf_19_value_REG <= perfEvents_19_2_probe; io_perf_19_value_REG_1 <= io_pe…
@@ -19325,10 +19325,10 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.sbuffer.prefetcher.spb.bu
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.sbuffer.prefetcher.spb.burst_engine	burst_generator_full	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.sbuffer.prefetcher.spb.burst_engine	burst_valid_num	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.sbuffer.prefetcher.spb.burst_engine	prefetch_req_fire_by_generator	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	alloc	C_DIAG	MEASURED	1	0	0	StoreMisalignBuffer	no	FC/no_reader:全部 1 条 bore 都不馈入控制	StoreMisalignBuffer._GEN_19
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush	B_CONTROL	MEASURED	1	1	0	StoreMisalignBuffer	no	FC/read_by_logic:StoreMisalignBuffer.flush_probe	EG_1; wire _GEN_19 = REG_1 & req_valid; wire _GEN_20 = flush_probe & ~(|bufferState); wire _GEN_21 = flush_pr…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush_idle	C_DIAG	MEASURED	1	0	0	StoreMisalignBuffer	no	FC/no_reader:全部 1 条 bore 都不馈入控制	StoreMisalignBuffer._GEN_20
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush_non_idle	C_DIAG	MEASURED	1	0	0	StoreMisalignBuffer	no	FC/no_reader:全部 1 条 bore 都不馈入控制	StoreMisalignBuffer._GEN_21
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	alloc	C_DIAG	GAP	1	0	1	StoreMisalignBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	StoreMisalignBuffer._GEN_19
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush	B_CONTROL	GAP	1	1	1	StoreMisalignBuffer	yes	FC/read_by_logic:StoreMisalignBuffer.flush_probe	EG_1; wire _GEN_19 = REG_1 & req_valid; wire _GEN_20 = flush_probe & ~(|bufferState); wire _GEN_21 = flush_pr…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush_idle	C_DIAG	GAP	1	0	1	StoreMisalignBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	StoreMisalignBuffer._GEN_20
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.storeMisalignBuffer	flush_non_idle	C_DIAG	GAP	1	0	1	StoreMisalignBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	StoreMisalignBuffer._GEN_21
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_alloc_simple	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_79
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_alloc_wait_same	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_80
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.uncache	e0_merge	C_DIAG	MEASURED	1	0	0	Uncache	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Uncache._GEN_77
