@@ -1,0 +1,9 @@
+{
+  "target": "ImmExtractor_2",
+  "ut": "ImmExtractorBypass",
+  "regs": 0,
+  "outs": 64,
+  "expected": 64,
+  "merge_dup": "false",
+  "model_applicable": true
+}
