@@ -80,6 +80,54 @@ tb 分辨力自测（20k 拍）：去掉 A.valid 的 wfiReq 门控 errors=15555�
 lane 内 diagnostic-full 试跑（dirty，未出 receipt）两次：vmucp 关 passing 116 + matched-unread 16；
 vmucp 开 passing 132 / failing 0 / unmatched 0。可能出错：无已知风险。
 
+## 3. MissEntry（golden 1,505 行 / 155 端口，无子模块；MissQueue 里 16 份例化同一模块）
+
+### 3.1 核与 golden 差异点
+
+- `rtl/memblock/MissEntry.sv`（1,275 行，`_GEN_`/`_T_` 0）：missentry_pkg（常量、请求/通道结构体、
+  命令分类与 ClientMetadata.onAccess 的 grow 表）+ xs_MissEntry_core（§1 接收新请求 / §2 请求与 s_*/w_* 状态
+  寄存器，always_ff 严格按 Scala 语句顺序"后写者赢" / §3 A / §4-5 D·E / §6 MainPipe 回填请求 / §7 其它输出 /
+  §8 延迟监控 / §9 断言与性能计数寄存器）+ golden 同名 wrapper（端口表与结构体拆装由 `scripts/gen_missq.py`
+  生成：每个 golden 端口恰好一条规则、方向位宽逐个核对）。
+- 本配置折叠照 golden：nMaxPrefetchEntry=14 ⇒ 能接预取的表项 = id>=2；grant.ready 恒 1；isDirty/miss_dirty 等 DCE。
+- 寄存器一一对应：每个请求口一份的 RegNext(primary_fire)（10 个）与 RegNext(id>=2)（5 个）照留；
+  §9 死寄存器（REG..REG_7、r/r_3/r_4、last_REG_5..7、refill_finished_last_REG、3 个 64 位 counter）照留。
+- FM 钉点 `verif/ut/MissEntry/fm_pins_pre.tcl`（gen_missq.py 生成，229 对逐位写死，`ME_PREPIN_END n=229`）+
+  vmucp（`verif/fm_target_config/MissEntry.tcl`）。
+- lane 内 diagnostic-full 试跑（dirty，未出 receipt）两次：
+  1. 无钉点/无 vmucp：native FAILED passing 4093 / failing 7 / unmatched 10(10) / unread 209（matched_nc 2 +
+     unmatched-unread 207(207)）/ constant reg 6 —— failing 全在 10 个未配上的 RegNext(primary_fire) 下游。
+  2. 加钉点 + vmucp：native SUCCEEDED passing **4319** / failing 0 / unmatched 0 / constant reg 6。
+- constant reg 6 的身份（单独一次 FM match 后 `report_potentially_constant_registers` 实查）：
+  `req_q.addr[5:0]` —— 每次写入都是 `{addr[47:6], 6'h0}`，不复位，FM 视为初值后恒 0（golden `req_addr[5:0]` 同）。
+
+### 3.2 UT（verif/ut/MissEntry；3 档 initreg × 3 seed × 200k，串行）
+
+9/9 `errors=0 cov_fail=0` TEST PASSED（checks 200032 / 200042 / 200045）。激励：地址取自 4 行 × 2 alias 的小池（每 2000 拍换池）、
+alloc/merge/cancel 随机、Grant/GrantData × size 5/6、MainPipe resp/replay/evict、L2 hint、wfiReq 成段、io_id 每 4000 拍在
+{0,1}/{2..15} 交替、随机异步复位；暖机 = store 分配 + 两拍 GrantData，写定所有不复位且输出可见的寄存器后才开比较。
+覆盖（seed 1 / initreg 0，全部 ≥ COV_MIN=200）：alloc 35949 / merge load 14401 / merge store 9005 / A.fire 17123（AcquirePerm 1312）/
+GrantData 关键字 7883 / 非关键字 31107 / 无数据 Grant 11021 / Grant 与 store 字节合并 14686 / E.fire 19994 / MainPipe 请求 26611 /
+replay 10127 / evict 9541 / 释放 9098 / handled 8813 / 可接预取表项 primary_ready 17438 / 非预取表项挡预取 3761 / secondary_ready 1719 /
+reject 18146 / query 合并 6827 / query 拒绝 64136 / late prefetch 1423 / probe 阻挡 9036 / replace 阻挡 19871 / refill_to_ldq 22182 /
+wfiReq 挡 A 14195 / 前递"只到第一拍" 14591 / 异步复位 32；每个输出位见过 0 和 1（结构恒定位 gen.py 逐个豁免、仍逐位比较）。
+tb 分辨力自测（20k 拍，9/9 抓到）：A.valid 去掉"合并 store 时先别发" errors=383；row 下标不按 isKeyword 翻转 35357；
+store 字节合并掩码取反 128952；merge 不再保持 isKeyword 16740；reject 去掉 alias 项 1636；无数据 Grant 不再保持数据 7794；
+replay/evict 优先级对调 177；可接预取表项 primary_ready 去掉"刚分配"打拍 1471；firstbeat 不按 isKeyword 对调 290。
+UT 看不见的：§9 死寄存器（无输出）—— 由 FM vmucp 逐位实比覆盖。
+
+### 3.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/MissEntry.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | 模型 **4325**（golden 寄存器 1806 + 输出 2519）；实测预计 **4319**，差 6 由 receipt `constant_reg`=6 指认（req_addr[5:0]） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched 六项 | 全 0（`ME_PREPIN_END MissEntry n=229 expect=229`） |
+| 黑盒 | 无 |
+| mode / verdict / vmucp | signoff-strict / SUCCEEDED / true |
+
+可能出错：run_proof 在 detached worktree 里跑，钉点叶名若格式不同钉点脚本会 `error` 早退（表现为 FM 早退）。
+
 ---
 
 # 对账（跑完追加；上文各节未改一字）
