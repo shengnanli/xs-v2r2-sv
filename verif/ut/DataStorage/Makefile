@@ -61,6 +61,10 @@ PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
 
+# vmucp 只对 DataStorage*（各 544 个对称死位，依据见 verif/fm_target_config/DataStorage*.tcl）；
+# GatedSplittedSRAM* 没有未读点，不开（按目标设，不影响同目录其它变体）。
+fm-DataStorage fm-DataStorage_1 fm-DataStorage_2 fm-DataStorage_3: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 INITREG  ?= random
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)

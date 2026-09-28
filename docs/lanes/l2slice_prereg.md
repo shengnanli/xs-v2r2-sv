@@ -285,7 +285,7 @@ BRRIP 监视组；每 4000 拍里 1000 拍把读与 MSHR 压到 set 0 制造 8 �
   refillBuf / releaseBuf 读判定）。TaskBundle 用包内 `task_t` 结构体（94 字段 383 位），结构体、golden 同名
   wrapper、fm_pins_pre.tcl 由 `scripts/gen_l2_requestarb.py` 生成，并核对 sinkA/B/C/mshrTask/taskInfo_s1/taskToPipe_s2
   六组端口字段表完全一致、golden 两组任务寄存器与字段表一一对应。0 子模块、0 黑盒。
-- 钉点：golden `mshr_task_s1_bits_<f>` / `task_s2_bits_<f>`（2 × 383 位）↔ 核里两个 task_t 结构体寄存器逐位，
+- （原计划）钉点：golden `mshr_task_s1_bits_<f>` / `task_s2_bits_<f>`（2 × 383 位）↔ 核里两个 task_t 结构体寄存器逐位，
   fail-closed 计数 766。★风险★：重写侧结构体寄存器在 FM 里的名字（`u_core/<name>_reg[bit]`）是按惯例推的，
   若不是这个名字，钉点会整体失败并 error（不会静默）。
 
@@ -339,3 +339,22 @@ releaseRefillData 漏 Evict errors=127、A-Hint 也触发 MCP2 stall errors=2041
 | Directory | unread **27**（wayMask 16 + mbistPl 地址 11），全部 matched_nc ⇒ PARTIAL |
 | Directory_1..3 | unread **27**，全部 matched_nc ⇒ PARTIAL |
 第三跑：DataStorage* / Directory* 按 vmucp standing rule 开 vmucp，passing 分别 +544 / +27、SUCCEEDED。
+
+### 9.4 对账（第一跑）与第二跑登记
+
+- 第一跑（commit f6806ac5，evidence/f6806ac59aae/RequestArb）：**ERROR**，钉点 0/766 —— §9.1 标出的风险成真：
+  FM 给 packed struct 寄存器起的名字是 `u_core/mshr_task_s1_bits_reg\[<字段>][bit]`，不是按惯例推的
+  `u_core/mshr_task_s1_bits_reg[bit]`；钉点文件 fail-closed 报错停下，没有出 receipt。
+- 定位（scratch 副本里 FM_MODE=diagnostic-full、去掉钉点，不产 receipt）：FM 自己按名/签名配上全部寄存器，
+  0(0) unmatched，Verification SUCCEEDED，1837 passing，unread 0 —— 本模块没有对称阵列，根本不需要钉。
+  于是删掉钉点（生成器不再产出 fm_pins_pre.tcl）。
+- 第二跑登记：passing **1837**、unread 0、failing / unmatched 0、SUCCEEDED（与 §9.3 相同，钉点那一项作废）。
+
+### 7.5 对账（第二跑，commit f6806ac5，evidence/f6806ac59aae/）与第三跑登记
+
+- GatedSplittedSRAM / _1 / _2 / _3：passing **2272** 各，**SUCCEEDED**（allow 8 对象精确相等），与登记一致 —— 签核完成。
+- SplittedSRAM_3..6：**SUCCEEDED**，unread 0（merge 开，passing 1286 各）—— 签核完成。
+- DataStorage / _1 / _2 / _3：passing 1988 / 1989 / 1990 / 1990，unread **544**，全部 matched_nc、两侧独占 0，
+  钉点 DS_PIN ok=530 bad=0 —— 与登记逐位相等。
+- 第三跑（DataStorage* 开 vmucp：verif/fm_target_config/DataStorage*.tcl + Makefile 目标级开关）登记：
+  passing **2532 / 2533 / 2534 / 2534**（= 第二跑 + 544 = 模型值）、unread 0、SUCCEEDED。

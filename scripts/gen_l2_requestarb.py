@@ -2,7 +2,7 @@
 """gen_l2_requestarb.py —— RequestArb 的机械部分：TaskBundle 结构体、golden 同名 wrapper、FM 钉点。
 
 可读核 xs_RequestArb_core 在 rtl/uncore/RequestArb.sv 里手写，本脚本**不碰**；它只原地替换同一文件里的
-两个 GENERATED 区，并写 verif/ut/RequestArb/fm_pins_pre.tcl：
+两个 GENERATED 区：
 
   task_t   TaskBundle（KunminghuV2Config 单态化后的 94 个字段），字段表逐字取自 golden 的
            io_taskToPipe_s2_bits_* 端口（顺序、位宽）；并**核对** sinkA/sinkB/sinkC/mshrTask/taskInfo_s1
@@ -10,9 +10,9 @@
            第一个端口字段放在结构体最高位；`alias` 是 SV 保留字，写成 alias_。
   wrapper  四组输入 bits 按字段装成 task_t；task_s2 / task_s1 拆回 taskToPipe_s2 / taskInfo_s1 端口；
            其余端口逐个接核。msInfo_*（dontTouch 保留、RequestArb 不读）不接。
-  pins     golden 的 mshr_task_s1_bits_<f> / task_s2_bits_<f> 扁平寄存器（共 2 x 94 个）与重写核里
-           两个 task_t 结构体寄存器的逐位对应。fail-closed：每条 set_user_match 数返回值，拒一条或
-           总数不等于字面位数即 error；只消名差，不约束 ref。
+  （不生成 FM 钉点：第一版按"结构体寄存器叫 <name>_reg[bit]"钉，FM 实际的名字是
+   <name>_reg\[<字段>][bit]，钉点整体失败（evidence/f6806ac59aae/RequestArb）；随后不钉的诊断跑表明
+   FM 按名字/签名把 2 x 383 位全部自动配上、0 unmatched —— 本模块没有对称阵列，不需要钉。）
 
 用法：python3 scripts/gen_l2_requestarb.py [--check]
 """
@@ -172,41 +172,6 @@ def emit_wrapper(P, F):
     return '\n'.join(L)
 
 
-def emit_pins(F):
-    total_w = sum(w for _, w in F)
-    L = ['# RequestArb FM「匹配前」钉点 —— 自动生成：scripts/gen_l2_requestarb.py（勿手改）',
-         '#',
-         '# 只消 golden 扁平寄存器名（mshr_task_s1_bits_<f> / task_s2_bits_<f>）与重写核里两个 task_t',
-         '# 结构体寄存器（u_core/mshr_task_s1_bits / u_core/task_s2_bits）之间的命名鸿沟。',
-         '# set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。',
-         '# fail-closed：逐条数返回值；拒一条或总数不等于字面位数就 error（safe interp 里不用 exit）。',
-         '# 进 fm.log 的输出一律 ASCII。',
-         'set ::RA_PIN_EXPECT %d' % (2 * total_w),
-         'set ::RA_PIN_OK 0',
-         'set ::RA_PIN_BAD 0',
-         'proc ra_pin {r i} {',
-         '  if {[set_user_match $r $i]} { incr ::RA_PIN_OK } else {',
-         '    incr ::RA_PIN_BAD',
-         '    if {$::RA_PIN_BAD <= 10} { puts "RA_PIN_FAIL: $r <-> $i" }',
-         '  }',
-         '}',
-         'puts "RA_PIN_BEGIN RequestArb expect=$::RA_PIN_EXPECT"']
-    for gname, iname in (('mshr_task_s1_bits', 'mshr_task_s1_bits'), ('task_s2_bits', 'task_s2_bits')):
-        hi = total_w
-        for f, w in F:
-            lo = hi - w
-            for b in range(w):
-                r = 'r:/WORK/RequestArb/%s_%s_reg' % (gname, f) + ('' if w == 1 else '\\[%d\\]' % b)
-                i = 'i:/WORK/RequestArb/u_core/%s_reg\\[%d\\]' % (iname, lo + b)
-                L.append('ra_pin %s %s' % (r, i))
-            hi = lo
-    L += ['puts "RA_PIN_END ok=$::RA_PIN_OK bad=$::RA_PIN_BAD expect=$::RA_PIN_EXPECT"',
-          'if {$::RA_PIN_BAD != 0 || $::RA_PIN_OK != $::RA_PIN_EXPECT} {',
-          '  error "RA_PIN_MISMATCH ok=$::RA_PIN_OK bad=$::RA_PIN_BAD expect=$::RA_PIN_EXPECT"',
-          '}']
-    return '\n'.join(L) + '\n'
-
-
 def replace_region(txt, tag, body):
     b = re.search(r'(// BEGIN GENERATED\(%s\)[^\n]*\n)(.*?)(// END GENERATED\(%s\))' % (tag, tag), txt, re.S)
     assert b, '找不到 GENERATED(%s) 区' % tag
@@ -238,19 +203,16 @@ def main():
     new = replace_region(cur, 'task_t', emit_struct(F))
     new = replace_region(new, 'wrapper', emit_wrapper(P, F))
     new = with_nav(new)
-    pins = emit_pins(F)
-    curp = open(PINS).read() if os.path.exists(PINS) else None
     if a.check:
-        bad = [p for p, c, n in ((RTL, cur, new), (PINS, curp, pins)) if c != n]
+        bad = [p for p, c, n in ((RTL, cur, new),) if c != n]
+        if os.path.exists(PINS):
+            bad.append(PINS + '（不该存在）')
         for p in bad:
             print('DRIFT: %s' % p)
         return 1 if bad else 0
     if cur != new:
         open(RTL, 'w').write(new)
-    os.makedirs(os.path.dirname(PINS), exist_ok=True)
-    if curp != pins:
-        open(PINS, 'w').write(pins)
-    print('RequestArb: task_t %d 字段 / %d 位；钉点 %d 位' % (len(F), sum(w for _, w in F), 2 * sum(w for _, w in F)))
+    print('RequestArb: task_t %d 字段 / %d 位' % (len(F), sum(w for _, w in F)))
     return 0
 
 
