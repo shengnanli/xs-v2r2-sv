@@ -1,92 +1,10 @@
 {
   "target": "LoadQueueUncache",
   "ut": "LoadQueueUncache",
-  "regs": 11546,
+  "regs": 38266,
   "outs": 6671,
-  "expected": 45241,
+  "expected": 44937,
   "merge_dup": "false",
   "model_applicable": true,
-  "bbin": 27024,
-  "bbox": {
-    "UncacheEntry": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_1": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_10": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_11": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_12": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_13": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_14": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_15": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_2": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_3": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_4": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_5": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_6": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_7": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_8": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    },
-    "UncacheEntry_9": {
-      "insts": 1,
-      "in_bits": 1689,
-      "points": 1689
-    }
-  }
+  "note": "第1跑(7c7701af)登记值45241多算304: Makefile 用 $(addsuffix) 写条目依赖, 模型读不到 16 个 UncacheEntry, 按黑盒输入位 1689/个计而非寄存器位 1670/个(16x19=304); 改字面列表后模型=44937=38266 DFF(与第1跑 FM DFF 36645+1616+5 逐位相等)+6671 port"
 }

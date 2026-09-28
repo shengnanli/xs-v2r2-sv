@@ -25,7 +25,14 @@ RTL_SRCS = $(RTL_DIR)/memblock/LoadQueueUncache.sv \
            $(RTL_DIR)/common/RRArbiterInit_11.sv
 TB_SRCS  = tb.sv
 
-LQU_CHILDREN = $(addsuffix .sv,$(UE_VARIANTS)) FreeList_6.sv RRArbiterInit_11.sv \
+# ★逐个写字面 .sv 名，别用 $(addsuffix ...)★：scripts/fm_passing_model.py 只认字面 .sv 词，
+# 第一版写成 $(addsuffix .sv,$(UE_VARIANTS)) 时它读不到 16 个条目，把它们当黑盒按输入位
+# （1689/个）计，而真实是寄存器位（1670/个），预测凭空多出 16×19 = 304（第 1 跑实测对账）。
+LQU_CHILDREN = UncacheEntry.sv UncacheEntry_1.sv UncacheEntry_2.sv UncacheEntry_3.sv \
+               UncacheEntry_4.sv UncacheEntry_5.sv UncacheEntry_6.sv UncacheEntry_7.sv \
+               UncacheEntry_8.sv UncacheEntry_9.sv UncacheEntry_10.sv UncacheEntry_11.sv \
+               UncacheEntry_12.sv UncacheEntry_13.sv UncacheEntry_14.sv UncacheEntry_15.sv \
+               FreeList_6.sv RRArbiterInit_11.sv \
                PipelineRegModule.sv PipelineRegModule_1.sv PipelineRegModule_2.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/LoadQueueUncache.sv $(addprefix $(GOLDEN_RTL)/,$(LQU_CHILDREN))
@@ -37,6 +44,10 @@ FM_REF_DEPS_LoadQueueUncache = $(LQU_CHILDREN)
 # 条目里的 flushPipe/replayInst 两个同函数寄存器），合并后两侧幸存者可能不同；
 # 且只有关掉时 fm_predict 的 passing 模型才严格适用。这是加强不是放宽。
 FM_MERGE_DUP = false
+
+# vmucp（加强不是放宽）：唯一的 5 个 unread 点是 freeList.freeSlotCnt[4:0]（只驱动 io_validCount，
+# 父级只接到 perf 探针），两侧对称死位；依据与六条证据见 verif/fm_target_config/LoadQueueUncache.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail
 
