@@ -1,0 +1,17 @@
+{
+  "target": "DuplicatedTagArray",
+  "ut": "DuplicatedTagArray",
+  "regs": 892,
+  "outs": 776,
+  "expected": 2460,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 792,
+  "bbox": {
+    "array_8_ext": {
+      "insts": 8,
+      "in_bits": 99,
+      "points": 792
+    }
+  }
+}

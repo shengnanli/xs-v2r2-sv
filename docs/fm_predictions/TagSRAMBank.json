@@ -1,0 +1,17 @@
+{
+  "target": "TagSRAMBank",
+  "ut": "TagArray",
+  "regs": 97,
+  "outs": 173,
+  "expected": 369,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 99,
+  "bbox": {
+    "array_8_ext": {
+      "insts": 1,
+      "in_bits": 99,
+      "points": 99
+    }
+  }
+}

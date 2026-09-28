@@ -24,7 +24,10 @@ FM_VARIANTS = TagSRAMBank TagArray
 FM_REF_DEPS_TagSRAMBank = SRAMTemplate_116.sv $(SRAM_DEPS)
 FM_REF_DEPS_TagArray    = TagSRAMBank.sv SRAMTemplate_116.sv $(SRAM_DEPS)
 FM_MODE = assembly
-FM_MERGE_DUP = false
+# merge_duplicated_registers 保持工具默认（开）：共享核 xs_SRAMTemplate_core 的 rdata_last_REG 在
+# holdRead 关闭时与 respReg 同方程，靠合并消掉（golden 无此寄存器）；关掉合并它就成为 impl 独有的
+# unread（本 lane 实测：TagSRAMBank 1 个 / TagArray 2 个 / DuplicatedTagArray 8 个）。
+# 这与 SRAMTemplate_* 自身签核的口径相同。代价：fm_predict 模型不适用（MODEL_NA）。
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

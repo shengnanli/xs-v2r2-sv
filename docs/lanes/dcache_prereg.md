@@ -120,3 +120,45 @@ enable 与 confidence 在 3 万拍内同进同退（分叉要到 10 万拍的退
 CtrlUnit 5 个：4 CAUGHT；C5（tag 通道打拍件第 3 组掩码接错）SURVIVED —— 那组输出在 CtrlUnit 里悬空，
 UT 结构上看不见；FM 经钉点 + vmucp 真比较这 455 位，覆盖之。
 CounterFilter 5 个：4 CAUGHT；F5（入队写项口序反转）为等价变异（同拍各口分配指针两两不同，不会写同一项）。
+
+## 2. 第二批：LoadPipe / TagSRAMBank / TagArray / DuplicatedTagArray（跑前登记，FM 起跑前提交）
+
+### 2.1 结构与子模块处置
+
+| 目标 | 重写件 | child 处置 |
+|---|---|---|
+| LoadPipe（×3 例化） | rtl/memblock/LoadPipe.sv（loadpipe_pkg：权限表 growStarter / SECDED 检错 / OHToUInt；§1..§6 按 s0..s3 分节） | 无子模块 |
+| TagSRAMBank | rtl/memblock/TagSRAMBank.sv（上电逐组清零 + 单口写优先） | SRAMTemplate_116（PROVEN_DIRECT）两侧白盒；其下 sram_array_*_dcsh_tag / array_8 / MbistClockGateCell / ClockGate 两侧同源；唯一黑盒 array_8_ext（vendor_boundary 已审定） |
+| TagArray | rtl/memblock/TagArray.sv（2 个 TagSRAMBank 拼 4 路） | TagSRAMBank（本 lane）+ 同上 |
+| DuplicatedTagArray | rtl/memblock/DuplicatedTagArray.sv（沿用已有重写核；本 lane 只改注释） | TagArray/TagSRAMBank（本 lane）、MbistPipeDcacheTag（PROVEN_DIRECT，rtl/dft）、SRAMTemplate_116；黑盒只有 array_8_ext ×8 |
+
+DuplicatedTagArray 上一版 impl 直接读 golden TagArray/TagSRAMBank/SRAMTemplate_116/MbistPipeDcacheTag
+（golden 逻辑复用），本批起 impl 侧全部换成重写件。
+
+三个 SRAM 目标的 FM 口径：`FM_MODE=assembly`（黑盒逐对象声明 verif/allow/<目标>.json，declare_allow.py
+由实跑生成，只含 array_8_ext，class=vendor_macro），**merge_dup 保持工具默认（开）**：共享核
+xs_SRAMTemplate_core 的 rdata_last_REG 在 holdRead 关时与 respReg 同方程，靠合并消掉（关掉合并时实测
+TagSRAMBank 1 / TagArray 2 / DuplicatedTagArray 8 个 impl 独有 unread）；与 SRAMTemplate_* 自身签核同口径。
+代价：fm_predict 模型对这三个目标判 MODEL_NA（不给绿也不给红），预测按试跑数字登记。
+
+### 2.2 UT
+
+| UT 目录 | 目标 | commit | 结果 |
+|---|---|---|---|
+| LoadPipe | LoadPipe | bdd4281b | 9/9 errors=0 cov_fail=0（checks 14999025..14999100） |
+| TagArray | TagSRAMBank + TagArray | 见对账 | seed 7 random 试跑 checks=2197049 errors=0 |
+| DuplicatedTagArray | DuplicatedTagArray | 见对账 | seed 7 random 试跑 checks=3794908 errors=0 |
+
+LoadPipe 覆盖（seed 42 random）：s1 命中 57171 / 命中无权限 4812、s2 真缺失 27774、miss 发出 14116、
+no_mshr 8398、data nack 20515、tag ECC 错 28276、BtoT 3692 / BtoT 占路失败 962、handled 6039、
+tag 伪错误 2883、128 位数据错 2735、预取命中计数 14068 / 被过滤 13983、污染 3037。
+UT 结构上恒 0 的输出位（行地址低 6 位、perf 高 5 位）豁免 0/1 覆盖。
+
+### 2.3 跑前预测（★跑完不许改本节★）
+
+| 目标 | passing 预测 | 其余 | 依据 |
+|---|---|---|---|
+| LoadPipe | **1311**，constant_reg **1**（REG_4 恒 1） | vmucp 开（62 对对称死位，verif/fm_target_config/LoadPipe.tcl）→ unread 0；failing/unmatched 0；无黑盒；signoff-strict SUCCEEDED | 模型 1312 = regs 554 + outs 758；非正式试跑 1311 + const 1 |
+| TagSRAMBank | **369** | assembly；黑盒 2（array_8_ext 两侧各 1）；unread 0；failing/unmatched 0 | 试跑（merge 默认）369 |
+| TagArray | **737** | assembly；黑盒 4；其余同上 | 试跑 737 |
+| DuplicatedTagArray | **2460** | assembly；黑盒 16；vmucp 开（10 对 MBIST 地址打拍死位）→ unread 0 | 试跑 2460 |
