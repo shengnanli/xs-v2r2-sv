@@ -191,6 +191,10 @@ def gen(a):
     for T in a.target:
         A(f'      check_{T}();')
         A(f'      cover_{T}();')
+    if a.both_phases:
+        A('      @(posedge clock); #1;')
+        for T in a.target:
+            A(f'      check_{T}();')
     A('    end')
     for T, fin in finals:
         L.extend(fin)
@@ -213,6 +217,8 @@ def main():
     ap.add_argument('--cover', action='append', default=[])
     ap.add_argument('--min-toggled', action='append', default=[])
     ap.add_argument('--rst-period', type=int, default=5000)
+    ap.add_argument('--both-phases', action='store_true',
+                    help='时钟高电平相位（posedge 后 #1）再比一次：门控时钟类输出只有高相位才看得见')
     a = ap.parse_args()
     txt = gen(a)
     p = pathlib.Path(a.out)
