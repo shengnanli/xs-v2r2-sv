@@ -33,6 +33,12 @@ FM_REF_DEPS_VSMergeBufferImp = FreeList_1.sv NewPipelineConnectPipe_29.sv
 # （load 版里 valid / mBIndex 被打成三份独立寄存器，golden 与核都一份不少）。
 FM_MERGE_DUP = false
 
+# ★vmucp：依据见 verif/fm_target_config/VLMergeBufferImp.tcl / VSMergeBufferImp.tcl★ ——
+# 两侧对称的只写不读位（load：unit-stride 合并锁存的取不到的高位、hit 恒 1 下的 replayFlowNum、
+# 流水缓冲里 store 类异常位；store：debug 的 isPartReplay、流水缓冲里 load 类异常位）。
+# 名字鸿沟由 fm_pins_pre.tcl（流水缓冲 payload，生成）与 fm_pins.tcl（条目 SoA 叶名规则）消除。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
