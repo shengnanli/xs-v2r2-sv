@@ -194,3 +194,18 @@ vmucp 预案同 §1.3：先诊断跑核对集合，逐位相等才加 `verif/fm_
    重写件用 `req_nxt = '0` 再填入队字段实现；若 FM 在这几位报 failing，先查"跨页顶替时 req := req 覆盖"那条优先级。
 2. `s2_reqSelPort_next_r` 在 golden 里是 GatedRegNext（值变才写），重写件写成每拍写 —— 功能相同，FM 应判等价。
 3. 跨 16B 时"非法拆分组合"结构上不可达，只能由 FM 证等价（同 load 侧）。
+
+### 2.5 正式证明前的补充登记（诊断跑之后；§2.3 的数字不动）
+
+诊断跑（commit `5bc7dabf` 同字节，diagnostic-full、FAILING_LIMIT=0、vmucp 关，不出正式 receipt）：native SUCCEEDED，
+passing **4733** / failing 0 / unmatched 0(0)，Constant reg **2**（= 预测，`splitStoreReqs_{0,1}_is128bit`）+ Unread **19**。
+4754 − 4733 = 21 = 2 + 19。unread 比 §2.3 预测多 1：`req_alignedType[2]` —— 只经 `alignedType(1,0)` 读，
+store 的 vecWriteBack 没有 alignedType 端口（被 DCE），跑前逐项枚举时漏列；两侧同为 matched_nc，对称死位。
+其余 18 位逐位等于 §2.3 的三组集合。据此加 `verif/fm_target_config/StoreMisalignBuffer.tcl` + 开 vmucp。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **4752**（不变：= 4754 − 2 = 4733 + 19） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched / constant_reg | 0(0) / 2 |
+| verdict | SUCCEEDED（signoff-strict） |
