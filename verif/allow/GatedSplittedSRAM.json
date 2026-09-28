@@ -1,0 +1,63 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "GatedSplittedSRAM",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "objects": [
+  {
+   "side": "i",
+   "design": "array_18_ext",
+   "path": "i:/WORK/GatedSplittedSRAM/array_0_0_0/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_18_ext",
+   "path": "i:/WORK/GatedSplittedSRAM/array_0_0_1/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_18_ext",
+   "path": "i:/WORK/GatedSplittedSRAM/array_0_0_2/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_18_ext",
+   "path": "i:/WORK/GatedSplittedSRAM/array_0_0_3/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_18_ext",
+   "path": "r:/WORK/GatedSplittedSRAM/array_0_0_0/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_18_ext",
+   "path": "r:/WORK/GatedSplittedSRAM/array_0_0_1/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_18_ext",
+   "path": "r:/WORK/GatedSplittedSRAM/array_0_0_2/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_18_ext",
+   "path": "r:/WORK/GatedSplittedSRAM/array_0_0_3/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  }
+ ]
+}

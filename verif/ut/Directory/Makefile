@@ -58,7 +58,10 @@ FM_REF_DEPS_Directory_2 = SplittedSRAM_5.sv L2Directory_2.sv SRAMTemplate_163.sv
 FM_REF_DEPS_Directory_3 = SplittedSRAM_6.sv L2Directory_3.sv SRAMTemplate_185.sv SRAMTemplate_186.sv SRAMTemplate_187.sv $(FM_REF_DEPS_SplittedSRAM_6)
 FM_VARIANTS = SplittedSRAM_3 SplittedSRAM_4 SplittedSRAM_5 SplittedSRAM_6 \
               Directory Directory_1 Directory_2 Directory_3
-FM_MERGE_DUP = false
+# FM_MERGE_DUP 取默认（true），与 SRAMTemplate 两个 UT 目录一致：共用核 xs_SRAMTemplate_core 的非 MCP 形态
+# 有一个 golden 没有的 rdata_last_REG（holdRead 关时与 respReg 同方程，靠 merge 合并），关掉 merge 它就成了
+# 重写侧独有的未读寄存器（第一跑 evidence/2690db305435 实测：每块 SRAM 1 个，Directory 7 个 / SplittedSRAM 4 个）。
+# 代价：fm_predict 的 passing 模型只在 merge 关时严格成立，本目录第二跑起 passing 不再与模型逐位对账（MODEL_NA）。
 
 # assembly：唯一黑盒 = array_14..17_ext（verif/allow/<T>.json 逐条声明，class vendor_macro）
 FM_MODE = assembly

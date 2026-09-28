@@ -300,3 +300,42 @@ releaseRefillData 漏 Evict errors=127、A-Hint 也触发 MCP2 stall errors=2041
 | 目标 | passing | 其余 |
 |---|---|---|
 | RequestArb | **1837**（regs 779 + outs 1058） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED；钉点 ok=766 |
+
+### 7.4 / 8.4 对账（第一跑，commit 2690db30，evidence/2690db305435/）
+
+| 目标 | 登记 | 实测 | 判读 |
+|---|---|---|---|
+| L2Directory_1 / _2 / _3 | 911 / 914 / 922 SUCCEEDED | **911 / 914 / 922 SUCCEEDED** | 逐位相等，签核完成 |
+| GatedSplittedSRAM ×4 | 2272，缺 allow ⇒ PARTIAL | 2272 各，PARTIAL(assembly_no_allow_decl) | 与登记一致 |
+| DataStorage / _1 / _2 / _3 | 模型 − 529 = 2003 / 2004 / 2005 / 2005 | **1988 / 1989 / 1990 / 1990**，PARTIAL | ★少 15，登记错了★：见下 |
+| SplittedSRAM_3..6 | 1286，unread 0 | 1286 各，**unread 4** | ★unread 登记错了★：见下 |
+| Directory / _1 / _2 / _3 | 模型 − 16 = 1938 / 1939 / 1939 / 1940 | **1927 / 1928 / 1929 / 1929** unread 18 / 27 / 27 / 27 | ★少 11，登记错了★：见下 |
+
+逐项指认（按 unread_points.txt 逐点分类，不是凑数）：
+1. DataStorage：影子寄存器 529 位之外，MBIST 叶子 mbistPl 的 addrReg[12:0] + addrRdReg 1 位 + beReg 1 位共 15 位在
+   DataStorage 里**也没有读者**（SRAMTemplate_155/166/178 的 bore 口不用这些位）——我只算了本层，没算子树在父层语境
+   下变死的位（CONVENTIONS「同一字段在不同层次被 DCE 的程度不同，每一层都要自己量」的又一例）。另：影子寄存器与
+   beReg 因名字不同（REG_* vs 语义名、标量 vs [0:0]）没被 FM 配对，526 位两侧各自落单、2 位错配 —— 须按名钉点。
+2. SplittedSRAM_3..6 与 Directory*：共用核 xs_SRAMTemplate_core 的非 MCP 形态有一个 golden 没有的 rdata_last_REG，
+   靠 merge_duplicated_registers 与 respReg 合并；我在本目录关了 merge（为了 passing 模型严格成立），它就成了
+   重写侧独有的未读寄存器（每块 SRAM 1 个）。Directory 的另 11 位是 mbistPl 的 addrReg[9:0] / addrRdReg[9]（同 1 的
+   父层语境死位）；slice 0 用的旧手写件 L2Directory 多一层 u_ctrl，名字配不上，须钉点。
+
+第二跑的改动（本节提交里一起落地）：
+- verif/allow/<T>.json ×16（declare_allow.py 由第一跑 black_boxes.rpt 生成，全部 class vendor_macro：
+  GatedSplittedSRAM* / DataStorage* 各 array_18_ext ×4/侧；SplittedSRAM_* array_14_ext ×4/侧；Directory*
+  array_14_ext ×4 + array_15/16/17_ext 各 1，×2 侧 = 14）。
+- verif/ut/DataStorage/fm_pins_pre.tcl（530 位：影子寄存器 529 + mbistPl.beReg 1，只对 DataStorage*）；
+  verif/ut/Directory/fm_pins_pre.tcl（11 位，只对 Directory）。
+- verif/ut/Directory/Makefile：FM_MERGE_DUP 回到默认 true（与 SRAMTemplate 两个 UT 目录一致）⇒ 本目录 passing
+  不再与模型逐位对账（MODEL_NA），这是为了不改已签核的共享 SRAM 核。
+
+第二跑登记（vmucp 仍关）：
+| 目标 | 预测 |
+|---|---|
+| GatedSplittedSRAM ×4 | passing 2272，SUCCEEDED（allow 精确相等） |
+| SplittedSRAM_3..6 | unread 0，SUCCEEDED（passing 因 merge 开，不对账） |
+| DataStorage ×4 | passing 仍 1988 / 1989 / 1990 / 1990；unread **544**，全部 matched_nc 双射 ⇒ PARTIAL |
+| Directory | unread **27**（wayMask 16 + mbistPl 地址 11），全部 matched_nc ⇒ PARTIAL |
+| Directory_1..3 | unread **27**，全部 matched_nc ⇒ PARTIAL |
+第三跑：DataStorage* / Directory* 按 vmucp standing rule 开 vmucp，passing 分别 +544 / +27、SUCCEEDED。
