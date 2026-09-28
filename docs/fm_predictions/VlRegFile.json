@@ -1,0 +1,9 @@
+{
+  "target": "VlRegFile",
+  "ut": "RegfileVariants",
+  "regs": 276,
+  "outs": 40,
+  "expected": 316,
+  "merge_dup": "false",
+  "model_applicable": true
+}

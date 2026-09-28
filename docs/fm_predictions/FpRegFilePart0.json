@@ -1,0 +1,9 @@
+{
+  "target": "FpRegFilePart0",
+  "ut": "RegfileVariants",
+  "regs": 3160,
+  "outs": 3248,
+  "expected": 6408,
+  "merge_dup": "false",
+  "model_applicable": true
+}
