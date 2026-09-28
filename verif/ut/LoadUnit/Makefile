@@ -21,6 +21,10 @@ FM_REF_DEPS_LoadUnit = MemTrigger.sv
 # 关掉 merge_duplicated_registers：让 fm_predict 的 passing 模型严格适用。
 FM_MERGE_DUP = false
 
+# ★vmucp：依据与复核判据见 verif/fm_target_config/LoadUnit.tcl★ —— 89 个两侧对称的死位
+# （vecBaseVaddr/vecVaddrOffset 高 39 位、断言/perf 专用寄存器），FM 按名 matched_nc。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

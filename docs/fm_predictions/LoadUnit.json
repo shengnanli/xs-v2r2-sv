@@ -1,0 +1,10 @@
+{
+  "target": "LoadUnit",
+  "ut": "LoadUnit",
+  "regs": 9361,
+  "outs": 9399,
+  "expected": 18760,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 18760 = 寄存器 9361 + 输出 9399；预期差额 = constant_reg 11（s1_try_ptr_chasing_last_REG/s1_kill_last_REG/io_s2_ptr_chasing_r/io_perf_1_value_REG{,_1}/mmio 包的 debug_isNCIO/isPerfCnt 三级各 2 位），vmucp 打开后 unread 89 转为 passing，预测 passing=18749"
+}
