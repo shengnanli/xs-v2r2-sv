@@ -44,7 +44,8 @@ def stim(n, w, P):
     if re.search(r'(_psrc_\d+|_pdest|_bits_pdest)$', n):
         return f"{w}'(pick_preg())"
     if re.search(r'_srcState_\d+$', n):
-        return 'pct(50)'
+        # 源多（FP 3 个 / VEC 5 个）时 50% 就绪几乎凑不齐全就绪，队列堵死、发射极少（VEC 实测 200k 拍仅 ~2.7k 次）
+        return 'pct(50)' if P['N_SRC'] <= 2 else 'pct(80)'
     if re.search(r'robIdx_value$', n):
         return f"{w}'(rob_cursor + $urandom_range(0, 12))"
     if re.fullmatch(r'io_og[012]Resp_\d+_valid', n):
