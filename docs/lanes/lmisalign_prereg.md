@@ -146,3 +146,51 @@ UT 结构上看不见的 3 个，全部由 FM 覆盖（scratch detached worktree
 | M7 uncache 时不清其它累计异常位（s_resp 里 exceptionVec 结构上恒 0，UT 造不出差异） | errors=0 | **FAILED failing 5**（不截断）= exceptionVec_{3,5,13,19,21} |
 | M15 给 req_uop_pc 加异步复位（复位域；req 在首次入队前不比） | errors=0 | **FAILED failing 50** = req_uop_pc[49:0] |
 | M16 去掉 data_select 的复位（复位域；首次入队前不比） | errors=0 | **FAILED failing 9** = data_select[8:0] |
+
+## 2. StoreMisalignBuffer（同族第二目标；coverage_three_axis.tsv 原为 UNPROVEN）
+
+### 2.1 结构
+
+- golden `StoreMisalignBuffer.sv` 2343 行 / 281 端口 / 186 个 reg 共 2723 位；**叶子**（无子模块实例），Scala 679 行。
+- `rtl/memblock/StoreMisalignBuffer.sv`：`storemisalignbuffer_pkg` → `xs_StoreMisalignBuffer_core`（§1 入队 / §2 状态机 /
+  §3 拆分 / §4 发请求 / §5 收响应 / §6 写回与 StoreQueue 控制，手写；§7 整包寄存器生成）→ wrapper（生成）。
+- 生成器 `scripts/gen_smisalign.py`（与 gen_lmisalign 共用引擎 `scripts/misalign_gen_lib.py`，`--check` 已进 gate_all）；
+  条目类型 `entry_t` 的字段直接取 golden 的 `req_*` 寄存器表。寄存器名与 golden 逐个相同，不需要 fm_pins。
+- 照抄的 golden 怪癖：`REG`（needDelay 打一拍）在任何状态下都按响应口打拍（Chisel 的 WireInit 声明在 is(s_resp) 分支里，
+  分支外 invalid，firtool 把状态条件优化掉了）；拆分时不清异常累计；入队口没有的字段（vaNeedExt / paddr / gpaddr /
+  isForVSnonLeafPTE）入队时写 0。
+
+### 2.2 UT（verif/ut/StoreMisalignBuffer；3 seed × 3 initreg 档 × 200k）
+
+tb 扮演 StoreUnit + ROB + StoreQueue（`verif/ut/StoreMisalignBuffer/tb_template.py` 文件头），逐拍比全部 **91 个输出口**（2031 位）；
+覆盖闸 32 项（6 状态 / 13 种拆分组合 / 不跨 16B / 跨页拆分 / 响应五类 / 多等一拍去 s_wb / 写回四类 / s_block 放行 /
+跨页顶替 / revoke 杀条目 / 两种 flush / 入队 / 入队被拦）。读数见 §对账 E（跑完追加）。
+
+### 2.3 跑前预测（★跑完不许改本节★；登记 docs/fm_predictions/StoreMisalignBuffer.json；写于任何 FM 运行之前）
+
+模型：expected = **4754**（golden 寄存器位 2723 + 顶层 output 位 2031），`FM_MERGE_DUP=false`。
+
+**Constant reg（预测 2）**：`splitStoreReqs_{0,1}_is128bit`（WireInit 0 起头，拆分时从不赋值，复位 0）。
+（req 与 splitStoreReqs 的 uop 字段集合完全相同，不存在"只在拆分寄存器里、从 req 拷不到"的常量字段。）
+
+**matched-but-unread（预测 18，两侧对称死位）**：
+- `REG_1`（1）：`RegNext(!req_valid)`，只喂 XSPerfAccumulate("alloc")；
+- `splitStoreReqs_{0,1}_uop_fuOpType[8:2]`（14）：发请求时标量只取 `[1:0]`、向量用 req 的 fuOpType；
+- `splitStoreResp_1_paddr[2:0]`（3）：给 StoreQueue 的 paddr 是 `Cat(paddr(47,3), 0.U(3.W))`。
+
+vmucp 预案同 §1.3：先诊断跑核对集合，逐位相等才加 `verif/fm_target_config/StoreMisalignBuffer.tcl` 并开 vmucp。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **4752**（= 4754 − 2）；未开 vmucp 时 4734 |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 2 |
+| 黑盒 / dont_verify / elab147 / relaxed_appvars | 无 / 空 / 空 / 空 |
+| verdict | SUCCEEDED（signoff-strict） |
+
+### 2.4 明写可能出错的地方
+1. `req_vaNeedExt` / `req_isForVSnonLeafPTE` / `req_paddr` / `req_gpaddr` 在 golden 里是"入队写 0、异常响应写响应值"，
+   重写件用 `req_nxt = '0` 再填入队字段实现；若 FM 在这几位报 failing，先查"跨页顶替时 req := req 覆盖"那条优先级。
+2. `s2_reqSelPort_next_r` 在 golden 里是 GatedRegNext（值变才写），重写件写成每拍写 —— 功能相同，FM 应判等价。
+3. 跨 16B 时"非法拆分组合"结构上不可达，只能由 FM 证等价（同 load 侧）。
