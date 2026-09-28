@@ -27,6 +27,11 @@ FM_REF_DEPS_MutiLevelPrefetchFilter = $(MLPF_CHILDREN)
 # passing 模型严格适用。这是加强不是放宽。
 FM_MERGE_DUP = false
 
+# ★vmucp：依据见 verif/fm_target_config/MutiLevelPrefetchFilter.tcl★ —— 202 位两侧对称死位
+# （性能计数器打拍 / 只喂它们的 s1 region / TLB 物理地址低 10 位），其中 1 对由本目录
+# fm_pins.tcl 按名钉配（golden REG ↔ 核 REG_0）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
