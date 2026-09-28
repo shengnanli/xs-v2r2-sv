@@ -147,3 +147,38 @@ ptr_match 时有意义，而同拍进出不改变 ptr 差值、不会让指针�
   §4.3 登记的"unread 0"**预测错了**——我没把 Bundle 里只被部分读的字段算进去。
 - 第二跑（本节提交后）：按 vmucp standing rule 六条加 verif/fm_target_config/TXDAT.tcl + Makefile 开 vmucp。
   登记：passing **10264**（= 10196 + 68），unread 0，failing/unmatched 0，SUCCEEDED。
+
+## 5. L2DataStorage ×4、MbistClockGateCell_93、ClockMux（DataStorage 子树的叶子）
+
+### 5.1 结构
+
+- L2DataStorage / _1 / _2 / _3：MbistPipeline 在 DataStorage 层的 **extraHold 叶子**（读/写使能 2 位展宽寄存器，
+  golden 无 wenReg/renReg）。新核 `rtl/dft/xs_mbist_hold_leaf_core.sv`（只写与 xs_mbist_pipe_core 不同之处）；
+  薄文件由 gen_mbist_pipe_family.py（parse 识别 hold、EXTRA_MODS）生成，24 个旧变体产物与 json 字节不变。0 子模块。
+- MbistClockGateCell_93：SRAM 读时钟门控（MBIST/DFT 使能 + mcp_hold + aux 时钟旁路）；child ClockGate 为锁存器
+  单元模型（非 firtool，GOLDEN_REUSE 先例：SRAMTemplate_145 / DuplicatedTagArray / BitmapCache），两侧同源读 golden；
+  child ClockMux 本 lane 重写（1 行组合）。
+
+### 5.2 UT（commit 6e5509c0）
+
+| UT | seed 1/7/42 × initreg {0, random, <seed>017} |
+|---|---|
+| verif/ut/L2DataStorage（四对） | checks=30400000 errors=0 ×9 |
+| verif/ut/ClockGateCell93（两对，--both-phases 高/低相位各比一次） | checks=800000 errors=0 ×9 |
+
+覆盖（seed 1 random）：L2DataStorage activated 112442、child0/3 命中 16904/16581、展宽尾拍 40511（_1.._3 同量级）。
+变异：展宽改一拍清零 errors=59877、re 取展宽高位 errors=59492；ClockGate 去掉 mcp_hold errors=1533、MBIST 使能漏写口
+errors=316，均 CAUGHT。★自抓★：第一次 mcp_hold 变异"存活"，查出是 harness 的文本替换命中了**文件头注释**里的同一串
+（没改电路），已给 mut.sh 加"首个命中不许在注释行"断言后重做；另外 ClockGate 的 UT 起初只在时钟低相位采样，门控使能
+根本不可见，已加 --both-phases。
+
+### 5.3 跑前预测（★跑完不许改★）
+
+| 目标 | passing | 其余 |
+|---|---|---|
+| L2DataStorage   | **1000**（regs 174 + outs 826） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |
+| L2DataStorage_1 | **1005**（175 + 830） | 同上 |
+| L2DataStorage_2 | **1009**（176 + 833） | 同上 |
+| L2DataStorage_3 | **1010**（176 + 834） | 同上 |
+| MbistClockGateCell_93 | **2**（ClockGate 锁存器 1 + out 1） | 同上；锁存器在 FM 里的归类没把握，若不是 1 个比较点就指认差额 |
+| ClockMux | **1**（outs 1） | 同上 |
