@@ -134,3 +134,73 @@ M3 payload 加复位 ⇒ 22；M4 valid 改同步复位 ⇒ 21；M5 payload 锁�
 | 第 2 跑（按 vmucp standing rule 加 verif/fm_target_config/LqExceptionBuffer.tcl） | **1267**（正好 +1） | unread 0 / failing 0 / unmatched 0 / SUCCEEDED |
 
 若第 1 跑的 unread 不是恰好这一个点，或出现别的 unread / constant_reg，先诊断，不加 vmucp。
+
+---
+
+## 对账（跑后追加；上面各节数字未改）
+
+### A. PipelineRegModule / _1 / _2（commit 48fbfd80，evidence/48fbfd801873）
+
+| 目标 | 预测 | 实测 passing | failing / unmatched / unread / constant | 判决 |
+|---|---|---|---|---|
+| PipelineRegModule   | 389  | 389  | 0 / 0 / 0 / 0 | SUCCEEDED，逐位相等 |
+| PipelineRegModule_1 | 2859 | 2859 | 0 / 0 / 0 / 0 | SUCCEEDED，逐位相等 |
+| PipelineRegModule_2 | 3137 | 3137 | 0 / 0 / 0 / 0 | SUCCEEDED，逐位相等 |
+
+钉点 194 / 1429 / 1568 全部被接受。
+
+### B. LoadQueueUncache
+
+**UT 全矩阵**（commit 76235b85 的字节，200k 拍/档，全部 errors=0）：
+
+| seed | `+0` | `+random` | `+<seed>017` | 覆盖（enq / 多条同拍 / MMIO 请求 / NC 请求 / MMIO 写回 / NC1 / NC2 / 回滚拍 / 异常 / denied / flush / idResp / resp / 复位） |
+|---|---|---|---|---|
+| 1  | 0 | 0 | 0 | 28495 / 2513 / 5441 / 11231 / 5250 / 5470 / 5477 / 48897 / 16126 / 614 / 19335 / 19104 / 19491 / 8 |
+| 7  | 0 | 0 | 0 | 26138 / 2314 / 4884 / 9993 / 4679 / 4826 / 4898 / 48550 / 14391 / 605 / 17569 / 17517 / 17695 / 8 |
+| 42 | 0 | 0 | 0 | 33421 / 2860 / 6580 / 15847 / 6371 / 7806 / 7699 / 44081 / 21811 / 868 / 25002 / 24906 / 25244 / 8 |
+
+变异自检（scratchpad/lquncache2/mut_lqu，20k 拍，seed1×random 与 seed7×0 两档）：
+M1 排序反向 19998/19987；M2 s2 不看本拍 redirect 19536/19575；M3 漏异常位 21 19450/17982；
+M4 分配不按 offset 19499/19511；M6 MMIO 取编号最小 6186/8482；M7 MMIO 请求 id 取仲裁器 17603/19293；
+M9 异常取编号最大 10/3；M10 回滚不滤上上拍 redirect 86/105；M11 rawData 锁存不看 ready 0/6；
+M12 释放漏 flush 19787/19396；M14 回滚 level 置 0 19950/19941。
+**UT 抓不到的 3 个**，各跑一次 FM（scratchpad 脚本，同 golden/同钉点，不产 receipt）：
+M5 同一条目多 lane 写入时 lane0 赢（FreeList 给的槽互不相同，仿真里不会撞）→ **FM FAILED ≥20**；
+M8 奇偶组让出 MMIO 条目（mmio/nc 互斥时不可达）→ **FM FAILED ≥20**；
+M13 三份 RegNext(redirect) 合并读第 0 份（值恒等）→ **FM FAILED ≥20**（另多出 22 个 unread）。
+
+**FM 第 1 跑**（commit 7c7701af，vmucp 关；evidence/7c7701af25a7，receipt sha256
+`d383f181cf1926b9d817fca9808615f2dd06bda03fa8451aca267660d5d7a00a`）：native SUCCEEDED，passing 43316 /
+failing 0 / unmatched 0(0) / constant_reg 1616 / unread 5 → strict PARTIAL(strict_unread)。钉点 11364 全接受；
+matched by user 9796 / name 32169 / signature 1351。
+
+- ★§2.3 的登记值 45241 错了 304★：Makefile 里条目依赖写成 `$(addsuffix .sv,…)`，`fm_passing_model.py` 只认字面
+  `.sv` 词，没读到 16 个 UncacheEntry，把它们当黑盒按**输入位** 1689/个计，而真实比较点是**寄存器位** 1670/个：
+  16 × 19 = 304。实测 DFF 总数 36645 + 1616 + 5 = 38266，与逐实例寄存器位之和（条目 16×1670 + 流水寄存器 6327 +
+  FreeList 178 + 仲裁器 4 + 顶层 5037）逐位相等。修法：Makefile 改字面列表（commit ff3b73fa），重新登记 44937 并在
+  JSON 的 note 里写明原因。**§2.3 的数字未改**，这里记账。
+- constant_reg 1616 逐项（scratchpad 诊断跑 `report_not_compared_points`，ref 侧）：pipelineReg_2（ncOut(0)，
+  in_valid 恒 0）的 1567 位 payload（DFFX）+ valid 1 位 + FreeList 的 freeSlotOH_next_nextVec_{0..3}_r 共 48 位（DFF0X）
+  = 1616。§2.3 猜的"条目 flushPipe/replayInst 32 位"在父级里**没有**成为常量（猜错，已由实测替代）。
+- unread 5 = freeList.freeSlotCnt[4:0]（只驱动 io_validCount / io_empty，父级只接 perf 探针），两侧对称死位 →
+  按 vmucp standing rule 加 `verif/fm_target_config/LoadQueueUncache.tcl`。
+
+**FM 第 2 跑**（commit ff3b73fa，vmucp 开；evidence/ff3b73fa4b35，receipt sha256
+`33061f1b7126eca4c11737920d8b951c5de06e5c1bea68e438798743a530befb`）：**SUCCEEDED passing 43321**（= 43316 + 5，
+正好 +5）/ failing 0 / unverified 0 / unmatched 0(0) / unread 0 / constant_reg 1616 / 无黑盒 / 无 dont_verify /
+elab147 无。`fm_predict check`：44937 − 43321 = 1616 = constant_reg，差额全部指认。
+
+### C. LqExceptionBuffer
+
+UT 全矩阵（commit 04dd0c83 的字节，200k/档）：seed 1/7/42 × {0, random, <seed>017} 九档全部 errors=0；
+覆盖（seed 1）候选 177310 / 同拍多候选 44286 / 换记 62707 / 保持 50739 / 同龄比 uopIdx 4435 / 已记者被冲 8132 / 复位 10。
+变异（20k，random）：L1 都无效取 a 947；L2 uopIdx 比较反向 2027；L3 树形改 2+1 133；L5 已记者不看 redirect 2437；
+L6 漏异常位 19 3649；L7 不看上一拍 redirect 1859；L8 isHyper 常数错 6277；
+L4"只在胜者有效时写 req"errors=0 —— **等价变异**：胜者无效 ⇔ 7 个选手全无效，此时按 pick 规则胜者恰是 c6 = req 本身，写与不写相同。
+
+- 第 1 跑（commit cce51d75，vmucp 关；evidence/cce51d750b8a，receipt sha256
+  `606542b488a56078e00bca590752581209b0044f16529edbe3fe6cdfe237b6e8`）：passing **1266**、unread **1**（REG ↔
+  req_valid_last_q，matched_nc）→ PARTIAL，与 §3.3 逐字一致。
+- 第 2 跑（commit e268a54e，vmucp 开；evidence/e268a54e29da，receipt sha256
+  `121da8cc8cbc286147dc7332eeb366dc7d8bf15d5a027ffb457910e8d25e8843`）：**SUCCEEDED passing 1267** / failing 0 /
+  unmatched 0 / unread 0 / constant 0，与预测逐位相等。钉点 1136 全接受。
