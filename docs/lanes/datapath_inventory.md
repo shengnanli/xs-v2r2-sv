@@ -13,7 +13,7 @@
 |---|---:|---:|---|---|---|
 | UIntExtractor_27_000011100000000000001010101 | 23 | 95 | MISSING/UNPROVEN（tsv 未重算） | — | **codex 已签**（codex/readable-leaves-15 → main `9f15cac9`，receipt `evidence/45cf2620708e/`）；本 lane 不改，本体证明两侧白盒（ref golden / impl `rtl/backend/UIntExtractor_27_*.sv`） |
 | UIntExtractor_27_000000000000001010100000000 | 13 | 94 | 同上 | — | 同上 |
-| IntRegFilePart0 | 1 | 7,012 | MISSING/UNPROVEN | — | **intrf lane 负责，本 lane 不碰**；本体证明时若未合入 main：两侧同源 golden 白盒，记条件项 |
+| IntRegFilePart0 | 1 | 7,012 | MISSING/UNPROVEN（盘点时） | — | **intrf lane 负责，本 lane 不碰**；已签核并合入 main，随 main 合进本分支（`3d3b68b2`），本体证明 impl 用重写件 |
 | IntRegFilePart1 | 1 | 7,012 | MISSING/UNPROVEN | — | 同上（intrf lane） |
 | IntRegFilePart2 | 1 | 7,012 | MISSING/UNPROVEN | — | 同上（intrf lane） |
 | IntRegFilePart3 | 1 | 7,012 | MISSING/UNPROVEN | — | 同上（intrf lane） |
@@ -58,3 +58,9 @@ Int 家族的寄存器堆核由 intrf lane 自建（`xs_IntRegFilePart_core`）�
 - 实例表：`awk '/^module DataPath/,/^endmodule/' DataPath.sv | grep -E '^\s+[A-Za-z_]\w*\s+[A-Za-z_]\w*\s*\($' | awk '{print $1}' | sort | uniq -c`
   （在 `/home/eda/xs-env/G1-canonical/golden-rtl` 下）。
 - 状态：`grep -P '^<类型>\t' docs/coverage_three_axis.tsv | cut -f1-4`。
+
+## 4. 更新（2026-09-28，本体证明前）
+
+- IntRegFilePart0..3：intrf lane 已签核（passing 7400 ×4）并合入 main；本分支 merge main 于 `3d3b68b2`。本体证明两侧白盒、impl 用
+  `rtl/backend/xs_IntRegFilePart_core.sv` + `IntRegFilePart{0..3}.sv`，**不再是条件项**。
+- 本 lane 的 21 个 child 已签核：evidence/833a201786eb（族 A–E 对账见 docs/lanes/datapath_prereg.md）。

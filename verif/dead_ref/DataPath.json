@@ -1,0 +1,93 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "DataPath",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "golden-only cone-dead，全部在子模块 regCache（RegCache）内部，由已签核的 RegCache 重写件继承而来，DataPath 自己的逻辑不产生任何死位。依据与机理见 verif/dead_ref/RegCache.json（RegCache 的 PASS_DEAD_REF 声明，evidence/25cdce831a66/RegCache）：golden 把 7 路写口替换下标的全宽 5 位（{半区选择位, 4 位条目下标}）打进三级无复位流水 delayToWakeupQueueRCIdx_REG_* -> _REG_1_* -> delayToWakeupQueueRCIdx_*，流水末级只被写口地址取 [3:0]，bit[4]（半区位，Int 组恒 0 / Mem 组恒 1）写入但永不被读；重写核 rcidx_delay 只打 4 位。RegCache 单独证明时观测 6 条而非 21 条，是因为那次 verification_merge_duplicated_registers=true 把同驱动同值的寄存器合并（Int 组合成 _0、Mem 组合成 _4，三级各一次 = 6）；本目标 FM_MERGE_DUP=false（为了 fm_predict 模型严格适用），7 路 × 3 级 = 21 条逐条出现，与下面逐条列出的点精确相等。lane 内非正式试跑（agent/datapath，run_id DataPath-20260928T151646Z-3d3b68b2，未出 receipt）观测：native SUCCEEDED、passing 137627、failing 0、比较点 unmatched 0(0)、unmatched unread ref 21 / impl 6（impl 的 6 个是核里 always_ff 组合临时量 slot 的伪影，已移到 always_comb 消除）、matched_nc 481（对称死位，vmucp 覆盖）。非 waiver：这 21 位之外的全部比较点（含 RegCache 的全部输出与写口地址低 4 位）都被 FM 证明等价。",
+ "observed_points": 21,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_0_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_1_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_2_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_3_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_4_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_5_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_6_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_0_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_1_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_2_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_3_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_4_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_5_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_6_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_1_0_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_1_1_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_1_2_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_1_3_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_1_4_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_1_5_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  },
+  {
+   "ref_path": "r:/WORK/DataPath/regCache/delayToWakeupQueueRCIdx_REG_1_6_reg[4]",
+   "class": "golden_only_cone_dead_halfbank_bit_in_rcidx_delay_pipe"
+  }
+ ]
+}

@@ -169,3 +169,65 @@ UT（verif/ut/RegfileVariants，在 `f7fdd6cb` 字节上跑，9 档 × 200k 拍�
 | 42 | checks=200129 errors=0 PASSED | checks=200129 errors=0 PASSED | checks=200129 errors=0 PASSED |
 
 覆盖（seed 1 / initreg 0）：同址多写 samewrite 12862..38155 拍/变体，越界 oob（Fp/V0）66487..82047，同拍读写同址 rawsame 30325..33164。
+
+## C. DataPath 本体（golden 25,618 行 / 2,426 端口；UT = verif/ut/DataPath）
+
+### C.1 结构与子模块处置
+
+- 可读核 `xs_DataPath_core`（rtl/backend/DataPath.sv，手写）：§1 读口仲裁请求 §2 写口撞口请求 §3 og0 能否通过（含 s0_cancel）
+  §4 s0→s1 流水寄存器 §5 og0/og1 回告与取消 §6 寄存器堆写/读口（含向量异常借口）§7 og1 选源 §8 RegCache 读口
+  §9 向量异常模块读回 §10 性能与 TopDown。27 个 EXU 用同一套逻辑 + `datapath_pkg` 的配置表（生成区，golden 实测）。
+- og0→og1 原样打拍的字段拼成 `s1_payload_q`（5,547 位，各 EXU 一段）；字段表、端口拼/拆、62 个子模块例化都在 golden 同名 wrapper
+  的生成区（`scripts/gen_datapath.py`，每个 golden 顶层寄存器 / 子模块端口连接 / 输出驱动都必须被一条已知形状解释，否则生成失败）。
+- 子模块全部两侧白盒、无黑盒：本 lane 的 21 个 child（evidence/833a201786eb）、WBArbiter 家族 13 变体、RegCache、UIntExtractor_27_* ×2、
+  IntRegFilePart0..3（intrf lane 已签核、已随 main 合入本分支 `3d3b68b2`，impl 用重写件——**不再是条件项**）；
+  RegCache 的 6 个 GOLDEN_REUSE 子模块两侧同源 golden。
+- 钉点 `verif/ut/DataPath/fm_pins_pre.tcl`（生成）：golden 顶层 1,111 个寄存器 / 9,519 位 + 重写子模块内部（寄存器堆 mem / 读地址寄存器、
+  WBArbiter 反饥饿状态）共 **57,191** 位逐位 set_user_match；逐条数返回值，拒一条或总数不符即 error。RegCache 内部不钉。
+
+### C.2 golden 自比基线（CONVENTIONS「大件动手前先量自比基线」）
+
+scratchpad 里 golden 闭包 48 个文件逐字拷一份当 impl（`FM_MERGE_DUP=false`，不开 vmucp）：native SUCCEEDED，
+passing **137,627**，failing 0，比较点 unmatched 0(0)，Unread 481（全 matched_nc），1160 s。地板 = 0 failing。
+
+### C.3 UT（verif/ut/DataPath；9 档 × 200k 拍，结果见 §对账 C，本节不写数字）
+
+热身 120 拍：写回口全开按顺序写满 5 类寄存器堆全部物理寄存器、RegCache 写口全开，最后 40 拍发射口全开、源全走 RegCache
+（RegCache 读地址寄存器只在 ren 时更新且不复位，+vcs+initreg+<n> 档实测不这样做比对开头 3 拍会不一致）。
+随机阶段：发射 valid 每 500 拍在 60/20/3% 间换档、dataSources 在 7 种里挑、redirect 5%、ld2Cancel 5%、EXU ready 85%、
+向量异常借口 10%、写回 wen 50%、约每 5k 拍一次 2 拍异步复位。覆盖判据：s0_cancel / 读口仲裁失败 / 写口撞口 / 冲刷 /
+ld 取消 / og1 失败 / 异常借写口 / 多候选选源 各 >100 拍，6 个 TopDown 事件 >10 拍（exec_stall >100）。
+
+变异自证（scratchpad 拷贝，8k 拍）：M1 去掉 ld2Cancel ⇒ errors=9486；M2 success/uncertain 对调 ⇒ 161407；M3 isAfter 用 >= ⇒ 48；
+M4 忽略 redirect.level ⇒ 18；M5 异常借写口不看 isV0 ⇒ 12285；M6 s0_cancel 看 regcache 而非 forward ⇒ 6961；
+M8 MEMSTALL_STORE 只看 sqFull ⇒ 470（tb 加低发射率档之前是 0，据此加档）；M9 payload 只在 fire 时更新 ⇒ 758282；
+M10 异常借写口只置 1 片 wen ⇒ 19609；M11 选源看错 srcType 位 ⇒ 7961；M12 imm 只在 fire 时更新 ⇒ 6918。
+**UT 看不见**：M7 int_regcache_tag 去掉"槽号 < 48"守卫（改成取模）⇒ errors=0 —— 这组寄存器只给 XSPerf 用、无输出，
+归 FM（vmucp 后它们是比较点）兜底，结果见 §对账 C。
+
+### C.4 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/DataPath.json）
+
+模型（`fm_predict.py model DataPath`）：expected = **138,279**（golden 闭包寄存器位 59,535 + 顶层 output 位 78,744），`FM_MERGE_DUP=false` 模型适用。
+
+lane 内非正式试跑（run_id DataPath-20260928T151646Z-3d3b68b2，不出 receipt，vmucp 关）：native SUCCEEDED，passing 137,627 /
+failing 0 / 比较点 unmatched 0(0) / Constant reg 150 / Unread 481（全 matched_nc）/ unmatched unread ref 21 + impl 6；1871 s、3801 MB。
+impl 的 6 个是核里 always_ff 内组合临时量 `slot` 被 FM 当寄存器的伪影 —— 已改成 always_comb 的 `rc_slot`（本 commit），预期消失。
+模型对账：138,279 = 137,627 + 150 + 481 + 21 ✔。
+
+| 项 | 预测（正式 run_proof，vmucp 开，dead_ref 声明 21 点） |
+|---|---|
+| passing | **138,108**（= 137,627 + 481） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| 比较点 unmatched | 0(0) |
+| constant_reg | 150（105 = 35 个 N=1 WBArbiter × cancelCounter 3 位；45 = loadDependency 打拍后恒 0 的低位，24 + 21） |
+| unmatched unread | ref 21（= verif/dead_ref/DataPath.json，逐条相等）/ impl 0 |
+| 黑盒 | 无 |
+| verdict | **PASS_DEAD_REF**（signoff-strict；native SUCCEEDED） |
+
+`fm_predict check` 口径：模型 − 实测 = 171 = constant_reg 150 + unread 21。
+
+### C.5 明写可能出错的地方
+1. vmucp 打开后 481 点里若有被 FM 判成常量的（像族 A/B 里 cancelCounter 那样），passing 会少于 138,108、constant_reg 相应增加，
+   总和不变；若总和变了，那是比较点被吞掉，按红处理。
+2. constant_reg 150 的分解（105 + 45）是按试跑推的，未逐点核对；若分解不同但总数相同，照实记。
+3. 本体是本 lane 第一次跑正式证明，FM 时长按试跑 ~31 分钟估；超过 3 小时按规范 30 分钟采样。
