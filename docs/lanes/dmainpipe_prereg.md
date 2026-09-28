@@ -109,3 +109,18 @@ replace 请求源：本配置 MainPipe 没有 replace 输入（仲裁器无此�
 | `fm_predict.py check` | 预期 986，实测 986，差 0，「全部对上」 |
 
 复跑：`cd /home/eda/xs-env/wt-dmainpipe && PROOF_COMMIT=5c140d96 bash scripts/run_proof.sh Arbiter4_MainPipeReq Arbiter4_MainPipeReq < /dev/null`
+
+## B. MainPipe
+
+| 项 | 值 |
+|---|---|
+| proof commit | `8162ecc5`（预测登记在同一 commit；RTL/UT/钉点/vmucp 配置在其父 `6c87c410`） |
+| 证据 | `evidence/8162ecc59607/MainPipe/receipt.json` sha256 `ba0ca7bac1abe113f14d2d72e26097716721218a07e91c20f1d99a03d254f3db` |
+| impl_closure | `rtl/memblock/MainPipe.sv` `e0e6fc4d98b128d6bb8d11e6325abf0e21ede32f116790424539b586dfe2aecc`；`Arbiter4_MainPipeReq.sv` `8a3c7ce1…2a85d88`；`AMOALU.sv` `ebb01df1…a51e`；`xs_FixedPriorityArbiter_core.sv` `e7c8526c…a5618` |
+| 结果 | native SUCCEEDED，passing **9036** / failing 0 / unverified 0 / aborted 0 / unread_notcompared 0 / unmatched 六项 0 / constant_reg 1 / 无黑盒 / signoff-strict / vmucp true / dirty false / fm.log 行首 `Error:` 0 / `MP_PREPIN_END n=16` |
+| `fm_predict.py check` | 模型 9037，实测 9036，差 1 = constant_reg 1，「全部对上」 |
+
+§2.3 的"可能出错"没有发生。
+
+复跑：`cd /home/eda/xs-env/wt-dmainpipe && PROOF_COMMIT=8162ecc5 bash scripts/run_proof.sh MainPipe MainPipe < /dev/null`；
+UT：`cd verif/ut/MainPipe && make run SEED=1 INITREG=+vcs+initreg+0`（另 `+vcs+initreg+random`；SEED=7/42，串行）。
