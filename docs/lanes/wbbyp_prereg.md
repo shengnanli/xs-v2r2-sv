@@ -228,3 +228,19 @@ valid=1 时赢家的 wen 必为 1，Scala 里这一 & 本就冗余，FM 也会�
 1. 正式证明在 detached worktree 里跑，字节与试跑 2 仅差提交；若 passing 不等于 23060，先查钉点计数行
    （WBDP_PIN_END ok=2268）与 vmucp 是否生效，不改声明迁就。
 2. Constant reg 2 的身份是推断，未用 report 核对；它不影响判决（常量寄存器两侧对称、不进比较点）。
+
+### WbDataPath（证明 commit f72c6cf6，`bash scripts/run_proof.sh WbDataPath WbDataPath < /dev/null`）
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| 判决 | PASS_DEAD_REF | **PASS_DEAD_REF**（native SUCCEEDED） |
+| passing | 23060 | **23060**（差 0；模型 24427 − 实测 = 1367 = constant_reg 2 + unread 1365，`fm_predict.py check` 判「差额被指认」） |
+| failing / unverified / aborted | 0 | 0 / 0 / 0 |
+| unmatched compare points | 0(0) | 0(0) |
+| Constant reg | 2 | 2 |
+| unread | ref 1365、impl 0、matched_nc 0 | ref 1365、impl 0、matched_nc 0（与声明逐条相等，dead_ref_points=1365） |
+| 钉点 | 2268 | WBDP_PIN_END ok=2268 bad=0 |
+| 黑盒 / dont_verify | 0 / 否 | 0 / 否 |
+| receipt.json sha256 | — | b47bddf21dc31d82285685f4d5ad0c4b86704b1ab363143a6862e029b8a6394d |
+
+receipt：`evidence/f72c6cf69b28/WbDataPath/`（impl_worktree_dirty=false）。§3.5 两条风险均未发生（Constant reg 身份仍为推断）。
