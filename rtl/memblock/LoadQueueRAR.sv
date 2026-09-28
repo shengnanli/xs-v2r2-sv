@@ -334,15 +334,27 @@ module xs_LoadQueueRAR_core
     end
   end
 
+  // allocated[lastAllocIndex]：7 位下标读 72 项。Chisel 的动态下标读被 firtool 展开成
+  // 2^7 = 128 项查找表，越界项（72..127）全部填 allocated_0 —— 照同一形状写：默认第 0 项，
+  // 再逐项常量比较覆盖（不用变量下标，也就没有越界读）。写侧（freeMask）越界时谁也不写。
+  logic revokeSlotAllocated [LD_W];
+  always_comb
+    for (int w = 0; w < LD_W; w++) begin
+      revokeSlotAllocated[w] = allocated[0];
+      for (int i = 1; i < RAR_SIZE; i++)
+        if (lastAllocIndex[w] == IDX_W'(i)) revokeSlotAllocated[w] = allocated[i];
+    end
+
   always_comb begin
     for (int i = 0; i < RAR_SIZE; i++) begin
-      deqFree[i]  = allocated[i] & (~lq_is_before(io_ldWbPtr, uop_lqIdx[i])
+      deqFree[i]  =allocated[i] & (~lq_is_before(io_ldWbPtr, uop_lqIdx[i])
                                     | need_flush(uop_robIdx[i], io_redirect));
       freeMask[i] = deqFree[i];
     end
     for (int w = 0; w < LD_W; w++) begin
-      revokeFire[w] = io_query_revoke[w] & lastCanAccept[w] & allocated[lastAllocIndex[w]];
-      if (revokeFire[w]) freeMask[lastAllocIndex[w]] = 1'b1;
+      revokeFire[w] = io_query_revoke[w] & lastCanAccept[w] & revokeSlotAllocated[w];
+      for (int i = 0; i < RAR_SIZE; i++)
+        if (revokeFire[w] && lastAllocIndex[w] == IDX_W'(i)) freeMask[i] = 1'b1;
     end
   end
 
