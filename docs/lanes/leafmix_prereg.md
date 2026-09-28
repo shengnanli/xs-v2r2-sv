@@ -131,3 +131,39 @@ lane 内非正式试跑（commit 8e7adcdb，`make fm-VIntMisc64b`）：native SU
 | constant_reg / unread | 0 / 0 |
 | failing / unverified / aborted / unmatched / 黑盒 / dont_verify | 全 0 / 无 |
 | verdict | SUCCEEDED（signoff-strict，不需要 vmucp） |
+
+## 对账（续）
+
+### Uncache（run_proof @ c39a3334，evidence/c39a3334ba26/Uncache）
+
+| 项 | 预测 | 实测 | 差 |
+|---|---|---|---|
+| native | SUCCEEDED | SUCCEEDED | — |
+| passing | 7617 | 7617 | 0 |
+| constant_reg | 0 | 0 | 0 |
+| failing / unverified / aborted / unread_notcompared | 0 | 0 / 0 / 0 / 0 | 0 |
+| unmatched（ref/impl compare、unread、bbout） | 0 | 全 0 | 0 |
+| 钉点 | 6757 | 6757 ok / 0 bad | 0 |
+| 黑盒 / dont_verify / elab147 | 无 | 无 / false / false | — |
+
+receipt.json sha256 = `f2b3d2759b3b9df69c545ccb808b945175ed3e35f0e66a07efc34a7c53578140`；fm_predict check rc=0。
+UT（RTL 字节 = 9621dbc8 起未变，在 c39a3334 上跑）：3 seed × {0, random, <seed>017} × 200k 拍，9/9 TEST PASSED，
+每档 25.2M checks、errors=0、17 项覆盖全非 0（seed 42 / 42017 档：merge 2044、alloc_waitSame 1035、reject 63603、
+drain 13324、matchInvalid 12473、busError 1874、fullish 27139、idle 前递 631 …）。
+变异（seed 7 random 30k）：12 个里 9 个 CAUGHT；SURVIVED 3 个 —— U3（q0 挂 waitSame 时不排除 waitReturn 项）
+输出等价（该位在交回时被清、期间无读者）→ 归 FM 寄存器比较点；U10（合并偏移默认值 7→0，只在 mask 全 0 时出现、
+而此时地址不写）、U11（清 waitSame 时不判原值）为语义等价变异。
+
+### VIntMisc64b（run_proof @ 837949ea，evidence/837949eaffbf/VIntMisc64b）
+
+| 项 | 预测 | 实测 | 差 |
+|---|---|---|---|
+| native | SUCCEEDED | SUCCEEDED | — |
+| passing | 176 | 176 | 0 |
+| failing / unverified / aborted / unread | 0 | 0 / 0 / 0 / 0 | 0 |
+| unmatched | 0 | 全 0 | 0 |
+| 黑盒 / dont_verify / elab147 | 无 | 无 / false / false | — |
+
+receipt.json sha256 = `0a014e46ec2707b5c6e3633205740e4fb28d5546fb2a38a843417ecb7381b073`；fm_predict check rc=0。
+UT（837949ea 字节）：9/9 TEST PASSED，每档 1.0M checks errors=0；覆盖 26 opcode × 4 SEW 每格最少 1590 次，
+窄化移位 ≥ 6729、vf2/vf4/vf8 ≥ 1655/1690/3384、有/无符号扩展 ≥ 1640/5048。
