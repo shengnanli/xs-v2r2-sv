@@ -162,8 +162,8 @@ UT 结构上看不见的 3 个，全部由 FM 覆盖（scratch detached worktree
 
 ### 2.2 UT（verif/ut/StoreMisalignBuffer；3 seed × 3 initreg 档 × 200k）
 
-tb 扮演 StoreUnit + ROB + StoreQueue（`verif/ut/StoreMisalignBuffer/tb_template.py` 文件头），逐拍比全部 **91 个输出口**（2031 位）；
-覆盖闸 32 项（6 状态 / 13 种拆分组合 / 不跨 16B / 跨页拆分 / 响应五类 / 多等一拍去 s_wb / 写回四类 / s_block 放行 /
+tb 扮演 StoreUnit + ROB + StoreQueue（`verif/ut/StoreMisalignBuffer/tb_template.py` 文件头），逐拍比全部 **126 个输出口**（2031 位）；
+覆盖闸 36 项（6 状态 / 11 个拆分组合桶（H 合 1、W 按偏移 3、D 按偏移 7） / 不跨 16B / 跨页拆分 / 响应五类 / 多等一拍去 s_wb / 写回四类 / s_block 放行 /
 跨页顶替 / revoke 杀条目 / 两种 flush / 入队 / 入队被拦）。读数见 §对账 E（跑完追加）。
 
 ### 2.3 跑前预测（★跑完不许改本节★；登记 docs/fm_predictions/StoreMisalignBuffer.json；写于任何 FM 运行之前）
