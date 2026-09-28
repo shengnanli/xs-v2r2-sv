@@ -11,8 +11,7 @@
            第一个端口字段放结构体最高位；`alias` 是 SV 保留字，写成 alias_。
   wrapper  端口按 golden；issueArb（FastArbiter_2）/ chosenQ（Queue1_ChosenQBundle）按 golden 实例名例化；
            msInfo_<i>_* 打包成核的数组口。
-  pins     golden 缓冲表项 buffer_<k>_* / 各调用点 sameSet_s3 / perf 寄存器 与核里数组、结构体寄存器的逐位对应。
-           fail-closed：逐条数返回值，拒一条或总数不等于字面位数即 error；只消名差，不约束 ref。
+  pins     只钉 perf 专用的 12 个寄存器（见 emit_pins 的说明）；其余 FM 自己配得上。
 
 用法：python3 scripts/gen_l2_reqbuf.py [--check]
 """
@@ -189,46 +188,22 @@ def emit_wrapper(P, A, T, E):
 
 
 def emit_pins(A):
-    pins = []   # (ref, impl)
-    aw = sum(w for _, w in A)
+    """只钉 perf 专用的 12 个 1 位寄存器（其余寄存器 FM 自己按名 / 签名全部配上 —— 诊断跑实测 0 unmatched）。
 
-    def bits(g, i, w):
-        for b in range(w):
-            pins.append((g + ('_reg' if w == 1 else '_reg\\[%d\\]' % b), i(b)))
+    这 12 个只被 perf / assert 读，是两侧对称的未读寄存器；FM 不给未读寄存器做签名配对，golden 的匿名名
+    REG / REG_<n> / enable_REG_<n> 与重写的语义名配不上，于是两侧各自落单 —— 必须按名钉。"""
+    pins = []
     for k in range(N_ENTRY):
-        bits('buffer_%d_valid' % k, lambda b, k=k: 'u_core/buffer_valid_reg\\[%d\\]' % k, 1)
-        bits('buffer_%d_rdy' % k, lambda b, k=k: 'u_core/buffer_rdy_reg\\[%d\\]' % k, 1)
-        bits('buffer_%d_task_channel' % k, lambda b, k=k: 'u_core/buffer_channel_reg\\[%d\\]\\[%d\\]' % (k, b), 3)
-        hi = aw
-        for f, w in A:
-            lo = hi - w
-            bits('buffer_%d_task_%s' % (k, f), lambda b, k=k, lo=lo: 'u_core/buffer_task_reg\\[%d\\]\\[%d\\]' % (k, lo + b), w)
-            hi = lo
-        bits('buffer_%d_waitMP' % k, lambda b, k=k: 'u_core/buffer_waitMP_reg\\[%d\\]\\[%d\\]' % (k, b), 4)
-        bits('buffer_%d_waitMS' % k, lambda b, k=k: 'u_core/buffer_waitMS_reg\\[%d\\]\\[%d\\]' % (k, b), 16)
-    sites = ['canFlow', 'buffer'] + ['buffer_%d' % k for k in range(N_ENTRY)]
-    for s, name in enumerate(sites):
-        bits('%s_rdy_sameSet_s3_REG' % name if name != 'canFlow' else 'canFlow_sameSet_s3_REG',
-             lambda b, s=s: 'u_core/sameSetS3Valid_reg\\[%d\\]' % s, 1)
-        bits('%s_rdy_sameSet_s3_r' % name if name != 'canFlow' else 'canFlow_sameSet_s3_r',
-             lambda b, s=s: 'u_core/sameSetS3Set_reg\\[%d\\]\\[%d\\]' % (s, b), 9)
-    bits('io_hasHitPfInMSHR_valid_REG_set', lambda b: 'u_core/hitPfPrev_set_reg\\[%d\\]' % b, 9)
-    bits('io_hasHitPfInMSHR_valid_REG_tag', lambda b: 'u_core/hitPfPrev_tag_reg\\[%d\\]' % b, 31)
-    bits('io_hasMergeA_REG_set', lambda b: 'u_core/mergeAPrev_set_reg\\[%d\\]' % b, 9)
-    bits('io_hasMergeA_REG_tag', lambda b: 'u_core/mergeAPrev_tag_reg\\[%d\\]' % b, 31)
-    for k in range(N_ENTRY):
-        bits('bufferTimer_%d' % k, lambda b, k=k: 'u_core/bufferTimer_reg\\[%d\\]\\[%d\\]' % (k, b), 16)
-        bits('REG' if k == 0 else 'REG_%d' % (2 * k), lambda b, k=k: 'u_core/validPrev_reg\\[%d\\]' % k, 1)
-        bits('REG_%d' % (2 * k + 1), lambda b, k=k: 'u_core/timerClear_reg\\[%d\\]' % k, 1)
-        bits('enable_REG' if k == 0 else 'enable_REG_%d' % k, lambda b, k=k: 'u_core/histValidPrev_reg\\[%d\\]' % k, 1)
+        pins.append(('REG' if k == 0 else 'REG_%d' % (2 * k), 'u_core/validPrev_reg\\[%d\\]' % k))
+        pins.append(('REG_%d' % (2 * k + 1), 'u_core/timerClear_reg\\[%d\\]' % k))
+        pins.append(('enable_REG' if k == 0 else 'enable_REG_%d' % k, 'u_core/histValidPrev_reg\\[%d\\]' % k))
     L = ['# RequestBuffer FM「匹配前」钉点 —— 自动生成：scripts/gen_l2_reqbuf.py（勿手改）',
          '#',
-         '# 只消 golden 扁平寄存器名与重写核数组 / 结构体寄存器之间的命名鸿沟：',
-         '#   buffer_<k>_<字段>                      <-> u_core/buffer_<字段>_reg[k]（task_* 进结构体 buffer_task[k] 的对应位段）',
-         '#   canFlow / buffer / buffer_<k> _rdy_sameSet_s3_{REG,r}  <-> u_core/sameSetS3{Valid,Set}_reg[调用点]',
-         '#   io_hasHitPfInMSHR_valid_REG_* / io_hasMergeA_REG_*     <-> u_core/hitPfPrev_* / mergeAPrev_*',
-         '#   perf：bufferTimer_<k>、REG_*、enable_REG_*             <-> u_core/bufferTimer / validPrev / timerClear / histValidPrev',
-         '# 4 个表项与 6 个 sameSet 调用点结构逐位对称，签名分析分不开它们，所以必须按名钉。',
+         '# 只钉 perf 专用的 12 个 1 位寄存器（每个表项 3 个：RegNext(valid) / 清零脉冲 / 直方图采样），',
+         '#   golden  REG / REG_<2k> / REG_<2k+1> / enable_REG[_k]   <->  重写  u_core/validPrev / timerClear / histValidPrev [k]',
+         '# 它们只被 perf 打印与 ifndef SYNTHESIS 的 assert 读（两侧对称的未读寄存器），FM 不给未读寄存器做签名配对，',
+         '# 名字又完全不同，不钉就两侧各自落单。其余寄存器（含 4 个对称表项）FM 按名 / 签名全部自动配上：',
+         '# 诊断跑（不产 receipt）实测 0(0) unmatched compare points。',
          '# set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。',
          '# fail-closed：逐条数返回值，拒一条或总数不等于字面位数就 error。进 fm.log 的输出一律 ASCII。',
          'set ::RB_PIN_EXPECT %d' % len(pins),
@@ -242,7 +217,7 @@ def emit_pins(A):
          '}',
          'puts "RB_PIN_BEGIN RequestBuffer expect=$::RB_PIN_EXPECT"']
     for r, i in pins:
-        L.append('rb_pin r:/WORK/RequestBuffer/%s i:/WORK/RequestBuffer/%s' % (r, i))
+        L.append('rb_pin r:/WORK/RequestBuffer/%s_reg i:/WORK/RequestBuffer/%s' % (r, i))
     L += ['puts "RB_PIN_END ok=$::RB_PIN_OK bad=$::RB_PIN_BAD expect=$::RB_PIN_EXPECT"',
           'if {$::RB_PIN_BAD != 0 || $::RB_PIN_OK != $::RB_PIN_EXPECT} {',
           '  error "RB_PIN_MISMATCH ok=$::RB_PIN_OK bad=$::RB_PIN_BAD expect=$::RB_PIN_EXPECT"',

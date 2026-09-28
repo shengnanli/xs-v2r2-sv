@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Directory_2
+Implementation : i:/WORK/Directory_2
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 17:07:53 2026
+**************************************************
+
+No aborted compare points.
+
+1

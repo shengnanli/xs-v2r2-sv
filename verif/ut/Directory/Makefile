@@ -71,6 +71,9 @@ PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
 
+# vmucp 只对 Directory*（各 27 个对称死位，依据见 verif/fm_target_config/Directory*.tcl）；SplittedSRAM_* 不开。
+fm-Directory fm-Directory_1 fm-Directory_2 fm-Directory_3: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 INITREG  ?= random
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)

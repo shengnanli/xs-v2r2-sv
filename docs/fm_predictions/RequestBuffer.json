@@ -1,0 +1,9 @@
+{
+  "target": "RequestBuffer",
+  "ut": "RequestBuffer",
+  "regs": 1204,
+  "outs": 504,
+  "expected": 1708,
+  "merge_dup": "false",
+  "model_applicable": true
+}

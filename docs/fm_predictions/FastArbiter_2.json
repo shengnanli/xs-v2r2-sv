@@ -1,0 +1,9 @@
+{
+  "target": "FastArbiter_2",
+  "ut": "RequestBuffer",
+  "regs": 8,
+  "outs": 146,
+  "expected": 154,
+  "merge_dup": "false",
+  "model_applicable": true
+}

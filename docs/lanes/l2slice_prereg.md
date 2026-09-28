@@ -358,3 +358,41 @@ releaseRefillData 漏 Evict errors=127、A-Hint 也触发 MCP2 stall errors=2041
   钉点 DS_PIN ok=530 bad=0 —— 与登记逐位相等。
 - 第三跑（DataStorage* 开 vmucp：verif/fm_target_config/DataStorage*.tcl + Makefile 目标级开关）登记：
   passing **2532 / 2533 / 2534 / 2534**（= 第二跑 + 544 = 模型值）、unread 0、SUCCEEDED。
+
+### 8.5 对账（Directory 第二跑，commit f6806ac5）与第三跑登记
+
+- Directory / _1 / _2 / _3：passing 1926 / 1927 / 1927 / 1928（merge 开），unread **27** 各，全部 matched_nc、两侧独占 0，
+  Directory 钉点 DIR_PIN ok=11 —— 与 §7.4 第二跑登记一致。
+- 第三跑（Directory* 开 vmucp）：passing 1953 / 1954 / 1954 / 1955（+27）、unread 0、SUCCEEDED（merge 开，不与模型对账）。
+
+## 10. RequestBuffer 子树（RequestBuffer、FastArbiter_2、Queue1_ChosenQBundle）
+
+### 10.1 结构
+
+- `xs_RequestBuffer_core`：直通 / 分配 / 去重 / 合并 / 表项更新 / 发射取消 / noFreeWay（6 份 sameSet_s3 寄存器照 golden）/
+  统计 / perf 计时寄存器（照 golden 保留）。类型（a_req_t 14 字段、task_t 93 字段、entry_t）、wrapper、钉点由
+  `scripts/gen_l2_reqbuf.py` 生成，核对 FastArbiter_2 载荷 = channel + a_req_t、chosenQ 出队字段 = io_out 字段。
+- FastArbiter_2：已签核共享核 xs_FastArbiter_core **不改**，薄文件在载荷低 4 位捎带独热标识取回 chosenOH（io_chosen）。
+- Queue1_ChosenQBundle：新共享核 `xs_ChiselQueue1_core`（深度 1：只有 full + 整字寄存器 ram）+ gen_l2_queues.py 薄文件，
+  407 位字按 golden 拼接（含恒 0 的补零段）逐字段校验。
+- 钉点只有 12 位（perf 的 REG_* / enable_REG_*）；其余寄存器（含 4 个对称表项）FM 自己配得上 —— 在 scratch 副本里
+  diagnostic-full、不钉的诊断跑（不产 receipt）实测 0(0) unmatched compare points、Verification SUCCEEDED、1592 passing。
+
+### 10.2 UT（verif/ut/RequestBuffer；commit aa03186a）
+
+seed1 random 20k：checks=2220000 errors=0，111/111 输出翻转；覆盖 直通 2017 / 分配 3755 / 去重 806 / 合并 106 / 满 8119 /
+发射取消 309 / 发射 3737 / noFreeWay 5000。（78 个出口字段在 A 路径上结构性恒 0，只在 chosenQ 上电初值随机时翻；
+initreg 0 档翻转门限因此按 33 设。）变异：去重漏缓冲比对 errors=37119、waitMP 不置 s1 阻塞 errors=107076、
+直通判定漏 s3 份额 errors=10（初版激励下存活，加"MSHR 数卡在 8 路门槛边"的拥挤相后抓到）、表项 noFreeWay 漏 s3 errors=22708、
+FastArbiter_2 io_chosen 低位接错 errors=162415，均 CAUGHT。9 档矩阵后台跑，文末对账。
+
+### 10.3 跑前预测（★跑完不许改★）
+
+第一跑（vmucp 关）：
+| 目标 | 模型 | 预计 unread | 预计 passing |
+|---|---|---|---|
+| FastArbiter_2 | 154 | 1（pendingMask[0]：rrGrantMask[0] 恒 0 把它与掉，同 FastArbiter_28） | 153 |
+| Queue1_ChosenQBundle | 787 | 22（ram 里 valid/rdy/waitMP/waitMS：存了没人读） | 765 |
+| RequestBuffer | 1708 | 119（bufferTimer 64 + chosenQ.ram 30 + issueArb.pendingMask[0] 1 + perf 1 位 12 + …）| 1592（取自诊断跑） |
+RequestBuffer 的 1708 − 1592 = 116 ≠ 119（差 3）我现在指认不了，第一跑后逐点对账。
+第二跑：三者按 vmucp standing rule 开 vmucp，passing = 第一跑 + unread，SUCCEEDED。
