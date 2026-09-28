@@ -2528,8 +2528,8 @@ module tb;
   longint cov_sel_comp = 0;
   longint cov_sel_simp = 0;
   longint cov_sel_enq = 0;
-  longint cov_cancel_deq = 0;
   longint cov_dly_not_ready = 0;
+  longint cov_cancel_deq = 0;
   longint cov_deq0 = 0;
   always @(posedge clock) begin
     #4;
@@ -2606,10 +2606,10 @@ module tb;
     if (cov_sel_simp == 0) begin bad = 1; $display("  *** COVERAGE HOLE: sel_simp"); end
     $display("  cov %-14s = %0d", "sel_enq", cov_sel_enq);
     if (cov_sel_enq == 0) begin bad = 1; $display("  *** COVERAGE HOLE: sel_enq"); end
-    $display("  cov %-14s = %0d", "cancel_deq", cov_cancel_deq);
-    if (cov_cancel_deq == 0) begin bad = 1; $display("  *** COVERAGE HOLE: cancel_deq"); end
     $display("  cov %-14s = %0d", "dly_not_ready", cov_dly_not_ready);
     if (cov_dly_not_ready == 0) begin bad = 1; $display("  *** COVERAGE HOLE: dly_not_ready"); end
+    $display("  cov %-14s = %0d", "cancel_deq", cov_cancel_deq);
+    if (cov_cancel_deq == 0) begin bad = 1; $display("  *** COVERAGE HOLE: cancel_deq"); end
     $display("  cov %-14s = %0d", "deq0", cov_deq0);
     if (cov_deq0 == 0) begin bad = 1; $display("  *** COVERAGE HOLE: deq0"); end
     $display("cmp_all=%0d warm=%0d", cmp_all, warm);
