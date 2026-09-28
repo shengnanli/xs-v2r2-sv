@@ -306,9 +306,12 @@ def build_pairs(g, ty, table):
         m = re.match(r'decodeBufValid_(\d)$', gname)
         if m:
             emit(gname, gw, 'dbuf_valid_q', int(m.group(1))); continue
+        m = re.match(r'decodeBufBits_(\d)_exceptionVec_(\d+)$', gname)
+        if m:
+            emit(gname, gw, 'g_dbuf[%s].g_exc[%s].g_y.q' % (m.group(1), m.group(2)), 0); continue
         m = re.match(r'decodeBufBits_(\d)_(.+)$', gname)
         if m:
-            field_in('static_inst_t', m.group(2), gname, gw, 'dbuf_bits_q[%s]' % m.group(1)); continue
+            field_in('static_inst_body_t', m.group(2), gname, gw, 'g_dbuf[%s].body_q' % m.group(1)); continue
         m = re.match(r'decode_io_csrCtrl_REG_(.+)$', gname)
         if m:
             field_in('csr_ctrl_t', m.group(1), gname, gw, 'csr_ctrl_q'); continue
@@ -328,9 +331,12 @@ def build_pairs(g, ty, table):
         m = re.match(r'enqRob_req_(\d)_valid_REG$', gname)
         if m:
             emit(gname, gw, 'enq_valid_q[%s]' % m.group(1), 0); continue
+        m = re.match(r'enqRob_req_(\d)_bits_r_exceptionVec_(\d+)$', gname)
+        if m:
+            emit(gname, gw, 'g_enq[%s].g_exc[%s].g_y.q' % (m.group(1), m.group(2)), 0); continue
         m = re.match(r'enqRob_req_(\d)_bits_r_(.+)$', gname)
         if m:
-            field_in('dyn_inst_t', m.group(2), gname, gw, 'enq_bits_q[%s]' % m.group(1)); continue
+            field_in('dyn_inst_body_t', m.group(2), gname, gw, 'g_enq[%s].body_q' % m.group(1)); continue
         # ---- 杂项 ----
         if gname == 'io_robio_csr_perfinfo_retiredInstr_REG':
             emit(gname, gw, 'retired_instr_q', 0); continue

@@ -63,24 +63,24 @@
 // ============================================================================
 // 私有类型包
 // ============================================================================
-// 本文件导航（共 38318 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 38465 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L83    私有类型包
-//   L615   可读核端口束：顶层 IO 里核真消费/真驱动的那部分
-//   L945   可读核：CtrlBlock 的全部 glue 逻辑
-//   L986   1. 重定向流水：s0 Rob.flushOut → s1 → s1_s3
-//   L1088  2. 写回打拍与压缩：27 路 ExuOutput 各打一拍，valid 过滤掉被更老重定向冲掉的
-//   L1090  被 s1_s3 或 s2_s4 冲掉
-//   L1463  3. 执行单元重定向：4 个带 redirect 的写回口里选最老的，打一拍给 RedirectGenerator
-//   L1555  4. load 违例重定向
-//   L1575  5. pcMem 读口分配
-//   L1641  6. 发给前端 FTQ：提交信息、Rob flush
-//   L1702  7. 译码缓冲：decode 收不下的指令暂存 6 项，整体前移；缓冲非空时优先喂缓冲
-//   L1779  8. 快照：rename 出口打了 snapshot 的 uop 记一份 RobPtr 组，重定向时决定回滚到哪份
-//   L1862  9. 融合译码：改写 rename/dispatch 入口的字段；清掉被融合的第二条
-//   L1907  10. 访存依赖预测：译码 fire 那拍和下一拍把 foldpc 送 MemCtrl
-//   L1919  11. Rob 入队：NewDispatch 的请求打一拍
-//   L1964  12. 杂项：vstart、retiredInstr、向量异常模块要的旧 pdest、perf/error 打两拍
-//   L2004  golden 同名 wrapper：扁平端口 + 22 个 child 实例 + 可读核
+//   L748   可读核端口束：顶层 IO 里核真消费/真驱动的那部分
+//   L1078  可读核：CtrlBlock 的全部 glue 逻辑
+//   L1119  1. 重定向流水：s0 Rob.flushOut → s1 → s1_s3
+//   L1221  2. 写回打拍与压缩：27 路 ExuOutput 各打一拍，valid 过滤掉被更老重定向冲掉的
+//   L1223  被 s1_s3 或 s2_s4 冲掉
+//   L1596  3. 执行单元重定向：4 个带 redirect 的写回口里选最老的，打一拍给 RedirectGenerator
+//   L1688  4. load 违例重定向
+//   L1708  5. pcMem 读口分配
+//   L1774  6. 发给前端 FTQ：提交信息、Rob flush
+//   L1835  7. 译码缓冲：decode 收不下的指令暂存 6 项，整体前移；缓冲非空时优先喂缓冲
+//   L1920  8. 快照：rename 出口打了 snapshot 的 uop 记一份 RobPtr 组，重定向时决定回滚到哪份
+//   L2003  9. 融合译码：改写 rename/dispatch 入口的字段；清掉被融合的第二条
+//   L2048  10. 访存依赖预测：译码 fire 那拍和下一拍把 foldpc 送 MemCtrl
+//   L2060  11. Rob 入队：NewDispatch 的请求打一拍
+//   L2111  12. 杂项：vstart、retiredInstr、向量异常模块要的旧 pdest、perf/error 打两拍
+//   L2151  golden 同名 wrapper：扁平端口 + 22 个 child 实例 + 可读核
 //
 package ctrlblock_pkg;
 
@@ -507,6 +507,43 @@ package ctrlblock_pkg;
     static_inst_t bits;
   } static_inst_valid_t;
 
+  // 译码缓冲的寄存器体：与 static_inst_t 同构但**不含 exceptionVec**——异常位按 DECODE_EXC_KEEP 逐位
+  // 单独生成寄存器，没保留的位根本不存在（impl 独有的死寄存器会成为 FM 的未读点）。
+  typedef struct packed {
+    logic [31:0]        instr;
+    logic [VADDR_W-1:0] pc;
+    logic [9:0]         foldpc;
+    logic               isFetchMalAddr;
+    logic [3:0]         trigger;
+    predecode_t         preDecodeInfo;
+    logic               pred_taken;
+    logic               crossPageIPFFix;
+    ftqptr_t            ftqPtr;
+    logic [3:0]         ftqOffset;
+    logic               isLastInFtqEntry;
+    seq_num_t           debug_seqNum;
+    logic               satpFlushFirstFetchFault;
+  } static_inst_body_t;
+
+  function automatic static_inst_body_t static_inst_body(static_inst_t s);
+    static_inst_body_t b;
+    b.instr = s.instr; b.pc = s.pc; b.foldpc = s.foldpc; b.isFetchMalAddr = s.isFetchMalAddr;
+    b.trigger = s.trigger; b.preDecodeInfo = s.preDecodeInfo; b.pred_taken = s.pred_taken;
+    b.crossPageIPFFix = s.crossPageIPFFix; b.ftqPtr = s.ftqPtr; b.ftqOffset = s.ftqOffset;
+    b.isLastInFtqEntry = s.isLastInFtqEntry; b.debug_seqNum = s.debug_seqNum;
+    b.satpFlushFirstFetchFault = s.satpFlushFirstFetchFault;
+    return b;
+  endfunction
+  function automatic static_inst_t static_inst_join(static_inst_body_t b, logic [EXC_N-1:0] exc);
+    static_inst_t s;
+    s.instr = b.instr; s.pc = b.pc; s.foldpc = b.foldpc; s.exceptionVec = exc; s.isFetchMalAddr = b.isFetchMalAddr;
+    s.trigger = b.trigger; s.preDecodeInfo = b.preDecodeInfo; s.pred_taken = b.pred_taken;
+    s.crossPageIPFFix = b.crossPageIPFFix; s.ftqPtr = b.ftqPtr; s.ftqOffset = b.ftqOffset;
+    s.isLastInFtqEntry = b.isLastInFtqEntry; s.debug_seqNum = b.debug_seqNum;
+    s.satpFlushFirstFetchFault = b.satpFlushFirstFetchFault;
+    return s;
+  endfunction
+
   // ---- DynInst：Rob 入队请求里真保留的字段（NewDispatch → 打一拍 → Rob.enq.req） ----
   typedef struct packed {
     logic       vill;
@@ -583,6 +620,102 @@ package ctrlblock_pkg;
   } dyn_inst_t;
 
   localparam logic [EXC_N-1:0] ENQ_EXC_KEEP = 24'h50100F;
+
+  // Rob 入队寄存器体：dyn_inst_t 去掉 exceptionVec（同 static_inst_body_t 的理由）
+  typedef struct packed {
+    logic [31:0]        instr;
+    logic [VADDR_W-1:0] pc;
+    logic               isFetchMalAddr;
+    logic               hasException;
+    logic [3:0]         trigger;
+    logic               preDecodeInfo_isRVC;
+    logic               crossPageIPFFix;
+    ftqptr_t            ftqPtr;
+    logic [3:0]         ftqOffset;
+    logic               satpFlushFirstFetchFault;
+    logic [5:0]         ldest;
+    logic [34:0]        fuType;
+    logic [8:0]         fuOpType;
+    logic               rfWen;
+    logic               fpWen;
+    logic               vecWen;
+    logic               v0Wen;
+    logic               vlWen;
+    logic               isXSTrap;
+    logic               waitForward;
+    logic               blockBackward;
+    logic               flushPipe;
+    enq_vpu_t           vpu;
+    logic               vlsInstr;
+    logic               wfflags;
+    logic               isMove;
+    logic               isVset;
+    logic               firstUop;
+    logic               lastUop;
+    logic [6:0]         numWB;
+    logic [2:0]         commitType;
+    logic [PREG_W-1:0]  pdest;
+    robptr_t            robIdx;
+    logic [2:0]         instrSize;
+    logic               dirtyFs;
+    logic               dirtyVs;
+    trace_pipe_t        traceBlockInPipe;
+    logic               eliminatedMove;
+    logic               snapshot;
+    logic [XLEN-1:0]    debugInfo_renameTime;
+    logic [XLEN-1:0]    debugInfo_dispatchTime;
+    logic [XLEN-1:0]    debugInfo_enqRsTime;
+    logic [XLEN-1:0]    debugInfo_selectTime;
+    logic [XLEN-1:0]    debugInfo_issueTime;
+    logic [XLEN-1:0]    debugInfo_writebackTime;
+    logic [6:0]         lqIdx_value;
+    logic [5:0]         sqIdx_value;
+    logic               singleStep;
+    logic               replayInst;
+    logic [34:0]        debug_fuType;
+    logic               debug_sim_trig;
+  } dyn_inst_body_t;
+
+  function automatic dyn_inst_body_t dyn_inst_body(dyn_inst_t d);
+    dyn_inst_body_t b;
+    b = '0;
+    b.instr = d.instr; b.pc = d.pc; b.isFetchMalAddr = d.isFetchMalAddr; b.hasException = d.hasException;
+    b.trigger = d.trigger; b.preDecodeInfo_isRVC = d.preDecodeInfo_isRVC; b.crossPageIPFFix = d.crossPageIPFFix;
+    b.ftqPtr = d.ftqPtr; b.ftqOffset = d.ftqOffset; b.satpFlushFirstFetchFault = d.satpFlushFirstFetchFault;
+    b.ldest = d.ldest; b.fuType = d.fuType; b.fuOpType = d.fuOpType; b.rfWen = d.rfWen; b.fpWen = d.fpWen;
+    b.vecWen = d.vecWen; b.v0Wen = d.v0Wen; b.vlWen = d.vlWen; b.isXSTrap = d.isXSTrap; b.waitForward = d.waitForward;
+    b.blockBackward = d.blockBackward; b.flushPipe = d.flushPipe; b.vpu = d.vpu; b.vlsInstr = d.vlsInstr;
+    b.wfflags = d.wfflags; b.isMove = d.isMove; b.isVset = d.isVset; b.firstUop = d.firstUop; b.lastUop = d.lastUop;
+    b.numWB = d.numWB; b.commitType = d.commitType; b.pdest = d.pdest; b.robIdx = d.robIdx; b.instrSize = d.instrSize;
+    b.dirtyFs = d.dirtyFs; b.dirtyVs = d.dirtyVs; b.traceBlockInPipe = d.traceBlockInPipe;
+    b.eliminatedMove = d.eliminatedMove; b.snapshot = d.snapshot;
+    b.debugInfo_renameTime = d.debugInfo_renameTime; b.debugInfo_dispatchTime = d.debugInfo_dispatchTime;
+    b.debugInfo_enqRsTime = d.debugInfo_enqRsTime; b.debugInfo_selectTime = d.debugInfo_selectTime;
+    b.debugInfo_issueTime = d.debugInfo_issueTime; b.debugInfo_writebackTime = d.debugInfo_writebackTime;
+    b.lqIdx_value = d.lqIdx_value; b.sqIdx_value = d.sqIdx_value; b.singleStep = d.singleStep;
+    b.replayInst = d.replayInst; b.debug_fuType = d.debug_fuType; b.debug_sim_trig = d.debug_sim_trig;
+    return b;
+  endfunction
+  function automatic dyn_inst_t dyn_inst_join(dyn_inst_body_t b, logic [EXC_N-1:0] exc);
+    dyn_inst_t d;
+    d = '0;
+    d.instr = b.instr; d.pc = b.pc; d.exceptionVec = exc; d.isFetchMalAddr = b.isFetchMalAddr; d.hasException = b.hasException;
+    d.trigger = b.trigger; d.preDecodeInfo_isRVC = b.preDecodeInfo_isRVC; d.crossPageIPFFix = b.crossPageIPFFix;
+    d.ftqPtr = b.ftqPtr; d.ftqOffset = b.ftqOffset; d.satpFlushFirstFetchFault = b.satpFlushFirstFetchFault;
+    d.ldest = b.ldest; d.fuType = b.fuType; d.fuOpType = b.fuOpType; d.rfWen = b.rfWen; d.fpWen = b.fpWen;
+    d.vecWen = b.vecWen; d.v0Wen = b.v0Wen; d.vlWen = b.vlWen; d.isXSTrap = b.isXSTrap; d.waitForward = b.waitForward;
+    d.blockBackward = b.blockBackward; d.flushPipe = b.flushPipe; d.vpu = b.vpu; d.vlsInstr = b.vlsInstr;
+    d.wfflags = b.wfflags; d.isMove = b.isMove; d.isVset = b.isVset; d.firstUop = b.firstUop; d.lastUop = b.lastUop;
+    d.numWB = b.numWB; d.commitType = b.commitType; d.pdest = b.pdest; d.robIdx = b.robIdx; d.instrSize = b.instrSize;
+    d.dirtyFs = b.dirtyFs; d.dirtyVs = b.dirtyVs; d.traceBlockInPipe = b.traceBlockInPipe;
+    d.eliminatedMove = b.eliminatedMove; d.snapshot = b.snapshot;
+    d.debugInfo_renameTime = b.debugInfo_renameTime; d.debugInfo_dispatchTime = b.debugInfo_dispatchTime;
+    d.debugInfo_enqRsTime = b.debugInfo_enqRsTime; d.debugInfo_selectTime = b.debugInfo_selectTime;
+    d.debugInfo_issueTime = b.debugInfo_issueTime; d.debugInfo_writebackTime = b.debugInfo_writebackTime;
+    d.lqIdx_value = b.lqIdx_value; d.sqIdx_value = b.sqIdx_value; d.singleStep = b.singleStep;
+    d.replayInst = b.replayInst; d.debug_fuType = b.debug_fuType; d.debug_sim_trig = b.debug_sim_trig;
+    return d;
+  endfunction
 
   typedef struct packed {
     logic      valid;
@@ -1702,7 +1835,7 @@ module xs_CtrlBlock_core
   // 7. 译码缓冲：decode 收不下的指令暂存 6 项，整体前移；缓冲非空时优先喂缓冲
   // --------------------------------------------------------------------------
   logic [DECODE_W-1:0] dbuf_valid_q;
-  static_inst_t        dbuf_bits_q [DECODE_W];
+  static_inst_t        dbuf_bits_q [DECODE_W];   // 寄存器体 + 保留的异常位拼回的完整视图（见 g_dbuf）
   logic [DECODE_W-1:0] dbuf_not_accept, fe_not_accept;
   logic [2:0]          dbuf_accept_num, fe_accept_num;   // 第一个未被接收的位置（全收下 = 6）
 
@@ -1731,6 +1864,8 @@ module xs_CtrlBlock_core
     logic [2:0] buf_k, fe_k;
     logic         buf_valid_sel, fe_valid_sel;
     static_inst_t buf_bits_sel, fe_bits_sel, dbuf_next;
+    static_inst_body_t body_q;              // 除 exceptionVec 外的全部字段
+    logic [EXC_N-1:0]  exc_q;               // 只有 DECODE_EXC_KEEP 里的位真有寄存器
     assign shift_from_buf = dbuf_valid_q[i] & (|dbuf_not_accept[DECODE_W-1:i]);
     assign load_from_fe   = ~dbuf_valid_q[0] & (|fe_not_accept[DECODE_W-1:i]);
     // 本项是这一拍被接收的最后一批：缓冲非空、本项有效、decode 收下且后面没有卡住的
@@ -1746,20 +1881,26 @@ module xs_CtrlBlock_core
         if (buf_k == 3'(k)) begin buf_valid_sel = dbuf_valid_q[k]; buf_bits_sel = dbuf_bits_q[k]; end
         if (fe_k  == 3'(k)) begin fe_valid_sel  = io_in.cfVec[k].valid; fe_bits_sel = fe_bits[k]; end
       end
-      // 缓冲只保留 DECODE_EXC_KEEP 里的异常位（bit 3/22 无消费者）
       dbuf_next = shift_from_buf ? buf_bits_sel : fe_bits_sel;
-      dbuf_next.exceptionVec = dbuf_next.exceptionVec & DECODE_EXC_KEEP;
     end
     always_ff @(posedge clock or posedge reset)
       if (reset) dbuf_valid_q[i] <= 1'b0;
       else if (decode_i.redirect | pop_last) dbuf_valid_q[i] <= 1'b0;
       else if (shift_from_buf) dbuf_valid_q[i] <= (dbuf_accept_num > 3'(DECODE_W - 1 - i)) ? 1'b0 : buf_valid_sel;
       else if (load_from_fe)   dbuf_valid_q[i] <= (fe_accept_num   > 3'(DECODE_W - 1 - i)) ? 1'b0 : fe_valid_sel;
-    always_ff @(posedge clock) begin
-      if (shift_from_buf | load_from_fe) dbuf_bits_q[i] <= dbuf_next;
-      // 没保留的异常位无条件写 0：让它们成为真常量寄存器（不占比较点），而不是 hold-clear 形的未读寄存器
-      for (int b = 0; b < EXC_N; b++) if (!DECODE_EXC_KEEP[b]) dbuf_bits_q[i].exceptionVec[b] <= 1'b0;
+    always_ff @(posedge clock)
+      if (shift_from_buf | load_from_fe) body_q <= static_inst_body(dbuf_next);
+    // 异常位逐位生成：DECODE_EXC_KEEP 之外的位（3/22）在 DecodeStage 入口没有端口，golden 没有这些寄存器
+    for (genvar b = 0; b < EXC_N; b++) begin : g_exc
+      if (DECODE_EXC_KEEP[b]) begin : g_y
+        logic q;
+        always_ff @(posedge clock) if (shift_from_buf | load_from_fe) q <= dbuf_next.exceptionVec[b];
+        assign exc_q[b] = q;
+      end else begin : g_n
+        assign exc_q[b] = 1'b0;
+      end
     end
+    assign dbuf_bits_q[i] = static_inst_join(body_q, exc_q);
     // DecodeStage 入口：缓冲非空喂缓冲，否则喂前端
     assign decode_i.in[i].valid = dbuf_valid_q[0] ? dbuf_valid_q[i] : io_in.cfVec[i].valid;
     assign decode_i.in[i].bits  = dbuf_valid_q[i] ? dbuf_bits_q[i]  : fe_bits[i];
@@ -1919,20 +2060,26 @@ module xs_CtrlBlock_core
   // 11. Rob 入队：NewDispatch 的请求打一拍（valid 被 s1_s3 冲掉）
   // --------------------------------------------------------------------------
   logic      enq_valid_q [DECODE_W];
-  dyn_inst_t enq_bits_q  [DECODE_W];
+  dyn_inst_t enq_bits_q  [DECODE_W];   // 寄存器体 + 保留的 7 个异常位拼回的完整视图（见 g_enq）
   logic      enq_block_backward, enq_any_valid;
   for (genvar i = 0; i < DECODE_W; i++) begin : g_enq
-    dyn_inst_t enq_next;
-    always_comb begin
-      enq_next = dispatch_o.enqRob_req[i].bits;
-      enq_next.exceptionVec = dispatch_o.enqRob_req[i].bits.exceptionVec & ENQ_EXC_KEEP;   // Rob 只看 7 位
-    end
+    dyn_inst_body_t   body_q;
+    logic [EXC_N-1:0] exc_q;
     always_ff @(posedge clock)
       enq_valid_q[i] <= dispatch_o.enqRob_req[i].valid & ~s1_s3_valid;
-    always_ff @(posedge clock) begin
-      if (dispatch_o.enqRob_req[i].valid) enq_bits_q[i] <= enq_next;
-      for (int b = 0; b < EXC_N; b++) if (!ENQ_EXC_KEEP[b]) enq_bits_q[i].exceptionVec[b] <= 1'b0;   // 同上：真常量而非 hold-clear
+    always_ff @(posedge clock)
+      if (dispatch_o.enqRob_req[i].valid) body_q <= dyn_inst_body(dispatch_o.enqRob_req[i].bits);
+    // Rob 只看 ENQ_EXC_KEEP 的 7 位：其余位 golden 没有寄存器，这里也不生成
+    for (genvar b = 0; b < EXC_N; b++) begin : g_exc
+      if (ENQ_EXC_KEEP[b]) begin : g_y
+        logic q;
+        always_ff @(posedge clock) if (dispatch_o.enqRob_req[i].valid) q <= dispatch_o.enqRob_req[i].bits.exceptionVec[b];
+        assign exc_q[b] = q;
+      end else begin : g_n
+        assign exc_q[b] = 1'b0;
+      end
     end
+    assign enq_bits_q[i] = dyn_inst_join(body_q, exc_q);
     assign rob_i.enq_req[i].valid = enq_valid_q[i];
     assign rob_i.enq_req[i].bits  = enq_bits_q[i];
   end
