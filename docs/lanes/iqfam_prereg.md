@@ -140,3 +140,4 @@ FM 在本父级里把 PipeWithFlush_1 的那几位也计成了比较点（两侧
 
 | 目标 | 登记 passing（模型） | 诊断跑 | 预期实测 |
 |---|---|---|---|
+| IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v | 27502 | 821b5475：passing 21370 / unread 6118（全 matched_nc，全在钉点表）/ constant_reg 14 | **27488**（差 14，应 = constant_reg 14） |
