@@ -79,3 +79,50 @@ tb 带覆盖计数（写回 / toLsq / 反馈 / 部分重放 / 带异常出队）
 ---
 
 # 对账（跑完追加；上文各节未改一字）
+
+## A. 起止 commit
+
+| 项 | 值 |
+|---|---|
+| 跑前登记 / proof commit | `0282c93b52b40ab85b16333244c1cb73d929494e`（登记与预测 JSON 即在此 commit 进库，证明钉在同一 commit） |
+| 证据目录 | `evidence/0282c93b52b4/{VLMergeBufferImp,VSMergeBufferImp}`（`git add -f`） |
+| VLMergeBufferImp receipt.json sha256 | `64200a9ee8f349bf2ae408701142f19b4e181dc1e80c2fb40fd58aa8e9df1af7` |
+| VSMergeBufferImp receipt.json sha256 | `b5991649f512aec929297abfda95133c978d5cc94663934f0c552499da102f87` |
+
+## B. 逐条对账（`python3 scripts/fm_predict.py check VLMergeBufferImp VSMergeBufferImp` rc=0，「全部对上」）
+
+| 目标 | 模型 | 预计 | 实测 passing | 差 | 指认 | failing/unverified/aborted/unread_nc | unmatched | 黑盒 | verdict | FM 墙钟 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| VLMergeBufferImp | 24436 | 24360 | **24360** | 76 | constant_reg 76 | 0/0/0/0 | 0(0)，unread 0 | 无（matched_blackbox_pairs []） | SUCCEEDED | 896 s |
+| VSMergeBufferImp | 20052 | 20042 | **20042** | 10 | constant_reg 10 | 0/0/0/0 | 0(0)，unread 0 | 无 | SUCCEEDED | 319 s |
+
+两者：mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify_objects [] /
+elab147 [] / relaxed_appvars [] / failing_truncated false / fm.log 行首 `Error:` 0 / impl_worktree_dirty false。
+钉点：VL `MB_PREPIN_END n=2046 expect=2046`、`MB_PIN_END n=18807 impl_left=0`；
+VS `MB_PREPIN_END n=1023 expect=1023`、`MB_PIN_END n=17584 impl_left=0`。§4 的三条「可能出错」都没发生。
+
+## C. 复跑
+
+```
+cd /home/eda/xs-env/wt-vmergebuf
+PROOF_COMMIT=0282c93b52b40ab85b16333244c1cb73d929494e bash scripts/run_proof.sh VMergeBuffer VSMergeBufferImp VLMergeBufferImp < /dev/null
+python3 scripts/fm_predict.py check VLMergeBufferImp VSMergeBufferImp
+cd verif/ut/VMergeBuffer && make run SEED=1 INITREG=+vcs+initreg+0     # 另 +vcs+initreg+random；SEED=7/42，串行
+```
+
+## D. UT（RTL 字节 = proof commit 的 rtl/，4d4e2363 起未再改 rtl；每档 200000 拍，两对同跑）
+
+| seed | +vcs+initreg+0 | +vcs+initreg+random |
+|---|---|---|
+| 1  | checks=12744416 errors=0 TEST PASSED | checks=12744416 errors=0 TEST PASSED |
+| 7  | checks=12649639 errors=0 TEST PASSED | checks=12649639 errors=0 TEST PASSED |
+| 42 | checks=12728406 errors=0 TEST PASSED | checks=12728406 errors=0 TEST PASSED |
+
+覆盖（seed 1，只数 golden 侧）：VL 写回 64450 / toLsq 46166 / 反馈 46166 / 带异常出队 7635（部分重放 0：
+load 版 hit≡1，结构上不存在）；VS 写回 33838 / toLsq 24174 / 反馈 36874 / 部分重放 12700 / 带异常出队 4736。
+两档 initreg 读数逐位相同：暖机把所有只在异常时写的条目字段写满，且 bits 只在 valid 时比较，
+上电初值不再可观测 —— 按 CONVENTIONS，这意味着两档 UT **证明不了复位域**，复位域由 FM 全比较点
+（含 16 条目控制位的异步复位）覆盖。
+变异自检（seed 1，20k 拍，commit b1e89be4 的核）：selectOldest `<`→`<=` 抓到（16 errors）、出队口 0/1
+互换抓到（318361）、unit-stride mask 偏移 +1 抓到（3236）、word 合并改成先到者胜抓到（73）；
+fof 截断 `<`→`<=` 未抓到 —— 等价变异体（相等时两支取值相同）。
