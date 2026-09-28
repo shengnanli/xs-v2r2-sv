@@ -59,6 +59,10 @@ FM_REF_DEPS_LsqWrapper = $(LSQ_CHILDREN)
 
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：278 个 unread 点全是子队列内部的对称死位，依据与六条证据见
+# verif/fm_target_config/LsqWrapper.tcl（run A @22db5f87，evidence/22db5f873939）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
