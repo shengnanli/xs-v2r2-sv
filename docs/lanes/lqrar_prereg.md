@@ -135,3 +135,48 @@ LqPAddrModule 1152 + FreeList_3 891。`FM_MERGE_DUP=false`，模型适用。
    passing 的 DFF 比较点，预期注入后 FM failing 恰好落在这些寄存器上。
 
 ## 对账（跑完追加，不改上文任何数字）
+
+### A. LqPAddrModule（proof commit 2fdc00c8，evidence/2fdc00c890e0/LqPAddrModule/）
+signoff-strict native SUCCEEDED：passing **1440** / failing 0 / unverified 0 / aborted 0 / unread 0 /
+unmatched 0(0) / constant_reg 0，黑盒实例 0，无 dont_verify / elab147。
+预测 1440，差 **+0**（`fm_predict check` rc=0，逐位相等）。
+receipt.json sha256 = `9fdf12ec9934e79fbb9d0e170c3bfba2af0d9cb670ccbd1d8eafd7cbe8ba066f`。
+
+### B. LoadQueueRAR
+**B0. RTL 修正（登记之后、证明之前，commit ef64cefa）**：第一次 diagnostic 在 2fdc00c8 上 set_top 失败 ——
+`allocated[lastAllocIndex[w]]` 是 7 位下标读 72 项数组，FM 报越界下标告警（ELAB-147，未抑制 ⇒ link 失败）。
+这不是去抑制告警的理由：golden 把这次动态读展开成 128 项表、72..127 全填 `allocated_0`
+（LoadQueueRAR.sv 里 `_GEN_71[lastAllocIndex_next_nextVec_*_r]`）。按同一形状改写（默认第 0 项 + 逐项常量比较），
+写侧 freeMask 改成逐项比较（越界谁也不写）。登记的数字不受影响、未改。
+
+**B1. diagnostic-full（ef64cefa，vmucp 关，不出 receipt）**：native SUCCEEDED passing **3584** / failing 0 /
+unmatched 0(0)，Constant reg **216**（全部 = ref `freeList/freeSlotOH_next_nextVec_{0..3}_r_reg` 各 54 位 ↔
+impl `freeList/u_core/freeSlotOHReg_reg[k]` 216 位，两侧 DFF0 对称），Unread **6**（全部 matched_nc：
+`release2Cycle_bits_paddr_reg[0..5]` 两侧同名）。与 §2.3 左列逐项一致。钉点 `LQRAR_PIN_END ok=1741 bad=0`。
+
+**B2. 正式证明（proof commit c80893ce，evidence/c80893ce57ec/LoadQueueRAR/）**：signoff-strict、vmucp 开：
+native SUCCEEDED passing **3590** / failing 0 / unverified 0 / aborted 0 / unread_notcompared 0 / unmatched 0(0)，
+constant_reg 216，dont_verify/elab147/relaxed_appvars 皆空，黑盒实例 0，fm_target_config/LoadQueueRAR.tcl 在 script_closure 里。
+与 §2.3 右列逐项一致；模型 3806 − 实测 3590 = 216 = receipt constant_reg（`fm_predict check` rc=0，差额被指认）。
+vmucp 六条：(1) unread 集合恰为 release2Cycle.paddr[5:0] 6 位 (2) 6↔6 matched_nc 双射 (3) 3584→3590 正好 +6
+(4) 全零 (5) 无放宽无黑盒 (6) 配置文件进 script_closure。
+receipt.json sha256 = `6a52ac8b20dbbf7905844b3fa447c708099d9d57937b40217ab9bcc6e17cb42f`。
+
+### C. LoadQueueRAR UT（在 ef64cefa 字节上跑；ef64cefa..c80893ce 之间 rtl/ 与 tb 无改动）
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED（= 全 1 档） | 1017：checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | 7017：checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | 42017：checks=200000 errors=0 PASSED |
+
+覆盖（seed 1/7/42）：违例（resp.valid && rep_frm_fetch）每口 37267~38255、入队 fire 316328~319527、
+ready=0 40578~43844 口·拍、lqFull 25636~27515 拍、release 命中（REG_5/40/71 三探针）7430~7731、有效 revoke（口 0）12900~13221。
+
+### D. UT 看不见的三处变异，FM 是否覆盖（scratchpad 独立 worktree，ef64cefa + 三处同时注入，diagnostic-full、FAILING_LIMIT=0，不出 receipt）
+native FAILED passing 2720 / **failing 864（不截断，864 matched / 0 unmatched）**，按落点归属：
+| 变异 | UT（30k 拍） | FM failing 落点 |
+|---|---|---|
+| R2 released 多口写优先级反向 | errors=0 | 72 × `released_*` |
+| R3 revoke 不查 allocated | errors=0 | 72 × `allocated_*` + 72 × `freeList/freeMask` |
+| R7 折叠 paddr 低位配对错位 | errors=0 | 360 × `paddrModule/data_*`（72 项 × 低 5 位）+ 216 × `ldLdViolationMask_*` + 72 × `REG_*`（release 命中） |
+合计 72 + 144 + 648 = 864。即三处改动的 D 端函数都在 passing 比较点里，由 FM 兜底。
