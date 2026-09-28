@@ -1487,6 +1487,15 @@ ArrayMulDataModule	c53_986	C53	UNRESOLVED				none
 ArrayMulDataModule	c53_987	C53	UNRESOLVED				none	
 ArrayMulDataModule	c53_988	C53	UNRESOLVED				none	
 ArrayMulDataModule	c53_99	C53	UNRESOLVED				none	
+BankedDataArray	data_banks_0_0	DataSRAMBank	SAME_PATH	data_banks_0_0	DataSRAMBank		auto_same	
+BankedDataArray	data_banks_0_1	DataSRAMBank_1	SAME_PATH	data_banks_0_1	DataSRAMBank_1		auto_same	
+BankedDataArray	data_banks_0_2	DataSRAMBank_2	SAME_PATH	data_banks_0_2	DataSRAMBank_2		auto_same	
+BankedDataArray	data_banks_0_3	DataSRAMBank_2	SAME_PATH	data_banks_0_3	DataSRAMBank_2		auto_same	
+BankedDataArray	data_banks_0_4	DataSRAMBank_4	SAME_PATH	data_banks_0_4	DataSRAMBank_4		auto_same	
+BankedDataArray	data_banks_0_5	DataSRAMBank_4	SAME_PATH	data_banks_0_5	DataSRAMBank_4		auto_same	
+BankedDataArray	data_banks_0_6	DataSRAMBank_4	SAME_PATH	data_banks_0_6	DataSRAMBank_4		auto_same	
+BankedDataArray	data_banks_0_7	DataSRAMBank_4	SAME_PATH	data_banks_0_7	DataSRAMBank_4		auto_same	
+BankedDataArray	mbistPl	MbistPipeDCacheData	SAME_PATH	mbistPl	MbistPipeDCacheData		auto_same	
 Bitmap	cache_req_arb	Arbiter8_bitmapCacheReqBundle	DEEPER	u_core.cache_req_arb	Arbiter8_bitmapCacheReqBundle		auto_deeper	
 Bitmap	mem_arb	RRArbiterInit	DEEPER	u_core.mem_arb	RRArbiterInit		auto_deeper	
 BitmapCache	ClockGate	ClockGate	DEEPER	u_core.ClockGate	ClockGate		auto_deeper	
@@ -1570,6 +1579,9 @@ Composer	tage	Tage_SC	SAME_PATH	tage	Tage_SC		auto_same
 Composer	tage_io_ctrl_delay	DelayN	SAME_PATH	tage_io_ctrl_delay	DelayN		auto_same	
 Composer	uftb	FauFTB	SAME_PATH	uftb	FauFTB		auto_same	
 Composer	uftb_io_ctrl_delay	DelayN	SAME_PATH	uftb_io_ctrl_delay	DelayN		auto_same	
+CtrlUnit	CtrlUnitPseudoErrorPipelineConnect0	NewPipelineConnectPipe_27	SAME_PATH	CtrlUnitPseudoErrorPipelineConnect0	NewPipelineConnectPipe_27		auto_same	
+CtrlUnit	CtrlUnitPseudoErrorPipelineConnect1	NewPipelineConnectPipe_27	SAME_PATH	CtrlUnitPseudoErrorPipelineConnect1	NewPipelineConnectPipe_27		auto_same	
+CtrlUnit	out_back_q	Queue1_RegMapperInput_6	SAME_PATH	out_back_q	Queue1_RegMapperInput_6		auto_same	
 DataPath	exuOHNoLoad_ext	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext	UIntExtractor_27_000011100000000000001010101		auto_same	
 DataPath	exuOHNoLoad_ext_1	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext_1	UIntExtractor_27_000011100000000000001010101		auto_same	
 DataPath	exuOHNoLoad_ext_10	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext_10	UIntExtractor_27_000011100000000000001010101		auto_same	
@@ -1632,6 +1644,22 @@ DataPath	vfWbBusyArbiter	VfRFWBCollideChecker	SAME_PATH	vfWbBusyArbiter	VfRFWBCo
 DataPath	vlRFReadArbiter	VlRFReadArbiter	SAME_PATH	vlRFReadArbiter	VlRFReadArbiter		auto_same	
 DataPath	vlRegFile	VlRegFile	SAME_PATH	vlRegFile	VlRegFile		auto_same	
 DataPath	vlWbBusyArbiter	VlRFWBCollideChecker	SAME_PATH	vlWbBusyArbiter	VlRFWBCollideChecker		auto_same	
+DataSRAMBank	data_bank_0	SRAMTemplate_84	SAME_PATH	data_bank_0	SRAMTemplate_84		auto_same	
+DataSRAMBank	data_bank_1	SRAMTemplate_84	SAME_PATH	data_bank_1	SRAMTemplate_84		auto_same	
+DataSRAMBank	data_bank_2	SRAMTemplate_86	SAME_PATH	data_bank_2	SRAMTemplate_86		auto_same	
+DataSRAMBank	data_bank_3	SRAMTemplate_86	SAME_PATH	data_bank_3	SRAMTemplate_86		auto_same	
+DataSRAMBank_1	data_bank_0	SRAMTemplate_88	SAME_PATH	data_bank_0	SRAMTemplate_88		auto_same	
+DataSRAMBank_1	data_bank_1	SRAMTemplate_88	SAME_PATH	data_bank_1	SRAMTemplate_88		auto_same	
+DataSRAMBank_1	data_bank_2	SRAMTemplate_88	SAME_PATH	data_bank_2	SRAMTemplate_88		auto_same	
+DataSRAMBank_1	data_bank_3	SRAMTemplate_88	SAME_PATH	data_bank_3	SRAMTemplate_88		auto_same	
+DataSRAMBank_2	data_bank_0	SRAMTemplate_92	SAME_PATH	data_bank_0	SRAMTemplate_92		auto_same	
+DataSRAMBank_2	data_bank_1	SRAMTemplate_92	SAME_PATH	data_bank_1	SRAMTemplate_92		auto_same	
+DataSRAMBank_2	data_bank_2	SRAMTemplate_92	SAME_PATH	data_bank_2	SRAMTemplate_92		auto_same	
+DataSRAMBank_2	data_bank_3	SRAMTemplate_92	SAME_PATH	data_bank_3	SRAMTemplate_92		auto_same	
+DataSRAMBank_4	data_bank_0	SRAMTemplate_100	SAME_PATH	data_bank_0	SRAMTemplate_100		auto_same	
+DataSRAMBank_4	data_bank_1	SRAMTemplate_100	SAME_PATH	data_bank_1	SRAMTemplate_100		auto_same	
+DataSRAMBank_4	data_bank_2	SRAMTemplate_100	SAME_PATH	data_bank_2	SRAMTemplate_100		auto_same	
+DataSRAMBank_4	data_bank_3	SRAMTemplate_100	SAME_PATH	data_bank_3	SRAMTemplate_100		auto_same	
 DebugModule	debug	TLDebugModule	DEEPER	u_core.debug	TLDebugModule		auto_deeper	
 DebugModule	dtm	DebugTransportModuleJTAG	DEEPER	u_core.dtm	DebugTransportModuleJTAG		auto_deeper	
 DecodeStage	decoderComp	DecodeUnitComp	ONE_SITE	u_core.u_complex	DecodeUnitComp		auto_one_site	
@@ -3204,6 +3232,9 @@ TLPLIC	gateways_gateway_9	LevelGateway	INSTANCE	u_core.g_gateways[9].u_gw	xs_Lev
 TLPLIC	out_back_q	Queue1_RegMapperInput	INLINE	u_core	-	q_full,q_read,q_index,q_data,q_mask,q_source,q_size	declared	impl rtl/uncore/TLPLIC.sv:107-140「TileLink A 通道: 1 深寄存器队列 (out_back_q)」，与 golden Queue1_RegMapperInput 同构，整块内联成 7 个寄存器。
 TXREQ	queue	Queue16_CHIREQ	DEEPER	u_core.queue	Queue16_CHIREQ		auto_deeper	
 TXRSP	queue	Queue16_CHIRSP	DEEPER	u_core.queue	Queue16_CHIRSP		auto_deeper	
+TagArray	tag_arrays_0	TagSRAMBank	SAME_PATH	tag_arrays_0	TagSRAMBank		auto_same	
+TagArray	tag_arrays_1	TagSRAMBank	SAME_PATH	tag_arrays_1	TagSRAMBank		auto_same	
+TagSRAMBank	tag_array	SRAMTemplate_116	SAME_PATH	tag_array	SRAMTemplate_116		auto_same	
 TageBTable	bt_0	FoldedSRAMTemplate_20	GEN_SITE	u_core.g_bank[0].bt	FoldedSRAMTemplate_20		auto_gen_site_suffix	
 TageBTable	bt_1	FoldedSRAMTemplate_20	GEN_SITE	u_core.g_bank[1].bt	FoldedSRAMTemplate_20		auto_gen_site_suffix	
 TageBTable	wrbypass	WrBypass_32	DEEPER	u_core.wrbypass	WrBypass_32		auto_deeper	

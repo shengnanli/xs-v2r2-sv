@@ -54,10 +54,10 @@ Arbiter16_CHIDAT	MISSING	UNPROVEN	-
 Arbiter16_MainPipeReq	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/Arbiter16_MainPipeReq.sv
 Arbiter16_TLBundleD	MISSING	UNPROVEN	-
 Arbiter1_InsUncacheResp	REWRITTEN	PROVEN_DIRECT	rtl/frontend/Arbiter1_InsUncacheResp.sv
-Arbiter1_L1BankedDataWriteReq	MISSING	UNPROVEN	-
-Arbiter1_L1BankedDataWriteReqCtrl	MISSING	UNPROVEN	-
+Arbiter1_L1BankedDataWriteReq	REWRITTEN	PROVEN_DIRECT	rtl/memblock/Arbiter1_L1BankedDataWriteReq.sv
+Arbiter1_L1BankedDataWriteReqCtrl	REWRITTEN	PROVEN_DIRECT	rtl/memblock/Arbiter1_L1BankedDataWriteReqCtrl.sv
 Arbiter1_L2TLBImp_Anon	GOLDEN_REUSE	UNPROVEN	-
-Arbiter1_TagWriteReq	MISSING	UNPROVEN	-
+Arbiter1_TagWriteReq	REWRITTEN	PROVEN_DIRECT	rtl/memblock/Arbiter1_TagWriteReq.sv
 Arbiter2_ICacheMissReq	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/Arbiter2_ICacheMissReq.sv
 Arbiter2_L2TLBImp_Anon	GOLDEN_REUSE	UNPROVEN	-
 Arbiter2_L2TLBImp_Anon_1	GOLDEN_REUSE	UNPROVEN	-
@@ -94,7 +94,7 @@ AsyncResetSynchronizerShiftReg_w4_d3_i0	MISSING	UNPROVEN	-
 AsyncValidSync	MISSING	UNPROVEN	-
 AtomicsUnit	MISSING	UNPROVEN	-
 Backend	MISSING	UNPROVEN	-
-BankedDataArray	MISSING	UNPROVEN	-
+BankedDataArray	REWRITTEN	UNPROVEN	rtl/memblock/BankedDataArray.sv
 Bitmap	GOLDEN_REUSE	PROVEN_DIRECT	rtl/mmu/Bitmap.sv
 BitmapCache	GOLDEN_REUSE	PROVEN_DIRECT	rtl/mmu/BitmapCache.sv
 Bku	REWRITTEN	PROVEN_DIRECT	rtl/backend/Bku.sv
@@ -190,10 +190,10 @@ Conversion	MISSING	UNPROVEN	-
 Conversion_12	MISSING	UNPROVEN	-
 Conversion_8	MISSING	UNPROVEN	-
 CountModule	MISSING	PROVEN_IN_CONE	-
-CounterFilter	MISSING	UNPROVEN	-
+CounterFilter	REWRITTEN	PROVEN_DIRECT	rtl/memblock/CounterFilter.sv
 CryptoModule	MISSING	PROVEN_IN_CONE	-
 CtrlBlock	MISSING	UNPROVEN	-
-CtrlUnit	MISSING	UNPROVEN	-
+CtrlUnit	REWRITTEN	PROVEN_DIRECT	rtl/memblock/CtrlUnit.sv
 CustomL1Hint	MISSING	UNPROVEN	-
 DCache	MISSING	UNPROVEN	-
 DCacheWrapper	MISSING	UNPROVEN	-
@@ -209,10 +209,10 @@ DataModule__16entry_8	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DataModule__16entry_
 DataModule__64entry	REWRITTEN	PROVEN_DIRECT	rtl/common/DataModule__64entry.sv
 DataModule__64entry_16	REWRITTEN	PROVEN_DIRECT	rtl/common/DataModule__64entry_16.sv
 DataPath	REWRITTEN	PROVEN_DIRECT	rtl/backend/DataPath.sv
-DataSRAMBank	MISSING	UNPROVEN	-
-DataSRAMBank_1	MISSING	UNPROVEN	-
-DataSRAMBank_2	MISSING	UNPROVEN	-
-DataSRAMBank_4	MISSING	UNPROVEN	-
+DataSRAMBank	REWRITTEN	PROVEN_DIRECT	rtl/memblock/DataSRAMBank.sv
+DataSRAMBank_1	REWRITTEN	PROVEN_DIRECT	rtl/memblock/DataSRAMBank_1.sv
+DataSRAMBank_2	REWRITTEN	PROVEN_DIRECT	rtl/memblock/DataSRAMBank_2.sv
+DataSRAMBank_4	REWRITTEN	PROVEN_DIRECT	rtl/memblock/DataSRAMBank_4.sv
 DataStorage	MISSING	UNPROVEN	-
 DataStorage_1	MISSING	UNPROVEN	-
 DataStorage_2	MISSING	UNPROVEN	-
@@ -296,7 +296,7 @@ DpcModule	MISSING	UNPROVEN	-
 DretEventModule	MISSING	UNPROVEN	-
 Dscratch0Module	MISSING	UNPROVEN	-
 Dscratch1Module	MISSING	UNPROVEN	-
-DuplicatedTagArray	REWRITTEN	UNPROVEN	rtl/memblock/DuplicatedTagArray.sv
+DuplicatedTagArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/DuplicatedTagArray.sv
 EnqEntry	REWRITTEN	PROVEN_DIRECT	rtl/backend/EnqEntry.sv
 EnqEntryVecMem	MISSING	PROVEN_IN_CONE	-
 EnqEntryVecMem_2	MISSING	PROVEN_IN_CONE	-
@@ -350,7 +350,7 @@ ExuBlock_2	MISSING	UNPROVEN	-
 F3Predecoder	REWRITTEN	PROVEN_DIRECT	rtl/frontend/F3Predecoder.sv
 FAlu	REWRITTEN	PROVEN_DIRECT	rtl/backend/FAlu.sv
 FCVT	REWRITTEN	PROVEN_DIRECT	rtl/backend/FCVT.sv
-FDPrefetcherMonitor	MISSING	UNPROVEN	-
+FDPrefetcherMonitor	NO_OUTPUT	UNPROVEN	rtl/memblock/FDPrefetcherMonitor.sv
 FDivSqrt	MISSING	UNPROVEN	-
 FIFOReg	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/FIFOReg.sv
 FMA	REWRITTEN	PROVEN_DIRECT	rtl/backend/FMA.sv
@@ -679,7 +679,7 @@ LeftShiftWordModule	MISSING	PROVEN_IN_CONE	-
 LevelGateway	REWRITTEN	PROVEN_DIRECT	rtl/uncore/LevelGateway.sv
 LinkMonitor	REWRITTEN	UNPROVEN	rtl/uncore/LinkMonitor.sv
 LoadMisalignBuffer	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadMisalignBuffer.sv
-LoadPipe	MISSING	UNPROVEN	-
+LoadPipe	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadPipe.sv
 LoadQueue	MISSING	UNPROVEN	-
 LoadQueueRAR	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadQueueRAR.sv
 LoadQueueRAW	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadQueueRAW.sv
@@ -722,7 +722,7 @@ MbistIntfFrontend	MISSING	UNPROVEN	-
 MbistIntfL2	MISSING	UNPROVEN	-
 MbistIntfMemBlk	MISSING	UNPROVEN	-
 MbistPipeDCacheData	REWRITTEN	PROVEN_DIRECT	rtl/dft/MbistPipeDCacheData.sv
-MbistPipeDcacheTag	GOLDEN_REUSE	PROVEN_DIRECT	rtl/dft/MbistPipeDcacheTag.sv
+MbistPipeDcacheTag	REWRITTEN	PROVEN_DIRECT	rtl/dft/MbistPipeDcacheTag.sv
 MbistPipeFrontend	REWRITTEN	PROVEN_DIRECT	rtl/dft/MbistPipeFrontend.sv
 MbistPipeFtb	GOLDEN_REUSE	PROVEN_DIRECT	rtl/dft/MbistPipeFtb.sv
 MbistPipeIcacheDataWay0	GOLDEN_REUSE	PROVEN_DIRECT	rtl/dft/MbistPipeIcacheDataWay0.sv
@@ -807,7 +807,7 @@ MiscResultSelect	MISSING	PROVEN_IN_CONE	-
 MiselectModule	MISSING	UNPROVEN	-
 MissEntry	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/MissEntry.sv
 MissQueue	REWRITTEN	PROVEN_DIRECT	rtl/memblock/MissQueue.sv
-MissReadyGen	MISSING	UNPROVEN	-
+MissReadyGen	REWRITTEN	PROVEN_DIRECT	rtl/memblock/MissReadyGen.sv
 MncauseModule	MISSING	UNPROVEN	-
 MnepcModule	MISSING	UNPROVEN	-
 MnscratchModule	MISSING	UNPROVEN	-
@@ -1147,7 +1147,7 @@ PrefetchQueue	MISSING	UNPROVEN	-
 PrefetchReceiver	MISSING	UNPROVEN	-
 PrefetchReqBuffer	MISSING	UNPROVEN	-
 Prefetcher	MISSING	UNPROVEN	-
-PrefetcherMonitor	MISSING	UNPROVEN	-
+PrefetcherMonitor	REWRITTEN	PROVEN_DIRECT	rtl/memblock/PrefetcherMonitor.sv
 PrintCommitIDModule	MISSING	UNPROVEN	-
 PriorityMuxModule	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/PriorityMuxModule.sv
 PriorityMuxModule_12	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/PriorityMuxModule_12.sv
@@ -1192,7 +1192,7 @@ Queue1_RegMapperInput	MISSING	PROVEN_IN_CONE	-
 Queue1_RegMapperInput_1	MISSING	UNPROVEN	-
 Queue1_RegMapperInput_3	MISSING	UNPROVEN	-
 Queue1_RegMapperInput_5	REWRITTEN	PROVEN_DIRECT	rtl/frontend/Queue1_RegMapperInput_5.sv
-Queue1_RegMapperInput_6	MISSING	UNPROVEN	-
+Queue1_RegMapperInput_6	REWRITTEN	PROVEN_DIRECT	rtl/memblock/Queue1_RegMapperInput_6.sv
 Queue1_RegMapperInput_7	MISSING	UNPROVEN	-
 Queue1_TLBundleA	MISSING	UNPROVEN	-
 Queue1_UInt32	MISSING	UNPROVEN	-
@@ -1369,7 +1369,7 @@ SRAMTemplateWithFixedWidth_12	GOLDEN_REUSE	PROVEN_IN_CONE	-
 SRAMTemplateWithFixedWidth_28	GOLDEN_REUSE	PROVEN_IN_CONE	-
 SRAMTemplateWithFixedWidth_4	GOLDEN_REUSE	PROVEN_IN_CONE	-
 SRAMTemplate_100	REWRITTEN	PROVEN_DIRECT	rtl/common/SRAMTemplate_100.sv
-SRAMTemplate_116	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SRAMTemplate_116.sv
+SRAMTemplate_116	REWRITTEN	PROVEN_DIRECT	rtl/common/SRAMTemplate_116.sv
 SRAMTemplate_124	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SRAMTemplate_124.sv
 SRAMTemplate_128	GOLDEN_REUSE	PROVEN_IN_CONE	rtl/common/SRAMTemplate_128.sv
 SRAMTemplate_129	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SRAMTemplate_129.sv
@@ -1593,8 +1593,8 @@ TXREQ_4	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TXREQ_4.sv
 TXRSP	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TXRSP.sv
 TXRSP_4	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TXRSP_4.sv
 TXSNP	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TXSNP.sv
-TagArray	GOLDEN_REUSE	UNPROVEN	-
-TagSRAMBank	GOLDEN_REUSE	UNPROVEN	-
+TagArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/TagArray.sv
+TagSRAMBank	REWRITTEN	PROVEN_DIRECT	rtl/memblock/TagSRAMBank.sv
 TageBTable	GOLDEN_REUSE	PROVEN_IN_CONE	rtl/frontend/TageBTable.sv
 TageTable	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/TageTable.sv
 TageTable_1	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/TageTable_1.sv
@@ -1623,7 +1623,7 @@ TrapEntryVSEventModule	MISSING	UNPROVEN	-
 TrapHandleModule	MISSING	UNPROVEN	-
 TrapInstMod	MISSING	UNPROVEN	-
 TrapTvalMod	MISSING	UNPROVEN	-
-TreeArbiter	MISSING	UNPROVEN	-
+TreeArbiter	REWRITTEN	PROVEN_DIRECT	rtl/memblock/TreeArbiter.sv
 Trigger0_Tdata1Module	MISSING	UNPROVEN	-
 Trigger0_Tdata2Module	MISSING	UNPROVEN	-
 Trigger1_Tdata1Module	MISSING	UNPROVEN	-
