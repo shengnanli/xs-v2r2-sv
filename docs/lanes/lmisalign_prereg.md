@@ -209,3 +209,48 @@ store 的 vecWriteBack 没有 alignedType 端口（被 DCE），跑前逐项枚�
 | failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
 | unmatched / constant_reg | 0(0) / 2 |
 | verdict | SUCCEEDED（signoff-strict） |
+
+### E. StoreMisalignBuffer 正式证明（proof commit 9f03fce6，evidence/9f03fce6d9a6/StoreMisalignBuffer/）
+`bash scripts/run_proof.sh StoreMisalignBuffer StoreMisalignBuffer`（signoff-strict、vmucp 开、FM_MERGE_DUP=false）：
+native **SUCCEEDED**，passing **4752** / failing 0 / unverified 0 / aborted 0 / unread_notcompared 0 / unmatched 0(0)，
+constant_reg 2，dont_verify / elab147 / relaxed_appvars 皆空，黑盒 0。
+receipt.json sha256 `2f8aa89bbf07500855ca41f99b2630aacf31ceaa7a80cce285d11a1fcb39d92d`；
+impl_closure `rtl/memblock/StoreMisalignBuffer.sv` sha256 `101c6c71…4d82c1a67`（= 提交字节）。
+
+| 项 | §2.3 预测（跑前） | 实测 | 差额指认 |
+|---|---|---|---|
+| passing（vmucp 开） | 4752 | 4752 | 0 |
+| constant_reg | 2 | 2 | 0 |
+| unread（vmucp 前，诊断跑） | 18 | 19 | +1 = `req_alignedType[2]`（跑前漏列，见 §2.5） |
+| failing / unmatched | 0 / 0 | 0 / 0 | — |
+
+`python3 scripts/fm_predict.py check StoreMisalignBuffer LoadMisalignBuffer` rc=0。
+
+UT（在 adf889cd 的字节上跑；adf889cd..9f03fce6 之间 rtl/ 与 tb 无改动）：
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=199997 errors=0 PASSED（= 全 1 档） | 1017：checks=199997 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=199998 errors=0 PASSED | 7017：checks=199998 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=199999 errors=0 PASSED | 42017：checks=199999 errors=0 PASSED |
+
+9 轮 cover_holes 全 0。覆盖读数（seed 1 / initreg 0）：状态 idle 72952 / split 11855 / req 27738 / resp 69168 / wb 14792 /
+block 3495；拆分 H 2334、W/01 887、W/10 880、W/11 888、D/001..111 = 316 319 378 315 424 415 443；不跨 16B 4256；
+跨页拆分 1884；响应 成功 14238 / replay 2862 / 异常 2187 / uncache 1026 / robIdx 不符 5619；多等一拍去 s_wb 7732；
+写回 标量正常 5318 / 标量异常 2227 / 向量口0 1607 / 口1 1576；s_block 放行 1051；跨页顶替 1111；revoke 杀条目 1429；
+flush 空闲 186 / 非空闲 1229；入队 13431 / 被拦 137。
+
+变异自检（16 个；UT seed1/initreg0 与 seed7/initreg7017 各 20k 拍）：UT 抓到 13 个（S1..S8、S10..S14，errors 31..952108；
+S3 跨 4KB 判错位只在 seed 1 抓到 2554、seed 7 为 0）。UT 没抓到的 3 个（scratch detached worktree @9f03fce6，
+diagnostic-full、FAILING_LIMIT=0）：
+
+| 变异 | UT | FM |
+|---|---|---|
+| S9 去掉"跨页期间 req := req 覆盖入队写" | errors=0 | **SUCCEEDED passing 4752** —— 等价变异：cross4k 蕴含 req_valid，此时 can_enq 退化成"顶替"条件，覆盖句在逻辑上冗余 |
+| S15 给 s2_canEnq 加异步复位（复位域） | errors=0 | **FAILED failing 1** = s2_canEnq |
+| S16 去掉 s2_reqSelPort_next_r 的复位（复位域） | errors=0 | **FAILED failing 1** = s2_reqSelPort_next_r |
+（S16 第一版变异体写成"异步敏感表里没有复位分支"，FM elaborate 直接报错 rc=3、无 verdict —— 那是变异体本身不合法，
+已改成同步无复位写法后重跑，上表是重跑的读数。）
+
+### F. 更正（描述性，非预测数字）
+§1.2 写的 LoadMisalignBuffer "覆盖闸 20 项" 数错了：tb 实际判 31 项（6 状态 + 11 个拆分组合桶 + 14 个事件项）。
