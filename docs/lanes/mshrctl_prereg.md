@@ -134,3 +134,39 @@ validCnt[63:0]、REG、REG_1..3、state_w_pprobeackfirst）。1443 − 1 − 69 
 
 可能出错处：(1) 那 1 个常量寄存器的身份未查明（试跑报告只给计数）——若 constant_reg≠1，差额按 receipt 指认；
 (2) 若 merge 关闭后 blockRefill_REG/_REG_1 仍被合并，passing 会是 1441。
+
+## 4. MSHRCtl（本体，golden 14,590 行 / 1071 端口）
+
+### 4.1 结构与子模块处置
+
+- `rtl/uncore/MSHRCtl.sv`：手写核 xs_MSHRCtl_core §1 占用计数与反压 / §2 分配与响应分发 /
+  §3 releaseBuf 与嵌套写回 ID / §4 L2 miss / §5 性能计数与断言影子（约 150 行）；
+  16 份 MSHR 用 generate（`mshrs[i].entry`），每个 MSHR 端口按 fail-closed 规则表连到 `ms_*` 数组或广播输入；
+  四个仲裁器 / SourceB / MSHRSelector 的扁平连线 —— 全部由 scripts/gen_mshrctl.py（--check，进 gate）生成。
+- child 全部两侧白盒（ref golden 同名件，impl 本仓重写件）：MSHR ×16、FastArbiter_3/4/6/7（本 lane §1/§3）、
+  SourceB（§2）及其 FastArbiter_5、MSHRSelector（coverage 表 PROVEN_DIRECT）。无黑盒。
+- 钉点 `verif/ut/MSHRCtl/fm_pins_pre.tcl`：只钉 sourceB 的 224 位表项（理由同 §2）；其余 FM 按名自动配对。
+
+### 4.2 UT（verif/ut/MSHRCtl；两侧 child 各为 golden / 重写件；3 seed × 3 initreg × 200k）
+
+commit 2ef62393 之后、ea8f5e84 字节上的全矩阵：9 档全部 173.4M checks errors=0（见 §对账）。
+覆盖：17 项（mshrFull / a_mshrFull、nestedwbDataId、l2Miss、按地址 sinkC 命中、16 个全占、
+四路出口握手、mshrs_7 的 release/probeack/dct/事务结束、嵌套写回匹配、long_miss 计数非 0）每档非 0。
+
+### 4.3 跑前预测（★跑完不许改本节★，登记 docs/fm_predictions/MSHRCtl.json）
+
+模型 expected = 15682（regs 12037 + outs 3645）。lane 内非正式试跑（commit 6b1afb3a，与正式配置相同：
+钉点 + vmucp + merge_dup=false）：passing 15645 / constant_reg 37 / unread 0 / unmatched 0(0)。
+更早一次（commit 159b9c25，无钉点、vmucp 关）：passing 10407 / constant 25 / matched unread 5238 /
+sourceB waitG[6:4] 两侧各 12 位 unmatched unread —— 10407 + 5238 + 25 + 12 = 15682，逐位对上模型。
+
+| 项 | 预测 |
+|---|---|
+| passing | **15645**（= 15682 − constant_reg 37） |
+| constant_reg | 37 = 25（无钉点时已有：5 个仲裁器 rrGrantMask[0] + 其余 20 个）+ 12（sourceB waitG[6:4]） |
+| unread（vmucp 后） | 0（5238 位 matched_nc 实比，分类见 verif/fm_target_config/MSHRCtl.tcl） |
+| failing / unverified / unmatched / 黑盒 / dont_verify | 全 0 / 无 |
+| verdict | SUCCEEDED（signoff-strict） |
+
+可能出错处：constant_reg 25 里除仲裁器 5 位外的 20 位尚未逐个指认（推测为 16 个 MSHR 各 1 位常量——
+与 MSHR 单独证明的 constant_reg 1 对应 —— 外加 4 位本层/SourceB 常量），跑完从 receipt 核对。
