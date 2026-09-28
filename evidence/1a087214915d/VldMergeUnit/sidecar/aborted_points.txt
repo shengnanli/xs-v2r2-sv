@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VldMergeUnit
+Implementation : i:/WORK/VldMergeUnit
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 12:38:52 2026
+**************************************************
+
+No aborted compare points.
+
+1

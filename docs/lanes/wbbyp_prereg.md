@@ -141,3 +141,15 @@ M9 ta 去掉 isMasked ⇒ 491。九个全抓。
    卡住或出现 unmatched，改为生成 fm_pins_pre.tcl（逐位一一对应、字面计数），不改电路。
 2. golden ByteMaskTailGen 多一个无读者的 UIntToContLow1s 实例（prestart 段）：纯组合、无比较点，预期不影响计数。
 3. 本节没有做过任何 FM 试跑。
+
+### 向量 load 合并链（证明 commit 1a087214，`bash scripts/run_proof.sh VldMergeUnit <5 targets> < /dev/null`）
+
+| 目标 | 预测 | 实测 passing | 差 | failing | unverified | unmatched | unread | 黑盒 | dont_verify | native | receipt.json sha256 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| UIntToContLow1s | 255 | 255 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | e2734314008a0b991ca18d8d8ac2050db41cab00bcd7c81933aa08f9e016fbe1 |
+| UIntToContLow0s | 255 | 255 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | 64172875b063ecb6e33c8c0cf418ee49cd88fedac1f3f3730e8058a9e7c7bf39 |
+| ByteMaskTailGen | 32 | 32 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | f244e06b5feff7ca5e113e493f9e89597e40c4e8d71376772d8c7f2fb6aa4bc8 |
+| VldMgu | 128 | 128 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | b704b9ee9ffc769eceef5b3db5d7379418730ecd0e7b562aed8c3986d4cc32d1 |
+| VldMergeUnit | 2270 | 2270 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | 67d313895b64a53b5214fbd1a05b63ac7231c1788d2ae2bab1378a289ff68637 |
+
+`fm_predict.py check` 全部逐位相等（rc=0）。§2.4 风险 1 未发生：VldMergeUnit 的 packed struct 寄存器无需钉点即被 FM 全部配上（unmatched 0）。receipt：`evidence/1a087214915d/<target>/`。
