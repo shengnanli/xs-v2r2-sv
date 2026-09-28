@@ -1,43 +1,47 @@
+# DuplicatedTagArray —— DCache 的 4 份复制 tag 阵列（每个读口一份，写口广播 + 写入时算 SECDED）。
+# 子模块处置（两侧白盒，ref 读 golden 同名件、impl 读本仓重写件）：
+#   TagArray / TagSRAMBank（本 lane 重写签核，verif/ut/TagArray）、
+#   SRAMTemplate_116（PROVEN_DIRECT，rtl/common + xs_SRAMTemplate_core）、
+#   MbistPipeDcacheTag（PROVEN_DIRECT，rtl/dft + xs_mbist_pipe_core）；
+#   其下 sram_array_1p256x86m43s1h0l1b_dcsh_tag / array_8 / MbistClockGateCell / ClockGate
+#   两侧同源 elaborate（RTL_GOLDEN_DEPS）；唯一黑盒 = 厂商 SRAM 叶子 array_8_ext ×8
+#   （verif/vendor_boundary.tsv 已审定；声明逐条在 verif/allow/DuplicatedTagArray.json）。
+# 与上一版（直接读 golden TagArray/TagSRAMBank/SRAMTemplate_116/MbistPipeDcacheTag 作 impl 依赖）
+# 的区别：impl 侧已不再复用任何 golden 逻辑件。
 MODULE = DuplicatedTagArray
 
 RTL_DIR = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/memblock/DuplicatedTagArray.sv
+RTL_SRCS = $(RTL_DIR)/common/xs_SRAMTemplate_core.sv \
+           $(RTL_DIR)/common/SRAMTemplate_116.sv \
+           $(RTL_DIR)/memblock/TagSRAMBank.sv \
+           $(RTL_DIR)/memblock/TagArray.sv \
+           $(RTL_DIR)/dft/xs_mbist_pipe_core.sv \
+           $(RTL_DIR)/dft/MbistPipeDcacheTag.sv \
+           $(RTL_DIR)/memblock/DuplicatedTagArray.sv
 TB_SRCS = tb.sv
 
-# closure 对称（codex 0151 D60）：impl 侧必须与 FM_REF_DEPS_DuplicatedTagArray 读
-# **同一组** golden 闭包文件，否则 sram_array_*_dcsh_tag 里例化的 array_8 在 ref 侧
-# 白盒、impl 侧黑盒，assembly 声明必被 fm_verdict.py 的 assembly_bbox_not_symmetric 拒
-# （实测 `assembly_bbox_not_symmetric:array_8(ref=0,impl=8)`）。
-# array_9.sv 原先两侧都读但闭包里**无人例化**（唯一例化点 sram_array_*_dcsh_tag:103
-# 例化的是 array_8），已连同 GOLDEN_SRCS 里的 array_9/array_9_ext 一并删去。
-# 机器检查：scripts/check_closure_symmetry.py --only DuplicatedTagArray
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
-                  $(GOLDEN_RTL)/MbistClockGateCell.sv \
-                  $(GOLDEN_RTL)/MbistPipeDcacheTag.sv \
-                  $(GOLDEN_RTL)/SRAMTemplate_116.sv \
-                  $(GOLDEN_RTL)/TagArray.sv \
-                  $(GOLDEN_RTL)/TagSRAMBank.sv \
-                  $(GOLDEN_RTL)/array_8.sv \
-                  $(GOLDEN_RTL)/sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv
-
-FM_ELAB = TagArray.sv TagSRAMBank.sv SRAMTemplate_116.sv sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv array_8.sv MbistClockGateCell.sv ClockGate.sv MbistPipeDcacheTag.sv
-FM_REF_DEPS_DuplicatedTagArray = TagArray.sv TagSRAMBank.sv SRAMTemplate_116.sv sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv array_8.sv MbistClockGateCell.sv ClockGate.sv MbistPipeDcacheTag.sv
+SRAM_DEPS = sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv array_8.sv MbistClockGateCell.sv ClockGate.sv
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(SRAM_DEPS))
 GOLDEN_SRCS = $(GOLDEN_RTL)/DuplicatedTagArray.sv \
               $(GOLDEN_RTL)/TagArray.sv \
               $(GOLDEN_RTL)/TagSRAMBank.sv \
               $(GOLDEN_RTL)/SRAMTemplate_116.sv \
-              $(GOLDEN_RTL)/sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv \
-              $(GOLDEN_RTL)/MbistClockGateCell.sv \
-              $(GOLDEN_RTL)/ClockGate.sv \
               $(GOLDEN_RTL)/MbistPipeDcacheTag.sv \
-              $(GOLDEN_RTL)/array_8.sv \
+              $(RTL_GOLDEN_DEPS) \
               $(GOLDEN_RTL)/array_8_ext.v
-# 老战役审计声明继承: proof_mode=assembly, 对称黑盒边界 = array_0_tag_arrays_0, array_0_tag_arrays_1, array_1_tag_arrays_0, array_1_tag_arrays_1, array_2_tag_arrays_0, array_2_tag_arrays_1…
-FM_MODE = assembly
-FM_ALLOWLIST ?= 8
-# 老战役审计声明继承: vmucp=加强证明(FM 实比 matched-unread, 非 waiver)
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 FM_VARIANTS = DuplicatedTagArray
+FM_REF_DEPS_DuplicatedTagArray = TagArray.sv TagSRAMBank.sv SRAMTemplate_116.sv MbistPipeDcacheTag.sv $(SRAM_DEPS)
+FM_MODE = assembly
+FM_MERGE_DUP = false
+PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
-VCS += +define+SYNTHESIS
+
+VCS      += +define+SYNTHESIS +vcs+initreg+random
+INITREG  ?= random
+SIM_ARGS += +vcs+initreg+$(INITREG)
+
+.PHONY: gencheck
+gencheck:
+	python3 gen.py --check

@@ -66,13 +66,14 @@ class Pair(object):
     arm        [SV 布尔表达式]：每一项都至少为真过一次（粘滞）之后才开始比较——
                给"不复位的数据寄存器要先被写过一次，两侧初值才一致"的情形用；
                表达式同 cov 的 @ 替换规则。arm 之前的拍数会打印出来。
+    arm_delay  全部 arm 条件满足之后再多等几拍才开始比（读出数据还要过一级锁存的情形）
     mode_period 每隔多少拍重抽一次 <pfx>mode（0..15），供 stim 做分阶段偏置
     decls      模块级 SV 声明（stim 要用的辅助 function / 变量），原样放进 tb 模块体
     """
 
     def __init__(self, top, pfx, clocked=False, stim="", cov=(), exempt=(),
                  warmup=0, mode_period=4000, reset_period=40000, cov_min=100, arm=(),
-                 decls=""):
+                 decls="", arm_delay=0):
         self.top = top
         self.pfx = pfx
         self.clocked = clocked
@@ -85,6 +86,7 @@ class Pair(object):
         self.cov_min = cov_min
         self.arm = list(arm)
         self.decls = decls
+        self.arm_delay = arm_delay
         self.ports = golden_ports(top)
         names = [n for _, _, n in self.ports]
         if clocked and ("clock" not in names or "reset" not in names):
@@ -170,7 +172,10 @@ def render(pairs, header, ncycles=200000):
         outs = [(w, n) for d, w, n in p.ports if d == "output"]
         if not p.arm:
             L.append(f"      {x}armed = 1'b1;")
-        L.append(f"      if (cyc >= RESET_CYC + {p.warmup} && (&{x}armed)) begin")
+        if p.arm_delay:
+            L.append(f"      if (cyc >= RESET_CYC + {p.warmup} && {x}armed_at >= 0 && cyc >= {x}armed_at) begin")
+        else:
+            L.append(f"      if (cyc >= RESET_CYC + {p.warmup} && (&{x}armed)) begin")
         for w, n in outs:
             L.append(f"        checks++;")
             L.append(f"        if ({x}g_{n} !== {x}i_{n}) begin")
@@ -185,7 +190,8 @@ def render(pairs, header, ncycles=200000):
         # arm 在比较之后更新：本拍发生的写入要到下一个 posedge 才进寄存器
         for k, a in enumerate(p.arm):
             L.append(f"      if ({p.subst(a)}) {x}armed[{k}] = 1'b1;")
-        L.append(f"      if ({x}armed_at < 0 && (&{x}armed)) {x}armed_at = cyc + 1;")
+        dly = f" + {p.arm_delay}" if p.arm_delay else ""
+        L.append(f"      if ({x}armed_at < 0 && (&{x}armed)) {x}armed_at = cyc + 1{dly};")
     L.append("    end")
     L.append("")
     L.append("    // ---- 覆盖闸 ----")
