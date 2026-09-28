@@ -1,0 +1,10 @@
+{
+  "target": "SourceB",
+  "ut": "SourceB",
+  "regs": 232,
+  "outs": 311,
+  "expected": 543,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额=constant_reg 13：issueArb.rrGrantMask[0] + probes_k_waitG[6:4]×4（恒写 0，两侧对称，钉点配对后 FM 判常量）"
+}

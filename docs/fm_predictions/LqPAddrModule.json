@@ -1,0 +1,10 @@
+{
+  "target": "LqPAddrModule",
+  "ut": "LqPAddrModule",
+  "regs": 1152,
+  "outs": 288,
+  "expected": 1440,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "逐位相等预期：72x16 条目 + 288 输出；0 级延迟件无寄存器；无 unread/constant"
+}

@@ -1,0 +1,9 @@
+{
+  "target": "IntRegFilePart2",
+  "ut": "IntRegFilePart",
+  "regs": 3656,
+  "outs": 3744,
+  "expected": 7400,
+  "merge_dup": "false",
+  "model_applicable": true
+}

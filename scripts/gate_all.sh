@@ -154,6 +154,7 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_redirectgen.py scripts/gen_renametablewrapper.py \
          scripts/gen_csr_leaves10c.py scripts/gen_pmpaddr_leaves20.py \
          scripts/gen_vmergebuf.py scripts/gen_readable_leaves15.py \
+         scripts/gen_pmaaddr_leaves30.py \
          scripts/gen_rob_ut.py scripts/gen_sbuffer.py \
          scripts/gen_sbuffer_tb.py scripts/gen_tlbsw_family.py \
          scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
@@ -162,6 +163,10 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_lqreplay_ut.py scripts/gen_xstile_closure.py \
          scripts/gen_ptwcache.py scripts/gen_mmu5.py \
          scripts/gen_cb_connect.py scripts/gen_lqraw.py \
+         scripts/gen_fastarbiter_l2.py scripts/gen_intregfile.py \
+         scripts/gen_l2_mshr_pins.py scripts/gen_lmisalign.py \
+         scripts/gen_lqrar.py scripts/gen_mshr.py \
+         scripts/gen_mshrctl.py scripts/gen_smisalign.py \
          scripts/gen_datapath_arb.py scripts/gen_datapath_rf.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done

@@ -1,0 +1,10 @@
+{
+  "target": "FastArbiter_3",
+  "ut": "FastArbiterL2",
+  "regs": 32,
+  "outs": 113,
+  "expected": 145,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额=constant_reg 1（rrGrantMask_reg[0]，Scala false.B 恒 0，两侧对称）；pendingMask_reg[0] 为对称 matched-unread，vmucp 开后实比进 passing"
+}
