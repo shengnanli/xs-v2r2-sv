@@ -276,3 +276,27 @@ BRRIP 监视组；每 4000 拍里 1000 拍把读与 MSHR 压到 set 0 制造 8 �
 | L2Directory_1 / _2 / _3（strict，无黑盒） | 911 / 914 / 922 | 0 | SUCCEEDED |
 
 第二跑：allow（array_14..17_ext，tag 阵列 4 块 + meta + repl + orgb = 7 个/侧）+ Directory 的 vmucp ⇒ 模型值、SUCCEEDED。
+
+## 9. RequestArb
+
+### 9.1 结构
+
+- 可读核 `xs_RequestArb_core`（上电计数 / s0 MSHR 入口 / s1 C>B>A 挑任务、目录读、s1Entrance / s2 MCP2 stall、
+  refillBuf / releaseBuf 读判定）。TaskBundle 用包内 `task_t` 结构体（94 字段 383 位），结构体、golden 同名
+  wrapper、fm_pins_pre.tcl 由 `scripts/gen_l2_requestarb.py` 生成，并核对 sinkA/B/C/mshrTask/taskInfo_s1/taskToPipe_s2
+  六组端口字段表完全一致、golden 两组任务寄存器与字段表一一对应。0 子模块、0 黑盒。
+- 钉点：golden `mshr_task_s1_bits_<f>` / `task_s2_bits_<f>`（2 × 383 位）↔ 核里两个 task_t 结构体寄存器逐位，
+  fail-closed 计数 766。★风险★：重写侧结构体寄存器在 FM 里的名字（`u_core/<name>_reg[bit]`）是按惯例推的，
+  若不是这个名字，钉点会整体失败并 error（不会静默）。
+
+### 9.2 UT（verif/ut/RequestArb；commit 3714b6a0）
+
+seed1 random 200k：checks=46400000 errors=0（232/232 输出翻转）；覆盖 s0 进 49704、s1 进 78484、回填读替换 12563、
+C/B/A 各被选 14378/7356/7076、refillBuf 读 8447、releaseBuf 读 31521。变异：B 不让 C 优先 errors=776、
+releaseRefillData 漏 Evict errors=127、A-Hint 也触发 MCP2 stall errors=20418，均 CAUGHT。9 档矩阵后台跑，文末对账。
+
+### 9.3 跑前预测（★跑完不许改★）
+
+| 目标 | passing | 其余 |
+|---|---|---|
+| RequestArb | **1837**（regs 779 + outs 1058） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED；钉点 ok=766 |
