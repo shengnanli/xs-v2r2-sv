@@ -177,3 +177,26 @@ Rob `debug_otherPdest` 56×8 = 448 位，正是第 1 轮差额里那 448；其�
 
 两个 golden 实例彼此都对不上 ⇒ 失配来自两实例各摇各的未复位存储初值（Rob/pcMem 等 payload），与重写无关；
 这正是 ut_common.mk / 本 Makefile 注明「双例化只用 +0/+1 常量档」的原因。
+
+## 7. 第 2 轮对账（e8c9b2fb，PID 54656 跑完，11.95 h；`evidence/e8c9b2fb4de8/CtrlBlock`，receipt sha256 ce477fab…cad96，未入库）
+
+| 项 | 第 2 轮预测 | 实测 | 判 |
+|---|---|---|---|
+| native | SUCCEEDED | **FAILED** | ✘ |
+| passing | 328,422 − 448 − 16 − constant_reg | 277,012 | 不可比（verify 在第 20 个失败点停下，unverified 47,518） |
+| failing | 0 | **≥ 20（截断）**：全是 `redirectGen/io_memPredUpdate_stpc_r_reg[*]` | ✘ |
+| unmatched | 0/0 | 12(12)（pcMem 读地址，见 §6.1） | ✘ |
+| unread | ref 16 / impl 0 | ref 168 / impl 152 | ✘ |
+| constant_reg | ≥ 7,235 | 3,244（verify 半途停，非完整规模） | — |
+
+failing 根因：`stpc_r` 是 redirectGen 从 pcMem **读口 1 的数据**算出的 10 位哈希（golden RedirectGenerator.sv:807）。
+pcMem 自己签核时存储体 3,200 位与写口复制寄存器是钉了的（`verif/ut/SyncDataModule/fm_pins_pre.tcl`），
+第 2 轮搬进 CtrlBlock 时一位没搬，4 个 bank 结构相同的存储体只能靠签名匹配、bank 配错。★第 5 节反向出口「unmatched/失配落在 pcMem/
+→ 照它签核时的点名补钉点」的情形★，不是 RTL 失配（UT 1.3G 次比较 errors=0；pcMem 独立签核 SUCCEEDED）。
+
+## 8. 第 3 轮登记补充（起跑前提交，追加于第 6 节之后；★不改第 6 节★）
+
+`render_pcmem` 在读地址 450 位之外补钉 **写口复制寄存器 4×(1+6+50)=228 位** 与 **存储体 4×16×50=3,200 位**，PCMEM_PIN 共 **3,878**（fail-closed：
+golden 名/宽/驱动/喂给哪个 dataBanks_b 逐条核对）。点名先在 pcMem 独立 FM 上实测（scratchpad，diagnostic-full，钉同一份映射）：
+PCMEM_PIN_END n=3878 miss=0，Verification SUCCEEDED，passing 4,448，unmatched 0/0。
+第 6.2 节的预测数字不变（钉点不改变比较点集合）：passing = 327,974 − 16 − receipt.constant_reg，failing/unverified/unmatched 0，unread ref 16/impl 0。

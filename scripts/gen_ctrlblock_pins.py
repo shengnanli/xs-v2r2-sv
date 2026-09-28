@@ -471,7 +471,10 @@ def render_pcmem():
     扁平复制名（bank b 的口 P = raddr_dup_P[_b]，出口选 bank 用的 = raddr_dup / raddr_dup_{14+P}），重写件是
     g_bank[b].raddr_dup[P] / g_rport[P].raddr_q。这 450 位互为按位复制、签名一致，第 2 轮实测签名匹配配错/配不上：
     12(12) 个 compare 点 unmatched（raddr_dup_2{,_1,_3}）+ 152(152) 个 unread 点 unmatched（CtrlBlock 用不到的读口/高位）。
-    所以整族在首次 match 前钉死。★fail-closed★：golden 寄存器名/宽度按源码逐条核对。"""
+    所以整族在首次 match 前钉死。★fail-closed★：golden 寄存器名/宽度按源码逐条核对。
+    第 2 轮 verify 另有 failing（redirectGen/io_memPredUpdate_stpc_r，读 pcMem 口 1 的数据）：pcMem 自己签核时
+    存储体 3,200 位与写口复制寄存器是**钉了**的（verif/ut/SyncDataModule/fm_pins_pre.tcl），上一版这里只搬了读地址，
+    存储体在 CtrlBlock 上下文里靠签名匹配、bank 配错。所以写口 4×57 位与存储体 4×16×50 位一并钉死。"""
     graw = (GC.GOLDEN.parent / 'SyncDataModuleTemplate_BackendPC_64entry.sv').read_text()
     gregs = {}
     for m in re.finditer(r'^\s*reg\s+(?:\[(\d+):0\]\s+)?(\w+);', graw, re.M):
@@ -497,9 +500,42 @@ def render_pcmem():
             GC.die('golden pcMem %s 不是读口 %d 的出口地址寄存器' % (gn, p))
         for k in range(AW):
             pairs.append(('%s_reg\\[%d\\]' % (gn, k), 'u_core/g_rport\\[%d\\].raddr_q_reg\\[%d\\]' % (p, k)))
+    # 写口复制寄存器（每 bank 一份：wen / waddr / wdata），同样互为按位复制 ⇒ 同样钉死。
+    # golden 第 b 份的后缀是 ''/_1/_2/_3，wdata 叫 r[_b]_startAddr；逐条核对它们确实喂给 dataBanks_b。
+    DW = 50
+    for b in range(NB):
+        sfx = '' if b == 0 else '_%d' % b
+        wen_g, wa_g, wd_g = 'wen_dup_last_REG' + sfx, 'waddr_dup_0' + sfx, 'r%s_startAddr' % sfx
+        for gn, w in ((wen_g, 1), (wa_g, AW), (wd_g, DW)):
+            if gregs.get(gn) != w:
+                GC.die('golden pcMem 缺寄存器 %s（宽 %d）' % (gn, w))
+        if not re.search(r'^\s*%s <= io_wen_0;' % wen_g, graw, re.M) \
+                or not re.search(r'^\s*%s <= io_waddr_0;' % wa_g, graw, re.M) \
+                or not re.search(r'^\s*%s <= io_wdata_0_startAddr;' % wd_g, graw, re.M):
+            GC.die('golden pcMem 第 %d 份写口寄存器的驱动与预期不符' % b)
+        m = re.search(r'dataBanks_%d \((.*?)\);' % b, graw, re.S)
+        if not m or ('(%s)' % wd_g) not in m.group(1).replace(' ', '') \
+                or ('%s[3:0]' % wa_g) not in m.group(1).replace(' ', ''):
+            GC.die('golden pcMem dataBanks_%d 的写数据/写地址不是 %s / %s' % (b, wd_g, wa_g))
+        pairs.append(('%s_reg' % wen_g, 'u_core/g_bank\\[%d\\].wen_dup_reg\\[0\\]' % b))
+        for k in range(AW):
+            pairs.append(('%s_reg\\[%d\\]' % (wa_g, k), 'u_core/g_bank\\[%d\\].waddr_dup_reg\\[0\\]\\[%d\\]' % (b, k)))
+        for k in range(DW):
+            pairs.append(('%s_reg\\[%d\\]' % (wd_g, k), 'u_core/g_bank\\[%d\\].wdata_dup_reg\\[0\\]\\[%d\\]' % (b, k)))
+    # 存储体：4 bank × 16 项 × 50 位，与 pcMem 自己签核用的钉点同一映射
+    # （verif/ut/SyncDataModule/fm_pins_pre.tcl：dataBanks_b/data_e_startAddr ↔ g_bank[b].dataBank/data[e]）。
+    draw = (GC.GOLDEN.parent / 'DataModule_BackendPC_16entry.sv').read_text()
+    for e in range(16):
+        if not re.search(r'^\s*reg \[49:0\] data_%d_startAddr;' % e, draw, re.M):
+            GC.die('golden DataModule_BackendPC_16entry 缺 data_%d_startAddr[49:0]' % e)
+    for b in range(NB):
+        for e in range(16):
+            for k in range(DW):
+                pairs.append(('dataBanks_%d/data_%d_startAddr_reg\\[%d\\]' % (b, e, k),
+                              'u_core/g_bank\\[%d\\].dataBank/data_reg\\[%d\\]\\[%d\\]' % (b, e, k)))
     n = len(pairs)
     L = ['',
-         '# ---- pcMem (SyncDataModuleTemplate_BackendPC_64entry, white-box on both sides): read-address register family',
+         '# ---- pcMem (SyncDataModuleTemplate_BackendPC_64entry, white-box on both sides): read/write address, write data and bank storage registers',
          '#      golden raddr_dup_P[_b] / raddr_dup{,_15.._28}  <->  u_core/g_bank[b].raddr_dup[P] / u_core/g_rport[P].raddr_q',
          'set _pinned 0',
          'set _want 0',
