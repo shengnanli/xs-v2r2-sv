@@ -124,3 +124,35 @@ M7 load U 型立即数改零扩展 3280；M8 浮点组恒取第 0 路 28672。
   20 个 failing 全在 `u_core/byp_data_reg[2][*]` —— 签名分析把旁路寄存器配错了对。按 2.5 第 1 条预案：生成器新增
   fail-closed 钉点 `verif/ut/BypassNetwork/fm_pins_pre.tcl`（647 条 = 10×64 旁路寄存器 + 7 个 RegCache wen，双射、
   逐条数返回值、字面总数），只消名差。RTL 未改。若钉后仍有 failing，按失配处理（改 RTL 对齐 golden），不找解释。
+
+## 对账（跑后追加；上面各节数字未改）
+
+### ImmExtractor_2 / ImmExtractor_37（commit 2f3f8902，evidence/2f3f8902e695/）
+
+| 目标 | 预测 passing | 实测 | 差 | failing | unverified | unmatched | unread | 黑盒 | dont_verify | 判决 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ImmExtractor_2  | 64  | 64  | 0 | 0 | 0 | 0(0) | 0 | 无 | 无 | SUCCEEDED |
+| ImmExtractor_37 | 128 | 128 | 0 | 0 | 0 | 0(0) | 0 | 无 | 无 | SUCCEEDED |
+
+### BypassNetwork（第三跑 commit ccf7f50a，evidence/ccf7f50a4e5a/BypassNetwork）
+
+| 项 | 预测（2.3） | 实测 |
+|---|---|---|
+| passing | 27719 | **27719** |
+| failing / unverified / aborted | 0 / 0 / 0 | 0 / 0 / 0 |
+| unmatched ref/impl | 0 / 0 | 0 / 0 |
+| unread | ref 64 / impl 0 / matched_nc 0 | ref 64 / impl 0 / matched_nc 0（与 verif/dead_ref/BypassNetwork.json 逐条相等） |
+| 黑盒 / dont_verify / ELAB-147 | 无 | 无 |
+| 钉点 | （未预置） | 647/647，bad=0 |
+| 判决 | PASS_DEAD_REF | **PASS_DEAD_REF**（native SUCCEEDED） |
+
+fm_predict check：模型 27783 − 实测 27719 = 64 = constant_reg 0 + unread 64，差额全部指认。
+与预测的偏离只有一处：2.5 第 1 条押"不钉也能配上"押错了（第二跑配错对，见 §3），补了钉点；passing 数字不受影响。
+
+更正（事实性，不是预测）：2 节标题的端口数写错了。实测 golden 端口 2,108 个：1,135 入（含 clock/reset）/ 973 出。
+
+### BypassNetwork UT 重跑（修 ELAB-147 之后，RTL = 876a9668 起未再变）
+
+9 档全部 checks=194596108 errors=0（seed 1/7/42 × initreg 0 / random / <seed>017）；覆盖计数与修正前逐字相同
+（seed 1：fwd_int=440998 byp_int=439307 fwd_fp=213878 byp_fp=212514 v0=50857 rc=502400 imm=109461 loadu=65967
+jalr=149952 nojalr=450036 rcw_wen=348969）。修正后补测变异 M1'（序号比较差一）errors=100734。
