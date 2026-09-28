@@ -122,3 +122,30 @@ Constant reg 96 + Unread 48。7326 − 7182 = 144 = 96 + 48，全部可指认：
 1. 钉点名形状（`_reg\[s\]\[b\]`）若与正式 run 的工作树不同会早退（error），不会静默。
 2. M2/M3 的 FM 覆盖：allocated_* / datavalid_* 都在 passing 的 DFF 比较点里（D 端函数被逐点比较），
    预期 M2/M3 注入后 FM failing 恰好落在 allocated_* / datavalid_*；实测结果见 §对账（scratchpad 变异 worktree，diagnostic-full，不出 receipt）。
+
+## 对账（跑完追加，不改上文任何数字）
+
+### A. LqMaskModule / LqPAddrModule_1（proof commit 341d7e6f，evidence/341d7e6f14cf/）
+signoff-strict native SUCCEEDED：LqMaskModule passing **1080** / LqPAddrModule_1 passing **1528**，
+failing / unverified / aborted / unread / unmatched 全 0，无黑盒实例，无 dont_verify。
+预测 1080 / 1528，差 **+0 / +0**（`fm_predict check` rc=0）。
+
+### B. LoadQueueRAW（proof commit 9d8eede3，evidence/9d8eede3b9f3/LoadQueueRAW/）
+signoff-strict、vmucp 开：native SUCCEEDED passing **7230** / failing 0 / unverified 0 / aborted 0 /
+unread_notcompared 0 / unmatched 0(0)，constant_reg 96，dont_verify/elab147/relaxed_appvars 皆空，黑盒实例 0，
+钉点 `LQRAW_PIN_END ok=4196 bad=0`，fm_target_config/LoadQueueRAW.tcl 在 script_closure 里。
+与 §2.3 预测逐项一致；模型 7326 − 实测 7230 = 96 = receipt constant_reg 96（`fm_predict check` rc=0，差额被指认）。
+
+### C. LoadQueueRAW UT（在 5459f781 字节上跑；5459f781..9d8eede3 之间 rtl/ 与 tb 无改动）
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` |
+|---|---|---|
+| 1  | checks=200000 errors=0 PASSED（rollback 5674/5587） | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED（rollback 5603/5505） | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED（rollback 5593/5565） | checks=200000 errors=0 PASSED |
+
+### D. UT 看不见的两处变异，FM 是否覆盖（scratchpad 独立 worktree，diagnostic-full、FAILING_LIMIT=0，不出 receipt）
+| 变异 | UT（50k 拍） | FM |
+|---|---|---|
+| M2 revoke 不查 `allocated[lastAllocIndex]` | errors=0 | **FAILED failing 64**（不截断）= 32 × `u_core/allocated_reg[i]` + 32 × `freeList/u_core/freeMask_reg[i]`；passing 7182→7118 |
+| M3 datavalid 多口写优先级反向 | errors=0 | **FAILED failing 32**（不截断）= 32 × `u_core/datavalid_reg[i]`；passing 7182→7150 |
+即 allocated_* / datavalid_* 的 D 端函数确实在 passing 比较点里，这两类改动由 FM 兜底。
