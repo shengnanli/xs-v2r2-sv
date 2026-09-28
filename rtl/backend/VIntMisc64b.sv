@@ -58,22 +58,21 @@ package vintmisc64b_pkg;
     logic        rnd_tail;  // 被移出的其余位 v[d-2:0] 全为 0（d<=1 时恒真）
   } shr_t;
 
-  // 元素右移：data 的低 len 位是一个元素，amt 是移位量（调用方已截到 log2(len) 位）。
-  // arith=1 时高位补元素符号位。对应 Chisel dynamicShift 按移位量各位逐级右移再折叠
-  // 舍入位的做法 —— 逐级折叠的最终结果就是这里的闭式：
-  //   rnd_high = data[d-1]，rnd_tail = (data[d-2:0] == 0)。
+  // 元素右移：data 的低 len 位是一个元素（其余位为 0），amt 是移位量（调用方已截到
+  // log2(len) 位，故 amt < len）。arith=1 时高位补元素符号位。
+  // Chisel dynamicShift 按移位量各位逐级右移、逐级折叠舍入位；逐级折叠的最终结果就是这里的闭式：
+  //   rnd_high = data[amt-1]，rnd_tail = (data[amt-2:0] == 0)。
+  // 全部用移位运算符写（不用变量下标），Formality 不必证明下标不越界。
   function automatic shr_t shr_elem(input logic [63:0] data, input logic [5:0] amt,
-                                    input int len, input logic arith);
-    logic sign;
-    shr_elem = '0;
-    sign = arith & data[len-1];
-    for (int b = 0; b < 64; b++)
-      if (b < len)
-        shr_elem.data[b] = (b + int'(amt) < len) ? data[b + int'(amt)] : sign;
-    shr_elem.rnd_high = (amt != 6'd0) ? data[int'(amt) - 1] : 1'b0;
-    shr_elem.rnd_tail = 1'b1;
-    for (int b = 0; b < 64; b++)
-      if (b + 1 < int'(amt) && data[b]) shr_elem.rnd_tail = 1'b0;
+                                    input logic [6:0] len, input logic arith);
+    logic [63:0] len_mask, low_mask;
+    logic        sign;
+    len_mask = (len == 7'd64) ? '1 : ((64'h1 << len) - 64'h1);
+    sign     = arith & (|(data & (64'h1 << (len - 7'd1))));
+    shr_elem.data     = ((data >> amt) | ({64{sign}} & ~(len_mask >> amt))) & len_mask;
+    shr_elem.rnd_high = (amt != 6'd0) && (((data >> (amt - 6'd1)) & 64'h1) != 64'h0);
+    low_mask          = (amt == 6'd0) ? 64'h0 : ((64'h1 << (amt - 6'd1)) - 64'h1);
+    shr_elem.rnd_tail = (data & low_mask) == 64'h0;
   endfunction
 
   // 整体 64 位按位反转
@@ -236,12 +235,12 @@ module xs_VIntMisc64b_core
   shr_t sh64;
   always_comb begin
     for (int k = 0; k < 8; k++)
-      sh8[k]  = shr_elem({56'h0, vs2_adjust[8*k +: 8]},   {3'h0, vs1_adjust[8*k +: 3]},  8,  op_is_signed_shift);
+      sh8[k]  = shr_elem({56'h0, vs2_adjust[8*k +: 8]},   {3'h0, vs1_adjust[8*k +: 3]},  7'd8,  op_is_signed_shift);
     for (int k = 0; k < 4; k++)
-      sh16[k] = shr_elem({48'h0, vs2_adjust[16*k +: 16]}, {2'h0, vs1_adjust[16*k +: 4]}, 16, op_is_signed_shift);
+      sh16[k] = shr_elem({48'h0, vs2_adjust[16*k +: 16]}, {2'h0, vs1_adjust[16*k +: 4]}, 7'd16, op_is_signed_shift);
     for (int k = 0; k < 2; k++)
-      sh32[k] = shr_elem({32'h0, vs2_adjust[32*k +: 32]}, {1'h0, vs1_adjust[32*k +: 5]}, 32, op_is_signed_shift);
-    sh64 = shr_elem(vs2_adjust, vs1_adjust[5:0], 64, op_is_signed_shift);
+      sh32[k] = shr_elem({32'h0, vs2_adjust[32*k +: 32]}, {1'h0, vs1_adjust[32*k +: 5]}, 7'd32, op_is_signed_shift);
+    sh64 = shr_elem(vs2_adjust, vs1_adjust[5:0], 7'd64, op_is_signed_shift);
   end
 
   logic [63:0] shift_out;
@@ -400,25 +399,34 @@ module xs_VIntMisc64b_core
   // §8 旋转 vrol/vror（按元素，移位量取 vs1 元素低 log2(SEW) 位），
   //    宽化左移 vwsll（取 vs1/vs2 的第 uop_idx[0] 个 32 位半，元素零扩展到 2*SEW 后左移）。
   // ===========================================================================
-  function automatic logic [63:0] rotl_each(input logic [63:0] x, input logic [63:0] amt_src,
-                                            input int w, input logic right);
-    int a, e;
-    for (int b = 0; b < 64; b++) begin
-      e = b / w;
-      a = int'(amt_src[e*w +: 6]) % w;           // 元素低 log2(w) 位（w | 64，取模即截位）
-      if (right) rotl_each[b] = x[e*w + (b % w + a) % w];
-      else       rotl_each[b] = x[e*w + (b % w - a + w) % w];
-    end
+  // 一个元素的循环移位：v 的低 w 位是元素，a < w。right=1 右旋，否则左旋。
+  function automatic logic [63:0] rot_elem(input logic [63:0] v, input logic [5:0] a,
+                                           input logic [6:0] w, input logic right);
+    logic [63:0] w_mask;
+    w_mask = (w == 7'd64) ? '1 : ((64'h1 << w) - 64'h1);
+    if (right) rot_elem = ((v >> a) | (v << (w - 7'(a)))) & w_mask;
+    else       rot_elem = ((v << a) | (v >> (w - 7'(a)))) & w_mask;
   endfunction
 
   logic [63:0] vro_result;
   always_comb begin
-    logic right;
+    logic        right;
+    logic [63:0] r8 [8];
+    logic [63:0] r16 [4];
+    logic [63:0] r32 [2];
+    logic [63:0] r64, v8, v16, v32;
     right = op == OP_VROR;
-    vro_result = ({64{vd_is8 }} & ({64{op_is_vro}} & rotl_each(vs2, vs1, 8,  right)))
-               | ({64{vd_is16}} & ({64{op_is_vro}} & rotl_each(vs2, vs1, 16, right)))
-               | ({64{vd_is32}} & ({64{op_is_vro}} & rotl_each(vs2, vs1, 32, right)))
-               | ({64{vd_is64}} & ({64{op_is_vro}} & rotl_each(vs2, vs1, 64, right)));
+    for (int k = 0; k < 8; k++) r8[k]  = rot_elem({56'h0, vs2[8*k +: 8]},   {3'h0, vs1[8*k +: 3]},  7'd8,  right);
+    for (int k = 0; k < 4; k++) r16[k] = rot_elem({48'h0, vs2[16*k +: 16]}, {2'h0, vs1[16*k +: 4]}, 7'd16, right);
+    for (int k = 0; k < 2; k++) r32[k] = rot_elem({32'h0, vs2[32*k +: 32]}, {1'h0, vs1[32*k +: 5]}, 7'd32, right);
+    r64 = rot_elem(vs2, vs1[5:0], 7'd64, right);
+    for (int k = 0; k < 8; k++) v8[8*k +: 8]    = r8[k][7:0];
+    for (int k = 0; k < 4; k++) v16[16*k +: 16] = r16[k][15:0];
+    for (int k = 0; k < 2; k++) v32[32*k +: 32] = r32[k][31:0];
+    vro_result = {64{op_is_vro}} & (({64{vd_is8}}  & v8)
+                                  | ({64{vd_is16}} & v16)
+                                  | ({64{vd_is32}} & v32)
+                                  | ({64{vd_is64}} & r64));
   end
 
   logic [63:0] wsll_result;
