@@ -1,0 +1,148 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/MiregModule
+Implementation : i:/WORK/MiregModule
+Version        : V-2023.12-SP3
+Date           : Sun Sep 27 23:18:34 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    HgeipModule
+
+       Instances : 0
+
+e *    IntSyncSyncCrossingSink
+
+       Instances : 0
+
+e *    MconfigptrModule
+
+       Instances : 0
+
+e *    MhartidModule
+
+       Instances : 0
+
+e *    MtopiModule
+
+       Instances : 0
+
+e *    Pmacfg0Module
+
+       Instances : 0
+
+e *    Pmacfg2Module
+
+       Instances : 0
+
+e *    Pmacfg4Module
+
+       Instances : 0
+
+e *    Pmacfg6Module
+
+       Instances : 0
+
+e *    SiregModule
+
+       Instances : 0
+
+e *    StopiModule
+
+       Instances : 0
+
+e *    Tdata2Module
+
+       Instances : 0
+
+e *    VSiregModule
+
+       Instances : 0
+
+e *    VStopiModule
+
+       Instances : 0
+
+e *    xs_HgeipModule_core
+
+       Instances : 0
+
+e *    xs_IntSyncSyncCrossingSink_core
+
+       Instances : 0
+
+e *    xs_MconfigptrModule_core
+
+       Instances : 0
+
+e *    xs_MhartidModule_core
+
+       Instances : 0
+
+e *    xs_MtopiModule_core
+
+       Instances : 0
+
+e *    xs_Pmacfg0Module_core
+
+       Instances : 0
+
+e *    xs_Pmacfg2Module_core
+
+       Instances : 0
+
+e *    xs_Pmacfg4Module_core
+
+       Instances : 0
+
+e *    xs_Pmacfg6Module_core
+
+       Instances : 0
+
+e *    xs_SiregModule_core
+
+       Instances : 0
+
+e *    xs_StopiModule_core
+
+       Instances : 0
+
+e *    xs_Tdata2Module_core
+
+       Instances : 0
+
+e *    xs_VSiregModule_core
+
+       Instances : 0
+
+e *    xs_VStopiModule_core
+
+       Instances : 0
+
+
+1
+
