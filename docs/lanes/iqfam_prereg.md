@@ -153,3 +153,16 @@ FM 在本父级里把 PipeWithFlush_1 的那几位也计成了比较点（两侧
 | IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf | 23603 | 2fed422e：passing 21113 / unread 2347（全 matched_nc，全在钉点表）/ constant_reg 143 | **23460**（差 143，应 = constant_reg 143） |
 | IssueQueueVlduVstu | 20514 | 8a2333a6：passing 18090 / unread 2304（全 matched_nc，全在钉点表）/ constant_reg 120 | **20394**（差 120，应 = constant_reg 120） |
 | IssueQueueVlduVstuVseglduVsegstu | 20546 | b8385b7f：passing 18122 / unread 2304（全 matched_nc，全在钉点表）/ constant_reg 120 | **20426**（差 120，应 = constant_reg 120） |
+
+## 6. Scheduler 家族（4 个，共享核 xs_Scheduler_core）
+
+- 核 `rtl/backend/xs_Scheduler_core.sv`（手写）：性能事件（lastCycleIqEnqFireVec / lastCycleIqFullVec(=enq(0).ready，
+  Chisel 原样) 及两拍延迟）+ 访存调度器 sta/std 成对派遣（ready 相与、amocas 的 sta 半拍丢弃）。
+- wrapper 由 `scripts/gen_sched.py` 生成（复用 gen_iq 的 fail-closed 连线翻译）；child = 本 lane 已签核的 IssueQueue*，两侧白盒。
+- 钉点：汇总各 IQ 已签核钉点表加实例前缀 + 各 IQ 的 deqDelay 负载寄存器与性能计时器（调度器里大多没有出口）。
+- 诊断跑（diagnostic-full，不产 receipt）：Scheduler_1 第一次（243a33a3 之前的钉点）native SUCCEEDED / failing 0 /
+  unread 34853 matched + 4962(4962) unmatched（IQ 的 deqDelay 负载与性能计时器）→ 补钉点后重跑。
+- 以下每行在该目标 proof 之前提交（★跑完不许改★）：
+
+| 目标 | 登记 passing（模型） | 诊断跑 | 预期实测 |
+|---|---|---|---|
