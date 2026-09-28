@@ -10,9 +10,12 @@ include closure.mk
 # impl 侧：本目标 + 已有重写件的 child（UT 用 derive 改名成 *_xs，FM 原名进 impl 容器）
 #   Rob                                   两侧白盒（ref 用 golden Rob.sv，impl 用重写件）——CtrlBlock 是它 448 位
 #                                         debug_otherPdest 悬空输出的第一个可观测边界（codex 0169 D3）
-#   pcMem / DelayN×2 / PipelineConnectPipe / PipeGroupConnect
-#                                         已签核绿 child：impl 侧用重写件，FM 两侧对称接口黑盒（FM_INTERFACE_ONLY），allow 记 green_child
-#   snpt（SnapshotGenerator_14）          同为绿 child 黑盒，但 impl 侧用 golden 体（重写件的共享核文件与 golden 同名 wrapper 撞名，见 gen_ctrlblock_ut.py）
+#   pcMem / DelayN×3 / PipelineConnectPipe×6 / PipeGroupConnect
+#                                         已签核绿 child：impl 侧用重写件，FM 两侧白盒展开（ref golden / impl 重写件）。
+#                                         PCP 的 payload 按它自己签核用的字段映射钉点（gen_ctrlblock_pins.py render_pcp）；
+#                                         其余按名/签名匹配（各自独立签核时就不需要钉点）。
+#   snpt（SnapshotGenerator_14）          impl 侧用 golden 体（重写件的共享核文件与 golden 同名 wrapper 撞名，见 gen_ctrlblock_ut.py），
+#                                         两侧同源 golden 白盒（UNCHANGED_GOLDEN_DEP）
 RTL_SRCS = $(RTL_DIR)/backend/CtrlBlock.sv \
            $(RTL_DIR)/backend/Rob.sv \
            $(RTL_DIR)/common/xs_DataModule.sv \
@@ -34,13 +37,14 @@ TB_SRCS = tb.sv
 FM_VARIANTS = CtrlBlock
 FM_REF_DEPS_CtrlBlock = $(GOLDEN_CLOSURE_REPLACED) $(GOLDEN_CLOSURE_SHARED)
 
-# assembly 边界（两侧对称接口黑盒，声明在 verif/allow/CtrlBlock.json）：
-#   green_child                  已签核绿的 child（证书等 freeze 铸，故意不填 certificate_sha256）
-#   APPROVED_MEMORY_MACRO_MODEL  三个 firtool 行为级存储叶子（深度 160/320 非 2 的幂，inline 必触发
-#                                FMR_ELAB-147 让 set_top 失败：本 lane 实测 stateBankTags_320x3 FM-262/FM-156）
-FM_INTERFACE_ONLY = SyncDataModuleTemplate_BackendPC_64entry SnapshotGenerator_14 DelayN_15 DelayN_17 \
-                    PipelineConnectPipe PipeGroupConnect \
-                    dt_pcTransType_160x2 diff_rat_state_bank_320x776 stateBankTags_320x3
+# assembly 边界（两侧对称接口黑盒，声明在 verif/allow/CtrlBlock.json）：只剩三个 firtool 行为级存储叶子
+#   APPROVED_MEMORY_MACRO_MODEL  深度 160/320 非 2 的幂，inline 必触发 FMR_ELAB-147 让 set_top 失败
+#                                （本 lane 实测 stateBankTags_320x3 FM-262/FM-156）。diff_rat_state_bank_320x776 /
+#                                stateBankTags_320x3 已入 verif/vendor_boundary.tsv（codex 0158 §1）；
+#                                ★dt_pcTransType_160x2 仍是候选，未入表★（须 codex 单条审定）。
+# 第 2 轮起不再有 green_child：原先 6 个 child 目标 12 个实例的接口黑盒全部改为两侧白盒——
+# D57 证书要 freeze_commit，POLICY.json 里它仍是 null，green_child 在本 commit 上无论如何过不了闸、也出不了 receipt。
+FM_INTERFACE_ONLY = dt_pcTransType_160x2 diff_rat_state_bank_320x776 stateBankTags_320x3
 # ★加强（不是放宽）：逐个比而不是合并重复寄存器后比——Rob 白盒展开后 160 项 debug 阵列的同构次态
 # 会让 merge 阶段跑不完（verif/ut/Rob/Makefile 实测 5674 s 仍未到 match）。
 FM_MERGE_DUP = false

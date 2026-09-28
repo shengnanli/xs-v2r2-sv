@@ -61,3 +61,63 @@
 双例化 CtrlBlock（golden）vs CtrlBlock_xs（重写，含 Rob/pcMem/DelayN/PCP/PGC 重写件），6729 个输出逐拍比对，golden 侧 X 跳过。
 3000 拍冒烟（seed 1，initreg+0）：checks=20,180,271 errors=0，distinct_diverging_ports=0/6729。
 3 seed × 2 档（+0/+1）× 200k 拍：在对账节补记。
+
+## 4. 对账：第 1 轮官方证明（commit ebf657d2，evidence/ebf657d20722/CtrlBlock，未入库）
+
+`bash scripts/run_proof.sh CtrlBlock CtrlBlock < /dev/null`，端到端 9.69 h（match 至 14:37，verify 14:37→17:05 匀速，未触发 3 h 减速停）。
+
+| 项 | 预测 | 实测 | 判 |
+|---|---|---|---|
+| native | SUCCEEDED | SUCCEEDED | ✔ |
+| passing | ≤ 323,564 | 315,865 | 见下 |
+| failing / unverified / aborted | 0/0/0 | 0/0/0 | ✔ |
+| unmatched ref/impl | 0/0 | 0/0 | ✔ |
+| unread | 0 | **130**（ref 16 + impl 114） | ✘ 预测漏了 |
+| 黑盒对象 | 40 | 40（20 对，与 allow 精确相等） | ✔ |
+| dont_verify / elab147 / 放宽 appvar | 无 | 无 | ✔ |
+| validator | PARTIAL(assembly_green_child_*) | PARTIAL `assembly_green_child_certificate_not_in_commit:SyncDataModuleTemplate_BackendPC_64entry`；make_receipt 同因拒绝出 receipt（MAKE_RC=2） | ✔（条件绿终态） |
+
+passing 差额 323,564 − 315,865 = **7,699 = 448 + 7,235 + 16**：
+1. −448：golden Rob `debug_otherPdest` 悬空，与预测一致；
+2. −7,235：receipt 口径的 constant_reg（fm.log "Not Compared / Constant reg 7235"），与预测的类别一致（本轮未出 receipt，数字取自 fm.log 汇总表）；
+3. **−16：预测里没有**。golden Rob.sv 的 `walkCycle` / `waitRabWalkCycle`（2×8 位 perf 探针计数器）只写自身，唯一外部读者是 SimTop 的 perf XMR bore，在 CtrlBlock 边界是 golden-only cone-dead；重写件没有这两个寄存器 ⇒ ref 侧 unmatched-unread，不是比较点。模型把它们算进了 golden 寄存器位。处置：`verif/dead_ref/CtrlBlock.json`（declare_dead_ref.py 由本轮观测生成，commit 1ba708b8）。
+
+unread impl 114 = decodeBuf 6×{异常位 3,22} + enqRob 6×(ENQ_EXC_KEEP 之外 17 位)：第 6 步"无条件写 0"没让它们消失，FM 仍点名为寄存器。处置：commit 78e1a775 把这两组寄存器拆成「体 + 保留异常位逐位 generate」，golden 没有的位在 impl 里也不再有寄存器。
+
+## 5. 第 2 轮登记（合入 main 231b615d 之后，起跑前提交；★跑完不许改本节★）
+
+边界变化（其余同第 1 节）：
+
+| child | 实例 | 第 1 轮 | 第 2 轮 |
+|---|---|---|---|
+| SyncDataModuleTemplate_BackendPC_64entry | pcMem | green_child 接口黑盒 | 两侧白盒（ref golden + DataModule_BackendPC_16entry；impl rtl/common 重写件） |
+| DelayN_15 ×2 / DelayN_17 | s5_* / io_toTop_cpuHalt_delay | green_child 接口黑盒 | 两侧白盒（impl 重写件） |
+| PipelineConnectPipe ×6 | decodePipeRenameModule* | green_child 接口黑盒 | 两侧白盒（impl 重写件；payload 617 位/实例按 PCP 签核用的字段映射匹配前钉点，共 3,702） |
+| PipeGroupConnect | renamePipeDispatch | green_child 接口黑盒 | 两侧白盒（impl 重写件） |
+| SnapshotGenerator_14 | snpt | green_child 接口黑盒 | 两侧同源 golden 白盒（重写件撞名，UT 一直用 golden 体） |
+| 3 个存储叶子（8 实例） | rob/dt_pcTransType_ext、rat/diffRatBuffer/* | 接口黑盒 | 不变；diff_rat_state_bank_320x776 / stateBankTags_320x3 已在 main 入表，**dt_pcTransType_160x2 仍未入表** |
+
+理由：D57 证书要求 `certificate.impl_commit == POLICY.freeze_commit`，而 `verif/proof_certificates/POLICY.json` 的 freeze_commit 仍是 null ⇒ green_child 在任何 commit 上都过不了 validator，make_receipt 也拒绝出 receipt（第 1 轮实测）。白盒展开是收窄黑盒，不是放宽。
+
+预测（`python3 scripts/fm_predict.py model CtrlBlock`，docs/fm_predictions/CtrlBlock.json）：
+
+| 项 | 值 |
+|---|---|
+| 白盒闭包寄存器位 | 266,268 |
+| 顶层输出端口位 | 57,119 |
+| 黑盒输入引脚位（8 个实例） | 5,035 |
+| **模型 passing（上界）** | **328,422** |
+| failing / unverified / aborted | 0 / 0 / 0 |
+| unmatched（ref / impl） | 0 / 0 |
+| unread | ref 16（恰为 verif/dead_ref/CtrlBlock.json 的 16 条）/ impl 0 |
+| 黑盒对象 | 16（8 实例 × 两侧），与 allow 精确相等 |
+| 钉点 | CB_PIN 25,852 miss 0；PCP_PIN 3,702 miss 0；Rob OE_PIN 168,720 miss 0 |
+| native | SUCCEEDED |
+| validator | PASS_DEAD_REF（assembly）；receipt 出得来 |
+
+可指认差额：passing = 328,422 − 448 − 16 − constant_reg，**差额必须逐位等于 448 + 16 + receipt.constant_reg**；constant_reg ≥ 第 1 轮的 7,235（新展开的 child 内若有常量寄存器只会增加，增量须在 receipt 里逐位指认到这些 child）。其他任何差额都算失配。
+
+反向出口（在第 2 节之外新增）：
+- unmatched 落在 `decodePipeRenameModule*/`、`pcMem/`、`renamePipeDispatch/`、`s5_*`/`io_toTop_cpuHalt_delay`：重写件内部名在 CtrlBlock 上下文按名/签名对不上 → 照各自签核时的点名补钉点，不放宽。
+- `PCP_PIN_END … miss≠0`：字段映射的 golden 点名与层次不符，证明中止，先修名字。
+- 已知条件项（不是失配，照实报）：dt_pcTransType_160x2 的 APPROVED_MEMORY_MACRO_MODEL 类别未经 codex 入表；9 个 child 仍同源 golden。

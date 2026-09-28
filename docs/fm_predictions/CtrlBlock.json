@@ -1,43 +1,13 @@
 {
   "target": "CtrlBlock",
   "ut": "CtrlBlock",
-  "regs": 254008,
+  "regs": 266268,
   "outs": 57119,
-  "expected": 323564,
+  "expected": 328422,
   "merge_dup": "false",
   "model_applicable": true,
-  "bbin": 12437,
+  "bbin": 5035,
   "bbox": {
-    "DelayN_15": {
-      "insts": 2,
-      "in_bits": 2,
-      "points": 4
-    },
-    "DelayN_17": {
-      "insts": 1,
-      "in_bits": 2,
-      "points": 2
-    },
-    "PipeGroupConnect": {
-      "insts": 1,
-      "in_bits": 4421,
-      "points": 4421
-    },
-    "PipelineConnectPipe": {
-      "insts": 6,
-      "in_bits": 457,
-      "points": 2742
-    },
-    "SnapshotGenerator_14": {
-      "insts": 1,
-      "in_bits": 69,
-      "points": 69
-    },
-    "SyncDataModuleTemplate_BackendPC_64entry": {
-      "insts": 1,
-      "in_bits": 164,
-      "points": 164
-    },
     "diff_rat_state_bank_320x776": {
       "insts": 6,
       "in_bits": 798,
@@ -54,5 +24,5 @@
       "points": 95
     }
   },
-  "note": "assembly 边界：Rob 两侧白盒（golden Rob.sv vs rtl/backend/Rob.sv）、9 个重写中 child + Rob 的 8 个 child 两侧同源 golden 白盒、12 个 green_child 实例 + 8 个存储叶子实例接口黑盒（bbin 计入）。merge_dup=false + vmucp=true。已知扣减：golden Rob 的 448 位 debug_otherPdest 悬空（两侧都不是比较点，receipt 里不会以 constant_reg 出现）；constant_reg 按 receipt 逐位指认（enqRob debugInfo 时间戳/lqIdx/sqIdx 装常量 0 的 1998 位、lane1..5 snapshot 与全部 replayInst 的 hold-clear 位、pdest 第 7 位等）。"
+  "note": "第 2 轮登记（合入 main 231b615d 后）：assembly 边界 = Rob 两侧白盒（golden Rob.sv vs rtl/backend/Rob.sv）；原 12 个 green_child 实例（pcMem/snpt/DelayN×3/PCP×6/PGC）改为两侧白盒（ref golden / impl 重写件，snpt 两侧 golden）；9 个 child + Rob 的 8 个 child 两侧同源 golden 白盒；只剩 8 个存储叶子实例接口黑盒（bbin 5035 计入）。merge_dup=false + vmucp=true。可指认扣减：−448 golden Rob debug_otherPdest 悬空（两侧都不是比较点，receipt 不记）；−16 verif/dead_ref/CtrlBlock.json 的 ref 侧 unread（Rob walkCycle/waitRabWalkCycle）；−constant_reg（receipt 直读；第 1 轮 7235，本轮白盒展开的 PCP/PGC/pcMem/DelayN 内若有常量寄存器会使它增加，逐位按 receipt 指认）。"
 }

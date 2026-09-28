@@ -10,6 +10,8 @@
                                        s2_s4_bits_reg[<struct 位偏移>]），名字与层次都不同，签名匹配在
                                        hold-clear 常数寄存器上会被 merge/常数池搅乱（上一轮 gate3 实测
                                        compare_ref=13 的根因），所以整族在首次 match 前钉死。
+                                       另加 6 个 PipelineConnectPipe 实例（两侧白盒）的 payload 钉点：按 PCP 自己签核用的
+                                       字段映射（verif/ut/PipelineConnectPipe/fm_map）逐位钉 <inst>/u_core/data_reg[k]（render_pcp）。
   verif/ut/CtrlBlock/fm_pins.tcl       匹配后钉点：verif/ut/Rob/fm_pins.tcl 的 168720 条 Rob 寄存器钉点
                                        原样搬到 CtrlBlock 层次（r:/WORK/CtrlBlock/rob/... ↔
                                        i:/WORK/CtrlBlock/rob/u_core/...），Rob 在本目标里两侧白盒。
@@ -412,6 +414,58 @@ def scan_scalar_impl(text):
     return scal - vec
 
 
+PCP_MAP = REPO / 'verif' / 'ut' / 'PipelineConnectPipe' / 'fm_map' / 'PipelineConnectPipe.txt'
+PCP_INSTS = ['decodePipeRenameModule'] + ['decodePipeRenameModule_%d' % k for k in range(1, 6)]
+
+
+def render_pcp():
+    """6 个 PipelineConnectPipe 实例两侧白盒：payload 寄存器按 PCP 自己签核用的字段映射
+    （verif/ut/PipelineConnectPipe/fm_map/PipelineConnectPipe.txt，fm_eq.tcl 的 match_packed_payload
+    只对 FM 顶层生效）逐位钉到 <inst>/u_core/data_reg[lo+b]。golden 是 120 个 data_<字段>_reg，
+    重写件是一条 617 位的 data 向量，按名字/签名对不上，所以在首次 match 前钉死。
+    ★fail-closed★：字段必须在 golden PCP 里真有同名同宽的寄存器、impl 位必须恰好铺满 0..W-1。"""
+    graw = (GC.GOLDEN.parent / 'PipelineConnectPipe.sv').read_text()
+    gregs = {}
+    for m in re.finditer(r'^\s*reg\s+(?:\[(\d+):0\]\s+)?(\w+);', graw, re.M):
+        gregs[m.group(2)] = int(m.group(1)) + 1 if m.group(1) else 0   # 0 = 1 位标量（点名无 [0]）
+    rows = [l.split() for l in PCP_MAP.read_text().splitlines() if l.strip()]
+    seen = set()
+    pairs = []
+    for suf, lo, w in rows:
+        lo, w = int(lo), int(w)
+        gn = 'data_' + suf
+        if gn not in gregs:
+            GC.die('PCP 映射字段 %s 在 golden PipelineConnectPipe 里没有寄存器' % gn)
+        gw = gregs[gn]
+        if not ((gw == 0 and w == 1) or gw == w):
+            GC.die('PCP 映射字段 %s 宽度 %d 与 golden %d 不符' % (gn, w, gw))
+        for b in range(w):
+            if lo + b in seen:
+                GC.die('PCP impl 位 data[%d] 被重复映射' % (lo + b))
+            seen.add(lo + b)
+            gp = '%s_reg' % gn if gw == 0 else '%s_reg\\[%d\\]' % (gn, b)
+            pairs.append((gp, 'u_core/data_reg\\[%d\\]' % (lo + b)))
+    if seen != set(range(len(seen))):
+        GC.die('PCP impl data 位没有铺满 0..%d' % (len(seen) - 1))
+    if sorted(k for k in gregs if not k.startswith('data_')) != ['valid']:
+        GC.die('golden PipelineConnectPipe 出现 data_*/valid 之外的寄存器，映射需复核')
+    n = len(pairs) * len(PCP_INSTS)
+    L = ['',
+         '# ---- PipelineConnectPipe x%d (white-box on both sides): payload field map from' % len(PCP_INSTS),
+         '#      verif/ut/PipelineConnectPipe/fm_map/PipelineConnectPipe.txt (%d fields / %d bits per instance).' % (len(rows), len(pairs)),
+         '#      The valid register keeps its golden name on both sides and is left to the normal match.',
+         'set _pinned 0',
+         'set _want 0',
+         'puts "PCP_PIN_BEGIN CtrlBlock expect=%d"' % n]
+    for inst in PCP_INSTS:
+        for gp, ip in pairs:
+            L.append('_cbpin r:/WORK/CtrlBlock/%s/%s i:/WORK/CtrlBlock/%s/%s' % (inst, gp, inst, ip))
+    L.append('puts "PCP_PIN_END CtrlBlock n=$_pinned miss=[expr {$_want - $_pinned}] expect=%d"' % n)
+    L.append('if {$_pinned != $_want} { error "PCP_PINS_FAIL not every pin was accepted" }')
+    L.append('if {$_want != %d} { error "PCP_PINS_FAIL expected %d pins, built $_want" }' % (n, n))
+    return '\n'.join(L) + '\n'
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true')
@@ -432,7 +486,7 @@ def main():
         if ip in seen:
             GC.die('impl 位 %s 被 %s 与 %s 同时钉住' % (ip, seen[ip], gp))
         seen[ip] = gp
-    pre = render_pre(pairs, total)
+    pre = render_pre(pairs, total) + render_pcp()
     # Rob 钉点重定位
     rob = ROB_PINS.read_text()
     n_r = rob.count('r:/WORK/Rob/')
