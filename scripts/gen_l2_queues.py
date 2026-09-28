@@ -173,6 +173,98 @@ def emit(R):
     return '\n'.join(L) + '\n'
 
 
+# 单项队列（entries=1）：firtool 不生成指针、不例化 ram 叶子，只有 full + 一个整字寄存器 ram
+QUEUES1 = {
+    'Queue1_ChosenQBundle': ('RequestBuffer', 'RequestBuffer 的 chosenQ：仲裁出的那一项（含 buffer 下标 id）在此等 MainPipe 收，pipe'),
+}
+
+
+def parse1(mod):
+    """单项队列：解析 `ram <= {拼接}` 与每条 io_deq_bits_* 的切片，并逐项校验。"""
+    txt = open(os.path.join(G, mod + '.sv')).read()
+    P = ports(txt, mod)
+    body = txt[txt.index('\n);', txt.index('module %s(' % mod)):]
+    m = re.search(r'reg\s+\[(\d+):0\]\s+ram;', body)
+    word_w = int(m.group(1)) + 1
+    pipe = 'assign io_enq_ready_0 = io_deq_ready | ~full;' in body
+    assert pipe or 'assign io_enq_ready_0 = ~full;' in body, mod
+    cm = re.search(r'ram <=\s*\{(.*?)\};', body, re.S)
+    items = [x.strip() for x in re.sub(r'\s+', ' ', cm.group(1)).split(',')]
+    W = {n: w for _, w, n in P}
+    layout, hi = [], word_w
+    for it in items:
+        z = re.fullmatch(r"(\d+)'h0", it)
+        w = int(z.group(1)) if z else W[it]
+        layout.append((it, hi - 1, hi - w))
+        hi -= w
+    assert hi == 0, '%s: 拼接总宽 != %d' % (mod, word_w)
+    enq_rng = {it[len('io_enq_bits_'):]: (a, b) for it, a, b in layout if it.startswith('io_enq_bits_')}
+    zero = [(a, b) for it, a, b in layout if not it.startswith('io_enq_bits_')]
+    deq = []
+    for d, w, n in P:
+        if d != 'output' or not n.startswith('io_deq_bits_'):
+            continue
+        f = n[len('io_deq_bits_'):]
+        a = re.search(r'assign %s = ram\[(\d+)(?::(\d+))?\];' % re.escape(n), body)
+        assert a, '%s: %s 不是 ram 切片' % (mod, n)
+        rh, rl = int(a.group(1)), int(a.group(2) or a.group(1))
+        assert rh - rl + 1 == w, (mod, n)
+        if f in enq_rng:
+            assert enq_rng[f] == (rh, rl), '%s: %s 切片与入队拼接不一致' % (mod, n)
+        else:
+            assert any(zl <= rl and rh <= zh for zh, zl in zero), '%s: %s 既不是入队字段也不在补零段' % (mod, n)
+        deq.append((n, rh, rl, f in enq_rng))
+    unread = [f for f in enq_rng if 'io_deq_bits_' + f not in {n for n, *_ in deq}]
+    return dict(mod=mod, P=P, word_w=word_w, pipe=pipe, layout=layout, deq=deq, unread=unread,
+                lines=len(txt.splitlines()))
+
+
+def emit1(R):
+    m = R['mod']
+    parent, what = QUEUES1[m]
+    L = []
+    A = L.append
+    A('// %s.sv —— %s' % (m, what))
+    A('//')
+    A('// chisel3 Queue(entries=1, pipe=%s, flow=false) 的单态化（父模块 %s）。控制与存储在' % ('true' if R['pipe'] else 'false', parent))
+    A('// rtl/common/xs_ChiselQueue1_core.sv；本文件只把 Bundle 字段按 golden 的顺序拼成 %d 位字、再拆回来。' % R['word_w'])
+    A('// ★照 golden 保留的两类"没用的位"★：')
+    A('//   * 补零段：入队时恒为 0 的 TaskBundle 字段（SinkA 送来的 A 请求里这些字段是常量 0），golden 仍占着 ram 的位，')
+    A('//     出队时照样从 ram 读出（上电后第一次入队之前它们是 ram 的初值）；')
+    A('//   * 出队没人要的字段：%s —— 存进 ram 但无读者（FM 里两侧对称的未读位）。' % ', '.join(R['unread']))
+    A('// golden %d 行；由 scripts/gen_l2_queues.py 从 golden 机械生成并逐字段校验切片。' % R['lines'])
+    A('')
+    A('// BEGIN GENERATED(%s) —— scripts/gen_l2_queues.py' % m)
+    A('module %s (' % m)
+    A(',\n'.join('  %-6s logic %s%s' % (d, '' if w == 1 else '[%d:0] ' % (w - 1), n) for d, w, n in R['P']))
+    A(');')
+    A('')
+    A('  logic [%d:0] enqWord, deqWord;' % (R['word_w'] - 1))
+    A('')
+    A('  // 入队字（高位在前；补零段是恒 0 的 Bundle 字段）')
+    A('  assign enqWord = {')
+    A(',\n'.join('    %s' % ("%d'h0" % (a - b + 1) if not it.startswith('io_enq_bits_') else it) for it, a, b in R['layout']))
+    A('  };')
+    A('')
+    A("  xs_ChiselQueue1_core #(.W(%d), .PIPE(1'b%d)) u_core (" % (R['word_w'], 1 if R['pipe'] else 0))
+    A('    .clock     (clock),')
+    A('    .reset     (reset),')
+    A('    .enq_valid (io_enq_valid),')
+    A('    .enq_ready (io_enq_ready),')
+    A('    .enq_word  (enqWord),')
+    A('    .deq_valid (io_deq_valid),')
+    A('    .deq_ready (io_deq_ready),')
+    A('    .deq_word  (deqWord)')
+    A('  );')
+    A('')
+    for n, rh, rl, _ in R['deq']:
+        A('  assign %s = %s;' % (n, 'deqWord[%d]' % rh if rh == rl else 'deqWord[%d:%d]' % (rh, rl)))
+    A('')
+    A('endmodule')
+    A('// END GENERATED(%s)' % m)
+    return '\n'.join(L) + '\n'
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true')
@@ -190,6 +282,18 @@ def main():
         elif cur != txt:
             open(p, 'w').write(txt)
         print('%-24s depth=%-2d flow=%d word=%-3d fields=%d deq=%d' % (q, R['depth'], R['flow'], R['word_w'], len(R['fields']), len(R['deq'])))
+    for q in QUEUES1:
+        R = parse1(q)
+        txt = emit1(R)
+        p = os.path.join(OUT, q + '.sv')
+        cur = open(p).read() if os.path.exists(p) else None
+        if a.check:
+            if cur != txt:
+                print('DRIFT: %s' % p)
+                bad += 1
+        elif cur != txt:
+            open(p, 'w').write(txt)
+        print('%-24s depth=1  pipe=%d word=%-3d deq=%d unread=%s' % (q, R['pipe'], R['word_w'], len(R['deq']), ','.join(R['unread'])))
     return 1 if bad else 0
 
 
