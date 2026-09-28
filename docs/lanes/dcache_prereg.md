@@ -90,3 +90,33 @@ unmatched unread，钉后全部 matched_nc），vmucp 开 2493；Queue1_RegMappe
 ## 对账
 
 （跑完追加）
+
+### 第一批对账（run_proof @ 414ed06a，evidence/414ed06a79c5/<目标>/）
+
+UT 补记：Queue1_RegMapperInput_6 在 0354a9ea 的 9 档里有一项覆盖闸（同拍进出）结构上不可能
+（enq_ready = ~full，deq 只在 full 时）→ 9/9 cov_fail=1；66215d30 去掉该项、改为中途复位覆盖，
+重跑 9/9 checks=1599936 errors=0 cov_fail=0。CounterFilter @ 0354a9ea 9/9 checks=599976 errors=0 cov_fail=0。
+
+| 目标 | 预测 passing | 实测 passing | 差 | failing / unmatched / unread / 黑盒 / dont_verify | receipt.json sha256 |
+|---|---|---|---|---|---|
+| Arbiter1_TagWriteReq | 49 | 49 | 0 | 0 / 0 / 0 / 无 / false | `9fabe86d2d3907e85fcf8aae3308d5cda183c6f60cb1c1774535a29580437ff4` |
+| Arbiter1_L1BankedDataWriteReq | 521 | 521 | 0 | 同上 | `ea3cbb54e73e6375b9ed156319063ba4a4005eb87a63489194512eec06cd76a8` |
+| Arbiter1_L1BankedDataWriteReqCtrl | 53 | 53 | 0 | 同上 | `8095bdf3eb1d4a417738e2e9264bf253953ae4eb415b242bc05d32b04ecc467b` |
+| TreeArbiter | 981 | 981 | 0 | 同上 | `e6cff906e9ad16f674738cf49523da43f4d7a96238c27ebd2a510a91d49e8b42` |
+| MissReadyGen | 412 | 412 | 0 | 同上 | `a32ca698792409734191e89ecc1b9e529d094d691f1f6342908236ecabf485a3` |
+| PrefetcherMonitor | 96 | 96 | 0 | 同上 | `6b46a188dfdfa60aae0cb0d6b4e23e2d50f913caa09c1adfd6e6d4d1a8e043eb` |
+| Queue1_RegMapperInput_6 | 169 | 169 | 0 | 同上 | `608bd3906477cf686e2fa3e4973501c60d3a5f8111540d2fb20c83aa1164ad5c` |
+| CounterFilter | 204 | 204 | 0 | 同上 | `1443facfc655e80ea9d5c125bf21f335a5f01aeaf0c1e925dc8e0c56f13e152b` |
+| CtrlUnit | 2493 | 2493 | 0 | 0 / 0 / 0（vmucp 实比 455）/ 两侧白盒 / false | `07294d5481ebeab3f90f479974c4e3ef61a1548421f5d0ceb00195cb782572e8` |
+
+全部 native SUCCEEDED、verdict SUCCEEDED（signoff-strict）；`fm_predict.py check` 9/9「全部对上」。
+复跑：`bash scripts/run_proof.sh DCacheLeaves <6 个目标> < /dev/null`、
+`bash scripts/run_proof.sh {Queue1_RegMapperInput_6,CounterFilter,CtrlUnit} <同名> < /dev/null`
+（PROOF_COMMIT=414ed06a）。
+
+变异自检（scratch 沙箱，seed 7 random 30k 拍；短跑下覆盖闸必然不满，只看 errors）：
+DCacheLeaves 9 个：8 CAUGHT；L9（PrefetcherMonitor 低置信计数改加 ~enable）SURVIVED ——
+enable 与 confidence 在 3 万拍内同进同退（分叉要到 10 万拍的退避恢复），归 FM（下一状态函数不同，寄存器比较点必失配）。
+CtrlUnit 5 个：4 CAUGHT；C5（tag 通道打拍件第 3 组掩码接错）SURVIVED —— 那组输出在 CtrlUnit 里悬空，
+UT 结构上看不见；FM 经钉点 + vmucp 真比较这 455 位，覆盖之。
+CounterFilter 5 个：4 CAUGHT；F5（入队写项口序反转）为等价变异（同拍各口分配指针两两不同，不会写同一项）。
