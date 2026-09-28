@@ -1,0 +1,9 @@
+{
+  "target": "LoadQueueRAW",
+  "ut": "LoadQueueRAW",
+  "regs": 7116,
+  "outs": 210,
+  "expected": 7326,
+  "merge_dup": "false",
+  "model_applicable": true
+}
