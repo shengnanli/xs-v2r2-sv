@@ -7,6 +7,8 @@
 # 诊断跑（不产 receipt）实测 0(0) unmatched compare points。
 # set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。
 # fail-closed：逐条数返回值，拒一条或总数不等于字面位数就 error。进 fm.log 的输出一律 ASCII。
+# 本目录还有 FastArbiter_2 / Queue1_ChosenQBundle 两个 FM 目标：钉点只对 top 为 RequestBuffer 时生效。
+if {$top eq "RequestBuffer"} {
 set ::RB_PIN_EXPECT 12
 set ::RB_PIN_OK 0
 set ::RB_PIN_BAD 0
@@ -32,4 +34,5 @@ rb_pin r:/WORK/RequestBuffer/enable_REG_3_reg i:/WORK/RequestBuffer/u_core/histV
 puts "RB_PIN_END ok=$::RB_PIN_OK bad=$::RB_PIN_BAD expect=$::RB_PIN_EXPECT"
 if {$::RB_PIN_BAD != 0 || $::RB_PIN_OK != $::RB_PIN_EXPECT} {
   error "RB_PIN_MISMATCH ok=$::RB_PIN_OK bad=$::RB_PIN_BAD expect=$::RB_PIN_EXPECT"
+}
 }
