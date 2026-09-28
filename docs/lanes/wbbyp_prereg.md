@@ -70,3 +70,18 @@ M3 ready 全取组首授权 ⇒ 112731；M4 int 出口 3 的 wen 接成 pdest[0]
 2. 常数输出（组首 ready 恒 1）预期计入 passing（输出端口本身是比较点）；若 FM 把它们归为
    常量而不计，passing 会比预测少恰好常数 ready 个数（int 4 / fp 5 / vec 3 / v0 3 / vl 0）。
 3. 本节没有做过任何 FM 试跑。
+
+## 对账（跑后追加）
+
+### RealWBCollideChecker 家族（证明 commit 1d3825d9，`bash scripts/run_proof.sh RealWBCollideChecker <5 targets> < /dev/null`）
+
+| 目标 | 预测 | 实测 passing | 差 | failing | unverified | unmatched | unread | 黑盒 | dont_verify | native | receipt.json sha256 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| RealWBCollideChecker   | 603 | 603 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | a82c21b3d5a0c4bf0506dedb967d9e1e7f293ef6a13a53c8f26a54932d24e9a7 |
+| RealWBCollideChecker_1 | 454 | 454 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | e52795ddf1ce0d963ef4562c25e890fc897aad33bd0f58567a278c821488b2d4 |
+| RealWBCollideChecker_2 | 828 | 828 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | 17540596bd3cd38e540be173886f2b616a6a97b1e16711b0cb28375b1dd825b1 |
+| RealWBCollideChecker_3 | 816 | 816 | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | 6794c4d91d83765c292431779e36d00dd4967e38aeadce8c8c6698bce22dc57c |
+| RealWBCollideChecker_4 | 60  | 60  | 0 | 0 | 0 | 0 | 0 | 0 | 否 | SUCCEEDED | 40ca7fe0e2c0967dbb7cbe1ed1f31861c38f44be93107bc375db8b9df666ee30 |
+
+`fm_predict.py check` 全部逐位相等（rc=0）。§1.4 的两条风险都没发生：二维 int 参数 FM 照常 elaborate；
+常数 ready 计入 passing。receipt：`evidence/1d3825d96fc7/<target>/`。

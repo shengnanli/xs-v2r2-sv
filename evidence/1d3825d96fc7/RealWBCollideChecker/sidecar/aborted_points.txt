@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/RealWBCollideChecker
+Implementation : i:/WORK/RealWBCollideChecker
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 11:57:38 2026
+**************************************************
+
+No aborted compare points.
+
+1
