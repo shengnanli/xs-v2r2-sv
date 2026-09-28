@@ -1,0 +1,206 @@
+# LoadQueueUncache lane（agent/lquncache2）—— 跑前登记
+
+本文件在每个目标 **FM 起跑之前**提交对应分节；跑完在文末「对账」追加，
+★不修改已提交分节的任何数字★。
+
+## 0. 输入
+
+| 项 | 值 |
+|---|---|
+| 基线 commit | `4728f823`（main，`git worktree add /home/eda/xs-env/wt-lquncache2 -b agent/lquncache2 main`） |
+| 工作树 | `/home/eda/xs-env/wt-lquncache2`，分支 `agent/lquncache2` |
+| golden | `/home/eda/xs-env/G1-canonical/golden-rtl`（只读） |
+| 目标 | `PipelineRegModule` / `_1` / `_2`（child，叶子）→ `LoadQueueUncache`（本体）→ 余力：`LqExceptionBuffer` |
+| 口径 | 全部 `signoff-strict`，`FM_MERGE_DUP=false`（模型严格适用），allowlist 空，无 dont_verify |
+| codex 冲突 | 第 0 步查过 outbox 最新 0197（Pmpaddr/Pmaaddr/ShiftRightJam/RightShift 共 50 个）与 18 个 codex/* 分支的 rtl 改动：均不含本 lane 目标及其 child |
+
+## 1. PipelineRegModule / _1 / _2（共用核 xs_PipelineRegModule_core）
+
+### 1.1 结构与子模块处置
+
+- Chisel `AddPipelineReg.PipelineRegModule`（MemCommon.scala）：1 个异步复位 valid 位 + 不复位 payload，
+  in.fire 写入、out.fire 清空（入优先），isFlush 恒 false 已被 firtool 消掉。
+- 三个变体只差 payload 字段表（10 / 182 / 187 字段 = 193 / 1428 / 1567 位）。`scripts/gen_pipelinereg.py`
+  生成前对 golden 逐条核对：端口形状、寄存器表（恰 valid + 每字段一个 io_out_bits_r_*）、家族共同语句。
+- 叶子：golden 侧 0 子模块，无黑盒。
+- 钉点 `verif/ut/PipelineRegModule/fm_pins_pre.tcl`（生成）：golden 每个寄存器位逐位 set_user_match 到
+  `u_core/bits_q_reg[k]` / `u_core/valid_q_reg`；fail-closed（逐条数返回值，总数 != 字面整数即 error）。
+  期望钉点数 = 寄存器位数：194 / 1429 / 1568。
+
+### 1.2 UT（verif/ut/PipelineRegModule，三变体同 tb；commit 8f5c5900 的字节）
+
+逐拍比全部输出（in_ready / out_valid 从复位撤销起比；payload 在该变体第一次 in 成交后比）；
+每 5000 拍一次中途异步复位脉冲（valid 归 0、payload 保持）。
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=600000 errors=0 | checks=600000 errors=0 | checks=600000 errors=0 |
+| 7  | checks=600000 errors=0 | checks=600000 errors=0 | checks=600000 errors=0 |
+| 42 | checks=600000 errors=0 | checks=600000 errors=0 | checks=600000 errors=0 |
+
+（checks = 3 变体 × 200k 拍。）覆盖（seed 1，PipelineRegModule_1）：in_fire 80691 / out_fire 80663 /
+同拍进出 48503 / 反压 39318 / 复位脉冲 40；另两变体同量级，tb 对任一为 0 判红。
+变异自检（scratchpad，20k 拍，random 档）：M1 in_ready 丢 out_ready ⇒ errors=55011；M2 出优先于入 ⇒ 20742；
+M3 payload 加复位 ⇒ 22；M4 valid 改同步复位 ⇒ 21；M5 payload 锁存不看 ready ⇒ 19536。5/5 抓到。
+
+复跑：`cd verif/ut/PipelineRegModule && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 1.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/PipelineRegModule*.json）
+
+| 目标 | passing 预测（golden 寄存器位 + 顶层 output 位） | 其余 |
+|---|---|---|
+| PipelineRegModule   | **389**（194 + 195） | failing 0 / unverified 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |
+| PipelineRegModule_1 | **2859**（1429 + 1430） | 同上 |
+| PipelineRegModule_2 | **3137**（1568 + 1569） | 同上 |
+
+无 vmucp、无 allow / dead_ref 声明。
+
+### 1.4 明写可能出错的地方
+
+1. 钉点名字形状（`bits_q_reg[k]` / 1 位 golden 寄存器无下标）是按 LoadQueueRAW / FCVT 的已知形状写的，
+   没有 FM 试跑过；若有钉点被拒，fail-closed 会让整跑报错而不是静默退回自动匹配。
+2. payload 里若有两侧都判为常量的位（本家族没有常量输入），passing 会少恰好 constant_reg 个。
+3. 本节没有做过任何 FM 试跑。
+
+## 2. LoadQueueUncache（本体，golden 59,051 行 / 1425 端口）
+
+### 2.1 结构与子模块处置
+
+- 可读核 `rtl/memblock/LoadQueueUncache.sv`：package loadqueueuncache_pkg（配置常量、redirect_t、RobPtr 比较、
+  needFlush，及 9 个 bundle 结构体 —— 字段表逐字取 golden 端口表，GENERATED）+ xs_LoadQueueUncache_core
+  （§1 s1 HwSort / §2 s2 入队判定 / §3 FreeList 分配与写条目 / §4 条目阵列 / §5 MMIO 独占 + NC 轮转发请求 /
+  §6 MMIO 与奇偶组 NC 写回 / §7 释放 / §8 ParallelPriorityMux 异常 / §9 ROB 通知 / §10 满了就回滚，手写）
+  + golden 同名 wrapper（GENERATED）。`scripts/gen_lquncache.py`（--check，已登记 gate_all）生成全部 GENERATED 区、
+  钉点与 tb；生成前核对 bundle 字段表在各端口表之间逐项相同、每个端口/实例端口恰命中一条接线规则。
+- golden 直接 child 23 实例 / 21 种，全部白盒：UncacheEntry×16（PROVEN_DIRECT，xs_UncacheEntry_core）、
+  FreeList_6（PROVEN_DIRECT）、RRArbiterInit_11（PROVEN_DIRECT）、PipelineRegModule/_1/_2×3（本 lane §1 签核，
+  evidence/48fbfd801873）。无黑盒。
+- 钉点 `verif/ut/LoadQueueUncache/fm_pins_pre.tcl`：golden 顶层 651 个寄存器（5037 位）逐位钉到核的结构体数组
+  （`s2_req_q_reg[k]\[字段][b]` 等），5 个流水寄存器实例的 payload/valid（6327 位）钉到 `u_core/<实例>/u_core/bits_q_reg`；
+  共 **11364** 条，fail-closed。条目 / FreeList / 仲裁器内部不钉（名字只差 u_core 一层）。
+
+### 2.2 UT（verif/ut/LoadQueueUncache；commit 76235b85 的字节）
+
+- 冒烟（跑前）：seed 1 × `+vcs+initreg+0` × 20k 拍：checks=20000 errors=0；覆盖 enq 3654 / 同拍多条入队 332 /
+  MMIO 请求 788 / NC 请求 1599 / MMIO 写回 772 / NC 写回 1 口 776、2 口 792 / 回滚 5066 / 异常 2330 / denied 92 /
+  条目 flush 2649 / idResp 2592 / resp 2614。
+- 激励调试中实测到的两个 **golden 自身的死锁形状**（不是重写的问题，是激励违反了真实环境的约束，已改激励并写进
+  tb 文件头）：robIdx 重复 或 mmio/nc 同置 或 pendingPtr 在 MMIO 完成前跳走 ⇒ 多个 MMIO 条目同时进 S_REQ、
+  都看到广播的 mmioReq.ready 一起进 S_RESP、只有一条请求真的发出，其余永远等不到 resp。
+- 全矩阵（3 seed × {0, random, <seed>017} × 200k）在同一 commit 上**正在跑**，结果记入文末对账，不改本节。
+
+### 2.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/LoadQueueUncache.json）
+
+| 目标 | passing 模型 | 其余 |
+|---|---|---|
+| LoadQueueUncache | **45241**（fm_predict 模型：闭包寄存器位 + 顶层 output 位 6671） | failing 0 / unmatched 0 / unread 0 / 无黑盒 / SUCCEEDED |
+
+预期差额（若出现，须由 receipt 的 constant_reg 逐位指认）：
+- 16 条目 × {req_uop_flushPipe, req_uop_replayInst} = 32 位：UncacheEntry 单独签核时两侧各 2 个 `Constant reg`；
+- pipelineReg_2（ncOut(0)，in_valid 恒 0）的 valid 与 1567 位 payload 可能被判常量（最多 1568 位）。
+所以 passing 的可接受区间是 45241 − constant_reg，constant_reg 预计在 {32, 33, 1600} 之一附近；
+若差额不能被 constant_reg + unread 精确解释，判红并查。
+
+### 2.4 明写可能出错的地方
+
+1. 结构体数组寄存器的 FM 名字形状（`s2_req_q_reg[0]\[uop_pc][3]`、`mmio_raw_q_reg\[lqData][3]`、
+   1 位字段无位下标）照 LoadQueueReplay / InstrUncache matched.rpt 记下的形状写，没有 FM 试跑过；
+   若被拒，fail-closed 整跑报错。
+2. 条目内部寄存器靠 FM 自动按名配对（多一层 u_core）；LoadQueueRAW 同法已过，但规模大 16 倍。
+3. match 规模：闭包约 38570 位寄存器，O(N²) 签名分析若没被钉点/名字消掉会很慢；3 小时不收敛按规范 30 分钟采样。
+4. 本节没有做过任何 FM 试跑。
+
+## 3. LqExceptionBuffer（golden 1,215 行 / 100 端口，叶子）
+
+### 3.1 结构
+
+- 可读核 `rtl/memblock/LqExceptionBuffer.sv`：6 入口打一拍 → s2 候选（有效 & 未被冲 & 带 LduCfg 异常位）→
+  7 选手锦标赛（树形照抄 Scala selectOldest 的递归切分 1+2 / 2+2，`pick_oldest` 逐字照 length==2 分支，
+  含"都无效取第二个"的规则）→ req 每拍无条件写胜者。口 3/4 的 isHyper、口 5 的 vaNeedExt 在 golden 里无端口无寄存器，
+  核只在 generate 里为真有该字段的口建寄存器（其余读常数）。`scripts/gen_lqexcbuf.py` 生成结构体/wrapper/钉点/tb，
+  生成前逐口核对字段表与 HAS_* 掩码、逐个核对 golden 寄存器表。叶子，无黑盒。
+- 钉点 **1136** 条（= golden 121 个寄存器全部位），fail-closed。
+
+### 3.2 UT
+
+- 冒烟（commit 04dd0c83）：seed 1 × random × 20k：checks=20000 errors=0；覆盖 候选 17749 / 同拍多候选 4436 /
+  换记 6236 / 保持 5154 / 同龄比 uopIdx 426 / 已记者被冲 827。全矩阵在跑，结果记入对账。
+
+### 3.3 跑前预测（★跑完不许改本节★）
+
+| 跑次 | passing | 其余 |
+|---|---|---|
+| 第 1 跑（vmucp 关，signoff-strict） | **1266** = 模型 1267 − 1 | unread **1**（golden `REG` = RegNext(req_valid)，只供 perf，无读者；impl `req_valid_last_q` 照抄，两侧对称死位）→ 判 PARTIAL(strict_unread) |
+| 第 2 跑（按 vmucp standing rule 加 verif/fm_target_config/LqExceptionBuffer.tcl） | **1267**（正好 +1） | unread 0 / failing 0 / unmatched 0 / SUCCEEDED |
+
+若第 1 跑的 unread 不是恰好这一个点，或出现别的 unread / constant_reg，先诊断，不加 vmucp。
+
+---
+
+## 对账（跑后追加；上面各节数字未改）
+
+### A. PipelineRegModule / _1 / _2（commit 48fbfd80，evidence/48fbfd801873）
+
+| 目标 | 预测 | 实测 passing | failing / unmatched / unread / constant | 判决 |
+|---|---|---|---|---|
+| PipelineRegModule   | 389  | 389  | 0 / 0 / 0 / 0 | SUCCEEDED，逐位相等 |
+| PipelineRegModule_1 | 2859 | 2859 | 0 / 0 / 0 / 0 | SUCCEEDED，逐位相等 |
+| PipelineRegModule_2 | 3137 | 3137 | 0 / 0 / 0 / 0 | SUCCEEDED，逐位相等 |
+
+钉点 194 / 1429 / 1568 全部被接受。
+
+### B. LoadQueueUncache
+
+**UT 全矩阵**（commit 76235b85 的字节，200k 拍/档，全部 errors=0）：
+
+| seed | `+0` | `+random` | `+<seed>017` | 覆盖（enq / 多条同拍 / MMIO 请求 / NC 请求 / MMIO 写回 / NC1 / NC2 / 回滚拍 / 异常 / denied / flush / idResp / resp / 复位） |
+|---|---|---|---|---|
+| 1  | 0 | 0 | 0 | 28495 / 2513 / 5441 / 11231 / 5250 / 5470 / 5477 / 48897 / 16126 / 614 / 19335 / 19104 / 19491 / 8 |
+| 7  | 0 | 0 | 0 | 26138 / 2314 / 4884 / 9993 / 4679 / 4826 / 4898 / 48550 / 14391 / 605 / 17569 / 17517 / 17695 / 8 |
+| 42 | 0 | 0 | 0 | 33421 / 2860 / 6580 / 15847 / 6371 / 7806 / 7699 / 44081 / 21811 / 868 / 25002 / 24906 / 25244 / 8 |
+
+变异自检（scratchpad/lquncache2/mut_lqu，20k 拍，seed1×random 与 seed7×0 两档）：
+M1 排序反向 19998/19987；M2 s2 不看本拍 redirect 19536/19575；M3 漏异常位 21 19450/17982；
+M4 分配不按 offset 19499/19511；M6 MMIO 取编号最小 6186/8482；M7 MMIO 请求 id 取仲裁器 17603/19293；
+M9 异常取编号最大 10/3；M10 回滚不滤上上拍 redirect 86/105；M11 rawData 锁存不看 ready 0/6；
+M12 释放漏 flush 19787/19396；M14 回滚 level 置 0 19950/19941。
+**UT 抓不到的 3 个**，各跑一次 FM（scratchpad 脚本，同 golden/同钉点，不产 receipt）：
+M5 同一条目多 lane 写入时 lane0 赢（FreeList 给的槽互不相同，仿真里不会撞）→ **FM FAILED ≥20**；
+M8 奇偶组让出 MMIO 条目（mmio/nc 互斥时不可达）→ **FM FAILED ≥20**；
+M13 三份 RegNext(redirect) 合并读第 0 份（值恒等）→ **FM FAILED ≥20**（另多出 22 个 unread）。
+
+**FM 第 1 跑**（commit 7c7701af，vmucp 关；evidence/7c7701af25a7，receipt sha256
+`d383f181cf1926b9d817fca9808615f2dd06bda03fa8451aca267660d5d7a00a`）：native SUCCEEDED，passing 43316 /
+failing 0 / unmatched 0(0) / constant_reg 1616 / unread 5 → strict PARTIAL(strict_unread)。钉点 11364 全接受；
+matched by user 9796 / name 32169 / signature 1351。
+
+- ★§2.3 的登记值 45241 错了 304★：Makefile 里条目依赖写成 `$(addsuffix .sv,…)`，`fm_passing_model.py` 只认字面
+  `.sv` 词，没读到 16 个 UncacheEntry，把它们当黑盒按**输入位** 1689/个计，而真实比较点是**寄存器位** 1670/个：
+  16 × 19 = 304。实测 DFF 总数 36645 + 1616 + 5 = 38266，与逐实例寄存器位之和（条目 16×1670 + 流水寄存器 6327 +
+  FreeList 178 + 仲裁器 4 + 顶层 5037）逐位相等。修法：Makefile 改字面列表（commit ff3b73fa），重新登记 44937 并在
+  JSON 的 note 里写明原因。**§2.3 的数字未改**，这里记账。
+- constant_reg 1616 逐项（scratchpad 诊断跑 `report_not_compared_points`，ref 侧）：pipelineReg_2（ncOut(0)，
+  in_valid 恒 0）的 1567 位 payload（DFFX）+ valid 1 位 + FreeList 的 freeSlotOH_next_nextVec_{0..3}_r 共 48 位（DFF0X）
+  = 1616。§2.3 猜的"条目 flushPipe/replayInst 32 位"在父级里**没有**成为常量（猜错，已由实测替代）。
+- unread 5 = freeList.freeSlotCnt[4:0]（只驱动 io_validCount / io_empty，父级只接 perf 探针），两侧对称死位 →
+  按 vmucp standing rule 加 `verif/fm_target_config/LoadQueueUncache.tcl`。
+
+**FM 第 2 跑**（commit ff3b73fa，vmucp 开；evidence/ff3b73fa4b35，receipt sha256
+`33061f1b7126eca4c11737920d8b951c5de06e5c1bea68e438798743a530befb`）：**SUCCEEDED passing 43321**（= 43316 + 5，
+正好 +5）/ failing 0 / unverified 0 / unmatched 0(0) / unread 0 / constant_reg 1616 / 无黑盒 / 无 dont_verify /
+elab147 无。`fm_predict check`：44937 − 43321 = 1616 = constant_reg，差额全部指认。
+
+### C. LqExceptionBuffer
+
+UT 全矩阵（commit 04dd0c83 的字节，200k/档）：seed 1/7/42 × {0, random, <seed>017} 九档全部 errors=0；
+覆盖（seed 1）候选 177310 / 同拍多候选 44286 / 换记 62707 / 保持 50739 / 同龄比 uopIdx 4435 / 已记者被冲 8132 / 复位 10。
+变异（20k，random）：L1 都无效取 a 947；L2 uopIdx 比较反向 2027；L3 树形改 2+1 133；L5 已记者不看 redirect 2437；
+L6 漏异常位 19 3649；L7 不看上一拍 redirect 1859；L8 isHyper 常数错 6277；
+L4"只在胜者有效时写 req"errors=0 —— **等价变异**：胜者无效 ⇔ 7 个选手全无效，此时按 pick 规则胜者恰是 c6 = req 本身，写与不写相同。
+
+- 第 1 跑（commit cce51d75，vmucp 关；evidence/cce51d750b8a，receipt sha256
+  `606542b488a56078e00bca590752581209b0044f16529edbe3fe6cdfe237b6e8`）：passing **1266**、unread **1**（REG ↔
+  req_valid_last_q，matched_nc）→ PARTIAL，与 §3.3 逐字一致。
+- 第 2 跑（commit e268a54e，vmucp 开；evidence/e268a54e29da，receipt sha256
+  `121da8cc8cbc286147dc7332eeb366dc7d8bf15d5a027ffb457910e8d25e8843`）：**SUCCEEDED passing 1267** / failing 0 /
+  unmatched 0 / unread 0 / constant 0，与预测逐位相等。钉点 1136 全接受。
