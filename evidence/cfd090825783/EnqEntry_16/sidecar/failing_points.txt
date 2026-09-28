@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/EnqEntry_16
+Implementation : i:/WORK/EnqEntry_16
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 02:03:20 2026
+**************************************************
+
+No failing compare points.
+
+1

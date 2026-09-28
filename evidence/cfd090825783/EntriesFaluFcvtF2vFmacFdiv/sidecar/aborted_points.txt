@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/EntriesFaluFcvtF2vFmacFdiv
+Implementation : i:/WORK/EntriesFaluFcvtF2vFmacFdiv
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 02:30:45 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -261,7 +261,11 @@ MUTANTS = [
      "        resp_bits_tab[d][k]  = OG_HAS_BITS[k] ? og_resp[k][d] : OG_CONST_RESP[k];",
      "        resp_bits_tab[d][k]  = OG_HAS_BITS[k] ? og_resp[k][d]\n"
      "                             : ((k == 0) ? RESP_SUCCESS : OG_CONST_RESP[k]);",
-     lambda v: (True, 'issueResp 的 timer0 档每个变体都用')),
+     lambda v: (v.og_has_bits[0] == 0,
+                'timer0 档是**真 resp 端口**（og_has_bits[0]=1：Ldu/StaMou/StdMoud/Alu* 等）时'
+                '根本不读 OG_CONST_RESP[0]，改常量是空变异。★2026-09-28 实测更正★：原判据'
+                '写死 True，StaMou 上跑出"逃逸"，查下去是 golden 的表'
+                ' `{2\'h0, 2\'h0, og1, og0}` 两档都是真端口')),
 ]
 
 

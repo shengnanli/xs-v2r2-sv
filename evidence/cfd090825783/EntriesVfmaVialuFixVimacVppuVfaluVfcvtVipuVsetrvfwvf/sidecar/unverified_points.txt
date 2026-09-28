@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf
+Implementation : i:/WORK/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 02:46:53 2026
+**************************************************
+
+No unverified compare points.
+
+1
