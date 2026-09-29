@@ -1,0 +1,227 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Pmpaddr18Module",
+ "run_id": "PmpaddrLeaves17_31-20260928T132542Z-f6817b39",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Pmpaddr18Module.sv",
+   "kind": "golden",
+   "sha256": "8d24615b01cf75a67e7e8e1bab2bb0b731af21b3770608d15b875e1e0b3eed96"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Pmpaddr17Module.sv",
+   "kind": "repo",
+   "sha256": "eb194bd17233ea09548d2c1962b4b8acb4521d6c90f6b5dd851583ae698cece0"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr18Module.sv",
+   "kind": "repo",
+   "sha256": "421627933ae852b3fc42642fe6c708e7f5a2595ed3d06354d6d5495f7f632e64"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr19Module.sv",
+   "kind": "repo",
+   "sha256": "e72632d013e7d168eeadca07ad13ee0c12a05152ab32f650231bcb947ed32484"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr20Module.sv",
+   "kind": "repo",
+   "sha256": "fcaffb62c03053a2b983c4d000b9a0de9abcd1e790cab6cbdd4837904d62bcad"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr21Module.sv",
+   "kind": "repo",
+   "sha256": "89ba7d41d695e5844924839b6bfdbde456c7aa4527b7bc1acc3bc0148b2cc3d0"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr22Module.sv",
+   "kind": "repo",
+   "sha256": "fd7c28c884d6b2046b7097a6e7833f28f91364a3d9ee87b0ad9a6b57d3779754"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr23Module.sv",
+   "kind": "repo",
+   "sha256": "7b1f7718beeebc057d8f1e3fdc99d5eeed7bb3ccfaf97e3c8293963a5a8b28cc"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr24Module.sv",
+   "kind": "repo",
+   "sha256": "10b10f5638aef4bccad3887ce441464237ed4f47f5cbe56d8786ff97ab18ba69"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr25Module.sv",
+   "kind": "repo",
+   "sha256": "8db665e008cf6c8e5c897d8852f8b1c577a7386b7492cb616c7d293066089b8a"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr26Module.sv",
+   "kind": "repo",
+   "sha256": "d1361d9981af9eacdfcabc41c840e3f8e1670478252d29c977503b685ec67120"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr27Module.sv",
+   "kind": "repo",
+   "sha256": "2f1d77d938c047f9be3e3378d83ad8659d7eac18247b252f30b8591d374cb9c8"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr28Module.sv",
+   "kind": "repo",
+   "sha256": "c2e16fccda1d39aa7ff6fa02a4cb2fc963ec5967286d2206afbfeefa7c56f50c"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr29Module.sv",
+   "kind": "repo",
+   "sha256": "7ba8757f76bddce1b2be7414779c704ac2a893a1af653b377f96c67c58a987f1"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr30Module.sv",
+   "kind": "repo",
+   "sha256": "99951ad30d7b4b1174229ff15229f5f5815fc9789952c70bd5dbd89408c13849"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr31Module.sv",
+   "kind": "repo",
+   "sha256": "ab3b6cba85316421b3dda9357bf7c70f04433778c4929d010fbc902c883a7000"
+  }
+ ],
+ "impl_commit": "f6817b39c5761ec4c7c572824ed086e4b33c5a56",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "PmpaddrLeaves17_31-20260928T132542Z-f6817b39",
+  "top": "Pmpaddr18Module",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 110,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 110,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Pmpaddr18Module",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
