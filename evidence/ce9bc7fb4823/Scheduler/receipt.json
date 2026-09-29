@@ -1,0 +1,469 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Scheduler",
+ "run_id": "Scheduler-20260929T004103Z-ce9bc7fb",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Scheduler.sv",
+   "kind": "golden",
+   "sha256": "26748de8146e7449f2e0db69cf4f9d35ab38aa4d2b396fb320004078aeb25b42"
+  },
+  {
+   "path": "golden-rtl/IssueQueueAluMulBkuBrhJmp.sv",
+   "kind": "golden",
+   "sha256": "b9d735e72102708cfd0cbffa1177a3ed59dc95254d3e9dae8bf5e5fd01ab4a04"
+  },
+  {
+   "path": "golden-rtl/EntriesAluMulBkuBrhJmp.sv",
+   "kind": "golden",
+   "sha256": "d7e316096551b2fc3149957b8e154bb39d25a1348037a61bbb1a5a090ca927b0"
+  },
+  {
+   "path": "golden-rtl/EnqEntry.sv",
+   "kind": "golden",
+   "sha256": "b7a6821e4bd1ea4b65da851b4fbd1ea2f3dc3816cb5fe406d2fd3dcb764f1629"
+  },
+  {
+   "path": "golden-rtl/UIntCompressor_27_000011100000000000001010101.sv",
+   "kind": "golden",
+   "sha256": "d6074f3be04114b079c1a40a1d70566a63636ef951341e7588d91194bed798fe"
+  },
+  {
+   "path": "golden-rtl/OthersEntry.sv",
+   "kind": "golden",
+   "sha256": "9bfe29801918460adb1e5ad216b699c06c3af48e647dda49135cc117750e0e6e"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_6.sv",
+   "kind": "golden",
+   "sha256": "93594dca9e45adea18e66da40fce074fd0f8390000c4bcc09f1acf29db2f4a23"
+  },
+  {
+   "path": "golden-rtl/EnqPolicy.sv",
+   "kind": "golden",
+   "sha256": "bfad10d8d6b8b7c8a697ddb30bf77de9d44baeb6c2a7caf206cc638b1fd1a741"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite.sv",
+   "kind": "golden",
+   "sha256": "e67c050742464fa17141393a1777dd23c8ae67f88e9b7c060b9191566f1446db"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead.sv",
+   "kind": "golden",
+   "sha256": "c714fd249a4a971e22a96d0de6a3169214a5d7d47fe33c70ad99135f727091dc"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_2.sv",
+   "kind": "golden",
+   "sha256": "202d0cb5bdcf5ef7f867e0ce29e3a66cc29779277b02422a42b6d88a2cd0b3f9"
+  },
+  {
+   "path": "golden-rtl/MultiWakeupQueue.sv",
+   "kind": "golden",
+   "sha256": "30de51253ad4548e606565d1ba524508f01559960fb17bba91e5e5e1cb8d80f0"
+  },
+  {
+   "path": "golden-rtl/PipeWithFlush.sv",
+   "kind": "golden",
+   "sha256": "8d5f36073deed1a2842c922d8ac8ef95bee4ec5eb3c3d7faec88a9def7211229"
+  },
+  {
+   "path": "golden-rtl/PipeWithFlush_1.sv",
+   "kind": "golden",
+   "sha256": "f49090ea5152954d5ff7d2a600138c90664ab61fd3fabeb726b681df361d16ae"
+  },
+  {
+   "path": "golden-rtl/NewAgeDetector.sv",
+   "kind": "golden",
+   "sha256": "a473d828149912e0069ac0d6f5d0e58467693d8c247ec6590b5a4b52a441e868"
+  },
+  {
+   "path": "golden-rtl/AgeDetector.sv",
+   "kind": "golden",
+   "sha256": "6041af2a875257a297295d5d32f873533deb3be66d94007418ace122dce90042"
+  },
+  {
+   "path": "golden-rtl/AgeDetector_1.sv",
+   "kind": "golden",
+   "sha256": "3960a49929aabddfb1d9ed5e2c8b6bd3dc472aaf4ea3ec4acc8a4a10568313a7"
+  },
+  {
+   "path": "golden-rtl/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv",
+   "kind": "golden",
+   "sha256": "f5d9fa8e9596299bb51afd5d21bad38efc4bf8c454e0d32c6d84fa022722641c"
+  },
+  {
+   "path": "golden-rtl/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv",
+   "kind": "golden",
+   "sha256": "6d8709d7bc2f53d04f4a22015a57c77bd2c977085e6b491b646414ae72182f03"
+  },
+  {
+   "path": "golden-rtl/EnqEntry_4.sv",
+   "kind": "golden",
+   "sha256": "22da66d8e1a26ef9d30ca62469da66a8f3abc7c2ac513ce3a3b95fd3dfe1cfcb"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_44.sv",
+   "kind": "golden",
+   "sha256": "9712098d6697fb4322d21f789668dba5ba9a66f83440e3af6c150c545bffcf1e"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_50.sv",
+   "kind": "golden",
+   "sha256": "c3442fe85e7404af93861f62089e2872d1c4dda805c047011ecb8d5ea1c534c8"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_22.sv",
+   "kind": "golden",
+   "sha256": "c42d9fb7cb011c6954b1c42e893b3b4ed4f71c8b5369ad9f8b6660995ea8f926"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_22.sv",
+   "kind": "golden",
+   "sha256": "6704c6dd34e3d48186975f0d49b25ca6ad2a2c397e1aac5861e6c250efe0bc57"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_23.sv",
+   "kind": "golden",
+   "sha256": "ba64f2b79c582cb678fb3ab0953b7f02b030f18c658d5cfa3a0f1ac6b5daa064"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_26.sv",
+   "kind": "golden",
+   "sha256": "e6f32d6ad3739e25ca71105d2adf3ce2ab0a40395294a8ada640a0d27c9815a2"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_26.sv",
+   "kind": "golden",
+   "sha256": "a2b0196b2dad5ab2d62fb2e067d7480ee5cf2849a597bba2e1e6e6eb931a6bc7"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_28.sv",
+   "kind": "golden",
+   "sha256": "ccf2e14d00f3a06119577f58eaca0543c095cf4651a839e90600774152251968"
+  },
+  {
+   "path": "golden-rtl/MultiWakeupQueue_2.sv",
+   "kind": "golden",
+   "sha256": "29b0f6b92e0b10e9efa63c78761a638a52b01e897734c08677264e6dec7d995c"
+  },
+  {
+   "path": "golden-rtl/IssueQueueAluCsrFenceDiv.sv",
+   "kind": "golden",
+   "sha256": "0f6bf83f92691b1c4710526543d0f31fd5f4c4a566261c0f4c58e8ec505c6919"
+  },
+  {
+   "path": "golden-rtl/EntriesAluCsrFenceDiv.sv",
+   "kind": "golden",
+   "sha256": "833a614aa1a6ebd91e3c957f9361a29ccddc41aa71d5be87ef57c61a04cad1f6"
+  },
+  {
+   "path": "golden-rtl/EnqEntry_6.sv",
+   "kind": "golden",
+   "sha256": "c9c714bdad3aafe45084e9758f38cdb245cb8bb4502c4a4868d3eb3dbda3ea0e"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_66.sv",
+   "kind": "golden",
+   "sha256": "f33347e0f9af958ff5c2f57b17abf5d85d80e31588777d83927a4b4d46095059"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_72.sv",
+   "kind": "golden",
+   "sha256": "a6bcf4add42abdde8e7acac064bf377abf6c8e397b1f5ec3dbd22280d6946b42"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Scheduler.sv",
+   "kind": "repo",
+   "sha256": "2ffd323e4aa68dc43b14bb79a1efa402502e658165105335a1afe2d07343e2ef"
+  },
+  {
+   "path": "rtl/backend/xs_Scheduler_core.sv",
+   "kind": "repo",
+   "sha256": "6161e947af911f8df1dc97f28ea2510e5b2a169ab14ba4a5cb60bd557e696665"
+  },
+  {
+   "path": "rtl/backend/IssueQueueAluMulBkuBrhJmp.sv",
+   "kind": "repo",
+   "sha256": "b7b32daf6482650bb173cd1124cdacc69eaed3a2707ddc6fcf96eb5c4f2b979e"
+  },
+  {
+   "path": "rtl/backend/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv",
+   "kind": "repo",
+   "sha256": "ed57e38664612c68c64c1bcf0ab21c759154591a84facf87db5306e1a55cde6b"
+  },
+  {
+   "path": "rtl/backend/IssueQueueAluCsrFenceDiv.sv",
+   "kind": "repo",
+   "sha256": "4983814f2ac25dba16b8fa8d4b7ea7e7d34f35e3d727f28ac35478135abd6b36"
+  },
+  {
+   "path": "rtl/backend/EntriesAluMulBkuBrhJmp.sv",
+   "kind": "repo",
+   "sha256": "57503b00271fc639f1948a1f3d307864d716f0b89cedcd740f279d4c6ecc6f00"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite.sv",
+   "kind": "repo",
+   "sha256": "a485f5413767737e437e806d49e332945ba902ce84be6ed496a3ecc9fdc67bbf"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead.sv",
+   "kind": "repo",
+   "sha256": "a3538bd2886f6981f5515e1e21779fdcbcdcaa4c589c849b43edc665079724e4"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_2.sv",
+   "kind": "repo",
+   "sha256": "216b664f479a042b0e59b679ab232a555be4b6e8cd5244dd8fd4eb81d2939eb2"
+  },
+  {
+   "path": "rtl/backend/MultiWakeupQueue.sv",
+   "kind": "repo",
+   "sha256": "d36a3394e242ed76b84ab370b4a19d7e34dcad3a552263acf5a6361c184f3652"
+  },
+  {
+   "path": "rtl/backend/NewAgeDetector.sv",
+   "kind": "repo",
+   "sha256": "03633999256b8cbd4e2617700ed96ef8497485fde32dbe6a26e19961b3f317c1"
+  },
+  {
+   "path": "rtl/backend/AgeDetector.sv",
+   "kind": "repo",
+   "sha256": "25e1bce6600b78065e7ff0f554dfc0db42b4f8cd0ba713457b63022174ccc62e"
+  },
+  {
+   "path": "rtl/backend/AgeDetector_1.sv",
+   "kind": "repo",
+   "sha256": "47aaae05d0a9fe04b5a5dbbe03ba16f807ae6bfd4d385a551fb584bd162b4e6a"
+  },
+  {
+   "path": "rtl/backend/xs_IssueQueue_core.sv",
+   "kind": "repo",
+   "sha256": "c6946d041ae99f868e07f60f4e2cf64a0cc013e5de282defdc5c38a45ff7ad03"
+  },
+  {
+   "path": "rtl/backend/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv",
+   "kind": "repo",
+   "sha256": "a155d04d54bd5ee8ee55113cdb6178c184613b833821b5e6ef302848097c5b9a"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_22.sv",
+   "kind": "repo",
+   "sha256": "02dc3391c530fae5fabec7b9c43ac0426f5b1668027956f5ea011301fbc8dc39"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_22.sv",
+   "kind": "repo",
+   "sha256": "d7ec96e2bf55b97183bab0f2dbb7dc59014723124c9752494266e7a181494422"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_23.sv",
+   "kind": "repo",
+   "sha256": "b442e146afebf5789fd3767eb240775c9ed9b1733f4d1d8cd47b05237d8101b6"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_26.sv",
+   "kind": "repo",
+   "sha256": "f7355f84e589e2be942ea8422ef80993e57038b1212a6646d81bd3da0782c065"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_26.sv",
+   "kind": "repo",
+   "sha256": "fd8d80acd66b297687aa8e499c8373c14d38c5df5d7fa3f7197a6634776e46f6"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_28.sv",
+   "kind": "repo",
+   "sha256": "a0e4ca79d35cafa3b66fce628d15b91f654cb8975eec2514ba7d3516cfbcb490"
+  },
+  {
+   "path": "rtl/backend/MultiWakeupQueue_2.sv",
+   "kind": "repo",
+   "sha256": "f9481bc2ade2ba754a89b9eea8c784f17fe888cb8091a07d9b8d1d07a5d85993"
+  },
+  {
+   "path": "rtl/backend/EntriesAluCsrFenceDiv.sv",
+   "kind": "repo",
+   "sha256": "ae9fbb6fc52c49c26fa3d0f8b92a01e5f0378de5b69f8144f85fb54ca86856ba"
+  },
+  {
+   "path": "rtl/backend/xs_iq_entries_core.sv",
+   "kind": "repo",
+   "sha256": "f14b2f2f068ff3edac5c75cd113ebdd392c57053daee733140872f201f7e7216"
+  },
+  {
+   "path": "rtl/common/PipeWithFlush.sv",
+   "kind": "repo",
+   "sha256": "1cab04d4b141b148077f45f6484c5e755c6043486ea65e7c0fcc75e11d9cf533"
+  },
+  {
+   "path": "rtl/common/PipeWithFlush_1.sv",
+   "kind": "repo",
+   "sha256": "ab862c025e65f98549b245e39d3062f4a83b978a27f218d5694e3f1c06453dfd"
+  },
+  {
+   "path": "rtl/backend/xs_MultiWakeupQueue_core.sv",
+   "kind": "repo",
+   "sha256": "36cc42cb13958c220837a6edf36f87cc81609033e7fd35834de935ed0d21cd7f"
+  },
+  {
+   "path": "rtl/backend/xs_NewAgeDetector_core.sv",
+   "kind": "repo",
+   "sha256": "ab2f443094a81c2aef971cfbd9b04f5275db3be7f14239206ef5e8e832ce416e"
+  },
+  {
+   "path": "rtl/backend/xs_AgeDetector_core.sv",
+   "kind": "repo",
+   "sha256": "b3d45baa9410014e01c1a0d7f47ad8fa13ccfe0b09d569545a0c2537a9b2072b"
+  },
+  {
+   "path": "rtl/common/xs_PipeWithFlush_core.sv",
+   "kind": "repo",
+   "sha256": "fd7017ae8749de927ab8cf52bd16b8b83066affadb8bde09f98311d813dacc0a"
+  }
+ ],
+ "impl_commit": "ce9bc7fb482390b28733a5f9331fe496eb3e1f10",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "8b14d3dd5c068bb573b66ecde86e3e31d3a51ef018621f3713a3cf4c5756c847"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "Scheduler-20260929T004103Z-ce9bc7fb",
+  "top": "Scheduler",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 102880,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 102880,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 54,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "Scheduler",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
