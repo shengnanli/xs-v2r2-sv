@@ -3675,3 +3675,17 @@ WritebackQueue	entries_6	WritebackEntry	DEEPER	u_core.entries_6	WritebackEntry		
 WritebackQueue	entries_7	WritebackEntry	DEEPER	u_core.entries_7	WritebackEntry		auto_deeper	
 WritebackQueue	entries_8	WritebackEntry	DEEPER	u_core.entries_8	WritebackEntry		auto_deeper	
 WritebackQueue	entries_9	WritebackEntry	DEEPER	u_core.entries_9	WritebackEntry		auto_deeper	
+compare_2to1	adder_xb	Adder_xb_3	UNRESOLVED				none	
+compare_2to1_2	adder_xb	Adder_xb_20	UNRESOLVED				none	
+compare_3to1	adder_xb	Adder_xb	UNRESOLVED				none	
+compare_3to1	adder_xb_1	Adder_xb	UNRESOLVED				none	
+compare_3to1	adder_xb_2	Adder_xb	UNRESOLVED				none	
+compare_3to1_1	adder_xb	Adder_xb_3	UNRESOLVED				none	
+compare_3to1_1	adder_xb_1	Adder_xb_3	UNRESOLVED				none	
+compare_3to1_1	adder_xb_2	Adder_xb_3	UNRESOLVED				none	
+compare_3to1_2	adder_xb	Adder_xb_8	UNRESOLVED				none	
+compare_3to1_2	adder_xb_1	Adder_xb_8	UNRESOLVED				none	
+compare_3to1_2	adder_xb_2	Adder_xb_8	UNRESOLVED				none	
+compare_3to1_6	adder_xb	Adder_xb_20	UNRESOLVED				none	
+compare_3to1_6	adder_xb_1	Adder_xb_20	UNRESOLVED				none	
+compare_3to1_6	adder_xb_2	Adder_xb_20	UNRESOLVED				none	

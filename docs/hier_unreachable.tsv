@@ -6,6 +6,10 @@
 #        ABSORBED_COLLATERAL = 它的 golden 父模块自己先没了，它是被连带带走的
 # module	kind	cause	golden_parents	golden_sites	impl_owner	impl_file
 AddModule	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	AluDataModule	1	-	rtl/backend/AddModule.sv
+Adder_xb	SIGNED_OFF_TARGET	ABSORBED_DIRECT	compare_3to1	3	compare_3to1	rtl/backend/Adder_xb.sv
+Adder_xb_20	SIGNED_OFF_TARGET	ABSORBED_DIRECT	compare_2to1_2,compare_3to1_6	4	compare_2to1_2,compare_3to1_6	rtl/backend/Adder_xb_20.sv
+Adder_xb_3	SIGNED_OFF_TARGET	ABSORBED_DIRECT	compare_2to1,compare_3to1_1	4	compare_2to1,compare_3to1_1	rtl/backend/Adder_xb_3.sv
+Adder_xb_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	compare_3to1_2	3	compare_3to1_2	rtl/backend/Adder_xb_8.sv
 AluDataModule	GOLDEN_ONLY	ABSORBED_DIRECT	Alu	1	Alu	$(GOLDEN_RTL)/AluDataModule.sv
 AluResSel	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/AluResSel.sv
 C22	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ArrayMulDataModule	293	ArrayMulDataModule	rtl/backend/C22.sv
@@ -46,8 +50,8 @@ IndexableCAMTemplate_32	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_32	1	WrBypass
 IndexableCAMTemplate_33	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_33	1	WrBypass_33	rtl/common/IndexableCAMTemplate_33.sv
 IndexableCAMTemplate_41	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_41	1	WrBypass_41	rtl/common/IndexableCAMTemplate_41.sv
 IndexableCAMTemplate_43	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_43	1	WrBypass_43	rtl/common/IndexableCAMTemplate_43.sv
-LeftShiftModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/LeftShiftModule.sv
-LeftShiftWordModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/LeftShiftWordModule.sv
+LeftShiftModule	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	AluDataModule	1	-	rtl/backend/LeftShiftModule.sv
+LeftShiftWordModule	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	AluDataModule	1	-	rtl/backend/LeftShiftWordModule.sv
 LevelGateway	SIGNED_OFF_TARGET	ABSORBED_DIRECT	TLPLIC	65	TLPLIC	rtl/uncore/LevelGateway.sv
 MbistPipeIttage	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable	1	ITTageTable	rtl/dft/MbistPipeIttage.sv
 MbistPipeIttage_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable_1	1	ITTageTable_1	rtl/dft/MbistPipeIttage_1.sv
