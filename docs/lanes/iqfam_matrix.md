@@ -59,3 +59,17 @@ golden 实例连线**机械**产出，规则 fail-closed：每个 golden 子模�
 1. canary：IssueQueueAluCsrFenceDiv（INT 族，24 条目 / 2 口，MWQ_2 + 1 个忙表）走通 UT+FM。
 2. 其余 13 个按族铺开：INT（AluBrh/AluMul）→ FP（3）→ MEM（Ldu/Sta/Std）→ VEC（5）。
 3. 余力：Scheduler / _1 / _2 / _3。
+
+## 6. 结果（事后追加）
+
+- §3 的判断成立：14 个 IssueQueue 变体共用一个手写核 `rtl/backend/xs_IssueQueue_core.sv`（479 行）；
+  逐变体差异全部落成参数或生成器连线（`scripts/gen_iq.py`），实际需要的变体专属开关比预判多两类：
+  写回忙表 deqResp.valid（出队 valid && 写使能）、og1 失败冲刷 / lat 查表 / is0Lat（MWQ 胶合）。
+- 生成器的 fail-closed 规则在 14 个变体上跑通：golden 表达式里的逻辑没有一处被抄进 wrapper
+  （readability_audit G 类：wrapper 代码区与 golden 逐字重合 ≤ 0.4%）。
+- 一个真 bug 由 FM 抓到、UT 结构上看不见：向量 IQ 条目只存 7 位 psrc，但 "psrc==0" 必须按 Dispatch 端口的 8 位判。
+  修法是给核的 PSRC_W 取端口宽（生成器一行），UT 激励池补 0x80..0x83 后能复现。
+- FM 父级的主要工作量在钉点：条目阵列（复用 Entries 钉点表）之外，IQ 父级里常量化/无出口的寄存器
+  （条目状态 dataSources、MWQ/流水 fuType、忙表写寄存器、validCnt 高位）签名失效，逐类补钉后全部 matched。
+- Scheduler 4 个也签完：核 `xs_Scheduler_core.sv`（性能事件 + sta/std 成对派遣）+ `scripts/gen_sched.py`；
+  父级钉点 = 各 IQ 钉点加前缀 + IQ 的 deqDelay 负载与性能计时器（调度器里大多没有出口）。
