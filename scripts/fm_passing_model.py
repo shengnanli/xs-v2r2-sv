@@ -162,6 +162,24 @@ def _txt(mod):
     return (GOLDEN / f'{mod}.sv').read_text(errors='replace')
 
 
+# ★3. 无驱动的 `reg` 不算★（2026-09-28，CtrlBlock 第 1 轮对账逼出来的）
+# SV 的 `reg` 只是变量，不等于触发器。golden 里有的 reg **只在** `ENABLE_INITIAL_REG_`
+# 块里被 `_RANDOM` 赋初值、除此之外一处赋值都没有；FM 用 `-define SYNTHESIS` 读，那块整个
+# 不存在，这个 reg 就是一根无驱动的线，不产生比较点。全 golden 扫下来只有一处：
+# Rob 的 robDeqGroup_*_debug_otherPdest_*（56 个 × 8 位 = 448 位，firtool 把 Scala 里没接的
+# debug 字段留成了空壳）—— CtrlBlock 第 1 轮实测差额里恰好有这 448。
+# 判据**只往保守方向错**：任何形如 `name[...] =` / `name <=`（含 `<=` 比较误命中）的出现都算
+# "有驱动"，所以只会少扣、不会多扣，上界性质不变。
+_INIT_BLOCK_RE = re.compile(r'^[ \t]*`ifdef ENABLE_INITIAL_(?:REG|MEM)_\b.*?'
+                            r'^[ \t]*`endif // ENABLE_INITIAL_(?:REG|MEM)_', re.M | re.S)
+_ASSIGN_LHS_RE = re.compile(r'\b([A-Za-z_]\w*)\s*(?:\[[^\]\n]*\]\s*)*<?=(?!=)')
+
+
+def _driven_names(text):
+    """去掉 ENABLE_INITIAL_{REG,MEM}_ 块后，所有出现在赋值左侧（`=` / `<=`）的名字。"""
+    return set(_ASSIGN_LHS_RE.findall(_INIT_BLOCK_RE.sub('', text)))
+
+
 def reg_bits(mod):
     """该模块一份实例的触发器位数（上界）。
 
@@ -173,9 +191,13 @@ def reg_bits(mod):
        scripts/fm_eq.tcl 的 read_sverilog 是 `-define {SYNTHESIS}`，FM 根本读不到
        它们。把它们算进去只会让上界虚高。
     """
+    t = _txt(mod)
+    driven = _driven_names(t)
     n = 0
-    for hi, lo, name, dhi, dlo in REG_RE.findall(_txt(mod)):
+    for hi, lo, name, dhi, dlo in REG_RE.findall(t):
         if name.startswith('_RANDOM'):
+            continue
+        if name not in driven:          # 3. 无驱动的 reg 不是触发器（见 _driven_names）
             continue
         w = 1 if not hi else int(hi) - int(lo) + 1
         d = 1 if not dhi else abs(int(dhi) - int(dlo)) + 1
@@ -283,8 +305,20 @@ def _expand(s, vars_, depth=0):
 
 def from_ut(ut):
     mk = (REPO / 'verif' / 'ut' / ut / 'Makefile').read_text(errors='replace')
+    # ★同目录的 `include xxx.mk` 先内联★（2026-09-27 CtrlBlock）：闭包文件表由生成器写在
+    # verif/ut/CtrlBlock/closure.mk 里、Makefile 只 include 它。不内联的话 FM_REF_DEPS 里的
+    # $(GOLDEN_CLOSURE_*) 展不开，模型退回 regs+outs（缺失与否定长得一样）。只认同目录、
+    # 只认 .mk、读不到就原样留着让 deps_unexpanded 守卫报出来。
+    def _inl(m):
+        f = REPO / 'verif' / 'ut' / ut / m.group(1)
+        return f.read_text(errors='replace') if f.suffix == '.mk' and f.exists() else m.group(0)
+    mk = re.sub(r'^include\s+(\S+)\s*$', _inl, mk, flags=re.M)
     mk = re.sub(r'\\\n', ' ', mk)          # 续行拼起来
     vars_ = _mk_vars(mk)
+    # ★FM_INTERFACE_ONLY 里的模块在证明里是接口黑盒★：从 deps 里剔掉，让下面的 bbox_counts
+    # 按黑盒计（BBPin 输入位进模型、子树寄存器不进）。Makefile 没写就是空表，行为不变。
+    io_ = re.search(r'^FM_INTERFACE_ONLY[^\S\n]*=[^\S\n]*(.*)$', mk, re.M)
+    iface_only = set(_expand(io_.group(1), vars_).split()) if io_ else set()
     mv = re.search(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', mk, re.M)
     if not mv:
         sys.exit(f'{ut}: Makefile 里没有 FM_VARIANTS')
@@ -303,6 +337,7 @@ def from_ut(ut):
         raw = d.group(1) if d else ''
         exp = _expand(raw, vars_)
         deps = [x.split('/')[-1][:-3] for x in exp.split() if x.endswith('.sv')]
+        deps = [x for x in deps if x not in iface_only]
         unexp = sorted(set(re.findall(r'\$\(([A-Za-z_]\w*)\)', exp)))
         out.append(model(t, deps, unexp))
     return out
@@ -404,6 +439,19 @@ def selftest():
        nd_naive.get('bbin', 0) > 0,
        'naive bbin=%d（%d 个"黑盒"）' % (nd_naive.get('bbin', 0),
                                         len(nd_naive.get('bbox', {}))))
+
+    # --- 无驱动 reg（判据 3）：只扣 golden Rob 的 448 位 debug_otherPdest，别处一位不动 ----
+    rob_all = sum((1 if not hi else int(hi) - int(lo) + 1)
+                  * (1 if not dhi else abs(int(dhi) - int(dlo)) + 1)
+                  for hi, lo, nm, dhi, dlo in REG_RE.findall(_txt('Rob'))
+                  if not nm.startswith('_RANDOM'))
+    ck('判据 3 Rob：无驱动 reg 恰为 448 位（debug_otherPdest 56×8）',
+       rob_all - reg_bits('Rob') == 448, '全部 %d / 计入 %d' % (rob_all, reg_bits('Rob')))
+    ck('判据 3 合成：只在 ENABLE_INITIAL_REG_ 块里赋值的 reg 算无驱动，always 里赋值的算有驱动',
+       _driven_names('reg [7:0] a;\nreg [7:0] b;\nalways @(posedge clock) b <= io_in;\n'
+                     '  `ifdef ENABLE_INITIAL_REG_\n    initial begin\n      a = _RANDOM[0];\n'
+                     '      b = _RANDOM[1];\n    end\n  `endif // ENABLE_INITIAL_REG_\n')
+       & {'a', 'b'} == {'b'})
 
     print('fm_passing_model --selftest', 'PASS' if rc == 0 else '★FAIL★')
     return rc
