@@ -67,9 +67,10 @@ FROZEN_MENTIONS = {
     'EntriesFaluFmac':           'switch body 注记事故的实测受害者（44 秒 / 0 比较点）',
     'ICacheMissUnit':            'set_top 失败"教训 B"的实测实例',
     'LoadQueueReplay':           'churn 统计里那 1 次 appvar 块改动的出处（本次拆分的注记）',
+    'LoadQueueUncache':          'fm_eq.tcl 初版（42445a00）vmucp 段注释里的举例；该名字'
+                                 ' 2026-09-28 才成为 FM target，注释本身不带 per-target 数据',
     'MulUnit':                   'FM_MERGE_DUP=false 的先例之一',
-    'Rob':                       'merge_duplicated_registers 经验注记里那组实测读数的出处',
-    'LoadQueueUncache':          'fm_eq.tcl 初版（42445a00）vmucp 段注释里的举例；该名字 2026-09-28 才成为 FM target，注释本身不带 per-target 数据'
+    'Rob':                       'merge_duplicated_registers 经验注记里那组实测读数的出处'
                                  '（true 烧 5674s 从未到达 match / false 端到端 72 分钟）——'
                                  '是通用教训的**证据**，不是 per-target 数据；与 MulUnit /'
                                  ' RenameBuffer 同类，删掉就只剩一句没有读数的断言',
