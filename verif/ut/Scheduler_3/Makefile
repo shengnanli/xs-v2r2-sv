@@ -38,6 +38,9 @@ FM_REF_DEPS_Scheduler_3 = IssueQueueStaMou.sv EntriesStaMou.sv EnqEntry_20.sv UI
 
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：依据与六条证据见 verif/fm_target_config/Scheduler_3.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
