@@ -170,3 +170,43 @@ FM 在本父级里把 PipeWithFlush_1 的那几位也计成了比较点（两侧
 | Scheduler_1 | 50936 | 3f915ccd：passing 10890 / unread 39815（全 matched_nc，全在钉点表）/ constant_reg 231 | **50705**（差 231，应 = constant_reg 231） |
 | Scheduler | 102934 | d94ef9c6：passing 26607 / unread 76273（全 matched_nc，全在钉点表）/ constant_reg 54 | **102880**（差 54，应 = constant_reg 54） |
 | Scheduler_3 | 149023 | 1e45cff4：passing 122397 / unread 26285（全 matched_nc，全在钉点表）/ constant_reg 341 | **148682**（差 341，应 = constant_reg 341） |
+
+## 7. 对账（跑完后追加；§5/§6 未改）
+
+全部目标 signoff-strict native SUCCEEDED；failing 0 / unverified 0 / unmatched 0 / unread 0 / 黑盒输出 0 / 无 dont_verify；
+`python3 scripts/fm_predict.py check <T>` 全部"差额被指认"（差 = constant_reg，unread 0）。
+
+| 目标 | 登记 | 实测 passing | 差 | constant_reg | 最终 receipt（evidence/<证明 commit>/<T>/receipt.json） |
+|---|---|---|---|---|---|
+| MultiWakeupQueue | 402 | 402 | 0 | 0 | `evidence/1338bdb28432/MultiWakeupQueue/receipt.json` |
+| MultiWakeupQueue_2 | 212 | 212 | 0 | 0 | `evidence/1338bdb28432/MultiWakeupQueue_2/receipt.json` |
+| MultiWakeupQueue_4 | 430 | 430 | 0 | 0 | `evidence/1338bdb28432/MultiWakeupQueue_4/receipt.json` |
+| MultiWakeupQueue_5 | 96 | 96 | 0 | 0 | `evidence/1338bdb28432/MultiWakeupQueue_5/receipt.json` |
+| NewAgeDetector | 5 | 5 | 0 | 0 | `evidence/1338bdb28432/NewAgeDetector/receipt.json` |
+| NewAgeDetector_6 | 3 | 3 | 0 | 0 | `evidence/1338bdb28432/NewAgeDetector_6/receipt.json` |
+| IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v | 27502 | 27488 | 14 | 14 | `evidence/c020ee80aa29/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v/receipt.json` |
+| IssueQueueAluCsrFenceDiv | 27066 | 27054 | 12 | 12 | `evidence/5c4390ac0a1a/IssueQueueAluCsrFenceDiv/receipt.json` |
+| IssueQueueAluMulBkuBrhJmp | 27358 | 27344 | 14 | 14 | `evidence/4c7465dc5a1b/IssueQueueAluMulBkuBrhJmp/receipt.json` |
+| IssueQueueFaluFcvtF2vFmacFdiv | 19363 | 19286 | 77 | 77 | `evidence/062e0583cf1c/IssueQueueFaluFcvtF2vFmacFdiv/receipt.json` |
+| IssueQueueFaluFmac | 16860 | 16783 | 77 | 77 | `evidence/e3c8b88abf2a/IssueQueueFaluFmac/receipt.json` |
+| IssueQueueFaluFmacFdiv | 18993 | 18916 | 77 | 77 | `evidence/9d1afd13fa47/IssueQueueFaluFmacFdiv/receipt.json` |
+| IssueQueueLdu | 16021 | 16006 | 15 | 15 | `evidence/230feb2ce499/IssueQueueLdu/receipt.json` |
+| IssueQueueStaMou | 15130 | 15116 | 14 | 14 | `evidence/1ac7ed007899/IssueQueueStaMou/receipt.json` |
+| IssueQueueStdMoud | 14640 | 14626 | 14 | 14 | `evidence/8084b3841ed1/IssueQueueStdMoud/receipt.json` |
+| IssueQueueVfdivVidiv | 14451 | 14323 | 128 | 128 | `evidence/243a33a34eba/IssueQueueVfdivVidiv/receipt.json` |
+| IssueQueueVfmaVialuFixVfalu | 23236 | 23095 | 141 | 141 | `evidence/d9cf4cf1c357/IssueQueueVfmaVialuFixVfalu/receipt.json` |
+| IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf | 23603 | 23460 | 143 | 143 | `evidence/34642bf8c6ed/IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf/receipt.json` |
+| IssueQueueVlduVstu | 20514 | 20394 | 120 | 120 | `evidence/a9604df564cb/IssueQueueVlduVstu/receipt.json` |
+| IssueQueueVlduVstuVseglduVsegstu | 20546 | 20426 | 120 | 120 | `evidence/02a74cee13a0/IssueQueueVlduVstuVseglduVsegstu/receipt.json` |
+| Scheduler | 102934 | 102880 | 54 | 54 | `evidence/ce9bc7fb4823/Scheduler/receipt.json` |
+| Scheduler_1 | 50936 | 50705 | 231 | 231 | `evidence/24303747f040/Scheduler_1/receipt.json` |
+| Scheduler_2 | 53820 | 53408 | 412 | 412 | `evidence/3810d3836a87/Scheduler_2/receipt.json` |
+| Scheduler_3 | 149023 | 148682 | 341 | 341 | `evidence/df94aa52f4e1/Scheduler_3/receipt.json` |
+
+说明：
+- IssueQueue 早期签的 8 个（AluCsrFenceDiv / AluBrh / AluMul / FaluFmac / FaluFmacFdiv / StaMou / Ldu / StdMoud）
+  在签完之后钉点文件又加了条目状态寄存器配对（fae00c96），为让 receipt 与分支 tip 的字节一致，已在 tip 上各重证一次，
+  数字与首证逐位相同；上表列的是重证的 receipt（首证 receipt 也已收录在 evidence/ 下）。
+- 向量族 5 个的首次诊断跑暴露真 bug：入队 psrc==0 按条目存储宽（7 位）判而非端口宽（8 位），psrc=0x80 时 srcState/
+  dataSources 错（VlduVstu 24 failing）。已修（7b4fe4e3，改生成器给核的 PSRC_W），并把 UT 激励的物理寄存器号池加进
+  0x80..0x83（新 tb 对旧 RTL 实测 44 errors）；上表向量族 receipt 全部在修复之后。
