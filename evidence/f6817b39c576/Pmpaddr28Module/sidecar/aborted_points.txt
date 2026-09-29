@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Pmpaddr28Module
+Implementation : i:/WORK/Pmpaddr28Module
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 09:34:12 2026
+**************************************************
+
+No aborted compare points.
+
+1
