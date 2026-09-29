@@ -1,0 +1,22 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "Queue10_GrantBuffer_Anon",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "assembly 边界声明：黑盒**只有** codex 0202 单条审定的 firtool 行为级存储宏 ram_10x89（verif/vendor_boundary.tsv 表尾，golden sha256 7cdc3e1c…；深度 10 / 4 位地址，inline 必 FMR_ELAB-147），两侧对称各恰好 1 个 ram_ext（ref golden Queue10_GrantBuffer_Anon.ram_ext / impl rtl/uncore/Queue10_GrantBuffer_Anon.sv 的 ram_ext）。控制核 xs_ChiselQueue_core 在 impl 侧白盒受验。不含任何逻辑子模块、不含 green_child、不含 golden_logic_reuse。",
+ "objects": [
+  {
+   "side": "i",
+   "design": "ram_10x89",
+   "path": "i:/WORK/Queue10_GrantBuffer_Anon/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "ram_10x89",
+   "path": "r:/WORK/Queue10_GrantBuffer_Anon/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}
