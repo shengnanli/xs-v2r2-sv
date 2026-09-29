@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/ShiftRightJam_3
+Implementation : i:/WORK/ShiftRightJam_3
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 09:31:53 2026
+**************************************************
+
+No failing compare points.
+
+1
