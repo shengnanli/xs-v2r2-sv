@@ -146,49 +146,12 @@ run "钉点调用序列闸"     python3 scripts/pin_call_equiv.py --check
 # 却都没人要求它们去登记 —— 正是这道闸设计时说的"忘了加就静默漏"。
 # 这里先把名字放进来：`[ -f "$g" ]` 会跳过尚未合入的文件，所以提前登记无害，
 # 合入当天自动生效，不用再记得回来加一次。
-for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
-         scripts/gen_sram_wrappers.py scripts/gen_ndaux.py \
-         scripts/gen_npc_missing3.py scripts/gen_splittedsram.py \
-         scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
-         scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
-         scripts/gen_newdispatch_tb.py scripts/gen_tlbnb_family.py \
-         scripts/gen_predictor.py scripts/gen_rob.py \
-         scripts/gen_csr_leaves15.py scripts/gen_csr_leaves10b.py \
-         scripts/gen_redirectgen.py scripts/gen_renametablewrapper.py \
-         scripts/gen_csr_leaves10c.py scripts/gen_pmpaddr_leaves20.py \
-         scripts/gen_vmergebuf.py scripts/gen_readable_leaves15.py \
-         scripts/gen_ctrlunit_pins.py scripts/gen_datasrambank.py \
-         scripts/gen_bankeddataarray.py scripts/gen_iq.py \
-         scripts/gen_sched.py scripts/gen_pmpaddr0_16.py \
-         scripts/gen_pmpaddr17_31.py scripts/gen_pmpaddr53_63_pma31.py \
-         scripts/gen_shift_right_leaves6.py \
-         scripts/gen_pmaaddr_leaves30.py \
-         scripts/gen_rob_ut.py scripts/gen_sbuffer.py \
-         scripts/gen_sbuffer_tb.py scripts/gen_tlbsw_family.py \
-         scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
-         scripts/gen_rob_iface.py scripts/gen_fubusy_wbarb.py \
-         scripts/gen_l2tlb.py scripts/gen_lqreplay.py \
-         scripts/gen_lqreplay_ut.py scripts/gen_xstile_closure.py \
-         scripts/gen_ptwcache.py scripts/gen_mmu5.py \
-         scripts/gen_cb_connect.py scripts/gen_lqraw.py \
-         scripts/gen_fastarbiter_l2.py scripts/gen_intregfile.py \
-         scripts/gen_l2_mshr_pins.py scripts/gen_lmisalign.py \
-         scripts/gen_bypassnetwork.py scripts/gen_datapath.py \
-         scripts/gen_datapath_arb.py scripts/gen_datapath_rf.py \
-         scripts/gen_fastarbiter_28.py scripts/gen_lqexcbuf.py \
-         scripts/gen_lqrar.py scripts/gen_lquncache.py \
-         scripts/gen_lsq.py scripts/gen_missq.py \
-         scripts/gen_mshr.py scripts/gen_mshrctl.py \
-         scripts/gen_l2_arbiter3.py scripts/gen_l2_datastorage.py \
-         scripts/gen_l2_directory.py scripts/gen_l2_gated_sram.py \
-         scripts/gen_l2_grantbuf.py scripts/gen_l2_mainpipe.py \
-         scripts/gen_l2_queues.py scripts/gen_l2_reqbuf.py \
-         scripts/gen_l2_requestarb.py scripts/gen_l2_sinkc.py \
-         scripts/gen_l2_splitted_sram.py scripts/gen_pipelinereg.py \
-         scripts/gen_realwbcc.py scripts/gen_smisalign.py \
-         scripts/gen_uncache.py scripts/gen_vldmergeunit.py \
-         scripts/gen_wbdatapath.py; do
-  [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
+# ★生成器幂等闸：自动扫描★（2026-09-29 改）。原来是手写列表，每条 lane 合并都在这一行
+# 冲突，而且照样漏挂（最后一次漏了 4 个）。现在由 check_gen_gate_complete.py 列出
+# "scripts/gen_*.py 里所有带 --check 的，减去本文件别处已单独调用的"，逐个跑 --check。
+# 新生成器只要自带 --check 就自动进闸；不带的必须进 NO_CHECK 写理由（完备性闸管）。
+for g in $(python3 scripts/check_gen_gate_complete.py --list-autoscan); do
+  run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
 # 所以挂了 --check 的要手动登记。gen_tb_variant.py 生成 tb_1/tb_2/tb_3.sv 三份 tb。

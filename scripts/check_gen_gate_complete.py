@@ -44,13 +44,40 @@ NO_CHECK = {
 }
 
 
-def gated_generators():
-    """从 gate_all.sh 里解析出被逐个挂闸的 scripts/gen_*.py。"""
+AUTOSCAN_MARK = 'check_gen_gate_complete.py --list-autoscan'
+
+
+def _has_check(p):
+    return '--check' in p.read_text(encoding='utf-8', errors='replace')
+
+
+def explicit_generators():
+    """gate_all.sh 里**逐个点名**调用的 scripts/gen_*.py。"""
     txt = GATE.read_text(encoding='utf-8', errors='replace')
     return set(re.findall(r'scripts/(gen_[A-Za-z0-9_]+\.py)', txt))
 
 
+def autoscan_generators():
+    """自动扫描进闸的：带 --check、且 gate_all.sh 别处没单独点名的 scripts/gen_*.py。"""
+    exp = explicit_generators()
+    return sorted(p.name for p in (REPO / 'scripts').glob('gen_*.py')
+                  if _has_check(p) and p.name not in exp)
+
+
+def gated_generators():
+    """进闸 = 点名的 ∪ 自动扫描的（后者只在 gate_all.sh 确实挂了自动扫描循环时才算）。"""
+    txt = GATE.read_text(encoding='utf-8', errors='replace')
+    gated = explicit_generators()
+    if AUTOSCAN_MARK in txt:
+        gated |= set(autoscan_generators())
+    return gated
+
+
 def main():
+    if '--list-autoscan' in sys.argv[1:]:
+        for n in autoscan_generators():
+            print('scripts/' + n)
+        return 0
     gated = gated_generators()
     fails = []
     ok_gated, ok_exempt = [], []
