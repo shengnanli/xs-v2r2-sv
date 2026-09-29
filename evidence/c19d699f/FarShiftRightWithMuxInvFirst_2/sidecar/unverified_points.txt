@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/FarShiftRightWithMuxInvFirst_2
+Implementation : i:/WORK/FarShiftRightWithMuxInvFirst_2
+Version        : V-2023.12-SP3
+Date           : Tue Sep 29 01:07:51 2026
+**************************************************
+
+No unverified compare points.
+
+1
