@@ -1,0 +1,10 @@
+{
+  "target": "MultiWakeupQueue_2",
+  "ut": "MultiWakeupQueue",
+  "regs": 106,
+  "outs": 106,
+  "expected": 212,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "iqfam lane 叶子：模型 = golden 闭包寄存器位 + 顶层 output 位，merge_dup=false"
+}

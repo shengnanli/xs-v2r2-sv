@@ -1,0 +1,10 @@
+{
+  "target": "IssueQueueVfdivVidiv",
+  "ut": "IssueQueueVfdivVidiv",
+  "regs": 12727,
+  "outs": 1724,
+  "expected": 14451,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "iqfam：模型 = golden 闭包寄存器位 + output 位；诊断跑(7b4fe4e3) constant_reg=128，开 vmucp 后预期实测 14323"
+}

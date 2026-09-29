@@ -1,0 +1,10 @@
+{
+  "target": "IssueQueueAluCsrFenceDiv",
+  "ut": "IssueQueueAluCsrFenceDiv",
+  "regs": 24889,
+  "outs": 2177,
+  "expected": 27066,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "iqfam canary：模型 = golden 闭包寄存器位 + output 位；诊断跑 constant_reg=12，开 vmucp 后预期实测 27054（差 12 由 constant_reg 指认）"
+}
