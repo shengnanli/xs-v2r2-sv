@@ -39,6 +39,7 @@ Arbiter3_TaskWithData	SUCCEEDED	p899 f0 um0 unread=? const_reg=? mode=signoff-st
 Arbiter4_MainPipeReq	SUCCEEDED	p986 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @5c140d96a3fb evidence/5c140d96a3fb/Arbiter4_MainPipeReq/receipt.json
 Arbiter5_MSHRAcquire	SUCCEEDED	p66 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @7a881579fe64 evidence/7a881579fe64/Arbiter5_MSHRAcquire/receipt.json
 ArrayMulDataModule	SUCCEEDED	p2661 f0 um0 unread=? const_reg=31 mode=signoff-strict vmucp=false @014a7e1521d4 evidence/014a7e1521d4/ArrayMulDataModule/receipt.json
+BankedDataArray	SUCCEEDED	p10342 f0 um0 unread=? const_reg=? mode=assembly vmucp=true @0b523bc0d2bb evidence/0b523bc0d2bb/BankedDataArray/receipt.json
 Bitmap	SUCCEEDED	p1777 f0 um0 unread=? const_reg=11 mode=signoff-strict vmucp=true @46fb5c533f75 evidence/46fb5c533f75/Bitmap/receipt.json
 BitmapCache	SUCCEEDED	p13069 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @dfc23ffb1c9b evidence/dfc23ffb1c9b/BitmapCache/receipt.json
 Bku	SUCCEEDED	p3391 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @a68d32beb185 evidence/a68d32beb185/Bku/receipt.json

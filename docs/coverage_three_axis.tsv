@@ -94,7 +94,7 @@ AsyncResetSynchronizerShiftReg_w4_d3_i0	MISSING	UNPROVEN	-
 AsyncValidSync	MISSING	UNPROVEN	-
 AtomicsUnit	MISSING	UNPROVEN	-
 Backend	MISSING	UNPROVEN	-
-BankedDataArray	REWRITTEN	UNPROVEN	rtl/memblock/BankedDataArray.sv
+BankedDataArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/BankedDataArray.sv
 Bitmap	GOLDEN_REUSE	PROVEN_DIRECT	rtl/mmu/Bitmap.sv
 BitmapCache	GOLDEN_REUSE	PROVEN_DIRECT	rtl/mmu/BitmapCache.sv
 Bku	REWRITTEN	PROVEN_DIRECT	rtl/backend/Bku.sv
