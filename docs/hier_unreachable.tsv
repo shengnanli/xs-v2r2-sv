@@ -104,8 +104,8 @@ RealWBArbiter_26	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RealWBCollideChecker_4	4	Real
 RealWBArbiter_3	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RealWBCollideChecker,RealWBCollideChecker_1	5	RealWBCollideChecker,RealWBCollideChecker_1	rtl/backend/RealWBArbiter_3.sv
 RegCacheTagModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RegCacheTagTable	1	RegCacheTagTable	rtl/backend/RegCacheTagModule.sv
 RegCacheTagModule_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RegCacheTagTable	1	RegCacheTagTable	rtl/backend/RegCacheTagModule_1.sv
-RightShiftModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftModule.sv
-RightShiftWordModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftWordModule.sv
+RightShiftModule	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	AluDataModule	1	-	rtl/backend/RightShiftModule.sv
+RightShiftWordModule	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	AluDataModule	1	-	rtl/backend/RightShiftWordModule.sv
 ShiftResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/ShiftResultSelect.sv
 SnapshotGenerator_11	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	StdFreeList_1	1	-	rtl/backend/SnapshotGenerator_11.sv
 SnapshotGenerator_12	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	StdFreeList_2,StdFreeList_3	2	-	rtl/backend/SnapshotGenerator_12.sv
