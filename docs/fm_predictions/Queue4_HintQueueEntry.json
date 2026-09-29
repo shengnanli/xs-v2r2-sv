@@ -1,0 +1,9 @@
+{
+  "target": "Queue4_HintQueueEntry",
+  "ut": "L2MainPipeLeaves",
+  "regs": 49,
+  "outs": 13,
+  "expected": 62,
+  "merge_dup": "false",
+  "model_applicable": true
+}

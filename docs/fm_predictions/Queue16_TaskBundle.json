@@ -1,0 +1,9 @@
+{
+  "target": "Queue16_TaskBundle",
+  "ut": "L2Queues",
+  "regs": 1081,
+  "outs": 74,
+  "expected": 1155,
+  "merge_dup": "false",
+  "model_applicable": true
+}

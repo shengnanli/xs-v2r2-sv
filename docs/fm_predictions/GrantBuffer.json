@@ -1,0 +1,10 @@
+{
+  "target": "GrantBuffer",
+  "ut": "GrantBuffer",
+  "regs": 11512,
+  "outs": 1033,
+  "expected": 12545,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "ram_10x89 未审定，预期 elab147 => PARTIAL；见 docs/lanes/l2slice_prereg.md §12"
+}

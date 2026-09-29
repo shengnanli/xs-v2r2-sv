@@ -1,0 +1,9 @@
+{
+  "target": "L2DataStorage_3",
+  "ut": "L2DataStorage",
+  "regs": 176,
+  "outs": 834,
+  "expected": 1010,
+  "merge_dup": "false",
+  "model_applicable": true
+}

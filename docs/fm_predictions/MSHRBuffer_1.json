@@ -1,0 +1,9 @@
+{
+  "target": "MSHRBuffer_1",
+  "ut": "MSHRBuffer",
+  "regs": 8704,
+  "outs": 512,
+  "expected": 9216,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "ClockMux",
+  "ut": "ClockGateCell93",
+  "regs": 0,
+  "outs": 1,
+  "expected": 1,
+  "merge_dup": "false",
+  "model_applicable": true
+}

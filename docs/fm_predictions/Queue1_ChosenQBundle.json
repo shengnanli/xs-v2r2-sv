@@ -1,0 +1,9 @@
+{
+  "target": "Queue1_ChosenQBundle",
+  "ut": "RequestBuffer",
+  "regs": 408,
+  "outs": 379,
+  "expected": 787,
+  "merge_dup": "false",
+  "model_applicable": true
+}

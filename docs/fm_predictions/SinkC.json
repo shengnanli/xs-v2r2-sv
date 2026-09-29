@@ -1,0 +1,9 @@
+{
+  "target": "SinkC",
+  "ut": "SinkC",
+  "regs": 4887,
+  "outs": 1981,
+  "expected": 6868,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -176,9 +176,15 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_lqrar.py scripts/gen_lquncache.py \
          scripts/gen_lsq.py scripts/gen_missq.py \
          scripts/gen_mshr.py scripts/gen_mshrctl.py \
-         scripts/gen_pipelinereg.py scripts/gen_realwbcc.py \
-         scripts/gen_smisalign.py scripts/gen_uncache.py \
-         scripts/gen_vldmergeunit.py scripts/gen_wbdatapath.py; do
+         scripts/gen_l2_arbiter3.py scripts/gen_l2_datastorage.py \
+         scripts/gen_l2_directory.py scripts/gen_l2_gated_sram.py \
+         scripts/gen_l2_grantbuf.py scripts/gen_l2_mainpipe.py \
+         scripts/gen_l2_queues.py scripts/gen_l2_reqbuf.py \
+         scripts/gen_l2_requestarb.py scripts/gen_l2_sinkc.py \
+         scripts/gen_l2_splitted_sram.py scripts/gen_pipelinereg.py \
+         scripts/gen_realwbcc.py scripts/gen_smisalign.py \
+         scripts/gen_uncache.py scripts/gen_vldmergeunit.py \
+         scripts/gen_wbdatapath.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
