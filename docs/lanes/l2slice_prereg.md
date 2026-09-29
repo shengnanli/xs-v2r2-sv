@@ -551,3 +551,24 @@ CustomL1Hint **268**：全部 SUCCEEDED，与登记逐个相等（CustomL1Hint �
   §8.x 文字预测 1953/1954/1954/1955 是对的）。现按 merge_dup=true 重登（模型不适用、带状判定）。
 - 第四跑预测（★跑完不许改★，commit 在本登记之后）：SplittedSRAM_3..6 1286 x4，Directory / _1 / _2 / _3 **1953 / 1954 / 1954 / 1955**
   SUCCEEDED（vmucp 开，与第三跑相同 —— 这次只搬了 package 与钉点守卫写法，比较点不该变）。
+
+## 16. UT 矩阵汇总（seed 1/7/42 × initreg 0 / random / <seed>017，各 200k 拍，种子串行；scratch utmx.sh）
+
+| UT 目录 | 目标 | 9 档 | 每档 checks |
+|---|---|---|---|
+| L2Slice | L2Slice x4 | 9/9 errors=0 | 16.0M |
+| MSHRBuffer | MSHRBuffer / _1 | 9/9 | 0.4M |
+| L2Queues | 5 个 Queue | 9/9 | 7.0M |
+| TXDAT | TXDAT | 9/9 | 3.8M |
+| L2DataStorage | L2DataStorage x4 / MbistClockGateCell_93 / ClockMux | 9/9 | 30.4M |
+| ClockGateCell93 | MbistClockGateCell_93（双相） | 9/9 | 0.8M |
+| RXSNP | RXSNP | 9/9 | 5.2M |
+| L2DirectoryVariants | L2Directory_1..3 | 9/9 | 39.0M |
+| Directory | Directory x4 / SplittedSRAM_3..6 | 9/9（pkg 搬家前）+ 9/9（搬家后） | 30.4M |
+| DataStorage | DataStorage x4 / GatedSplittedSRAM x4 | 9/9（补抄 rdataReg 之后；之前 seed1×1017 档首拍 4 个假失配） | 3.2M |
+| RequestArb | RequestArb | 9/9 | 46.4M |
+| RequestBuffer | RequestBuffer / FastArbiter_2 / Queue1_ChosenQBundle | 9/9 | 22.2M |
+| SinkC | SinkC | 9/9（门限改 29 后；之前 8 档 errors=0 但翻转门限 111 判 coverage 失败） | 22.2M |
+| GrantBuffer | GrantBuffer / Queue10_GrantBuffer_Anon | 9/9 | 14.6M |
+| L2MainPipeLeaves | Arbiter3 x3 / Queue16/4_HintQueueEntry / CustomL1Hint | 9/9 | 28.4M |
+| MainPipe_1 | MainPipe_1 | 9/9 | 75.4M |
