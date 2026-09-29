@@ -2,7 +2,8 @@
 //
 // chisel3 Queue(entries=10, flow=true) 的单态化（父模块 GrantBuffer）。控制逻辑全在
 // rtl/common/xs_ChiselQueue_core.sv（语义讲在那里）；存储是 golden 的 ram_10x89 行为级
-// 存储叶子（10 项 x 89 位，两侧同源 inline）。本文件只做字段拼接/拆分：
+// 存储叶子（10 项 x 89 位；深度非 2 的幂，逐条审定入 verif/vendor_boundary.tsv，
+// FM 两侧对称黑盒、VCS 两侧共用 golden 文件）。本文件只做字段拼接/拆分：
 //   ram 字（lsb 起）：tag[30:0]  set[39:31]  vaddr[83:40]  pfSource[88:84]
 // golden 185 行；端口表与连线由 scripts/gen_l2_queues.py 从 golden 机械生成并逐字段校验切片。
 

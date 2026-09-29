@@ -23,3 +23,4 @@
 ram_40x47	Queue40_L2TlbMQBundle.sv	rtl/memblock/L2TlbMissQueue.sv	-
 diff_rat_state_bank_320x776	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer.sv	value<160@robIdx=CircularQueuePtr(RobSize=160),value∈[0,159] 由 Rob 维护
 stateBankTags_320x3	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer.sv	value<160@robIdx=CircularQueuePtr(RobSize=160),value∈[0,159] 由 Rob 维护
+ram_10x89	Queue10_GrantBuffer_Anon.sv	rtl/uncore/Queue10_GrantBuffer_Anon.sv	M3 impl 侧人工复核（codex 0202）：地址来自 xs_ChiselQueue_core #(.DEPTH(10),.FLOW(1)) 的 enq_ptr/deq_ptr，复位 0、唯一更新 next_ptr、p==9 回 0，归纳 ∈[0,9]；非形态 B 接口契约

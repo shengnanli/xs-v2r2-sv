@@ -107,7 +107,13 @@ def emit(R):
     A('//')
     A('// chisel3 Queue(entries=%d, flow=%s) 的单态化（父模块 %s）。控制逻辑全在' % (R['depth'], 'true' if R['flow'] else 'false', parent))
     A('// rtl/common/xs_ChiselQueue_core.sv（语义讲在那里）；存储是 golden 的 %s 行为级' % R['ram_mod'])
-    A('// 存储叶子（%d 项 x %d 位，两侧同源 inline）。本文件只做字段拼接/拆分：' % (R['depth'], R['word_w']))
+    if R['depth'] & (R['depth'] - 1):
+        # 非 2 的幂：地址位宽能表示的范围超出深度，inline 会触发 FMR_ELAB-147，
+        # 只能走逐条审定（verif/vendor_boundary.tsv），FM 两侧对称黑盒
+        A('// 存储叶子（%d 项 x %d 位；深度非 2 的幂，逐条审定入 verif/vendor_boundary.tsv，' % (R['depth'], R['word_w']))
+        A('// FM 两侧对称黑盒、VCS 两侧共用 golden 文件）。本文件只做字段拼接/拆分：')
+    else:
+        A('// 存储叶子（%d 项 x %d 位，两侧同源 inline）。本文件只做字段拼接/拆分：' % (R['depth'], R['word_w']))
     A('//   ram 字（lsb 起）：' + '  '.join('%s[%d:%d]' % (f, R['rng'][f][0], R['rng'][f][1]) for f in reversed(R['fields'])))
     unused = [f for f in R['fields'] if f not in R['deq']]
     enq_only = [n[len('io_enq_bits_'):] for d, w, n in R['P'] if n.startswith('io_enq_bits_') and n[len('io_enq_bits_'):] not in R['fields']]
