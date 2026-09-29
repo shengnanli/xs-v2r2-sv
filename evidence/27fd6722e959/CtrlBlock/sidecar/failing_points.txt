@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/CtrlBlock
+Implementation : i:/WORK/CtrlBlock
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 23:17:58 2026
+**************************************************
+
+No failing compare points.
+
+1
