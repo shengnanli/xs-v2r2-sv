@@ -156,7 +156,9 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_vmergebuf.py scripts/gen_readable_leaves15.py \
          scripts/gen_ctrlunit_pins.py scripts/gen_datasrambank.py \
          scripts/gen_bankeddataarray.py scripts/gen_iq.py \
-         scripts/gen_sched.py \
+         scripts/gen_sched.py scripts/gen_pmpaddr0_16.py \
+         scripts/gen_pmpaddr17_31.py scripts/gen_pmpaddr53_63_pma31.py \
+         scripts/gen_shift_right_leaves6.py \
          scripts/gen_pmaaddr_leaves30.py \
          scripts/gen_rob_ut.py scripts/gen_sbuffer.py \
          scripts/gen_sbuffer_tb.py scripts/gen_tlbsw_family.py \
