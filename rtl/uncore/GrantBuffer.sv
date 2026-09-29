@@ -341,7 +341,12 @@ module xs_GrantBuffer_core
   assign d_data      = gb_valid ? gb_data : (q_deq_isKeyword ? q_deq_data1 : q_deq_data0);
 
   // ------------------------------------------------------------------------------------------------
-  // 入口阻塞（容量反压）。所有加法都不会溢出：4 + 16 = 20 < 32。
+  // 入口阻塞（容量反压）。grantQueue / inflight 两组加法用 6 位，不会溢出：4 + 16 = 20 < 32。
+  // ★pftRespQueue 两条照 golden 用 4 位截断加法★：golden 写的是 4'(pipeA + io_count) > 9 / > 8。
+  // 可达状态下 io_count ≤ 10、pipeA ≤ 4，和 ≤ 14 不回绕，与宽加法等价；但 io_count 来自 4 位
+  // 指针，FM 不知道指针只取 [0,9]（ram_10x89 审定入表时人工复核的归纳不变量，FM 自己不证），
+  // 在指针 10..15 的不可达状态下 io_count 可到 15，4 位和会回绕 —— 宽加法在那里与 golden 不同，
+  // FM 报 blockA_s1 / blockMSHRReqEntrance 两个输出 failing。bug-for-bug 照抄截断。
   // ------------------------------------------------------------------------------------------------
   logic [2:0] pipeAorC, pipeA;  // s2..s5 里来自 A|C / 只来自 A 的有效任务数
   logic [4:0] inflightCnt;
@@ -361,10 +366,10 @@ module xs_GrantBuffer_core
   logic noSpaceForMSHRReq, noSpaceWaitSinkEForMSHRReq, noSpaceForMSHRPft;
   assign noSpaceForSinkReq          = 6'(pipeAorC) + 6'(q_count)     >= 6'(N_MSHR);
   assign noSpaceWaitSinkEForSinkReq = 6'(pipeA)    + 6'(inflightCnt) >= 6'(N_MSHR);
-  assign noSpaceForSinkPft          = 6'(pipeA)    + 6'(pft_count)   >= 6'(PFT_LEN);
+  assign noSpaceForSinkPft          = 4'(4'(pipeA) + pft_count)     >  4'(PFT_LEN - 1);
   assign noSpaceForMSHRReq          = 6'(pipeAorC) + 6'(q_count)     >= 6'(N_MSHR - 1);
   assign noSpaceWaitSinkEForMSHRReq = 6'(pipeA)    + 6'(inflightCnt) >= 6'(N_MSHR - 1);
-  assign noSpaceForMSHRPft          = 6'(pipeA)    + 6'(pft_count)   >= 6'(PFT_LEN - 1);
+  assign noSpaceForMSHRPft          = 4'(4'(pipeA) + pft_count)     >  4'(PFT_LEN - 2);
 
   assign blockA_s1 = noSpaceForSinkReq || noSpaceWaitSinkEForSinkReq || noSpaceForSinkPft;
   assign blockC_s1 = noSpaceForSinkReq;

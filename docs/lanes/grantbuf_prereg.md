@@ -44,3 +44,14 @@ regimeA 黑盒。本 lane 逐条落实：
 |---|---|---|
 | Queue10_GrantBuffer_Anon | 205（regs 9 + outs 95 + bbin 101） | passing **205** SUCCEEDED；failing / unverified / unmatched / unread / constant 0；黑盒 ram_10x89 r1/i1 |
 | GrantBuffer | 11756（regs 10622 + outs 1033 + bbin 101） | failing / unverified / unmatched 0，SUCCEEDED；差额只许 unread + constant_reg：unread ≥ 1056（timers 1024 + REG 16 + enable_REG 16）、constant ≥ 68（§12.3），即 passing ≤ 10632；黑盒 ram_10x89 r1/i1 |
+
+## 5. 第一跑（commit c51b83fb，evidence/c51b83fb1067/，未入库）与 RTL 修正
+
+- Queue10_GrantBuffer_Anon：**SUCCEEDED passing 205**（failing/unmatched 0，unread/constant 无，黑盒对象 2 = r/i 各 1 个 ram_10x89），与登记逐位相等。
+- GrantBuffer：**FAILED failing 2**（未截断，limit 20）：`io_toReqArb_blockSinkReqEntrance_blockA_s1`、`io_toReqArb_blockMSHRReqEntrance`；
+  passing 10677 / unread 1072 / constant 4 / unmatched 0。
+- 根因（真失配，修 RTL 对齐 golden）：golden 的 pftRespQueue 门槛写成 `4'(pipeA + io_count) > 9 / > 8`（4 位截断加法），
+  重写件用了 6 位宽加法 `>= 10 / >= 9`。可达状态下 io_count ≤ 10、pipeA ≤ 4 不回绕，UT 抓不到；但 io_count 来自 4 位指针，
+  FM 不知道指针 ∈[0,9]，在 10..15 的不可达状态下两者不同。inline 时 FM 连 set_top 都过不去，所以这一处此前从未被比到。
+  修法：`rtl/uncore/GrantBuffer.sv` 两条改成 golden 的 4 位截断形式（注释讲清原因）；UT 9 档（seed 1/7/42 × 0/random/<seed>017，200k）
+  errors=0、每档 checks=14600000。登记（§4）不变。
