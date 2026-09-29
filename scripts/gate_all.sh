@@ -44,6 +44,9 @@ run "重复/分叉闸"       python3 scripts/equality_dup_lint.py
 # 重名（vset_pkg / xs_predecode_pkg），UT+FM 全绿、10 道闸全过，整芯片 elaborate 第一次
 # 跑就 Error-[SV-PPD]。修完立刻配闸，否则下一个共用包还会这么长出来。
 run "package 作用域闸"   python3 scripts/check_pkg_scope.py
+# assembly 黑盒对称性的作用域（codex 0199 裁定 B'）：只比 /WORK/<top>/ 下可达实例；
+# 负测：顶层内多/缺/改路径、无 top、前缀伪装、顶层内不对称都必须仍判不过。
+run "assembly 黑盒作用域负测" python3 scripts/test_assembly_bbox_scope.py
 # package 闸的负测（codex 0158 §3 续）：闸"跑了且退出 0"不等于"它会响"。
 # 这里在临时 rtl 树里逐条判据各种一个病（包重名 / 跨文件共享包 / $unit 作用域 import），
 # 要求闸每次都红；同时钉住两种合法的模块头 import 写法不许被误报。
