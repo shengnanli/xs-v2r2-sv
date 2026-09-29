@@ -1,0 +1,9 @@
+{
+  "target": "LsqWrapper",
+  "ut": "LsqWrapper",
+  "regs": 241940,
+  "outs": 14682,
+  "expected": 256622,
+  "merge_dup": "false",
+  "model_applicable": true
+}
