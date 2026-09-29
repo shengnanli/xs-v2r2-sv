@@ -1,0 +1,231 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "GrantBuffer",
+ "run_id": "GrantBuffer-20260929T081404Z-deb72ce5",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/GrantBuffer.sv",
+   "kind": "golden",
+   "sha256": "dd6b2299a77d1edd9964bdb5db395587546541027bfd5aa89cbe9ead8e5e8b76"
+  },
+  {
+   "path": "golden-rtl/Queue16_GrantQueueTask.sv",
+   "kind": "golden",
+   "sha256": "87b1cc1a57524db285fe3eafb3bf388cc9937220e8b0a78796df71d873fdf8db"
+  },
+  {
+   "path": "golden-rtl/Queue16_GrantQueueData.sv",
+   "kind": "golden",
+   "sha256": "64768bc55308c6db27290e892bc8f76ab98963ce6bd72fe60f70473a42cb0592"
+  },
+  {
+   "path": "golden-rtl/Queue10_GrantBuffer_Anon.sv",
+   "kind": "golden",
+   "sha256": "5433d97238aa4ce78e34a34f47a49f5170f8d9253440329264d1db366fd06716"
+  },
+  {
+   "path": "golden-rtl/ram_16x25.sv",
+   "kind": "golden",
+   "sha256": "8b8d39c2fc1a2a7568c6e97593b4c0b4059f510471a5eb1d786b4f67277a645c"
+  },
+  {
+   "path": "golden-rtl/ram_data_16x256.sv",
+   "kind": "golden",
+   "sha256": "fbaf26b94de42cedbe31ccf5d8795b481c1bcdb5c9095eac776fc5b28e479cf0"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/uncore/GrantBuffer.sv",
+   "kind": "repo",
+   "sha256": "b038e70b0ddc9cdf44bf2367a475429514f273de77eafcda888966ae2c5bed8b"
+  },
+  {
+   "path": "rtl/common/xs_ChiselQueue_core.sv",
+   "kind": "repo",
+   "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+  },
+  {
+   "path": "rtl/uncore/Queue16_GrantQueueTask.sv",
+   "kind": "repo",
+   "sha256": "6a7b84928df37a28918938c423c270e20d1b7e2f73a729d37dd639ae8f9fb65c"
+  },
+  {
+   "path": "rtl/uncore/Queue16_GrantQueueData.sv",
+   "kind": "repo",
+   "sha256": "53596927fad32889e3e43f8077caf194f54b482782d51a7d2368885447072ea1"
+  },
+  {
+   "path": "rtl/uncore/Queue10_GrantBuffer_Anon.sv",
+   "kind": "repo",
+   "sha256": "f3966df0733c17eb6e49e83a69c14019c7d3855c79435b833a8a157a20553d55"
+  },
+  {
+   "path": "golden-rtl/ram_16x25.sv",
+   "kind": "golden",
+   "sha256": "8b8d39c2fc1a2a7568c6e97593b4c0b4059f510471a5eb1d786b4f67277a645c"
+  },
+  {
+   "path": "golden-rtl/ram_data_16x256.sv",
+   "kind": "golden",
+   "sha256": "fbaf26b94de42cedbe31ccf5d8795b481c1bcdb5c9095eac776fc5b28e479cf0"
+  }
+ ],
+ "impl_commit": "deb72ce588a2f2884d08fefac28ebab23fc77cfd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "1",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "1dcd15ba7118dbb3a3f0bea115068562d0bfc1bd46ffca9dba553fc2208a8c92"
+  },
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/GrantBuffer.json",
+    "sha256": "84eb8e99f69b89ff20482cae1686e587106a6f55ac7b015693128a8b748276c0"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "GrantBuffer-20260929T081404Z-deb72ce5",
+  "top": "GrantBuffer",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 11752,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/GrantBuffer/pftRespQueue/ram_ext",
+     "impl_path": "i:/WORK/GrantBuffer/pftRespQueue/ram_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/GrantBuffer/pftRespQueue/ram_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/GrantBuffer/pftRespQueue/ram_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 11752,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "constant_reg": 4,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "GrantBuffer",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_aux_observed": 0,
+  "bbox_aux_declared": 0,
+  "bbox_objects": 2
+ }
+}
