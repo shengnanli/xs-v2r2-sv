@@ -8,8 +8,9 @@ GENERATED(task_t) / GENERATED(wrapper) 两个区，并写 verif/ut/GrantBuffer/f
            的 io_enq_bits_task_* 字段表与之完全相同。第一个字段放最高位；`alias` 写成 alias_。
   wrapper  端口按 golden；三个 child 队列（grantQueue / grantQueueData0/1 / pftRespQueue）按 golden 实例名例化；
            grantStatus / pipeStatusVec 打包成核的数组口。
-  pins     只钉 perf 专用的 32 个 1 位寄存器（golden REG[_k] / enable_REG[_k] <-> 核 validPrev / histValidPrev [k]）：
-           两侧对称的未读寄存器，FM 不给未读寄存器做签名配对、名字又不同。其余寄存器按名自动配。
+  pins     只钉 33 个两侧对称的未读寄存器位：perf 专用的 32 个 1 位寄存器（golden REG[_k] / enable_REG[_k] <-> 核
+           validPrev / histValidPrev [k]）+ grantBuf param[2]（golden grantBuf_task_param[2] <-> 核 gb_param[2]，D 通道
+           param 只有 2 位）。FM 不给未读寄存器做签名配对、名字又不同。其余寄存器按名自动配。
 
 用法：python3 scripts/gen_l2_grantbuf.py [--check]
 """
@@ -186,13 +187,19 @@ def emit_pins():
     pins = []
     for k in range(N_INFLIGHT):
         sfx = '' if k == 0 else '_%d' % k
-        pins.append(('REG' + sfx, 'u_core/validPrev_reg\\[%d\\]' % k))
-        pins.append(('enable_REG' + sfx, 'u_core/histValidPrev_reg\\[%d\\]' % k))
+        pins.append(('REG%s_reg' % sfx, 'u_core/validPrev_reg\\[%d\\]' % k))
+        pins.append(('enable_REG%s_reg' % sfx, 'u_core/histValidPrev_reg\\[%d\\]' % k))
+    # grantBuf 暂存的 param 是 3 位（TaskBundle.param），但 D 通道 param 只有 2 位：两侧都只读 [1:0]，
+    # 第 2 位是对称死位，名字又不同（grantBuf_task_param / u_core.gb_param），不钉就两侧各自落单。
+    pins.append(('grantBuf_task_param_reg\\[2\\]', 'u_core/gb_param_reg\\[2\\]'))
     L = ['# GrantBuffer FM「匹配前」钉点 —— 自动生成：scripts/gen_l2_grantbuf.py（勿手改）',
          '#',
-         '# 只钉 perf 专用的 32 个 1 位寄存器（每个 inflight 项 2 个 RegNext(valid)）：',
+         '# 钉 %d 个两侧都没有读者、名字又不同的寄存器位：' % len(pins),
+         '# (1) perf 专用的 32 个 1 位寄存器（每个 inflight 项 2 个 RegNext(valid)）：',
          '#   golden  REG[_k] / enable_REG[_k]   <->  重写  u_core/validPrev / histValidPrev [k]',
          '# REG 只喂 perf 计时器 timers（计时器只被 ifndef SYNTHESIS 的 assert 读），enable_REG 谁也不读：',
+         '# (2) grantBuf 暂存的 param[2]：golden grantBuf_task_param[2] <-> 重写 u_core/gb_param[2]；',
+         '#     D 通道 param 只有 2 位，两侧都只读 [1:0]。',
          '# 两侧对称的未读寄存器，FM 不给未读寄存器做签名配对，名字又不同，不钉就两侧各自落单。',
          '# set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。',
          '# fail-closed：逐条数返回值，拒一条或总数不等于字面位数就 error。进 fm.log 的输出一律 ASCII。',
@@ -209,7 +216,7 @@ def emit_pins():
          '}',
          'puts "GB_PIN_BEGIN GrantBuffer expect=$::GB_PIN_EXPECT"']
     for r, i in pins:
-        L.append('gb_pin r:/WORK/GrantBuffer/%s_reg i:/WORK/GrantBuffer/%s' % (r, i))
+        L.append('gb_pin r:/WORK/GrantBuffer/%s i:/WORK/GrantBuffer/%s' % (r, i))
     L += ['puts "GB_PIN_END ok=$::GB_PIN_OK bad=$::GB_PIN_BAD expect=$::GB_PIN_EXPECT"',
           # 期望数量用字面整数（结构闸 P3 只认字面量 / `set <var> <整数>`，不认 $::var）
           'if {$::GB_PIN_BAD != 0 || $::GB_PIN_OK != %d} {' % len(pins),
@@ -265,7 +272,7 @@ def main():
     os.makedirs(os.path.dirname(PINS), exist_ok=True)
     if curp != pins:
         open(PINS, 'w').write(pins)
-    print('GrantBuffer: task_t %d 字段 / %d 位；钉点 32' % (len(T), sum(w for _, w in T)))
+    print('GrantBuffer: task_t %d 字段 / %d 位；钉点 %d' % (len(T), sum(w for _, w in T), pins.count('\ngb_pin ')))
     return 0
 
 

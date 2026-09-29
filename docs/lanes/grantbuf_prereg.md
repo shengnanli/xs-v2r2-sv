@@ -55,3 +55,20 @@ regimeA 黑盒。本 lane 逐条落实：
   FM 不知道指针 ∈[0,9]，在 10..15 的不可达状态下两者不同。inline 时 FM 连 set_top 都过不去，所以这一处此前从未被比到。
   修法：`rtl/uncore/GrantBuffer.sv` 两条改成 golden 的 4 位截断形式（注释讲清原因）；UT 9 档（seed 1/7/42 × 0/random/<seed>017，200k）
   errors=0、每档 checks=14600000。登记（§4）不变。
+
+## 6. 第二跑（commit 4e421fc8，evidence/4e421fc82194/，未入库）与 vmucp 加强登记
+
+- Queue10_GrantBuffer_Anon：**SUCCEEDED passing 205**，与登记相等。
+- GrantBuffer：native **SUCCEEDED**、failing 0 / unverified 0 / unmatched 0 / 黑盒 ram_10x89 r1/i1 / dont_verify 无，
+  但 validator **PARTIAL（assembly_unread!=0）**：passing 10679、constant_reg 4、matched_nc 1072、unmatched_unread r1/i1。
+  - matched_nc 1072 = timers 1024 + REG 16 + enable_REG 16 + grantQueue ram 存储第 7 位（task.param[2]）16。
+  - unmatched_unread：golden `grantBuf_task_param_reg[2]` / 重写 `u_core/gb_param_reg[2]` —— D 通道 param 只有 2 位，
+    两侧都只读 [1:0]，对称死位但名字不同、FM 不给未读点做签名配对。
+  - §4 文字预测的"constant ≥ 68、passing ≤ 10632"**没有兑现**（实测 constant 4）：当时以为 grantQueue 存储里 grantid 高 4 位
+    也会被判常量，FM 实际没有；照实记。
+- 处置（均为证明加强，跑前登记）：
+  1. `scripts/gen_l2_grantbuf.py` 钉点加 param[2] 一条（32 -> 33，fail-closed 字面计数），重生成 fm_pins_pre.tcl；
+  2. `verif/fm_target_config/GrantBuffer.tcl` 按 vmucp standing rule 六条入白名单，Makefile `fm-GrantBuffer` 开 vmucp。
+- 第三跑预测（★跑完不许改★）：Queue10_GrantBuffer_Anon 205 SUCCEEDED（不变）；GrantBuffer **passing 11752**
+  （= 10679 + 1073）SUCCEEDED，failing / unverified / unmatched / unread 全 0，constant_reg 4，黑盒 ram_10x89 r1/i1；
+  fm_predict 差额 11756 - 11752 = 4 = constant_reg 4。

@@ -35,6 +35,8 @@ FM_MERGE_DUP = false
 # assembly 模式 + 逐对象声明（verif/allow/GrantBuffer.json / Queue10_GrantBuffer_Anon.json）：黑盒只允许 ram_10x89 两侧各 1
 FM_MODE = assembly
 FM_ALLOWLIST ?= 1
+# GrantBuffer 单独开 matched-unread 加强（1073 个对称死位，依据见 verif/fm_target_config/GrantBuffer.tcl）：
+fm-GrantBuffer: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail
 
