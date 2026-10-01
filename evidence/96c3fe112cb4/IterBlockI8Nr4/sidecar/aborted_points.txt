@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/IterBlockI8Nr4
+Implementation : i:/WORK/IterBlockI8Nr4
+Version        : V-2023.12-SP3
+Date           : Wed Sep 30 23:50:19 2026
+**************************************************
+
+No aborted compare points.
+
+1
