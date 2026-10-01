@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Pmp0cfgModule
+Implementation : i:/WORK/Pmp0cfgModule
+Version        : V-2023.12-SP3
+Date           : Thu Oct  1 08:18:59 2026
+**************************************************
+
+No failing compare points.
+
+1
