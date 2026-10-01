@@ -35,3 +35,10 @@ include ../../../scripts/ut_common.mk
 # 在运行期选 +0（CONVENTIONS 2026-09-17 更正的用法）。
 VCS += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+0
+
+# matched-unread 对称双射证明（vmucp，CONVENTIONS 允许的唯一 unread 处置）：
+# Queue1_PrefetchResp 的 ram 存了 tag/set/vaddr 共 86 位、Queue1_PrefetchTrain 存了
+# hit/prefetched/pfsource 共 5 位，但这些字段在 deq 侧没有输出读者（firtool 留了
+# 存储删了输出）。两侧是同一份语义下的同位死存储，matched unread 逐对 verify
+# 后归零——这不是 waiver/dont_verify，而是把 unread 点变成已证明等价的 matched 点。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
