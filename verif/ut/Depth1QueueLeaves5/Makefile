@@ -41,4 +41,7 @@ SIM_ARGS += +vcs+initreg+0
 # hit/prefetched/pfsource 共 5 位，但这些字段在 deq 侧没有输出读者（firtool 留了
 # 存储删了输出）。两侧是同一份语义下的同位死存储，matched unread 逐对 verify
 # 后归零——这不是 waiver/dont_verify，而是把 unread 点变成已证明等价的 matched 点。
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+# 只作用在这两个目标：vmucp=true 需要 verif/fm_target_config/<top>.tcl 白名单，
+# 其余 3 个 unread=0 的目标不在白名单上，全局开会令它们 exit 3（fail-closed）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = \
+  $(if $(filter Queue1_PrefetchResp Queue1_PrefetchTrain,$*),true,)

@@ -40,3 +40,9 @@ include ../../../scripts/ut_common.mk
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 INITREG  ?= 0
 SIM_ARGS += +vcs+initreg+$(INITREG)
+
+# FDivSqrt 唯一 unread 点是 golden 闭包（VectorFloatDividerR64）内两侧同死的
+# matched_nc 死位 fp_format_onehot_q_reg[2]，依据与白名单见
+# verif/fm_target_config/FDivSqrt.tcl。只作用在 FDivSqrt：vmucp=true 无白名单
+# 会被 fm_eq.tcl fail-closed 拒掉，其余 4 个 unread=0 的目标不能开。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = $(if $(filter FDivSqrt,$*),true,)
