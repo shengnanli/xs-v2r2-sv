@@ -210,10 +210,11 @@ module xs_FrontendTrigger_core
       assign fire_bkpt[j]  = can_fire[j] & (tdata[j].action == ACTION_BKPT_EXCPT);
     end
 
-    // 进 debug 模式优先于断点异常；断点异常还要 CSR 允许（io_frontendTrigger_triggerCanRaiseBpExp）
-    assign io_triggered[i] = (|fire_debug)                        ? TRIG_DEBUG_MODE
-                        : ((|fire_bkpt) & io_frontendTrigger_triggerCanRaiseBpExp) ? TRIG_BREAKPOINT_EXP
-                        :                                         TRIG_NONE;
+    // 进 debug 模式优先于断点异常；断点异常还要 CSR 允许（triggerCanRaiseBpExp）
+    wire raise_bkpt = (|fire_bkpt) & io_frontendTrigger_triggerCanRaiseBpExp;
+    assign io_triggered[i] = (|fire_debug) ? TRIG_DEBUG_MODE
+                           : raise_bkpt    ? TRIG_BREAKPOINT_EXP
+                           :                 TRIG_NONE;
   end
 
 endmodule
@@ -270,13 +271,12 @@ module FrontendTrigger (
   input  [49:0] io_pc_15
 );
   wire [3:0] io_frontendTrigger_tEnableVec = {
-    io_frontendTrigger_tEnableVec_3, io_frontendTrigger_tEnableVec_2, io_frontendTrigger_tEnableVec_1, io_frontendTrigger_tEnableVec_0};
+    io_frontendTrigger_tEnableVec_3, io_frontendTrigger_tEnableVec_2, io_frontendTrigger_tEnableVec_1,
+    io_frontendTrigger_tEnableVec_0};
   wire [15:0][3:0] io_triggered;
   wire [15:0][49:0] io_pc = {
-    io_pc_15, io_pc_14, io_pc_13, io_pc_12,
-    io_pc_11, io_pc_10, io_pc_9, io_pc_8,
-    io_pc_7, io_pc_6, io_pc_5, io_pc_4,
-    io_pc_3, io_pc_2, io_pc_1, io_pc_0};
+    io_pc_15, io_pc_14, io_pc_13, io_pc_12, io_pc_11, io_pc_10, io_pc_9, io_pc_8, io_pc_7, io_pc_6, io_pc_5,
+    io_pc_4, io_pc_3, io_pc_2, io_pc_1, io_pc_0};
 
   xs_FrontendTrigger_core u_core (
     .clock                                           (clock),

@@ -132,8 +132,14 @@ def gen_wrapper(top):
         if d == "input":
             o.append("  wire %s %s = {" % (vec_decl(w, arr), n))
             items = [mem[i] for i in range(hi, lo - 1, -1)]
-            for k in range(0, len(items), 4):
-                o.append("    " + ", ".join(items[k:k + 4]) + ("," if k + 4 < len(items) else "};"))
+            line = "   "
+            for k, it in enumerate(items):
+                piece = " " + it + ("," if k + 1 < len(items) else "};")
+                if len(line) + len(piece) > 110 and line.strip():
+                    o.append(line)
+                    line = "   "
+                line += piece
+            o.append(line)
         else:
             o.append("  wire %s %s;" % (vec_decl(w, arr), n))
     o.append("")

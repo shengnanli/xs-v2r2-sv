@@ -20,3 +20,4 @@ SIM_ARGS += +vcs+initreg+$(INITREG)
 .PHONY: gencheck
 gencheck:
 	python3 gen.py --check
+	python3 ../../../scripts/gen_newifu_lane.py --check

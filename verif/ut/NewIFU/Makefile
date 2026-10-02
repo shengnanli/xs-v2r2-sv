@@ -25,6 +25,10 @@ FM_REF_DEPS_NewIFU = $(NEWIFU_CHILDREN)
 # 关掉 merge_duplicated_registers：golden 有值恒等的重复寄存器（REG / wb_enable_REG 等，重写核
 # 照留），合并后两侧幸存者可能不同；且只有关掉时 fm_predict 的 passing 模型才严格适用。
 FM_MERGE_DUP = false
+# vmucp（加强不是放宽）：365 个 unread 点（5 族）两侧对称死位，
+# 依据与六条证据见 verif/fm_target_config/NewIFU.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

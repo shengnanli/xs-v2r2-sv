@@ -573,11 +573,14 @@ module xs_NewIFU_core
 
   // ---- 完整 PC 与「半字后继」half_snpc[i] = pc[i] + 4（= pc[i+2]；最后两个另存）----
   logic [PW-1:0][VADDR_BITS-1:0] f3_pc, f3_half_snpc;
+  // 最后两个位置的后继已超出本块存的 16 个 PC，用 f2 时多算的两个低位结果
+  wire [VADDR_BITS-1:0] f3_pc_last_plus2 = cat_pc(f3_pc_last_lower_plus2_q, f3_pc_high_q, f3_pc_high_plus1_q);
+  wire [VADDR_BITS-1:0] f3_pc_last_plus4 = cat_pc(f3_pc_last_lower_plus4_q, f3_pc_high_q, f3_pc_high_plus1_q);
   for (genvar i = 0; i < PW; i++) begin : g_f3_pc
     assign f3_pc[i] = cat_pc(f3_pc_lower_q[i], f3_pc_high_q, f3_pc_high_plus1_q);
-    if (i < PW - 2)       begin : g_in   assign f3_half_snpc[i] = f3_pc[i + 2]; end
-    else if (i == PW - 2) begin : g_p2   assign f3_half_snpc[i] = cat_pc(f3_pc_last_lower_plus2_q, f3_pc_high_q, f3_pc_high_plus1_q); end
-    else                  begin : g_p4   assign f3_half_snpc[i] = cat_pc(f3_pc_last_lower_plus4_q, f3_pc_high_q, f3_pc_high_plus1_q); end
+    if (i < PW - 2)       begin : g_in  assign f3_half_snpc[i] = f3_pc[i + 2];     end
+    else if (i == PW - 2) begin : g_p2  assign f3_half_snpc[i] = f3_pc_last_plus2; end
+    else                  begin : g_p4  assign f3_half_snpc[i] = f3_pc_last_plus4; end
   end
 
   // ---- RVC 展开：合法才用展开结果，非法保留原码（后端据此报 illegal）----
@@ -986,9 +989,11 @@ module xs_NewIFU_core
   end
 
   // 真 last half：块满 16 个半字，最后一个位置是 RVI 前半
-  wire f3_hasLastHalf    = has_last_half(4'd15, f3_pd_isRVC_q, chk_fixedRange, f3_instr_valid, chk_fixedTaken, f3_req_is_mmio);
+  wire f3_hasLastHalf    = has_last_half(4'd15, f3_pd_isRVC_q, chk_fixedRange, f3_instr_valid,
+                                         chk_fixedTaken, f3_req_is_mmio);
   // 假 last half：块没满却以 RVI 前半结尾（BPU 给的块尾落在指令中间）→ wb 级冲刷重取
-  wire f3_false_lastHalf = has_last_half(f3_last_validIdx, f3_pd_isRVC_q, chk_fixedRange, f3_instr_valid, chk_fixedTaken, f3_req_is_mmio);
+  wire f3_false_lastHalf = has_last_half(f3_last_validIdx, f3_pd_isRVC_q, chk_fixedRange, f3_instr_valid,
+                                         chk_fixedTaken, f3_req_is_mmio);
   wire [VADDR_BITS-1:0] f3_false_snpc = f3_half_snpc[f3_last_validIdx];
 
   logic wb_valid_q;
@@ -1082,7 +1087,8 @@ module xs_NewIFU_core
                       : ((f3_exception_q[0] == EXC_GPF) | (f3_exception_q[1] == EXC_GPF)));
   assign io_toBackend_gpaddrMem_waddr                   = f3_ftqIdx_value_q;
   assign io_toBackend_gpaddrMem_wdata_gpaddr            = f3_req_is_mmio ? mmio_resend_gpaddr_q : f3_gpaddr_q;
-  assign io_toBackend_gpaddrMem_wdata_isForVSnonLeafPTE = f3_req_is_mmio ? mmio_resend_isForVSnonLeafPTE_q : f3_isForVSnonLeafPTE_q;
+  assign io_toBackend_gpaddrMem_wdata_isForVSnonLeafPTE =
+      f3_req_is_mmio ? mmio_resend_isForVSnonLeafPTE_q : f3_isForVSnonLeafPTE_q;
 
   // ===========================================================================
   // §7 wb：预译码结果写回 FTQ，误预测则重定向
@@ -1854,16 +1860,39 @@ module NewIFU (
   output [5:0]   io_perf_12_value
 );
   wire [37:0] io_ftqInter_fromFtq_req_bits_topdown_info_reasons = {
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_37, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_36, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_35, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_34,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_33, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_32, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_31, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_30,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_29, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_28, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_27, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_26,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_25, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_24, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_23, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_22,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_21, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_20, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_19, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_18,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_17, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_16, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_15, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_14,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_13, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_12, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_11, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_10,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_9, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_8, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_7, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_6,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_5, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_4, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_3, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_2,
-    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_1, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_0};
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_37,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_36,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_35,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_34,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_33,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_32,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_31,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_30,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_29,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_28,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_27,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_26,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_25,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_24,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_23,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_22,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_21,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_20,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_19,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_18,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_17,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_16,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_15,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_14,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_13,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_12,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_11,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_10, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_9,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_8, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_7,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_6, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_5,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_4, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_3,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_2, io_ftqInter_fromFtq_req_bits_topdown_info_reasons_1,
+    io_ftqInter_fromFtq_req_bits_topdown_info_reasons_0};
   wire [15:0][49:0] io_ftqInter_toFtq_pdWb_bits_pc;
   wire [15:0] io_ftqInter_toFtq_pdWb_bits_pd_valid;
   wire [15:0] io_ftqInter_toFtq_pdWb_bits_pd_isRVC;
@@ -1897,19 +1926,24 @@ module NewIFU (
   wire [15:0][49:0] io_toIbuffer_bits_pc;
   wire [37:0] io_toIbuffer_bits_topdown_info_reasons;
   wire [3:0] io_frontendTrigger_tEnableVec = {
-    io_frontendTrigger_tEnableVec_3, io_frontendTrigger_tEnableVec_2, io_frontendTrigger_tEnableVec_1, io_frontendTrigger_tEnableVec_0};
+    io_frontendTrigger_tEnableVec_3, io_frontendTrigger_tEnableVec_2, io_frontendTrigger_tEnableVec_1,
+    io_frontendTrigger_tEnableVec_0};
   wire [7:0] io_rob_commits_valid = {
     io_rob_commits_7_valid, io_rob_commits_6_valid, io_rob_commits_5_valid, io_rob_commits_4_valid,
     io_rob_commits_3_valid, io_rob_commits_2_valid, io_rob_commits_1_valid, io_rob_commits_0_valid};
   wire [7:0] io_rob_commits_bits_ftqIdx_flag = {
-    io_rob_commits_7_bits_ftqIdx_flag, io_rob_commits_6_bits_ftqIdx_flag, io_rob_commits_5_bits_ftqIdx_flag, io_rob_commits_4_bits_ftqIdx_flag,
-    io_rob_commits_3_bits_ftqIdx_flag, io_rob_commits_2_bits_ftqIdx_flag, io_rob_commits_1_bits_ftqIdx_flag, io_rob_commits_0_bits_ftqIdx_flag};
+    io_rob_commits_7_bits_ftqIdx_flag, io_rob_commits_6_bits_ftqIdx_flag, io_rob_commits_5_bits_ftqIdx_flag,
+    io_rob_commits_4_bits_ftqIdx_flag, io_rob_commits_3_bits_ftqIdx_flag, io_rob_commits_2_bits_ftqIdx_flag,
+    io_rob_commits_1_bits_ftqIdx_flag, io_rob_commits_0_bits_ftqIdx_flag};
   wire [7:0][5:0] io_rob_commits_bits_ftqIdx_value = {
-    io_rob_commits_7_bits_ftqIdx_value, io_rob_commits_6_bits_ftqIdx_value, io_rob_commits_5_bits_ftqIdx_value, io_rob_commits_4_bits_ftqIdx_value,
-    io_rob_commits_3_bits_ftqIdx_value, io_rob_commits_2_bits_ftqIdx_value, io_rob_commits_1_bits_ftqIdx_value, io_rob_commits_0_bits_ftqIdx_value};
+    io_rob_commits_7_bits_ftqIdx_value, io_rob_commits_6_bits_ftqIdx_value,
+    io_rob_commits_5_bits_ftqIdx_value, io_rob_commits_4_bits_ftqIdx_value,
+    io_rob_commits_3_bits_ftqIdx_value, io_rob_commits_2_bits_ftqIdx_value,
+    io_rob_commits_1_bits_ftqIdx_value, io_rob_commits_0_bits_ftqIdx_value};
   wire [7:0][3:0] io_rob_commits_bits_ftqOffset = {
-    io_rob_commits_7_bits_ftqOffset, io_rob_commits_6_bits_ftqOffset, io_rob_commits_5_bits_ftqOffset, io_rob_commits_4_bits_ftqOffset,
-    io_rob_commits_3_bits_ftqOffset, io_rob_commits_2_bits_ftqOffset, io_rob_commits_1_bits_ftqOffset, io_rob_commits_0_bits_ftqOffset};
+    io_rob_commits_7_bits_ftqOffset, io_rob_commits_6_bits_ftqOffset, io_rob_commits_5_bits_ftqOffset,
+    io_rob_commits_4_bits_ftqOffset, io_rob_commits_3_bits_ftqOffset, io_rob_commits_2_bits_ftqOffset,
+    io_rob_commits_1_bits_ftqOffset, io_rob_commits_0_bits_ftqOffset};
   wire [12:0][5:0] io_perf_value;
 
   xs_NewIFU_core u_core (
