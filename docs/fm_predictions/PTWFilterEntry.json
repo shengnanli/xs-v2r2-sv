@@ -1,0 +1,10 @@
+{
+  "target": "PTWFilterEntry",
+  "ut": "PTWFilterEntry",
+  "regs": 692,
+  "outs": 65,
+  "expected": 757,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "实测预计 = 模型，差 0（constant_reg 0；vmucp 把对称死位纳入比较）"
+}
