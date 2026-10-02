@@ -169,3 +169,45 @@ lane 内非正式试跑（commit 285d6f41）：native SUCCEEDED、passing 1、�
 | passing | **1** |
 | failing / unverified / aborted / unread / unmatched / 黑盒 / dont_verify | 全 0 / 无 |
 | verdict | SUCCEEDED（signoff-strict） |
+
+## 对账（跑完追加，不改上文任何数字）
+
+### A. FM（全部 signoff-strict、FM_MERGE_DUP=false、allowlist 空、dont_verify/elab147/relaxed_appvars 皆空、黑盒 0）
+
+| 目标 | proof commit / evidence | 预测 passing | 实测 passing | 差 | constant_reg | failing/unverified/aborted/unread/unmatched | receipt.json sha256 |
+|---|---|---|---|---|---|---|---|
+| VMask | afe9babc → `evidence/afe9babc7a2e/VMask` | 1147 | 1147 | 0 | 1 | 全 0（vmucp 120） | `4e06d560a32c79415e0839a969b9e757786ca8de08550b0760c067022f860cba` |
+| slideupVs2VdTable | 3c0ff31e → `evidence/3c0ff31ede22/slideupVs2VdTable` | 6 | 6 | 0 | 0 | 全 0 | `533e5d532c2de1dc3f6006f9751763debc8959bad8f3311efaa00595b70d0eec` |
+| slidednVs2VdTable | 3c0ff31e → `evidence/3c0ff31ede22/slidednVs2VdTable` | 7 | 7 | 0 | 0 | 全 0 | `74c67cc9d38b7b7bed9f565f9d0a443ccbd638c47d23fd7d393a3e1108aa36f3` |
+| Permutation | e7e43874 → `evidence/e7e43874c72f/Permutation` | 3458 | 3458 | 0 | 14 | 全 0（vmucp 128） | `1f0883303dbab26c43269cfd8cb8bc3508242016a01327aff0bbb71335a75c43` |
+| Og2ForVector | e7e43874 → `evidence/e7e43874c72f/Og2ForVector` | 20628 | 20628 | 0 | 0 | 全 0（钉点 ok=10291 bad=0） | `999355dc65de23d1dfdff38ce4b25d9cac48a02293bb11dbf356212447abf790` |
+| TopDownMonitor | b25fa9a9 → `evidence/b25fa9a98c29/TopDownMonitor` | 1 | 1 | 0 | 0 | 全 0 | `37a158ed8ddace4bc161b7bf450072d10c3fe88a84ef84010f4e05f14b34d93b` |
+
+`fm_predict check`（6 个目标）rc=0「全部对上」；`check_lane_receipts.py` rc=0。差额只有 VMask 1 / Permutation 14，均为 constant_reg，
+与登记 note 逐项一致。耗时/内存：Permutation 732 s / 1955 MB，Og2ForVector 125 s / 867 MB（地板值），其余 < 2 min。
+
+过程中的两次"没进证明"（均为闸拦下，不是 FM 结果）：Permutation/Og2ForVector 在 bd24a3ce 上被 run_proof 的
+可读性闸 E 类拦下（Og2ForVector.sv 1742 行无"本文件导航"）；e7e43874 加分节 + gen_file_nav 后重跑。
+Og2ForVector 的 UT 9 档在 e7e43874 字节上重跑过（导航前的一轮 3 档结果作废不计）。
+
+### B. UT（3 seed × {initreg 0 / random / <seed>017} × 200k 拍，seed 串行；全部 TEST PASSED、errors=0）
+
+| 目标 | 每档 checks | 覆盖下限（9 档最小值） |
+|---|---|---|
+| VMask | 199999 | 7 op × 4 SEW 每格 >= 4239；vstart>=vl >= 20985、vfirst 无 1 >= 7991、iota/vid 奇/偶 >= 17336/17851、ma/ta >= 44068 |
+| slide*Vs2VdTable | 800000（两表 × golden/oracle 各比） | 256 个输入每个 781 次（穷举） |
+| Permutation | 199997 | 8 op × 4 SEW 每格 >= 1989；vrgather16_sew8 >= 8008、slide × vlmul >= 8033、vcompress 计数 uop >= 3521 |
+| Og2ForVector | 79199208（396 端口 × 拍） | 每通道 进 OG2 >= 96381、本拍冲刷 >= 23306、上拍冲刷 >= 19452、flushItself >= 2579、block >= 28713 |
+| TopDownMonitor | 200000 | 命中 28033 拍/档，64 个 (bank,mshr) 每个作为命中者 >= 376 |
+
+### C. 变异自检（scratchpad 镜像，seed 7 random 30k 拍；UT 抓不到的再跑 diagnostic-full FM，FAILING_LIMIT=0，不出 receipt）
+
+| 目标 | UT CAUGHT | UT 抓不到的 | FM |
+|---|---|---|---|
+| VMask | 8/14 | V2 ele_cnt 越界读 0（17..31 仿真不可达）、V8 fire_reg_s1 加复位（复位期不比较）；V3 vd_vl_mask 不回绕、V4 vstart 不封顶（**语义等价**：移位量 >=128 两种写法都得 0）；V9、V12 也是等价变异（换成 V13/V14 后均 CAUGHT） | V2 **FAILED 8**、V8 **FAILED 1**；V3/V4 SUCCEEDED 1147（证实等价）|
+| slide*Vs2VdTable | 2/2 | — | — |
+| Permutation | 11/12 | P1 current_ones_sum 条件改 i<elements（多算的那项永远不被 ones_sum_reg0 读到，输出等价） | **FAILED 120**（current_ones_sum_reg0 15×8 位的次态函数不同）|
+| Og2ForVector | 5/6 | O6 上拍 redirect 的 bits 无条件采样（只在 valid 时被读，输出等价） | **FAILED 70**（7 通道 × (rob 9 + level 1)）|
+| TopDownMonitor | 4/4 | — | — |
+
+据 V3 更正认识：VMask 头注释"vd_vl_mask 在 vl>128 时回绕"字面成立但**不可观测**（结果恒 0），证明后未改 RTL 字节，记在此处。
