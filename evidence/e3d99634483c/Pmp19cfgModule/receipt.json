@@ -1,0 +1,197 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Pmp19cfgModule",
+ "run_id": "PmpCfgLeaves8b-20261002T134723Z-e3d99634",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Pmp19cfgModule.sv",
+   "kind": "golden",
+   "sha256": "7c6238c7f7012d70b67c31a66b6ebee9546334d9661530b444aa60e5ae580612"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/xs_Pmpcfg_core_next20d.sv",
+   "kind": "repo",
+   "sha256": "4fd0868ee78f6f0819e765a3b0ab1e5fab3685008668759b5900be0430a01edd"
+  },
+  {
+   "path": "rtl/backend/Pmp13cfgModule.sv",
+   "kind": "repo",
+   "sha256": "4f345e3699bac1bafe1869fa80c698cc00c064fcfd7f6054d01b78bc72b19775"
+  },
+  {
+   "path": "rtl/backend/Pmp14cfgModule.sv",
+   "kind": "repo",
+   "sha256": "3fd48f4d8cdc8f91faf3213c60c2fb3d1e6b260b93f47e2241e19f25aac51164"
+  },
+  {
+   "path": "rtl/backend/Pmp15cfgModule.sv",
+   "kind": "repo",
+   "sha256": "00546aeafd42cfb609ebd7520a7399a5aa6d00e3900cabd7ca9589e9e6490650"
+  },
+  {
+   "path": "rtl/backend/Pmp16cfgModule.sv",
+   "kind": "repo",
+   "sha256": "2ae21596af58766168afac3dc7518468998239ddbe309aa39acae84a6a487492"
+  },
+  {
+   "path": "rtl/backend/Pmp17cfgModule.sv",
+   "kind": "repo",
+   "sha256": "3a4108c4a63ea4b93f01cf83990789ddd73fd85e24bcfc91c979fbd78be4bc52"
+  },
+  {
+   "path": "rtl/backend/Pmp18cfgModule.sv",
+   "kind": "repo",
+   "sha256": "67007f0904e2a80eb2c198fc6c887eeab5913daad41665370e1c25e8348b97e4"
+  },
+  {
+   "path": "rtl/backend/Pmp19cfgModule.sv",
+   "kind": "repo",
+   "sha256": "a1b267dcd717a3dd3f305b34a789a3f5c024d4391945b3d5c1b09261b364fe09"
+  },
+  {
+   "path": "rtl/backend/Pmp20cfgModule.sv",
+   "kind": "repo",
+   "sha256": "b2d1d7cd5eeccafcf311ac2f15836961dbd332636728c138321316186495d586"
+  }
+ ],
+ "impl_commit": "e3d99634483c67e849b07ecfdca00433edabc6c9",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "PmpCfgLeaves8b-20261002T134723Z-e3d99634",
+  "top": "Pmp19cfgModule",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 20,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 20,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Pmp19cfgModule",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
