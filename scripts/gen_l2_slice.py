@@ -12,7 +12,8 @@ CoupledL2（tl2chi）的 Slice 在 Scala 里约 230 行，几乎全是 child 之
   to_dir_ds   核 -> 目录 / 数据阵列的输入（dir_* / ds_*）
   wrapper      golden 同名 wrapper Slice：例化核 + 本变体的 Directory / DataStorage / L2Slice（MBIST）
   nav          本文件导航
-  另外整份生成 rtl/uncore/Slice_1.sv / Slice_2.sv / Slice_3.sv（薄 wrapper，同一模板）。
+  另外整份生成 rtl/uncore/Slice_1.sv / Slice_2.sv / Slice_3.sv（薄 wrapper，同一模板），
+  以及 verif/ut/Slice/fm_pins_pre.tcl（FM「匹配前」钉点，见 pins_file 的说明）。
 
 ★为什么目录 / 数据阵列 / MBIST 分发放在 wrapper 里★：四个变体在 golden 里只差这三个 child 的
 单态化版本（Directory_N / DataStorage_N / L2Slice_N）、MBIST bore 数组位宽、以及给 TXREQ 的
@@ -576,7 +577,97 @@ def render(M, widths):
     out = {CORE_FILE: text}
     for v in VARIANTS[1:]:
         out[REPO / 'rtl' / 'uncore' / (v + '.sv')] = variant_file(M, v, widths)
+    out[REPO / 'verif' / 'ut' / 'Slice' / 'fm_pins_pre.tcl'] = pins_file()
     return out
+
+
+# ---------------------------------------------------------------------------
+# FM 匹配前钉点：从各 child 自己签核时用的 fm_pins_pre.tcl **机械收割**，只改层次前缀
+# ---------------------------------------------------------------------------
+# 这些 child 单独签核时，golden 扁平名与重写件的数组名 FM 自己配不上（或配错），各自带了钉点。
+# 放进 Slice 后对象没变、只是多了一层路径：ref 侧 <child>/ -> Slice/<inst>/，impl 侧
+# <child>/ -> Slice_N/u_core/<inst>/（目录 / 数据阵列在 wrapper 里：Slice_N/<inst>/）。
+# 收割法：用 tclsh 执行 child 的钉点文件，set_user_match 换成"只打印"的桩，$top 设为
+# 该 child 在本变体里的 golden 名 —— 得到的就是 child 签核时**真实**钉过的那组对，不重写规则。
+CHILD_PINS = [   # (UT 目录, 本层实例名, 变体 -> child golden 名)
+    ('MSHRCtl', 'mshrCtl', lambda v: 'MSHRCtl'),
+    ('GrantBuffer', 'grantBuf', lambda v: 'GrantBuffer'),
+    ('RequestBuffer', 'reqBuf', lambda v: 'RequestBuffer'),
+    ('Directory', 'directory', lambda v: 'Directory' + SFX[v]),
+    ('DataStorage', 'dataStorage', lambda v: 'DataStorage' + SFX[v]),
+]
+TCL_STUB = r"""
+proc set_user_match {r i} { puts "PIN\t$r\t$i"; return 1 }
+proc error {msg} { puts stderr "child pin file error: $msg"; exit 9 }
+set top [lindex $argv 0]
+source [lindex $argv 1]
+"""
+
+
+def harvest_pins(var):
+    import subprocess
+    import tempfile
+    pairs = []
+    with tempfile.NamedTemporaryFile('w', suffix='.tcl', delete=False) as f:
+        f.write(TCL_STUB)
+        stub = f.name
+    try:
+        for ut, inst, gname in CHILD_PINS:
+            child = gname(var)
+            pf = REPO / 'verif' / 'ut' / ut / 'fm_pins_pre.tcl'
+            r = subprocess.run(['tclsh', stub, child, str(pf)], stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, universal_newlines=True)
+            if r.returncode != 0:
+                raise SystemExit('收割 %s 钉点失败: %s' % (pf, r.stderr.strip()))
+            ipath = ('%s' % inst) if inst in WRAP_INSTS else ('u_core/%s' % inst)
+            n = 0
+            for ln in r.stdout.splitlines():
+                if not ln.startswith('PIN\t'):
+                    continue
+                _, rr, ii = ln.split('\t')
+                rp, ip = 'r:/WORK/%s/' % child, 'i:/WORK/%s/' % child
+                if not rr.startswith(rp) or not ii.startswith(ip):
+                    raise SystemExit('%s: 钉点路径不以 %s / %s 开头: %s %s' % (pf, rp, ip, rr, ii))
+                pairs.append(('r:/WORK/%s/%s/%s' % (var, inst, rr[len(rp):]),
+                              'i:/WORK/%s/%s/%s' % (var, ipath, ii[len(ip):]), child))
+                n += 1
+    finally:
+        os.unlink(stub)
+    if len({r for r, _, _ in pairs}) != len(pairs) or len({i for _, i, _ in pairs}) != len(pairs):
+        raise SystemExit('%s: 收割到的钉点不是一一对应' % var)
+    return pairs
+
+
+def pins_file():
+    L = ['# Slice 家族 FM「匹配前」钉点 —— 自动生成：scripts/gen_l2_slice.py（勿手改）',
+         '#',
+         '# 内容 = 各 child 单独签核时用的钉点（verif/ut/{MSHRCtl,GrantBuffer,RequestBuffer,Directory,',
+         '# DataStorage}/fm_pins_pre.tcl），用 tclsh 机械执行收割、只改层次前缀。本层自己的寄存器保留 golden',
+         '# 名，不钉。set_user_match 只是声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。',
+         '# fail-closed：逐条数 set_user_match 的返回值；拒一条或总数不等于字面整数就 error。',
+         'set ::SLICE_PIN_OK 0',
+         'set ::SLICE_PIN_BAD 0',
+         'proc slice_pin {r i} {',
+         '  if {[set_user_match $r $i]} { incr ::SLICE_PIN_OK } else {',
+         '    incr ::SLICE_PIN_BAD',
+         '    if {$::SLICE_PIN_BAD <= 10} { puts "SLICE_PIN_FAIL: $r <-> $i" }',
+         '  }',
+         '}']
+    for v in VARIANTS:
+        pairs = harvest_pins(v)
+        per = collections.Counter(c for _, _, c in pairs)
+        L.append('if {$top eq "%s"} {' % v)
+        L.append('  # %s' % ', '.join('%s %d' % kv for kv in sorted(per.items())))
+        L.append('  puts "SLICE_PIN_BEGIN %s expect=%d"' % (v, len(pairs)))
+        for r, i, _ in pairs:
+            L.append('  slice_pin %s %s' % (r.replace('[', '\\[').replace(']', '\\]'),
+                                            i.replace('[', '\\[').replace(']', '\\]')))
+        L.append('  puts "SLICE_PIN_END %s ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"' % v)
+        L.append('  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != %d} {' % len(pairs))
+        L.append('    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=%d"' % len(pairs))
+        L.append('  }')
+        L.append('}')
+    return '\n'.join(L) + '\n'
 
 
 def main():
