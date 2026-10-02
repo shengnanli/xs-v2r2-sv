@@ -15,6 +15,10 @@ FM_REF_DEPS_PMP =
 # 关掉 merge_duplicated_registers：让 FM 逐个比，fm_predict 的 passing 模型也只在关掉时严格适用。
 FM_MERGE_DUP = false
 
+# ★vmucp：依据见 verif/fm_target_config/PMP.tcl★ —— 64 位两侧对称死位
+# （PMP 表 cfg 字节里的保留位 c / atomic），由 fm_pins_pre.tcl 一一钉配。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

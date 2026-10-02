@@ -393,6 +393,19 @@ def gen_pmp_rtl():
         (r"io_(pmp|pma)_(\d+)_(addr|mask)", "{0}_{2}[{1}]"),
     ], set(), lambda port, rhs: "  assign %s = %s;" % (port, rhs), "PMP.outputs")
     text = replace_region(text, "pmp_outputs", "\n".join(lines))
+    # 每项 mask 的两个写者谁排在后面：wen_reg 生成序号大的那个 when 后生成、赢
+    wen = pmp_wen_targets()
+    idx = {a: (0 if n == "wen_reg_last_REG" else int(n.rsplit("_", 1)[1])) for n, a in wen.items()}
+    words = []
+    for cb, ab in ((0x3A0, 0x3B0), (0x7C0, 0x7C8)):
+        v = 0
+        for i in range(32):
+            if idx[ab + i] > idx[cb + 2 * (i // 8)]:
+                v |= 1 << i
+        words.append(v)
+    prio = ("  localparam logic [NUM-1:0] ADDR_WRITE_WINS [2] = '{\n"
+            "      32'h%08X,     // PMP 表\n      32'h%08X };   // PMA 表" % (words[0], words[1]))
+    text = replace_region(text, "pmp_mask_prio", prio)
     return path, text
 
 

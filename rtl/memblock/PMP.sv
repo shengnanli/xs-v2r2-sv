@@ -55,6 +55,17 @@ package pmp_pkg;
 
   localparam logic [1:0] A_TOR = 2'd1;
 
+  // ---- 同拍"addr 写"与"cfg 写"都想改 mask 时谁说了算（逐项，bit i = 第 i 项）----
+  //   可达状态下不会同拍（每拍只写一个 CSR），但 golden 的 when 链次序就是这张表：Chisel 里所有 CSR
+  //   映射放在一个 Scala Map 里逐个生成 `when(wen_reg)`，后生成的赢；Map 的遍历次序由键的哈希决定，
+  //   于是每一项的先后各不相同。FM 比的是全部状态组合下的次态函数，必须照抄。
+  //   1 = addr 写赢；0 = cfg 写赢。由 scripts/gen_mmuleaf.py 按 golden wen_reg 的生成序号现算。
+  // BEGIN GENERATED(pmp_mask_prio) —— scripts/gen_mmuleaf.py
+  localparam logic [NUM-1:0] ADDR_WRITE_WINS [2] = '{
+      32'h9D8BFF00,     // PMP 表
+      32'h2CBF0076 };   // PMA 表
+  // END GENERATED
+
   // ---- PMA 复位值（平台地址映射；由 SoC 的 PMAConfigs 生成，0 号项在最后一个 cfg 字节）----
   //   addr 是 pmpaddr 格式（物理地址 >> 2）；mask 由 addr 与 a 预计算。只列非零项，其余项复位为 0。
   localparam logic [63:0] PMA_INIT_CFG [CFG_CSRS] = '{
@@ -196,11 +207,20 @@ module xs_PMP_core
           addr[t][i] <= (t == 0) ? '0 : PMA_INIT_ADDR[i];
           mask[t][i] <= (t == 0) ? '0 : pma_init_mask(i);
         end else begin
-          if (cfg_napot_write)
-            mask[t][i] <= match_mask(new_cfg.a[0], addr[t][i][44:0]);
-          if (addr_wen[t][i] & ~addr_locked) begin
+          if (addr_wen[t][i] & ~addr_locked)
             addr[t][i] <= wdata_reg[ADDR_W-1:0];
-            mask[t][i] <= match_mask(cfg[t][i].a[0], wdata_reg[44:0]);
+          // mask 有两个写者，次序见 ADDR_WRITE_WINS（可达状态下不会同拍，FM 要求照抄）
+          if (ADDR_WRITE_WINS[t][i]) begin
+            if (addr_wen[t][i]) begin
+              if (~addr_locked) mask[t][i] <= match_mask(cfg[t][i].a[0], wdata_reg[44:0]);
+            end else if (cfg_napot_write) begin
+              mask[t][i] <= match_mask(new_cfg.a[0], addr[t][i][44:0]);
+            end
+          end else begin
+            if (cfg_napot_write)
+              mask[t][i] <= match_mask(new_cfg.a[0], addr[t][i][44:0]);
+            else if (addr_wen[t][i] & ~addr_locked)
+              mask[t][i] <= match_mask(cfg[t][i].a[0], wdata_reg[44:0]);
           end
         end
       end
