@@ -10,8 +10,7 @@
 #       由 gen_tb.py 按本文件是否存在生成）。
 #   (2) 双射配对：6221 个 unread 点**全部**是 matched_nc，且逐对都是 fm_pins_pre.tcl 里的钉点
 #       （vmucp_check.py：不在钉点表 0 对、未配对 0 个）；FM 自行猜配 0 对。
-#       构成 = 条目阵列 EntriesAluCsrFenceDiv 的死负载位（与 EntriesAluCsrFenceDiv 单签时同一批，本变体条目里没有输出锥的
-#       负载字段）+ IQ 层 validCntDeqVec 打拍寄存器超出端口宽度的高位（若有）。两侧对称。
+#       构成 = 条目阵列 EntriesAluCsrFenceDiv 的死负载位（与 EntriesAluCsrFenceDiv 单签时同一批，本变体条目里没有输出锥的负载字段）+ IQ 层 validCntDeqVec 打拍寄存器超出端口宽度的高位 + 唤醒队列/忙表里 IQ 父级不读的位（若有）。两侧对称。
 #   (3) 期望：开 vmucp 后 passing 20833 -> 27054（恰好 +6221），failing 仍 0，unread 归 0。
 #       不增即空转，按 fail 处理。
 #   (4) 全零：failing / unverified / unmatched / aborted 全 0。

@@ -250,6 +250,7 @@ run "覆盖证据链闸"       python3 scripts/check_coverage_provenance.py --st
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
 # 好处是新加的生成器自动进闸，不会因为"忘了挂 --check"再敞一个口。
+run "生成器幂等库调用负测"  python3 scripts/test_gen_idempotent.py --selftest
 run "生成器幂等 verif/ut/*"  python3 scripts/test_gen_idempotent.py
 # 仿真 collateral 闸（codex 0160 §Canonical simulation collateral）：
 # verif/sim/collateral/ 是「干净 checkout 能跑起仿真」所缺的 13 个生成物（207 KiB）——
