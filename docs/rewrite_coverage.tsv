@@ -21,24 +21,24 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	935	941	99.4
-unique_design_written	474	1191	39.8
-unique_design_proven	467	1191	39.2
-golden_lines_written	2907963	3902283	74.5
-golden_lines_proven	2570117	3902283	65.9
+fm_targets_configured	1014	1020	99.4
+unique_design_written	537	1191	45.1
+unique_design_proven	529	1191	44.4
+golden_lines_written	2919873	3902283	74.8
+golden_lines_proven	2581930	3902283	66.2
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2739163	3349905	81.8
-incore_golden_lines_proven	2405569	3349905	71.8
+incore_golden_lines_written	2749893	3349905	82.1
+incore_golden_lines_proven	2416202	3349905	72.1
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
-outcore_golden_lines_written	168800	552378	30.6
-outcore_golden_lines_proven	164548	552378	29.8
+outcore_golden_lines_written	169980	552378	30.8
+outcore_golden_lines_proven	165728	552378	30.0
 #
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	16	934	1.7
+legacy_proven_unanchored	16	1012	1.6
 #   合计 6555 golden 行
 #   ITTageTable                                   336 行
 #   ITTageTable_1                                 333 行
@@ -58,6 +58,7 @@ legacy_proven_unanchored	16	934	1.7
 #   TageBTable                                    396 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
+#   CommitIDModule                                     97 行
 #   FDPrefetcherMonitor                               111 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
@@ -101,7 +102,7 @@ FTB	3378	1	REWRITE_L
 Permutation	3264	1	-
 #
 # ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
-#   让人看得见它们的存在，别当成"还没人接的活"★  合计 354445 行
+#   让人看得见它们的存在，别当成"还没人接的活"★  合计 352600 行
 #   TLToAXI4                                    68788 行  variants=2
 #   NCB200                                      36161 行  variants=2
 #   Domain                                      26885 行  variants=2

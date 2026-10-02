@@ -1505,6 +1505,7 @@ Bku	clmulModule	ClmulModule	DEEPER	u_core.clmulModule	ClmulModule		auto_deeper
 Bku	countModule	CountModule	DEEPER	u_core.countModule	CountModule		auto_deeper	
 Bku	cryptoModule	CryptoModule	DEEPER	u_core.cryptoModule	CryptoModule		auto_deeper	
 Bku	miscModule	MiscModule	DEEPER	u_core.miscModule	MiscModule		auto_deeper	
+BranchModule	subModule	SubModule	UNRESOLVED				none	
 BypassNetwork	forwardOrBypassValidVec3_ext	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
 BypassNetwork	forwardOrBypassValidVec3_ext_1	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
 BypassNetwork	forwardOrBypassValidVec3_ext_10	UIntExtractor_27_000011100000000000001010101	UNRESOLVED				none	
@@ -1570,6 +1571,7 @@ ByteMaskTailGen	bodyEn_uintToContTail1sMod128Bits	UIntToContLow1s	ONE_SITE	u_cor
 ByteMaskTailGen	maskEn_maskExtractor	MaskExtractor	ONE_SITE	u_core.u_mask	MaskExtractor		auto_one_site	
 ByteMaskTailGen	prestartEn_uintToContTail1sMod128Bits	UIntToContLow1s	ONE_SITE	u_core.u_body_hi	UIntToContLow1s		auto_one_site	
 ByteMaskTailGen	tailEn_uintToContTail0sMod128Bits	UIntToContLow0s	UNRESOLVED				none	
+CommitIDModule	printCommitIDMod	PrintCommitIDModule	SAME_PATH	printCommitIDMod	PrintCommitIDModule		auto_same	
 Composer	ftb	FTB	SAME_PATH	ftb	FTB		auto_same	
 Composer	ftb_io_ctrl_delay	DelayN	SAME_PATH	ftb_io_ctrl_delay	DelayN		auto_same	
 Composer	ittage	ITTage	SAME_PATH	ittage	ITTage		auto_same	
@@ -1739,6 +1741,7 @@ Directory_3	metaArray	SRAMTemplate_185	SAME_PATH	metaArray	SRAMTemplate_185		aut
 Directory_3	origin_bit_opt	SRAMTemplate_187	SAME_PATH	origin_bit_opt	SRAMTemplate_187		auto_same	
 Directory_3	replacer_sram_opt	SRAMTemplate_186	SAME_PATH	replacer_sram_opt	SRAMTemplate_186		auto_same	
 Directory_3	tagArray	SplittedSRAM_6	SAME_PATH	tagArray	SplittedSRAM_6		auto_same	
+DivUnit	divDataModule	SRT16DividerDataModule	ONE_SITE	u_core.u_div	SRT16DividerDataModule		auto_one_site	
 DuplicatedTagArray	array_0	TagArray	GEN_SITE	g_tarr[0].array_k	TagArray		auto_gen_site_suffix	
 DuplicatedTagArray	array_1	TagArray	GEN_SITE	g_tarr[1].array_k	TagArray		auto_gen_site_suffix	
 DuplicatedTagArray	array_2	TagArray	GEN_SITE	g_tarr[2].array_k	TagArray		auto_gen_site_suffix	
@@ -2022,6 +2025,7 @@ EntriesVlduVstuVseglduVsegstu	othersEntriesSimp_1	OthersEntryVecMem	UNRESOLVED		
 EntriesVlduVstuVseglduVsegstu	simpTransPolicy	EnqPolicy_14	UNRESOLVED				none	
 FAlu	falu	FloatAdder	DEEPER	u_core.falu	FloatAdder		auto_deeper	
 FCVT	fcvt	FPCVT	DEEPER	u_core.fcvt	FPCVT		auto_deeper	
+FDivSqrt	fdiv	FloatDivider	ONE_SITE	u_core.u_fdiv	FloatDivider		auto_one_site	
 FMA	fma	FloatFMA	DEEPER	u_core.fma	FloatFMA		auto_deeper	
 FTBBank	ftb	SplittedSRAMTemplate_2	SAME_PATH	ftb	SplittedSRAMTemplate_2		auto_same	
 FTBBank	mbistPl	MbistPipeFtb	SAME_PATH	mbistPl	MbistPipeFtb		auto_same	
@@ -2201,6 +2205,18 @@ IntRFWBCollideChecker	arbiters_4	WBArbiter_2	SAME_PATH	arbiters_4	WBArbiter_2		a
 IntRFWBCollideChecker	arbiters_5	WBArbiter_3	SAME_PATH	arbiters_5	WBArbiter_3		auto_same	
 IntRFWBCollideChecker	arbiters_6	WBArbiter_3	SAME_PATH	arbiters_6	WBArbiter_3		auto_same	
 IntRFWBCollideChecker	arbiters_7	WBArbiter_3	SAME_PATH	arbiters_7	WBArbiter_3		auto_same	
+IntToFP	post_norm	IntToFP_postnorm	DEEPER	u_core.post_norm	IntToFP_postnorm		auto_deeper	
+IntToFP	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
+IntToFP_1	post_norm	IntToFP_postnorm_1	DEEPER	u_core.post_norm	IntToFP_postnorm_1		auto_deeper	
+IntToFP_1	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
+IntToFP_2	post_norm	IntToFP_postnorm_2	DEEPER	u_core.post_norm	IntToFP_postnorm_2		auto_deeper	
+IntToFP_2	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
+IntToFP_postnorm	rounder	RoundingUnit	DEEPER	u_core.rounder	RoundingUnit		auto_deeper	
+IntToFP_postnorm_1	rounder	RoundingUnit_1	DEEPER	u_core.rounder	RoundingUnit_1		auto_deeper	
+IntToFP_postnorm_2	rounder	RoundingUnit_2	DEEPER	u_core.rounder	RoundingUnit_2		auto_deeper	
+IntToFP_prenorm	lza	LZA	DEEPER	u_core.lza	LZA		auto_deeper	
+IntToFP_prenorm	neg_lzc_clz	CLZ	DEEPER	u_core.neg_lzc_clz	CLZ		auto_deeper	
+IntToFP_prenorm	pos_lzc_clz	CLZ	DEEPER	u_core.pos_lzc_clz	CLZ		auto_deeper	
 InterruptFilter	delayedDebugIntr_delay	DelayN_17	DEEPER	u_core.delayedDebugIntr_delay	DelayN_17		auto_deeper	
 InterruptFilter	delayedIRToHS_delay	DelayN_17	DEEPER	u_core.delayedIRToHS_delay	DelayN_17		auto_deeper	
 InterruptFilter	delayedIRToVS_delay	DelayN_17	DEEPER	u_core.delayedIRToVS_delay	DelayN_17		auto_deeper	
