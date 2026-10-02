@@ -1,0 +1,10 @@
+{
+  "target": "PrefetchFilter",
+  "ut": "PrefetchFilter",
+  "regs": 1800,
+  "outs": 232,
+  "expected": 2032,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "实测预计 2032，差 0（constant_reg 0；vmucp 把 10 位 s3_tlb_resp_paddr_0[9:0] 纳入比较）"
+}

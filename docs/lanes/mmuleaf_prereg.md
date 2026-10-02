@@ -90,3 +90,48 @@ L2 宽度 / 去反压 / 邻区不查 cnt / 忽略 enable / sink 常量 / 查询�
 dont_verify 无 / impl_worktree_dirty false / failing_truncated false。
 
 复跑：`PROOF_COMMIT=05a6fe8428263daba7de64638186ac82f4e55eb1 bash scripts/run_proof.sh StreamBitVectorArray StreamBitVectorArray < /dev/null`
+
+---
+
+## 2. PrefetchFilter（golden 3,252 行 / child RRArbiterInit_5、RRArbiterInit_6）
+
+### 2.1 结构
+
+- 设计源 `SMSPrefetcher.scala` class PrefetchFilter（SMS 的预取请求过滤表，16 项）。可读核 `rtl/memblock/PrefetchFilter.sv`
+  （prefetchfilter_pkg + xs_PrefetchFilter_core + golden 同名 wrapper），代码区 `_GEN_`/`_T_` = 0，readability_audit rc=0。
+- 表项 generate 块 `entries[i]`（region_tag/region_addr/region_bits/filter_bits/paddr_valid/decr_mode）；PLRU 用共享辅助件
+  `xs_PlruReplacer`；两个仲裁器的例化连线在 GENERATED 区，由 `scripts/gen_mmuleaf.py` 按 golden 子模块端口表逐口认领生成。
+- 配置折掉的：alias_bits / debug_source_type（无出口，golden 已删）；TLB 请求 bits 除 vaddr 外全常量（寄存器仍在）。
+  GatedValidRegNext 写成普通 RegNext（功能等价）。
+- child 处置：RRArbiterInit_5 / _6 均 PROVEN_DIRECT，两侧白盒（ref golden 同名件，impl rtl/common 重写件 + 家族核 RRArbiterInit.sv）。无黑盒。
+
+### 2.2 UT（verif/ut/PrefetchFilter；3 seed × 3 档初值 × 200k 拍，串行，commit 5cb5b16e 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=3398572 errors=0 PASS | checks=3398572 errors=0 PASS | (1017) checks=3398572 errors=0 PASS |
+| 7  | checks=3397221 errors=0 PASS | checks=3397221 errors=0 PASS | (7017) checks=3397221 errors=0 PASS |
+| 42 | checks=3390823 errors=0 PASS | checks=3390823 errors=0 PASS | (42017) checks=3390823 errors=0 PASS |
+
+覆盖（seed 1）：alloc 37956 / update 43547 / 去重丢弃 9330 / TLB 请求 23219 / 回填成功 16252 / 作废 3465 / 撤销 TLB 请求 6 /
+L2 预取 行号偶 70639、奇 70343；任一类为 0 即 FAILED。（tb 只改过覆盖计数的注释措辞，激励与比较未动。）
+
+变异自检（scratchpad，seed 1 +0，40k 拍；M6 另以 200k 拍复跑）：13 个里 12 个 CAUGHT。M6（去掉"撤销 TLB 请求"）40k 拍内该事件
+未出现，只被覆盖闸判红（errors=1 = 覆盖不足，不算真抓到），200k 复跑出现 6 处 io_tlb_req_req_valid 真失配，计为 CAUGHT。
+存活 M8（alloc 分支加 `& ~update`）：同一拍同一项不可能既 alloc 又 update（s1_hit 二选一），观测等价。
+
+### 2.3 lane 内非正式试跑（diagnostic-full，不出证）
+
+1. 关 vmucp（commit 5cb5b16e）：native SUCCEEDED，passing 2022 / failing 0 / unmatched 全 0 / constant_reg 0，unread 10 全部 matched_nc
+   （`PFF_PIN_END ok=1792 bad=0`）= s3_tlb_resp_paddr_0[9:0]。
+2. 开 vmucp：native SUCCEEDED，passing **2032**，unread_points 空。
+
+### 2.4 跑前预测（★跑完不许改本节★，登记 docs/fm_predictions/PrefetchFilter.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | 模型 **2032**（regs 1800 = 顶层 1792 + 两仲裁器 lastGrant 4+4；outs 232）；实测预计 **2032**，差 0 |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched 六项 | 全 0（`PFF_PIN_END … ok=1792 bad=0`） |
+| 黑盒 | 无 |
+| mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / true / false |
