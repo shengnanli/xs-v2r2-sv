@@ -30,6 +30,10 @@ FM_REF_DEPS_TLB = $(TLB_CHILDREN)
 # ptw_resp_bits_reg / _1、difftest 打拍），让 FM 逐个比；fm_predict 的 passing 模型也只在关掉时严格适用。
 FM_MERGE_DUP = false
 
+# ★vmucp：依据见 verif/fm_target_config/TLB.tcl★ —— 95 对两侧对称死位（子模块内部 itlb 不读的
+# CSR/sfence/查询 vpn 位 + 两个断言打拍），由本目录 fm_pins.tcl（gen_mmuleaf.py 生成）逐位钉配。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

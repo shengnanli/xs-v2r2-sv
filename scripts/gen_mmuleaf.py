@@ -287,6 +287,156 @@ def gen_ptwfe_rtl():
     return path, text
 
 
+
+# -----------------------------------------------------------------------------
+#  TLB 的「匹配后」钉点 fm_pins.tcl：子模块内部的对称死位
+# -----------------------------------------------------------------------------
+#  TLB 本体 FM 时三个子模块两侧白盒（ref golden、impl 重写件），子模块内部寄存器的名字两侧不同
+#  （golden DelayN 的 REG_<字段> / REG_1_<字段> vs 重写件 u_core/g_chain.stage_reg[级][位]；
+#  golden TLBFA 的 reqVpn{,_1,_2} vs 重写件 u_core/g_port[i].req_vpn_q）。
+#  其中在 itlb 里**没有读者**的那些位 FM 签名分析配不上（unread 点没有扇出可比），
+#  诊断跑实测 95(95) unmatched unread。逐位一一钉上，再由 vmucp 实开比较。
+#  哪些位：
+#    · csr_delay：itlb 不用 priv.{mxr,sum,vmxr,vsum,spvp,dmode,debug} 与 pmm.* —— 两级各 18 位；
+#    · sfence_delay：表项刷新只用 sfence.addr[49:12]（vpn），addr[11:0] 两级各 12 位；
+#    · entries/page_itlb_storage_fa：三个查询口打拍的 vpn 只比到 [26:0]，[37:27] 各 11 位；
+#    · 本体：两个断言打拍寄存器 REG_4 / REG_5（核里叫 assert_resp_ready_ok / assert_miss_has_req）。
+#  DelayN 的载荷拼接顺序从**重写件源码**里 `assign payload_in = {...}` 现读，位宽从 golden 端口表读，
+#  所以字段偏移不是手抄的。钉点数字面 95，少一个多一个都 error。
+TLB_DEAD_CSR_FIELDS = ["priv_mxr", "priv_sum", "priv_vmxr", "priv_vsum", "priv_spvp", "priv_dmode",
+                       "priv_debug", "pmm_mseccfg", "pmm_menvcfg", "pmm_henvcfg", "pmm_hstatus",
+                       "pmm_senvcfg"]
+
+
+def delayn_layout(mod):
+    """{字段名: (lsb, 宽)}，字段名去掉 io_in_ 前缀；按重写件 payload_in 的拼接顺序（高位在前）。"""
+    widths = {}
+    t = open(os.path.join(GOLDEN_DIR, mod + ".sv")).read()
+    m = re.search(r"^module\s+%s\s*\((.*?)^\);" % mod, t, re.S | re.M)
+    for ln in m.group(1).splitlines():
+        pm = PORT_RE.match(ln)
+        if pm and pm.group(3).startswith("io_in_"):
+            widths[pm.group(3)[len("io_in_"):]] = int(pm.group(2)) + 1 if pm.group(2) else 1
+    src = open(os.path.join(REPO, "rtl", "common", mod + ".sv")).read()
+    mm = re.search(r"assign payload_in =\s*\{(.*?)\};", src, re.S)
+    if not mm:
+        raise SystemExit("gen_mmuleaf: %s 重写件里找不到 payload_in 拼接" % mod)
+    order = [x.strip()[len("io_in_"):] for x in mm.group(1).split(",")]
+    if sorted(order) != sorted(widths):
+        raise SystemExit("gen_mmuleaf: %s payload_in 字段集合与 golden 端口表不一致" % mod)
+    lay, lsb = {}, 0
+    for f in reversed(order):
+        lay[f] = (lsb, widths[f])
+        lsb += widths[f]
+    return lay
+
+
+def gen_tlb_post_pins():
+    pairs = []
+    csr = delayn_layout("DelayN_7")
+    for stage, gpre in ((0, "REG_"), (1, "REG_1_")):
+        for f in TLB_DEAD_CSR_FIELDS:
+            lsb, w = csr[f]
+            for b in range(w):
+                r = "r:/WORK/TLB/csr_delay/%s%s_reg%s" % (gpre, f, ("[%d]" % b) if w > 1 else "")
+                i = "i:/WORK/TLB/csr_delay/u_core/g_chain.stage_reg[%d][%d]" % (stage, lsb + b)
+                pairs.append((r, i))
+    sf = delayn_layout("DelayN_9")
+    lsb, w = sf["bits_addr"]
+    for stage, gpre in ((0, "REG_"), (1, "REG_1_")):
+        for b in range(12):
+            pairs.append(("r:/WORK/TLB/sfence_delay/%sbits_addr_reg[%d]" % (gpre, b),
+                          "i:/WORK/TLB/sfence_delay/u_core/g_chain.stage_reg[%d][%d]" % (stage, lsb + b)))
+    for port, gname in ((0, "reqVpn"), (1, "reqVpn_1"), (2, "reqVpn_2")):
+        for b in range(27, 38):
+            pairs.append(("r:/WORK/TLB/entries/page_itlb_storage_fa/%s_reg[%d]" % (gname, b),
+                          "i:/WORK/TLB/entries/page_itlb_storage_fa/u_core/g_port[%d].req_vpn_q_reg[%d]" % (port, b)))
+    pairs.append(("r:/WORK/TLB/REG_4_reg", "i:/WORK/TLB/u_core/assert_resp_ready_ok_reg"))
+    pairs.append(("r:/WORK/TLB/REG_5_reg", "i:/WORK/TLB/u_core/assert_miss_has_req_reg"))
+    if len(pairs) != 95 or len(set(r for r, _ in pairs)) != 95 or len(set(i for _, i in pairs)) != 95:
+        raise SystemExit("gen_mmuleaf: TLB 匹配后钉点不是 95 对一一对应")
+    o = []
+    o.append("# TLB FM「匹配后」钉点 —— 自动生成：scripts/gen_mmuleaf.py（勿手改）")
+    o.append("#")
+    o.append("# 子模块内部 + 本体断言打拍里两侧对称的死位（itlb 不读），名字两侧不同、签名分析配不上，")
+    o.append("# 逐位一一钉上（依据见生成器注释与 verif/fm_target_config/TLB.tcl）。只 set_user_match，")
+    o.append("# 比较照比：不约束 ref、不改 appvar、不加黑盒。fail-closed：逐条数返回值，总数字面 95。")
+    o.append("# 跑在 sidecar 的 safe child interp 里：只用 set_user_match / puts / error。进 fm.log 的输出一律 ASCII。")
+    o.append("set ::TLB_PIN_OK 0")
+    o.append("set ::TLB_PIN_BAD 0")
+    o.append("proc tlb_pin {r i} {")
+    o.append("  if {[set_user_match $r $i]} { incr ::TLB_PIN_OK } else {")
+    o.append("    incr ::TLB_PIN_BAD")
+    o.append("    if {$::TLB_PIN_BAD <= 10} { puts \"TLB_PIN_FAIL: $r <-> $i\" }")
+    o.append("  }")
+    o.append("}")
+    o.append("puts \"TLB_PIN_BEGIN TLB expect=95\"")
+    for r, i in pairs:
+        o.append("tlb_pin %s %s" % (esc(r), esc(i)))
+    o.append("puts \"TLB_PIN_END TLB ok=$::TLB_PIN_OK bad=$::TLB_PIN_BAD\"")
+    o.append("if {$::TLB_PIN_BAD != 0} { error \"TLB_PIN_MISS=$::TLB_PIN_BAD\" }")
+    o.append("if {$::TLB_PIN_OK != 95} { error \"TLB_PIN_COUNT=$::TLB_PIN_OK expect=95\" }")
+    return os.path.join(REPO, "verif", "ut", "TLB", "fm_pins.tcl"), "\n".join(o) + "\n"
+
+
+
+def gen_pmp_rtl():
+    path = os.path.join(REPO, "rtl", "memblock", "PMP.sv")
+    text = open(path).read()
+    plines = golden_port_lines("PMP")
+    text = replace_region(text, "pmp_ports",
+                          "\n".join("  " + ln.strip() + ("," if k < len(plines) - 1 else "")
+                                    for k, ln in enumerate(plines)))
+    outs = [n for d, n in golden_port_dirs("PMP") if d == "output"]
+    lines = gen_assigns(outs, [
+        (r"io_(pmp|pma)_(\d+)_cfg_(\w+)", "{0}_cfg[{1}].{2}"),
+        (r"io_(pmp|pma)_(\d+)_(addr|mask)", "{0}_{2}[{1}]"),
+    ], set(), lambda port, rhs: "  assign %s = %s;" % (port, rhs), "PMP.outputs")
+    text = replace_region(text, "pmp_outputs", "\n".join(lines))
+    return path, text
+
+
+def pmp_wen_targets():
+    """golden wen_reg_last_REG{,_k} -> 它所在的 CSR 地址（从 golden 的赋值语句现读）。"""
+    t = open(os.path.join(GOLDEN_DIR, "PMP.sv")).read()
+    flat = re.sub(r"\s+", " ", t)
+    out = {}
+    for name, addr in re.findall(r"(wen_reg_last_REG(?:_\d+)?) <= io_distribute_csr_w_valid "
+                                 r"& io_distribute_csr_w_bits_addr == 12'h([0-9A-F]+);", flat):
+        out[name] = int(addr, 16)
+    if len(out) != 72:
+        raise SystemExit("gen_mmuleaf: PMP 的 wen 寄存器地址只解析到 %d 个（应 72）" % len(out))
+    return out
+
+
+PMP_WEN = None
+
+
+def pmp_rule(name):
+    global PMP_WEN
+    if PMP_WEN is None:
+        PMP_WEN = pmp_wen_targets()
+    T = {"pmp": 0, "pma": 1}
+    rules = [
+        (r"(pmp|pma)Mapping_cfgMerged_(\d+)", lambda m: ("cfg_merged", "[%d][%s]" % (T[m[1]], m[2]))),
+        (r"(pmp|pma)Mapping_(addr|mask)_(\d+)", lambda m: (m[2], "[%d][%s]" % (T[m[1]], m[3]))),
+        (r"wdata_reg", lambda m: ("wdata_reg", "")),
+    ]
+    hits = []
+    for pat, fn in rules:
+        mm = re.fullmatch(pat, name)
+        if mm:
+            hits.append(fn(mm))
+    if re.fullmatch(r"wen_reg_last_REG(?:_\d+)?", name):
+        a = PMP_WEN[name]
+        for t, cb, ab in ((0, 0x3A0, 0x3B0), (1, 0x7C0, 0x7C8)):
+            if cb <= a < cb + 8 and (a - cb) % 2 == 0:
+                hits.append(("cfg_wen", "[%d][%d]" % (t, (a - cb) // 2)))
+            if ab <= a < ab + 32:
+                hits.append(("addr_wen", "[%d][%d]" % (t, a - ab)))
+    return hits
+
+
 def pf_rule(name):
     rules = [
         (r"entries_(\d+)_(region_tag|region_addr|region_bits|filter_bits|paddr_valid|decr_mode)",
@@ -308,9 +458,10 @@ TARGETS = {
     # 目标名: (UT 目录, 规则函数, 打印前缀)
     "StreamBitVectorArray": ("StreamBitVectorArray", sbva_rule, "SBVA"),
     "PrefetchFilter":       ("PrefetchFilter", pf_rule, "PFF"),
+    "PMP":                  ("PMP", pmp_rule, "PMP"),
 }
 
-RTL_GENERATORS = [gen_prefetchfilter_rtl, gen_tlb_rtl, gen_ptwfe_rtl]
+RTL_GENERATORS = [gen_prefetchfilter_rtl, gen_tlb_rtl, gen_ptwfe_rtl, gen_pmp_rtl]
 
 
 def gen_pins(top, rule, tag):
@@ -367,6 +518,8 @@ def targets():
     out = {}
     for top, (ut, rule, tag) in TARGETS.items():
         out[os.path.join(REPO, "verif", "ut", ut, "fm_pins_pre.tcl")] = gen_pins(top, rule, tag)
+    path, text = gen_tlb_post_pins()
+    out[path] = text
     for g in RTL_GENERATORS:
         path, text = g()
         out[path] = text
