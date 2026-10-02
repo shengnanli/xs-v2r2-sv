@@ -45,4 +45,67 @@ cboHit × {EQ,GE,LT} 各 ≥1，三种 action 各 ≥1。
 可能出错：核的 `triggerMask` 输出在 MemTrigger_3 里悬空——它是组合输出不是寄存器，不应产生
 impl-only 比较点；若 FM 报 impl 侧 unread/unmatched，就把 mask 输出挂参数关掉。
 
+## 2. StoreUnit（golden 2,203 行 / 447 端口 / 233 个寄存器 4021 位；唯一 child = MemTrigger_3）
+
+### 2.1 核
+
+`rtl/memblock/StoreUnit.sv`：`storeunit_pkg`（常量 / 译码与掩码小函数 / 接口 struct）+ `xs_StoreUnit_core`
+（手写，s0 / s1 / s2 / s3+sx 各一节，每节开头写"做什么、依赖哪些输入"）+ golden 同名 wrapper。
+机械派生区（接口 struct、核端口表、MemTrigger_3 例化、整包打拍寄存器字段表、导航、wrapper）与 tb 由
+`scripts/gen_storeunit.py` 从 golden 端口表 / 寄存器表生成（`--check` 幂等；生成时核对：每个端口恰归一组
+且同名字段位宽一致、golden 233 个寄存器 = 生成的 199 + 手写的 34 逐名一致、代码区无 firtool 展平名）。
+寄存器一律保持 golden 展平名（FM 按名配对，无钉点）。子模块 MemTrigger_3 两侧白盒。
+行数：golden 2,203 / impl 2,768（其中手写核约 700 行，其余是生成的 struct / 寄存器表 / wrapper 拆装）；
+`_GEN_` / `_T_<n>` = 0 / 0。
+
+本配置下 golden 里消失的东西（核里不写，文件头有说明）：store 硬件预取一路、DCache 写意图查询除
+req_valid 外的端口、stout/vecstout.ready（恒 1 ⇒ ready 链恒通，核里保留写法、常量 `STOUT_READY`）、
+vec_isFirstIssue（恒 1）、debug_ls、性能计数器。
+
+### 2.2 UT（跑前已跑）
+
+verif/ut/StoreUnit：双例化逐拍比 197 根输出。seed 1/7/42 × {`+vcs+initreg+0`, `+vcs+initreg+random`,
+`+vcs+initreg+<seed>017`}（非常量档 warmup 3000 拍）= 9/9 `checks=200000 errors=0 uncovered=0`。
+28 个覆盖桶均有下限（三路来源 fire、s0 杀、cbo、跨 16B / 16B 内非对齐、needReplay、TLB miss 杀、
+触发器断点 / debug、非对齐入队 / 被拒、s2 MMIO 杀、异常、访问异常、非对齐异常、revoke、缓冲回写、
+不写回、s3/sx 杀、stout / vecstout、反馈命中 / 未命中）。
+（跑完后只改过文件头导航的行号注释；proof commit 上再补跑一档确认，结果记在对账节。）
+
+变异体（seed 1 × initreg+0 × 20k 拍，每个先确认文本变了且能编过）：
+
+| 变异 | errors | 判定 |
+|---|---|---|
+| M1 needFlush 去掉 level 相等项 | 331 | CAUGHT |
+| M2 s1_kill 不排除向量 | 89976 | CAUGHT |
+| M3 异常掩码去掉 bit19 | 4033 | CAUGHT |
+| M4 s2_frm_mab_vec 复位值 1→0 | 2 | CAUGHT（余量薄，换 seed 可能漏；复位域归 FM） |
+| M5 s1_vecActive 复位值 1→0 | 0 | ★UT 漏（s1_valid 置位前必被写过）★ → FM 诊断跑实测 failing 1（passing 7482） |
+| M6 基掩码 h 档 3→1 | 1186 | CAUGHT |
+| M7 misalign_cango 去掉 needReplay | 18902 | CAUGHT |
+| M8 needReplay 去掉 uopIdx 比较 | 5 | CAUGHT（余量薄） |
+| M9 checkfullva 去掉向量 | 4283 | CAUGHT |
+| M10 vstart 移位量写死 | 17485 | CAUGHT |
+| M11 revoke 去掉 TLB miss 打拍项 | 2752 | CAUGHT |
+| M13 访问异常去掉 cbo-MMIO 项 | 2190 | CAUGHT |
+| M14 first_set_byte 漏一位 | 450 | CAUGHT |
+
+### 2.3 非正式试跑（活动工作树未提交字节，`FM_MODE=diagnostic-full FM_FAILING_LIMIT=0`，关 vmucp，不出 receipt）
+
+native SUCCEEDED：passing 7399 / failing 0（未截断）/ unmatched 六项 0 / constant_reg 0 /
+unread_notcompared 84（全部 matched_nc，两侧对称）→ strict 会判 PARTIAL。84 的逐类解释见
+`verif/fm_target_config/StoreUnit.tcl`。耗时约 1 分钟，峰值低于 867 MB 地板。
+
+### 2.4 跑前预测（★跑完不许改★，登记见 docs/fm_predictions/StoreUnit.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | **正好 7483**（模型 7483 = 寄存器 4021 + 输出 3462；差额 0） |
+| constant_reg | 0 |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched 六项 | 全 0 |
+| 黑盒 | 无（MemTrigger_3 两侧白盒） |
+| mode / verdict / vmucp | signoff-strict / SUCCEEDED / true |
+
+可能出错：vmucp 打开后这 84 个死位若两侧次态函数不同会以 failing 出现，那就是真差异，按修 RTL 处理。
+
 ## 对账（跑后追加，不改上面任何数字）
