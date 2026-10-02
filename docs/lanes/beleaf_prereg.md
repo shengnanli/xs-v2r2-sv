@@ -54,3 +54,26 @@ unmatched 0(0)，Not Compared = Constant reg 1 + Unread 120 → strict PARTIAL�
 
 1. vmucp 打开后若 passing 不是正好 +120，判红（空转或有额外点）。
 2. 本节数字来自一次非正式试跑（上文），不是纯模型推算。
+
+## 2. slideupVs2VdTable / slidednVs2VdTable（Permutation 的 child，golden 262 / 365 行，各 0 子模块）
+
+### 2.1 结构
+
+- `rtl/backend/slideupVs2VdTable.sv` / `slidednVs2VdTable.sv`：各一个手写核（把 Scala `compute_vs2_vd`
+  的三角编号公式直接写成 always_comb 双/三重循环）+ golden 同名 wrapper。纯组合。
+- 关键语义：Scala 用 `TruthTable(..., BitPat.N(n))` —— 缺省值是"全 0"而不是 don't-care，所以 golden 的
+  QMC 化简结果在表外输入（uopIdx >= L(L+1)/2）上也是确定的 0；重写件照此输出 0。
+- coverage 第 3 列原为 UNPROVEN，本 lane 先签它们，Permutation 再两侧白盒使用。
+
+### 2.2 UT（verif/ut/SlideVs2VdTable；3 seed × 3 initreg × 200k 拍；无寄存器）
+
+每拍一个 src，256 个输入每 256 拍穷举一遍（200k 拍 = 每个输入 781 次）；golden / 重写件 / Scala 公式 oracle 三方比。
+
+### 2.3 跑前预测（★跑完不许改本节★）
+
+lane 内非正式试跑（commit 0c6aecff，`make fm-*`）：两者 native SUCCEEDED，passing 6 / 7。
+
+| 目标 | expected（模型 = 输出位） | passing 预测 | 其余 |
+|---|---|---|---|
+| slideupVs2VdTable | 6 | **6** | failing/unverified/aborted/unread/unmatched 全 0，无黑盒，无 dont_verify，SUCCEEDED |
+| slidednVs2VdTable | 7 | **7** | 同上 |
