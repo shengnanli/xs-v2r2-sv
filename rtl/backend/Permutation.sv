@@ -159,10 +159,12 @@ module xs_Permutation_core
 
   // ---- 本 uop 剩余的 vl / v0 段（vslide1up/1down 按 uopIdx 线性切，其余按 vdId 切） ----
   logic [12:0]     slide1up_first, slide1dn_first;   // 本 uop 第一个元素的下标
+  logic [7:0]      vd_first;                          // 其余指令：vdId * ele_cnt（<= 7*16）
   logic [7:0]      vl_remain;
   logic [VLEN-1:0] vmask_uop;
   assign slide1up_first = 13'(uop_idx)      << log2_elems_per_uop;
   assign slide1dn_first = 13'(uop_idx[5:1]) << log2_elems_per_uop;
+  assign vd_first       = 8'(vd_id) * 8'(ele_cnt);
   always_comb begin
     if (vslide1up) begin
       vl_remain = (13'(vl) >= slide1up_first) ? 8'(13'(vl) - slide1up_first) : 8'd0;
@@ -171,8 +173,6 @@ module xs_Permutation_core
       vl_remain = (13'(vl) >= slide1dn_first) ? 8'(13'(vl) - slide1dn_first) : 8'd0;
       vmask_uop = mask >> slide1dn_first;
     end else begin
-      logic [7:0] vd_first;          // vdId * ele_cnt <= 7*16
-      vd_first  = 8'(vd_id) * 8'(ele_cnt);
       vl_remain = (vl >= vd_first) ? 8'(vl - vd_first) : 8'd0;
       vmask_uop = mask >> vd_first;
     end
@@ -193,8 +193,6 @@ module xs_Permutation_core
     else if (vslide1dn)
       vstart_remain = (13'(vstart) >= slide1dn_first) ? 8'(13'(vstart) - slide1dn_first) : 8'd0;
     else begin
-      logic [7:0] vd_first;
-      vd_first      = 8'(vd_id) * 8'(ele_cnt);
       vstart_remain = (vd_id == 3'd0) ? vslideup_vstart
                     : (vslideup_vstart >= vd_first) ? 8'(vslideup_vstart - vd_first) : 8'd0;
     end
@@ -291,13 +289,12 @@ module xs_Permutation_core
     vl_remain_vcompress = '0;
     for (int g = 0; g < 8; g++) begin
       if (cmprs_group_oh[g]) begin
-        logic [7:0] lo, hi;
-        lo = 8'(g) * 8'(ele_cnt);
-        hi = 8'(g + 1) * 8'(ele_cnt);
+        // 本组 vd 覆盖元素 [g*ele_cnt, (g+1)*ele_cnt)
         if (g == 7)
-          vl_remain_vcompress = (vl > lo) ? 8'(vl - lo) : 8'd0;
+          vl_remain_vcompress = (vl > 8'(g) * 8'(ele_cnt)) ? 8'(vl - 8'(g) * 8'(ele_cnt)) : 8'd0;
         else
-          vl_remain_vcompress = (vl > hi) ? 8'(ele_cnt) : (vl > lo) ? 8'(vl - lo) : 8'd0;
+          vl_remain_vcompress = (vl > 8'(g + 1) * 8'(ele_cnt)) ? 8'(ele_cnt)
+                              : (vl > 8'(g) * 8'(ele_cnt))     ? 8'(vl - 8'(g) * 8'(ele_cnt)) : 8'd0;
       end
     end
   end
