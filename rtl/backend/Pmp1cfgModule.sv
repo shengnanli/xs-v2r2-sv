@@ -19,7 +19,7 @@ module Pmp1cfgModule (
   output logic         regOut_L
 // END GENERATED
 );
-  xs_Pmpcfg_core u_core (
+  xs_Pmpcfg_core #(.SLOT(1)) u_core (
     .clk     (clock),
     .rst     (reset),
     .wr_en   (w_wen),

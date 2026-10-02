@@ -12,7 +12,10 @@
 //   L（lock）位只作普通字段读写，不在本层回读门控后续写（golden 即如此；锁定对
 //   addr/权限的约束在 PMPEntryHandleModule 层实现，不在本模块）。
 // ---------------------------------------------------------------------------
-module xs_Pmpcfg_core (
+// SLOT is the architectural PMP entry number; it is not a local parent-array index.
+module xs_Pmpcfg_core #(
+  parameter int unsigned SLOT = 0
+) (
   input  logic        clk,
   input  logic        rst,
   input  logic        wr_en,
