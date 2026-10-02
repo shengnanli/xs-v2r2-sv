@@ -68,3 +68,25 @@ L2 宽度 / 去反压 / 邻区不查 cnt / 忽略 enable / sink 常量 / 查询�
 
 可能出错的地方：诊断跑与官方跑只差 mode 与 detached worktree 路径；钉点路径若在 detached worktree 下格式不同会 error 早退
 （表现为 FM 早退而非数字偏离）。
+
+---
+
+# 对账（跑完追加；上文各节未改一字）
+
+## A. StreamBitVectorArray
+
+| 项 | 值 |
+|---|---|
+| 跑前登记 / proof commit | `05a6fe8428263daba7de64638186ac82f4e55eb1`（登记与证明同一 commit） |
+| 证据目录 | `evidence/05a6fe842826/StreamBitVectorArray/` |
+| receipt sha256 | `ffdead3bd2de23b24d7894ed1d53f8a25aa7cef2cc16a8c389dc07424ab17bc4` |
+| impl_closure | `rtl/memblock/StreamBitVectorArray.sv` f0385cee…bcca / `rtl/common/xs_PlruReplacer.sv` bf422014…3709 |
+
+| 预测 | 实测 passing | 差 | 指认 | failing/unverified/aborted/unread_nc | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|---|
+| 1810（预计实测 1794） | 1794 | 16 | constant_reg 16 | 0/0/0/0 | 全 0（`SBVA_PIN_END ok=1692 bad=0`） | 无 | SUCCEEDED |
+
+`fm_predict.py check StreamBitVectorArray` → 「全部对上」rc=0。mode signoff-strict / vmucp true / merge_dup false / allowlist 0 /
+dont_verify 无 / impl_worktree_dirty false / failing_truncated false。
+
+复跑：`PROOF_COMMIT=05a6fe8428263daba7de64638186ac82f4e55eb1 bash scripts/run_proof.sh StreamBitVectorArray StreamBitVectorArray < /dev/null`
