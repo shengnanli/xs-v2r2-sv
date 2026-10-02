@@ -189,7 +189,11 @@ def main():
     known = set(defs)
     users = collections.defaultdict(set)
     for p, t in texts.items():
-        for n in set(PKG_USE.findall(t)) & known:
+        # ★先去注释★：注释里写一句 `mainpipe_pkg::grow_starter`（讲「这张表与那边同一张」）
+        # 不产生任何编译依赖，VCS 不会因此报 SV-LCM-PND。2026-10-02 实测 MissEntry.sv:234
+        # 就是这种形态被判成 CROSS_FILE_PACKAGE —— 误报。判据 C/D 早就先 strip_comments，B 漏了。
+        # 去注释保留行数与代码，真实的 `pkg::` 引用（含同行带尾注释的）照抓，见负测。
+        for n in set(PKG_USE.findall(strip_comments(t))) & known:
             if n not in per_file_defs[p]:
                 users[n].add(rel(p))
     for n, us in sorted(users.items()):
