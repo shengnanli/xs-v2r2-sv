@@ -1,0 +1,651 @@
+
+                                 Formality (R)
+
+               Version V-2023.12-SP3 for linux64 - Apr 13, 2024 
+
+                    Copyright (c) 1988 - 2024 Synopsys, Inc.
+   This software and the associated documentation are proprietary to Synopsys,
+ Inc. This software may only be used in accordance with the terms and conditions
+ of a written license agreement with Synopsys, Inc. All other use, reproduction,
+   or distribution of this software is strictly prohibited.  Licensed Products
+     communicate with Synopsys servers for the purpose of providing software
+    updates, detecting software piracy and verifying that customers are using
+    Licensed Products in conformity with the applicable License Key for such
+  Licensed Products. Synopsys will use information gathered in connection with
+    this process to deliver software updates and pursue software pirates and
+                                   infringers.
+
+ Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+            Inclusivity and Diversity" (Refer to article 000036315 at
+                        https://solvnetplus.synopsys.com)
+
+Build: 8868332
+Hostname: localhost.localdomain
+Current time: Fri Oct  2 09:15:01 2026
+
+Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
+
+Script: /tmp/xsv2-proof-TpFzgn/scripts/fm_eq.tcl
+
+# Formality 等价性检查通用脚本
+# 由 scripts/ut_common.mk 的 fm-% 目标调用，经环境变量传参：
+#   FM_TOP        顶层模块名（golden 变体名；impl 侧包装层与其同名同端口）
+#   FM_REF_SRCS   golden RTL 文件列表（变体 + 其子模块）
+#   FM_IMPL_SRCS  手写 SV 文件列表（参数化核心 + 包装层）
+set top       $env(FM_TOP)
+MscratchModule
+set ref_srcs  $env(FM_REF_SRCS)
+/home/eda/xs-env/G1-canonical/golden-rtl/MscratchModule.sv 
+set impl_srcs $env(FM_IMPL_SRCS)
+/tmp/xsv2-proof-TpFzgn/rtl/backend/cycleModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/instretModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/HipModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/HieModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/HgeieModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/MscratchModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/SscratchModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/VSscratchModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/MnscratchModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/Dscratch0Module.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/Dscratch1Module.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/ScontextModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/TselectModule.sv /tmp/xsv2-proof-TpFzgn/rtl/backend/PrivilegePermitModule.sv
+# ----------------------------------------------------------------------------
+# Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
+# source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
+# 不在注册表 → exit 3, 拒产 native facts)。
+# ----------------------------------------------------------------------------
+set SIDECAR_ON 0
+0
+if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne ""} {
+    set _entry [file normalize [info script]]
+    set _emit  [file join [file dirname $_entry] sidecar fm_native_emit.tcl]
+    source $_emit
+    set SIDECAR_ON 1
+    # 3B验收三审: script closure = **执行时刻字节快照**(sidecar_register_script 把被
+    # 执行文件的字节即时拷入 FM_SIDECAR_OUT 并追加清单; source trace 对嵌套亦触发,
+    # 解析 -encoding 形式)。入口与 emitter 非 source 载入, 在此显式登记快照。
+    # appvar 拦截 = execution trace 加在命令本身 + phase(match 后冻结)+ 写历史。
+    set ::SIDECAR_SOURCED {}
+    sidecar_register_script $_entry
+    sidecar_register_script $_emit
+    sidecar_install_appvar_guard
+}
+# ----------------------------------------------------------------------------
+# ★per-target 证明数据：verif/fm_target_config/<FM_TOP>.tcl★（2026-09-20 拆出）
+#
+# 为什么拆（量出来的，不是印象；基线 main 5c21fc56）：
+#   D57 把工具脚本算作证明输入，child 证书里记着 scripts/fm_eq.tcl 的 sha256。
+#   但它是**每条 lane 都在改的共享文件** —— 任何一条 lane 往白名单里加一个名字，
+#   全仓所有 child 证书同时失效。实测 6 份 verif/proof_certificates/*.json：
+#     fm_eq.tcl            4 个互不相同的哈希，**没有一个**等于 HEAD
+#     fm_native_emit.tcl   2 个哈希，其中 4/6 份**已经等于** HEAD
+#   同为 script_closure、同样被绑定，一个全过期一个多数不过期
+#   ⇒ 问题不在"绑定共享脚本"这个做法，而在 fm_eq.tcl 这一个文件里混着 per-target 数据。
+#   churn 的分布也量过：最近 9 次非 merge 改动有 8 次**只碰 per-target 数据**
+#   （7 次在白名单区、1 次在 LoadQueueReplay 的 appvar 块），只有 cb2c646d 改了共享逻辑。
+#
+# ★这不是放宽★：绑定的总量没减，只是从"整个共享文件"换成"共享逻辑 + 本目标自己
+#   那份数据"。本文件只 source **与 FM_TOP 同名的那一份**（不 glob、不 source 任何
+#   别的目标的文件），所以每个目标的脚本闭包 = {fm_eq.tcl, <top>.tcl}；sidecar 的
+#   source trace 会把它的字节快照进 script_closure.list，于是它照样被 receipt 与
+#   证书的 sha256 绑住。"这个目标没有配置文件"这一情形不能靠"没记就是没有"糊过去
+#   —— 由 scripts/proof_certificate.py 的 green_child_target_config_added 兜住：
+#   证书的 script_closure 里没有 <child>.tcl 时，父 commit 上它必须**不存在**。
+#
+# 契约（fail-closed，详见 verif/fm_target_config/README.md）：
+#   · 文件顶层只许出现注释、fm_target_vmucp_allow、fm_target_appvar 三种东西；
+#     出现别的命令即 exit 3 —— per-target 文件不许含逻辑，逻辑只许在本文件里。
+#   · fm_target_appvar 只许改 sidecar 注册表里的 **OPTIONAL** 项；POLICY.json
+#     钉死的 required appvar 不许被 per-target 覆盖（那是全仓一致的证明语义）。
+#   · 反向那一半由 scripts/check_fm_eq_no_target_data.py 守：谁再往本文件里塞
+#     per-target 数据（按名字分支 / 新目标名），闸判红。
+# ----------------------------------------------------------------------------
+set ::FM_TARGET_CONFIG_DIR ""
+foreach _cand [list \
+        [file join [file dirname [file dirname [file normalize [info script]]]] verif fm_target_config] \
+        [expr {[info exists env(XSSV_HOME)] ? [file join $env(XSSV_HOME) verif fm_target_config] : ""}]] {
+    if {$_cand ne "" && [file isdirectory $_cand]} { set ::FM_TARGET_CONFIG_DIR $_cand ; break }
+}
+if {$::FM_TARGET_CONFIG_DIR eq ""} {
+    puts "FM_MODE_ERROR: 找不到 per-target 配置目录 verif/fm_target_config（info script / XSSV_HOME 都没落在仓库里）"
+    exit 3
+}
+set ::FM_TARGET_VMUCP_ALLOW 0
+0
+set ::FM_TARGET_APPVARS {}
+# 允许 per-target 覆盖的 appvar = sidecar 注册表(scripts/sidecar/fm_native_emit.tcl)
+# 的 OPTIONAL 集合，逐字同步；required 那 10 项一个都不在这里。
+set ::FM_TARGET_APPVAR_ALLOWED {
+    verification_assume_reg_init
+    verification_set_undriven_signals
+    verification_propagate_const_reg_x
+    verification_blackbox_match_mode
+}
+
+    verification_assume_reg_init
+    verification_set_undriven_signals
+    verification_propagate_const_reg_x
+    verification_blackbox_match_mode
+
+proc fm_target_vmucp_allow {} { set ::FM_TARGET_VMUCP_ALLOW 1 }
+proc fm_target_appvar {name value} {
+    if {[lsearch -exact $::FM_TARGET_APPVAR_ALLOWED $name] < 0} {
+        puts "FM_MODE_ERROR: per-target appvar $name 不在允许表内（required appvar 由 POLICY.json 钉死）"
+        exit 3
+    }
+    lappend ::FM_TARGET_APPVARS [list $name $value]
+}
+proc fm_target_apply_appvars {} {
+    foreach _nv $::FM_TARGET_APPVARS {
+        set_app_var [lindex $_nv 0] [lindex $_nv 1]
+        puts "FM_TARGET_APPVAR: $::top [lindex $_nv 0]=[lindex $_nv 1] (依据见 verif/fm_target_config/$::top.tcl)"
+    }
+}
+set ::FM_TARGET_CONFIG [file join $::FM_TARGET_CONFIG_DIR $top.tcl]
+/tmp/xsv2-proof-TpFzgn/verif/fm_target_config/MscratchModule.tcl
+if {[file exists $::FM_TARGET_CONFIG]} {
+    # 先按契约扫一遍再 source：顶层只许 # 注释与那两个声明命令。
+    set _cfgfh [open $::FM_TARGET_CONFIG r]
+    set _cfgtxt [read $_cfgfh]
+    close $_cfgfh
+    foreach _cfgln [split $_cfgtxt "\n"] {
+        set _s [string trim $_cfgln]
+        if {$_s eq "" || [string index $_s 0] eq "#"} { continue }
+        set _cmd [lindex [split $_s] 0]
+        if {$_cmd ne "fm_target_vmucp_allow" && $_cmd ne "fm_target_appvar"} {
+            puts "FM_MODE_ERROR: $::FM_TARGET_CONFIG 出现契约外的命令 $_cmd（per-target 文件不许含逻辑）"
+            exit 3
+        }
+    }
+    source $::FM_TARGET_CONFIG
+}
+# ----------------------------------------------------------------------------
+# FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
+#   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
+#   assembly: 允许**声明的对称黑盒** FM_INTERFACE_ONLY(仅证本层 glue)。
+#   diagnostic-full: 诊断跑, **永不签核**。判定端 fm_verdict.py 对这个 mode
+#     无论数字多好看都不给 SUCCEEDED, 所以它才是"诊断"这件事的真正落点。
+#     在本文件这一侧, 它与 signoff-strict 受**完全相同**的约束(同样拒绝
+#     FM_INTERFACE_ONLY): 诊断性来自 FM_FAILING_LIMIT 这类**增加信息**的旋钮,
+#     不来自任何放宽。
+#     ★2026-09-17 修★ 此前这一行写的是"由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限)",
+#     那是从上轮 xs-v2r2-sv 抄过来的陈述 —— 本仓根本没有 fm_eq_full.tcl,
+#     而 diagnostic-full 又不在下面的 switch 里, 于是 FM_MODE=diagnostic-full
+#     会在读到任何旋钮之前 exit 3。也就是说 b24338e 里我写的那条调用方式
+#     跑不通(Entries canary lane 实测后报的)。现在把它补进 switch。
+#     ★注意这里有个同名不同物的坑★: FM_MODE(本文件, 环境变量)与
+#     fm_verdict.py 的 --mode 是**两套东西**, 词表还差一个。诊断跑的正确姿势是
+#     两边都给 diagnostic-full; 只给判定端也行(FM_MODE 留 signoff-strict),
+#     反正拦住签核的是判定端。
+#   shadow: 同 strict(可读核不驱动输出, 判定归 SHADOW_CHECK)。
+# 诊断能力永不进 signoff: strict 下 FM_INTERFACE_ONLY 非空即报错退出(fail-closed)。
+# ----------------------------------------------------------------------------
+set _fmmode "signoff-strict"
+signoff-strict
+if {[info exists env(FM_MODE)]} { set _fmmode $env(FM_MODE) }
+signoff-strict
+switch -- $_fmmode {
+  "assembly" {
+    if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
+      set_app_var hdlin_interface_only $env(FM_INTERFACE_ONLY)
+    }
+  }
+  "signoff-strict" - "shadow" - "diagnostic-full" {
+    if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
+      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
+      exit 3
+    }
+  }
+  default {
+    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+    exit 3
+  }
+}
+# ★vmucp 为什么是"加强"而不是走过场（2026-09-17，四个实测实例）★
+# 一条 lane 的总结，值得放在这里：**vmucp 提升的那些点，恰恰是仿真按构造够不着的点。**
+# 本轮四个实例，每个都是"UT 全绿、FM 一开加强就现形"：
+#
+#   缺陷                              为什么仿真看不见
+#   ---------------------------------  ------------------------------
+#   打拍寄存器被合并成一份              两份值逐位恒等
+#   保留了该变体不存在的 ld1Cancel 项    c1 恒 0
+#   dataSources 用等值比较而非位测试     仅在非法编码 4'b1001..1111 上分歧
+#   Predictor 的 _pc_*_reg[0]          bit 0 架构恒 0（PC 二字节对齐）
+#
+# 前三个来自 Entries canary（那轮 failing 1030 -> 0），第四个是 Predictor 开 vmucp
+# 之后才冒出来的 17 个失败点 —— 关着 vmucp 时它们是 matched-unread、根本不比。
+# 所以"开加强没发现问题"与"开加强发现了问题"都是有意义的结果；
+# **不开加强则这一整类差异在两种验证手段下都不可见。**
+#
+# 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点。
+# 十一审: unread 六元组**显式全量设置**(305 统一冻结执行语义, 不让工具默认代替声明;
+# emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
+# 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
+set_app_var verification_verify_unread_compare_points false
+false
+# LoadQueueUncache target-scoped strengthening: verify matched unread compare
+# points instead of accepting them as Not-Compared.  The signoff runner obtains
+# this value from the committed declaration/manifest and binds it into input
+# provenance.  It is deliberately not a waiver: true asks FM to prove *more*.
+set _verify_matched_unread_compare_points "false"
+false
+if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
+    [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] ne ""} {
+    set _verify_matched_unread_compare_points \
+        [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
+}
+switch -- $_verify_matched_unread_compare_points {
+  "true" {
+    # xs-v2-sv 新战役: vmucp 白名单从空开始, 每个目标须给出对称双射证明后逐个加入
+    # (上轮 xs-v2r2-sv 的百余目标白名单不继承——G1 基线下须重新挣)。
+    #
+    #   ☆一条通用判断，别只看 TLBFA☆
+    #   申请 vmucp 之前先分清基线里的 unread 点是哪一种：
+    #     · matched_nc（两侧都配上了、都没人读）-> 开 vmucp 就能证，passing 会增
+    #     · unmatched unread（FM 自己配不上）   -> **vmucp 单开必然空转**，
+    #                                             得先用 fm_pins 把它们配起来
+    #   实测里 NCBTransactionQueue{,_1} 与 TLBFA 家族属于后者，白名单上其余多数属于前者
+    #   （每个目标各自的依据见 verif/fm_target_config/<top>.tcl，不再堆在本文件里）。
+    #   分不清就申请，最好的情况是浪费一轮，最坏的情况是把空转读成"加强过了"。
+    #
+    #   ★☆别拿裸错误号当判据☆★（2026-09-17，SSIT lane 查出来的，我这条注释就是祸首）
+    #   本条原先写的是 `FM-036 = 0`，指望用 `grep -c "FM-036" fm.log` 来验。
+    #   **那是个假判据**：fm_shell 会把 `-file` 载入的入口脚本**逐行回显进 fm.log，
+    #   注释也不例外**。所以这行注释本身一进 fm.log，任何目标的
+    #   `grep -c "FM-036"` 就永远 >= 1，判据永远为假。实测：
+    #       grep -n "FM-036" <任一 evidence>/fm.log   -> 命中的就是本注释的回显
+    #       grep -cE "^ *Error:" <同一份>             -> 0
+    #   正确写法是钉在**行首的 Error:** 上：`grep -cE "^ *Error:" fm.log` 必须为 0。
+    #   这和 test_tcl_no_poison.py 防的是同一类事，区别是那道闸盯的是
+    #   fm_verdict.py 的正则，而这次中招的是**人手写的判据** —— 闸没覆盖到的那一半。
+    # ★白名单已拆出本文件★：它在 verif/fm_target_config/<top>.tcl 里 ——
+    #   该文件写了 fm_target_vmucp_allow 即在白名单上；没有文件 = 不在白名单上。
+    #   判定与拆分前逐字节同构（同一条报错文案、同一个 exit 3、同一个发生时刻：
+    #   在下面那几条 set_app_var 之前），拆分本身的行为等价由
+    #   scripts/fm_eq_split_equiv.py 用调用序列差分证过（含判别性自证）。
+    if {!$::FM_TARGET_VMUCP_ALLOW} {
+      puts "FM_MODE_ERROR: matched-unread strengthening needs an explicit whitelist entry; $top is not on it"
+      exit 3
+    }
+  }
+  "false" { }
+  default {
+    puts "FM_MODE_ERROR: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 非法值 $_verify_matched_unread_compare_points"
+    exit 3
+  }
+}
+set_app_var verification_verify_matched_unread_compare_points \
+    $_verify_matched_unread_compare_points
+false
+set_app_var verification_verify_unread_bbox_inputs false
+false
+set_app_var verification_verify_matched_unread_bbox_inputs true
+true
+set_app_var verification_verify_unread_tech_cell_pins true
+true
+set_app_var verification_verify_unread_tech_cell_pg_pins true
+true
+# ----------------------------------------------------------------------------
+# per-target appvar：由 verif/fm_target_config/<top>.tcl 里的 fm_target_appvar 声明，
+# 实测依据写在那份文件里（拆分前这里是一个硬编码的 `if {$top eq "..."}` 块）。
+# ★位置不许动★：必须排在上面那几条全局 appvar **之后** —— per-target 是覆盖，
+#   排到前面就会被全局值盖回去，而且不会有任何人报错。
+# ----------------------------------------------------------------------------
+fm_target_apply_appvars
+# 未解析模块（厂商 SRAM 叶子 array_ext 等外部宏）自动当黑盒——两侧一致即可，
+# SRAM 内部存储不参与 wrapper 逻辑等价比对。
+set_app_var hdlin_unresolved_modules black_box
+black_box
+# 合并由同一逻辑驱动的重复寄存器（如分 bank 的读地址扇出复制：每 bank 一份、
+# 输出级一份，值完全相同）。否则两侧各有 N 个同值寄存器，名字（展平 vs generate
+# 层次）和签名（值相同）都无法配对，导致大量 unmatched。FTQ/IFU 等扇出复制
+# 普遍存在，默认 true。
+# 九审(3A.2 审定补丁3): 该值由 FM_MERGE_DUP 入口变量真实绑定——此前 Makefile 声明
+# FM_MERGE_DUP=false 而这里硬编码 true, manifest 声称值与实际证明语义脱节(fail-closed:
+# 非法值退出, 不静默回落)。
+set _mergedup "true"
+true
+if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
+    set _mergedup [string trim $env(FM_MERGE_DUP)]
+}
+# ★这段注记必须留在 switch **外面**★（2026-09-20 实测，Entries lane 踩到）
+#   它原先写在 `switch -- $_mergedup { ... }` 的花括号里。Tcl 的 switch 体是一张
+#   （★这行的花括号必须成对写★：本文件的结构闸 test_fm_eq_wellformed.py 是**全文**
+#     数左右花括号的，注释里落单一个左花括号就会把它判红。判据粗，但粗得有道理 ——
+#     注释若落在某个 **braced body 里面**，Tcl 收词时照样数它的花括号，那时落单的
+#     花括号是真会炸的。所以宁可让注释配平，不要放宽判据。）
+#   **pattern/body 列表**，不是脚本体 —— `#` 在那里不是注释，整块要按列表语法解析。
+#   下面第 8 行里的 ASCII 双引号 "Merging duplicated registers" 后面紧跟中文逗号，
+#   于是 Tcl 报 `list element in quotes followed by "，★从未到达" instead of space`
+#   (CMD-013)，fm_eq.tcl 在 line 494 停下。
+#   ★后果不是"这个注记没生效"，是 **本仓每一次 FM 都在 setup 阶段死掉**★ ——
+#   这个 switch 无条件执行（_mergedup 默认 "true"），与目标、与 FM_MERGE_DUP
+#   给没给都无关。实测 EntriesFaluFmac：44 秒、0 个比较点、rc=2。
+#   引入于 ee3aa24（"fm_eq.tcl 加 merge_dup 经验注记"），随 main 合进各 lane。
+#   判据教训：**Tcl 里"加一段注释"不是无副作用操作**，加在哪要看它落进了谁的
+#   花括号；而这类改动没有任何 lint 会响，只有真跑一次 FM 才看得见。
+#   ★独立复现（2026-09-20，Sbuffer lane，同一天另一条 lane）★：
+#   现象与上面逐字一致 —— evidence/4648b236a440/Sbuffer/fm.log:557 存着那次的
+#   `Error: list element in quotes ...` 与 `stopped at line 494`，44 秒、0 比较点、
+#   run_proof rc=2、sidecar/native_facts.json 根本没生成。两条 lane 各自撞到又各自
+#   修好，说明这不是某个人手滑的偶发，而是"Tcl 注释位置"这件事在本仓没有守卫。
+#   两道闸现在都在：scripts/check_fm_eq_tcl_syntax.py（本条的权威判据，带元负例）
+#   与 scripts/test_fm_eq_wellformed.py（另补一条：body **顶层** `#` 即使能解析
+#   也要拒 —— 那种情况 Tcl 把 `#` 当成 pattern，是静默错，上面那道解析闸不会响）。
+# ===== verification_merge_duplicated_registers 的经验注记（codex 0168 裁定） =====
+# ★不翻全局默认★。下面是可复核的经验，不是规则：
+#
+# 症状：出现"合并导致的不对称孤儿点"，或 match 阶段长时间不收敛时，
+#       可以 target-scoped 地试 FM_MERGE_DUP=false 并重跑，**对比比较点数与结果**。
+#       关掉它是**加强不是放宽**：不黑盒、不跳点、不约束 ref，只是要求逐个而非
+#       合并后比，比较点只增不减。
+#
+# 实测（2026-09-18，Rob，golden 44,908 行 / 11,639 个寄存器；同设计同机器只差这一个 appvar）：
+#       true   烧掉 5674 s CPU 卡在 "Merging duplicated registers"，★从未到达 match★
+#       false  match 1973 s + verify 1044 s，峰值 14.7 GB，端到端约 72 分钟
+#       证据 evidence/rob-selfcompare-<golden sha256 前缀>/
+# 另有先例：RenameBuffer（failing 20->0、unverified 5147->0、passing 651->5825）、MulUnit。
+#
+# ★不要写成因果★：本仓曾出现过"u_core 这种写法必然导致需要关掉它"这类说法，
+# 已被 0179 的判别性实验证伪（NewDispatch 因此从支持集里移出）。
+# 目前能说的只有上面这些 target-scoped 的观测，没有已确立的普遍机制。
+switch -- $_mergedup {
+  "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
+  default {
+    puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
+    exit 3
+  }
+}
+true
+# ----------------------------------------------------------------------------
+# FM_FAILING_LIMIT —— 失败点上限，**只用于诊断跑**
+#
+# Formality 的 verification_failing_point_limit 默认是 20：撞到第 20 个失败点就
+# 停止验证。后果是 `failing: 20` **几乎总是截断值**，而且它一停，剩下的点全部
+# 计入 `Unverified` —— Predictor 那次终局跑就是 failing=20 / unverified=411955，
+# 两个数其实是同一件事的两面。本仓早先把 failing=20 当成真实数量报过，是错的；
+# 真实数量只能用 limit=0（不限）重跑才拿得到（实测过 262/129/36 这种量级）。
+#
+# ★为什么放开它不是放宽证明★：把上限调高**只会报出更多失败点**，不可能把
+# 不等价变成等价，方向与"放宽"相反。它是**增加信息**，不是降低判据。
+#
+# ★但它仍然只许用于诊断★：limit=0 会让 verify 跑满全部点，代价是墙钟成倍；
+# 且签核的权威判据是 `Unverified compare points` 是否为 0，不是 failing 这个数。
+# 所以用它跑出来的 log **不要**拿去出 receipt，走 --mode diagnostic-full。
+# 未设置时保持 FM 默认（不写 appvar），以免悄悄改变既有 253 个目标的证明语义。
+# ----------------------------------------------------------------------------
+if {[info exists env(FM_FAILING_LIMIT)] && [string trim $env(FM_FAILING_LIMIT)] ne ""} {
+    set _flim [string trim $env(FM_FAILING_LIMIT)]
+    if {![string is integer -strict $_flim] || $_flim < 0} {
+        puts "FM_MODE_ERROR: FM_FAILING_LIMIT 非法值 $_flim（要非负整数，0=不限）"
+        exit 3
+    }
+    set_app_var verification_failing_point_limit $_flim
+    puts "FM_DIAG: verification_failing_point_limit = $_flim（诊断跑，勿用于签核）"
+}
+# Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
+read_sverilog -r -define {SYNTHESIS} $ref_srcs
+No target library specified, default is WORK
+Loading verilog file '/home/eda/xs-env/G1-canonical/golden-rtl/MscratchModule.sv'
+Current container set to 'r'
+1
+# ★ fail-closed：set_top 失败必须立刻终止 ★
+# 教训 A：SourceB 的 set_top 因子模块端口不符失败（FM-156），脚本不检查返回值
+#   继续往下跑，报告变成"reference-only"，最终由 bbox_parse 报出
+#   "FM-184 出现 0 次（须恰 1）" —— 距离真实错误约 800 行，几乎不可读。
+# 教训 B（2026-09-14, agent/err3）：**只 catch 拦不住**。fm_shell 的 set_top 失败时
+#   不抛 Tcl 异常，而是打印 Error 后返回 0，所以 catch 恒为 0，教训 A 那道闸形同虚设。
+#   ICacheMissUnit / MuxBundle 两个目标就是这样再次掉进同一个坑，报的仍是
+#   "FM-184 出现 0 次"；真实第一处错误在约 800 行之前：手写 MuxBundle.sv 里
+#   in_valid[vec_idx] 的变量下标可能越界 → link 时数组越界告警（ELAB-147）未被抑制
+#   → FM-262 → set_top 失败（FM-156）。返回值必须和 catch 一起判。
+# ★ 写注释的人注意：本文件的每一行都会被 fm_shell 原样回显进 fm.log，而
+#   fm_verdict.py 的 qualification 检测（_DONTVERIFY / _ELAB147，见该文件 ~L100）
+#   是拿正则在**整份 log** 上搜的。所以那几个消息号/命令名在本文件里一个字都不能
+#   写全：写全了每个目标都会被误判成"被污染"，直接 PARTIAL。上面那句刻意只写
+#   "ELAB-147" 而不带厂商前缀，就是为了躲开这条正则。（agent/err3 实测踩过：
+#   注释里写全消息号后，MuxBundle 立刻从 SUCCEEDED 变成 elab147=true 的 PARTIAL。）
+proc set_top_or_die { side path } {
+    if {[catch {set_top $path} _m]} {
+        puts "FM_ELAB_ERROR: set_top $side ($path) 抛异常: $_m"
+        exit 3
+    }
+    # set_top 成功返回 1、失败返回 0（不抛异常）
+    if {![string is integer -strict $_m] || $_m == 0} {
+        puts "FM_ELAB_ERROR: set_top $side ($path) 返回 '$_m'（失败）——\
+真实原因见本 log 中紧邻上方的 FM-156 / FM-262 / 数组越界告警，不要看后面的 FM-184/FM-046"
+        exit 3
+    }
+}
+set_top_or_die ref r:/WORK/$top
+Setting top design to 'r:/WORK/MscratchModule'
+Status:   Elaborating design MscratchModule   ...  
+Status:  Implementing inferred operators...
+Top design successfully set to 'r:/WORK/MscratchModule'
+Reference design set to 'r:/WORK/MscratchModule'
+# Implementation: 手写 SV
+read_sverilog -i -define {SYNTHESIS} $impl_srcs
+No target library specified, default is WORK
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/cycleModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/instretModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/HipModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/HieModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/HgeieModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/MscratchModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/SscratchModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/VSscratchModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/MnscratchModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/Dscratch0Module.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/Dscratch1Module.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/ScontextModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/TselectModule.sv'
+Loading verilog file '/tmp/xsv2-proof-TpFzgn/rtl/backend/PrivilegePermitModule.sv'
+Current container set to 'i'
+1
+# ★ fail-closed：set_top 失败必须立刻终止 ★（教训 A/B 见上面 ref 侧的注释）
+set_top_or_die impl i:/WORK/$top
+Setting top design to 'i:/WORK/MscratchModule'
+Status:   Elaborating design MscratchModule   ...  
+Status:   Elaborating design xs_MscratchModule_core   ...  
+Status:  Implementing inferred operators...
+Top design successfully set to 'i:/WORK/MscratchModule'
+Implementation design set to 'i:/WORK/MscratchModule'
+# ----------------------------------------------------------------------------
+# 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
+# 扁平寄存器 data_reg，而 golden 用逐字段寄存器 data_<suffix> 时，等宽字段会令签名
+# 分析产生歧义、且会在重新 match 时互相搅乱。生成器输出「<suffix> <lo> <width>」
+# 映射（FM_FIELD_MAP），这里据此把 ref 的 data_<suffix>_reg[b] 逐位 set_user_match
+# 到 impl 的 u_core/data_reg[lo+b]，使后续 match 只需处理 valid 等非 payload 寄存器。
+# 供 PipelineConnect 及后续扁平 payload 模块复用。
+# ----------------------------------------------------------------------------
+proc match_packed_payload { top } {
+    if {![info exists ::env(FM_FIELD_MAP)] || ![file exists $::env(FM_FIELD_MAP)]} return
+    # ★2026-09-20 补：把 field map 纳入字节快照★
+    # agent/harvest 在核对 receipt 闭包时发现的洞：sidecar 的字节快照挂在 `source`
+    # 上（sidecar_source_trace / sidecar_pin_source），而这里用 **open** 读 field map，
+    # 于是这个文件一个字节都没进 script_closure.list、也没进 receipt。
+    # 实测 NewPipelineConnectPipe_29 的 fm.log 写着 `PACKED_MATCH: 1023 points pinned`
+    # —— ★1023 个 set_user_match 来自一份字节没留档的文件；换掉它 receipt 的 sha256
+    #    一个都不变★。那不是记账问题，是证据完整性的洞：receipt 声称
+    #    「证明输入的字节都在这里」，而实际少记了一个输入。
+    # 这也是 harvest 那批里仅剩 2 个 NEEDS_RERUN 的全部原因（八项检查其余全过）。
+    set _fmpath $::env(FM_FIELD_MAP)
+    set fh [open $_fmpath rb]
+    set _fmraw [read $fh]
+    close $fh
+    if {$::SIDECAR_ON} { sidecar_snapshot_buffer $_fmpath $_fmraw }
+    set n 0
+    foreach ln [split [encoding convertfrom utf-8 $_fmraw] "\n"] {
+        if {![regexp {^(\S+)\s+(\d+)\s+(\d+)$} $ln -> suf lo w]} continue
+        for {set b 0} {$b < $w} {incr b} {
+            set ipath "i:/WORK/$top/u_core/data_reg\[[expr {$lo + $b}]\]"
+            # 多位字段 golden 名为 data_<suf>_reg[b]；1 位字段可能无下标
+            set cands [list "r:/WORK/$top/data_${suf}_reg\[$b\]"]
+            if {$w == 1} { lappend cands "r:/WORK/$top/data_${suf}_reg" }
+            foreach rpath $cands {
+                if {![catch {set_user_match $rpath $ipath}]} { incr n; break }
+            }
+        }
+    }
+    if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
+}
+# 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
+# 四审: sidecar 下 pin 代码进受限 safe child interp(sidecar_pin_source: 一次读取→快照
+# →child 执行同一缓冲; 拿不到父层 guard/trace/证据目录; 嵌套 source 走同一受控入口)。
+if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
+    if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_PRE_TCL) } else { source $env(FM_PIN_PRE_TCL) }
+}
+match_packed_payload $top
+match
+Reference design is 'r:/WORK/MscratchModule'
+Implementation design is 'i:/WORK/MscratchModule'
+Status:  Checking designs...
+Status:  Building verification models...
+Status:  Matching...
+    
+*********************************** Matching Results ***********************************    
+ 128 Compare points matched by name    
+ 64 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 66 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
+
+    Info:  Formality Guide Files (SVF) can improve matching performance and success by automating setup.
+1
+# ----------------------------------------------------------------------------
+# 自动配对 Chisel 展平命名与 SV 数组命名的寄存器：
+#   ref:  name_1_0_reg / array_0_reg[2]   （firtool 把 Vec 展平成带下标后缀的标量名）
+#   impl: name_reg[1][0] / array_reg[0][2]（SV 数组寄存器）
+# 名字过滤匹配不了这种结构差异；条目间逻辑对称时签名分析也常失败，因此按
+# 命名规则显式 set_user_match。impl 路径会依次尝试：原层次、顶层下插入
+# u_core（变体包装层例化参数化核心的固定实例名）。
+# ----------------------------------------------------------------------------
+proc auto_match_flattened_arrays { top } {
+    redirect -variable um_txt {report_unmatched_points}
+
+    # 收集两侧未匹配 DFF；impl 侧建立「展平等价名 → 实际路径」查找表。
+    # 展平等价名 = 去掉 i:/WORK/<top> 前缀和 u_core 层次、数组下标改成 _i 后缀，
+    # 与 ref 侧的 firtool 展平叶子名同构，可直接字符串比对。
+    array set impl_lut {}
+    set refs {}
+    foreach line [split $um_txt "\n"] {
+        if {[regexp {Ref\s+DFF\S*\s+(r:\S+)} $line -> rpath]} {
+            lappend refs $rpath
+        } elseif {[regexp {Impl\s+DFF\S*\s+(i:\S+)} $line -> ipath]} {
+            set rel $ipath
+            regsub "^i:/WORK/${top}/" $rel "" rel
+            regsub "^u_core/" $rel "" rel
+            # name_reg[1][0] -> name_1_0_reg；保留最后一个位下标（多位寄存器）
+            set key $rel
+            regexp {^(.*?)((?:\[\d+\])*)$} $rel -> stem bits
+            set idxs ""
+            set blist [regexp -all -inline {\d+} $bits]
+            if {[regexp {^(.*)_reg$} $stem -> nm]} {
+                # 位下标个数与 ref 侧叶子的展平维度由名字比对自然对齐：
+                # 先全转成 name_i_j_reg 形式，再在比对时允许 ref 带一个 [bit] 尾巴
+                foreach b $blist { append idxs "_$b" }
+                set key "${nm}${idxs}_reg"
+            }
+            set impl_lut($key) $ipath
+        }
+    }
+
+    set n 0
+    foreach rpath $refs {
+        set leaf [file tail $rpath]
+        set dir  [file dirname $rpath]
+        regsub "^r:/WORK/${top}" $dir "" relhier
+        regsub {^/} $relhier "" relhier
+        # ref 叶子可能带位下标尾巴：array_0_reg[2]
+        regexp {^(.*?)((?:\[\d+\])*)$} $leaf -> base bit
+        set bitidx ""
+        foreach b [regexp -all -inline {\d+} $bit] { set bitidx "_$b" }
+        # 候选 key：把 ref 展平名（含可选位下标）规约成 name_i_j_reg
+        set cand ""
+        if {[regexp {^(.*)_reg$} $base -> nm]} {
+            set cand "${nm}${bitidx}_reg"
+        }
+        set hit ""
+        foreach key [list $cand $base] {
+            if {$key ne "" && [info exists impl_lut($key)]} { set hit $key; break }
+        }
+        if {$hit eq ""} { puts "AUTO_MATCH_FAIL: $rpath"; continue }
+        set ipath $impl_lut($hit)
+        if {[catch {set_user_match $rpath $ipath} msg]} {
+            puts "AUTO_MATCH_FAIL: $rpath <-> $ipath ($msg)"
+        } else {
+            puts "AUTO_MATCH: $rpath <-> $ipath"
+            unset impl_lut($hit)
+            incr n
+        }
+    }
+    if {$n > 0} { match }
+}
+auto_match_flattened_arrays $top
+# 模块本地「匹配后」钉点(FM_PIN_TCL, 可选): 层次/叶名差异的一一对应(只 set_user_match, 不约束 ref)。
+if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
+    if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
+    match
+}
+report_unmatched_points > fm_work/$top/unmatched.rpt
+report_matched_points > fm_work/$top/matched.rpt
+# 黑盒对象逐条枚举（assembly 判定依据：观测集合须与 verif/allow/<top>.json 精确相等）。
+# 报告文本按 side(ref/impl) + 属性类别分块；这里原样落盘，解析与判定交 fm_verdict.py，
+# 保证「工具说了什么」与「我们据此判了什么」可分别审计。
+redirect -variable _bb_txt {report_black_boxes}
+set _fh [open fm_work/$top/black_boxes.rpt w]
+file19
+puts $_fh $_bb_txt
+close $_fh
+# unread 点逐条枚举（PASS_DEAD_REF 判定依据：观测集合须与声明**精确相等**）。
+# report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
+set _fh [open fm_work/$top/unread_points.txt w]
+file19
+foreach _p [lsort -unique [report_unmatched_points -reference -status unread -list]] {
+    puts $_fh "ref\t$_p"
+}
+foreach _p [lsort -unique [report_unmatched_points -implementation -status unread -list]] {
+    puts $_fh "impl\t$_p"
+}
+foreach _p [lsort -unique [report_matched_points -not_compared -status unread -list]] {
+    puts $_fh "matched_nc\t$_p"
+}
+close $_fh
+# sidecar: appvar 有效值读回——全部 pin/custom Tcl 之后、verify 之前(schema v7 契约)
+if {$SIDECAR_ON} { sidecar_capture_appvars }
+if {[verify]} {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+} else {
+    report_failing_points > fm_work/$top/failing.rpt
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+}
+Reference design is 'r:/WORK/MscratchModule'
+Implementation design is 'i:/WORK/MscratchModule'
+    
+*********************************** Matching Results ***********************************    
+ 128 Compare points matched by name    
+ 64 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 66 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
+
+Status:  Verifying...
+
+
+********************************* Verification Results *********************************
+Verification SUCCEEDED
+----------------------
+ Reference design: r:/WORK/MscratchModule
+ Implementation design: i:/WORK/MscratchModule
+ 192 Passing compare points
+----------------------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+----------------------------------------------------------------------------------------
+Passing (equivalent)           0       0       0       0     128      64       0     192
+Failing (not equivalent)       0       0       0       0       0       0       0       0
+****************************************************************************************
+FM_RESULT: Verification SUCCEEDED for MscratchModule
+# sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
+if {$SIDECAR_ON} { sidecar_emit $top }
+SIDECAR_NATIVE_FACTS_WRITTEN
+exit
+
+Maximum memory usage for this session: 865 MB
+CPU usage for this session: 2.59 seconds ( 0.00 hours )
+Current time: Fri Oct  2 09:15:42 2026
+Elapsed time: 44 seconds ( 0.01 hours )
+
+Thank you for using Formality (R)!
