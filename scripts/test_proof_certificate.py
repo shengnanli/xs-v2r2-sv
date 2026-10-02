@@ -59,7 +59,7 @@ _TMPDIRS = []
 
 #: 实际会跑到的断言条数。少一条 = 有测试被跳过/提前 return，整体判失败。
 #: 改测试时必须同步改这个数字（这正是它的用途：逼你意识到少跑了）。
-EXPECTED_ASSERTIONS = 77
+EXPECTED_ASSERTIONS = 78
 
 
 def check(name, cond, detail=''):
@@ -621,6 +621,28 @@ def test_old_untracked_receipt_index_cannot_turn_green():
 # ===========================================================================
 # 三、端到端：真实 Formality 日志 + fm_verdict.verdict()
 # ===========================================================================
+E2E_TOP = 'WrBypass'   # REAL_FM_LOG 的 marker 顶层
+
+
+def _reroot_allow(allow, top):
+    """把夹具 allow 的黑盒路径挪到真实日志的顶层 root 下。
+
+    ★为什么必须挪★：fm_verdict 自 0b523bc0（codex 0199 B'）起只比较路径以
+    `<side>:/WORK/<top>/` 开头的黑盒，top 取自日志 marker（这里是 WrBypass）。夹具声明在
+    `/WORK/ParentAsm/` 下 → 观测与声明两侧都被滤成空集 → green_child 判据一条都不跑，
+    三条负例全部"放行"。这不是判据被放宽，而是负测打空了靶；挪回顶层 root 下才真正喂到证书判据。
+    """
+    import copy
+    a = copy.deepcopy(allow)
+    for o in a['objects']:
+        side = o['side']
+        head = '%s:/WORK/' % side
+        assert o['path'].startswith(head), o['path']
+        rest = o['path'][len(head):].split('/', 1)
+        o['path'] = '%s%s/%s' % (head, top, rest[1] if len(rest) > 1 else '')
+    return a
+
+
 def _bbox_from_allow(allow):
     return {(o['side'], o['design'], o['path']) for o in allow['objects']}
 
@@ -629,9 +651,10 @@ def _run_verdict(f, log_text, impl_commit):
     env_home, env_g1 = os.environ.get('XSSV_HOME'), os.environ.get('G1_CANONICAL')
     os.environ['XSSV_HOME'] = str(f.repo_dir)
     os.environ['G1_CANONICAL'] = str(f.g1)
+    allow = _reroot_allow(f.allow, E2E_TOP)
     try:
-        return FV.verdict(log_text, 0, 'assembly', 'WrBypass', 0, None, None,
-                          _bbox_from_allow(f.allow), {}, f.allow, CANON, impl_commit)
+        return FV.verdict(log_text, 0, 'assembly', E2E_TOP, 0, None, None,
+                          _bbox_from_allow(allow), {}, allow, CANON, impl_commit)
     finally:
         for k, v in (('XSSV_HOME', env_home), ('G1_CANONICAL', env_g1)):
             if v is None:
@@ -658,6 +681,11 @@ def test_end_to_end_fm_verdict():
           'v=%s reason=%r' % (v, q.get('reason')))
     NOTES.append('%-52s -> %s (bbox_objects=%s)'
                  % ('e2e:valid_certificate', v, q.get('bbox_objects')))
+    # 靶子必须真被打到：两条 green_child 声明都在顶层 root 内参与了判决（防 0b523bc0 式打空靶）
+    check('e2e:green_child_in_scope', q.get('bbox_objects') == len(f.allow['objects'])
+          and not q.get('bbox_aux_declared'),
+          'bbox_objects=%r aux_declared=%r（声明没进顶层作用域，证书判据没被执行）'
+          % (q.get('bbox_objects'), q.get('bbox_aux_declared')))
 
     g = Fixture(commit_cert=False)
     v2, q2 = _run_verdict(g, log, g.parent_commit)
