@@ -854,6 +854,41 @@ def gen_tb():
     return path, text
 
 
+# ---------------------------------------------------------------------------
+#  assembly 黑盒声明：收割子模块签核时的 allow 声明（只收子模块顶层之下的实例，按 codex 0199 的
+#  「只比 /WORK/<top>/ 下实例」口径；子模块容器里的辅助 design root 不是本目标的实例）
+# ---------------------------------------------------------------------------
+CHILD_ALLOW = {"bankedDataArray": "BankedDataArray", "tagArray": "DuplicatedTagArray"}
+ALLOW_EXPECT = {"array_7_ext": 32, "array_8_ext": 8}    # 每侧的实例数（字面）
+
+
+def gen_allow():
+    objs = []
+    for inst, ctop in CHILD_ALLOW.items():
+        d = json.load(open(os.path.join(REPO, "verif/allow/%s.json" % ctop)))
+        if d.get("target") != ctop:
+            die("verif/allow/%s.json 的 target 不是 %s" % (ctop, ctop))
+        for o in d["objects"]:
+            pre = "%s:/WORK/%s/" % (o["side"], ctop)
+            if not o["path"].startswith(pre):
+                continue          # 辅助 design root（uniquify 副本），不是 <ctop> 的实例
+            if o["class"] != "vendor_macro":
+                die("%s 的 allow 对象 %s 不是 vendor_macro" % (ctop, o["path"]))
+            n = dict(o)
+            n["path"] = "%s:/WORK/%s/%s/%s" % (o["side"], TOP, inst, o["path"][len(pre):])
+            objs.append(n)
+        base = d["baseline"]
+    for side in ("r", "i"):
+        for design, k in ALLOW_EXPECT.items():
+            got = sum(1 for o in objs if o["side"] == side and o["design"] == design)
+            if got != k:
+                die("allow 收割：%s 侧 %s 实例 %d 个，字面期望 %d" % (side, design, got, k))
+    if len({o["path"] for o in objs}) != len(objs):
+        die("allow 收割出重复路径")
+    out = {"schema": "xs-v2-sv-allow-v1", "target": TOP, "baseline": base, "objects": objs}
+    return os.path.join(REPO, "verif/allow/%s.json" % TOP), json.dumps(out, indent=1, ensure_ascii=False) + "\n"
+
+
 def gen_rtl():
     text = open(RTL_FILE).read()
     text = replace_region(text, "dcache-ports", port_block())
@@ -861,7 +896,7 @@ def gen_rtl():
     return RTL_FILE, text
 
 
-GENERATORS = [gen_rtl, gen_pins, gen_tb]
+GENERATORS = [gen_rtl, gen_pins, gen_tb, gen_allow]
 
 
 def main():

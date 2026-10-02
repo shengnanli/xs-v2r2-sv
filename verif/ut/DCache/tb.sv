@@ -11,7 +11,7 @@
 //   · store（整行，掩码随机）、原子（发一条等回应）、CMO、forward_mshr 查询、l2_hint、wfi 段；
 //   · L2 模型：A 通道 Acquire → 延迟 2..24 拍回 GrantData(2 拍)/Grant，CBO → CBOAck；
 //     C 通道 Release[Data] 收完 → ReleaseAck；B 通道偶发 Probe（toN/toB/toT）；E 通道随机 ready；
-//     D 消息偶发 denied / corrupt；千分之三的拍插一个随机 opcode / source 的"噪声" D 消息（覆盖非法 opcode）；
+//     D 消息偶发 denied / corrupt；千分之三的拍插一个非法 opcode 的"噪声" D 消息（覆盖 d_ready=0 那一支）；
 //   · CtrlUnit（TL-UL 寄存器口）每约 1500 拍写一次 8 个掩码与 ctrl，注入 tag / data 伪 ECC 错误。
 // 初值档（Makefile 的 INITREG）：
 //   0      : +vcs+initreg+0，全设计 0，复位后全部输出逐拍全比（cmp_all=1）；
@@ -4381,6 +4381,7 @@ module tb;
   dmsg_t dq [$];
   int    d_beat = 0;
   bit    d_noise = 0;       // 本拍 D 上是噪声消息（不从队列出）
+  logic [3:0] noise_ops [11] = '{4'h0, 4'h1, 4'h2, 4'h3, 4'h7, 4'h9, 4'hA, 4'hB, 4'hC, 4'hD, 4'hF};
   int    c_beat = 0;
   bit    probe_pending = 0;
   bit    amo_pending = 0;
@@ -4445,7 +4446,9 @@ module tb;
     end else if ($urandom_range(999) < 3) begin
       d_noise = 1;
       auto_client_out_d_valid        = 1;
-      auto_client_out_d_bits_opcode  = 4'($urandom());
+      // 只用 DCache 不认的 opcode（d_ready 恒 0、不分给任何子模块）：覆盖非法 opcode 那一支，
+      // 又不会把合法 Grant 塞给空闲 MSHR、把 L2 模型与 MissQueue 的状态搅乱（那会让后半程 MSHR 卡死、覆盖塌掉）
+      auto_client_out_d_bits_opcode  = noise_ops[$urandom_range(10)];
       auto_client_out_d_bits_param   = 2'($urandom());
       auto_client_out_d_bits_size    = 3'($urandom());
       auto_client_out_d_bits_source  = 6'($urandom());
