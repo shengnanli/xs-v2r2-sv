@@ -3,8 +3,9 @@
 """gen_vmergebuf.py —— VMergeBuffer 家族（VLMergeBufferImp / VSMergeBufferImp）的机械派生区。
 
 产物（全部从 G1 golden 端口表现场读出，不抄手）：
-  rtl/memblock/VLMergeBufferImp.sv
+  rtl/memblock/vmergebuffer_pkg.sv
     · GENERATED(structs)         package 里的端口 struct：成员 = 两个变体端口的并集
+  rtl/memblock/VLMergeBufferImp.sv
     · GENERATED(deq_pipe)        核里 NewPipelineConnectPipe_29 的端口连线
     · GENERATED(uop_store)       核里"入队照抄、出队原样送出"的 uop 字段：每字段一个数组
     · GENERATED(wrapper_VLMergeBufferImp)   golden 同名 wrapper（端口逐行照 golden）
@@ -30,6 +31,7 @@ import sys
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
+RTL_PKG = REPO / 'rtl' / 'memblock' / 'vmergebuffer_pkg.sv'
 RTL_VL = REPO / 'rtl' / 'memblock' / 'VLMergeBufferImp.sv'
 RTL_VS = REPO / 'rtl' / 'memblock' / 'VSMergeBufferImp.sv'
 TB = REPO / 'verif' / 'ut' / 'VMergeBuffer' / 'tb.sv'
@@ -91,7 +93,7 @@ def golden_entry_fields(mod):
     excs = {int(m.group(1)) for n in names for m in [re.fullmatch(r'exceptionVec_(\d+)', n)] if m}
     assert excs == EXC_NOS[mod], f'{mod}: golden 条目异常位 {sorted(excs)} != exceptionOut'
     sel = int(re.search(VARIANTS[mod]['exc'] + r" = 24'h([0-9A-Fa-f_]+);",
-                        RTL_VL.read_text()).group(1).replace('_', ''), 16)
+                        RTL_PKG.read_text()).group(1).replace('_', ''), 16)
     assert sel == sum(1 << b for b in excs), f'{mod}: 包里的 {VARIANTS[mod]["exc"]} 与 golden 不一致'
     return {n for n in names if not n.startswith('exceptionVec_')} | {'exceptionVec'}
 
@@ -752,8 +754,10 @@ def main():
     check = '--check' in sys.argv[1:]
     uop, groups, pipe29 = build_structs()
     outputs = {}
+    t = RTL_PKG.read_text()
+    t = replace_region(t, 'structs', gen_structs(uop, groups), RTL_PKG)
+    outputs[RTL_PKG] = t
     t = RTL_VL.read_text()
-    t = replace_region(t, 'structs', gen_structs(uop, groups), RTL_VL)
     t = replace_region(t, 'deq_pipe', gen_deq_pipe(uop, groups, pipe29), RTL_VL)
     t = replace_region(t, 'uop_store', gen_uop_store(uop), RTL_VL)
     t = replace_region(t, 'wrapper_VLMergeBufferImp', gen_wrapper('VLMergeBufferImp', uop, groups), RTL_VL)
