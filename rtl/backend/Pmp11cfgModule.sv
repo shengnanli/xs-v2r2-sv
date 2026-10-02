@@ -15,16 +15,16 @@ module Pmp11cfgModule (
   output logic regOut_L
 );
   xs_Pmpcfg_core #(.SLOT(11)) u_core (
-    .clock(clock),
-    .reset(reset),
-    .w_wen(w_wen),
-    .w_wdata(w_wdata),
-    .rdata(rdata),
-    .regOut_R(regOut_R),
-    .regOut_W(regOut_W),
-    .regOut_X(regOut_X),
-    .regOut_A(regOut_A),
-    .regOut_L(regOut_L)
+    .clk     (clock),
+    .rst     (reset),
+    .wr_en   (w_wen),
+    .wr_data (w_wdata),
+    .rd_data (rdata),
+    .cfg_r   (regOut_R),
+    .cfg_w   (regOut_W),
+    .cfg_x   (regOut_X),
+    .cfg_a   (regOut_A),
+    .cfg_l   (regOut_L)
   );
 endmodule
 // END GENERATED(pmpcfg-leaves8)
