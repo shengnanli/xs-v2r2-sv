@@ -349,6 +349,8 @@ module xs_VIMac64b_core (
     endcase
   endfunction
 
+  // 四种 sew 的结果按 sew_oh_s2 "与或"合成（golden 是 Mux1H）：sew_oh_s2 是不复位的寄存器，
+  // 上电值可以不是 one-hot，这时 golden 得到的是各路按位或 —— 所以下面一律用 |=，不能写成覆盖。
   logic [XLEN-1:0] product_shifted;   // 每个元素：乘积块 >> (sew-1) 的低 sew 位
   logic [7:0]      rnd_inc_byte;      // 舍入进位，放在每个元素的最低字节
 
@@ -357,28 +359,28 @@ module xs_VIMac64b_core (
     rnd_inc_byte    = '0;
     if (sew_oh_s2[0]) begin
       for (int e = 0; e < 8; e++) begin
-        product_shifted[8*e +: 8] = product_q[16*e + 7 +: 8];
-        rnd_inc_byte[e] = round_inc(vxrm_s2, product_q[16*e + 7], product_q[16*e + 6],
+        product_shifted[8*e +: 8] |= product_q[16*e + 7 +: 8];
+        rnd_inc_byte[e] |= round_inc(vxrm_s2, product_q[16*e + 7], product_q[16*e + 6],
                                     product_q[16*e +: 6] != '0);
       end
     end
     if (sew_oh_s2[1]) begin
       for (int e = 0; e < 4; e++) begin
-        product_shifted[16*e +: 16] = product_q[32*e + 15 +: 16];
-        rnd_inc_byte[2*e] = round_inc(vxrm_s2, product_q[32*e + 15], product_q[32*e + 14],
+        product_shifted[16*e +: 16] |= product_q[32*e + 15 +: 16];
+        rnd_inc_byte[2*e] |= round_inc(vxrm_s2, product_q[32*e + 15], product_q[32*e + 14],
                                       product_q[32*e +: 14] != '0);
       end
     end
     if (sew_oh_s2[2]) begin
       for (int e = 0; e < 2; e++) begin
-        product_shifted[32*e +: 32] = product_q[64*e + 31 +: 32];
-        rnd_inc_byte[4*e] = round_inc(vxrm_s2, product_q[64*e + 31], product_q[64*e + 30],
+        product_shifted[32*e +: 32] |= product_q[64*e + 31 +: 32];
+        rnd_inc_byte[4*e] |= round_inc(vxrm_s2, product_q[64*e + 31], product_q[64*e + 30],
                                       product_q[64*e +: 30] != '0);
       end
     end
     if (sew_oh_s2[3]) begin
-      product_shifted = product_q[126:63];
-      rnd_inc_byte[0] = round_inc(vxrm_s2, product_q[63], product_q[62], product_q[61:0] != '0);
+      product_shifted |= product_q[126:63];
+      rnd_inc_byte[0] |= round_inc(vxrm_s2, product_q[63], product_q[62], product_q[61:0] != '0);
     end
   end
 

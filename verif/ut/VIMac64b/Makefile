@@ -8,6 +8,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/VIMac64b.sv
 
 FM_VARIANTS = VIMac64b
 FM_MERGE_DUP = false
+# vmucp（加强不是放宽）：对称死位的依据与六条证据见 verif/fm_target_config/VIMac64b.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

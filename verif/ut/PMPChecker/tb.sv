@@ -28,7 +28,11 @@ module tb;
     int unsigned k;
     k = $urandom_range(0, 31);
     if (k == 0) return {$urandom, $urandom};
-    if (k < 6)  return 48'h3801FFF0 + 48'($urandom_range(0, 32'h1020));
+    if (k < 4)  return 48'h3801FFF0 + 48'($urandom_range(0, 32'h1020));
+    // 调试段的四个边界点：段外最后一个 / 段内第一个 / 段内最后一个 / 段外第一个
+    if (k < 6)  return 48'h3801FFFF + (($urandom_range(0, 1) == 0) ? 48'h0 : 48'h1000) + 48'($urandom_range(0, 1));
+    // 区边界（低 12 位为 0）：TOR 的 "上一项基址 <= paddr" 取等号只有在这里才分得出 >= 与 >
+    if (k < 14) return {36'($urandom_range(0, 21)), 12'h0};
     return {36'($urandom_range(0, 21)), 12'($urandom)};
   endfunction
   function automatic logic [1:0] p0_rnd_a(input int unsigned mode, input int unsigned idx);
@@ -400,6 +404,11 @@ module tb;
   logic p0_s0_io_resp_mmio = '0, p0_s1_io_resp_mmio = '0;
   wire  p0_g_io_resp_atomic, p0_i_io_resp_atomic;
   logic p0_s0_io_resp_atomic = '0, p0_s1_io_resp_atomic = '0;
+  int p0_cov_req_on_region_boundary = 0;
+  int p0_cov_dbg_first = 0;
+  int p0_cov_dbg_last = 0;
+  int p0_cov_dbg_before = 0;
+  int p0_cov_dbg_after = 0;
   int p0_cov_dbg_range_blocked = 0;
   int p0_cov_dbg_range_allowed = 0;
   int p0_cov_mmode = 0;
@@ -1153,7 +1162,11 @@ module tb;
     int unsigned k;
     k = $urandom_range(0, 31);
     if (k == 0) return {$urandom, $urandom};
-    if (k < 6)  return 48'h3801FFF0 + 48'($urandom_range(0, 32'h1020));
+    if (k < 4)  return 48'h3801FFF0 + 48'($urandom_range(0, 32'h1020));
+    // 调试段的四个边界点：段外最后一个 / 段内第一个 / 段内最后一个 / 段外第一个
+    if (k < 6)  return 48'h3801FFFF + (($urandom_range(0, 1) == 0) ? 48'h0 : 48'h1000) + 48'($urandom_range(0, 1));
+    // 区边界（低 12 位为 0）：TOR 的 "上一项基址 <= paddr" 取等号只有在这里才分得出 >= 与 >
+    if (k < 14) return {36'($urandom_range(0, 21)), 12'h0};
     return {36'($urandom_range(0, 21)), 12'($urandom)};
   endfunction
   function automatic logic [1:0] p2_rnd_a(input int unsigned mode, input int unsigned idx);
@@ -1493,6 +1506,11 @@ module tb;
   logic p2_s0_io_resp_instr = '0, p2_s1_io_resp_instr = '0;
   wire  p2_g_io_resp_mmio, p2_i_io_resp_mmio;
   logic p2_s0_io_resp_mmio = '0, p2_s1_io_resp_mmio = '0;
+  int p2_cov_req_on_region_boundary = 0;
+  int p2_cov_dbg_first = 0;
+  int p2_cov_dbg_last = 0;
+  int p2_cov_dbg_before = 0;
+  int p2_cov_dbg_after = 0;
   int p2_cov_dbg_range_blocked = 0;
   int p2_cov_dbg_range_allowed = 0;
   int p2_cov_mmode = 0;
@@ -2183,7 +2201,11 @@ module tb;
     int unsigned k;
     k = $urandom_range(0, 31);
     if (k == 0) return {$urandom, $urandom};
-    if (k < 6)  return 48'h3801FFF0 + 48'($urandom_range(0, 32'h1020));
+    if (k < 4)  return 48'h3801FFF0 + 48'($urandom_range(0, 32'h1020));
+    // 调试段的四个边界点：段外最后一个 / 段内第一个 / 段内最后一个 / 段外第一个
+    if (k < 6)  return 48'h3801FFFF + (($urandom_range(0, 1) == 0) ? 48'h0 : 48'h1000) + 48'($urandom_range(0, 1));
+    // 区边界（低 12 位为 0）：TOR 的 "上一项基址 <= paddr" 取等号只有在这里才分得出 >= 与 >
+    if (k < 14) return {36'($urandom_range(0, 21)), 12'h0};
     return {36'($urandom_range(0, 21)), 12'($urandom)};
   endfunction
   function automatic logic [1:0] p12_rnd_a(input int unsigned mode, input int unsigned idx);
@@ -2690,6 +2712,11 @@ module tb;
   logic p12_s0_io_resp_mmio = '0, p12_s1_io_resp_mmio = '0;
   wire  p12_g_io_resp_atomic, p12_i_io_resp_atomic;
   logic p12_s0_io_resp_atomic = '0, p12_s1_io_resp_atomic = '0;
+  int p12_cov_req_on_region_boundary = 0;
+  int p12_cov_dbg_first = 0;
+  int p12_cov_dbg_last = 0;
+  int p12_cov_dbg_before = 0;
+  int p12_cov_dbg_after = 0;
   int p12_cov_dbg_range_blocked = 0;
   int p12_cov_dbg_range_allowed = 0;
   int p12_cov_mmode = 0;
@@ -2704,6 +2731,7 @@ module tb;
   int p12_cov_pma_hit_last_only = 0;
   int p12_cov_pma_default = 0;
   int p12_cov_atomic1 = 0;
+  int p12_cov_reset_after_arm = 0;
   int p12_cov_cmd0 = 0;
   int p12_cov_cmd1 = 0;
   int p12_cov_cmd2 = 0;
@@ -5279,7 +5307,7 @@ module tb;
       p12_io_req_valid = 1'($urandom);
       p12_io_req_bits_addr = 48'({$urandom, $urandom});
       p12_io_req_bits_cmd = 3'($urandom);
-      p12_reset = (cyc < RESET_CYC) || ($urandom_range(0, 19999) == 0);
+      p12_reset = (cyc < RESET_CYC) || ($urandom_range(0, 799) == 0);
       begin : stim_p12
         p12_io_check_env_pmp_0_cfg_a = p12_rnd_a(p12_mode, 0);
         p12_io_check_env_pmp_0_addr = p12_rnd_addr();
@@ -5499,6 +5527,11 @@ module tb;
         end
         p0_s1_io_resp_atomic |= p0_g_io_resp_atomic;
         p0_s0_io_resp_atomic |= ~p0_g_io_resp_atomic;
+        if (p0_io_req_bits_addr[11:0] == 12'h0) p0_cov_req_on_region_boundary++;
+        if (p0_io_req_bits_addr == 48'h38020000) p0_cov_dbg_first++;
+        if (p0_io_req_bits_addr == 48'h38020fff) p0_cov_dbg_last++;
+        if (p0_io_req_bits_addr == 48'h3801ffff) p0_cov_dbg_before++;
+        if (p0_io_req_bits_addr == 48'h38021000) p0_cov_dbg_after++;
         if ((p0_io_req_bits_addr >= 48'h38020000 && p0_io_req_bits_addr <= 48'h38020fff) && !p0_io_check_env_debug) p0_cov_dbg_range_blocked++;
         if ((p0_io_req_bits_addr >= 48'h38020000 && p0_io_req_bits_addr <= 48'h38020fff) && p0_io_check_env_debug) p0_cov_dbg_range_allowed++;
         if (p0_io_check_env_mode[1]) p0_cov_mmode++;
@@ -5527,6 +5560,11 @@ module tb;
         end
         p2_s1_io_resp_mmio |= p2_g_io_resp_mmio;
         p2_s0_io_resp_mmio |= ~p2_g_io_resp_mmio;
+        if (p2_io_req_bits_addr[11:0] == 12'h0) p2_cov_req_on_region_boundary++;
+        if (p2_io_req_bits_addr == 48'h38020000) p2_cov_dbg_first++;
+        if (p2_io_req_bits_addr == 48'h38020fff) p2_cov_dbg_last++;
+        if (p2_io_req_bits_addr == 48'h3801ffff) p2_cov_dbg_before++;
+        if (p2_io_req_bits_addr == 48'h38021000) p2_cov_dbg_after++;
         if ((p2_io_req_bits_addr >= 48'h38020000 && p2_io_req_bits_addr <= 48'h38020fff) && !p2_io_check_env_debug) p2_cov_dbg_range_blocked++;
         if ((p2_io_req_bits_addr >= 48'h38020000 && p2_io_req_bits_addr <= 48'h38020fff) && p2_io_check_env_debug) p2_cov_dbg_range_allowed++;
         if (p2_io_check_env_mode[1]) p2_cov_mmode++;
@@ -5576,6 +5614,11 @@ module tb;
         end
         p12_s1_io_resp_atomic |= p12_g_io_resp_atomic;
         p12_s0_io_resp_atomic |= ~p12_g_io_resp_atomic;
+        if (p12_io_req_bits_addr[11:0] == 12'h0) p12_cov_req_on_region_boundary++;
+        if (p12_io_req_bits_addr == 48'h38020000) p12_cov_dbg_first++;
+        if (p12_io_req_bits_addr == 48'h38020fff) p12_cov_dbg_last++;
+        if (p12_io_req_bits_addr == 48'h3801ffff) p12_cov_dbg_before++;
+        if (p12_io_req_bits_addr == 48'h38021000) p12_cov_dbg_after++;
         if ((p12_io_req_bits_addr >= 48'h38020000 && p12_io_req_bits_addr <= 48'h38020fff) && !p12_io_check_env_debug) p12_cov_dbg_range_blocked++;
         if ((p12_io_req_bits_addr >= 48'h38020000 && p12_io_req_bits_addr <= 48'h38020fff) && p12_io_check_env_debug) p12_cov_dbg_range_allowed++;
         if (p12_io_check_env_mode[1]) p12_cov_mmode++;
@@ -5590,6 +5633,7 @@ module tb;
         if ((p12_u_gold.res_pma_r_31 && !(p12_u_gold.res_pma_r || p12_u_gold.res_pma_r_1 || p12_u_gold.res_pma_r_2 || p12_u_gold.res_pma_r_3 || p12_u_gold.res_pma_r_4 || p12_u_gold.res_pma_r_5 || p12_u_gold.res_pma_r_6 || p12_u_gold.res_pma_r_7 || p12_u_gold.res_pma_r_8 || p12_u_gold.res_pma_r_9 || p12_u_gold.res_pma_r_10 || p12_u_gold.res_pma_r_11 || p12_u_gold.res_pma_r_12 || p12_u_gold.res_pma_r_13 || p12_u_gold.res_pma_r_14 || p12_u_gold.res_pma_r_15 || p12_u_gold.res_pma_r_16 || p12_u_gold.res_pma_r_17 || p12_u_gold.res_pma_r_18 || p12_u_gold.res_pma_r_19 || p12_u_gold.res_pma_r_20 || p12_u_gold.res_pma_r_21 || p12_u_gold.res_pma_r_22 || p12_u_gold.res_pma_r_23 || p12_u_gold.res_pma_r_24 || p12_u_gold.res_pma_r_25 || p12_u_gold.res_pma_r_26 || p12_u_gold.res_pma_r_27 || p12_u_gold.res_pma_r_28 || p12_u_gold.res_pma_r_29 || p12_u_gold.res_pma_r_30))) p12_cov_pma_hit_last_only++;
         if (!(p12_u_gold.res_pma_r || p12_u_gold.res_pma_r_1 || p12_u_gold.res_pma_r_2 || p12_u_gold.res_pma_r_3 || p12_u_gold.res_pma_r_4 || p12_u_gold.res_pma_r_5 || p12_u_gold.res_pma_r_6 || p12_u_gold.res_pma_r_7 || p12_u_gold.res_pma_r_8 || p12_u_gold.res_pma_r_9 || p12_u_gold.res_pma_r_10 || p12_u_gold.res_pma_r_11 || p12_u_gold.res_pma_r_12 || p12_u_gold.res_pma_r_13 || p12_u_gold.res_pma_r_14 || p12_u_gold.res_pma_r_15 || p12_u_gold.res_pma_r_16 || p12_u_gold.res_pma_r_17 || p12_u_gold.res_pma_r_18 || p12_u_gold.res_pma_r_19 || p12_u_gold.res_pma_r_20 || p12_u_gold.res_pma_r_21 || p12_u_gold.res_pma_r_22 || p12_u_gold.res_pma_r_23 || p12_u_gold.res_pma_r_24 || p12_u_gold.res_pma_r_25 || p12_u_gold.res_pma_r_26 || p12_u_gold.res_pma_r_27 || p12_u_gold.res_pma_r_28 || p12_u_gold.res_pma_r_29 || p12_u_gold.res_pma_r_30 || p12_u_gold.res_pma_r_31)) p12_cov_pma_default++;
         if (p12_g_io_resp_atomic) p12_cov_atomic1++;
+        if (p12_reset && cyc > 100) p12_cov_reset_after_arm++;
         if (p12_u_gold.cmd == 3'd0) p12_cov_cmd0++;
         if (p12_u_gold.cmd == 3'd1) p12_cov_cmd1++;
         if (p12_u_gold.cmd == 3'd2) p12_cov_cmd2++;
@@ -5623,6 +5667,16 @@ module tb;
     if (!(p0_s0_io_resp_atomic && p0_s1_io_resp_atomic)) begin cov_fail++; $display("[COV] PMPChecker.io_resp_atomic 未见过 0 和 1"); end
     $display("[ARM] PMPChecker armed_at=%0d", p0_armed_at);
     if (p0_armed_at < 0) begin cov_fail++; $display("[ARM] PMPChecker 从未 arm"); end
+    $display("[COV] PMPChecker.req_on_region_boundary = %0d", p0_cov_req_on_region_boundary);
+    if (p0_cov_req_on_region_boundary < 200) begin cov_fail++; $display("[COV] PMPChecker.req_on_region_boundary < 200"); end
+    $display("[COV] PMPChecker.dbg_first = %0d", p0_cov_dbg_first);
+    if (p0_cov_dbg_first < 200) begin cov_fail++; $display("[COV] PMPChecker.dbg_first < 200"); end
+    $display("[COV] PMPChecker.dbg_last = %0d", p0_cov_dbg_last);
+    if (p0_cov_dbg_last < 200) begin cov_fail++; $display("[COV] PMPChecker.dbg_last < 200"); end
+    $display("[COV] PMPChecker.dbg_before = %0d", p0_cov_dbg_before);
+    if (p0_cov_dbg_before < 200) begin cov_fail++; $display("[COV] PMPChecker.dbg_before < 200"); end
+    $display("[COV] PMPChecker.dbg_after = %0d", p0_cov_dbg_after);
+    if (p0_cov_dbg_after < 200) begin cov_fail++; $display("[COV] PMPChecker.dbg_after < 200"); end
     $display("[COV] PMPChecker.dbg_range_blocked = %0d", p0_cov_dbg_range_blocked);
     if (p0_cov_dbg_range_blocked < 200) begin cov_fail++; $display("[COV] PMPChecker.dbg_range_blocked < 200"); end
     $display("[COV] PMPChecker.dbg_range_allowed = %0d", p0_cov_dbg_range_allowed);
@@ -5649,6 +5703,16 @@ module tb;
     if (!(p2_s0_io_resp_mmio && p2_s1_io_resp_mmio)) begin cov_fail++; $display("[COV] PMPChecker_2.io_resp_mmio 未见过 0 和 1"); end
     $display("[ARM] PMPChecker_2 armed_at=%0d", p2_armed_at);
     if (p2_armed_at < 0) begin cov_fail++; $display("[ARM] PMPChecker_2 从未 arm"); end
+    $display("[COV] PMPChecker_2.req_on_region_boundary = %0d", p2_cov_req_on_region_boundary);
+    if (p2_cov_req_on_region_boundary < 200) begin cov_fail++; $display("[COV] PMPChecker_2.req_on_region_boundary < 200"); end
+    $display("[COV] PMPChecker_2.dbg_first = %0d", p2_cov_dbg_first);
+    if (p2_cov_dbg_first < 200) begin cov_fail++; $display("[COV] PMPChecker_2.dbg_first < 200"); end
+    $display("[COV] PMPChecker_2.dbg_last = %0d", p2_cov_dbg_last);
+    if (p2_cov_dbg_last < 200) begin cov_fail++; $display("[COV] PMPChecker_2.dbg_last < 200"); end
+    $display("[COV] PMPChecker_2.dbg_before = %0d", p2_cov_dbg_before);
+    if (p2_cov_dbg_before < 200) begin cov_fail++; $display("[COV] PMPChecker_2.dbg_before < 200"); end
+    $display("[COV] PMPChecker_2.dbg_after = %0d", p2_cov_dbg_after);
+    if (p2_cov_dbg_after < 200) begin cov_fail++; $display("[COV] PMPChecker_2.dbg_after < 200"); end
     $display("[COV] PMPChecker_2.dbg_range_blocked = %0d", p2_cov_dbg_range_blocked);
     if (p2_cov_dbg_range_blocked < 200) begin cov_fail++; $display("[COV] PMPChecker_2.dbg_range_blocked < 200"); end
     $display("[COV] PMPChecker_2.dbg_range_allowed = %0d", p2_cov_dbg_range_allowed);
@@ -5676,6 +5740,16 @@ module tb;
     if (!(p12_s0_io_resp_atomic && p12_s1_io_resp_atomic)) begin cov_fail++; $display("[COV] PMPChecker_12.io_resp_atomic 未见过 0 和 1"); end
     $display("[ARM] PMPChecker_12 armed_at=%0d", p12_armed_at);
     if (p12_armed_at < 0) begin cov_fail++; $display("[ARM] PMPChecker_12 从未 arm"); end
+    $display("[COV] PMPChecker_12.req_on_region_boundary = %0d", p12_cov_req_on_region_boundary);
+    if (p12_cov_req_on_region_boundary < 200) begin cov_fail++; $display("[COV] PMPChecker_12.req_on_region_boundary < 200"); end
+    $display("[COV] PMPChecker_12.dbg_first = %0d", p12_cov_dbg_first);
+    if (p12_cov_dbg_first < 200) begin cov_fail++; $display("[COV] PMPChecker_12.dbg_first < 200"); end
+    $display("[COV] PMPChecker_12.dbg_last = %0d", p12_cov_dbg_last);
+    if (p12_cov_dbg_last < 200) begin cov_fail++; $display("[COV] PMPChecker_12.dbg_last < 200"); end
+    $display("[COV] PMPChecker_12.dbg_before = %0d", p12_cov_dbg_before);
+    if (p12_cov_dbg_before < 200) begin cov_fail++; $display("[COV] PMPChecker_12.dbg_before < 200"); end
+    $display("[COV] PMPChecker_12.dbg_after = %0d", p12_cov_dbg_after);
+    if (p12_cov_dbg_after < 200) begin cov_fail++; $display("[COV] PMPChecker_12.dbg_after < 200"); end
     $display("[COV] PMPChecker_12.dbg_range_blocked = %0d", p12_cov_dbg_range_blocked);
     if (p12_cov_dbg_range_blocked < 200) begin cov_fail++; $display("[COV] PMPChecker_12.dbg_range_blocked < 200"); end
     $display("[COV] PMPChecker_12.dbg_range_allowed = %0d", p12_cov_dbg_range_allowed);
@@ -5704,6 +5778,8 @@ module tb;
     if (p12_cov_pma_default < 200) begin cov_fail++; $display("[COV] PMPChecker_12.pma_default < 200"); end
     $display("[COV] PMPChecker_12.atomic1 = %0d", p12_cov_atomic1);
     if (p12_cov_atomic1 < 200) begin cov_fail++; $display("[COV] PMPChecker_12.atomic1 < 200"); end
+    $display("[COV] PMPChecker_12.reset_after_arm = %0d", p12_cov_reset_after_arm);
+    if (p12_cov_reset_after_arm < 200) begin cov_fail++; $display("[COV] PMPChecker_12.reset_after_arm < 200"); end
     $display("[COV] PMPChecker_12.cmd0 = %0d", p12_cov_cmd0);
     if (p12_cov_cmd0 < 200) begin cov_fail++; $display("[COV] PMPChecker_12.cmd0 < 200"); end
     $display("[COV] PMPChecker_12.cmd1 = %0d", p12_cov_cmd1);

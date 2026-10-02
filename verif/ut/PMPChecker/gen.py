@@ -8,7 +8,9 @@
 
 激励（纯随机的 48 位地址几乎不可能命中任何表项，所以全部偏置）：
   * 表项基址落在 20 个 4KB "区" 里（外加调试模块地址段附近的三个区），请求地址同样落在这些区，
-    另有 1/6 的请求打在调试段边界 [0x3801FFF0, 0x38021010]，1/32 全随机；
+    其中 1/4 正好落在区边界（低 12 位全 0 —— TOR 下界取等号的唯一情形）；
+    3/32 打在调试段附近 [0x3801FFF0, 0x38021010]，1/16 正好打在调试段的四个边界点，1/32 全随机；
+  * PMPChecker_12 约每 800 拍打一拍异步复位（命中位寄存器的复位域只有复位那一拍看得见）；
   * mask 取 NAPOT 形（低 12..17 位全 1），1/8 全随机；
   * cfg.a 按 mode 分四档：全随机 / 稀疏 / 只有高下标项启用（逼出"靠后的项胜出"）/ 几乎全关（走缺省项）；
   * env_mode、debug、cmd、req_valid 全随机（cmd 八个编码全打，含未定义的 3'b011 / 3'b110）。
@@ -50,7 +52,11 @@ function automatic logic [47:0] {x}rnd_req();
   int unsigned k;
   k = $urandom_range(0, 31);
   if (k == 0) return {{$urandom, $urandom}};
-  if (k < 6)  return 48'h3801FFF0 + 48'($urandom_range(0, 32'h1020));
+  if (k < 4)  return 48'h3801FFF0 + 48'($urandom_range(0, 32'h1020));
+  // 调试段的四个边界点：段外最后一个 / 段内第一个 / 段内最后一个 / 段外第一个
+  if (k < 6)  return 48'h3801FFFF + (($urandom_range(0, 1) == 0) ? 48'h0 : 48'h1000) + 48'($urandom_range(0, 1));
+  // 区边界（低 12 位为 0）：TOR 的 "上一项基址 <= paddr" 取等号只有在这里才分得出 >= 与 >
+  if (k < 14) return {{36'($urandom_range(0, 21)), 12'h0}};
   return {{36'($urandom_range(0, 21)), 12'($urandom)}};
 endfunction
 function automatic logic [1:0] {x}rnd_a(input int unsigned mode, input int unsigned idx);
@@ -80,6 +86,11 @@ def in_debug():
 
 
 COMMON_COV = [
+    ("req_on_region_boundary", "@io_req_bits_addr[11:0] == 12'h0"),
+    ("dbg_first", "@io_req_bits_addr == 48'h38020000"),
+    ("dbg_last", "@io_req_bits_addr == 48'h38020fff"),
+    ("dbg_before", "@io_req_bits_addr == 48'h3801ffff"),
+    ("dbg_after", "@io_req_bits_addr == 48'h38021000"),
     ("dbg_range_blocked", in_debug() + " && !@io_check_env_debug"),
     ("dbg_range_allowed", in_debug() + " && @io_check_env_debug"),
     ("mmode", "@io_check_env_mode[1]"),
@@ -124,6 +135,7 @@ COV12 = COMMON_COV + [
     ("pma_hit_last_only", only_last_pma),
     ("pma_default", "!" + any_pma),
     ("atomic1", "@io_resp_atomic"),
+    ("reset_after_arm", "@reset && cyc > 100"),
 ]
 # 访问类型 × 结果：cmd 八个编码各自见过；每个违例输出在其相关 cmd 下拉高/不拉高
 for c in range(8):
@@ -145,7 +157,7 @@ p2 = Pair("PMPChecker_2", "p2_", clocked=False, stim=stim("p2_"),
           cov=COV2, mode_period=2000, cov_min=200, arm=["@io_req_valid"])
 p2.clocked = True
 p12 = Pair("PMPChecker_12", "p12_", clocked=True, stim=stim("p12_"), decls=decls("p12_"),
-           cov=COV12, mode_period=2000, reset_period=20000, cov_min=200, arm=["@io_req_valid"])
+           cov=COV12, mode_period=2000, reset_period=800, cov_min=200, arm=["@io_req_valid"])
 
 HEADER = """自动生成：verif/ut/PMPChecker/gen.py（scripts/dual_tb_lib.py，读 G1 golden 端口表）—— 勿手改
 PMPChecker 家族三对双例化逐拍比对：golden PMPChecker / _2 / _12 vs 重写 *_xs，全部输出逐位 !==。"""

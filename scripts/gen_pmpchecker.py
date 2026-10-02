@@ -5,6 +5,7 @@
   rtl/backend/PMPChecker.sv      sameCycle=true（L2TLB 的页表访存口，cmd 恒为读）
   rtl/backend/PMPChecker_2.sv    结果打一拍（Frontend 取指口，cmd 恒为取指）
   rtl/backend/PMPChecker_12.sv   leaveHitMux=true（MemBlock 访存口，cmd 由端口给）
+  verif/ut/PMPChecker/fm_pins_pre.tcl   PMPChecker_12 的 FM「匹配前」钉点（见 gen_pins）
 手写逻辑全部在 rtl/backend/xs_PMPChecker_core.sv，本脚本不碰。
 
 端口表逐字取自 G1 golden 同名模块（顺序/名字/位宽全同）。fail-closed 核对：
@@ -202,14 +203,95 @@ def gen(module):
     return "\n".join(o) + "\n"
 
 
+# ---------------------------------------------------------------------------
+# PMPChecker_12 的 FM「匹配前」钉点
+#   golden 的寄存器是 firtool 展平名（res_pmp_r / res_pmp_r_<i> / res_pmp_r_33_<i>_cfg_x ...），
+#   重写核是按字段的数组（g_hitmux.pmp_match_q[i] / pmp_x_q[i] ...）。不钉时 FM 的名字匹配会把
+#   golden 的 res_pmp_r_33_<i>_cfg_r 与别的寄存器错配（2026-10-02 非正式试跑：62(62) unmatched、
+#   failing 至少 20，截断）。钉点只消名差：每个 golden 寄存器恰好命中一条规则、映射是单射，
+#   否则生成失败；运行时逐条数 set_user_match 返回值，拒一条或总数不等于字面整数即 error。
+#   另两个变体（PMPChecker 无寄存器、PMPChecker_2 只有 2 个）不需要钉，文件按 $top 分支。
+# ---------------------------------------------------------------------------
+PIN_TOP = "PMPChecker_12"
+PIN_RULES = [
+    (re.compile(r"res_(pmp|pma)_r$"), lambda m: "%s_match_q_reg[0]" % m.group(1)),
+    (re.compile(r"res_(pmp|pma)_r_(\d+)$"), lambda m: "%s_match_q_reg[%s]" % (m.group(1), m.group(2))),
+    (re.compile(r"res_(pmp|pma)_r_33_(\d+)_cfg_(\w+)$"),
+     lambda m: "%s_%s_q_reg[%s]" % (m.group(1), m.group(3), m.group(2))),
+    (re.compile(r"cmd$"), lambda m: "cmd_q_reg"),
+]
+REG_DECL = re.compile(r"^  reg\s+(?:\[(\d+):(\d+)\]\s*)?(\w+);\s*$")
+
+
+def golden_regs(module):
+    out = []
+    for l in open(os.path.join(GOLDEN_DIR, module + ".sv")).read().split("\n"):
+        m = REG_DECL.match(l)
+        if m:
+            out.append((m.group(3), int(m.group(1)) - int(m.group(2)) + 1 if m.group(1) else 1))
+    return out
+
+
+def gen_pins():
+    regs = golden_regs(PIN_TOP)
+    pairs = []
+    seen = set()
+    for name, w in regs:
+        hits = [fn(r.match(name)) for r, fn in PIN_RULES if r.match(name)]
+        if len(hits) != 1:
+            raise SystemExit("gen_pmpchecker: golden 寄存器 %s 命中 %d 条钉点规则（要求恰好 1 条）" % (name, len(hits)))
+        tgt = hits[0]
+        if w == 1:
+            bits = [(name + "_reg", tgt)]
+        else:
+            bits = [("%s_reg[%d]" % (name, b), "%s[%d]" % (tgt, b)) for b in range(w)]
+        for g, i in bits:
+            if i in seen:
+                raise SystemExit("gen_pmpchecker: 两个 golden 寄存器位映射到同一个重写寄存器位 %s（不是双射）" % i)
+            seen.add(i)
+            pairs.append((g, i))
+    total = len(pairs)
+    esc = lambda x: x.replace("[", "\\[").replace("]", "\\]")
+    o = []
+    o.append("# PMPChecker 家族 FM「匹配前」钉点 -- 自动生成：scripts/gen_pmpchecker.py（勿手改）")
+    o.append("#")
+    o.append("# 只对 PMPChecker_12 生效：消 golden 展平寄存器名与重写核按字段数组名之间的命名鸿沟。")
+    o.append("# set_user_match 只是声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。")
+    o.append("# fail-closed：set_user_match 从不抛异常（返回 0 = 没配上），所以逐条数返回值；")
+    o.append("# 拒一条或总数不等于字面整数（= golden 寄存器位数）就 error。进 fm.log 的输出一律 ASCII。")
+    o.append("if {$top eq \"%s\"} {" % PIN_TOP)
+    o.append("  set ::PMPCHK_PIN_EXPECT %d" % total)
+    o.append("  set ::PMPCHK_PIN_OK 0")
+    o.append("  set ::PMPCHK_PIN_BAD 0")
+    o.append("  proc pmpchk_pin {g i} {")
+    o.append("    if {[set_user_match \"r:/WORK/%s/$g\" \"i:/WORK/%s/u_core/g_hitmux.$i\"]} {" % (PIN_TOP, PIN_TOP))
+    o.append("      incr ::PMPCHK_PIN_OK")
+    o.append("    } else {")
+    o.append("      incr ::PMPCHK_PIN_BAD")
+    o.append("      if {$::PMPCHK_PIN_BAD <= 10} { puts \"PMPCHK_PIN_FAIL: $g <-> $i\" }")
+    o.append("    }")
+    o.append("  }")
+    o.append("  puts \"PMPCHK_PIN_BEGIN %s expect=$::PMPCHK_PIN_EXPECT\"" % PIN_TOP)
+    for g, i in pairs:
+        o.append("  pmpchk_pin {%s} {%s}" % (g, i))
+    o.append("  puts \"PMPCHK_PIN_END %s ok=$::PMPCHK_PIN_OK bad=$::PMPCHK_PIN_BAD\"" % PIN_TOP)
+    o.append("  if {$::PMPCHK_PIN_BAD != 0} { error \"PMPCHK_PIN_MISS=$::PMPCHK_PIN_BAD\" }")
+    o.append("  if {$::PMPCHK_PIN_OK != %d} { error \"PMPCHK_PIN_COUNT=$::PMPCHK_PIN_OK expect=%d\" }" % (total, total))
+    o.append("}")
+    return "\n".join(o) + "\n"
+
+
+PINS_PATH = os.path.normpath(os.path.join(HERE, "..", "verif", "ut", "PMPChecker", "fm_pins_pre.tcl"))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true", help="只比对不写，有漂移 rc=1")
     args = ap.parse_args()
     rc = 0
-    for module in VARIANTS:
-        path = os.path.join(RTL, module + ".sv")
-        txt = gen(module)
+    outs = [(os.path.join(RTL, module + ".sv"), gen(module)) for module in VARIANTS]
+    outs.append((PINS_PATH, gen_pins()))
+    for path, txt in outs:
         old = open(path).read() if os.path.exists(path) else None
         if args.check:
             if old != txt:
