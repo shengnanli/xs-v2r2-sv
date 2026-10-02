@@ -65,7 +65,7 @@ def template(slot, ports):
 module Pmp{slot}cfgModule (
 {generated_region(ports)}
 );
-  xs_Pmpcfg_core u_core (
+  xs_Pmpcfg_core #(.SLOT({slot})) u_core (
     .clk     (clock),
     .rst     (reset),
     .wr_en   (w_wen),
