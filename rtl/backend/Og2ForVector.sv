@@ -24,6 +24,21 @@
 // golden 对照：G1-canonical/golden-rtl/Og2ForVector.sv（无子模块）。
 // 机械区（package 里的通道宽度表、wrapper、FM 钉点、UT tb）由 scripts/gen_og2forvector.py 生成。
 // =============================================================================
+// 本文件导航（共 1782 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L96    冲刷判定：RobPtr.needFlush
+//   L98    RobPtr.needFlush：redirect 有效，且 (flushItself 且正是那条) 或 uop 比 redir
+//   L110   每个通道：上一拍 redirect、OG1->OG2 打拍、EXU 输出与 IQ 回应
+//   L152   ImmInfo：只剩通道 IMM_CH 一路
+//   L154   ---- ImmInfo：随通道 IMM_CH 的 OG1 valid 打拍
+//   L170   wrapper：golden 同名端口表
+//   L982   wrapper 通道 0：fromOg1VfArith_0_0 -> toVfArithExu_0_0
+//   L1073  wrapper 通道 1：fromOg1VfArith_0_1 -> toVfArithExu_0_1
+//   L1174  wrapper 通道 2：fromOg1VfArith_1_0 -> toVfArithExu_1_0
+//   L1265  wrapper 通道 3：fromOg1VfArith_1_1 -> toVfArithExu_1_1
+//   L1362  wrapper 通道 4：fromOg1VfArith_2_0 -> toVfArithExu_2_0
+//   L1453  wrapper 通道 5：fromOg1VecMem_0_0 -> toVecMemExu_0_0
+//   L1618  wrapper 通道 6：fromOg1VecMem_1_0 -> toVecMemExu_1_0
+//
 package og2forvector_pkg;
   // payload 里核要用到的三个字段的位置（所有通道相同）
   localparam int ROB_LSB    = 0;    // {flag, value[7:0]}，9 位
@@ -77,6 +92,9 @@ module xs_Og2ForVector_core
   localparam logic [1:0] RESP_UNCERTAIN = 2'd1;
   localparam logic [1:0] RESP_SUCCESS   = 2'd3;
 
+  // ===========================================================================
+  // 冲刷判定：RobPtr.needFlush
+  // ===========================================================================
   // RobPtr.needFlush：redirect 有效，且 (flushItself 且正是那条) 或 uop 比 redirect 年轻（isAfter）
   // isAfter(a, b) = (a.flag ^ b.flag) ^ (a.value > b.value)
   function automatic logic need_flush(input logic       r_valid,
@@ -88,6 +106,9 @@ module xs_Og2ForVector_core
     need_flush = r_valid & ((r_level & (rob == r_rob)) | is_after);
   endfunction
 
+  // ===========================================================================
+  // 每个通道：上一拍 redirect、OG1->OG2 打拍、EXU 输出与 IQ 回应
+  // ===========================================================================
   for (genvar k = 0; k < NCH; k++) begin : g_ch
     // ---- 上一拍的 redirect（每个通道一份） ----
     logic       flush_d_valid_q;
@@ -127,6 +148,9 @@ module xs_Og2ForVector_core
                    :                             RESP_SUCCESS;
   end
 
+  // ===========================================================================
+  // ImmInfo：只剩通道 IMM_CH 一路
+  // ===========================================================================
   // ---- ImmInfo：随通道 IMM_CH 的 OG1 valid 打拍（不看冲刷） ----
   logic [31:0] imm_q;
   logic [3:0]  imm_type_q;
@@ -142,6 +166,9 @@ module xs_Og2ForVector_core
 endmodule
 
 // BEGIN GENERATED(og2-wrapper)
+// =============================================================================
+// wrapper：golden 同名端口表（生成）
+// =============================================================================
 module Og2ForVector (
   input          clock,
   input          reset,
@@ -951,7 +978,9 @@ module Og2ForVector (
     .imm_type_out  (io_toBypassNetworkImmInfo_1_immType)
   );
 
-  // ---- 通道 0：fromOg1VfArith_0_0 -> toVfArithExu_0_0 ----
+  // ===========================================================================
+  // wrapper 通道 0：fromOg1VfArith_0_0 -> toVfArithExu_0_0（payload 拼装 / 拆回）
+  // ===========================================================================
   assign in_valid[0]  = io_fromOg1VfArith_0_0_valid;
   assign exu_ready[0] = io_toVfArithExu_0_0_ready;
   assign io_toVfArithExu_0_0_valid = out_valid[0];
@@ -1040,7 +1069,9 @@ module Og2ForVector (
   assign io_toVfIQOg2Resp_0_0_valid = out_valid[0];
   assign io_toVfIQOg2Resp_0_0_bits_resp = resp[0];
 
-  // ---- 通道 1：fromOg1VfArith_0_1 -> toVfArithExu_0_1 ----
+  // ===========================================================================
+  // wrapper 通道 1：fromOg1VfArith_0_1 -> toVfArithExu_0_1（payload 拼装 / 拆回）
+  // ===========================================================================
   assign in_valid[1]  = io_fromOg1VfArith_0_1_valid;
   assign exu_ready[1] = io_toVfArithExu_0_1_ready;
   assign io_toVfArithExu_0_1_valid = out_valid[1];
@@ -1139,7 +1170,9 @@ module Og2ForVector (
   assign io_toVfIQOg2Resp_0_1_valid = out_valid[1];
   assign io_toVfIQOg2Resp_0_1_bits_resp = resp[1];
 
-  // ---- 通道 2：fromOg1VfArith_1_0 -> toVfArithExu_1_0 ----
+  // ===========================================================================
+  // wrapper 通道 2：fromOg1VfArith_1_0 -> toVfArithExu_1_0（payload 拼装 / 拆回）
+  // ===========================================================================
   assign in_valid[2]  = io_fromOg1VfArith_1_0_valid;
   assign exu_ready[2] = io_toVfArithExu_1_0_ready;
   assign io_toVfArithExu_1_0_valid = out_valid[2];
@@ -1228,7 +1261,9 @@ module Og2ForVector (
   assign io_toVfIQOg2Resp_1_0_valid = out_valid[2];
   assign io_toVfIQOg2Resp_1_0_bits_resp = resp[2];
 
-  // ---- 通道 3：fromOg1VfArith_1_1 -> toVfArithExu_1_1 ----
+  // ===========================================================================
+  // wrapper 通道 3：fromOg1VfArith_1_1 -> toVfArithExu_1_1（payload 拼装 / 拆回）
+  // ===========================================================================
   assign in_valid[3]  = io_fromOg1VfArith_1_1_valid;
   assign exu_ready[3] = io_toVfArithExu_1_1_ready;
   assign io_toVfArithExu_1_1_valid = out_valid[3];
@@ -1323,7 +1358,9 @@ module Og2ForVector (
   assign io_toVfIQOg2Resp_1_1_valid = out_valid[3];
   assign io_toVfIQOg2Resp_1_1_bits_resp = resp[3];
 
-  // ---- 通道 4：fromOg1VfArith_2_0 -> toVfArithExu_2_0 ----
+  // ===========================================================================
+  // wrapper 通道 4：fromOg1VfArith_2_0 -> toVfArithExu_2_0（payload 拼装 / 拆回）
+  // ===========================================================================
   assign in_valid[4]  = io_fromOg1VfArith_2_0_valid;
   assign exu_ready[4] = io_toVfArithExu_2_0_ready;
   assign io_toVfArithExu_2_0_valid = out_valid[4];
@@ -1412,7 +1449,9 @@ module Og2ForVector (
   assign io_toVfIQOg2Resp_2_0_valid = out_valid[4];
   assign io_toVfIQOg2Resp_2_0_bits_resp = resp[4];
 
-  // ---- 通道 5：fromOg1VecMem_0_0 -> toVecMemExu_0_0 ----
+  // ===========================================================================
+  // wrapper 通道 5：fromOg1VecMem_0_0 -> toVecMemExu_0_0（payload 拼装 / 拆回）
+  // ===========================================================================
   assign in_valid[5]  = io_fromOg1VecMem_0_0_valid;
   assign exu_ready[5] = io_toVecMemExu_0_0_ready;
   assign io_toVecMemExu_0_0_valid = out_valid[5];
@@ -1575,7 +1614,9 @@ module Og2ForVector (
   assign io_toMemIQOg2Resp_0_0_bits_fuType = out_payload[6974 +: 35];
   assign io_toMemIQOg2Resp_0_0_bits_uopIdx = out_payload[7009 +: 7];
 
-  // ---- 通道 6：fromOg1VecMem_1_0 -> toVecMemExu_1_0 ----
+  // ===========================================================================
+  // wrapper 通道 6：fromOg1VecMem_1_0 -> toVecMemExu_1_0（payload 拼装 / 拆回）
+  // ===========================================================================
   assign in_valid[6]  = io_fromOg1VecMem_1_0_valid;
   assign exu_ready[6] = io_toVecMemExu_1_0_ready;
   assign io_toVecMemExu_1_0_valid = out_valid[6];

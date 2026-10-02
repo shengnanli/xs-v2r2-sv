@@ -184,6 +184,9 @@ def gen_params(chans, total):
 
 def gen_wrapper(ports, chans):
     o = []
+    o.append("// " + "=" * 77)
+    o.append("// wrapper：golden 同名端口表（生成）")
+    o.append("// " + "=" * 77)
     o.append("module %s (" % TOP)
     for idx, (_, _, _, line) in enumerate(ports):
         o.append(line + ("," if idx + 1 < len(ports) else ""))
@@ -213,7 +216,9 @@ def gen_wrapper(ports, chans):
     o.append("  );")
     for k, c in enumerate(chans):
         o.append("")
-        o.append("  // ---- 通道 %d：%s -> %s ----" % (k, c["frm"][3:], c["to"][3:]))
+        o.append("  // " + "=" * 75)
+        o.append("  // wrapper 通道 %d：%s -> %s（payload 拼装 / 拆回）" % (k, c["frm"][3:], c["to"][3:]))
+        o.append("  // " + "=" * 75)
         o.append("  assign in_valid[%d]  = %s_valid;" % (k, c["frm"]))
         o.append("  assign exu_ready[%d] = %s_ready;" % (k, c["to"]))
         o.append("  assign %s_valid = out_valid[%d];" % (c["to"], k))
