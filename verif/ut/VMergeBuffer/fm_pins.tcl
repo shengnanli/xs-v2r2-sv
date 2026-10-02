@@ -104,6 +104,14 @@ proc _mb_partner {top leaf} {
 
 proc _mb_pin {} {
     set top $::top
+    # 期望配对数（字面声明，test_fm_pins_wellformed P3）：实测值，evidence/0282c93b52b4
+    # （VL: MB_PIN_END n=18807 impl_left=0；VS: n=17584 impl_left=0）。规则表是按叶名双射的，
+    # 数量只会因 RTL/golden 的寄存器集合变化而变 —— 那正是要停下来重看的时候。
+    switch -exact -- $top {
+        VLMergeBufferImp { set expect 18807 }
+        VSMergeBufferImp { set expect 17584 }
+        default { error "MB_PIN_BAD_TOP=$top" }
+    }
     set refs  [concat [report_unmatched_points -reference -list] \
                       [report_unmatched_points -reference -status unread -list]]
     set impls [concat [report_unmatched_points -implementation -list] \
@@ -139,7 +147,8 @@ proc _mb_pin {} {
         unset impl_lut($want)
         incr n
     }
-    puts "MB_PIN_END top=$top n=$n impl_left=[array size impl_lut]"
+    puts "MB_PIN_END top=$top n=$n impl_left=[array size impl_lut] expect=$expect"
+    if {$n != $expect} { error "MB_PIN_COUNT=$n expect=$expect" }
     if {[array size impl_lut] != 0} {
         foreach k [lsort [array names impl_lut]] { puts "MB_PIN_IMPL_LEFT: $impl_lut($k)" }
         error "MB_PIN_IMPL_LEFT=[array size impl_lut]"

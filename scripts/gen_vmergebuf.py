@@ -705,12 +705,17 @@ def gen_pins_pre():
         '}',
         '',
         'proc _mb_prepin {top fields} {',
-        '    switch -exact -- $top {',
-        f'        VLMergeBufferImp {{ set ndeq {ndeq["VLMergeBufferImp"]} }}',
-        f'        VSMergeBufferImp {{ set ndeq {ndeq["VSMergeBufferImp"]} }}',
-        '        default { error "MB_PREPIN_BAD_TOP=$top" }',
+        # 期望数量写成**字面整数**（test_fm_pins_wellformed P3：期望数量须声明，不能是运行期算式）；
+        # 数值仍由生成器按 total × 出队口数算出，与 golden 对账过的 total 同源。
+        # 用 `if {$top eq "..."}` 而不是 switch：pin_call_equiv.py 按这个形态发现变体，
+        # switch 形态下它只会拿 UT 目录名当 $top 跑、撞 default 分支（桩环境下 rc=1，闸量不到）。
+        f'    if {{$top eq "VLMergeBufferImp"}} {{',
+        f'        set ndeq {ndeq["VLMergeBufferImp"]}; set expect {total * ndeq["VLMergeBufferImp"]}',
+        f'    }} elseif {{$top eq "VSMergeBufferImp"}} {{',
+        f'        set ndeq {ndeq["VSMergeBufferImp"]}; set expect {total * ndeq["VSMergeBufferImp"]}',
+        '    } else {',
+        '        error "MB_PREPIN_BAD_TOP=$top"',
         '    }',
-        f'    set expect [expr {{{total} * $ndeq}}]',
         '    puts "MB_PREPIN_BEGIN top=$top expect=$expect"',
         '    set n 0',
         '    for {set d 0} {$d < $ndeq} {incr d} {',

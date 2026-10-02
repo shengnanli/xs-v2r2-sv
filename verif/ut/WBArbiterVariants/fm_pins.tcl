@@ -114,8 +114,9 @@ foreach r $_ref {
     if {[lsearch -exact $_used $i] >= 0} {
         error "WBARBITER_PIN_ERROR: impl path pinned twice (over-pinning): $i"
     }
-    if {[catch {set_user_match $r $i} _msg]} {
-        error "WBARBITER_PIN_ERROR: set_user_match failed $r <-> $i : $_msg"
+    # set_user_match 不抛异常、只返回 0/1（P4）：数返回值，catch 的返回码恒为 0 等于没查。
+    if {![set_user_match $r $i]} {
+        error "WBARBITER_PIN_ERROR: set_user_match returned 0 for $r <-> $i"
     }
     lappend _used $i
     incr _pinned
