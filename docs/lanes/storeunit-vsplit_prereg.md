@@ -64,7 +64,7 @@ vec_isFirstIssue（恒 1）、debug_ls、性能计数器。
 
 ### 2.2 UT（跑前已跑）
 
-verif/ut/StoreUnit：双例化逐拍比 197 根输出。seed 1/7/42 × {`+vcs+initreg+0`, `+vcs+initreg+random`,
+verif/ut/StoreUnit：双例化逐拍比 250 根输出。seed 1/7/42 × {`+vcs+initreg+0`, `+vcs+initreg+random`,
 `+vcs+initreg+<seed>017`}（非常量档 warmup 3000 拍）= 9/9 `checks=200000 errors=0 uncovered=0`。
 28 个覆盖桶均有下限（三路来源 fire、s0 杀、cbo、跨 16B / 16B 内非对齐、needReplay、TLB miss 杀、
 触发器断点 / debug、非对齐入队 / 被拒、s2 MMIO 杀、异常、访问异常、非对齐异常、revoke、缓冲回写、
