@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Pma14cfgModule
+Implementation : i:/WORK/Pma14cfgModule
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 10:50:23 2026
+**************************************************
+
+No aborted compare points.
+
+1
