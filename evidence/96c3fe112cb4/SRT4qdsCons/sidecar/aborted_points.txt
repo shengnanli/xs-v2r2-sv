@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/SRT4qdsCons
+Implementation : i:/WORK/SRT4qdsCons
+Version        : V-2023.12-SP3
+Date           : Wed Sep 30 23:49:33 2026
+**************************************************
+
+No aborted compare points.
+
+1
