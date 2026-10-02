@@ -40,6 +40,21 @@
 //   - MMIO 状态寄存器 4 位、合法状态 0..11；12..15 保持不动（golden 的查表对这 4 项填的是自身）。
 //   - pdWb 在 wb_valid=0 时输出 MMIO 写回的内容（Mux(wb_valid, checkFlushWb, mmioFlushWb)），
 //     其中 DontCare 字段（jalTarget / cfiOffset）被 firtool 置 0。
+// 本文件导航（共 2499 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L291   §0 跨级信号：冲刷、握手
+//   L307   §1 f0：接 FTQ 请求
+//   L309   BPU 的 s2 / s3 级覆盖了更早的预测：ftqIdx 不早于覆盖点的请求作废
+//   L329   §2 f1：锁存请求；算每个位置的 PC 低位与切数据指针
+//   L370   §3 f2：等 ICache 响应、切数据、PreDecode、取指范围与异常
+//   L499   §4 f3：RVC 展开、预测检查、触发器、入 IBuffer
+//   L678   §5 MMIO 取指状态机
+//   L680   取指地址落在不可缓存空间
+//   L972   §6 f3 的 valid / last half / 入 IBuffer
+//   L1109  §7 wb：预译码结果写回 FTQ，误预测则重定向
+//   L1111  f3 装入新块后一拍
+//   L1206  §8 TopDown 气泡原因：跟着 f1/f2/f3 三级走
+//   L1261  §9 性能事件
+//
 
 package newifu_pkg;
   localparam int unsigned PW          = 16;   // PredictWidth：一个取指块的半字位置数
