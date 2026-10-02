@@ -17,6 +17,11 @@ FM_REF_DEPS_StreamBitVectorArray =
 # s2_pf_l2_incr_vaddr / s2_pf_l3_incr_vaddr），让 FM 逐个比；fm_predict 的 passing 模型也只在关掉时严格适用。
 FM_MERGE_DUP = false
 
+# ★vmucp：依据见 verif/fm_target_config/StreamBitVectorArray.tcl★ —— 319 位两侧对称死位
+# （表项 tag 高 15 位 / 查询 tag 高 15 位 / 性能计数器打拍 / 预取地址低 6 位 / 断言打拍），
+# 全部由 fm_pins_pre.tcl 一一钉配。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

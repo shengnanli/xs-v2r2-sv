@@ -1,0 +1,10 @@
+{
+  "target": "StreamBitVectorArray",
+  "ut": "StreamBitVectorArray",
+  "regs": 1692,
+  "outs": 118,
+  "expected": 1810,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "实测预计 1794：差 16 = constant_reg（last_REG/last_REG_1..15，每项一份 RegNext(io.flush)，flush 恒 0）"
+}
