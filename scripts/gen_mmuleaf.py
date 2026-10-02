@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""gen_mmuleaf.py —— mmuleaf lane 各目标的 FM「匹配前」钉点 fm_pins_pre.tcl。
+"""gen_mmuleaf.py —— mmuleaf lane 的机械派生区：FM「匹配前」钉点 fm_pins_pre.tcl + 子模块例化连线。
 
 golden 是 firtool 展平后的寄存器名（array_3_tag、valids_7、last_REG_5 …），重写核用 generate 块 /
 数组 / 语义名（array[3].tag、valids[7]、array[5].last_REG …）。名字对不上时 Formality 只能靠签名
@@ -13,6 +13,10 @@ golden 是 firtool 展平后的寄存器名（array_3_tag、valids_7、last_REG_
     拒一条或总数不等于字面整数（= golden 顶层寄存器总位数）就 error。
 
 set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。
+
+另外，重写核里例化 golden 子模块（扁平端口 io_in_<i>_valid …）的连线没有设计决策，只是长长的逐口
+连线，也在这里按 golden 子模块端口表生成，写进 rtl 文件的 `BEGIN GENERATED(<tag>)` 区：
+每个端口必须恰好被一条映射规则认领，认领不了（或有规则没用上）就拒绝生成。
 
 用法：
     python3 scripts/gen_mmuleaf.py            # 生成（幂等：内容不变不写文件）
@@ -74,10 +78,110 @@ def sbva_rule(name):
     return hits
 
 
+# -----------------------------------------------------------------------------
+#  子模块例化连线
+# -----------------------------------------------------------------------------
+PORT_RE = re.compile(r"^\s*(input|output)\s+(?:\[(\d+):0\]\s+)?(\w+)\s*,?\s*$")
+
+
+def golden_ports(mod):
+    t = open(os.path.join(GOLDEN_DIR, mod + ".sv")).read()
+    m = re.search(r"^module\s+%s\s*\((.*?)^\);" % re.escape(mod), t, re.S | re.M)
+    if not m:
+        raise SystemExit("gen_mmuleaf: golden 里找不到 module %s" % mod)
+    out = []
+    for ln in m.group(1).splitlines():
+        if not ln.strip():
+            continue
+        pm = PORT_RE.match(ln)
+        if not pm:
+            raise SystemExit("gen_mmuleaf: %s 端口行解析不了：%r" % (mod, ln))
+        out.append(pm.group(3))
+    return out
+
+
+def gen_inst(mod, inst, rules, indent="  "):
+    """rules: [(正则, 连线表达式模板)]，模板里 {0},{1}… 是正则分组。每口恰好一条、每条至少用一次。"""
+    ports = golden_ports(mod)
+    used = [0] * len(rules)
+    width = max(len(p) for p in ports)
+    lines = []
+    for p in ports:
+        hits = [(k, re.fullmatch(pat, p)) for k, (pat, _) in enumerate(rules)]
+        hits = [(k, m) for k, m in hits if m]
+        if len(hits) != 1:
+            raise SystemExit("gen_mmuleaf: %s.%s 被 %d 条规则认领（必须恰好 1）" % (mod, p, len(hits)))
+        k, m = hits[0]
+        used[k] += 1
+        lines.append("%s  .%s (%s)" % (indent, p.ljust(width), rules[k][1].format(*m.groups())))
+    for k, n in enumerate(used):
+        if n == 0:
+            raise SystemExit("gen_mmuleaf: %s 的规则 %r 一个端口也没认领（端口表变了？）" % (mod, rules[k][0]))
+    return "%s%s %s (\n%s\n%s);" % (indent, mod, inst, ",\n".join(lines), indent)
+
+
+def replace_region(text, tag, body):
+    b = "// BEGIN GENERATED(%s) —— scripts/gen_mmuleaf.py\n" % tag
+    pat = re.compile(r"([ \t]*)" + re.escape(b) + r".*?^([ \t]*)// END GENERATED\n", re.S | re.M)
+    m = pat.search(text)
+    if not m:
+        raise SystemExit("gen_mmuleaf: 找不到生成区 %s" % tag)
+    ind = m.group(1)
+    new = ind + b + body + "\n" + ind + "// END GENERATED\n"
+    return text[:m.start()] + new + text[m.end():]
+
+
+def gen_prefetchfilter_rtl():
+    path = os.path.join(REPO, "rtl", "memblock", "PrefetchFilter.sv")
+    text = open(path).read()
+    tlb = gen_inst("RRArbiterInit_5", "tlb_req_arb", [
+        (r"clock", "clock"),
+        (r"reset", "reset"),
+        (r"io_in_(\d+)_ready", "tlb_arb_in_ready[{0}]"),
+        (r"io_in_(\d+)_valid", "tlb_arb_in_valid[{0}]"),
+        (r"io_in_(\d+)_bits_vaddr", "tlb_arb_in_vaddr[{0}]"),
+        (r"io_out_valid", "tlb_arb_out_valid"),
+        (r"io_out_bits_vaddr", "tlb_arb_out_vaddr"),
+    ])
+    pf = gen_inst("RRArbiterInit_6", "pf_req_arb", [
+        (r"clock", "clock"),
+        (r"reset", "reset"),
+        (r"io_in_(\d+)_ready", "pf_arb_in_ready[{0}]"),
+        (r"io_in_(\d+)_valid", "pf_arb_in_valid[{0}]"),
+        (r"io_in_(\d+)_bits", "pf_arb_in_addr[{0}]"),
+        (r"io_out_valid", "l2_pf_valid"),
+        (r"io_out_bits", "l2_pf_addr"),
+        (r"io_chosen", "pf_arb_chosen"),
+    ])
+    text = replace_region(text, "tlb_req_arb", tlb)
+    text = replace_region(text, "pf_req_arb", pf)
+    return path, text
+
+
+def pf_rule(name):
+    rules = [
+        (r"entries_(\d+)_(region_tag|region_addr|region_bits|filter_bits|paddr_valid|decr_mode)",
+         lambda m: ("entries[%s].%s" % (m[1], m[2]), "")),
+        (r"valids_(\d+)", lambda m: ("valids", "[%s]" % m[1])),
+        (r"(s[123])_tlb_fire_vec_r_r_(\d+)", lambda m: ("%s_tlb_fire_vec" % m[1], "[%s]" % m[2])),
+        (r"state_reg", lambda m: ("u_plru/state_reg", "")),
+        (r"(prev_\w+|s1_(?!tlb_fire_vec_r_r_)\w+|s3_tlb_resp_\w+)", lambda m: (m[1], "")),
+    ]
+    hits = []
+    for pat, fn in rules:
+        m = re.fullmatch(pat, name)
+        if m:
+            hits.append(fn(m))
+    return hits
+
+
 TARGETS = {
     # 目标名: (UT 目录, 规则函数, 打印前缀)
     "StreamBitVectorArray": ("StreamBitVectorArray", sbva_rule, "SBVA"),
+    "PrefetchFilter":       ("PrefetchFilter", pf_rule, "PFF"),
 }
+
+RTL_GENERATORS = [gen_prefetchfilter_rtl]
 
 
 def gen_pins(top, rule, tag):
@@ -134,6 +238,9 @@ def targets():
     out = {}
     for top, (ut, rule, tag) in TARGETS.items():
         out[os.path.join(REPO, "verif", "ut", ut, "fm_pins_pre.tcl")] = gen_pins(top, rule, tag)
+    for g in RTL_GENERATORS:
+        path, text = g()
+        out[path] = text
     return out
 
 
