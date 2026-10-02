@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FcsrModule
+Implementation : i:/WORK/FcsrModule
+Version        : V-2023.12-SP3
+Date           : Thu Oct  1 08:19:00 2026
+**************************************************
+
+No aborted compare points.
+
+1

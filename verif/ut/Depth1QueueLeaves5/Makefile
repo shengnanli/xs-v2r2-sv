@@ -1,0 +1,47 @@
+MODULE = Depth1QueueLeaves5
+
+# 族 D：5 个深度 1 队列叶（chisel3 Queue entries=1 的单态化，prereg 族 D）。
+# 三种子形态共用一个共享核 rtl/common/xs_ChiselQueue1_core.sv（已随
+# Queue1_ChosenQBundle 签核，本族只读复用、不修改）：
+#   PIPE=1（enq_ready = deq_ready | ~full）：Queue1_PrefetchReq / Resp / Train
+#   PIPE=0（enq_ready = ~full）           ：Queue1_BundleMap
+#   无 ready 端口（deq_ready 恒 1 被折叠）：Queue1_UInt32（按 PIPE=1 + deq_ready=1 例化）
+# 薄文件由 scripts/gen_depth1queue_leaves5.py 生成（--check 幂等）。
+RTL_DIR = ../../../rtl
+RTL_SRCS = $(RTL_DIR)/common/xs_ChiselQueue1_core.sv \
+           $(RTL_DIR)/frontend/Queue1_PrefetchReq.sv \
+           $(RTL_DIR)/frontend/Queue1_PrefetchResp.sv \
+           $(RTL_DIR)/frontend/Queue1_PrefetchTrain.sv \
+           $(RTL_DIR)/frontend/Queue1_UInt32.sv \
+           $(RTL_DIR)/uncore/Queue1_BundleMap.sv
+TB_SRCS = tb.sv
+
+GOLDEN_SRCS = $(GOLDEN_RTL)/Queue1_PrefetchReq.sv \
+              $(GOLDEN_RTL)/Queue1_PrefetchResp.sv \
+              $(GOLDEN_RTL)/Queue1_PrefetchTrain.sv \
+              $(GOLDEN_RTL)/Queue1_UInt32.sv \
+              $(GOLDEN_RTL)/Queue1_BundleMap.sv
+FM_VARIANTS = Queue1_PrefetchReq Queue1_PrefetchResp Queue1_PrefetchTrain \
+              Queue1_UInt32 Queue1_BundleMap
+
+# 端口表由生成器逐字取自 golden（含顺序），顺序不一致也算失败。
+PORTLINT_ORDER = fail
+
+include ../../../scripts/ut_common.mk
+
+# ram（payload 寄存器）按 golden 不复位：双例化 UT 只能用常量初值档 ——
+# +vcs+initreg+random 会给两个实例各摇各的 ram 初值，空队列读 deq_bits 必不等
+# （与重写无关）。编译期 +vcs+initreg+random 只是打开机制，取值由 SIM_ARGS
+# 在运行期选 +0（CONVENTIONS 2026-09-17 更正的用法）。
+VCS += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0
+
+# matched-unread 对称双射证明（vmucp，CONVENTIONS 允许的唯一 unread 处置）：
+# Queue1_PrefetchResp 的 ram 存了 tag/set/vaddr 共 86 位、Queue1_PrefetchTrain 存了
+# hit/prefetched/pfsource 共 5 位，但这些字段在 deq 侧没有输出读者（firtool 留了
+# 存储删了输出）。两侧是同一份语义下的同位死存储，matched unread 逐对 verify
+# 后归零——这不是 waiver/dont_verify，而是把 unread 点变成已证明等价的 matched 点。
+# 只作用在这两个目标：vmucp=true 需要 verif/fm_target_config/<top>.tcl 白名单，
+# 其余 3 个 unread=0 的目标不在白名单上，全局开会令它们 exit 3（fail-closed）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = \
+  $(if $(filter Queue1_PrefetchResp Queue1_PrefetchTrain,$*),true,)
