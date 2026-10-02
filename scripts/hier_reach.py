@@ -194,15 +194,20 @@ def scan_impl(path):
         if cur is None:
             continue
         # --- begin/end 栈（generate 块路径的来源） ---
-        if re.search(r'\bbegin\b', line):
-            mb = _BEGIN_LBL.search(line)
-            mf = _GENFOR.search(line)
+        # ★按 token 出现顺序处理 begin/end★：`end else begin : g_b` 必须先弹出
+        # 前一个分支（g_a）再压入 g_b。旧写法先压后弹，把 g_b 弹掉、留下 g_a，
+        # 于是 else 分支里的实例被记到 if 分支的标签下（例：VSMergeBufferImp 的
+        # FreeList_1 被记成 g_freelist_vl.freeCount_freeList，实际在 g_freelist_vs，
+        # 重绑 SimTop 的 XMR 在 VCS 里解析失败）。
+        mf = _GENFOR.search(line)
+        for mt in re.finditer(r'\b(begin|end)\b(?![a-z_])', line):
+            if mt.group(1) == 'end':
+                if blocks:
+                    blocks.pop()
+                continue
+            mb = _BEGIN_LBL.match(line, mt.start())
             blocks.append((mb.group(1) if mb else None, bool(mf),
                            mf.group(1) if mf else None))
-        # `end`/`endgenerate` 出栈；一行可能有多个（`end else begin` 已被上面收过）
-        for _ in re.findall(r'\bend\b(?![a-z_])', line):
-            if blocks:
-                blocks.pop()
         # --- 例化识别 ---
         mp = _PARAM_HEAD.match(line)
         if mp and mp.group(1) not in KW:
