@@ -158,10 +158,18 @@ unsigned for while function endfunction task endtask return default'''.split())
             if m.group(2) not in defs:
                 defs[m.group(2)] = m.group(3).strip()
                 decl[m.group(2)] = (m.group(1) or '').strip()
+        # ★拆开写的声明也要带位宽★：firtool 对被 probe/bore 的线常写成
+        # `wire [2:0] _GEN_116; assign _GEN_116 = _GEN_115;`。只从 assign 取定义、
+        # 位宽记成空，适配器里就成了 1 位线，把 DecodeStage in_fire_count 这类
+        # [2:0] 计数截成最低位（整芯片实测 decode/rename/dispatch/dataPath/IQ/LQ
+        # 约 200 条 B_CONTROL 假差异全出自这里）。
+        bare = {}
+        for m in re.finditer(r'\bwire\s+((?:\[[^\]]*\]\s*)*)(\w+)\s*;', body):
+            bare.setdefault(m.group(2), (m.group(1) or '').strip())
         for m in re.finditer(r'\bassign\s+(\w+)\s*=\s*([^;]*);', body):
             if m.group(1) not in defs:
                 defs[m.group(1)] = m.group(2).strip()
-                decl[m.group(1)] = ''
+                decl[m.group(1)] = bare.get(m.group(1), '')
         regs = set(re.findall(r'\breg\s+(?:\[[^\]]*\]\s*)*(\w+)\s*[;=]', body))
         # ★内部线若被原样赋给某个输出端口，就当它是那个端口★。
         # 例：golden WrBypass 的 `wire hit = …;  assign io_hit = hit;` —— `hit` 的锥
@@ -773,7 +781,10 @@ def verify_simtop(rb, path, rows=None):
     # ★只复核本脚本负责的那些 XMR★：golden SimTop 自己还有别的层次引用（黑盒钩子、
     # 断言），它们不归重绑管，混进来只会刷出一堆假告警。范围 = 生成的锥声明行
     # + logEndpoint 的端口连接段。
-    scope = [ln for ln in text.splitlines() if ln.lstrip().startswith('wire xs_pb_')]
+    # 带位宽的锥声明（`wire [2:0] xs_pb_…`）同样在范围内 —— 只认 `wire xs_pb_` 开头会
+    # 把所有多位中间线的 XMR 漏出复核。
+    scope = [ln for ln in text.splitlines()
+             if re.match(r'\s*wire\s+(?:\[[^\]]*\]\s*)*xs_pb_', ln)]
     i = text.index('LogPerfEndpoint logEndpoint (')
     scope.append(text[i:text.index('\n  );', i)])
     xmrs = sorted(set(re.findall(r'\bSimTop\.[A-Za-z0-9_.\[\]:]+', '\n'.join(scope))))
@@ -782,7 +793,7 @@ def verify_simtop(rb, path, rows=None):
     # 更坏：静默变成 1 位新网）。实测漏过两条 —— 复核只查 XMR 是不够的。
     seen = set()
     for ln in text.splitlines():
-        m = re.match(r'\s*wire\s+(?:\[[^\]]*\]\s*)?(xs_pb_\w+)\s*=\s*(.*);\s*$', ln)
+        m = re.match(r'\s*wire\s+(?:\[[^\]]*\]\s*)*(xs_pb_\w+)\s*=\s*(.*);\s*$', ln)
         if not m:
             continue
         for u in re.findall(r'\bxs_pb_\w+\b', m.group(2)):
@@ -818,15 +829,35 @@ def verify_simtop(rb, path, rows=None):
     # 与「叶子重指到哪」无关，所以它检的正是复制这一步本身。
     if rows:
         holder = {r['port']: r['golden_holder'] for r in rows}
+        # ★位宽也要逐条对★：骨架比对只看 RHS，`wire [2:0] _GEN_116; assign …` 被抄成
+        # 1 位线时骨架完全相同、编译也不报，计数器却只剩最低位（实测约 200 条假差异）。
+        # 位宽从 golden 源码**直接**找 `wire <dims> 名字`，不走生成器自己的解析结果。
+        gdims = {}
+
+        def golden_dims(mod, w):
+            if mod not in gdims:
+                f = rb.G.root / (mod + '.sv')
+                t = re.sub(r'//[^\n]*', '', f.read_text(errors='replace')) if f.exists() else ''
+                d = {}
+                for mm in re.finditer(r'\bwire\s+((?:\[[^\]]*\]\s*)*)(\w+)\s*[=;]', t):
+                    d.setdefault(mm.group(2), re.sub(r'\s+', '', mm.group(1)))
+                gdims[mod] = d
+            return gdims[mod].get(w)
+
         for ln in text.splitlines():
-            m = re.match(r'\s*wire\s+(?:\[[^\]]*\]\s*)?xs_pb_([A-Za-z0-9_]*?bore(?:_\d+)?)'
+            m = re.match(r'\s*wire\s+((?:\[[^\]]*\]\s*)*)xs_pb_([A-Za-z0-9_]*?bore(?:_\d+)?)'
                          r'__([A-Za-z0-9_]+)\s*=\s*(.*);\s*$', ln)
             if not m:
                 continue
-            port, w, rhs = m.groups()
+            dims, port, w, rhs = m.groups()
             gm = rb.G.mod(holder.get(port, ''))
             if gm is None or w not in gm['defs']:
                 continue
+            gd = golden_dims(holder[port], w)
+            if gd is not None and gd != re.sub(r'\s+', '', dims):
+                bad.append(('xs_pb_%s__%s' % (port, w),
+                            '复制出来的位宽 `%s` 与 golden %s.%s 的 `%s` 不同'
+                            % (dims.strip(), holder[port], w, gd)))
             if _skel(rhs) != _skel(gm['defs'][w]):
                 bad.append(('xs_pb_%s__%s' % (port, w),
                             '复制出来的表达式结构与 golden %s.%s 不同'
