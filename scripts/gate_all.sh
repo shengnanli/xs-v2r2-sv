@@ -72,6 +72,7 @@ run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_cert
 # 没人跑；2026-09-27 扩多写口/多实例/输入偏移三种形态时一并挂上。
 run "RAM 模型审查负测"    python3 scripts/test_audit_ram_memory_model.py
 run "RAM 模型审查复算"    python3 scripts/audit_ram_memory_model.py --check
+run "RAM 人工复核窄出口负测" python3 scripts/test_audit_ram_manual_review.py
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
 # WBArbiter 反饥饿状态机的可达性表：verif/ut/WBArbiterVariants/tb.sv 的覆盖判据是

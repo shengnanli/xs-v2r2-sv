@@ -706,7 +706,56 @@ def m3_any(side, text, region, expr, depth, width, contract):
 
 
 # ---------------------------------------------------------------------------
-def audit(design, golden_rtl, parent_ref, parent_impl, contract=None):
+# M3 MANUAL_REVIEWED —— 一次性人工复核的精确绑定（codex 0203 裁定 X）
+#
+# 只为 impl 侧的 M3 MANUAL（地址指针在共享核里、薄文件上认不出）提供一个**窄**出口：
+#   · design 必须在下面的硬编码名单里（不读 tsv、不做模式匹配——不推广到其它 ram_*）；
+#   · parent-map 第 5 列写 `<reviewer 消息号>;<path>=<sha256>;<path>=<sha256>…`，
+#     消息号须形如 codex_NNNN 且 bridge outbox 里真有这条消息；
+#   · 绑定文件必须**包含** parent_impl 本身，且每个文件当前字节的 sha256 精确相等——
+#     任何一个字节变了就退回 MANUAL（fail-closed），须重新复核；
+#   · 只放行 MANUAL，不放行 FAIL；ref 侧永远要机器 PASS。
+MANUAL_REVIEW_DESIGNS = {
+    'ram_10x89': 'codex_0202',   # GrantBuffer/Queue10_GrantBuffer_Anon；xs_ChiselQueue_core 指针归纳 ∈[0,9]
+}
+BRIDGE_OUTBOX = pathlib.Path('/home/eda/xs-env/.agent-bridge/outbox')
+
+
+def check_manual_review(design, review, parent_impl):
+    """返回 (ok, msg)。review 为 parent-map 第 5 列原文（可为 None）。"""
+    if design not in MANUAL_REVIEW_DESIGNS:
+        return False, f'{design} 不在人工复核名单里（名单硬编码，不推广）'
+    if not review:
+        return False, 'parent-map 第 5 列没有人工复核绑定'
+    parts = [x.strip() for x in review.split(';') if x.strip()]
+    msg_id = parts[0] if parts else ''
+    if msg_id != MANUAL_REVIEW_DESIGNS[design]:
+        return False, f'复核消息号 {msg_id!r} 与名单要求的 {MANUAL_REVIEW_DESIGNS[design]!r} 不符'
+    if not list(BRIDGE_OUTBOX.glob(f'*_{msg_id}_*.md')):
+        return False, f'bridge outbox 里找不到复核消息 {msg_id}'
+    binds = {}
+    for b in parts[1:]:
+        if '=' not in b:
+            return False, f'绑定项 {b!r} 不是 path=sha256 形态'
+        path, sha = b.split('=', 1)
+        binds[path.strip()] = sha.strip()
+    if not binds:
+        return False, '没有绑定任何文件 sha256'
+    impl_rel = str(pathlib.Path(parent_impl).resolve().relative_to(REPO)) if parent_impl else None
+    if impl_rel not in binds:
+        return False, f'绑定文件里没有 parent_impl 本身（{impl_rel}）'
+    for path, sha in sorted(binds.items()):
+        f = REPO / path
+        if not f.is_file():
+            return False, f'绑定文件 {path} 不存在'
+        cur = hashlib.sha256(f.read_bytes()).hexdigest()
+        if cur != sha:
+            return False, f'绑定文件 {path} 字节已变（{cur[:16]} != {sha[:16]}），须重新复核'
+    return True, (f'按 {msg_id} 人工复核，绑定 {len(binds)} 个文件字节未变：'
+                  + ', '.join(sorted(binds)))
+
+
+def audit(design, golden_rtl, parent_ref, parent_impl, contract=None, review=None):
     g = pathlib.Path(golden_rtl)
     path = g / f'{design}.sv'
     if not path.is_file():
@@ -764,6 +813,13 @@ def audit(design, golden_rtl, parent_ref, parent_impl, contract=None):
                             continue      # 同一表达式已判过（多个实例共用读地址等）
                         ok3, msg3 = m3_any(side, txt, region, sig, facts['depth'],
                                            facts['addr_width'], contract)
+                        if (not ok3 and side == 'impl' and 'M3 FAIL' not in msg3
+                                and review is not None):
+                            okr, msgr = check_manual_review(design, review, parent_impl)
+                            if okr:
+                                ok3, msg3 = True, f'M3 MANUAL_REVIEWED[impl]: {msgr}（机器结论原为 MANUAL）'
+                            else:
+                                msg3 += f'\n  M3 人工复核未生效: {msgr}'
                         seen[key] = ok3
                         print(f'  [{modname}.{name}.{port} <- {sig}] {msg3}')
                         rc3 = rc3 or (0 if ok3 else 1)
@@ -809,9 +865,10 @@ def main():
                 print(f'ERROR: parent-map 行格式错: {ln!r}', file=sys.stderr)
                 return 2
             contract = f[3].strip() if len(f) > 3 and f[3].strip() not in ('', '-', 'none') else None
+            review = f[4].strip() if len(f) > 4 and f[4].strip() not in ('', '-', 'none') else None
             rc |= audit(f[0], a.golden_rtl,
                         resolve(f[1], pathlib.Path(a.golden_rtl)),
-                        resolve(f[2], REPO), contract)
+                        resolve(f[2], REPO), contract, review)
         print('=== audit --check: ' + ('全部 AUDIT_PASS ===' if rc == 0 else '★有条目未过★ ==='))
         return rc
     if not a.design:
