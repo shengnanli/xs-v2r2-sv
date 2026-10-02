@@ -158,6 +158,113 @@ def gen_prefetchfilter_rtl():
     return path, text
 
 
+
+# -----------------------------------------------------------------------------
+#  TLB（itlb）wrapper 的机械派生区
+# -----------------------------------------------------------------------------
+def golden_port_lines(mod):
+    """golden 端口声明原文行（去行尾逗号），与 golden_ports 同序。"""
+    t = open(os.path.join(GOLDEN_DIR, mod + ".sv")).read()
+    m = re.search(r"^module\s+%s\s*\((.*?)^\);" % re.escape(mod), t, re.S | re.M)
+    return [ln.rstrip().rstrip(",") for ln in m.group(1).splitlines() if ln.strip()]
+
+
+def golden_port_dirs(mod):
+    out = []
+    for ln in golden_port_lines(mod):
+        pm = PORT_RE.match(ln)
+        out.append((pm.group(1), pm.group(3)))
+    return out
+
+
+def gen_assigns(pairs, rules, handled, fmt, what):
+    """pairs: 待认领的端口名；每个要么被 handled（别处已接）收走，要么恰好命中一条规则。"""
+    used = [0] * len(rules)
+    lines = []
+    for p in pairs:
+        if p in handled:
+            continue
+        hits = [(k, re.fullmatch(pat, p)) for k, (pat, _) in enumerate(rules)]
+        hits = [(k, m) for k, m in hits if m]
+        if len(hits) != 1:
+            raise SystemExit("gen_mmuleaf: %s 端口 %s 被 %d 条规则认领（必须恰好 1）" % (what, p, len(hits)))
+        k, m = hits[0]
+        used[k] += 1
+        lines.append(fmt(p, rules[k][1].format(*m.groups())))
+    for k, n in enumerate(used):
+        if n == 0:
+            raise SystemExit("gen_mmuleaf: %s 的规则 %r 一个端口也没认领" % (what, rules[k][0]))
+    return lines
+
+
+def gen_tlb_rtl():
+    path = os.path.join(REPO, "rtl", "memblock", "TLB.sv")
+    text = open(path).read()
+    plines = golden_port_lines("TLB")
+    ports_body = "\n".join("  " + ln.strip() + ("," if k < len(plines) - 1 else "")
+                           for k, ln in enumerate(plines))
+    text = replace_region(text, "tlb_ports", ports_body)
+
+    text = replace_region(text, "sfence_delay", gen_inst("DelayN_9", "sfence_delay", [
+        (r"clock", "clock"),
+        (r"io_in_(\w+)", "io_sfence_{0}"),
+        (r"io_out_valid", "sfence_d_valid"),
+        (r"io_out_bits_(\w+)", "sfence_d_{0}"),
+    ]))
+    text = replace_region(text, "csr_delay", gen_inst("DelayN_7", "csr_delay", [
+        (r"clock", "clock"),
+        (r"io_in_(\w+)", "io_csr_{0}"),
+        (r"io_out_(satp|vsatp|hgatp|pmm)_(\w+)", "csr_d.{0}_{1}"),
+        (r"io_out_priv_(?!debug$)(\w+)", "csr_d.priv_{0}"),
+        (r"io_out_priv_debug", "csr_d_priv_debug"),
+        (r"io_out_mbmc_(\w+)", "csr_d_mbmc_{0}"),
+    ]))
+
+    ptw_in = [n for d, n in golden_port_dirs("TLB") if d == "input" and n.startswith("io_ptw_resp_bits_")]
+    lines = gen_assigns(ptw_in, [
+        (r"io_ptw_resp_bits_s2xlate", "ptw_resp.s2xlate"),
+        (r"io_ptw_resp_bits_getGpa", "ptw_resp.get_gpa"),
+        (r"io_ptw_resp_bits_(s[12])_entry_(\w+)", "ptw_resp.{0}.entry_{1}"),
+        (r"io_ptw_resp_bits_s1_(ppn_low|valididx|pteidx)_(\d)", "ptw_resp.s1.{0}[{1}]"),
+        (r"io_ptw_resp_bits_s1_(addr_low|pf|af)", "ptw_resp.s1.{0}"),
+        (r"io_ptw_resp_bits_s2_(gpf|gaf)", "ptw_resp.s2.{0}"),
+    ], set(), lambda port, lhs: "  assign %s = %s;" % (lhs, port), "TLB.ptw_resp")
+    text = replace_region(text, "ptw_resp", "\n".join(lines))
+
+    text = replace_region(text, "entries", gen_inst("TlbStorageWrapper", "entries", [
+        (r"clock", "clock"),
+        (r"reset", "reset"),
+        (r"io_sfence_valid", "sfence_d_valid"),
+        (r"io_sfence_bits_(\w+)", "sfence_d_{0}"),
+        (r"io_csr_(satp_asid|vsatp_asid|hgatp_vmid|priv_virt)", "csr_d.{0}"),
+        (r"io_csr_mbmc_(\w+)", "csr_d_mbmc_{0}"),
+        (r"io_r_req_(\d)_valid", "stor_r_req_valid[{0}]"),
+        (r"io_r_req_(\d)_bits_(vpn|s2xlate)", "stor_r_req_{1}[{0}]"),
+        (r"io_r_resp_(\d)_bits_hit", "stor_r_hit[{0}]"),
+        (r"io_r_resp_(\d)_bits_(ppn|pbmt|g_pbmt|s2xlate)_0", "stor_r_{1}[{0}]"),
+        (r"io_r_resp_(\d)_bits_perm_0_(\w+)", "stor_r_perm[{0}].{1}"),
+        (r"io_r_resp_(\d)_bits_g_perm_0_(\w+)", "stor_r_g_perm[{0}].{1}"),
+        (r"io_w_valid", "stor_w_valid"),
+        (r"io_w_bits_data_(\w+)", "io_ptw_resp_bits_{0}"),
+    ]))
+
+    outs = [n for d, n in golden_port_dirs("TLB") if d == "output"]
+    handled = {"io_requestor_2_req_ready", "io_requestor_2_resp_valid", "io_perf_0_value",
+               "io_perf_1_value", "gatewayIn_packed_3_bore", "gatewayIn_packed_4_bore",
+               "gatewayIn_packed_5_bore"}
+    lines = gen_assigns(outs, [
+        (r"io_requestor_(\d)_resp_bits_(paddr|gpaddr|pbmt)_0", "resp_{1}[{0}]"),
+        (r"io_requestor_(\d)_resp_bits_miss", "resp_miss[{0}]"),
+        (r"io_requestor_(\d)_resp_bits_isForVSnonLeafPTE", "resp_vs_non_leaf[{0}]"),
+        (r"io_requestor_(\d)_resp_bits_excp_0_(gpf|pf|af)_instr", "resp_{1}[{0}]"),
+        (r"io_ptw_req_(\d)_valid", "ptw_req_valid[{0}]"),
+        (r"io_ptw_req_(\d)_bits_(vpn|s2xlate)", "ptw_req_{1}[{0}]"),
+        (r"io_ptw_req_(\d)_bits_getGpa", "ptw_req_get_gpa[{0}]"),
+    ], handled, lambda port, rhs: "  assign %s = %s;" % (port, rhs), "TLB.outputs")
+    text = replace_region(text, "resp_out", "\n".join(lines))
+    return path, text
+
+
 def pf_rule(name):
     rules = [
         (r"entries_(\d+)_(region_tag|region_addr|region_bits|filter_bits|paddr_valid|decr_mode)",
@@ -181,7 +288,7 @@ TARGETS = {
     "PrefetchFilter":       ("PrefetchFilter", pf_rule, "PFF"),
 }
 
-RTL_GENERATORS = [gen_prefetchfilter_rtl]
+RTL_GENERATORS = [gen_prefetchfilter_rtl, gen_tlb_rtl]
 
 
 def gen_pins(top, rule, tag):

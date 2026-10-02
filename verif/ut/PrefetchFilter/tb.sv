@@ -14,7 +14,7 @@
 //   所以复位释放后先等：golden 发过一次 TLB 请求、16 项每一项都 alloc 过，再加 4 拍，之后逐拍全比。
 //   两路 valid 从复位释放起就比（它们只依赖复位过的状态和写过的表项）。
 // 覆盖判据：窗口内 alloc / update / 去重丢弃 / TLB 请求 / TLB 回填成功 / 作废 / 撤销 TLB 请求 /
-//   L2 预取（递增与递减各自）每一类都必须发生过，否则本轮不作数（TEST FAILED）。
+//   L2 预取（行号偶/奇两类）每一类都必须发生过，否则本轮不作数（TEST FAILED）。
 // =============================================================================
 `timescale 1ns/1ps
 
@@ -193,8 +193,8 @@ module tb;
     if (g_dut.s3_update_valid && !g_dut.s3_drop_probe)              n_fill++;
     if (g_dut.s3_drop_probe)                                        n_drop++;
     if (g_dut.s1_tlb_req_valid_last_REG && !g_tlb_valid)            n_cancel++;
-    if (g_l2_valid && !g_l2_addr[6])                                n_pf_incr++;   // 粗分：行号奇偶两类都要有
-    if (g_l2_valid &&  g_l2_addr[6])                                n_pf_decr++;
+    if (g_l2_valid && !g_l2_addr[6])                                n_pf_incr++;   // 行号偶
+    if (g_l2_valid &&  g_l2_addr[6])                                n_pf_decr++;   // 行号奇
   endtask
 
   initial begin
