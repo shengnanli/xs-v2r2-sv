@@ -1,0 +1,10 @@
+{
+  "target": "Permutation",
+  "ut": "Permutation",
+  "regs": 3344,
+  "outs": 128,
+  "expected": 3472,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 3472 = regs 3344 + outs 128；预测 passing=3458（vmucp 开，128 位对称死位纳入比较），差 14 = constant_reg（base/vs2_bytes_min 低 4 位、ele_cnt[0]、vlmax_bytes[0]、vs2_bytes_max[0]、out_previous_ones_sum[7:5]，两侧对称）"
+}

@@ -25,3 +25,7 @@ include ../../../scripts/ut_common.mk
 INITREG  ?= random
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)
+
+# vmucp（加强不是放宽）：128 个 unread 点是 vmask_uop_reg0[127:16] 与 vs1_next_reg0/1[127:120]，两侧对称死位，
+# 依据与复核判据见 verif/fm_target_config/Permutation.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true

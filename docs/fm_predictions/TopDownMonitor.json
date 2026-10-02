@@ -1,0 +1,10 @@
+{
+  "target": "TopDownMonitor",
+  "ut": "TopDownMonitor",
+  "regs": 0,
+  "outs": 1,
+  "expected": 1,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合 0 寄存器：唯一输出 l2MissMatch 1 位，预测 passing=1"
+}
