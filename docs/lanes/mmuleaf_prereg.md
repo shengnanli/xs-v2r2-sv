@@ -135,3 +135,18 @@ L2 预取 行号偶 70639、奇 70343；任一类为 0 即 FAILED。（tb 只改
 | unmatched 六项 | 全 0（`PFF_PIN_END … ok=1792 bad=0`） |
 | 黑盒 | 无 |
 | mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / true / false |
+
+# 对账 B. PrefetchFilter（跑完追加；§2 未改一字）
+
+| 项 | 值 |
+|---|---|
+| 跑前登记 / proof commit | `0eb94b233e9db3934327ee6f7e1ff7e220794a3d`（登记与证明同一 commit） |
+| 证据目录 | `evidence/0eb94b233e9d/PrefetchFilter/` |
+| receipt sha256 | `aad0e7d5e11e10edd79d3ca0ba456cd5588d31e04e38b6b373ebefb3f89ea181` |
+
+| 预测 | 实测 passing | 差 | failing/unverified/aborted/unread_nc | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|
+| 2032（预计实测 2032） | 2032 | 0 | 0/0/0/0 | 全 0（`PFF_PIN_END ok=1792 bad=0`） | 无（2 仲裁器两侧白盒） | SUCCEEDED |
+
+`fm_predict.py check PrefetchFilter` → 「全部对上」。mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify 无 /
+impl_worktree_dirty false。复跑：`PROOF_COMMIT=0eb94b233e9db3934327ee6f7e1ff7e220794a3d bash scripts/run_proof.sh PrefetchFilter PrefetchFilter < /dev/null`
