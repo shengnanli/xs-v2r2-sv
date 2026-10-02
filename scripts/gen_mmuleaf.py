@@ -265,6 +265,28 @@ def gen_tlb_rtl():
     return path, text
 
 
+
+def gen_ptwfe_rtl():
+    path = os.path.join(REPO, "rtl", "memblock", "PTWFilterEntry.sv")
+    text = open(path).read()
+    plines = golden_port_lines("PTWFilterEntry")
+    text = replace_region(text, "ptwfe_ports",
+                          "\n".join("  " + ln.strip() + ("," if k < len(plines) - 1 else "")
+                                    for k, ln in enumerate(plines)))
+    ptw_in = [n for d, n in golden_port_dirs("PTWFilterEntry")
+              if d == "input" and n.startswith("io_ptw_resp_bits_")]
+    lines = gen_assigns(ptw_in, [
+        (r"io_ptw_resp_bits_s2xlate", "ptw_resp.s2xlate"),
+        (r"io_ptw_resp_bits_s1_entry_(tag|asid|vmid|n|level)", "ptw_resp.s1_{0}"),
+        (r"io_ptw_resp_bits_s1_entry_perm_g", "ptw_resp.s1_perm_g"),
+        (r"io_ptw_resp_bits_s1_addr_low", "ptw_resp.s1_addr_low"),
+        (r"io_ptw_resp_bits_s1_valididx_(\d)", "ptw_resp.s1_valididx[{0}]"),
+        (r"io_ptw_resp_bits_s2_entry_(tag|vmid|n|level)", "ptw_resp.s2_{0}"),
+    ], set(), lambda port, lhs: "  assign %s = %s;" % (lhs, port), "PTWFilterEntry.ptw_resp")
+    text = replace_region(text, "ptwfe_resp", "\n".join(lines))
+    return path, text
+
+
 def pf_rule(name):
     rules = [
         (r"entries_(\d+)_(region_tag|region_addr|region_bits|filter_bits|paddr_valid|decr_mode)",
@@ -288,7 +310,7 @@ TARGETS = {
     "PrefetchFilter":       ("PrefetchFilter", pf_rule, "PFF"),
 }
 
-RTL_GENERATORS = [gen_prefetchfilter_rtl, gen_tlb_rtl]
+RTL_GENERATORS = [gen_prefetchfilter_rtl, gen_tlb_rtl, gen_ptwfe_rtl]
 
 
 def gen_pins(top, rule, tag):
