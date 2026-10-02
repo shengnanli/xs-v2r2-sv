@@ -109,3 +109,36 @@ unread_notcompared 84（全部 matched_nc，两侧对称）→ strict 会判 PAR
 可能出错：vmucp 打开后这 84 个死位若两侧次态函数不同会以 failing 出现，那就是真差异，按修 RTL 处理。
 
 ## 对账（跑后追加，不改上面任何数字）
+
+### 对账 A：MemTrigger_3 / MemTrigger / LoadUnit（proof commit `2ef95566`，`evidence/2ef9556668e5/`）
+
+| 目标 | 预测 passing | 实测 | failing/unverified/aborted | unmatched | constant_reg | 黑盒 / dont_verify | verdict | receipt.json sha256 |
+|---|---|---|---|---|---|---|---|---|
+| MemTrigger_3 | 54 | **54** | 0/0/0 | 0/0 | — | 0 / 无 | SUCCEEDED | `752d0ae574fac93e2d7ac4beddec151fc7a9fd2d0aa6153fd68c9cdd08b43516` |
+| MemTrigger（重证） | 70 | **70** | 0/0/0 | 0/0 | — | 0 / 无 | SUCCEEDED | `0434e8114052a06062ba1d5ae0819bddd7534eec56b5bdab72e08e80d68c486f` |
+| LoadUnit（重证） | 18749 | **18749** | 0/0/0 | 0/0 | 11 | 0 / 无 | SUCCEEDED | `6c6f969f3e683abe90245495353c0874d054d8d0e8285a4e12c7e121a44102bd` |
+
+差额：三个都是 0。§1.3 写的风险（核的 `triggerMask` 输出在 MemTrigger_3 里悬空）没有发生：unmatched_impl 为空。
+impl_closure：`MemTrigger.sv b9363f477dda…`、`MemTrigger_3.sv c9d684cbcb1e…`、`LoadUnit.sv c8d36a9b699c…`（未改）。
+复跑：`PROOF_COMMIT=2ef95566 bash scripts/run_proof.sh <MemTrigger_3|MemTrigger|LoadUnit> <同名> < /dev/null`；
+`python3 scripts/fm_predict.py check MemTrigger_3 MemTrigger LoadUnit`（rc=0）。
+
+### 对账 B：StoreUnit（proof commit `519a79aa`，`evidence/519a79aab030/StoreUnit/`）
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| passing | 7483 | **7483**（逐位相等） |
+| failing / unverified / aborted | 0/0/0 | 0/0/0 |
+| unread_notcompared | 0 | 0（vmucp 把 84 个对称死位转成 passing：7399 → 7483，正好 +84） |
+| unmatched ref / impl | 0/0 | 0/0 |
+| constant_reg | 0 | 无 |
+| 黑盒 / dont_verify | 无 | 0 / 无 |
+| verdict | SUCCEEDED | SUCCEEDED（signoff-strict） |
+
+receipt.json sha256：`3e55c8fbdf7f309fdba6b5647c6f8276cdd3e60425717abb895a4f9c56214a78`；
+impl_closure：`StoreUnit.sv e47d01ec61cb…` + `MemTrigger.sv` / `MemTrigger_3.sv`（同上）。
+proof commit 上补跑的 UT 一档：seed 7 × `+vcs+initreg+random` `checks=200000 errors=0 uncovered=0`
+（与 §2.2 的 9 档相比 RTL 只差文件头导航行号注释）。
+复跑：`PROOF_COMMIT=519a79aa bash scripts/run_proof.sh StoreUnit StoreUnit < /dev/null`；
+UT：`cd verif/ut/StoreUnit && make run SEED=<1|7|42> INITREG=<+vcs+initreg+0|+vcs+initreg+random|+vcs+initreg+<seed>017>`；
+`python3 scripts/gen_storeunit.py --check`；`python3 scripts/fm_predict.py check StoreUnit`（rc=0）。
