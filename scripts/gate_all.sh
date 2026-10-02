@@ -278,6 +278,9 @@ run "层次重绑表幂等"     python3 scripts/hier_map.py --check
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 90 秒）—— 顺序照层次重绑闸的先例。
 run "perf 重绑闸负测"    python3 scripts/test_perf_rebind_gate.py
 run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
+# 2026-10-02：--check 从「整份 == 考古骨架」改为「机械部分逐字」（核方程手写落地后整份比对永远红）。
+# 判的块见 gen_storequeue.py:check_regions；先跑它的正反测（每块单点变异必须打红）。
+run "StoreQueue 机械部分负测" python3 scripts/gen_storequeue.py --selftest
 run "StoreQueue 骨架幂等" python3 scripts/gen_storequeue.py --check
 run "StoreQueue tb 幂等"  python3 scripts/gen_storequeue_ut.py --check
 # perf 分档闸（codex 0162 D3）：重绑表只回答"绑上了没有"，不回答"这条差异挡不挡里程碑"。
