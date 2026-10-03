@@ -43,3 +43,7 @@ include ../../../scripts/ut_common.mk
 INITREG  ?= 0
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)
+
+# VectorIdiv 子树 96 个对称死位 + 外壳 outCtrl_r_vpu_vuopIdx[6:3] 4 位，钉点见 fm_pins_pre.tcl；
+# 按 vmucp standing rule 让 FM 真去比（白名单 verif/fm_target_config/VIDiv.tcl）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true

@@ -39,3 +39,18 @@ vl=0 / vstart≥vl / prestart / tail(vta) / 掩掉(vma) / active 合并），透
 | 目标 | expected | 预测 |
 |---|---:|---|
 | VIDiv | 13884（regs 13094 + outs 790） | constant_reg **8**（VectorIdiv 子树里 8 个 I8DivNr4 各 1）；unread **100** = VectorIdiv 子树 96 + `outCtrl_r_vpu_vuopIdx[6:3]` 4 位（Mgu 只读低 3 位）；钉点 + vmucp 后 passing **13876**，failing / unmatched / 黑盒 0 |
+
+## 5. 补登（official 签核跑之前提交；§4 数字不改）
+
+诊断跑（工作树 `make fm-VIDiv FM_MODE=diagnostic-full`，不进 evidence）：
+1. VectorIdiv 子树钉点按 `vidiv/` ↔ `u_core/vidiv/` 前缀重出（`scripts/gen_srt16divint.py` 生成 `verif/ut/VIDiv/fm_pins_pre.tcl`，
+   1600/1600 pinned）：native SUCCEEDED / passing **13776** / failing 0 / unmatched compare 0 / constant **8** / unread **100**
+   （96 matched + 4(4) unmatched）——与 §4 预测**逐项相同**：13776 + 8 + 100 = 13884。
+   4 个 unmatched 正是预测的 `outCtrl_r_vpu_vuopIdx[6:3]`：golden 平铺名 `outCtrl_r_vpu_vuopIdx_reg[b]` vs 核的打包结构体
+   `u_core/outCtrl_r_reg\[vuopIdx][b]`，死位无锥只能靠名字 ⇒ 生成器补这 4 对（共 1604 点）。
+2. `verif/fm_target_config/VIDiv.tcl` + Makefile `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true`，诊断复跑：passing 13876、
+   unread 0、failing 0、constant 8，`VIDIV_PINS: 1604 / 1604`。
+
+**official 复核判据**（`bash scripts/run_proof.sh VIDiv VIDiv`）：SUCCEEDED；passing **13876**；failing 0；unread 0；
+unmatched 全 0；constant_reg 8；黑盒 0；dont_verify false；fm.log 含 `VIDIV_PINS: 1604 / 1604 points pinned`。
+fm_predict 对账：13884 − 13876 = 8 = constant_reg。
