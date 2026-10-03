@@ -147,3 +147,12 @@ verif/fm_target_config/SMSTrainFilter.tcl + Makefile 开 FM_VERIFY_MATCHED_UNREA
   预测：passing **3310**（= 3279 + 31 = 模型 3310），unread 0，SUCCEEDED。
 - StridePF：生成器改名后 fm_pins_pre.tcl 只改了注释头与 tcl 过程名（钉点表 210 位逐行不变）；
   0a9f5511 上在跑的那轮作诊断用，签核以本节 commit 上的重跑为准，预测仍为 220。
+
+## 9. PrefetchReqBuffer 第二轮（钉点 + vmucp）
+
+首跑（a5e1c294）：native SUCCEEDED passing 2792 / failing 0 / 黑盒 0，unread 146（Unmatched unread）=
+full_vaddr/paddr 块内偏移 [5:0] × 3 寄存器（18）+ 16 项 paddrNoOffset[49:42]（128）。两侧对称。
+gen_l1pf_pins.py 加"只钉指定位"规则（新 proc 只出现在用到它的文件里，其余三个钉点文件逐字节不变），
+生成 verif/ut/PrefetchReqBuffer/fm_pins_pre.tcl（146 位）+ verif/fm_target_config/PrefetchReqBuffer.tcl。
+预测：passing **2938**（= 2792 + 146 = 模型 2938），unread 0，其余全零，SUCCEEDED。
+同轮 StridePF 在最终钉点字节（a5e1c294）上重证：SUCCEEDED 220（= 预测）。
