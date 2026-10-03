@@ -1,9 +1,0 @@
-seed=1 initreg=0 rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
-seed=1 initreg=random rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
-seed=1 initreg=1017 rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
-seed=7 initreg=0 rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
-seed=7 initreg=random rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
-seed=7 initreg=7017 rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
-seed=42 initreg=0 rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
-seed=42 initreg=random rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
-seed=42 initreg=42017 rc=0 checks=1799928 errors=0 cov_fail=0 PASSED
