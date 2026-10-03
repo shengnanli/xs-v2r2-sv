@@ -1,0 +1,10 @@
+{
+  "target": "HPerfMonitor_3",
+  "ut": "HPerfMonitor_3",
+  "regs": 640,
+  "outs": 48,
+  "expected": 688,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "寄存器全无复位；模型=闭包寄存器位+输出位"
+}

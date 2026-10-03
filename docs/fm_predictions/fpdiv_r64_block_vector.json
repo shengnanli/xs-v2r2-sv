@@ -1,0 +1,10 @@
+{
+  "target": "fpdiv_r64_block_vector",
+  "ut": "fpdiv_r64_block_vector",
+  "regs": 0,
+  "outs": 256,
+  "expected": 256,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合；模型=顶层 output 位 256"
+}
