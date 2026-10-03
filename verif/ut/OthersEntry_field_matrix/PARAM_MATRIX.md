@@ -10,6 +10,10 @@
 | 变体 | 父级 Entries | 角色 | 例化数 | NUM_REGSRC | NUM_WK_WB | NUM_WK_IQ | NUM_DEQ_PORTS | NUM_FU_BIT | LD_PIPES | LD_DEP_W | PL_DEQ_W | PL_TRANS_W | 端口数 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `OthersEntry` | `EntriesAluMulBkuBrhJmp` | simp | ×6 | 2 | 4 | 7 | 2 | 5 | 3 | 2 | 585 | 1362 | 580 |
+| `OthersEntryVecMem` | `EntriesVlduVstuVseglduVsegstu` | simp | ×2 | 5 | 16 | 0 | 1 | 4 | 3 | 2 | 759 | 1330 | 705 |
+| `OthersEntryVecMem_14` | `EntriesVlduVstu` | simp | ×2 | 5 | 16 | 0 | 1 | 2 | 3 | 2 | 759 | 1330 | 699 |
+| `OthersEntryVecMem_16` | `EntriesVlduVstu` | comp | ×12 | 5 | 16 | 0 | 1 | 2 | 3 | 2 | 759 | 1330 | 327 |
+| `OthersEntryVecMem_2` | `EntriesVlduVstuVseglduVsegstu` | comp | ×12 | 5 | 16 | 0 | 1 | 4 | 3 | 2 | 759 | 1330 | 331 |
 | `OthersEntry_104` | `EntriesFaluFmacFdiv` | simp | ×2 | 3 | 6 | 3 | 2 | 3 | 3 | 2 | 546 | 1330 | 529 |
 | `OthersEntry_106` | `EntriesFaluFmacFdiv` | comp | ×14 | 3 | 6 | 3 | 2 | 3 | 3 | 2 | 546 | 1330 | 143 |
 | `OthersEntry_120` | `EntriesFaluFmac` | simp | ×2 | 3 | 6 | 3 | 1 | 2 | 3 | 2 | 546 | 1330 | 524 |
@@ -20,6 +24,12 @@
 | `OthersEntry_152` | `EntriesVfmaVialuFixVfalu` | comp | ×12 | 5 | 16 | 0 | 2 | 3 | 3 | 2 | 742 | 1330 | 241 |
 | `OthersEntry_164` | `EntriesVfdivVidiv` | simp | ×2 | 5 | 16 | 0 | 1 | 2 | 3 | 2 | 741 | 1330 | 601 |
 | `OthersEntry_166` | `EntriesVfdivVidiv` | comp | ×6 | 5 | 16 | 0 | 1 | 2 | 3 | 2 | 741 | 1330 | 234 |
+| `OthersEntry_172` | `EntriesStaMou` | simp | ×2 | 1 | 4 | 7 | 1 | 2 | 3 | 2 | 574 | 1342 | 549 |
+| `OthersEntry_174` | `EntriesStaMou` | comp | ×12 | 1 | 4 | 7 | 1 | 2 | 3 | 2 | 574 | 1342 | 187 |
+| `OthersEntry_200` | `EntriesLdu` | simp | ×2 | 1 | 4 | 7 | 1 | 1 | 3 | 2 | 618 | 1362 | 558 |
+| `OthersEntry_202` | `EntriesLdu` | comp | ×12 | 1 | 4 | 7 | 1 | 1 | 3 | 2 | 618 | 1362 | 209 |
+| `OthersEntry_242` | `EntriesStdMoud` | simp | ×2 | 1 | 10 | 7 | 1 | 2 | 3 | 2 | 541 | 1330 | 569 |
+| `OthersEntry_244` | `EntriesStdMoud` | comp | ×12 | 1 | 10 | 7 | 1 | 2 | 3 | 2 | 541 | 1330 | 201 |
 | `OthersEntry_44` | `EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v` | simp | ×6 | 2 | 4 | 7 | 2 | 7 | 3 | 2 | 599 | 1362 | 595 |
 | `OthersEntry_50` | `EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v` | comp | ×16 | 2 | 4 | 7 | 2 | 7 | 3 | 2 | 599 | 1362 | 229 |
 | `OthersEntry_6` | `EntriesAluMulBkuBrhJmp` | comp | ×16 | 2 | 4 | 7 | 2 | 5 | 3 | 2 | 585 | 1362 | 207 |
@@ -41,6 +51,10 @@
 | 变体 | SRC_MATCH_KIND | WB_WEN_PRESENT | WBD | IQ_WEN_PRESENT | IQD | WB 逐路 wen 分段 |
 |---|---|---|---|---|---|---|
 | `OthersEntry` | `{2'd0, 2'd0}` | `5'b00001` | `5'b00000` | `5'b00001` | `5'b00000` | rfWen@0..3 |
+| `OthersEntryVecMem` | `{2'd2, 2'd1, 2'd0, 2'd0, 2'd0}` | `5'b11111` | `5'b00000` | `—(NUM_WK_IQ=0)` | `—` | fpWen,rfWen,v0Wen,vecWen,vlWen@0..15 |
+| `OthersEntryVecMem_14` | `{2'd2, 2'd1, 2'd0, 2'd0, 2'd0}` | `5'b11111` | `5'b00000` | `—(NUM_WK_IQ=0)` | `—` | fpWen,rfWen,v0Wen,vecWen,vlWen@0..15 |
+| `OthersEntryVecMem_16` | `{2'd2, 2'd1, 2'd0, 2'd0, 2'd0}` | `5'b11111` | `5'b00000` | `—(NUM_WK_IQ=0)` | `—` | fpWen,rfWen,v0Wen,vecWen,vlWen@0..15 |
+| `OthersEntryVecMem_2` | `{2'd2, 2'd1, 2'd0, 2'd0, 2'd0}` | `5'b11111` | `5'b00000` | `—(NUM_WK_IQ=0)` | `—` | fpWen,rfWen,v0Wen,vecWen,vlWen@0..15 |
 | `OthersEntry_104` | `{2'd0, 2'd0, 2'd0}` | `5'b00010` | `5'b00000` | `5'b00010` | `5'b00000` | fpWen@0..5 |
 | `OthersEntry_106` | `{2'd0, 2'd0, 2'd0}` | `5'b00010` | `5'b00000` | `5'b00010` | `5'b00000` | fpWen@0..5 |
 | `OthersEntry_120` | `{2'd0, 2'd0, 2'd0}` | `5'b00010` | `5'b00000` | `5'b00010` | `5'b00000` | fpWen@0..5 |
@@ -51,6 +65,12 @@
 | `OthersEntry_152` | `{2'd2, 2'd1, 2'd0, 2'd0, 2'd0}` | `5'b11100` | `5'b00000` | `—(NUM_WK_IQ=0)` | `—` | vecWen@0..5; v0Wen@6..11; vlWen@12..15 |
 | `OthersEntry_164` | `{2'd2, 2'd1, 2'd0, 2'd0, 2'd0}` | `5'b11100` | `5'b00000` | `—(NUM_WK_IQ=0)` | `—` | vecWen@0..5; v0Wen@6..11; vlWen@12..15 |
 | `OthersEntry_166` | `{2'd2, 2'd1, 2'd0, 2'd0, 2'd0}` | `5'b11100` | `5'b00000` | `—(NUM_WK_IQ=0)` | `—` | vecWen@0..5; v0Wen@6..11; vlWen@12..15 |
+| `OthersEntry_172` | `{2'd0}` | `5'b00111` | `5'b00000` | `5'b00001` | `5'b00000` | fpWen,rfWen,vecWen@0..3 |
+| `OthersEntry_174` | `{2'd0}` | `5'b00111` | `5'b00000` | `5'b00001` | `5'b00000` | fpWen,rfWen,vecWen@0..3 |
+| `OthersEntry_200` | `{2'd0}` | `5'b00111` | `5'b00000` | `5'b00001` | `5'b00000` | fpWen,rfWen,vecWen@0..3 |
+| `OthersEntry_202` | `{2'd0}` | `5'b00111` | `5'b00000` | `5'b00001` | `5'b00000` | fpWen,rfWen,vecWen@0..3 |
+| `OthersEntry_242` | `{2'd0}` | `5'b00111` | `5'b00000` | `5'b00001` | `5'b00000` | fpWen,rfWen,vecWen@0..9 |
+| `OthersEntry_244` | `{2'd0}` | `5'b00111` | `5'b00000` | `5'b00001` | `5'b00000` | fpWen,rfWen,vecWen@0..9 |
 | `OthersEntry_44` | `{2'd0, 2'd0}` | `5'b00001` | `5'b00000` | `5'b00001` | `5'b00000` | rfWen@0..3 |
 | `OthersEntry_50` | `{2'd0, 2'd0}` | `5'b00001` | `5'b00000` | `5'b00001` | `5'b00000` | rfWen@0..3 |
 | `OthersEntry_6` | `{2'd0, 2'd0}` | `5'b00001` | `5'b00000` | `5'b00001` | `5'b00000` | rfWen@0..3 |
@@ -83,6 +103,10 @@ EnqEntry 族 `6ad7839a` 的真 bug 是：`HAS_LD_DEP` 按「enq 口有没有某�
 | `HAS_LD_DEP` 逐变体读数 | 角色 | 自量(enq 口) | 父级 `has_ld_dep` | 父级 `comp_has_ld_dep` | 父级传给本角色的实参 | 一致 |
 |---|---|---|---|---|---|---|
 | `OthersEntry` | simp | 1 | 1 | 1 | 1 | ✔ |
+| `OthersEntryVecMem` | simp | 1 | 1 | 0 | 1 | ✔ |
+| `OthersEntryVecMem_14` | simp | 1 | 1 | 0 | 1 | ✔ |
+| `OthersEntryVecMem_16` | comp | 0 | 1 | 0 | 0 | ✔ |
+| `OthersEntryVecMem_2` | comp | 0 | 1 | 0 | 0 | ✔ |
 | `OthersEntry_104` | simp | 1 | 1 | 0 | 1 | ✔ |
 | `OthersEntry_106` | comp | 0 | 1 | 0 | 0 | ✔ |
 | `OthersEntry_120` | simp | 1 | 1 | 0 | 1 | ✔ |
@@ -93,6 +117,12 @@ EnqEntry 族 `6ad7839a` 的真 bug 是：`HAS_LD_DEP` 按「enq 口有没有某�
 | `OthersEntry_152` | comp | 0 | 1 | 0 | 0 | ✔ |
 | `OthersEntry_164` | simp | 1 | 1 | 0 | 1 | ✔ |
 | `OthersEntry_166` | comp | 0 | 1 | 0 | 0 | ✔ |
+| `OthersEntry_172` | simp | 1 | 1 | 1 | 1 | ✔ |
+| `OthersEntry_174` | comp | 1 | 1 | 1 | 1 | ✔ |
+| `OthersEntry_200` | simp | 1 | 1 | 1 | 1 | ✔ |
+| `OthersEntry_202` | comp | 1 | 1 | 1 | 1 | ✔ |
+| `OthersEntry_242` | simp | 1 | 1 | 1 | 1 | ✔ |
+| `OthersEntry_244` | comp | 1 | 1 | 1 | 1 | ✔ |
 | `OthersEntry_44` | simp | 1 | 1 | 1 | 1 | ✔ |
 | `OthersEntry_50` | comp | 1 | 1 | 1 | 1 | ✔ |
 | `OthersEntry_6` | comp | 1 | 1 | 1 | 1 | ✔ |
