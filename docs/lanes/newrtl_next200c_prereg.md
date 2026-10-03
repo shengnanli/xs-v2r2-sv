@@ -218,3 +218,73 @@
 - 多个互不重叠 family lane；每 lane 独占 wrapper/generator/UT 路径。
 - generator --check、portlint、6 seeds × 200000、readability A–G、official signoff-strict Formality。
 - prereg、实现/UT、evidence 分离提交；目标不得静默替换；最终 clean worktree。
+
+## 接管节（agent/next200c-takeover，2026-10-03，Claude；原 agent 额度用尽）
+
+基线：main + 已合入 `agent/newrtl-next200c@5094100f` + 认领 commit `8c0238a1d`（认领清单 `docs/lanes/next200c-takeover_claim.md`）。
+冲突核查：codex outbox 最新 0207 不涉及下列任何名字；全部 worktree 的 `*_claim.md`/`*_prereg.md` 里这些名字只出现在
+本文件与 vectorcvt-tree 的 prereg（后者只把 Rec7Table/Rsqrt7Table 列为 golden child，不改它们）。
+
+### A. 20 个目标的审读结论（原 RTL 不假定正确，逐个对 Scala/golden 读）
+
+| 目标 | 原 RTL 审读发现 | 本节处置 |
+|---|---|---|
+| PipelineRegModule_6 | ★真 bug★：载荷寄存器写在带 `posedge reset` 的 always 块里——复位期间 in.fire 时 golden（载荷在无复位的 always @(posedge clock)）会更新载荷，原 RTL 不会；原 UT 不在运行中复位，看不见 | 重写；载荷改进无复位 always_ff |
+| OverrideableQueue / _1 | ★同类真 bug★：表项数据写在异步复位块里；另外两份各自平铺一遍同一逻辑 | 抽出共享核 `rtl/common/xs_OverrideableQueue_core.sv`（Scala 原样：写赢读清、Mux1H=按 rd_ptr 选），两个 wrapper 只拼载荷 |
+| NfMappedElemIdx | 可读性不合格：golden `_GEN_*` 改名照抄（`element_stride_*`/`ranges_nf*` 且命名与语义不符：数组下标其实是 nf、名字里的 nf 其实是 vd 号） | 按 Scala 重写：vrgIdx = vd/(nf+1)，区间 [16*vrg,16*(vrg+1)) 按 eewOH Mux1H 右移 |
+| Arbiter3_PfGenReq / Arbiter4_L2ToL1Hint / Arbiter4_PrefetchReq / Arbiter16_TLBundleD | 功能看来对，但各自手写三元链/循环，与仓里已签核的 `xs_FixedPriorityArbiter_core` 重复；头注释一句英文，不讲被删端口与常量字段的来历 | 改成该共享核的 wrapper（Arbiter3_CHIREQ 先例：被删的 ready 记进端口数恒等式）；头注释写清每个常量字段的 Scala 来源 |
+| FastArbiter_27 | 已用共享核 xs_FastArbiter_core，正确；但 UT Makefile 把**重写核**放进 RTL_GOLDEN_DEPS（两侧共用、不派生），语义不对 | 头注释补全；Makefile 把核挪进 RTL_SRCS |
+| IntBuffer_1 / _2 | 头注释写成"integer datapath"——其实是中断线缓冲；端口多个一行 | 重写成与 agent/k3-returned 的 IntBuffer 同风格（不依赖其未合入的文件，不定义同名核） |
+| FliD/H/S Table、Rec7Table、Rsqrt7Table | 128/32 行 case 表，`default: 'x`；表值未对 Scala 逐项核过 | 从 Scala 源机械抽取成 localparam 表（行布局与 Scala 一致，Fli 表逐项带 Scala 注释），`out = TABLE[src]` |
+| CSA4to2_15 | 逻辑等价但写法与 Scala 的"两级全加器+奇偶交错"对不上 | 按 Scala 逐位重写，头注释写清交错规则 |
+| MbistIntfFrontend / MemBlk、SatpFlushMod | 纯连线/快照，正确；头注释一句英文、端口多个一行 | 补头注释（Scala 位置、pipelineNum=1 时 Mux1H 退化、satp 快照用途），端口一行一个 |
+
+UT（两个目录 `verif/ut/Pipeline200c`、`verif/ut/Arithmetic200c`）改动：initreg 三档可选（0 / random / `<seed>017`）；
+Pipeline 加暖机（非复位寄存器两侧先写满再比）、运行中随机复位脉冲（复位期间输入照常翻转）、Arbiter16 稀疏 valid、
+13 个覆盖计数器（任一为 0 判失败）；Arithmetic 加随机复位脉冲与 5 个覆盖计数器。`FM_MERGE_DUP = false`（加强：比较点 = 寄存器位 + 输出位，模型精确适用）。
+
+### A. 跑前登记（`python3 scripts/fm_predict.py model/register <T>`，merge_dup=false，signoff-strict）
+
+| 目标 | UT | 模型 expected（regs + outs） | 预期 native passing | 预期偏差来源 |
+|---|---|---:|---:|---|
+| Arbiter16_TLBundleD | Pipeline200c | 94 (0+94) | 94 | — |
+| Arbiter3_PfGenReq | Pipeline200c | 72 (0+72) | 72 | — |
+| Arbiter4_L2ToL1Hint | Pipeline200c | 40 (0+40) | 40 | — |
+| Arbiter4_PrefetchReq | Pipeline200c | 102 (0+102) | 102 | — |
+| CSA4to2_15 | Pipeline200c | 32 (0+32) | 32 | out_car[0] 恒 0 仍是输出比较点 |
+| MbistIntfFrontend | Pipeline200c | 260 (0+260) | 260 | — |
+| MbistIntfMemBlk | Pipeline200c | 328 (0+328) | 328 | — |
+| NfMappedElemIdx | Pipeline200c | 128 (0+128) | 128 | out_idxRangeVec_0_from 恒 0 仍是输出比较点 |
+| OverrideableQueue | Pipeline200c | 519 (416+103) | 519 | — |
+| OverrideableQueue_1 | Pipeline200c | 314 (252+62) | 314 | — |
+| PipelineRegModule_6 | Pipeline200c | 147 (73+74) | 147 | — |
+| SatpFlushMod | Pipeline200c | 22 (11+11) | 22 | — |
+| FastArbiter_27 | Arithmetic200c | 427 (10+417) | 426 | rrGrantMask[0] 恒 0（constant_reg 1）；pendingMask[0] 对称死位走 vmucp（`verif/fm_target_config/FastArbiter_27.tcl`，FastArbiter_2..7/28 先例），开后计入 passing |
+| FliDTable / FliHTable / FliSTable | Arithmetic200c | 16 / 16 / 16 | 16 / 16 / 16 | — |
+| IntBuffer_1 / IntBuffer_2 | Arithmetic200c | 4 / 4 (2+2) | 4 / 4 | — |
+| Rec7Table / Rsqrt7Table | Arithmetic200c | 7 / 7 | 7 / 7 | — |
+
+预期全部 native SUCCEEDED、failing 0、unverified 0、unmatched 0、unread 0（FastArbiter_27 vmucp 后）、无黑盒、无 dont_verify。
+
+### B. 16 个 STALE 重证（`rtl/backend/xs_Pmacfg_core.sv` 改了复位值表达式）
+
+`Pma0cfgModule`..`Pma15cfgModule`（UT `PmaCfgLeaves8` / `PmaCfgLeaves8b`）。核的改动只影响 PMA_INDEX ≥ 19 的复位值，
+0..15 的复位值表达式求值仍全 0，行为不变；重证只为让 receipt 的 impl_closure 与当前字节一致。
+预测：每个 native passing = 24（8 regs + 16 outs，与旧 receipt 523b6100 的 24 相同；merge_dup 维持该 UT 原设定 true，
+fm_predict 判 MODEL_NA，以旧实测为预测），failing/unverified/unread/unmatched 全 0。
+两个 UT Makefile 只把运行期 initreg 改成可选（`INITREG ?= 0`，默认行为不变），以便跑 9 档回归。
+
+### Rec7Table / Rsqrt7Table 签完后的下游重证（vectorcvt-tree 的 10 个 receipt）
+
+Estimate7、CVT64_1、VCVT、CVT32、VCVT_1、CVT16、VCVT_2、VectorCvt、VectorCvtTop、VCVT_8 的 UT Makefile 里
+这两张表从 RTL_GOLDEN_DEPS 挪进 RTL_SRCS（impl 侧用重写表、ref 侧用 golden 表），先跑 `check_shared_impl_impact`，再逐个重证；
+预测 passing 与各自现有 receipt 相同（表在两侧都是纯组合、被吸收进上层锥，不产生新比较点）。
+
+### 接管节：UT 与变异自检（证明之前的读数）
+
+- `make run SEED={1,7,42} INITREG={0,random,<seed>017}`（各 200k 拍，每拍比两次 = checks 400000）：
+  Pipeline200c 9/9 errors=0，Arithmetic200c 9/9 errors=0；PmaCfgLeaves8 / 8b 各 9/9 errors=0（checks 1600008）。
+- 覆盖计数（seed 1/7/42）：Pipeline 复位脉冲 387~400、复位期间 PipelineReg in.fire 359~411、OQ 满覆盖 ~12.3k、
+  OQ 同槽读写 ~5.4k、Arbiter16 第 15 路胜出 ~600、无人请求 ~17.8k；Arithmetic FastArbiter 轮转压过固定优先级 ~26.6k、第 4 路胜出 ~11k。
+- 变异 17 个（seed 7、initreg 7017、50k 拍）：16 个首轮即抓到，含原 agent 的 PipelineRegModule_6 / OverrideableQueue 原版
+  （复位块里写载荷）；M17（IntBuffer_1 异步复位改同步）首轮漏，原因是 tb 只在 posedge 后比较——加"negedge 输入变化后再比一次"后抓到。
