@@ -205,9 +205,131 @@ ITTAGE_CORE = [
     ("s3_target", "s3_target"), ("last_stage_meta", "io_out_last_stage_meta"), ("s1_ready", "io_s1_ready"),
 ]
 
+# =============================================================================
+#  Tage_SC
+# =============================================================================
+TAGE_UPD = {"oldCtrs": "old_ctrs", "uMask": "u_mask", "mask": "mask", "takens": "takens",
+            "alloc": "alloc", "us": "us", "reset_u": "reset_u"}
+SC_UPD = {"mask": "mask", "tagePreds": "tage_preds", "takens": "takens", "oldCtrs": "old_ctrs"}
+
+
+def tage_child_rule(mod, inst, port):
+    m = re.fullmatch(r"tables_(\d)", inst)
+    if m:
+        k = int(m.group(1))
+        if port == "io_req_ready":
+            return "tbl_req_ready[%d]" % k
+        pm = re.fullmatch(r"io_resps_(\d)_(valid|bits_ctr|bits_u|bits_unconf)", port)
+        if pm:
+            return "tbl_resp[%d][%s].%s" % (k, pm.group(1), pm.group(2).replace("bits_", ""))
+        if port in ("io_update_pc", "io_update_ghist"):
+            return "tbl_upd[%d].%s" % (k, port[len("io_update_"):])
+        pm = re.fullmatch(r"io_update_(\w+)_(\d)", port)
+        if pm and pm.group(1) in TAGE_UPD:
+            return "tbl_upd[%d].%s[%s]" % (k, TAGE_UPD[pm.group(1)], pm.group(2))
+        return None
+    if inst == "bt":
+        simple = {"io_req_ready": "bt_req_ready", "io_s1_resp_valid": "bt_s1_resp_valid",
+                  "io_update_pc": "bt_upd.pc"}
+        if port in simple:
+            return simple[port]
+        pm = re.fullmatch(r"io_s1_cnt_(\d)", port)
+        if pm:
+            return "bt_s1_cnt[%s]" % pm.group(1)
+        pm = re.fullmatch(r"io_update_(mask|cnt|takens)_(\d)", port)
+        if pm:
+            return "bt_upd.%s[%s]" % (pm.group(1), pm.group(2))
+        return None
+    if inst == "mbistPl":
+        return None
+    m = re.fullmatch(r"allocLFSR_prng(_1)?", inst)
+    if m:
+        b = 1 if m.group(1) else 0
+        pm = re.fullmatch(r"io_out_(\d+)", port)
+        if pm:
+            k = int(pm.group(1))
+            return "lfsr_bits[%d][%d]" % (b, k) if k < 3 else ""
+        return None
+    m = re.fullmatch(r"scTables_(\d)", inst)
+    if m:
+        k = int(m.group(1))
+        pm = re.fullmatch(r"io_resp_ctrs_(\d)_(\d)", port)
+        if pm:
+            return "sc_resp[%d][%s][%s]" % (k, pm.group(1), pm.group(2))
+        if port in ("io_update_pc", "io_update_ghist"):
+            return "sc_upd[%d].%s" % (k, port[len("io_update_"):])
+        pm = re.fullmatch(r"io_update_(\w+)_(\d)", port)
+        if pm and pm.group(1) in SC_UPD:
+            return "sc_upd[%d].%s[%s]" % (k, SC_UPD[pm.group(1)], pm.group(2))
+        return None
+    die("Tage_SC 未知实例 %s" % inst)
+
+
+def tage_output_rule(name):
+    m = re.fullmatch(r"io_out_s([23])_full_pred_(\d)_br_taken_mask_(\d)", name)
+    if m:
+        return "s%s_taken[%s][%s]" % m.groups()
+    m = re.fullmatch(r"io_out_last_stage_spec_info_sc_disagree_(\d)", name)
+    if m:
+        return "s3_sc_disagree[%s]" % m.group(1)
+    m = re.fullmatch(r"io_perf_(\d)_value", name)
+    if m:
+        return "{4'h0, perf[%s]}" % m.group(1)
+    return None
+
+
+TAGE_DECL = """
+  logic [PC_W-1:0]      s0_pc    [NUM_DUP];
+  logic                 s0_fire  [NUM_DUP];
+  logic                 s1_fire  [NUM_DUP];
+  logic                 s2_fire  [NUM_DUP];
+  logic                 tbl_req_ready [NUM_TABLES];
+  tage_resp_t           tbl_resp      [NUM_TABLES][NUM_BR];
+  tage_upd_t            tbl_upd       [NUM_TABLES];
+  logic                 bt_req_ready;
+  logic [1:0]           bt_s1_cnt     [NUM_BR];
+  logic                 bt_s1_resp_valid;
+  bt_upd_t              bt_upd;
+  logic [5:0]           sc_resp       [NUM_SC][NUM_BR][2];
+  sc_upd_t              sc_upd        [NUM_SC];
+  logic [2:0]           lfsr_bits     [NUM_BR];
+  logic [NUM_BR-1:0]    s2_taken      [NUM_DUP];
+  logic [NUM_BR-1:0]    s3_taken      [NUM_DUP];
+  logic [NUM_BR-1:0]    s3_sc_disagree;
+  logic [1:0]           perf          [3];
+"""
+
+TAGE_CORE = [
+    ("clock", "clock"), ("reset", "reset"), ("reset_vector", "io_reset_vector"),
+    ("s0_pc", "s0_pc"), ("s0_fire", "s0_fire"), ("s1_fire", "s1_fire"), ("s2_fire", "s2_fire"),
+    ("tage_enable", "io_ctrl_tage_enable"), ("sc_enable", "io_ctrl_sc_enable"),
+    ("s1_uftb_taken", "{io_in_bits_resp_in_0_s1_full_pred_0_br_taken_mask_1, "
+                      "io_in_bits_resp_in_0_s1_full_pred_0_br_taken_mask_0}"),
+    ("tbl_req_ready", "tbl_req_ready"), ("tbl_resp", "tbl_resp"), ("tbl_upd", "tbl_upd"),
+    ("bt_req_ready", "bt_req_ready"), ("bt_s1_cnt", "bt_s1_cnt"), ("bt_s1_resp_valid", "bt_s1_resp_valid"),
+    ("bt_upd", "bt_upd"), ("sc_resp", "sc_resp"), ("sc_upd", "sc_upd"), ("lfsr_bits", "lfsr_bits"),
+    ("update_valid", "io_update_valid"), ("update_pc", "io_update_bits_pc"),
+    ("update_br0_valid", "io_update_bits_ftb_entry_brSlots_0_valid"),
+    ("update_tail_sharing", "io_update_bits_ftb_entry_tailSlot_sharing"),
+    ("update_tail_valid", "io_update_bits_ftb_entry_tailSlot_valid"),
+    ("update_strong_bias", "{io_update_bits_ftb_entry_strong_bias_1, io_update_bits_ftb_entry_strong_bias_0}"),
+    ("update_br_taken", "{io_update_bits_br_taken_mask_1, io_update_bits_br_taken_mask_0}"),
+    ("update_mispred", "{io_update_bits_mispred_mask_1, io_update_bits_mispred_mask_0}"),
+    ("update_meta", "io_update_bits_meta"), ("update_ghist", "io_update_bits_ghist"),
+    ("s2_taken", "s2_taken"), ("s3_taken", "s3_taken"), ("s3_sc_disagree", "s3_sc_disagree"),
+    ("last_stage_meta", "io_out_last_stage_meta"), ("s1_ready", "io_s1_ready"), ("perf", "perf"),
+]
+
+TAGE_ALIAS = {"bd_%s" % f: "boreChildrenBd_bore_%s" % f
+              for f in ["array", "all", "req", "ack", "writeen", "be", "addr", "indata", "readen",
+                        "addr_rd", "outdata"]}
+
 TARGETS = {
     "ITTage": dict(pkgs=["ittage_pkg"], child_rule=ittage_child_rule, out_rule=ittage_output_rule,
                    decl=ITTAGE_DECL, core="xs_ITTage_core", core_conns=ITTAGE_CORE),
+    "Tage_SC": dict(pkgs=["tage_sc_pkg"], child_rule=tage_child_rule, out_rule=tage_output_rule,
+                    decl=TAGE_DECL, core="xs_Tage_SC_core", core_conns=TAGE_CORE,
+                    keep=r"childBd(_\d+)?_\w+", alias=TAGE_ALIAS),
 }
 
 
@@ -249,12 +371,27 @@ def build(top):
             drivers.setdefault(e, []).append("u_core")
     L.append("")
     L.append("  // ---- 子模块（实例名 / 端口顺序同 golden）----")
+    kept = set()
+    inst_start = len(L)
     for mod, inst, conns in golden_instances(body):
         L.append("  %s %s (" % (mod, inst))
         cl = []
         for port, expr in conns:
             rule = spec["child_rule"](mod, inst, port)
             gold_is_port = expr in pnames
+            keep_re = spec.get("keep")
+            if rule is None and keep_re and re.fullmatch(keep_re, expr):
+                # 子模块之间的直连网（MBIST 子链）：原名保留，按 golden 声明位宽声明
+                kept.add(expr)
+                cl.append((port, expr))
+                continue
+            alias = spec.get("alias", {}).get(expr)
+            if rule is None and alias is not None:
+                # golden 里给顶层端口起的别名网（wire bd_x = 顶层口）：直接接顶层口
+                cl.append((port, alias))
+                if alias in outputs:
+                    drivers.setdefault(alias, []).append(inst)
+                continue
             if port in ("clock", "reset"):
                 if expr != port:
                     die("%s.%s 接的不是 %s" % (inst, port, port))
@@ -274,6 +411,14 @@ def build(top):
                 cl.append((port, rule))
         L.append(",\n".join("    .%-40s (%s)" % c for c in cl))
         L.append("  );")
+    if kept:
+        decl = []
+        for nm in sorted(kept, key=lambda x: [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", x)]):
+            m = re.search(r"^\s*wire\s+(\[\d+:\d+\]\s+)?%s;" % re.escape(nm), body, re.M)
+            if not m:
+                die("子模块直连网 %s 在 golden 里找不到声明" % nm)
+            decl.append("  wire %s%s;" % ((m.group(1) or "").strip() + " " if m.group(1) else "", nm))
+        L[inst_start:inst_start] = ["  // MBIST 子链：子模块之间的直连网（名字同 golden）"] + decl + [""]
     L.append("")
     L.append("  // ---- 顶层输出 ----")
     for lhs, rhs in golden_assigns(body):

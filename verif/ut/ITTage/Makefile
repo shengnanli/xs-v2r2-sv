@@ -46,7 +46,22 @@ include ../../../scripts/ut_common.mk
 
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 INITREG  ?= random
-SIM_ARGS += +vcs+initreg+$(INITREG)
+# initreg 三档：0 / random / <seed>017。★后两档用 initreg 配置文件：其余状态照常随机，
+# 只把厂商 SRAM 行为模型（array_6_ext）的存储阵列初值钉 0★。原因：表项 SRAM 无复位，
+# 两个实例（golden 侧 / 重写侧）各自读到"从没写过"的条目时随机初值不同 —— 那是 tb 违反
+# "先写后读"的契约，不是 RTL 差异（seed 42 实测：不钉时开比第一拍 meta 目标位就不同）。
+# 两侧读的是同一份 golden SRAM 模型，钉 0 不改变被比对的任何逻辑。
+SRAM_LEAVES = array_6_ext
+ifeq ($(INITREG),0)
+SIM_ARGS += +vcs+initreg+0
+else
+SIM_ARGS += +vcs+initreg+config+$(UT_GEN_DIR)/initreg_$(INITREG).cfg
+endif
+$(UT_GEN_DIR)/initreg_%.cfg: Makefile
+	@mkdir -p $(UT_GEN_DIR)
+	@{ if [ "$*" = random ]; then echo "defaultvalue random"; else echo "defaultvalue random $*"; fi; \
+	   for m in $(SRAM_LEAVES); do echo "module $$m 0"; done; } > $@
+run: $(if $(filter-out 0,$(INITREG)),$(UT_GEN_DIR)/initreg_$(INITREG).cfg)
 
 .PHONY: gencheck
 gencheck:
