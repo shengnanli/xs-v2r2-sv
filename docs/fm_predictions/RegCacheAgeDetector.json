@@ -1,0 +1,10 @@
+{
+  "target": "RegCacheAgeDetector",
+  "ut": "RegCacheLeaves",
+  "regs": 120,
+  "outs": 16,
+  "expected": 136,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "regs+outs 模型；预测差额 0"
+}

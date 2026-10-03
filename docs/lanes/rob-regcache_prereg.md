@@ -56,3 +56,41 @@ CommitStuckCounter 自然计满要 2^21 拍，tb 每 4000 拍把两侧 count 同
 | VTypeBuffer | 1520（1496 + 24） | **constant_reg ≥ 9**（commitSize / walkSize / spclWalkSize 的 [6:4] 恒 0）；**unread ≈ 113**（deqPtrVec_1..7 共 49 位 + deqPtrOH 64 位，两侧对称无读者）——需 vmucp；子模块内部若另有死位以 receipt 指认。vmucp 后预测 passing = 1520 − constant_reg |
 
 失配 = 修 RTL 对齐 golden + UT 回归，不找解释去圆。
+
+---
+
+## B. 批 B 跑前登记（RegCache 家族六个 + SRT16DividerDataModule + 两个父级重证；★跑完不许改本节★）
+
+### B.1 结构
+
+| 目标 | golden 行 | impl 行 | `_GEN_`/`_T_` | 子模块 | UT |
+|---|---:|---:|---:|---|---|
+| RegCacheDataModule | 818 | 312（家族核 `xs_RegCacheDataModule_core` + wrapper） | 0 | — | RegCacheLeaves |
+| RegCacheDataModule_1 | 700 | 221（薄 wrapper） | 0 | — | RegCacheLeaves |
+| RegCacheAgeTimer | 1390 | 513（家族核 + wrapper） | 0 | — | RegCacheLeaves |
+| RegCacheAgeTimer_1 | 956 | 300（薄 wrapper） | 0 | — | RegCacheLeaves |
+| RegCacheAgeDetector | 1356 | 347（家族核 + wrapper） | 0 | — | RegCacheLeaves |
+| RegCacheAgeDetector_1 | 763 | 173（薄 wrapper） | 0 | — | RegCacheLeaves |
+| SRT16DividerDataModule | 1259 | 560 | 0 | CSA3_2_3956 ×4 / 3960 ×2 / 3962 ×25、RightShifter（PROVEN_DIRECT 重写件，实例名同 golden，处于 generate 块内） | SRT16DividerDataModule |
+| RegCache（父级重证） | — | RegCache.sv 不改 | — | impl 侧 6 个子模块由 golden 同源改为读上面 6 个重写件 | RegCache（tb 改由 gen.py 生成，支持九档） |
+| DivUnit（父级重证） | — | DivUnit.sv 不改 | — | impl 侧 SRT16DividerDataModule（+CSA/RightShifter）由 golden 同源改为读重写件 | ArithVecLeaves5（main b4d61278 的新 tb） |
+
+UT 过程中发现并修掉的重写件自身 bug（UT 抓到，均在提交前）：
+- RegCacheDataModule 越界判据 `raddr < 4'(16)` 在 16 项变体上回绕成 `< 0` ⇒ 恒读第 0 项（改为 int 比较）；
+- SRT16DividerDataModule 宽 CSA 的 -q·d 选择写成"读模块变量的 function + 连续赋值"，仿真里函数体内读的
+  udNegReg 变化不触发重算（综合语义正确、仿真语义错）⇒ 改 always_comb；同类写法 RegCacheAgeDetector 的
+  get_age 一并改成 always_comb 展开完整矩阵。
+
+### B.2 跑前预测（登记 `docs/fm_predictions/<T>.json`）
+
+| 目标 | expected | 预测 |
+|---|---:|---|
+| RegCacheDataModule | 2528（1040 + 1488） | passing 2528，unread 0（ren 只用于断言，是输入不是比较点） |
+| RegCacheDataModule_1 | 2264（780 + 1484） | passing 2264 |
+| RegCacheAgeTimer | 160（40 + 120） | passing 160 |
+| RegCacheAgeTimer_1 | 98（32 + 66） | passing 98 |
+| RegCacheAgeDetector | 136（120 + 16） | passing 136 |
+| RegCacheAgeDetector_1 | 78（66 + 12） | passing 78 |
+| SRT16DividerDataModule | 1803（1737 + 66） | **unread 6**：aLZCReg[6]、dLZCReg[6]、udNegReg_{0,1,3,4}[67]（与 DivUnit vmucp 白名单同一批死位，两侧对称）→ 拟 vmucp；**constant_reg ≥ 7**：rCarryReg[0]、udNegReg_0[1:0]、udNegReg_1[0]、udNegReg_3[0]、udNegReg_4[1:0]，另有 rud/r2udPmNegReg 里由查表常数位决定的恒定位（未逐位推算，以 receipt 指认）；vmucp 后 passing = 1803 − constant_reg |
+| RegCache | 3851（merge_dup=true，模型不适用） | 预测与旧 receipt（evidence/25cdce831a66）同：native SUCCEEDED、passing 3830、failing 0、unread_notcompared 0、ref 侧 unmatched-unread 6 = verif/dead_ref/RegCache.json 声明 ⇒ PASS_DEAD_REF；子模块内部若因数组命名出现 unmatched，诊断跑后补登 |
+| DivUnit | 沿用 docs/fm_predictions/DivUnit.json | 预测 passing 3132（vmucp）、unread 0，与现 receipt 同 |
