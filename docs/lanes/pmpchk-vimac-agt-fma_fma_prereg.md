@@ -62,3 +62,69 @@
 2. 2889 个输出位里有 1338 位是常量（两侧同为常量 0/1）。FM 对"两侧都是常量的输出口"仍计比较点（试跑 passing 就是 2889），
    若正式跑里 passing 少了，先查是不是这批常量口的计数口径变了，而不是 RTL。
 3. 可读核用了参数化子模块 + `localparam` 非打包数组做通道表（`F32_SIG_LSB[l]` 之类）下标 generate 变量；试跑已证明 FM 能展开。
+
+## 2. VectorFloatFMA
+
+### 2.1 结构与子模块处置
+
+- golden 5582 行 / 13 端口（io_fire / fp_a / fp_b / fp_c / widen_a / widen_b / uop_idx / round_mode / fp_format / op_code /
+  res_widening / fp_result / fflags），顶层 301 个寄存器 1326 位；直接 child 三个：
+  `BoothEncoderF64F32F16_3`、`CSA3to2`、`CSA_Nto2With3to2MainPipeline`（内含 4×107 位寄存器与 CSA4to2 / CSA3to2）。
+- 可读核 `rtl/backend/VectorFloatFMA.sv`（1224 行，`_GEN_`/`_T_<数字>` 0 命中）：
+  `xs_VfmaRightShiftSticky` / `xs_VfmaLane`（一条通道：拆操作数、对齐、规格化、舍入，参数化 W）× 7 实例 +
+  `xs_VfmaSlotPack`（按格式把通道结果拼进共用寄存器）+ `xs_VectorFloatFMA_core`（共用的 Booth + CSA 阵列、107 位加法、
+  三级寄存器）+ golden 同名 wrapper。
+- child 处置（两侧白盒，无黑盒、无 dont_verify）：
+  - `BoothEncoderF64F32F16_3`：ref = golden，impl = 本仓重写件（本文件 §1 单独签核）；
+  - `CSA3to2`：ref = golden，impl = `rtl/backend/CSA3to2.sv`（coverage_three_axis：PROVEN_DIRECT）；
+  - `CSA_Nto2With3to2MainPipeline`（+ 内部 `CSA4to2`）：★golden 复用★，本仓无重写件，照 `verif/ut/FMA/Makefile` 先例
+    走 `RTL_GOLDEN_DEPS`，两侧同源 elaborate，不设黑盒。
+- 钉点：`verif/ut/VectorFloatFMA/fm_pins_pre.tcl`（`scripts/gen_vfma.py --check`，golden 顶层 301 个扁平寄存器 / 1326 位
+  一一映射到 `u_core` 与 `g_lane[l].u_lane`，fail-closed 计数，字面 1326）。不钉时非正式试跑 1(1) unmatched
+  （`lzd_adder_inv_mask_reg1[140]` <-> `tzd_src_s1_q[23]` 错配），钉后 0(0)。
+
+### 2.2 UT（verif/ut/VectorFloatFMA；seed 1/7/42 × initreg 0 / random / `<seed>017`，各 200k 拍）
+
+逐拍比 io_fp_result / io_fflags（DZ 位恒 0 豁免见 0/1）。激励按"9 op × 3 格式 × 2 加宽 = 54 组合"各自计数，
+特殊值偏置（±0 / ±inf / qNaN / sNaN / 次正规 / 边界 / 抵消 / inf*0 / inf-inf），5 种舍入模式 × 3 格式各计数，
+每格式 fflags NV/OF/UF/NX 见过 1，7 条通道各 18 项内部状态计数（cov_min 100）。读数见对账。
+复跑：`bash <scratchpad>/pmpchk-vimac-agt-fma/ut9.sh VectorFloatFMA`，或单档
+`cd verif/ut/VectorFloatFMA && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`。
+
+### 2.3 非正式试跑抓到、UT 看不见的失配（已修 `7b655538`，登记前）
+
+试跑 1（`56340f39`，无钉点）：FAILED，passing 483 / failing ≥20（截断）/ unmatched 1(1)。
+试跑 2（同字节 + 钉点）：FAILED，passing 643 / failing ≥20（截断）/ unverified 1072 / unmatched 0(0)；
+failing 全在 S1 的 `adder_reg1[140..147]`、`lzd_adder_inv_mask_reg1[140..147]`、`tzd_adder_reg1[16..23]` —— 都是 f32_1 通道
+c 高段落下的位。根因：golden 的 59 位"c 高段加 1"向量里 f32_1 那一位是 `is_fp32_reg0`（不是 `~is_fp64 & is_fp32`），
+而重写核按"在用通道"给；`is_fp64_reg0 / is_fp32_reg0` 不复位、FM 当自由状态，两个同时为 1 时两侧不同。UT 里格式位由
+2 位 fp_format 译出、永远互斥，看不见。修法：照 golden，该位只看 is_fp32（文件头怪癖 8）。
+试跑 3（修后字节 + 钉点）：match 0(0) unmatched、钉点 1326/1326 全接受，**verify 未跑完**（会话进程崩溃），
+所以下表的 failing=0 是修法推断，不是试跑结果。
+
+### 2.4 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VectorFloatFMA.json）
+
+模型 expected = **1838**（regs 1754 = 顶层 1326 + U_CSAnto2 内 4×107；outs 84 = 64 + 20），`FM_MERGE_DUP=false`。
+试跑 2 的 passing + failing + unverified = 643 + 20 + 1072 = 1735 = 1838 − 103，verdict 记 constant_reg = 103：
+全部在 golden 复用件 `U_CSAnto2/U_CSA4to2_io_in_{a,b,c,d}_r`（matched.rpt 的 DFF0X 位：26 / 27 / 31 / 28，
+即 CSA 树进位加数左移后恒 0 的低位），两侧同一批位。unread_points.txt 为空（0 行）。
+
+| 项 | 预测（正式 run_proof） |
+|---|---|
+| passing | **1735**（= 1838 − constant_reg 103） |
+| failing / unverified / aborted / unread | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 103 |
+| 钉点 | 1326 条 set_user_match 全接受（`VFMA_PIN_END ok=1326 bad=0`） |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED（signoff-strict） |
+
+无 vmucp、无 allow / dead_ref 声明。
+
+### 2.5 明写可能出错的地方
+
+1. 修后字节没有跑完整的试跑：若正式跑 failing 仍 >0，按失败点定位再修 RTL、重新登记一节（不改本节数字）。
+2. constant_reg 103 与 matched.rpt 里 112 个 DFF0X 不等（9 位差额）——verdict 的 103 来自 verify 后的 Not Compared 计数，
+   DFF0X 是 match 期的"constrained 0X"标记，后者是前者的超集；对账以 receipt 的 constant_reg 为准。
+3. 不复位的格式寄存器还有别的"两位同时为 1"分支（S2/S3 的格式选择）；核里一律按 fp64 > fp32 > f16 优先级写，
+   与 golden 的三元链一致，试跑 2 的 failing 列表里没有这类点，但列表是截断的。
