@@ -125,3 +125,13 @@ constant_reg 9。差额 1520 − 1511 = 9 = constant_reg，全部指认。
 **RegCache**（父级重证，impl 改读 6 个重写件，merge_dup 默认，模型不适用）：native SUCCEEDED、passing **3830**、failing 0、
 unmatched 0、unread 6 且全部是 ref 侧（= verif/dead_ref/RegCache.json 声明的 6 个 delayToWakeupQueueRCIdx_*[4]），
 与旧 receipt evidence/25cdce831a66 逐项相同 ⇒ 预测 official 判 PASS_DEAD_REF。
+
+### B.5 DivUnit 重证（以 main 18359395 为基础；跑前登记）
+
+- 闭包变化：impl 侧 SRT16DividerDataModule（+ CSA3_2_3956/3960/3962、RightShifter）由 golden 同源改为读重写件
+  （`verif/ut/ArithVecLeaves5/Makefile` 的 DIVUNIT_REWRITTEN；RTL_GOLDEN_DEPS 去掉 DIVUNIT_DEPS）。DivUnit.sv 字节不改；
+  fpu-parents 合入的 fpdiv_r64_block 改动保留。
+- 钉点：`fm_pins.tcl` 不改（按叶名配对）；夹具 `fm_pins_fixture.tcl` 的 impl 路径改为 `u_core/u_div/u_core/<leaf>`
+  ⇒ pin_call_equiv 调用序列哈希变化（新前提），以本次 receipt 为准 `--update` 基线。
+- UT（merge 后，seed 1/7/42 × initreg 0/random/<seed>017）：9/9 PASSED，errors=0，checks 5199966/5199987/5199977，toggled 26/26。
+- 预测：与 evidence/f0492477b75c 同——native SUCCEEDED、passing **3132**、failing 0、unread 0（vmucp，6 对钉点）、unmatched 0。

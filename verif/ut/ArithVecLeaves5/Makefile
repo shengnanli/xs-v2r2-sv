@@ -21,12 +21,17 @@ LEAVES = Adder_chain_rnd DivUnit FDivSqrt VIAluDecoder VIntAdder64b
 #   impl 改读重写件；它下面的 CSA3to2_20/24、r4_qds_v2/_spec 仍是两侧同源 golden（下面 FDIVSQRT_GOLDEN_IMPL）。
 #   UT 限度同上：impl 的 FloatDividerR64 是 golden 文件、例化 golden 名 fpdiv_r64_block，UT 回归不到重写件，由 FM 覆盖。
 FDIVSQRT_REWRITTEN = lzc r4_qds_cg r4_qds r4_qds_spec fpsqrt_r16_block fpsqrt_r16 fpdiv_r64_block
-RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN)))
+# DivUnit 闭包（2026-10-03，agent/rob-regcache）：SRT16DividerDataModule 已由该 lane 重写签核
+#   （verif/ut/SRT16DividerDataModule），impl 改读重写件 + 其 child 重写件（CSA3_2_3956/3960/3962 的家族核
+#   CSA3_2.sv、RightShifter，均 PROVEN_DIRECT）。两侧白盒、无黑盒；UT 侧经 derive 改名 _xs，回归得到。
+DIVUNIT_REWRITTEN = CSA3_2 CSA3_2_3956 CSA3_2_3960 CSA3_2_3962 RightShifter SRT16DividerDataModule
+RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN) $(DIVUNIT_REWRITTEN)))
 TB_SRCS  = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL   ?= $(G1_CANONICAL)/golden-rtl
-GOLDEN_SRCS  = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN)))
+GOLDEN_SRCS  = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN))) \
+               $(addprefix $(GOLDEN_RTL)/,$(DIVUNIT_DEPS))
 
 DIVUNIT_DEPS = SRT16DividerDataModule.sv CSA3_2_3956.sv CSA3_2_3960.sv CSA3_2_3962.sv \
                RightShifter.sv
@@ -38,7 +43,7 @@ FDIVSQRT_DEPS = FloatDivider.sv FloatDividerR64.sv fpsqrt_r16.sv fpdiv_r64_block
 FDIVSQRT_GOLDEN_IMPL = FloatDivider.sv FloatDividerR64.sv \
                        CSA3to2_20.sv CSA3to2_24.sv ShiftLeftPriorityWithLZDResult.sv \
                        r4_qds_v2.sv r4_qds_v2_spec.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(DIVUNIT_DEPS) $(FDIVSQRT_GOLDEN_IMPL))
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(FDIVSQRT_GOLDEN_IMPL))
 
 # FM_VARIANTS / FM_REF_DEPS 写字面名（scripts/fm_predict.py 按字面解析，不展开 make 变量）
 FM_VARIANTS = Adder_chain_rnd DivUnit FDivSqrt VIAluDecoder VIntAdder64b
@@ -66,8 +71,9 @@ SIM_ARGS += +vcs+initreg+$(INITREG)
 # FDivSqrt 唯一 unread 点是 golden 闭包（VectorFloatDividerR64）内两侧同死的
 # matched_nc 死位 fp_format_onehot_q_reg[2]，依据与白名单见
 # verif/fm_target_config/FDivSqrt.tcl。
-# DivUnit 有 6 对 unread 死位，全在两侧共用 golden 孩子 SRT16DividerDataModule
-# 内部（aLZCReg/dLZCReg[6] 恒 0 且读者只取 [5:0]；udNegReg_{0,1,3,4}[67] 无
+# DivUnit 有 6 对 unread 死位，全在孩子 SRT16DividerDataModule 内部（2026-10-03 起 impl 侧读
+# 重写件，层次多一层 u_core/，死位同名同位，见 verif/fm_target_config/SRT16DividerDataModule.tcl）
+# （aLZCReg/dLZCReg[6] 恒 0 且读者只取 [5:0]；udNegReg_{0,1,3,4}[67] 无
 # 读者）——golden 自带死位，与重写无关。它们属 unmatched unread（层次名
 # divDataModule vs u_core/u_div、无扇出签名），由本目录 fm_pins.tcl 逐对
 # 钉死后交 vmucp 实比。依据与白名单见 verif/fm_target_config/DivUnit.tcl。
