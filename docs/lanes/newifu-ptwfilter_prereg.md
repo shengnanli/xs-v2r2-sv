@@ -170,3 +170,49 @@ level = min(s1,s2) 与 n 的三种组合是最容易抄错的地方，UT 的 hit
 ## 对账
 
 （跑完追加）
+
+### 对账（2026-10-03，跑完追加；上面各节数字未改）
+
+| 目标 | 证明 commit | 模型 | 预测实测 | 实测 passing | constant_reg | 差额指认 | failing / unmatched / unread / 黑盒 / dont_verify | receipt.json sha256 |
+|---|---|---|---|---|---|---|---|---|
+| FrontendTrigger | f57e436c | 360 | 356 | **356** | 4（timing ×4） | 360−356=4=constant_reg ✔ | 0/0/0/0/否 | `cad6219abf36b2dc445390f246a303825f76cd37dada6bc7542ae424f7a43ec1` |
+| PredChecker | f57e436c | 3495 | 3495 | **3495** | 0 | 逐位相等 ✔ | 0/0/0/0/否 | `c583a9654131812f2be2e6b95267ad2d5759999fd237ac80559f75511f9bdf99` |
+| NewIFU | 48bc44ef | 9251 | 9242（区间 9226～9242） | **9247** | 4（frontendTrigger timing ×4） | 9251−9247=4=constant_reg ✔ | 0/0/0/0/否 | `9d863897b952f5c8d696e8df6506b2905425613670dd803cdc19353a660af97f` |
+| PTWFilter | 48bc44ef | 1077 | 1077 | **1077** | 0 | 逐位相等 ✔ | 0/0/0/0/否 | `32ba72ba96de178be05410e97b41c3012a8451e973795e928cd694179bc4878e` |
+
+- 全部 signoff-strict native SUCCEEDED，`fm_predict.py check` rc=0，`check_lane_receipts.py` rc=0。
+- 钉点全部命中：FrontendTrigger 296/296、PredChecker 1799/1799、NewIFU 6113/6113、PTWFilter 759/759（bad=0）。
+- **NewIFU 预测偏差，照实指认**：我预测 constant_reg 为 9，实测是 4。另外 5 个（`{f2,f3,wb}_pc_lower_result_0[11]`、`f2_cut_ptr_0[6:5]`）FM 没有判成常量：它们仍是比较点，算进了 passing，结果两侧也相等。所以 9247 落在登记区间外（比上界多 5），但差额完全由 receipt 里的 constant_reg 指认，fm_predict 判绿。
+- vmucp（FrontendTrigger / NewIFU）：开 vmucp 后 unread=0。passing = 模型（全部寄存器位 + 输出位）− constant_reg，说明登记的 56 / 365 个对称死位全部进了比较、全部通过。**没有跑过关 vmucp 的基线**，所以「+56 / +365」只按模型核算，没有实测差值。
+
+#### UT（3 seed × {+0, +random, +<seed>017} × 200k 拍，全部 errors=0 cov_fail=0）
+
+| 目标 | 每档 checks | 字节 |
+|---|---|---|
+| FrontendTrigger | 3,199,872 ×9 | f57e436c 起（RTL 同 48bc44ef） |
+| PredChecker | 19,199,232 ×9 | 同上 |
+| NewIFU | 83,992,020（seed 1）/ 83,992,440（seed 7、42）×9 | 同上 |
+| PTWFilter | 13,195,974 / 13,196,106 / 13,197,294 ×9 | 48bc44ef |
+
+覆盖计数（seed 1）：NewIFU f2_fire 41055、wb_redirect 19971、lastHalf 273、lastHalf_disable 37、chk_{jal,jalr,ret,target,notcfi,invalid}
+= 13429/6193/268/861/2566/467、mmio 状态 waitLastCmt..commited 全部 ≥105、mmio_need_resend 132、mmio_need_not_flush 292；
+PTWFilter enq 21164、fake_enq 419、merge_{last_resp,old,port} = 17969/2213/2511、hit_{noS2,onlyS2,allS1,napot,super,g}
+= 684/714/1043/363/1169/463、flush_kills_resp 132。
+
+#### 变异自检（scratchpad，不进库；seed 7 × random；NewIFU 30k 拍、PTWFilter 40k 拍）
+
+- NewIFU 18 个变异：12 个 CATCH 照预期抓到。另有 **3 个原定 CATCH 实际 errors=0**：
+  - N2：响应匹配不看第二行 vaddr。tb 给 vaddr_0/vaddr_1/doubleline 是一起给对或一起给错的，「只错第二行」的组合造不出来，属于激励缺口。
+  - N4：crossPage 异常不看 doubleLine。按构造够不着：pc[5:0]==3E 的位置只在 startAddr[5]=1 时出现，而这时 doubleLine 恒为 1。
+  - N14：ITLB 异常 pf/gpf 优先级对调。要 pf 与 gpf 同时为 1 才有区别，golden 对这种情况有 one-hot 断言，激励几乎碰不到。
+  
+  这三处 UT 都看不见，只靠 FM：FM 已证明真实 RTL 与 golden 等价，变异后会出 failing 点。**但我没有对变异体实际跑过 FM**，这是推理，不是实测。
+  N16（wb_valid 去复位）和 N17（改死位 f3_pd_brType_q）errors=0，与预期 MISS 一致，由 FM 兜（复位结构 / vmucp 比较点）；N18 是等价变异，errors=0。
+- PTWFilter 14 个变异：12 个 CATCH 全部抓到（P2 napot 扇区位只有 errors=10，覆盖偏薄）。P13（不按 issue_filtered 过滤）errors=0，与预期 MISS 一致，由 FM 兜；P14 是等价变异，errors=0。
+- FrontendTrigger / PredChecker 变异见 §1.2 / §2.2。
+
+#### 过程记录
+
+- 第一次 run_proof 被可读性验收 E 类拦下：NewIFU.sv 缺大文件导航（commit f57e436c 补上）。那次 FM 没有起跑。
+- 会话崩溃和机器重启各中断过一次后台作业。NewIFU UT 曾因残留的 0 字节 simv 编不出来，clean 后整个矩阵重跑；PTWFilter seed 42 × +42017 这一档单独补跑。
+  上表全部是 clean 重建后的读数。
