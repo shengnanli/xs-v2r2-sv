@@ -123,3 +123,15 @@ validator PARTIAL：unread 8 = ref enqPtrExt_3/4 的 flag+value 8 位 ↔ impl e
 两侧对称死位（分配下标 PopCount ≤ 2，3/4 号指针永不被读）。按 vmucp standing rule 六条加
 verif/fm_target_config/SMSTrainFilter.tcl + Makefile 开 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS。
 预测：passing **2751**（= 2743 + 8 = 模型 2751），unread 0，其余全零，SUCCEEDED。
+
+## 7. StrideMetaArray / StridePF 第二轮（vmucp；StridePF 加钉点）
+
+- StrideMetaArray 首跑（c30ff018）：native SUCCEEDED passing 981 / constant_reg 10 / unread 2（s2_vaddr[1:0] 两侧按名
+  配上的对称死位：加数 stride<<2 低 2 位恒 0）。加 verif/fm_target_config/StrideMetaArray.tcl。
+  预测：passing **983**（= 981 + 2 = 模型 993 − constant_reg 10），unread 0，其余全零，SUCCEEDED。
+- StridePF 首跑（c30ff018）：**0 比较点**（golden 无输出端口），220 位寄存器全 unread（10 按名配上 + 210 未配），
+  sidecar 拒出 receipt（nonfinal_verification_status）。修法：新生成器 scripts/gen_stridepf_pins.py（带 --check）
+  产出 verif/ut/StridePF/fm_pins_pre.tcl（210 位，fail-closed）+ verif/fm_target_config/StridePF.tcl 开 vmucp，
+  让 FM 比较全部 220 个寄存器的次态函数。预测：passing **220**（= 模型 220），unread 0，其余全零，SUCCEEDED。
+  可能出错：钉点路径格式（`u_core/ent_pc_reg[i][b]`、`u_core/u_plru/state_reg_reg[b]`）若与 FM 实际名不同会
+  `error` 早退（FM 早退而非数字偏离）。

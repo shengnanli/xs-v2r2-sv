@@ -10,6 +10,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/StrideMetaArray.sv
 FM_VARIANTS = StrideMetaArray
 FM_MERGE_DUP = false
 
+# ★vmucp：依据见 verif/fm_target_config/StrideMetaArray.tcl★
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

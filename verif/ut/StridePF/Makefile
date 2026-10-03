@@ -12,6 +12,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/StridePF.sv
 FM_VARIANTS = StridePF
 FM_MERGE_DUP = false
 
+# ★vmucp：依据见 verif/fm_target_config/StridePF.tcl★
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
