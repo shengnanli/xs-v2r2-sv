@@ -46,6 +46,9 @@ FM_REF_DEPS_SCTable_2 = $(SC_CHILDREN) $(SC_SRAM) MbistPipeSc_2.sv
 FM_REF_DEPS_SCTable_3 = $(SC_CHILDREN) $(SC_SRAM) MbistPipeSc_3.sv
 
 FM_MERGE_DUP = false
+
+# ★vmucp：依据见 verif/fm_target_config/SCTable*.tcl★ —— 65 位两侧对称死位（s1_pc 未读位 / s1_idx[7:1] / MBIST 流水地址寄存器），FM 按名配上。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
