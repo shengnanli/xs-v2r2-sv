@@ -11,13 +11,15 @@ module xs_HPerfCounter_core #(
 );
   logic [5:0] increment_0_q, increment_1_q;
   logic [5:0] increment_2_q, increment_3_q;
-  logic [4:0] operation_0_q, operation_1_q, operation_2_q;
-  logic [4:0] operation_2_d_q;
+  // Only operation bits [2:0] participate in the reduction.  The golden
+  // generator emits five-bit registers, but bits [4:3] are cone-dead.
+  logic [2:0] operation_0_q, operation_1_q, operation_2_q;
+  logic [2:0] operation_2_d_q;
   logic [5:0] step_0_q, step_1_q;
   logic [5:0] result_q, output_q;
 
   function automatic logic [5:0] reduce_pair(
-    input logic [4:0] operation,
+    input logic [2:0] operation,
     input logic [5:0] left_value,
     input logic [5:0] right_value
   );
@@ -36,9 +38,9 @@ module xs_HPerfCounter_core #(
     increment_1_q <= event_values[hpm_event[9+EVENT_INDEX_BITS:10]];
     increment_2_q <= event_values[hpm_event[19+EVENT_INDEX_BITS:20]];
     increment_3_q <= event_values[hpm_event[29+EVENT_INDEX_BITS:30]];
-    operation_0_q <= hpm_event[44:40];
-    operation_1_q <= hpm_event[49:45];
-    operation_2_q <= hpm_event[54:50];
+    operation_0_q <= hpm_event[42:40];
+    operation_1_q <= hpm_event[47:45];
+    operation_2_q <= hpm_event[52:50];
     operation_2_d_q <= operation_2_q;
     step_0_q <= reduce_pair(operation_0_q, increment_0_q, increment_1_q);
     step_1_q <= reduce_pair(operation_1_q, increment_2_q, increment_3_q);
