@@ -1,0 +1,10 @@
+{
+  "target": "Pma11cfgModule",
+  "ut": null,
+  "regs": 8,
+  "outs": 16,
+  "expected": 24,
+  "merge_dup": null,
+  "model_applicable": false,
+  "note": "agent/next200c-takeover STALE 重证；模型 24 = 8 regs + 16 outs；UT merge_dup 未设（=true）判 MODEL_NA，旧 receipt 523b6100 实测 24"
+}

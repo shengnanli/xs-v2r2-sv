@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/FastArbiter_27
+Implementation : i:/WORK/FastArbiter_27
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:51:19 2026
+**************************************************
+
+No failing compare points.
+
+1

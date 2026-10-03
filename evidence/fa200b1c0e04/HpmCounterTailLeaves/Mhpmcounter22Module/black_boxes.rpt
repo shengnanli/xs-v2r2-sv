@@ -1,0 +1,240 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/Mhpmcounter22Module
+Implementation : i:/WORK/Mhpmcounter22Module
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:43:28 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    Hpmcounter11Module
+
+       Instances : 0
+
+e *    Hpmcounter12Module
+
+       Instances : 0
+
+e *    Hpmcounter13Module
+
+       Instances : 0
+
+e *    Hpmcounter14Module
+
+       Instances : 0
+
+e *    Hpmcounter15Module
+
+       Instances : 0
+
+e *    Hpmcounter16Module
+
+       Instances : 0
+
+e *    Hpmcounter17Module
+
+       Instances : 0
+
+e *    Hpmcounter18Module
+
+       Instances : 0
+
+e *    Hpmcounter19Module
+
+       Instances : 0
+
+e *    Hpmcounter20Module
+
+       Instances : 0
+
+e *    Hpmcounter21Module
+
+       Instances : 0
+
+e *    Hpmcounter22Module
+
+       Instances : 0
+
+e *    Hpmcounter23Module
+
+       Instances : 0
+
+e *    Hpmcounter24Module
+
+       Instances : 0
+
+e *    Hpmcounter25Module
+
+       Instances : 0
+
+e *    Hpmcounter26Module
+
+       Instances : 0
+
+e *    Hpmcounter27Module
+
+       Instances : 0
+
+e *    Hpmcounter28Module
+
+       Instances : 0
+
+e *    Hpmcounter29Module
+
+       Instances : 0
+
+e *    Hpmcounter30Module
+
+       Instances : 0
+
+e *    Hpmcounter31Module
+
+       Instances : 0
+
+e *    Mhpmcounter10Module
+
+       Instances : 0
+
+e *    Mhpmcounter11Module
+
+       Instances : 0
+
+e *    Mhpmcounter12Module
+
+       Instances : 0
+
+e *    Mhpmcounter13Module
+
+       Instances : 0
+
+e *    Mhpmcounter14Module
+
+       Instances : 0
+
+e *    Mhpmcounter15Module
+
+       Instances : 0
+
+e *    Mhpmcounter16Module
+
+       Instances : 0
+
+e *    Mhpmcounter17Module
+
+       Instances : 0
+
+e *    Mhpmcounter18Module
+
+       Instances : 0
+
+e *    Mhpmcounter19Module
+
+       Instances : 0
+
+e *    Mhpmcounter20Module
+
+       Instances : 0
+
+e *    Mhpmcounter21Module
+
+       Instances : 0
+
+e *    Mhpmcounter23Module
+
+       Instances : 0
+
+e *    Mhpmcounter24Module
+
+       Instances : 0
+
+e *    Mhpmcounter25Module
+
+       Instances : 0
+
+e *    Mhpmcounter26Module
+
+       Instances : 0
+
+e *    Mhpmcounter27Module
+
+       Instances : 0
+
+e *    Mhpmcounter28Module
+
+       Instances : 0
+
+e *    Mhpmcounter29Module
+
+       Instances : 0
+
+e *    Mhpmcounter30Module
+
+       Instances : 0
+
+e *    Mhpmcounter31Module
+
+       Instances : 0
+
+e *    Mhpmcounter3Module
+
+       Instances : 0
+
+e *    Mhpmcounter4Module
+
+       Instances : 0
+
+e *    Mhpmcounter5Module
+
+       Instances : 0
+
+e *    Mhpmcounter6Module
+
+       Instances : 0
+
+e *    Mhpmcounter7Module
+
+       Instances : 0
+
+e *    Mhpmcounter8Module
+
+       Instances : 0
+
+e *    Mhpmcounter9Module
+
+       Instances : 0
+
+e *    xs_Hpmcounter_core
+
+       Instances : 0
+
+e *    xs_mhpmcounter
+
+       Instances : 0
+
+
+1
+

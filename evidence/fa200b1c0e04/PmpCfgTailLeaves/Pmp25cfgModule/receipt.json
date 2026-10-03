@@ -1,0 +1,212 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Pmp25cfgModule",
+ "run_id": "PmpCfgTailLeaves-20261003T103644Z-fa200b1c",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Pmp25cfgModule.sv",
+   "kind": "golden",
+   "sha256": "33a47d367e4e67e765bcf2c34c74fd3c51ec3825d7a8ea8ebe4618fb3844213a"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/xs_Pmpcfg_core.sv",
+   "kind": "repo",
+   "sha256": "31b21f2ab925dff4fb3078467efd95aa29ed3857738244f5be4955f9315969cf"
+  },
+  {
+   "path": "rtl/backend/Pmp21cfgModule.sv",
+   "kind": "repo",
+   "sha256": "28f7db25ee1a0fdd1b2a36b5306491bbd3a68f346f1fcb77be3d0e0e20ca761f"
+  },
+  {
+   "path": "rtl/backend/Pmp22cfgModule.sv",
+   "kind": "repo",
+   "sha256": "8a8dbafc05bb5f51aaffe02ff44e404027b2245bd0efdd646fd7ef88c19fadc3"
+  },
+  {
+   "path": "rtl/backend/Pmp23cfgModule.sv",
+   "kind": "repo",
+   "sha256": "d374c6b35eb49dc532f7c030d4ca1bbfcc36faadf78adaa3c27947b12b01d6f9"
+  },
+  {
+   "path": "rtl/backend/Pmp24cfgModule.sv",
+   "kind": "repo",
+   "sha256": "87bbd77e732f4f96e42ef4ad291ca10a9696ee1f7da6b94b1f9fd407eb579534"
+  },
+  {
+   "path": "rtl/backend/Pmp25cfgModule.sv",
+   "kind": "repo",
+   "sha256": "05b514b6676012b33002aff197b7ea94e6f3867492ff674bfded986c88c6e22a"
+  },
+  {
+   "path": "rtl/backend/Pmp26cfgModule.sv",
+   "kind": "repo",
+   "sha256": "c188f18d4d47ba09f31b6325ae214f1de6622d7ca293a6d4fef230657a1d0a31"
+  },
+  {
+   "path": "rtl/backend/Pmp27cfgModule.sv",
+   "kind": "repo",
+   "sha256": "a4096f8a7f8e59944944de78ba17cd71f5874beb0a36460cf2f21c996e15b529"
+  },
+  {
+   "path": "rtl/backend/Pmp28cfgModule.sv",
+   "kind": "repo",
+   "sha256": "966022d97c6fc1f6cf9d8cdbd5e671740b85bc750d8d367029f359043b9b4036"
+  },
+  {
+   "path": "rtl/backend/Pmp29cfgModule.sv",
+   "kind": "repo",
+   "sha256": "2601170314487f46294fdb254a76227e9d27e646cd5292e2867eda9c10efd8d9"
+  },
+  {
+   "path": "rtl/backend/Pmp30cfgModule.sv",
+   "kind": "repo",
+   "sha256": "2235599e85a26a2170e3de363009179a0dd75dc16dd1f713e7230c2d72641d7b"
+  },
+  {
+   "path": "rtl/backend/Pmp31cfgModule.sv",
+   "kind": "repo",
+   "sha256": "cf2d23b282ed7b603f93460ee4f5b296edca8243cc025a250400f6e103429b82"
+  }
+ ],
+ "impl_commit": "fa200b1c0e04ee8c1ba9b962a312b7994c0f4621",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "PmpCfgTailLeaves-20261003T103644Z-fa200b1c",
+  "top": "Pmp25cfgModule",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 20,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 20,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Pmp25cfgModule",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

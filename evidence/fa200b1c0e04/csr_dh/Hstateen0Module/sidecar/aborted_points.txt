@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Hstateen0Module
+Implementation : i:/WORK/Hstateen0Module
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:36:56 2026
+**************************************************
+
+No aborted compare points.
+
+1

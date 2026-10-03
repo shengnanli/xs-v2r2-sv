@@ -1,0 +1,412 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Mhpmcounter11Module",
+ "run_id": "HpmCounterTailLeaves-20261003T104052Z-fa200b1c",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Mhpmcounter11Module.sv",
+   "kind": "golden",
+   "sha256": "e785707b547033f912014c2fbe310bb71e212db1437441f79d4d3999e776a6e5"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/xs_Hpmcounter_core.sv",
+   "kind": "repo",
+   "sha256": "724d27bb5e16f16583b2345c503480adab6d4fb22ff47f7f3c76837e7d13a8e9"
+  },
+  {
+   "path": "rtl/backend/newcsr_mhpmcounter.sv",
+   "kind": "repo",
+   "sha256": "d9f6d9436086ef976d86e0c10a08eac1279eae77ab7fd4233e2efb529a6c96af"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter11Module.sv",
+   "kind": "repo",
+   "sha256": "9d548f0f3b66bcd96a19394e8a65a8d2767f3c10feeab488be0a16c71749bef5"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter12Module.sv",
+   "kind": "repo",
+   "sha256": "e12e8a2a8e1b92631bde6cb4e706a501721a58f3636c4ce224d3f342ed5e52fa"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter13Module.sv",
+   "kind": "repo",
+   "sha256": "cf5d62e9d3b5c70e6b494b7cc1af9d22cbc822f579597218112556c9c322584a"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter14Module.sv",
+   "kind": "repo",
+   "sha256": "26e6a533ca6ba40ee2dec8db27b482506c60ed90cea357583b2e9989665d09ad"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter15Module.sv",
+   "kind": "repo",
+   "sha256": "0c3dd5fbd7901c774339732949358d83a22c0843a8cadec0ae7dc0933aef2d73"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter16Module.sv",
+   "kind": "repo",
+   "sha256": "cadfc838306b2280d8f8091e3a2b712aac39b90fde04648364e633d81d02088d"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter17Module.sv",
+   "kind": "repo",
+   "sha256": "0a84cdb653cafbf9fde23ad3ea6bda1f4b207ec5510d64341edf83e93ebd077c"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter18Module.sv",
+   "kind": "repo",
+   "sha256": "f7fd512744bdb41f98c3e723fafc90471e4474203dd8077c49cb6f371205562d"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter19Module.sv",
+   "kind": "repo",
+   "sha256": "a3ff3381122fdc6c7e9aebe1927e841f2cb580f12720194dd35c669e164bb25e"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter20Module.sv",
+   "kind": "repo",
+   "sha256": "2f457d277e8391922ef40b38308714cf035a9c4126ed5885fbc5ee9d39f28490"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter21Module.sv",
+   "kind": "repo",
+   "sha256": "f3d7fee0c7ff8eb3afed2b0b9aab11cc2853e9b219eed740ff407408ba5c419c"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter22Module.sv",
+   "kind": "repo",
+   "sha256": "ac3ed0ca9936a2fe3a90bce447bbff6764f1af84564c6f0ec4b8cb333b85bb1c"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter23Module.sv",
+   "kind": "repo",
+   "sha256": "b695f2524cfd43fe2e290cedbca37b1d3475c91eb3ca854d2b18553f4b0ab086"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter24Module.sv",
+   "kind": "repo",
+   "sha256": "4d67e10c4a3fe02279184889b5177c42cccead60b2c01d508e605e03ea396693"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter25Module.sv",
+   "kind": "repo",
+   "sha256": "c02869fc66dba829f2dabb73bade4c73a953b59c705c1e7029c5b5fc97729762"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter26Module.sv",
+   "kind": "repo",
+   "sha256": "35e437bd745872f573f249cdb02e67c823b8fd6c4a331a46df47fdbc88d9ace0"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter27Module.sv",
+   "kind": "repo",
+   "sha256": "1cd7094a2e8a93a425903505670248b3b001d822ed4aacc2f273870e49600fcd"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter28Module.sv",
+   "kind": "repo",
+   "sha256": "d8598057b4d953d22a2802497622bd490fc5cd31b136723b4908f139d9615717"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter29Module.sv",
+   "kind": "repo",
+   "sha256": "4c3d8d0e2f089b52130da2c4e016993803c0e74c3b44529758792430ff0305fc"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter30Module.sv",
+   "kind": "repo",
+   "sha256": "d8ea33f3db82e3b85640eb7a9d668418037cd238d40888707250240165deabee"
+  },
+  {
+   "path": "rtl/backend/Hpmcounter31Module.sv",
+   "kind": "repo",
+   "sha256": "c5a9cb7e002aa4a3e13070e916d2f22937e0d194caabb12da3d75d241772d722"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter3Module.sv",
+   "kind": "repo",
+   "sha256": "6ff6279d9ad7a160b4df5e5ac814411ef6fcc5a96a896649df55d94de7ac5253"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter4Module.sv",
+   "kind": "repo",
+   "sha256": "5d6f4d7dbd834c98d90dcc7cfb2dd700a1e2a8ea0982b02d3c361efb2c9d5260"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter5Module.sv",
+   "kind": "repo",
+   "sha256": "ed7ffd3f498631fca4a8cd682e391d56ce647c78ba604a7c1d1178ae263f4b2c"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter6Module.sv",
+   "kind": "repo",
+   "sha256": "24c64eaa394458382154e88dda311660086eccc4c2b31647de299f2daa24495f"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter7Module.sv",
+   "kind": "repo",
+   "sha256": "f4c11a92026bf37a25c11005841d26f656b054a5bc01dca0bbe8945b4123eda0"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter8Module.sv",
+   "kind": "repo",
+   "sha256": "210e13be54ba0e379289f40e0eafb22ec09c6e366000b32a0dcacd5f05939b0c"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter9Module.sv",
+   "kind": "repo",
+   "sha256": "18f4da5321d8465c9e7040e7f9812978ddf9b9976c35b4e58bacd832410d928f"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter10Module.sv",
+   "kind": "repo",
+   "sha256": "000d8450ff9566fce36c9806dd8d72d997a47db1c05e588ca5eed16d1715190e"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter11Module.sv",
+   "kind": "repo",
+   "sha256": "03868c9bd032a0e9cc2b851888cd3ae67cd80f621448c43461da858121053dff"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter12Module.sv",
+   "kind": "repo",
+   "sha256": "15042d6a66f6be0746833d1525e1bb5574b3bf47e01503e9a40f285ce849704b"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter13Module.sv",
+   "kind": "repo",
+   "sha256": "c301cc719b9ad0a5bee654c47e988e5e95c31acbfe28ec0b3abd5c18a40c814e"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter14Module.sv",
+   "kind": "repo",
+   "sha256": "4a6cb4184dd348cc19cfb87a9ed45e5b7adac23dce4a354af39649f49a975606"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter15Module.sv",
+   "kind": "repo",
+   "sha256": "106a512ef752c679406043d3146ef5cfb0ec3c95c834dadd9c3ddead5ada646b"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter16Module.sv",
+   "kind": "repo",
+   "sha256": "8ccd712d721769fbbd5c3006b3360d1f85f9bbb061762dce180006c522aedbd8"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter17Module.sv",
+   "kind": "repo",
+   "sha256": "c69bb05e9bcb9b26e86e5ce1a5c065161fa8e5cf64b0a90379d77e4b66252a5e"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter18Module.sv",
+   "kind": "repo",
+   "sha256": "a919d07b1e54400f7dc75d6d5959f6d62a209ae33cfae5883d76d2127b13673b"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter19Module.sv",
+   "kind": "repo",
+   "sha256": "c1d55478ef858f27668ac7258c9036ebdcf648990f688b5a8a970518cf5c7e5b"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter20Module.sv",
+   "kind": "repo",
+   "sha256": "0c8630315bd76369a16b81f059f43d83b3668c478b444503e180f4bef6ed682f"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter21Module.sv",
+   "kind": "repo",
+   "sha256": "a5cffef697596d273f79106408423afa09bf662d13eab03d4a69dbf2745567a9"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter22Module.sv",
+   "kind": "repo",
+   "sha256": "5c83fdce76777ab5a61e3afac9a0a1e82bac6a4f54042048e2ccea2571f192ae"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter23Module.sv",
+   "kind": "repo",
+   "sha256": "3ee1cd04103de22b5f5bbb1e4202ae0e5ec0d513d657c893f972431cbdfc241f"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter24Module.sv",
+   "kind": "repo",
+   "sha256": "7f15dc970263abdec9a1d810754708675ca791bb72d46fe7365ecad5c5518075"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter25Module.sv",
+   "kind": "repo",
+   "sha256": "4d7eccfaac39088635a712d28c1ccca656e64af0802ecc4e6142869578396a74"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter26Module.sv",
+   "kind": "repo",
+   "sha256": "fc365be323c01f8d41093be43ffeeca263b87096fc5b767eb075462f2cbb4ec9"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter27Module.sv",
+   "kind": "repo",
+   "sha256": "8ca98c35686aa640ba4bb7f286d1e63a14887672d5fa8ef01bdf15bd2e66accf"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter28Module.sv",
+   "kind": "repo",
+   "sha256": "1e98d53a225b85b0f822440f23d32c3977dd66bf8db3c91318200592244d82a0"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter29Module.sv",
+   "kind": "repo",
+   "sha256": "c899d5cd4262155fc957ec6bd8c0156b5de3cfd7cf6b91b0d88fd0fa30fc20a7"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter30Module.sv",
+   "kind": "repo",
+   "sha256": "0405dc0fa7095b18a575dae601e9e13d2a3edfdd9a0e81872533db373ec3a2ff"
+  },
+  {
+   "path": "rtl/backend/Mhpmcounter31Module.sv",
+   "kind": "repo",
+   "sha256": "def324922672d46a4fd83ea14a563430f81432cd0676eac9632839d00975270a"
+  }
+ ],
+ "impl_commit": "fa200b1c0e04ee8c1ba9b962a312b7994c0f4621",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "HpmCounterTailLeaves-20261003T104052Z-fa200b1c",
+  "top": "Mhpmcounter11Module",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 193,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 193,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Mhpmcounter11Module",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
