@@ -1,0 +1,9 @@
+{
+  "target": "NewIFU",
+  "ut": "NewIFU",
+  "regs": 6113,
+  "outs": 3138,
+  "expected": 9251,
+  "merge_dup": "false",
+  "model_applicable": true
+}
