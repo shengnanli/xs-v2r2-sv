@@ -92,3 +92,30 @@ CountModule 钉点：`verif/ut/BkuLeaves/fm_pins_pre.tcl` 整寄存器 funcReg 9
 |---|---|---|
 | Bku（`verif/ut/Bku`，PROVEN_DIRECT） | 当前四叶子 + CryptoModule 两侧同源 golden（RTL_GOLDEN_DEPS） | `agent/misc-core`（未合入 main，已有 Bku 首跑 receipt）正在改同一个 Makefile（BlockCipherModule 改读重写件、FM_MERGE_DUP=false、开 vmucp）。本 lane 再改会冲突，且两边任一份 receipt 在合并后闭包都会变（STALE）。待 misc-core 合入后，在一个 commit 上把 Count / Clmul / Misc / Hash 四个挪到 impl 侧重证（预期 Bku.tcl 白名单的 countModule[3..8] 死位改由 BkuLeaves 同型钉点配对）。 |
 | CryptoModule | MISSING / PROVEN_IN_CONE（未签） | 未签核；且其另一个 child BlockCipherModule 归 misc-core，未合入 main。只列不做。 |
+
+## 对账 §1（证明 commit `f696c5c84`，登记 commit 同为 `f696c5c84`，早于证明；首跑即正式跑，无试跑）
+
+| 目标 | 结果 | 模型 / 预测 / 实测 passing | constant_reg | unread / unmatched / failing / unverified | 黑盒 / dont_verify | receipt sha256 |
+|---|---|---|---:|---|---|---|
+| CountModule | SUCCEEDED | 125 / 125 / **125** | 0 | 0 / 0 / 0 / 0（vmucp 实比 6 点） | 0 / 无 | `b78d596814b8b0f3419f1bd6df4ade2b5c16c492a1894a6da3d104dcd0b83aa7` |
+| ClmulModule | SUCCEEDED | 1097 / 641 / **641** | 456 | 0 / 0 / 0 / 0 | 0 / 无 | `f73ac9ddbcf45d395dac0ba8e2d7473b309e3d9d63199e368a42ef83949d040e` |
+| MiscModule | SUCCEEDED | 128 / 128 / **128** | 0 | 0 / 0 / 0 / 0 | 0 / 无 | `701dc56856f19524be7bcb2e69216b6a5e3c33f14ef94dd9aef9c657cafe4460` |
+| HashModule | SUCCEEDED | 128 / 128 / **128** | 0 | 0 / 0 / 0 / 0 | 0 / 无 | `d0a5d85ea7348482515f941e83442219fa3cc246a7ec46b2f4b782c8af4ceeb7` |
+
+四个目标 passing 与预测逐位相等；ClmulModule 差额 456 全部被 constant_reg 指认。
+`python3 scripts/fm_predict.py check CountModule ClmulModule MiscModule HashModule` rc=0（结论：全部对上）。
+receipt 路径 `evidence/f696c5c84a6d/<目标>/receipt.json`（`git add -f`，commit `4e8c8570f`）。
+
+CountModule vmucp 六条（落数）：
+1. 精确绑定：恰 funcReg[8:3] 6 点（fm.log 回显 `BKULEAVES_PIN_END top=CountModule n=9 expect=9`）；
+2. 双射：诊断跑（vmucp 关、`FM_MODE=diagnostic-full`、不产 receipt）`matched_unread_notcompared_pairs` 恰 6 对，
+   `r:/WORK/CountModule/funcReg_reg[k]` ↔ `i:/WORK/CountModule/u_core/funcReg_reg[k]`，k=3..8，非 matched 的 unread 0；
+3. 真比较：vmucp 关 passing 119 / unread 6 → 开 passing 125 / unread 0，正好 +6；
+4. 全零：failing / unverified / unmatched 0；
+5. 无 dont_verify、无 elab147、无放宽 appvar、无黑盒；
+6. `verif/fm_target_config/CountModule.tcl` 与 `fm_pins_pre.tcl` 进 sidecar script_closure（sourced_002 / sourced_003）。
+
+补充（变异 M8 的 FM 侧）：把 M8（UT 结构上看不见的 s1 归并"相加"写法）喂给同一个 FM 诊断跑（scratch 副本，不产 receipt）：
+FAILED，failing 7（全部 matched），FM 抓到——这一类只能靠 FM 守。
+
+复跑：`PROOF_COMMIT=f696c5c84 bash scripts/run_proof.sh BkuLeaves <CountModule|ClmulModule|MiscModule|HashModule> < /dev/null`
