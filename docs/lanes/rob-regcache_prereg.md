@@ -135,3 +135,43 @@ unmatched 0、unread 6 且全部是 ref 侧（= verif/dead_ref/RegCache.json 声
   ⇒ pin_call_equiv 调用序列哈希变化（新前提），以本次 receipt 为准 `--update` 基线。
 - UT（merge 后，seed 1/7/42 × initreg 0/random/<seed>017）：9/9 PASSED，errors=0，checks 5199966/5199987/5199977，toggled 26/26。
 - 预测：与 evidence/f0492477b75c 同——native SUCCEEDED、passing **3132**、failing 0、unread 0（vmucp，6 对钉点）、unmatched 0。
+
+## 6. 对账（跑完追加）
+
+### 6.1 UT（各 9 档 = seed 1/7/42 × initreg 0/random/<seed>017，200k 拍，全部 TEST PASSED errors=0 cov_fail=0）
+
+| UT | 每档 checks（seed 1/7/42） | RTL 字节 |
+|---|---|---|
+| RobPtrLeaves | 10,799,568 ×9 | c8eca863 |
+| BeDataLeaves | 2,399,904 ×9 | c8eca863 |
+| VTypeBuffer | 3,592,152 / 3,590,766 / 3,597,822 | 68c9b177（去变量下标后重跑） |
+| RegCacheLeaves | 53,395,773 / 53,371,227 / 53,394,915（seed42 random 53,396,280） | 0a8077da |
+| RegCache（父，新 tb） | 5,999,280 ×9 | 0a8077da |
+| SRT16DividerDataModule | 599,955 / 599,961 / 599,961（加整除档后） | a5d5b98c |
+| ArithVecLeaves5（DivUnit 父，merge main 后） | 5,199,966 / 5,199,987 / 5,199,977，toggled 26/26 | c2fc93f1 |
+
+### 6.2 FM official（signoff-strict，全部 SUCCEEDED，failing/unverified/unmatched/黑盒 0，dont_verify false）
+
+| 目标 | evidence | passing | 预测 | 差额指认 |
+|---|---|---:|---:|---|
+| CommitStuckCounter | 8dded020a6c1 | 22 | 22 | 0 |
+| RobEnqPtrWrapper | 8dded020a6c1 | 108 | 108 | 0 |
+| NewRobDeqPtrWrapper | 8dded020a6c1 | 225 | 225 | 0 |
+| VsetModule / strdied / indexed / AluDataModule | 8dded020a6c1 | 24 / 4 / 7 / 64 | 同 | 0 |
+| IntToFPDataModule | 8dded020a6c1 | 212 | 212 | 0 |
+| SRT16DividerDataModule | 1bd206745dc2 | 1803（vmucp 6） | 1803 | 0（B.2 的 constant≥7 预测错，实测 0，见 B.3） |
+| RegCache 家族 6 个 | e64702417907 | 2528 / 2264 / 160 / 98 / 136 / 78 | 同 | 0 |
+| VTypeBuffer | 50c3e3521dd6 | 1511（钉点 150 + vmucp 214） | 1520 | 9 = constant_reg（unread 预测 ≈113 偏少 101，见 B.4） |
+| RegCache（父重证） | 50c3e3521dd6 | 3830，PASS_DEAD_REF（ref unread 6 = dead_ref 声明） | 同旧 receipt | — |
+| DivUnit（父重证） | c2fc93f125d3 | 3132（钉点 6 + vmucp） | 3132 | 0 |
+
+### 6.3 变异自检（scratch 沙箱，seed 1 / initreg 0 / 20k 拍，不进库）
+
+批 A 23 个：22 CAUGHT，M22（deqPtrOH 去回绕）MISSED，预期 MISS_FM——无读者，FM 的 vmucp 比较 deqPtrOH 覆盖。
+批 B 16 个：首轮 11 CAUGHT；SRT 的 N10（needCorr 去掉 r≠0 项）/ N16（RightShifter msb 去掉 r≠0 门控）MISSED ⇒ 给 tb 加
+"整除"激励档后两条 CAUGHT；N12 / N13（首商位阈值表、-m 查表各改一项）仍 MISSED——SRT 选择有冗余，改一个阈值项不改变商，
+外部不可观测；FM 侧诊断：N12 passing 1803 SUCCEEDED（逻辑等价于 golden？否——见下）、N13 FAILED（45 failing，qPrevReg/
+rudPmNegReg 被比出）。N12 的阈值改动落在 mInitPos2 第 3 项：FM 也判等价，说明该项改动在可达状态下等价于原值？★不是★——
+FM 比较的是寄存器 qPrevReg 的下一态，N12 仍 SUCCEEDED 意味着该表项在 FM 的组合锥里被 rSumInitTrunc 的取值范围吸收
+（rSumInitTrunc 最高位恒 0，≥ 16 与 ≥ 18 在 4 位可达域 [0,15] 上同为假）——即该表项本身在 golden 里就是不可达阈值，属等价变异。
+N14（quotSignReg 去掉 pre_1 写 1 的项）MISSED，预期 MISS_FM（值不被用到，寄存器比较点由 FM 覆盖）。
