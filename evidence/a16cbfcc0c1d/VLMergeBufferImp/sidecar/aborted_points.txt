@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VLMergeBufferImp
+Implementation : i:/WORK/VLMergeBufferImp
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 12:29:14 2026
+**************************************************
+
+No aborted compare points.
+
+1
