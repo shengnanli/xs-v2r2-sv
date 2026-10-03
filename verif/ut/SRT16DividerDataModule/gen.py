@@ -8,7 +8,7 @@ golden / 重写件（重写侧经 derive 改名 _xs）。
   * 握手：in_valid 3/4，out_ready 1/2，kill_w 1/16，kill_r 1/200（在飞请求被冲掉，回 idle）；
   * 操作数按 mode 切换：全随机 64 位 / 16 位以内小数（迭代次数少）/ 除数取 0、1、-1
     （special 路径）/ 被除数取 INT64_MIN、除数 -1（溢出）/ 32 位符号扩展值（W 指令）/
-    被除数小于除数（aTooSmall）；sign / isHi / isW 每拍随机。
+    被除数小于除数（aTooSmall）/ 整除（余数 0，含负被除数——needCorr 与右移补位的 r==0 分支）；sign / isHi / isW 每拍随机。
 不复位寄存器：rFinal / qFinal 在第一次走到 s_post_1 之前两侧初值不同，而 out_data 不看
 out_valid 直接由它们组合出 ⇒ arm = golden 第一次进入 s_post_1，之后再等 1 拍开比。
 覆盖：special 路径、迭代路径、kill_r 打断、needCorr 修正、奇 / 偶迭代步、isHi、isW。
@@ -27,7 +27,7 @@ STIM = """
 @io_out_ready = $urandom_range(0, 1);
 @io_kill_w = ($urandom_range(0, 15) == 0);
 @io_kill_r = ($urandom_range(0, 199) == 0);
-case (@mode % 7)
+case (@mode % 8)
   0: ;                                                         // 全随机
   1: begin @io_src_0 = 64'($urandom_range(0, 65535)); @io_src_1 = 64'($urandom_range(1, 300)); end
   2: begin
@@ -40,7 +40,13 @@ case (@mode % 7)
   3: begin @io_src_0 = 64'h8000_0000_0000_0000; @io_src_1 = '1; end
   4: begin @io_src_0 = 64'($signed(32'($urandom))); @io_src_1 = 64'($signed(32'($urandom) >>> $urandom_range(0, 30))); end
   5: begin @io_src_0 = 64'($urandom_range(0, 1000)); @io_src_1 = {$urandom, $urandom}; end
-  default: begin @io_src_0 = {$urandom, $urandom}; @io_src_1 = {$urandom, $urandom} >> $urandom_range(0, 63); end
+  6: begin @io_src_0 = {$urandom, $urandom}; @io_src_1 = {$urandom, $urandom} >> $urandom_range(0, 63); end
+  default: begin                                               // 整除：余数为 0（含负被除数）
+    @io_src_1 = 64'($urandom_range(1, 1 << 20));
+    @io_src_0 = @io_src_1 * 64'($urandom_range(0, 1 << 30));
+    if ($urandom_range(0, 1)) @io_src_0 = -@io_src_0;
+    if ($urandom_range(0, 3) == 0) @io_src_1 = -@io_src_1;
+  end
 endcase
 """
 COV = [

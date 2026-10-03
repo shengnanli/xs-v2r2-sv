@@ -1,0 +1,182 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "RegCacheAgeTimer",
+ "run_id": "RegCacheLeaves-20261003T161110Z-e64702417",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/RegCacheAgeTimer.sv",
+   "kind": "golden",
+   "sha256": "aa55024c273c0dd07b6b1795c3155cb05b384f1a49da9c96b5c802f1f9009969"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/RegCacheDataModule.sv",
+   "kind": "repo",
+   "sha256": "375d8d9af73076b89df2ef7164de230ada87207356c2c7ce7cefbb80ac4e02c5"
+  },
+  {
+   "path": "rtl/backend/RegCacheDataModule_1.sv",
+   "kind": "repo",
+   "sha256": "0c58988a806cc816782124a20a3627a198138044114065ecc505eb1fc4078d9d"
+  },
+  {
+   "path": "rtl/backend/RegCacheAgeTimer.sv",
+   "kind": "repo",
+   "sha256": "1d54edf9d35b8259b79e53a57ab1dbc4a53e73075cb3625f217858df6814e4f5"
+  },
+  {
+   "path": "rtl/backend/RegCacheAgeTimer_1.sv",
+   "kind": "repo",
+   "sha256": "8762fb8af05af2630f8aef43d0624c1e0a49d738432aadc2e579c886e0d71ec5"
+  },
+  {
+   "path": "rtl/backend/RegCacheAgeDetector.sv",
+   "kind": "repo",
+   "sha256": "b38400f1b04c95b3f081fc587163393817fdc01cda3958468176231f84c4a5ca"
+  },
+  {
+   "path": "rtl/backend/RegCacheAgeDetector_1.sv",
+   "kind": "repo",
+   "sha256": "46f9c723fdc67fd0c4397f2fa1e0a4746e3b42295110bf30c15319b43e84defd"
+  }
+ ],
+ "impl_commit": "e647024179073bb35332e4fe3d66e0b5e2136b0c",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "RegCacheLeaves-20261003T161110Z-e64702417",
+  "top": "RegCacheAgeTimer",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 160,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 160,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "RegCacheAgeTimer",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

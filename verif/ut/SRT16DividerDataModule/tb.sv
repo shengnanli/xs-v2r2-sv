@@ -89,7 +89,7 @@ module tb;
         sd_io_out_ready = $urandom_range(0, 1);
         sd_io_kill_w = ($urandom_range(0, 15) == 0);
         sd_io_kill_r = ($urandom_range(0, 199) == 0);
-        case (sd_mode % 7)
+        case (sd_mode % 8)
           0: ;                                                         // 全随机
           1: begin sd_io_src_0 = 64'($urandom_range(0, 65535)); sd_io_src_1 = 64'($urandom_range(1, 300)); end
           2: begin
@@ -102,7 +102,13 @@ module tb;
           3: begin sd_io_src_0 = 64'h8000_0000_0000_0000; sd_io_src_1 = '1; end
           4: begin sd_io_src_0 = 64'($signed(32'($urandom))); sd_io_src_1 = 64'($signed(32'($urandom) >>> $urandom_range(0, 30))); end
           5: begin sd_io_src_0 = 64'($urandom_range(0, 1000)); sd_io_src_1 = {$urandom, $urandom}; end
-          default: begin sd_io_src_0 = {$urandom, $urandom}; sd_io_src_1 = {$urandom, $urandom} >> $urandom_range(0, 63); end
+          6: begin sd_io_src_0 = {$urandom, $urandom}; sd_io_src_1 = {$urandom, $urandom} >> $urandom_range(0, 63); end
+          default: begin                                               // 整除：余数为 0（含负被除数）
+            sd_io_src_1 = 64'($urandom_range(1, 1 << 20));
+            sd_io_src_0 = sd_io_src_1 * 64'($urandom_range(0, 1 << 30));
+            if ($urandom_range(0, 1)) sd_io_src_0 = -sd_io_src_0;
+            if ($urandom_range(0, 3) == 0) sd_io_src_1 = -sd_io_src_1;
+          end
         endcase
       end
       #4;
