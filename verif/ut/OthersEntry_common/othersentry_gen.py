@@ -34,6 +34,7 @@ GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 sys.path.insert(0, str(REPO / 'verif' / 'ut' / 'Entries_common'))
 from entries_gen import (Variant, port_decls, read, bitvec,   # noqa: E402
                          wenpack, wenvec, WEN_ORDER, KIND_PAIRS)
+import entry_vecmem                                           # noqa: E402
 
 
 def parents():
@@ -45,8 +46,8 @@ def parents():
         for t, n in re.findall(
                 r'^  ([A-Za-z]\w*) (othersEntriesSimp_\d+|othersEntriesComp_\d+)\s*\(',
                 txt, re.M):
-            if t.startswith('OthersEntryVecMem'):
-                continue                      # VecMem 是另一族，不在本生成器范围
+            # OthersEntryVecMem* 也在本生成器里：核的 HAS_VEC_MEM 组由
+            # Entries_common/entry_vecmem.py 接线（阵列层已签核用过同一组参数）。
             role = 'simp' if 'Simp' in n else 'comp'
             cur = res.setdefault(t, [f.stem, role, 0])
             assert cur[0] == f.stem and cur[1] == role, f'{t} 角色/父级不唯一'
@@ -302,6 +303,8 @@ def gen_rtl(ov):
         A(f'  logic [{v.rob_w-1}:0] unused_trans_rob_value;')
         A('  logic [1:0] unused_trans_issue_timer;')
         A('  logic unused_enq_ready, unused_trans_out_valid;')
+        if v.has_vec_mem:
+            L.extend(entry_vecmem.unused_decls(ov))
     if not ov.has_deq_port:
         A('  logic unused_deq_port_idx;')
     if not ov.has('io_commonOut_cancelBypass'):
@@ -362,6 +365,9 @@ def gen_rtl_body(ov, L, ctx):
                     ('PLB_IS_DEPEND_OLDVD', 'vpu_isDependOldVd'),
                     ('PLB_IS_WRITE_PARTVD', 'vpu_isWritePartVd')):
         A(f'    .{pl}({v.pl_off[fld][0]}),')
+    if v.has_vec_mem:
+        A('    // 访存向量状态组（核 §2.6c；接线见 Entries_common/entry_vecmem.py）')
+        A(entry_vecmem.params(ov) + ',')
     A('    // ★ 条目单独成模块时 golden 有这 7 组 debug/perf 输出，故打开')
     A('    .HAS_DBG_OUT(1)')
     A('  ) u_entry (')
@@ -472,12 +478,14 @@ def gen_rtl_body(ov, L, ctx):
     c.append('.deq_port_idx_write(%s)' % p('io_commonIn_deqPortIdxWrite', "1'b0"))
     c.append('.resp_valid(io_commonIn_issueResp_valid)')
     c.append('.resp_bits(io_commonIn_issueResp_bits_resp)')
-    # 访存向量状态组（核 HAS_VEC_MEM，§2.6c）：本生成器覆盖的变体都不带它，
-    # 入口钉 0、出口不接（核在 HAS_VEC_MEM=0 时一个寄存器都不产出）。
-    # 真遇到带它的变体（OthersEntryVecMem* / EnqEntryVecMem*）必须先扩本生成器。
-    assert not v.has_vec_mem, f'{v.top}: 访存向量变体，本生成器尚未覆盖'
-    c.append(".enq_vm('0), .enq_vpr('0), .enq_vr_mask('0), .enq_vr_mbidx('0)")
-    c.append(".lq_deq_ptr('0), .resp_vpr('0), .resp_vr_mask('0), .resp_vr_mbidx('0)")
+    # 访存向量状态组（核 HAS_VEC_MEM，§2.6c）：OthersEntryVecMem* 接真端口
+    # （Entries_common/entry_vecmem.py），其余变体入口钉 0、出口不接
+    # （核在 HAS_VEC_MEM=0 时一个寄存器都不产出）。
+    if v.has_vec_mem:
+        c.extend(entry_vecmem.conns(ov, is_enq=False, has_trans=ov.is_trans))
+    else:
+        c.append(".enq_vm('0), .enq_vpr('0), .enq_vr_mask('0), .enq_vr_mbidx('0)")
+        c.append(".lq_deq_ptr('0), .resp_vpr('0), .resp_vr_mask('0), .resp_vr_mbidx('0)")
     c.append('.trans_sel(%s)' % p('io_commonIn_transSel', "1'b0"))
     # ---- 输出 ----
     c.append('.o_valid(io_commonOut_valid), .o_issued(io_commonOut_issued)')
@@ -661,6 +669,11 @@ COV_MIN_200K = {
     'ld_cancel_hit':    5674,   # 实测最小 22696
     'rc_hit':          31909,   # 实测最小 127639
     'ignore_old_vd':       1,   # 本轮 12 个变体都没有这个桶，未标定，先置 1
+    # 访存向量 4 个变体专属（agent/iq-entry-leaves 标定，口径同上：族内最小 / 4）
+    'vec_blocked':             8231,   # 实测最小 32926（4 变体 × 9 档 = 36 次跑）
+    'vec_unblocked_vleff':     9110,   # 实测最小 36443（4 变体 × 9 档 = 36 次跑）
+    'vec_part_replay':         8217,   # 实测最小 32871（4 变体 × 9 档 = 36 次跑）
+    'vec_replay_mask_upd':     8281,   # 实测最小 33127（4 变体 × 9 档 = 36 次跑）
 }
 
 
@@ -682,6 +695,8 @@ def cov_names(ov):
         nm += ['rc_hit']
     if v.has_ignore:
         nm += ['ignore_old_vd']
+    if v.has_vec_mem:
+        nm += entry_vecmem.COV_NAMES
     return nm
 
 
@@ -854,12 +869,19 @@ def gen_tb(ov):
         A(f'    io_commonIn_wakeUpFromWB_{w}_valid <= ($urandom_range(0, 99) < 55);')
         A(f'    io_commonIn_wakeUpFromWB_{w}_bits_{v.wk_wen[w]} <= '
           '($urandom_range(0, 99) < 85);')
+        # ★同一路上若还有别的写使能字段（访存族实测一路带 rfWen/fpWen/vecWen 三个），
+        #   每个都要驱动：不驱动的那几个停在上电初值，+vcs+initreg+0 下恒 0，
+        #   那一类源整轮不会被 WB 唤醒（实测 wb_wake 塌到 ~700，覆盖闸转红）。
+        for _f in sorted(ov.wen_lane['wb'].get(w, set()) - {v.wk_wen[w]}):
+            A(f'    io_commonIn_wakeUpFromWB_{w}_bits_{_f} <= ($urandom_range(0, 99) < 85);')
         A(f"    io_commonIn_wakeUpFromWB_{w}_bits_pdest <= "
           f"{v.pdest_w}'(rnd_reg());")
     for w in range(n_iq):
         if v.iq_wen[w]:
             A(f'    io_commonIn_wakeUpFromIQ_{w}_bits_{v.iq_wen[w]} <= '
               '($urandom_range(0, 99) < 30);')
+        for _f in sorted(ov.wen_lane['iq'].get(w, set()) - {v.iq_wen[w]}):
+            A(f'    io_commonIn_wakeUpFromIQ_{w}_bits_{_f} <= ($urandom_range(0, 99) < 30);')
         A(f"    io_commonIn_wakeUpFromIQ_{w}_bits_pdest <= {v.pdest_w}'(rnd_reg());")
         for q in range(v.ld_pipes):
             pn = f'io_commonIn_wakeUpFromIQ_{w}_bits_loadDependency_{q}'
@@ -890,6 +912,8 @@ def gen_tb(ov):
     A('    io_commonIn_issueResp_valid <= ($urandom_range(0, 99) < 35);')
     A("    io_commonIn_issueResp_bits_resp <= "
       "(2'($urandom_range(0, 2)) == 2'd2) ? 2'd3 : 2'($urandom_range(0, 1));")
+    if v.has_vec_mem:
+        L.extend(entry_vecmem.tb_drive(ov, is_enq=False))
     A('  endtask')
     A('')
     A('  // ---- deqSel / transSel：必须在时钟沿之前按 golden 当拍的 canIssue 算 ----')
@@ -947,6 +971,8 @@ def gen_tb_tail(ov, L):
         A('    // ignoreOldVd 走的是 vl 写回那两路；这里只统计条件成立的拍数')
         A('    if (io_commonIn_vlFromIntIsZero || io_commonIn_vlFromVfIsZero)'
           ' cov_ignore_old_vd++;')
+    if v.has_vec_mem:
+        L.extend(entry_vecmem.tb_cov(g))
     A('  endtask')
     A('')
     A('  longint cyc = 0;')
@@ -1052,8 +1078,16 @@ def check_port_refs(ov, rtl):
 # VEC 族 3 个 simp（_164/_150/_136）与 FP 族 3 个 simp 同因同型，只是源数 3 -> 5，
 # 死位 9 -> 15（5 源 x 3 pipe）。预登记：打开后 passing 各自恰好 +15
 #   _164 3777->3792 / _150 3782->3797 / _136 3844->3859（全等于模型上界）。
+# 访存向量族的 2 个 simp（OthersEntryVecMem / _14，agent/iq-entry-leaves 2026-10-03 实测）
+# 同因同型：golden 无 ldCancel 端口、影子 bit[1] 无读出点；首跑 strict native SUCCEEDED、
+# failing 0、unmatched 0，unread 15 全部 matched_nc、ref 15 <-> impl 15 严格双射且全是
+# 钉点文件自己钉的 r_ld_dep_reg[s][q][1]。预登记：打开后 passing 恰好 +15
+#   OthersEntryVecMem 3925->3940 / _14 3919->3934（= predict.py 模型上界，登记早于证明）。
 VMUCP = {'OthersEntry_88', 'OthersEntry_104', 'OthersEntry_120',
-         'OthersEntry_164', 'OthersEntry_150', 'OthersEntry_136'}
+         'OthersEntry_164', 'OthersEntry_150', 'OthersEntry_136',
+         'OthersEntryVecMem', 'OthersEntryVecMem_14'}
+VMUCP_LEGACY = {'OthersEntry_88', 'OthersEntry_104', 'OthersEntry_120',
+                'OthersEntry_164', 'OthersEntry_150', 'OthersEntry_136'}
 
 
 # =============================================================================
@@ -1066,9 +1100,12 @@ def gen_mk(ov):
     extra_golden = ''.join(f' \\\n              $(GOLDEN_RTL)/{m}.sv' for m in sub)
     extra_deps = ' '.join(f'{m}.sv' for m in sub)
     vmucp = 'true' if ov.mod in VMUCP else 'false'
+    # 死位数 = 源数 × 3 条 load 流水。★已签的 6 个变体 Makefile 里写的是 9（VEC 族 3 个实为 15，
+    #   旧注释沿用了 FP 族的数）；为不让已签产物漂移，旧 6 个保持原字面，新加的按实算。
+    _nd = 9 if ov.mod in VMUCP_LEGACY else 3 * ov.v.n_regsrc
     vmucp_note = (
-        '# ★vmucp=true（加强，不是放宽）★：本变体首跑仅剩 9 个 matched_nc unread\n'
-        '#   （srcLoadDependency 的 bit[1]，两侧同为死位、ref 9 <-> impl 9 严格双射、\n'
+        f'# ★vmucp=true（加强，不是放宽）★：本变体首跑仅剩 {_nd} 个 matched_nc unread\n'
+        f'#   （srcLoadDependency 的 bit[1]，两侧同为死位、ref {_nd} <-> impl {_nd} 严格双射、\n'
         '#    由本目录 fm_pins_pre.tcl 钉上）。依据与预登记数字见\n'
         '#   verif/ut/OthersEntry_common/othersentry_gen.py 的 VMUCP 表。'
         if vmucp == 'true' else

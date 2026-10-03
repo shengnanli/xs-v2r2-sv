@@ -1,0 +1,9 @@
+{
+  "target": "Std",
+  "ut": "MemExeUnit",
+  "regs": 0,
+  "outs": 75,
+  "expected": 75,
+  "merge_dup": "false",
+  "model_applicable": true
+}

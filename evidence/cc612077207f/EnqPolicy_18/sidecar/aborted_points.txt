@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/EnqPolicy_18
+Implementation : i:/WORK/EnqPolicy_18
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 08:45:21 2026
+**************************************************
+
+No aborted compare points.
+
+1

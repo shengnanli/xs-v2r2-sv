@@ -108,6 +108,7 @@ GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 sys.path.insert(0, str(REPO / 'verif' / 'ut' / 'Entries_common'))
 from entries_gen import (Variant, port_decls, read, bitvec,   # noqa: E402
                           wenpack, wenvec)
+import entry_vecmem                                           # noqa: E402
 
 
 # 父级 Entries 变体已在本仓实现、因而本 lane 敢做的那几个（见文件头「结论的边界」）。
@@ -116,6 +117,8 @@ IMPLEMENTED_PARENTS = {
     'EntriesAluCsrFenceDiv', 'EntriesFaluFcvtF2vFmacFdiv', 'EntriesFaluFmacFdiv',
     'EntriesFaluFmac', 'EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf',
     'EntriesVfmaVialuFixVfalu', 'EntriesVfdivVidiv',
+    'EntriesLdu', 'EntriesStaMou', 'EntriesStdMoud',
+    'EntriesVlduVstu', 'EntriesVlduVstuVseglduVsegstu',
 }
 
 
@@ -160,7 +163,13 @@ class EnqVariant:
         # ★ 入队时被强制的那几个状态位，golden 上不该有对应输入端口 ★
         #   （core:732-734 把 issued/firstIssue/issueTimer 钉成 0/0/3，
         #     core:777 IS_ENQ 无 blocked 寄存器）
+        #   ★访存向量变体例外：blocked 有真次态，enq 条目也有寄存器、入队吃派遣给的值
+        #     （核 §2.6a 末段），所以 EnqEntryVecMem* 有 enq.status.blocked 输入。
         for f in ('blocked', 'issued', 'firstIssue', 'issueTimer', 'deqPortIdx'):
+            if f == 'blocked' and v.has_vec_mem:
+                assert has('io_commonIn_enq_bits_status_blocked'), (
+                    f'{mod}: 访存向量 enq 条目竟无 enq.status.blocked 输入')
+                continue
             assert not has(f'io_commonIn_enq_bits_status_{f}'), (
                 f'{mod}: 有 enq.status.{f} 输入 —— 与 IS_ENQ 的强制装载不符')
 
@@ -389,6 +398,35 @@ def wrap_long(text, width=96):
     return '\n'.join(out)
 
 
+# 可读性闸 E 类：>1500 行的文件必须带「本文件导航」，且行号要落在分节注释上。
+# 只有访存向量的两个变体（5 源 + 整包 1330 位负载）超过这条线；其余变体不加，
+# 产物逐字节不变。导航插进文件头后会把正文整体下移，所以行号按插入后的位置算。
+NAV_ANCHORS = (
+    ('module ', '端口表（逐字取自 golden）'),
+    ('  // 入队负载按 Variant 的偏移表', '入队负载打包（字段 -> 比特区间的地图）'),
+    ('  xs_iq_entry #(', '共享核例化：参数 + 逐端口接线'),
+    ('  // fuType 出口', '输出展开：fuType / dataSources / exuSources'),
+    ('  // commonOut.entry.bits.status', 'commonOut.entry（发射口看到的那份）'),
+    ('  // commonOut.transEntry', 'commonOut.transEntry（交给下一级的整包）'),
+)
+
+
+def add_nav(text, limit=1500):
+    lines = text.split('\n')
+    if len(lines) <= limit:
+        return text
+    hdr_end = next(i for i, l in enumerate(lines) if l.startswith('// =====') and i > 2)
+    nav_len = 3 + len(NAV_ANCHORS)          # 标题 + 若干条 + 重算说明 + 空注释行
+    nav = ['//', f'// 本文件导航（插入后共 {len(lines) + nav_len} 行；生成器按插入后位置算行号）：']
+    for key, what in NAV_ANCHORS:
+        idx = next(i for i, l in enumerate(lines) if l.startswith(key))
+        ln = idx + 1 + (nav_len if idx >= hdr_end else 0)
+        nav.append(f'//   L{ln:<6}{what}')
+    nav.append('// 导航由 verif/ut/EnqEntry_common/enqentry_gen.py 生成 —— 勿手改')
+    assert len(nav) == nav_len
+    return '\n'.join(lines[:hdr_end] + nav + lines[hdr_end:])
+
+
 def gen_rtl_body(ov, L, ctx):
     v, n_src, n_wk, n_iq, nfu, ew, rw = ctx
     A = L.append
@@ -433,6 +471,9 @@ def gen_rtl_body(ov, L, ctx):
                     ('PLB_IS_DEPEND_OLDVD', 'vpu_isDependOldVd'),
                     ('PLB_IS_WRITE_PARTVD', 'vpu_isWritePartVd')):
         A(f'    .{pl}({v.pl_off[fld][0]}),')
+    if v.has_vec_mem:
+        A('    // 访存向量状态组（核 §2.6c；接线见 Entries_common/entry_vecmem.py）')
+        A(entry_vecmem.params(ov) + ',')
     A('    // ★ 条目单独成模块时 golden 有这 7 组 debug/perf 输出，故打开')
     A('    .HAS_DBG_OUT(1)')
     A('  ) u_entry (')
@@ -456,7 +497,12 @@ def gen_rtl_body(ov, L, ctx):
             for s in reversed(range(n_src)))))
     c.append('  // ★ IS_ENQ 装载时这五个由核强制（issued=0/firstIssue=0/issueTimer=3，')
     c.append('  //   blocked 无寄存器、deqPortIdx 清 0），golden 也正因此没有这几个输入')
-    c.append(".enq_blocked('0), .enq_issued('0), .enq_first_issue('0)")
+    if v.has_vec_mem:
+        c.append('  //   （访存向量例外：blocked 有寄存器，入队吃派遣给的值，见核 §2.6a）')
+        c.append('.enq_blocked(io_commonIn_enq_bits_status_blocked)')
+        c.append(".enq_issued('0), .enq_first_issue('0)")
+    else:
+        c.append(".enq_blocked('0), .enq_issued('0), .enq_first_issue('0)")
     c.append(".enq_issue_timer('0), .enq_deq_port_idx('0)")
     c.append('.enq_payload(enq_payload)')
     # ★ 接什么由 **enq 口有没有那组输入** 决定，不是由有没有影子寄存器决定 ★
@@ -568,9 +614,11 @@ def gen_rtl_body(ov, L, ctx):
     # 访存向量状态组（核 HAS_VEC_MEM，§2.6c）：本生成器覆盖的变体都不带它，
     # 入口钉 0、出口不接（核在 HAS_VEC_MEM=0 时一个寄存器都不产出）。
     # 真遇到带它的变体（OthersEntryVecMem* / EnqEntryVecMem*）必须先扩本生成器。
-    assert not v.has_vec_mem, f'{v.top}: 访存向量变体，本生成器尚未覆盖'
-    c.append(".enq_vm('0), .enq_vpr('0), .enq_vr_mask('0), .enq_vr_mbidx('0)")
-    c.append(".lq_deq_ptr('0), .resp_vpr('0), .resp_vr_mask('0), .resp_vr_mbidx('0)")
+    if v.has_vec_mem:
+        c.extend(entry_vecmem.conns(ov, is_enq=True, has_trans=True))
+    else:
+        c.append(".enq_vm('0), .enq_vpr('0), .enq_vr_mask('0), .enq_vr_mbidx('0)")
+        c.append(".lq_deq_ptr('0), .resp_vpr('0), .resp_vr_mask('0), .resp_vr_mbidx('0)")
     c.append('  // enq 条目的 transSel = 「本拍被搬到 simp/comp 去了」-> enqReady/clear')
     c.append('.trans_sel(io_commonIn_transSel)')
     # ---- 输出 ----
@@ -703,7 +751,7 @@ def gen_rtl_body(ov, L, ctx):
     A('  // END GENERATED(core-inst)')
     A('')
     A('endmodule')
-    return wrap_long('\n'.join(L)) + '\n'
+    return add_nav(wrap_long('\n'.join(L))) + '\n'
 
 
 # ---------------------------------------------------------------------------
@@ -755,6 +803,11 @@ COV_MIN_200K = {
     'resp_uncertain': 5744,    # 实测最小 22977 @ EnqEntry_6 seed=42 initreg=random（54 次跑）
     'trans_fire': 2200,        # 实测最小 8802 @ EnqEntry_10 seed=42 initreg=random（54 次跑）
     'wb_wake': 2527,           # 实测最小 10111 @ EnqEntry seed=1 initreg=random（54 次跑）
+    # 访存向量 2 个变体专属（agent/iq-entry-leaves 标定，口径同上：族内最小 / 4）
+    'vec_blocked': 11007,          # 实测最小 44028（2 变体 × 9 档 = 18 次跑）
+    'vec_unblocked_vleff': 6047,  # 实测最小 24190（2 变体 × 9 档 = 18 次跑）
+    'vec_part_replay': 3316,      # 实测最小 13267（2 变体 × 9 档 = 18 次跑）
+    'vec_replay_mask_upd': 8038,  # 实测最小 32153（2 变体 × 9 档 = 18 次跑）
 }
 
 
@@ -779,6 +832,8 @@ def cov_names(ov):
         nm += ['rc_hit']
     if v.has_ignore:
         nm += ['ignore_old_vd']
+    if v.has_vec_mem:
+        nm += entry_vecmem.COV_NAMES
     return nm
 
 
@@ -957,11 +1012,19 @@ def gen_tb(ov):
             A(f'    {pfx}_wakeUpFromWB_{w}_valid <= ($urandom_range(0, 99) < 55);')
             A(f'    {pfx}_wakeUpFromWB_{w}_bits_{v.wk_wen[w]} <= '
               '($urandom_range(0, 99) < 85);')
+            # ★同一路上别的写使能字段也要驱动（访存族一路带 rfWen/fpWen/vecWen），
+            #   否则停在上电初值：+vcs+initreg+0 下恒 0，那类源整轮不被 WB 唤醒。
+            _k = 'wb' if pfx == 'io_commonIn' else 'wbd'
+            for _f in sorted(v.wen_lane[_k].get(w, set()) - {v.wk_wen[w]}):
+                A(f'    {pfx}_wakeUpFromWB_{w}_bits_{_f} <= ($urandom_range(0, 99) < 85);')
             A(f"    {pfx}_wakeUpFromWB_{w}_bits_pdest <= {v.pdest_w}'(rnd_reg());")
         for w in range(n_iq):
             if v.iq_wen[w] and ov.has(f'{pfx}_wakeUpFromIQ_{w}_bits_{v.iq_wen[w]}'):
                 A(f'    {pfx}_wakeUpFromIQ_{w}_bits_{v.iq_wen[w]} <= '
                   '($urandom_range(0, 99) < 30);')
+            _k = 'iq' if pfx == 'io_commonIn' else 'iqd'
+            for _f in sorted(v.wen_lane[_k].get(w, set()) - {v.iq_wen[w]}):
+                A(f'    {pfx}_wakeUpFromIQ_{w}_bits_{_f} <= ($urandom_range(0, 99) < 30);')
             A(f"    {pfx}_wakeUpFromIQ_{w}_bits_pdest <= {v.pdest_w}'(rnd_reg());")
             for q in range(v.ld_pipes):
                 pn = f'{pfx}_wakeUpFromIQ_{w}_bits_loadDependency_{q}'
@@ -1002,6 +1065,8 @@ def gen_tb(ov):
     A('    io_commonIn_issueResp_valid <= ($urandom_range(0, 99) < 35);')
     A("    io_commonIn_issueResp_bits_resp <= "
       "(2'($urandom_range(0, 2)) == 2'd2) ? 2'd3 : 2'($urandom_range(0, 1));")
+    if v.has_vec_mem:
+        L.extend(entry_vecmem.tb_drive(ov, is_enq=True))
     A('  endtask')
     A('')
     A('  // ---- deqSel / transSel：必须在时钟沿之前按 golden 当拍的输出算 ----')
@@ -1097,6 +1162,8 @@ def gen_tb_tail(ov, L):
           f'io_commonIn_enq_bits_status_srcStatus_{s}_srcType;')
     A('    end')
     A('    dly_win = will_load;')
+    if v.has_vec_mem:
+        L.extend(entry_vecmem.tb_cov(g))
     A('  endtask')
     A('')
     A('  longint cyc = 0;')

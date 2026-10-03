@@ -1573,6 +1573,33 @@ ByteMaskTailGen	bodyEn_uintToContTail1sMod128Bits	UIntToContLow1s	ONE_SITE	u_cor
 ByteMaskTailGen	maskEn_maskExtractor	MaskExtractor	ONE_SITE	u_core.u_mask	MaskExtractor		auto_one_site	
 ByteMaskTailGen	prestartEn_uintToContTail1sMod128Bits	UIntToContLow1s	ONE_SITE	u_core.u_body_hi	UIntToContLow1s		auto_one_site	
 ByteMaskTailGen	tailEn_uintToContTail0sMod128Bits	UIntToContLow0s	UNRESOLVED				none	
+CVT16	clz_sig_clz	CLZ_30	DEEPER	u_core.clz_sig_clz	CLZ_30		auto_deeper	
+CVT16	int2fp_clz_clz	CLZ_7	DEEPER	u_core.int2fp_clz_clz	CLZ_7		auto_deeper	
+CVT16	out_exp_clz	CLZ_28	DEEPER	u_core.out_exp_clz	CLZ_28		auto_deeper	
+CVT16	rounder	RoundingUnit_11	DEEPER	u_core.rounder	RoundingUnit_11		auto_deeper	
+CVT16	shiftRightJam	ShiftRightJam_4	DEEPER	u_core.shiftRightJam	ShiftRightJam_4		auto_deeper	
+CVT16	vfrec7Table	Rec7Table	DEEPER	u_core.vfrec7Table	Rec7Table		auto_deeper	
+CVT16	vfrsqrt7Table	Rsqrt7Table	DEEPER	u_core.vfrsqrt7Table	Rsqrt7Table		auto_deeper	
+CVT16	zero_minus_lzc_clz	CLZ_28	DEEPER	u_core.zero_minus_lzc_clz	CLZ_28		auto_deeper	
+CVT32	clz_fp16_clz	CLZ_30	DEEPER	u_core.clz_fp16_clz	CLZ_30		auto_deeper	
+CVT32	clz_fp32_clz	CLZ_31	DEEPER	u_core.clz_fp32_clz	CLZ_31		auto_deeper	
+CVT32	int2fp_clz_clz	CLZ_9	DEEPER	u_core.int2fp_clz_clz	CLZ_9		auto_deeper	
+CVT32	int2fp_clz_clz_1	CLZ_7	DEEPER	u_core.int2fp_clz_clz_1	CLZ_7		auto_deeper	
+CVT32	nor_rounder	RoundingUnit_9	DEEPER	u_core.nor_rounder	RoundingUnit_9		auto_deeper	
+CVT32	out_exp_fp16_clz	CLZ_28	DEEPER	u_core.out_exp_fp16_clz	CLZ_28		auto_deeper	
+CVT32	out_exp_fp32_clz	CLZ_29	DEEPER	u_core.out_exp_fp32_clz	CLZ_29		auto_deeper	
+CVT32	rounder	RoundingUnit_8	DEEPER	u_core.rounder	RoundingUnit_8		auto_deeper	
+CVT32	shiftRightJam	ShiftRightJam_2	DEEPER	u_core.shiftRightJam	ShiftRightJam_2		auto_deeper	
+CVT32	shiftRightJam_1	ShiftRightJam_3	DEEPER	u_core.shiftRightJam_1	ShiftRightJam_3		auto_deeper	
+CVT32	subnor_rounder	RoundingUnit_9	DEEPER	u_core.subnor_rounder	RoundingUnit_9		auto_deeper	
+CVT32	subnor_shamt_clz	CLZ_28	DEEPER	u_core.subnor_shamt_clz	CLZ_28		auto_deeper	
+CVT32	vfrec7Table	Rec7Table	DEEPER	u_core.vfrec7Table	Rec7Table		auto_deeper	
+CVT32	vfrsqrt7Table	Rsqrt7Table	DEEPER	u_core.vfrsqrt7Table	Rsqrt7Table		auto_deeper	
+CVT32	zero_minus_lzc_f16_clz	CLZ_28	DEEPER	u_core.zero_minus_lzc_f16_clz	CLZ_28		auto_deeper	
+CVT32	zero_minus_lzc_f32_clz	CLZ_29	DEEPER	u_core.zero_minus_lzc_f32_clz	CLZ_29		auto_deeper	
+CVT64_1	estmate7	Estimate7	DEEPER	u_core.estmate7	Estimate7		auto_deeper	
+CVT64_1	fpcvt	FP_INCVT	DEEPER	u_core.fpcvt	FP_INCVT		auto_deeper	
+CVT64_1	int2fp	INT2FP	DEEPER	u_core.int2fp	INT2FP		auto_deeper	
 CommitIDModule	printCommitIDMod	PrintCommitIDModule	SAME_PATH	printCommitIDMod	PrintCommitIDModule		auto_same	
 Composer	ftb	FTB	SAME_PATH	ftb	FTB		auto_same	
 Composer	ftb_io_ctrl_delay	DelayN	SAME_PATH	ftb_io_ctrl_delay	DelayN		auto_same	
@@ -2025,6 +2052,9 @@ EntriesVlduVstuVseglduVsegstu	othersEntriesComp_9	OthersEntryVecMem_2	UNRESOLVED
 EntriesVlduVstuVseglduVsegstu	othersEntriesSimp_0	OthersEntryVecMem	UNRESOLVED				none	
 EntriesVlduVstuVseglduVsegstu	othersEntriesSimp_1	OthersEntryVecMem	UNRESOLVED				none	
 EntriesVlduVstuVseglduVsegstu	simpTransPolicy	EnqPolicy_14	UNRESOLVED				none	
+Estimate7	leadZerosNext_clz	CLZ_6	DEEPER	u_core.leadZerosNext_clz	CLZ_6		auto_deeper	
+Estimate7	rec7Table	Rec7Table	DEEPER	u_core.rec7Table	Rec7Table		auto_deeper	
+Estimate7	rsqrt7Table	Rsqrt7Table	DEEPER	u_core.rsqrt7Table	Rsqrt7Table		auto_deeper	
 FAlu	falu	FloatAdder	DEEPER	u_core.falu	FloatAdder		auto_deeper	
 FCVT	fcvt	FPCVT	DEEPER	u_core.fcvt	FPCVT		auto_deeper	
 FDivSqrt	fdiv	FloatDivider	ONE_SITE	u_core.u_fdiv	FloatDivider		auto_one_site	
@@ -2190,6 +2220,8 @@ IMSIC	intFile_6	IntFile	GEN_SITE	u_core.g_file[6].intFile	IntFile		auto_gen_site
 IMSIC	intFile_7	IntFile	GEN_SITE	u_core.g_file[7].intFile	IntFile		auto_gen_site_suffix	
 IMSIC	intFile_8	IntFile	GEN_SITE	u_core.g_file[8].intFile	IntFile		auto_gen_site_suffix	
 IMSICGateWay	msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0	DEEPER	u_core.msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0		auto_deeper	
+INT2FP	leadZerosNext_clz	CLZ_6	DEEPER	u_core.leadZerosNext_clz	CLZ_6		auto_deeper	
+INT2FP	rounder	RoundingUnit_3	DEEPER	u_core.rounder	RoundingUnit_3		auto_deeper	
 IPrefetchPipe	toMSHRArbiter	Arbiter2_ICacheMissReq	DEEPER	u_core.toMSHRArbiter	Arbiter2_ICacheMissReq		auto_deeper	
 ITTageTable	mbistPl	MbistPipeIttage	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
 ITTageTable	table_0	FoldedSRAMTemplate_22	SAME_PATH	table_0	FoldedSRAMTemplate_22		auto_same	
@@ -3675,6 +3707,11 @@ V0RFWBCollideChecker	arbiters_2	WBArbiter_2	SAME_PATH	arbiters_2	WBArbiter_2		au
 V0RFWBCollideChecker	arbiters_3	WBArbiter_2	SAME_PATH	arbiters_3	WBArbiter_2		auto_same	
 V0RFWBCollideChecker	arbiters_4	WBArbiter_3	SAME_PATH	arbiters_4	WBArbiter_3		auto_same	
 V0RFWBCollideChecker	arbiters_5	WBArbiter_3	SAME_PATH	arbiters_5	WBArbiter_3		auto_same	
+VCVT	vcvtImpl	CVT64_1	SAME_PATH	vcvtImpl	CVT64_1		auto_same	
+VCVT_1	vcvtImpl	CVT32	SAME_PATH	vcvtImpl	CVT32		auto_same	
+VCVT_2	vcvtImpl	CVT16	SAME_PATH	vcvtImpl	CVT16		auto_same	
+VCVT_8	mgu	Mgu	DEEPER	u_core.mgu	Mgu		auto_deeper	
+VCVT_8	vfcvt	VectorCvtTop	DEEPER	u_core.vfcvt	VectorCvtTop		auto_deeper	
 VFixPoint64b	adder_chain_rnd	Adder_chain_rnd	DEEPER	u_core.adder_chain_rnd	Adder_chain_rnd		auto_deeper	
 VIntFixpAlu64b	vFixPoint64b	VFixPoint64b	DEEPER	u_core.vFixPoint64b	VFixPoint64b		auto_deeper	
 VIntFixpAlu64b	vIntAdder64b	VIntAdder64b	DEEPER	u_core.vIntAdder64b	VIntAdder64b		auto_deeper	
@@ -3703,6 +3740,12 @@ VSegmentUnit	segmentTrigger	VSegmentTrigger	DEEPER	u_core.segmentTrigger	VSegmen
 VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。
 VSetRvfWvf	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	同上
 VTypeGen	vsetModule	VsetModule	UNRESOLVED				none	
+VectorCvt	vcvtWraper	VCVT	DEEPER	u_core.vcvtWraper	VCVT		auto_deeper	
+VectorCvt	vcvtWraper_1	VCVT_1	DEEPER	u_core.vcvtWraper_1	VCVT_1		auto_deeper	
+VectorCvt	vcvtWraper_2	VCVT_2	DEEPER	u_core.vcvtWraper_2	VCVT_2		auto_deeper	
+VectorCvt	vcvtWraper_3	VCVT_2	DEEPER	u_core.vcvtWraper_3	VCVT_2		auto_deeper	
+VectorCvtTop	vectorCvt0	VectorCvt	DEEPER	u_core.vectorCvt0	VectorCvt		auto_deeper	
+VectorCvtTop	vectorCvt1	VectorCvt	DEEPER	u_core.vectorCvt1	VectorCvt		auto_deeper	
 VectorFloatFMA	U_BoothEncoder	BoothEncoderF64F32F16_3	DEEPER	u_core.U_BoothEncoder	BoothEncoderF64F32F16_3		auto_deeper	
 VectorFloatFMA	U_CSA3to2	CSA3to2	DEEPER	u_core.U_CSA3to2	CSA3to2		auto_deeper	
 VectorFloatFMA	U_CSAnto2	CSA_Nto2With3to2MainPipeline	DEEPER	u_core.U_CSAnto2	CSA_Nto2With3to2MainPipeline		auto_deeper	

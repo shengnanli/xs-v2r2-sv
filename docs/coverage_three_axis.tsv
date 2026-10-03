@@ -154,10 +154,10 @@ CSA4to2_16	REWRITTEN	PROVEN_DIRECT	rtl/backend/CSA4to2_16.sv
 CSA_Nto2With3to2MainPipeline	GOLDEN_REUSE	PROVEN_IN_CONE	-
 CSR	MISSING	UNPROVEN	-
 CSRPermitModule	MISSING	UNPROVEN	-
-CVT16	MISSING	UNPROVEN	-
-CVT32	MISSING	UNPROVEN	-
+CVT16	REWRITTEN	PROVEN_DIRECT	rtl/backend/CVT16.sv
+CVT32	REWRITTEN	PROVEN_DIRECT	rtl/backend/CVT32.sv
 CVT64	MISSING	PROVEN_IN_CONE	-
-CVT64_1	MISSING	UNPROVEN	-
+CVT64_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/CVT64_1.sv
 CaptureChain	GOLDEN_REUSE	PROVEN_IN_CONE	-
 CaptureUpdateChain	GOLDEN_REUSE	PROVEN_IN_CONE	-
 CaptureUpdateChain_1	GOLDEN_REUSE	PROVEN_IN_CONE	-
@@ -329,7 +329,7 @@ EntriesVfmaVialuFixVfalu	MACRO_OPAQUE	PROVEN_DIRECT	rtl/backend/EntriesVfmaVialu
 EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	MACRO_OPAQUE	PROVEN_DIRECT	rtl/backend/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.sv
 EntriesVlduVstu	MACRO_OPAQUE	PROVEN_DIRECT	rtl/backend/EntriesVlduVstu.sv
 EntriesVlduVstuVseglduVsegstu	MACRO_OPAQUE	PROVEN_DIRECT	rtl/backend/EntriesVlduVstuVseglduVsegstu.sv
-Estimate7	MISSING	UNPROVEN	-
+Estimate7	REWRITTEN	PROVEN_DIRECT	rtl/backend/Estimate7.sv
 ExceptionGen	MISSING	PROVEN_IN_CONE	-
 ExeUnit	MISSING	UNPROVEN	-
 ExeUnit_1	MISSING	UNPROVEN	-
@@ -562,7 +562,7 @@ ICacheReplacer	REWRITTEN	PROVEN_DIRECT	rtl/frontend/ICacheReplacer.sv
 IMSIC	REWRITTEN	PROVEN_DIRECT	rtl/uncore/IMSIC.sv
 IMSICGateWay	REWRITTEN	PROVEN_DIRECT	rtl/uncore/IMSICGateWay.sv
 IMSIC_WRAP	MISSING	UNPROVEN	-
-INT2FP	MISSING	UNPROVEN	-
+INT2FP	REWRITTEN	PROVEN_DIRECT	rtl/backend/INT2FP.sv
 IPrefetchPipe	REWRITTEN	PROVEN_DIRECT	rtl/frontend/IPrefetchPipe.sv
 ITTage	GOLDEN_REUSE	PROVEN_IN_CONE	-
 ITTageTable	GOLDEN_REUSE	PROVEN_IN_CONE	rtl/frontend/ITTageTable.sv
@@ -765,7 +765,7 @@ MenvcfgModule	MISSING	UNPROVEN	-
 MepcModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/MepcModule.sv
 MflushpwrModule	MISSING	UNPROVEN	-
 Mgtu	MISSING	UNPROVEN	-
-Mgu	REWRITTEN	UNPROVEN	rtl/backend/Mgu.sv
+Mgu	REWRITTEN	PROVEN_DIRECT	rtl/backend/Mgu.sv
 MhartidModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/MhartidModule.sv
 Mhpmcounter10Module	MISSING	UNPROVEN	-
 Mhpmcounter11Module	MISSING	UNPROVEN	-
@@ -1159,7 +1159,7 @@ PrivilegePermitModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/PrivilegePermitModule.
 ProbeEntry	GOLDEN_REUSE	PROVEN_IN_CONE	-
 ProbeQueue	REWRITTEN	PROVEN_DIRECT	rtl/memblock/ProbeQueue.sv
 ProvideBuffer	MISSING	UNPROVEN	-
-PtwCache	GOLDEN_REUSE	UNPROVEN	rtl/mmu/PtwCache.sv
+PtwCache	GOLDEN_REUSE	PROVEN_DIRECT	rtl/mmu/PtwCache.sv
 Queue10_GrantBuffer_Anon	REWRITTEN	PROVEN_DIRECT	rtl/uncore/Queue10_GrantBuffer_Anon.sv
 Queue128_BundleMap	MISSING	UNPROVEN	-
 Queue15_CHIDAT	MISSING	UNPROVEN	-
@@ -1300,7 +1300,7 @@ RealWBCollideChecker_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/RealWBCollideChecker_
 RealWBCollideChecker_2	REWRITTEN	PROVEN_DIRECT	rtl/backend/RealWBCollideChecker_2.sv
 RealWBCollideChecker_3	REWRITTEN	PROVEN_DIRECT	rtl/backend/RealWBCollideChecker_3.sv
 RealWBCollideChecker_4	REWRITTEN	PROVEN_DIRECT	rtl/backend/RealWBCollideChecker_4.sv
-Rec7Table	MISSING	UNPROVEN	-
+Rec7Table	MISSING	PROVEN_IN_CONE	-
 ReceiverLinkMonitor	MISSING	UNPROVEN	-
 RecentRequestTable	MISSING	UNPROVEN	-
 RecentRequestTable_1	MISSING	UNPROVEN	-
@@ -1348,7 +1348,7 @@ RoundingUnit_3	REWRITTEN	PROVEN_DIRECT	rtl/backend/RoundingUnit_3.sv
 RoundingUnit_4	REWRITTEN	PROVEN_DIRECT	rtl/backend/RoundingUnit_4.sv
 RoundingUnit_8	REWRITTEN	PROVEN_DIRECT	rtl/backend/RoundingUnit_8.sv
 RoundingUnit_9	REWRITTEN	PROVEN_DIRECT	rtl/backend/RoundingUnit_9.sv
-Rsqrt7Table	MISSING	UNPROVEN	-
+Rsqrt7Table	MISSING	PROVEN_IN_CONE	-
 SBToTL	GOLDEN_REUSE	PROVEN_IN_CONE	-
 SCTable	GOLDEN_REUSE	PROVEN_IN_CONE	-
 SCTable_1	GOLDEN_REUSE	PROVEN_IN_CONE	-
@@ -1662,10 +1662,10 @@ V0RFWBCollideChecker	REWRITTEN	PROVEN_DIRECT	rtl/backend/V0RFWBCollideChecker.sv
 V0RegFilePart0	REWRITTEN	PROVEN_DIRECT	rtl/backend/V0RegFilePart0.sv
 V0RegFilePart1	REWRITTEN	PROVEN_DIRECT	rtl/backend/V0RegFilePart1.sv
 VBestOffsetPrefetch	MISSING	UNPROVEN	-
-VCVT	MISSING	UNPROVEN	-
-VCVT_1	MISSING	UNPROVEN	-
-VCVT_2	MISSING	UNPROVEN	-
-VCVT_8	MISSING	UNPROVEN	-
+VCVT	REWRITTEN	PROVEN_DIRECT	rtl/backend/VCVT.sv
+VCVT_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/VCVT_1.sv
+VCVT_2	REWRITTEN	PROVEN_DIRECT	rtl/backend/VCVT_2.sv
+VCVT_8	REWRITTEN	PROVEN_DIRECT	rtl/backend/VCVT_8.sv
 VFAlu	MISSING	UNPROVEN	-
 VFDivSqrt	MISSING	UNPROVEN	-
 VFMA	MISSING	UNPROVEN	-
@@ -1718,8 +1718,8 @@ VcsrModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VcsrModule.sv
 VecDataSplitModule	MISSING	UNPROVEN	-
 VecExceptionGen	REWRITTEN	PROVEN_DIRECT	rtl/backend/VecExceptionGen.sv
 VecExcpDataMergeModule	MISSING	UNPROVEN	-
-VectorCvt	MISSING	UNPROVEN	-
-VectorCvtTop	MISSING	UNPROVEN	-
+VectorCvt	REWRITTEN	PROVEN_DIRECT	rtl/backend/VectorCvt.sv
+VectorCvtTop	REWRITTEN	PROVEN_DIRECT	rtl/backend/VectorCvtTop.sv
 VectorFloatAdder	MISSING	UNPROVEN	-
 VectorFloatDivider	MISSING	UNPROVEN	-
 VectorFloatDividerR64	MISSING	UNPROVEN	-

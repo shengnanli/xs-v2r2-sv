@@ -1,0 +1,9 @@
+{
+  "target": "FarPathAdderF16Pipeline",
+  "ut": "FarPathAdderF16Pipeline",
+  "regs": 24,
+  "outs": 12,
+  "expected": 36,
+  "merge_dup": "false",
+  "model_applicable": true
+}

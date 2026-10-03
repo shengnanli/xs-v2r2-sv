@@ -73,8 +73,9 @@ DBG_MUTANTS = [
 
     ('D2', 'perfWakeupByWB 漏掉 isBusy(srcState) 门控 —— '
            '变成「WB 命中就计数」，而 golden 只算「把一个未就绪的源翻成就绪」',
+     # 锚点跟着核走：核在 EnqEntry 修复（currentStatus 门控）后读的是 cur_src_state
      "        assign o_dbg_perf_wakeup_by_wb[s] = wk_hit[s]\n"
-     "                                          & (r_src_state[s] == SRC_BUSY)\n"
+     "                                          & (cur_src_state[s] == SRC_BUSY)\n"
      "                                          & valid_reg;",
      "        assign o_dbg_perf_wakeup_by_wb[s] = wk_hit[s] & valid_reg;",
      lambda ov: (True, '每个变体都有 WB 唤醒')),

@@ -1,0 +1,10 @@
+{
+  "target": "EnqEntry_20",
+  "ut": "EnqEntry_20",
+  "regs": 1392,
+  "outs": 2061,
+  "expected": 3453,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "agent/iq-entry-leaves 首跑（ddb13c86）。模型 = golden 闭包寄存器位 + 顶层 output 位，merge_dup=false 故适用；同族 24+9 个已签变体全部 +0。预测差额 0；若有差额，可指认量 = constant_reg + unread，指认不了如实记红。"
+}

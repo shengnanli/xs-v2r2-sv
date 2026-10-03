@@ -310,6 +310,10 @@ run "共享件影响闸自证"  python3 scripts/check_shared_impl_impact.py --se
 run "written 驱动下限自证"  python3 scripts/rewritten_floor.py --selftest
 run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
 run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
+# perf 初值设定闸（codex 0207 P1）：主比较两侧必须 Z0（无 RANDOMIZE_*、编译期 initreg、
+# 运行期 +vcs+initreg+0），凭据是 assert.log 里 verif/sim/perf_cfg_stamp.sv 现场打的 [PERFCFG]。
+# 负测：各缺一项 / 两侧不一致 → perf_compare rc 3；正例 rc 0；设定对但数差 1 → rc 1（无容差）。
+run "perf 初值设定闸负测"  python3 scripts/test_perf_init_contract.py
 
 # passing 预测模型自校准（docs/tlbsw23_passing_prediction.md）：
 # 模型 = 闭包触发器位数 + 顶层 output 位数。6 个已签核点必须逐位命中，
