@@ -20,7 +20,9 @@ G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL   ?= $(G1_CANONICAL)/golden-rtl
 GOLDEN_SRCS  = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(CHILDREN) $(TARGETS)))
 
-FM_VARIANTS = $(TARGETS)
+# FM_VARIANTS / FM_REF_DEPS_* 写字面名（scripts/fm_predict.py 按字面解析，不展开 make 变量）
+FM_VARIANTS = FarPathF32WidenF16MixedAdderPipeline FarPathF32WidenF16MixedPipeline \
+              ClosePathF32WidenF16MixedPipeline
 FM_REF_DEPS_FarPathF32WidenF16MixedAdderPipeline =
 FM_REF_DEPS_FarPathF32WidenF16MixedPipeline = Adder_2.sv FarShiftRightWithMuxInvFirst_2.sv \
                                               FarPathF32WidenF16MixedAdderPipeline.sv
