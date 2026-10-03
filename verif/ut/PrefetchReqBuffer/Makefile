@@ -18,6 +18,9 @@ FM_VARIANTS = PrefetchReqBuffer
 FM_REF_DEPS_PrefetchReqBuffer = RRArbiterInit_14.sv RRArbiterInit_15.sv
 FM_MERGE_DUP = false
 
+# ★vmucp + 钉点：依据见 verif/fm_target_config/PrefetchReqBuffer.tcl★（146 位块内偏移 / paddr 高位）
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

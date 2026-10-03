@@ -147,3 +147,54 @@ verif/fm_target_config/SMSTrainFilter.tcl + Makefile 开 FM_VERIFY_MATCHED_UNREA
   预测：passing **3310**（= 3279 + 31 = 模型 3310），unread 0，SUCCEEDED。
 - StridePF：生成器改名后 fm_pins_pre.tcl 只改了注释头与 tcl 过程名（钉点表 210 位逐行不变）；
   0a9f5511 上在跑的那轮作诊断用，签核以本节 commit 上的重跑为准，预测仍为 220。
+
+## 9. PrefetchReqBuffer 第二轮（钉点 + vmucp）
+
+首跑（a5e1c294）：native SUCCEEDED passing 2792 / failing 0 / 黑盒 0，unread 146（Unmatched unread）=
+full_vaddr/paddr 块内偏移 [5:0] × 3 寄存器（18）+ 16 项 paddrNoOffset[49:42]（128）。两侧对称。
+gen_l1pf_pins.py 加"只钉指定位"规则（新 proc 只出现在用到它的文件里，其余三个钉点文件逐字节不变），
+生成 verif/ut/PrefetchReqBuffer/fm_pins_pre.tcl（146 位）+ verif/fm_target_config/PrefetchReqBuffer.tcl。
+预测：passing **2938**（= 2792 + 146 = 模型 2938），unread 0，其余全零，SUCCEEDED。
+同轮 StridePF 在最终钉点字节（a5e1c294）上重证：SUCCEEDED 220（= 预测）。
+
+---
+
+# 对账（跑完追加；上文各节未改一字）
+
+| 目标 | 签核 evidence | 预测 | 实测 passing | 差额指认 | receipt.json sha256 |
+|---|---|---|---|---|---|
+| DelayQueue         | evidence/07ca3bf4e230/DelayQueue         | 905  | 905  | 0 | b1ee33bd5fd65befc7c7c411241ea02f13bfadd20849f0920e1d3cc27d7beb34 |
+| DelayQueue_1       | evidence/07ca3bf4e230/DelayQueue_1       | 939  | 939  | 0 | c7a38578a2e064266344023d53e8e52acbe52fd756cc52bf6d54d5770d20f753 |
+| OffsetScoreTable   | evidence/c8313ce28267/OffsetScoreTable   | 289  | 289  | 0 | 1b570eb5beef95ef7345a038b348d1540f883a213d0e79761d57448283c5ce4a |
+| OffsetScoreTable_1 | evidence/c8313ce28267/OffsetScoreTable_1 | 665  | 665  | 0 | 88b5b4bcf410e7206d9fd9e87efe3242d9d05007da22da66342afbb4cb67e441 |
+| TrainFilter        | evidence/058ddde1d96b/TrainFilter        | 1678 | 1677 | constant_reg 1（REG = RegNext(flush=0)） | 43b5c99a13de7671c403be56a8d7afd233a0f7185273291a47524140b5c06c45 |
+| TrainFilter_1      | evidence/058ddde1d96b/TrainFilter_1      | 818  | 817  | constant_reg 1（同上） | dc2eec918e0d5790cb9314f7be4124bf37e6debb78dd3454101d9aee5f75e66f |
+| SMSTrainFilter     | evidence/83fa26ae624e/SMSTrainFilter     | 2751 | 2751 | 0（8 位钉点 + vmucp） | 1968ae68c9795b057c68c24795a8c0222931784d1f433dbf0a859c7b4620cddb |
+| StrideMetaArray    | evidence/0a9f55112c61/StrideMetaArray    | 993  | 983  | constant_reg 10（last_REG..last_REG_9 = RegNext(flush=0)）；vmucp 2 | 3e1cdf5859787c76d0a89971d9ab63cb94edca3ee5dcd86c806999677460cb4f |
+| StridePF           | evidence/a5e1c2945d2a/StridePF           | 220  | 220  | 0（210 位钉点 + vmucp；golden 无输出） | b23f9b3ce864e85a4d336b6afb864e4c469d7df45c0e4fb91e5af2cce8482982 |
+| PrefetchQueue      | evidence/83fa26ae624e/PrefetchQueue      | 3310 | 3310 | 0（31 位钉点 + vmucp） | ec51e0857d64e237635da38f3b8313fdec38fd1c87c84ad93978e32b9b3996cb |
+| PrefetchReqBuffer  | evidence/358e64b71cfa/PrefetchReqBuffer  | 2938 | 2938 | 0（146 位钉点 + vmucp，两仲裁器白盒） | aeadcdc2a0c311b15ea6f2dc6b2524414488173e573e09a597f244843f175323 |
+
+全部 signoff-strict native SUCCEEDED，failing / unverified / aborted / unmatched / unread 全 0，黑盒 0，
+dont_verify false。`python3 scripts/fm_predict.py check <11 个目标>` rc=0；`scripts/check_lane_receipts.py` rc=0；
+`scripts/gen_l1pf_pins.py --check` rc=0。
+
+## 中途失败与修正（全部留档在 evidence/）
+
+1. TrainFilter（c8313ce2）FAILED failing 5：deqPtr 越界（深 6，值 6/7）时 golden valid=0，核写成读第 0 项 → 9bf5ad8c 修，UT 不可达。
+2. SMSTrainFilter（058ddde1 / 8dd734c6）PARTIAL unread 8：Unmatched unread，vmucp 单开空转 → 钉点。
+3. StridePF（c30ff018）0 比较点、sidecar 拒出 receipt：golden 无输出端口 → 钉点 210 + vmucp，全部寄存器次态比较。
+4. StrideMetaArray（c30ff018）PARTIAL unread 2（matched_nc）→ vmucp。
+5. PrefetchQueue（8dd734c6）PARTIAL unread 31、PrefetchReqBuffer（a5e1c294）PARTIAL unread 146：Unmatched unread → 钉点 + vmucp。
+
+## 变异体（scratch，不进库；UT 档 seed 7 +vcs+initreg+0 20k 拍；FM 档 diagnostic-full 不出证）
+
+| 目标 | UT CAUGHT | UT 漏 → FM |
+|---|---|---|
+| DelayQueue      | M3 默认时延、M4 地址去复位、M6 满不丢 | M1 空判看 valid[0]、M2 cnt 自减/装入优先级 → FM FAILED（抓到）；M5 valid 出入队优先级 → FM SUCCEEDED = **逻辑等价**（同槽出入队需 head==tail，此时 full=~empty，组合上不可能同时发生） |
+| OffsetScoreTable| M1 轮数比较、M3 越界默认项、M4 到顶判据、M5 idle 不清 bestScore、M2 BAD_SCORE 比较（20k 漏，200k CAUGHT 43227） | — |
+| TrainFilter 家族| M1 哈希、M2 robIdx 比较、M3 判满 >=、M5 去掉同拍去重、M6 回绕、M7 SMS 条目去复位 | M4 多路同槽写优先级 → FM FAILED（抓到；可达状态下各路分配指针互异） |
+| StrideMetaArray | M1 PLRU 根方向、M2 stride_valid、M3 conf 门控、M4 L2 ratio、M5 ready 恒 1 | — |
+| StridePF        | M1 去抖、M2 PLRU touch、M3 分配 pc 来源 | — |
+| PrefetchQueue   | M1 满不丢最老、M2 直通也留、M3 出入队优先级 | — |
+| PrefetchReqBuffer | P1 空位优先级、P2 replay 计数 10→9、P3 pbmt IO、P4 s3 记账门控 | P5 无效项 replayCnt 也自减 → FM FAILED（抓到）；**P6 TLB kill 寄存器改恒 0 → UT 与 FM 都漏**：唯一差别是首个 TLB 请求前的上电初值（golden `kill <= ~valid & kill` 不复位），FM 默认初态假设把它当 0。核照 golden 写法，靠结构比对把关 |

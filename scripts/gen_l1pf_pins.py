@@ -7,6 +7,9 @@
                  全 unread；prev_pc 10 位按名配上，其余 210 位钉。不钉时证明是空的（0 比较点）。
   SMSTrainFilter 被裁 store 口留下的 3/4 号入队指针（8 位）：分配下标 PopCount ≤ 2，永不被读。
   PrefetchQueue  valids_0..30（31 位）：empty/full 只看 valids_31，其余 valid 位只喂自己的次态。
+  PrefetchReqBuffer 146 位：prev_in_req/s1_in_req 的 full_vaddr[5:0] 与 s3_tlb_resp_paddr[5:0]（块内偏移，
+                 只用 [..:6]），以及 16 项 paddrNoOffset[49:42]（PF tag 只取 [41:9]）。这些寄存器的其余位
+                 FM 已按签名配上，所以只钉指定位（规则返回 (元素, 位列表)）。
 
 钉点只声明"这两个点是同一个点"，比较照比：不约束 ref、不改 appvar、不加黑盒。
 fail-closed：
@@ -44,6 +47,12 @@ TARGETS = {
     "PrefetchQueue": (False, None, 31, [
         (r"valids_(\d|[12]\d|30)", lambda m: "u_core/queue_valid_reg[%s]" % m[1]),
     ]),
+    "PrefetchReqBuffer": (False, None, 146, [
+        (r"prev_in_req_full_vaddr",       lambda m: ("u_core/prev_in_full_vaddr_reg", range(0, 6))),
+        (r"s1_in_req_full_vaddr",         lambda m: ("u_core/s1_in_full_vaddr_reg", range(0, 6))),
+        (r"s3_tlb_resp_paddr_0",          lambda m: ("u_core/s3_tlb_resp_paddr_reg", range(0, 6))),
+        (r"entries_(\d+)_paddrNoOffset", lambda m: ("u_core/ent_paddrNoOffset_reg[%s]" % m[1], range(42, 50))),
+    ]),
 }
 
 
@@ -74,11 +83,23 @@ def build(top):
         tgt = hits[0][1](re.fullmatch(hits[0][0], name))
         if tgt is None:
             continue
+        if isinstance(tgt, tuple):          # 只钉指定位
+            tgt, bits = tgt[0], list(tgt[1])
+            if not bits or max(bits) >= w:
+                sys.exit("gen_l1pf_pins[%s]: %s 位列表越界（宽 %d）" % (top, name, w))
+            partial = True
+        else:
+            bits, partial = None, False
         if tgt in seen:
             sys.exit("gen_l1pf_pins[%s]: 映射不是单射：%s" % (top, tgt))
         seen.add(tgt)
-        lines.append("l1pf_pin %s %s %d" % (name, tgt.replace("[", "\\[").replace("]", "\\]"), w))
-        npins += w
+        esc = tgt.replace("[", "\\[").replace("]", "\\]")
+        if partial:
+            lines.append("l1pf_pin_bits %s %s {%s}" % (name, esc, " ".join(map(str, bits))))
+            npins += len(bits)
+        else:
+            lines.append("l1pf_pin %s %s %d" % (name, esc, w))
+            npins += w
     unused = [p for p, _ in rules if p not in used]
     if unused:
         sys.exit("gen_l1pf_pins[%s]: 规则没有命中任何寄存器：%s" % (top, unused))
@@ -110,6 +131,18 @@ proc l1pf_pin {g i w} {
 }
 puts "L1PF_PIN_BEGIN %s expect=$::L1PF_PIN_EXPECT"
 """ % (top, top, expect_pins, expect_pins, top, top, top, top, top)
+    if any(l.startswith("l1pf_pin_bits ") for l in lines):
+        head += """proc l1pf_pin_bits {g i bits} {
+  foreach b $bits {
+    set r "r:/WORK/%s/${g}_reg\\[$b\\]"
+    set m "i:/WORK/%s/${i}\\[$b\\]"
+    if {[set_user_match $r $m]} { incr ::L1PF_PIN_OK } else {
+      incr ::L1PF_PIN_BAD
+      if {$::L1PF_PIN_BAD <= 10} { puts "L1PF_PIN_FAIL: $r <-> $m" }
+    }
+  }
+}
+""" % (top, top)
     tail = """puts "L1PF_PIN_END %s ok=$::L1PF_PIN_OK bad=$::L1PF_PIN_BAD"
 if {$::L1PF_PIN_BAD != 0} { error "L1PF_PIN_MISS=$::L1PF_PIN_BAD" }
 if {$::L1PF_PIN_OK != %d} { error "L1PF_PIN_COUNT=$::L1PF_PIN_OK expect=%d" }
