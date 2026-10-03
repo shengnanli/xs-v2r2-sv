@@ -256,3 +256,12 @@ proof commit 上补跑的 UT 一档：seed 7 × `+vcs+initreg+random` `checks=20
 复跑：`PROOF_COMMIT=519a79aa bash scripts/run_proof.sh StoreUnit StoreUnit < /dev/null`；
 UT：`cd verif/ut/StoreUnit && make run SEED=<1|7|42> INITREG=<+vcs+initreg+0|+vcs+initreg+random|+vcs+initreg+<seed>017>`；
 `python3 scripts/gen_storeunit.py --check`；`python3 scripts/fm_predict.py check StoreUnit`（rc=0）。
+
+### 更正（跑证明之前，不改上面任何预测数字）：commit 7b1acd0b 混进了一个变异体
+
+`rtl/memblock/VLSplitBufferImp.sv` 在 7b1acd0b 里的 store SQ 指针加法是变异体 B10（`ptrValue = 7'(sqSum[5:0])`，
+丢了 56 项环形回绕）：提交时后台变异 harness 正在改同一个文件，`git add` 收进了变异中的字节。
+影响面：只有含该文件的目标（VLSplitBufferImp / VSSplitBufferImp / VLSplitImp / VSSplitImp）；在 7b1acd0b 上
+已出 receipt 的 VSegmentTrigger / skidBufferConnect / VLSplitPipelineImp / VSSplitPipelineImp 的 impl_closure
+不含该文件，仍有效。下一个 commit 改回原文（`ptrWrap ? sqDiff : sqSum`），上述 4 个目标与 VSegmentUnit 在新 commit
+上出证明；变异 / UT 矩阵作业今后不与 commit 并行（已扫描全部 rtl/memblock：其余文件无变异体文本残留）。
