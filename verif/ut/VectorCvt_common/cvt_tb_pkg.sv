@@ -190,9 +190,10 @@ package cvt_tb_pkg;
       end
       14: begin                                                       // 2^(k+1) 的正下方（尾数全 1）：饱和/上溢/舍入进位边界
         longint unsigned e;
-        e = bias + $urandom_range(0, 33);
+        int kb [8] = '{6, 7, 14, 15, 30, 31, 62, 63};                  // 整数 8/16/32/64 位与 f16 上溢附近
+        e = bias + (($urandom_range(0, 1)) ? kb[$urandom_range(0, 7)] : $urandom_range(0, 33));
         if (e >= emax) e = emax - 1;
-        return mk_fp(w, s, e, ((64'h1 << fw) - 1) >> $urandom_range(0, 2));
+        return mk_fp(w, s, e, ((64'h1 << fw) - 1) >> ($urandom_range(0, 1) ? 0 : $urandom_range(1, 2)));
       end
       default: return rnd64() & ((w == 64) ? 64'hFFFF_FFFF_FFFF_FFFF : ((64'h1 << w) - 1));
     endcase
