@@ -1,0 +1,43 @@
+{
+  "target": "Slice_1",
+  "ut": "Slice",
+  "regs": 65774,
+  "outs": 2817,
+  "expected": 69848,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 1257,
+  "bbox": {
+    "array_14_ext": {
+      "insts": 4,
+      "in_bits": 92,
+      "points": 368
+    },
+    "array_15_ext": {
+      "insts": 1,
+      "in_bits": 124,
+      "points": 124
+    },
+    "array_16_ext": {
+      "insts": 1,
+      "in_bits": 28,
+      "points": 28
+    },
+    "array_17_ext": {
+      "insts": 1,
+      "in_bits": 28,
+      "points": 28
+    },
+    "array_18_ext": {
+      "insts": 4,
+      "in_bits": 152,
+      "points": 608
+    },
+    "ram_10x89": {
+      "insts": 1,
+      "in_bits": 101,
+      "points": 101
+    }
+  },
+  "note": "merge_dup=false（模型适用）。预测 passing = expected - constant_reg；unread = Directory 7 个 impl-only rdata_last_REG（共享核 xs_SRAMTemplate_core 非 MCP 形态，golden 无对家）-> PARTIAL；failing/unmatched compare 0"
+}

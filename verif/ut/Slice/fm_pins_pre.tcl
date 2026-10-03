@@ -17,8 +17,8 @@ proc slice_pinw {r i w} {
   for {set b 0} {$b < $w} {incr b} { slice_pin "${r}\[$b\]" "${i}\[$b\]" }
 }
 if {$top eq "Slice"} {
-  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory 419, DataStorage 546, L2Slice 137
-  puts "SLICE_PIN_BEGIN Slice expect=29388"
+  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory 412, DataStorage 546, L2Slice 137
+  puts "SLICE_PIN_BEGIN Slice expect=29381"
   slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
   slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
   slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
@@ -1412,10 +1412,8 @@ if {$top eq "Slice"} {
   slice_pin {r:/WORK/Slice/directory/metaAll_s3_7_prefetch_reg} {i:/WORK/Slice/directory/u_core/metaAll_s3_prefetch_reg[7]}
   slice_pinw {r:/WORK/Slice/directory/metaAll_s3_7_state_reg} {i:/WORK/Slice/directory/u_core/metaAll_s3_state_reg[7]} 2
   slice_pin {r:/WORK/Slice/directory/metaAll_s3_7_tagErr_reg} {i:/WORK/Slice/directory/u_core/metaAll_s3_tagErr_reg[7]}
-  slice_pin {r:/WORK/Slice/directory/metaArray/respReg_reg} {i:/WORK/Slice/directory/metaArray/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pinw {r:/WORK/Slice/directory/origin_bit_opt/_resetSet_reg} {i:/WORK/Slice/directory/origin_bit_opt/u_core/resetSet_reg} 9
   slice_pin {r:/WORK/Slice/directory/origin_bit_opt/_resetState_reg} {i:/WORK/Slice/directory/origin_bit_opt/u_core/resetState_reg}
-  slice_pin {r:/WORK/Slice/directory/origin_bit_opt/respReg_reg} {i:/WORK/Slice/directory/origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pin {r:/WORK/Slice/directory/r_0_reg} {i:/WORK/Slice/directory/u_core/originHold_reg[0]}
   slice_pin {r:/WORK/Slice/directory/r_1_reg} {i:/WORK/Slice/directory/u_core/originHold_reg[1]}
   slice_pin {r:/WORK/Slice/directory/r_2_reg} {i:/WORK/Slice/directory/u_core/originHold_reg[2]}
@@ -1426,7 +1424,6 @@ if {$top eq "Slice"} {
   slice_pin {r:/WORK/Slice/directory/r_7_reg} {i:/WORK/Slice/directory/u_core/originHold_reg[7]}
   slice_pinw {r:/WORK/Slice/directory/replacer_sram_opt/_resetSet_reg} {i:/WORK/Slice/directory/replacer_sram_opt/u_core/resetSet_reg} 9
   slice_pin {r:/WORK/Slice/directory/replacer_sram_opt/_resetState_reg} {i:/WORK/Slice/directory/replacer_sram_opt/u_core/resetState_reg}
-  slice_pin {r:/WORK/Slice/directory/replacer_sram_opt/respReg_reg} {i:/WORK/Slice/directory/replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pinw {r:/WORK/Slice/directory/req_s2_replacerInfo_channel_reg} {i:/WORK/Slice/directory/u_core/req_s2_channel_reg} 3
   slice_pinw {r:/WORK/Slice/directory/req_s2_replacerInfo_opcode_reg} {i:/WORK/Slice/directory/u_core/req_s2_opcode_reg} 3
   slice_pin {r:/WORK/Slice/directory/req_s2_replacerInfo_refill_prefetch_reg} {i:/WORK/Slice/directory/u_core/req_s2_refill_prefetch_reg}
@@ -1443,10 +1440,6 @@ if {$top eq "Slice"} {
   slice_pinw {r:/WORK/Slice/directory/tagAll_s3_5_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[5]} 31
   slice_pinw {r:/WORK/Slice/directory/tagAll_s3_6_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[6]} 31
   slice_pinw {r:/WORK/Slice/directory/tagAll_s3_7_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[7]} 31
-  slice_pin {r:/WORK/Slice/directory/tagArray/array_0_0_0/respReg_reg} {i:/WORK/Slice/directory/tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice/directory/tagArray/array_0_0_1/respReg_reg} {i:/WORK/Slice/directory/tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice/directory/tagArray/array_0_1_0/respReg_reg} {i:/WORK/Slice/directory/tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice/directory/tagArray/array_0_1_1/respReg_reg} {i:/WORK/Slice/directory/tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pin {r:/WORK/Slice/dataStorage/REG_1_reg} {i:/WORK/Slice/dataStorage/u_core/enPrev_reg}
   slice_pinw {r:/WORK/Slice/dataStorage/REG_2_reg} {i:/WORK/Slice/dataStorage/u_core/reqPrev_reg} 14
   slice_pin {r:/WORK/Slice/dataStorage/REG_3_reg} {i:/WORK/Slice/dataStorage/u_core/wrEnPrev_reg}
@@ -1467,13 +1460,13 @@ if {$top eq "Slice"} {
   slice_pin {r:/WORK/Slice/dataStorage/mbistPl/beReg_reg} {i:/WORK/Slice/dataStorage/mbistPl/u_core/beReg_reg[0]}
   slice_pinw {r:/WORK/Slice/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
   puts "SLICE_PIN_END Slice ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29388} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29388"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29381} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29381"
   }
 }
 if {$top eq "Slice_1"} {
-  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_1 419, DataStorage_1 546, L2Slice_1 137
-  puts "SLICE_PIN_BEGIN Slice_1 expect=29388"
+  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_1 412, DataStorage_1 546, L2Slice_1 137
+  puts "SLICE_PIN_BEGIN Slice_1 expect=29381"
   slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
   slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
   slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
@@ -2867,10 +2860,8 @@ if {$top eq "Slice_1"} {
   slice_pin {r:/WORK/Slice_1/directory/metaAll_s3_7_prefetch_reg} {i:/WORK/Slice_1/directory/u_core/metaAll_s3_prefetch_reg[7]}
   slice_pinw {r:/WORK/Slice_1/directory/metaAll_s3_7_state_reg} {i:/WORK/Slice_1/directory/u_core/metaAll_s3_state_reg[7]} 2
   slice_pin {r:/WORK/Slice_1/directory/metaAll_s3_7_tagErr_reg} {i:/WORK/Slice_1/directory/u_core/metaAll_s3_tagErr_reg[7]}
-  slice_pin {r:/WORK/Slice_1/directory/metaArray/respReg_reg} {i:/WORK/Slice_1/directory/metaArray/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pinw {r:/WORK/Slice_1/directory/origin_bit_opt/_resetSet_reg} {i:/WORK/Slice_1/directory/origin_bit_opt/u_core/resetSet_reg} 9
   slice_pin {r:/WORK/Slice_1/directory/origin_bit_opt/_resetState_reg} {i:/WORK/Slice_1/directory/origin_bit_opt/u_core/resetState_reg}
-  slice_pin {r:/WORK/Slice_1/directory/origin_bit_opt/respReg_reg} {i:/WORK/Slice_1/directory/origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pin {r:/WORK/Slice_1/directory/r_0_reg} {i:/WORK/Slice_1/directory/u_core/originHold_reg[0]}
   slice_pin {r:/WORK/Slice_1/directory/r_1_reg} {i:/WORK/Slice_1/directory/u_core/originHold_reg[1]}
   slice_pin {r:/WORK/Slice_1/directory/r_2_reg} {i:/WORK/Slice_1/directory/u_core/originHold_reg[2]}
@@ -2881,7 +2872,6 @@ if {$top eq "Slice_1"} {
   slice_pin {r:/WORK/Slice_1/directory/r_7_reg} {i:/WORK/Slice_1/directory/u_core/originHold_reg[7]}
   slice_pinw {r:/WORK/Slice_1/directory/replacer_sram_opt/_resetSet_reg} {i:/WORK/Slice_1/directory/replacer_sram_opt/u_core/resetSet_reg} 9
   slice_pin {r:/WORK/Slice_1/directory/replacer_sram_opt/_resetState_reg} {i:/WORK/Slice_1/directory/replacer_sram_opt/u_core/resetState_reg}
-  slice_pin {r:/WORK/Slice_1/directory/replacer_sram_opt/respReg_reg} {i:/WORK/Slice_1/directory/replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pinw {r:/WORK/Slice_1/directory/req_s2_replacerInfo_channel_reg} {i:/WORK/Slice_1/directory/u_core/req_s2_channel_reg} 3
   slice_pinw {r:/WORK/Slice_1/directory/req_s2_replacerInfo_opcode_reg} {i:/WORK/Slice_1/directory/u_core/req_s2_opcode_reg} 3
   slice_pin {r:/WORK/Slice_1/directory/req_s2_replacerInfo_refill_prefetch_reg} {i:/WORK/Slice_1/directory/u_core/req_s2_refill_prefetch_reg}
@@ -2898,10 +2888,6 @@ if {$top eq "Slice_1"} {
   slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_5_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[5]} 31
   slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_6_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[6]} 31
   slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_7_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[7]} 31
-  slice_pin {r:/WORK/Slice_1/directory/tagArray/array_0_0_0/respReg_reg} {i:/WORK/Slice_1/directory/tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_1/directory/tagArray/array_0_0_1/respReg_reg} {i:/WORK/Slice_1/directory/tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_1/directory/tagArray/array_0_1_0/respReg_reg} {i:/WORK/Slice_1/directory/tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_1/directory/tagArray/array_0_1_1/respReg_reg} {i:/WORK/Slice_1/directory/tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pin {r:/WORK/Slice_1/dataStorage/REG_1_reg} {i:/WORK/Slice_1/dataStorage/u_core/enPrev_reg}
   slice_pinw {r:/WORK/Slice_1/dataStorage/REG_2_reg} {i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg} 14
   slice_pin {r:/WORK/Slice_1/dataStorage/REG_3_reg} {i:/WORK/Slice_1/dataStorage/u_core/wrEnPrev_reg}
@@ -2922,13 +2908,13 @@ if {$top eq "Slice_1"} {
   slice_pin {r:/WORK/Slice_1/dataStorage/mbistPl/beReg_reg} {i:/WORK/Slice_1/dataStorage/mbistPl/u_core/beReg_reg[0]}
   slice_pinw {r:/WORK/Slice_1/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice_1/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
   puts "SLICE_PIN_END Slice_1 ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29388} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29388"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29381} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29381"
   }
 }
 if {$top eq "Slice_2"} {
-  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_2 419, DataStorage_2 546, L2Slice_2 137
-  puts "SLICE_PIN_BEGIN Slice_2 expect=29388"
+  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_2 412, DataStorage_2 546, L2Slice_2 137
+  puts "SLICE_PIN_BEGIN Slice_2 expect=29381"
   slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
   slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
   slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
@@ -4322,10 +4308,8 @@ if {$top eq "Slice_2"} {
   slice_pin {r:/WORK/Slice_2/directory/metaAll_s3_7_prefetch_reg} {i:/WORK/Slice_2/directory/u_core/metaAll_s3_prefetch_reg[7]}
   slice_pinw {r:/WORK/Slice_2/directory/metaAll_s3_7_state_reg} {i:/WORK/Slice_2/directory/u_core/metaAll_s3_state_reg[7]} 2
   slice_pin {r:/WORK/Slice_2/directory/metaAll_s3_7_tagErr_reg} {i:/WORK/Slice_2/directory/u_core/metaAll_s3_tagErr_reg[7]}
-  slice_pin {r:/WORK/Slice_2/directory/metaArray/respReg_reg} {i:/WORK/Slice_2/directory/metaArray/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pinw {r:/WORK/Slice_2/directory/origin_bit_opt/_resetSet_reg} {i:/WORK/Slice_2/directory/origin_bit_opt/u_core/resetSet_reg} 9
   slice_pin {r:/WORK/Slice_2/directory/origin_bit_opt/_resetState_reg} {i:/WORK/Slice_2/directory/origin_bit_opt/u_core/resetState_reg}
-  slice_pin {r:/WORK/Slice_2/directory/origin_bit_opt/respReg_reg} {i:/WORK/Slice_2/directory/origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pin {r:/WORK/Slice_2/directory/r_0_reg} {i:/WORK/Slice_2/directory/u_core/originHold_reg[0]}
   slice_pin {r:/WORK/Slice_2/directory/r_1_reg} {i:/WORK/Slice_2/directory/u_core/originHold_reg[1]}
   slice_pin {r:/WORK/Slice_2/directory/r_2_reg} {i:/WORK/Slice_2/directory/u_core/originHold_reg[2]}
@@ -4336,7 +4320,6 @@ if {$top eq "Slice_2"} {
   slice_pin {r:/WORK/Slice_2/directory/r_7_reg} {i:/WORK/Slice_2/directory/u_core/originHold_reg[7]}
   slice_pinw {r:/WORK/Slice_2/directory/replacer_sram_opt/_resetSet_reg} {i:/WORK/Slice_2/directory/replacer_sram_opt/u_core/resetSet_reg} 9
   slice_pin {r:/WORK/Slice_2/directory/replacer_sram_opt/_resetState_reg} {i:/WORK/Slice_2/directory/replacer_sram_opt/u_core/resetState_reg}
-  slice_pin {r:/WORK/Slice_2/directory/replacer_sram_opt/respReg_reg} {i:/WORK/Slice_2/directory/replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pinw {r:/WORK/Slice_2/directory/req_s2_replacerInfo_channel_reg} {i:/WORK/Slice_2/directory/u_core/req_s2_channel_reg} 3
   slice_pinw {r:/WORK/Slice_2/directory/req_s2_replacerInfo_opcode_reg} {i:/WORK/Slice_2/directory/u_core/req_s2_opcode_reg} 3
   slice_pin {r:/WORK/Slice_2/directory/req_s2_replacerInfo_refill_prefetch_reg} {i:/WORK/Slice_2/directory/u_core/req_s2_refill_prefetch_reg}
@@ -4353,10 +4336,6 @@ if {$top eq "Slice_2"} {
   slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_5_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[5]} 31
   slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_6_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[6]} 31
   slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_7_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[7]} 31
-  slice_pin {r:/WORK/Slice_2/directory/tagArray/array_0_0_0/respReg_reg} {i:/WORK/Slice_2/directory/tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_2/directory/tagArray/array_0_0_1/respReg_reg} {i:/WORK/Slice_2/directory/tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_2/directory/tagArray/array_0_1_0/respReg_reg} {i:/WORK/Slice_2/directory/tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_2/directory/tagArray/array_0_1_1/respReg_reg} {i:/WORK/Slice_2/directory/tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pin {r:/WORK/Slice_2/dataStorage/REG_1_reg} {i:/WORK/Slice_2/dataStorage/u_core/enPrev_reg}
   slice_pinw {r:/WORK/Slice_2/dataStorage/REG_2_reg} {i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg} 14
   slice_pin {r:/WORK/Slice_2/dataStorage/REG_3_reg} {i:/WORK/Slice_2/dataStorage/u_core/wrEnPrev_reg}
@@ -4377,13 +4356,13 @@ if {$top eq "Slice_2"} {
   slice_pin {r:/WORK/Slice_2/dataStorage/mbistPl/beReg_reg} {i:/WORK/Slice_2/dataStorage/mbistPl/u_core/beReg_reg[0]}
   slice_pinw {r:/WORK/Slice_2/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice_2/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
   puts "SLICE_PIN_END Slice_2 ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29388} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29388"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29381} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29381"
   }
 }
 if {$top eq "Slice_3"} {
-  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_3 419, DataStorage_3 546, L2Slice_3 137
-  puts "SLICE_PIN_BEGIN Slice_3 expect=29388"
+  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_3 412, DataStorage_3 546, L2Slice_3 137
+  puts "SLICE_PIN_BEGIN Slice_3 expect=29381"
   slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
   slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
   slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
@@ -5777,10 +5756,8 @@ if {$top eq "Slice_3"} {
   slice_pin {r:/WORK/Slice_3/directory/metaAll_s3_7_prefetch_reg} {i:/WORK/Slice_3/directory/u_core/metaAll_s3_prefetch_reg[7]}
   slice_pinw {r:/WORK/Slice_3/directory/metaAll_s3_7_state_reg} {i:/WORK/Slice_3/directory/u_core/metaAll_s3_state_reg[7]} 2
   slice_pin {r:/WORK/Slice_3/directory/metaAll_s3_7_tagErr_reg} {i:/WORK/Slice_3/directory/u_core/metaAll_s3_tagErr_reg[7]}
-  slice_pin {r:/WORK/Slice_3/directory/metaArray/respReg_reg} {i:/WORK/Slice_3/directory/metaArray/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pinw {r:/WORK/Slice_3/directory/origin_bit_opt/_resetSet_reg} {i:/WORK/Slice_3/directory/origin_bit_opt/u_core/resetSet_reg} 9
   slice_pin {r:/WORK/Slice_3/directory/origin_bit_opt/_resetState_reg} {i:/WORK/Slice_3/directory/origin_bit_opt/u_core/resetState_reg}
-  slice_pin {r:/WORK/Slice_3/directory/origin_bit_opt/respReg_reg} {i:/WORK/Slice_3/directory/origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pin {r:/WORK/Slice_3/directory/r_0_reg} {i:/WORK/Slice_3/directory/u_core/originHold_reg[0]}
   slice_pin {r:/WORK/Slice_3/directory/r_1_reg} {i:/WORK/Slice_3/directory/u_core/originHold_reg[1]}
   slice_pin {r:/WORK/Slice_3/directory/r_2_reg} {i:/WORK/Slice_3/directory/u_core/originHold_reg[2]}
@@ -5791,7 +5768,6 @@ if {$top eq "Slice_3"} {
   slice_pin {r:/WORK/Slice_3/directory/r_7_reg} {i:/WORK/Slice_3/directory/u_core/originHold_reg[7]}
   slice_pinw {r:/WORK/Slice_3/directory/replacer_sram_opt/_resetSet_reg} {i:/WORK/Slice_3/directory/replacer_sram_opt/u_core/resetSet_reg} 9
   slice_pin {r:/WORK/Slice_3/directory/replacer_sram_opt/_resetState_reg} {i:/WORK/Slice_3/directory/replacer_sram_opt/u_core/resetState_reg}
-  slice_pin {r:/WORK/Slice_3/directory/replacer_sram_opt/respReg_reg} {i:/WORK/Slice_3/directory/replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pinw {r:/WORK/Slice_3/directory/req_s2_replacerInfo_channel_reg} {i:/WORK/Slice_3/directory/u_core/req_s2_channel_reg} 3
   slice_pinw {r:/WORK/Slice_3/directory/req_s2_replacerInfo_opcode_reg} {i:/WORK/Slice_3/directory/u_core/req_s2_opcode_reg} 3
   slice_pin {r:/WORK/Slice_3/directory/req_s2_replacerInfo_refill_prefetch_reg} {i:/WORK/Slice_3/directory/u_core/req_s2_refill_prefetch_reg}
@@ -5808,10 +5784,6 @@ if {$top eq "Slice_3"} {
   slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_5_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[5]} 31
   slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_6_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[6]} 31
   slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_7_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[7]} 31
-  slice_pin {r:/WORK/Slice_3/directory/tagArray/array_0_0_0/respReg_reg} {i:/WORK/Slice_3/directory/tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_3/directory/tagArray/array_0_0_1/respReg_reg} {i:/WORK/Slice_3/directory/tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_3/directory/tagArray/array_0_1_0/respReg_reg} {i:/WORK/Slice_3/directory/tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg}
-  slice_pin {r:/WORK/Slice_3/directory/tagArray/array_0_1_1/respReg_reg} {i:/WORK/Slice_3/directory/tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg}
   slice_pin {r:/WORK/Slice_3/dataStorage/REG_1_reg} {i:/WORK/Slice_3/dataStorage/u_core/enPrev_reg}
   slice_pinw {r:/WORK/Slice_3/dataStorage/REG_2_reg} {i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg} 14
   slice_pin {r:/WORK/Slice_3/dataStorage/REG_3_reg} {i:/WORK/Slice_3/dataStorage/u_core/wrEnPrev_reg}
@@ -5832,7 +5804,7 @@ if {$top eq "Slice_3"} {
   slice_pin {r:/WORK/Slice_3/dataStorage/mbistPl/beReg_reg} {i:/WORK/Slice_3/dataStorage/mbistPl/u_core/beReg_reg[0]}
   slice_pinw {r:/WORK/Slice_3/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice_3/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
   puts "SLICE_PIN_END Slice_3 ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29388} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29388"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29381} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29381"
   }
 }

@@ -1393,10 +1393,8 @@ Directory	metaAll_s3_7_prefetchSrc_reg	u_core/metaAll_s3_prefetchSrc_reg[7]	3
 Directory	metaAll_s3_7_prefetch_reg	u_core/metaAll_s3_prefetch_reg[7]	0
 Directory	metaAll_s3_7_state_reg	u_core/metaAll_s3_state_reg[7]	2
 Directory	metaAll_s3_7_tagErr_reg	u_core/metaAll_s3_tagErr_reg[7]	0
-Directory	metaArray/respReg_reg	metaArray/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory	origin_bit_opt/_resetSet_reg	origin_bit_opt/u_core/resetSet_reg	9
 Directory	origin_bit_opt/_resetState_reg	origin_bit_opt/u_core/resetState_reg	0
-Directory	origin_bit_opt/respReg_reg	origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory	r_0_reg	u_core/originHold_reg[0]	0
 Directory	r_1_reg	u_core/originHold_reg[1]	0
 Directory	r_2_reg	u_core/originHold_reg[2]	0
@@ -1407,7 +1405,6 @@ Directory	r_6_reg	u_core/originHold_reg[6]	0
 Directory	r_7_reg	u_core/originHold_reg[7]	0
 Directory	replacer_sram_opt/_resetSet_reg	replacer_sram_opt/u_core/resetSet_reg	9
 Directory	replacer_sram_opt/_resetState_reg	replacer_sram_opt/u_core/resetState_reg	0
-Directory	replacer_sram_opt/respReg_reg	replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory	req_s2_replacerInfo_channel_reg	u_core/req_s2_channel_reg	3
 Directory	req_s2_replacerInfo_opcode_reg	u_core/req_s2_opcode_reg	3
 Directory	req_s2_replacerInfo_refill_prefetch_reg	u_core/req_s2_refill_prefetch_reg	0
@@ -1424,10 +1421,6 @@ Directory	tagAll_s3_4_reg	u_core/tagAll_s3_reg[4]	31
 Directory	tagAll_s3_5_reg	u_core/tagAll_s3_reg[5]	31
 Directory	tagAll_s3_6_reg	u_core/tagAll_s3_reg[6]	31
 Directory	tagAll_s3_7_reg	u_core/tagAll_s3_reg[7]	31
-Directory	tagArray/array_0_0_0/respReg_reg	tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory	tagArray/array_0_0_1/respReg_reg	tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory	tagArray/array_0_1_0/respReg_reg	tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory	tagArray/array_0_1_1/respReg_reg	tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_1	errorAll_s3_0_reg	u_core/errorAll_s3_reg[0]	0
 Directory_1	errorAll_s3_1_reg	u_core/errorAll_s3_reg[1]	0
 Directory_1	errorAll_s3_2_reg	u_core/errorAll_s3_reg[2]	0
@@ -1508,10 +1501,8 @@ Directory_1	metaAll_s3_7_prefetchSrc_reg	u_core/metaAll_s3_prefetchSrc_reg[7]	3
 Directory_1	metaAll_s3_7_prefetch_reg	u_core/metaAll_s3_prefetch_reg[7]	0
 Directory_1	metaAll_s3_7_state_reg	u_core/metaAll_s3_state_reg[7]	2
 Directory_1	metaAll_s3_7_tagErr_reg	u_core/metaAll_s3_tagErr_reg[7]	0
-Directory_1	metaArray/respReg_reg	metaArray/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_1	origin_bit_opt/_resetSet_reg	origin_bit_opt/u_core/resetSet_reg	9
 Directory_1	origin_bit_opt/_resetState_reg	origin_bit_opt/u_core/resetState_reg	0
-Directory_1	origin_bit_opt/respReg_reg	origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_1	r_0_reg	u_core/originHold_reg[0]	0
 Directory_1	r_1_reg	u_core/originHold_reg[1]	0
 Directory_1	r_2_reg	u_core/originHold_reg[2]	0
@@ -1522,7 +1513,6 @@ Directory_1	r_6_reg	u_core/originHold_reg[6]	0
 Directory_1	r_7_reg	u_core/originHold_reg[7]	0
 Directory_1	replacer_sram_opt/_resetSet_reg	replacer_sram_opt/u_core/resetSet_reg	9
 Directory_1	replacer_sram_opt/_resetState_reg	replacer_sram_opt/u_core/resetState_reg	0
-Directory_1	replacer_sram_opt/respReg_reg	replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_1	req_s2_replacerInfo_channel_reg	u_core/req_s2_channel_reg	3
 Directory_1	req_s2_replacerInfo_opcode_reg	u_core/req_s2_opcode_reg	3
 Directory_1	req_s2_replacerInfo_refill_prefetch_reg	u_core/req_s2_refill_prefetch_reg	0
@@ -1539,10 +1529,6 @@ Directory_1	tagAll_s3_4_reg	u_core/tagAll_s3_reg[4]	31
 Directory_1	tagAll_s3_5_reg	u_core/tagAll_s3_reg[5]	31
 Directory_1	tagAll_s3_6_reg	u_core/tagAll_s3_reg[6]	31
 Directory_1	tagAll_s3_7_reg	u_core/tagAll_s3_reg[7]	31
-Directory_1	tagArray/array_0_0_0/respReg_reg	tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_1	tagArray/array_0_0_1/respReg_reg	tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_1	tagArray/array_0_1_0/respReg_reg	tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_1	tagArray/array_0_1_1/respReg_reg	tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_2	errorAll_s3_0_reg	u_core/errorAll_s3_reg[0]	0
 Directory_2	errorAll_s3_1_reg	u_core/errorAll_s3_reg[1]	0
 Directory_2	errorAll_s3_2_reg	u_core/errorAll_s3_reg[2]	0
@@ -1623,10 +1609,8 @@ Directory_2	metaAll_s3_7_prefetchSrc_reg	u_core/metaAll_s3_prefetchSrc_reg[7]	3
 Directory_2	metaAll_s3_7_prefetch_reg	u_core/metaAll_s3_prefetch_reg[7]	0
 Directory_2	metaAll_s3_7_state_reg	u_core/metaAll_s3_state_reg[7]	2
 Directory_2	metaAll_s3_7_tagErr_reg	u_core/metaAll_s3_tagErr_reg[7]	0
-Directory_2	metaArray/respReg_reg	metaArray/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_2	origin_bit_opt/_resetSet_reg	origin_bit_opt/u_core/resetSet_reg	9
 Directory_2	origin_bit_opt/_resetState_reg	origin_bit_opt/u_core/resetState_reg	0
-Directory_2	origin_bit_opt/respReg_reg	origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_2	r_0_reg	u_core/originHold_reg[0]	0
 Directory_2	r_1_reg	u_core/originHold_reg[1]	0
 Directory_2	r_2_reg	u_core/originHold_reg[2]	0
@@ -1637,7 +1621,6 @@ Directory_2	r_6_reg	u_core/originHold_reg[6]	0
 Directory_2	r_7_reg	u_core/originHold_reg[7]	0
 Directory_2	replacer_sram_opt/_resetSet_reg	replacer_sram_opt/u_core/resetSet_reg	9
 Directory_2	replacer_sram_opt/_resetState_reg	replacer_sram_opt/u_core/resetState_reg	0
-Directory_2	replacer_sram_opt/respReg_reg	replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_2	req_s2_replacerInfo_channel_reg	u_core/req_s2_channel_reg	3
 Directory_2	req_s2_replacerInfo_opcode_reg	u_core/req_s2_opcode_reg	3
 Directory_2	req_s2_replacerInfo_refill_prefetch_reg	u_core/req_s2_refill_prefetch_reg	0
@@ -1654,10 +1637,6 @@ Directory_2	tagAll_s3_4_reg	u_core/tagAll_s3_reg[4]	31
 Directory_2	tagAll_s3_5_reg	u_core/tagAll_s3_reg[5]	31
 Directory_2	tagAll_s3_6_reg	u_core/tagAll_s3_reg[6]	31
 Directory_2	tagAll_s3_7_reg	u_core/tagAll_s3_reg[7]	31
-Directory_2	tagArray/array_0_0_0/respReg_reg	tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_2	tagArray/array_0_0_1/respReg_reg	tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_2	tagArray/array_0_1_0/respReg_reg	tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_2	tagArray/array_0_1_1/respReg_reg	tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_3	errorAll_s3_0_reg	u_core/errorAll_s3_reg[0]	0
 Directory_3	errorAll_s3_1_reg	u_core/errorAll_s3_reg[1]	0
 Directory_3	errorAll_s3_2_reg	u_core/errorAll_s3_reg[2]	0
@@ -1738,10 +1717,8 @@ Directory_3	metaAll_s3_7_prefetchSrc_reg	u_core/metaAll_s3_prefetchSrc_reg[7]	3
 Directory_3	metaAll_s3_7_prefetch_reg	u_core/metaAll_s3_prefetch_reg[7]	0
 Directory_3	metaAll_s3_7_state_reg	u_core/metaAll_s3_state_reg[7]	2
 Directory_3	metaAll_s3_7_tagErr_reg	u_core/metaAll_s3_tagErr_reg[7]	0
-Directory_3	metaArray/respReg_reg	metaArray/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_3	origin_bit_opt/_resetSet_reg	origin_bit_opt/u_core/resetSet_reg	9
 Directory_3	origin_bit_opt/_resetState_reg	origin_bit_opt/u_core/resetState_reg	0
-Directory_3	origin_bit_opt/respReg_reg	origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_3	r_0_reg	u_core/originHold_reg[0]	0
 Directory_3	r_1_reg	u_core/originHold_reg[1]	0
 Directory_3	r_2_reg	u_core/originHold_reg[2]	0
@@ -1752,7 +1729,6 @@ Directory_3	r_6_reg	u_core/originHold_reg[6]	0
 Directory_3	r_7_reg	u_core/originHold_reg[7]	0
 Directory_3	replacer_sram_opt/_resetSet_reg	replacer_sram_opt/u_core/resetSet_reg	9
 Directory_3	replacer_sram_opt/_resetState_reg	replacer_sram_opt/u_core/resetState_reg	0
-Directory_3	replacer_sram_opt/respReg_reg	replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg	0
 Directory_3	req_s2_replacerInfo_channel_reg	u_core/req_s2_channel_reg	3
 Directory_3	req_s2_replacerInfo_opcode_reg	u_core/req_s2_opcode_reg	3
 Directory_3	req_s2_replacerInfo_refill_prefetch_reg	u_core/req_s2_refill_prefetch_reg	0
@@ -1769,10 +1745,6 @@ Directory_3	tagAll_s3_4_reg	u_core/tagAll_s3_reg[4]	31
 Directory_3	tagAll_s3_5_reg	u_core/tagAll_s3_reg[5]	31
 Directory_3	tagAll_s3_6_reg	u_core/tagAll_s3_reg[6]	31
 Directory_3	tagAll_s3_7_reg	u_core/tagAll_s3_reg[7]	31
-Directory_3	tagArray/array_0_0_0/respReg_reg	tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_3	tagArray/array_0_0_1/respReg_reg	tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_3	tagArray/array_0_1_0/respReg_reg	tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg	0
-Directory_3	tagArray/array_0_1_1/respReg_reg	tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg	0
 DataStorage	REG_1_reg	u_core/enPrev_reg	0
 DataStorage	REG_2_reg	u_core/reqPrev_reg	14
 DataStorage	REG_3_reg	u_core/wrEnPrev_reg	0

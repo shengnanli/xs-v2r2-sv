@@ -125,9 +125,15 @@ GOLDEN_SRCS = $(addprefix $(GOLDEN_RTL)/,Slice.sv Slice_1.sv Slice_2.sv Slice_3.
 
 FM_VARIANTS = Slice Slice_1 Slice_2 Slice_3
 
-# merge_duplicated_registers 取默认（true）：闭包里的 Directory 子树要它（xs_SRAMTemplate_core 非 MCP 形态
-# 有一个 golden 没有、与 respReg 同方程的 rdata_last_REG，见 verif/ut/Directory/Makefile）。
-# 代价：fm_predict 的 passing 模型不严格适用（MODEL_NA），登记里按 merge=true 说明。
+# FM_MERGE_DUP = false（模型严格适用）。为什么不取默认 true：闭包里 golden 有多处"同方程的重复寄存器"
+# （GrantBuffer / RequestBuffer 的 REG_k 与 enable_REG_k、CustomL1Hint 队列等），merge 在两侧合掉的代表不同，
+# 实测 Slice_1 诊断跑（diag5，merge=true）failing 1242 / unmatched unread 20+20；merge=false 的 diag4 只剩
+# Directory 那 7 个点（见下）。
+# ★已知代价★：Directory 的 7 块 SRAM（xs_SRAMTemplate_core 非 MCP 形态）各有一个 golden 没有、与 respReg
+# 同方程的 rdata_last_REG（verif/ut/Directory/Makefile 用 merge=true 正是为了合掉它）。merge=false 下它们是
+# 重写侧独有的未读寄存器 —— 每变体 7 个 impl-only unread，signoff 判 PARTIAL（不是 failing）。
+# 消掉它要改共享核 xs_SRAMTemplate_core（41 个已签变体共用），不在本 lane 范围，照实报告。
+FM_MERGE_DUP = false
 
 # assembly：黑盒只许 = 厂商 SRAM 叶子 array_14..18_ext + codex 0202 审定的 ram_10x89（两侧对称）
 FM_MODE = assembly
@@ -139,6 +145,9 @@ FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
+
+# Slice_1..3 的 ref 侧黑盒报告里另有 Directory_N / GrantBuffer 设计层引用（diag5 实测，Slice 没有），声明 32 条
+fm-Slice_1 fm-Slice_2 fm-Slice_3: FM_ALLOWLIST = 32
 
 # initreg：编译期开机制、运行期选取值（两处都要给，见 CONVENTIONS）。
 INITREG  ?= random

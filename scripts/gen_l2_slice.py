@@ -671,6 +671,11 @@ def harvest_child(child, ut):
         if r not in seen_r:
             triples.append(('DFF', child, r, 'DFF', child, i))
     for k1, t1, r, k2, t2, i in triples:
+        # Directory 自己签核用 merge_dup=true：FM 把 impl 独有、与 respReg 同方程的 rdata_last_REG 合并后，
+        # 把 ref respReg 配到了它（Func）。本目标 merge_dup=false，照搬这对会把 impl respReg 晾成 unmatched、
+        # 下游 rdataReg 全部 failing（diag4 实测 432 点）——这是 merge 的产物，不收。
+        if 'rdata_last_REG' in i:
+            continue
         if t1 != child or t2 != child:
             raise SystemExit('%s: 顶层名不是 %s' % (rpt, child))
         if not k1.startswith('DFF') and k1 != 'LAT':
