@@ -1,9 +1,10 @@
 # Slice 家族 FM「匹配前」钉点 —— 自动生成：scripts/gen_l2_slice.py（勿手改）
 #
-# 内容 = 各 child 单独签核时用的钉点（verif/ut/{MSHRCtl,GrantBuffer,RequestBuffer,Directory,
-# DataStorage}/fm_pins_pre.tcl），用 tclsh 机械执行收割、只改层次前缀。本层自己的寄存器保留 golden
-# 名，不钉。set_user_match 只是声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。
+# 内容 = 各 child 单独签核时 FM 已核实的配对（child_pins.tsv，由 --harvest 从 matched.rpt 收割），
+# 只改层次前缀。只钉两侧叶名不同的寄存器位；本层自己的寄存器保留 golden 名，FM 按名自配。
+# set_user_match 只是声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。
 # fail-closed：逐条数 set_user_match 的返回值；拒一条或总数不等于字面整数就 error。
+# 名字用花括号原样传（含 FM 报告里的 \[ 转义），不做任何替换。
 set ::SLICE_PIN_OK 0
 set ::SLICE_PIN_BAD 0
 proc slice_pin {r i} {
@@ -12,3242 +13,3774 @@ proc slice_pin {r i} {
     if {$::SLICE_PIN_BAD <= 10} { puts "SLICE_PIN_FAIL: $r <-> $i" }
   }
 }
+proc slice_pinw {r i w} {
+  for {set b 0} {$b < $w} {incr b} { slice_pin "${r}\[$b\]" "${i}\[$b\]" }
+}
 if {$top eq "Slice"} {
-  # DataStorage 530, Directory 11, GrantBuffer 33, MSHRCtl 224, RequestBuffer 12
-  puts "SLICE_PIN_BEGIN Slice expect=810"
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_valid_reg i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_rdy_reg i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_waitG_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_waitG_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_waitG_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_waitG_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_waitG_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_waitG_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_waitG_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[7\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[7\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[8\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[8\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[9\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[9\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[10\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[10\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[11\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[11\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[12\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[12\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[13\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[13\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[14\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[14\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[15\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[15\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[16\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[16\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[17\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[17\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[18\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[18\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[19\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[19\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[20\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[20\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[21\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[21\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[22\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[22\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[23\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[23\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[24\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[24\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[25\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[25\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[26\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[26\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[27\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[27\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[28\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[28\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[29\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[29\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_tag_reg\[30\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[30\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[7\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[7\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_set_reg\[8\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[8\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_opcode_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_opcode_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_opcode_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_param_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_param_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_alias_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_0_task_alias_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_valid_reg i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_rdy_reg i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_waitG_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_waitG_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_waitG_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_waitG_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_waitG_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_waitG_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_waitG_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[7\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[7\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[8\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[8\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[9\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[9\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[10\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[10\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[11\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[11\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[12\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[12\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[13\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[13\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[14\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[14\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[15\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[15\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[16\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[16\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[17\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[17\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[18\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[18\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[19\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[19\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[20\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[20\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[21\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[21\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[22\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[22\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[23\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[23\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[24\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[24\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[25\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[25\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[26\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[26\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[27\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[27\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[28\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[28\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[29\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[29\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_tag_reg\[30\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[30\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[7\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[7\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_set_reg\[8\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[8\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_opcode_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_opcode_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_opcode_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_param_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_param_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_alias_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_1_task_alias_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_valid_reg i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_rdy_reg i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_waitG_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_waitG_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_waitG_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_waitG_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_waitG_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_waitG_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_waitG_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[7\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[7\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[8\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[8\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[9\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[9\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[10\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[10\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[11\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[11\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[12\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[12\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[13\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[13\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[14\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[14\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[15\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[15\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[16\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[16\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[17\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[17\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[18\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[18\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[19\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[19\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[20\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[20\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[21\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[21\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[22\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[22\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[23\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[23\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[24\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[24\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[25\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[25\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[26\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[26\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[27\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[27\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[28\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[28\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[29\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[29\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_tag_reg\[30\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[30\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[7\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[7\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_set_reg\[8\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[8\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_opcode_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_opcode_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_opcode_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_param_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_param_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_alias_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_2_task_alias_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_valid_reg i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_rdy_reg i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_waitG_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_waitG_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_waitG_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_waitG_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_waitG_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_waitG_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_waitG_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[7\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[7\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[8\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[8\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[9\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[9\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[10\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[10\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[11\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[11\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[12\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[12\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[13\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[13\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[14\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[14\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[15\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[15\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[16\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[16\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[17\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[17\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[18\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[18\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[19\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[19\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[20\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[20\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[21\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[21\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[22\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[22\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[23\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[23\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[24\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[24\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[25\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[25\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[26\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[26\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[27\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[27\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[28\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[28\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[29\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[29\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_tag_reg\[30\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[30\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[3\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[4\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[5\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[6\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[7\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[7\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_set_reg\[8\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[8\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_opcode_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_opcode_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_opcode_reg\[2\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_param_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_param_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_alias_reg\[0\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice/mshrCtl/sourceB/probes_3_task_alias_reg\[1\] i:/WORK/Slice/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[0\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[0\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_1_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[1\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_1_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[1\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_2_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[2\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_2_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[2\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_3_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[3\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_3_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[3\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_4_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[4\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_4_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[4\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_5_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[5\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_5_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[5\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_6_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[6\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_6_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[6\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_7_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[7\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_7_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[7\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_8_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[8\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_8_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[8\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_9_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[9\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_9_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[9\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_10_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[10\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_10_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[10\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_11_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[11\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_11_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[11\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_12_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[12\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_12_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[12\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_13_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[13\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_13_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[13\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_14_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[14\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_14_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[14\]
-  slice_pin r:/WORK/Slice/grantBuf/REG_15_reg i:/WORK/Slice/u_core/grantBuf/u_core/validPrev_reg\[15\]
-  slice_pin r:/WORK/Slice/grantBuf/enable_REG_15_reg i:/WORK/Slice/u_core/grantBuf/u_core/histValidPrev_reg\[15\]
-  slice_pin r:/WORK/Slice/grantBuf/grantBuf_task_param_reg\[2\] i:/WORK/Slice/u_core/grantBuf/u_core/gb_param_reg\[2\]
-  slice_pin r:/WORK/Slice/reqBuf/REG_reg i:/WORK/Slice/u_core/reqBuf/u_core/validPrev_reg\[0\]
-  slice_pin r:/WORK/Slice/reqBuf/REG_1_reg i:/WORK/Slice/u_core/reqBuf/u_core/timerClear_reg\[0\]
-  slice_pin r:/WORK/Slice/reqBuf/enable_REG_reg i:/WORK/Slice/u_core/reqBuf/u_core/histValidPrev_reg\[0\]
-  slice_pin r:/WORK/Slice/reqBuf/REG_2_reg i:/WORK/Slice/u_core/reqBuf/u_core/validPrev_reg\[1\]
-  slice_pin r:/WORK/Slice/reqBuf/REG_3_reg i:/WORK/Slice/u_core/reqBuf/u_core/timerClear_reg\[1\]
-  slice_pin r:/WORK/Slice/reqBuf/enable_REG_1_reg i:/WORK/Slice/u_core/reqBuf/u_core/histValidPrev_reg\[1\]
-  slice_pin r:/WORK/Slice/reqBuf/REG_4_reg i:/WORK/Slice/u_core/reqBuf/u_core/validPrev_reg\[2\]
-  slice_pin r:/WORK/Slice/reqBuf/REG_5_reg i:/WORK/Slice/u_core/reqBuf/u_core/timerClear_reg\[2\]
-  slice_pin r:/WORK/Slice/reqBuf/enable_REG_2_reg i:/WORK/Slice/u_core/reqBuf/u_core/histValidPrev_reg\[2\]
-  slice_pin r:/WORK/Slice/reqBuf/REG_6_reg i:/WORK/Slice/u_core/reqBuf/u_core/validPrev_reg\[3\]
-  slice_pin r:/WORK/Slice/reqBuf/REG_7_reg i:/WORK/Slice/u_core/reqBuf/u_core/timerClear_reg\[3\]
-  slice_pin r:/WORK/Slice/reqBuf/enable_REG_3_reg i:/WORK/Slice/u_core/reqBuf/u_core/histValidPrev_reg\[3\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[0\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[0\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[1\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[1\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[2\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[2\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[3\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[3\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[4\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[4\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[5\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[5\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[6\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[6\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[7\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[7\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[8\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[8\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrReg_reg\[9\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg\[9\]
-  slice_pin r:/WORK/Slice/directory/mbistPl/addrRdReg_reg\[9\] i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrRdReg_reg\[9\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_reg i:/WORK/Slice/dataStorage/u_core/mcpEnPrev_reg
-  slice_pin r:/WORK/Slice/dataStorage/REG_1_reg i:/WORK/Slice/dataStorage/u_core/enPrev_reg
-  slice_pin r:/WORK/Slice/dataStorage/REG_3_reg i:/WORK/Slice/dataStorage/u_core/wrEnPrev_reg
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[0\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[0\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[1\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[1\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[2\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[2\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[3\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[3\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[4\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[4\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[5\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[5\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[6\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[6\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[7\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[7\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[8\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[8\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[9\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[9\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[10\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[10\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[11\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[11\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[12\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[12\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_2_reg\[13\] i:/WORK/Slice/dataStorage/u_core/reqPrev_reg\[13\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[0\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[0\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[1\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[1\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[2\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[2\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[3\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[3\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[4\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[4\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[5\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[5\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[6\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[6\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[7\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[7\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[8\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[8\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[9\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[9\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[10\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[10\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[11\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[11\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[12\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[12\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[13\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[13\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[14\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[14\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[15\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[15\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[16\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[16\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[17\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[17\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[18\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[18\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[19\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[19\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[20\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[20\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[21\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[21\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[22\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[22\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[23\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[23\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[24\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[24\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[25\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[25\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[26\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[26\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[27\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[27\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[28\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[28\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[29\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[29\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[30\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[30\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[31\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[31\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[32\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[32\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[33\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[33\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[34\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[34\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[35\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[35\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[36\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[36\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[37\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[37\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[38\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[38\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[39\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[39\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[40\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[40\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[41\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[41\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[42\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[42\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[43\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[43\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[44\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[44\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[45\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[45\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[46\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[46\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[47\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[47\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[48\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[48\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[49\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[49\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[50\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[50\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[51\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[51\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[52\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[52\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[53\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[53\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[54\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[54\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[55\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[55\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[56\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[56\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[57\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[57\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[58\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[58\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[59\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[59\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[60\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[60\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[61\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[61\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[62\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[62\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[63\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[63\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[64\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[64\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[65\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[65\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[66\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[66\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[67\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[67\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[68\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[68\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[69\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[69\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[70\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[70\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[71\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[71\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[72\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[72\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[73\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[73\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[74\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[74\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[75\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[75\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[76\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[76\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[77\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[77\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[78\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[78\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[79\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[79\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[80\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[80\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[81\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[81\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[82\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[82\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[83\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[83\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[84\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[84\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[85\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[85\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[86\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[86\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[87\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[87\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[88\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[88\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[89\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[89\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[90\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[90\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[91\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[91\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[92\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[92\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[93\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[93\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[94\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[94\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[95\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[95\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[96\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[96\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[97\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[97\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[98\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[98\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[99\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[99\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[100\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[100\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[101\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[101\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[102\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[102\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[103\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[103\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[104\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[104\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[105\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[105\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[106\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[106\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[107\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[107\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[108\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[108\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[109\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[109\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[110\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[110\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[111\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[111\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[112\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[112\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[113\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[113\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[114\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[114\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[115\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[115\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[116\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[116\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[117\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[117\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[118\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[118\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[119\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[119\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[120\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[120\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[121\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[121\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[122\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[122\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[123\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[123\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[124\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[124\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[125\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[125\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[126\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[126\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[127\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[127\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[128\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[128\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[129\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[129\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[130\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[130\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[131\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[131\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[132\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[132\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[133\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[133\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[134\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[134\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[135\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[135\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[136\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[136\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[137\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[137\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[138\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[138\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[139\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[139\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[140\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[140\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[141\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[141\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[142\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[142\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[143\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[143\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[144\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[144\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[145\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[145\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[146\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[146\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[147\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[147\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[148\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[148\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[149\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[149\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[150\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[150\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[151\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[151\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[152\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[152\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[153\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[153\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[154\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[154\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[155\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[155\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[156\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[156\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[157\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[157\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[158\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[158\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[159\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[159\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[160\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[160\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[161\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[161\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[162\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[162\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[163\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[163\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[164\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[164\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[165\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[165\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[166\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[166\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[167\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[167\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[168\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[168\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[169\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[169\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[170\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[170\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[171\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[171\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[172\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[172\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[173\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[173\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[174\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[174\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[175\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[175\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[176\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[176\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[177\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[177\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[178\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[178\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[179\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[179\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[180\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[180\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[181\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[181\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[182\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[182\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[183\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[183\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[184\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[184\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[185\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[185\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[186\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[186\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[187\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[187\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[188\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[188\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[189\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[189\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[190\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[190\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[191\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[191\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[192\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[192\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[193\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[193\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[194\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[194\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[195\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[195\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[196\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[196\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[197\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[197\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[198\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[198\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[199\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[199\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[200\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[200\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[201\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[201\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[202\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[202\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[203\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[203\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[204\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[204\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[205\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[205\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[206\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[206\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[207\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[207\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[208\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[208\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[209\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[209\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[210\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[210\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[211\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[211\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[212\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[212\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[213\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[213\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[214\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[214\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[215\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[215\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[216\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[216\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[217\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[217\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[218\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[218\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[219\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[219\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[220\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[220\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[221\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[221\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[222\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[222\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[223\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[223\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[224\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[224\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[225\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[225\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[226\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[226\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[227\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[227\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[228\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[228\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[229\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[229\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[230\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[230\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[231\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[231\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[232\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[232\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[233\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[233\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[234\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[234\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[235\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[235\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[236\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[236\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[237\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[237\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[238\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[238\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[239\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[239\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[240\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[240\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[241\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[241\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[242\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[242\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[243\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[243\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[244\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[244\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[245\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[245\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[246\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[246\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[247\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[247\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[248\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[248\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[249\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[249\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[250\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[250\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[251\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[251\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[252\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[252\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[253\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[253\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[254\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[254\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[255\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[255\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[256\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[256\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[257\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[257\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[258\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[258\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[259\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[259\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[260\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[260\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[261\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[261\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[262\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[262\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[263\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[263\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[264\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[264\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[265\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[265\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[266\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[266\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[267\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[267\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[268\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[268\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[269\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[269\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[270\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[270\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[271\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[271\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[272\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[272\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[273\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[273\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[274\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[274\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[275\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[275\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[276\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[276\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[277\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[277\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[278\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[278\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[279\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[279\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[280\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[280\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[281\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[281\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[282\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[282\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[283\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[283\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[284\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[284\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[285\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[285\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[286\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[286\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[287\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[287\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[288\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[288\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[289\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[289\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[290\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[290\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[291\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[291\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[292\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[292\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[293\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[293\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[294\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[294\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[295\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[295\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[296\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[296\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[297\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[297\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[298\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[298\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[299\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[299\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[300\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[300\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[301\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[301\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[302\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[302\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[303\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[303\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[304\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[304\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[305\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[305\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[306\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[306\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[307\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[307\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[308\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[308\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[309\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[309\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[310\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[310\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[311\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[311\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[312\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[312\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[313\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[313\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[314\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[314\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[315\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[315\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[316\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[316\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[317\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[317\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[318\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[318\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[319\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[319\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[320\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[320\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[321\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[321\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[322\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[322\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[323\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[323\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[324\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[324\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[325\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[325\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[326\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[326\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[327\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[327\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[328\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[328\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[329\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[329\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[330\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[330\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[331\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[331\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[332\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[332\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[333\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[333\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[334\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[334\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[335\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[335\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[336\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[336\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[337\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[337\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[338\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[338\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[339\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[339\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[340\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[340\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[341\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[341\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[342\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[342\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[343\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[343\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[344\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[344\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[345\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[345\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[346\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[346\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[347\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[347\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[348\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[348\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[349\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[349\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[350\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[350\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[351\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[351\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[352\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[352\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[353\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[353\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[354\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[354\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[355\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[355\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[356\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[356\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[357\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[357\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[358\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[358\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[359\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[359\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[360\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[360\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[361\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[361\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[362\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[362\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[363\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[363\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[364\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[364\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[365\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[365\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[366\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[366\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[367\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[367\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[368\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[368\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[369\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[369\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[370\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[370\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[371\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[371\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[372\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[372\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[373\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[373\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[374\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[374\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[375\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[375\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[376\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[376\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[377\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[377\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[378\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[378\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[379\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[379\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[380\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[380\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[381\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[381\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[382\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[382\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[383\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[383\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[384\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[384\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[385\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[385\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[386\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[386\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[387\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[387\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[388\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[388\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[389\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[389\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[390\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[390\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[391\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[391\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[392\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[392\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[393\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[393\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[394\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[394\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[395\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[395\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[396\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[396\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[397\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[397\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[398\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[398\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[399\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[399\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[400\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[400\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[401\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[401\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[402\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[402\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[403\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[403\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[404\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[404\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[405\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[405\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[406\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[406\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[407\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[407\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[408\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[408\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[409\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[409\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[410\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[410\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[411\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[411\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[412\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[412\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[413\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[413\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[414\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[414\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[415\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[415\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[416\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[416\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[417\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[417\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[418\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[418\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[419\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[419\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[420\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[420\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[421\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[421\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[422\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[422\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[423\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[423\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[424\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[424\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[425\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[425\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[426\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[426\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[427\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[427\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[428\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[428\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[429\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[429\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[430\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[430\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[431\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[431\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[432\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[432\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[433\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[433\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[434\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[434\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[435\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[435\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[436\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[436\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[437\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[437\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[438\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[438\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[439\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[439\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[440\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[440\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[441\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[441\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[442\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[442\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[443\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[443\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[444\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[444\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[445\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[445\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[446\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[446\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[447\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[447\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[448\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[448\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[449\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[449\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[450\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[450\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[451\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[451\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[452\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[452\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[453\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[453\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[454\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[454\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[455\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[455\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[456\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[456\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[457\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[457\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[458\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[458\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[459\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[459\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[460\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[460\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[461\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[461\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[462\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[462\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[463\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[463\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[464\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[464\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[465\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[465\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[466\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[466\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[467\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[467\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[468\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[468\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[469\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[469\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[470\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[470\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[471\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[471\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[472\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[472\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[473\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[473\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[474\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[474\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[475\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[475\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[476\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[476\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[477\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[477\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[478\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[478\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[479\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[479\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[480\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[480\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[481\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[481\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[482\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[482\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[483\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[483\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[484\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[484\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[485\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[485\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[486\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[486\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[487\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[487\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[488\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[488\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[489\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[489\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[490\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[490\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[491\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[491\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[492\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[492\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[493\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[493\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[494\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[494\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[495\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[495\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[496\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[496\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[497\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[497\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[498\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[498\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[499\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[499\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[500\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[500\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[501\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[501\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[502\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[502\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[503\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[503\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[504\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[504\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[505\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[505\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[506\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[506\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[507\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[507\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[508\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[508\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[509\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[509\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[510\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[510\]
-  slice_pin r:/WORK/Slice/dataStorage/REG_4_reg\[511\] i:/WORK/Slice/dataStorage/u_core/wdataPrev_reg\[511\]
-  slice_pin r:/WORK/Slice/dataStorage/mbistPl/beReg_reg i:/WORK/Slice/dataStorage/mbistPl/u_core/beReg_reg\[0\]
+  # MSHRCtl 1184, MainPipe_1 769, GrantBuffer 1024, RequestBuffer 64, RequestArb 766, SinkC 3592, RXSNP 0, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory 276, DataStorage 16, L2Slice 137
+  puts "SLICE_PIN_BEGIN Slice expect=25262"
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_12_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[12]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_13_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[13]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_14_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[14]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_15_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[15]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_1_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[1]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_2_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[2]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_3_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[3]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_4_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[4]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_5_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[5]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_6_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[6]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_7_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[7]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_8_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[8]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_9_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[9]} 10
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_0_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[0]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_10_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[10]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_11_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[11]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_12_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[12]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_13_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[13]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_14_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[14]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_15_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[15]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_1_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[1]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_2_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[2]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_3_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[3]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_4_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[4]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_5_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[5]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_6_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[6]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_7_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[7]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_8_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[8]} 64
+  slice_pinw {r:/WORK/Slice/mshrCtl/timers_9_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/timers_reg[9]} 64
+  slice_pin {r:/WORK/Slice/mainPipe/task_s3_valid_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s3_valid_reg}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_off_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_opcode_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_param_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_aliasTask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_allowRetry_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_bufIdx_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_channel_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_chiOpcode_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_cmoAll_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_cmoTask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_corrupt_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_dbID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_denied_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[denied]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_dirty_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[dirty]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_dsWen_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_expCompAck_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_fromL2pft_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_fwdNID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_fwdState_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_fwdTxnID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_homeNID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_isKeyword_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_likelyshared_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_memAttr_allocate_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_memAttr_cacheable_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_memAttr_device_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_memAttr_ewa_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_mergeA_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_metaWen_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_meta_accessed_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_meta_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_meta_clients_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_meta_dataErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_meta_dirty_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_meta_prefetch_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_meta_state_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_meta_tagErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_mshrId_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_mshrRetry_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_mshrTask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_needHint_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[needHint]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_needProbeAckData_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_off_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_opcode_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_pCrdType_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_param_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[param]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_readProbeDataDown_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_replTask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_reqSource_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_resp_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_retToSrc_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_set_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_size_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_snpHitRelease_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_sourceId_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_srcID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_tagWen_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_tag_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_tgtID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_traceTag_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_txChannel_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_txnID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_bits_useProbeData_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_vaddr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_wayMask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s4_bits_way_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_reg\[way]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s4_valid_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s4_valid_reg}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_off_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_opcode_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_param_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_aliasTask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_allowRetry_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_bufIdx_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_channel_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_chiOpcode_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_cmoAll_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_cmoTask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_corrupt_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_dbID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_denied_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[denied]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_dirty_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[dirty]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_dsWen_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_expCompAck_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_fromL2pft_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_fwdNID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_fwdState_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_fwdTxnID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_homeNID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_isKeyword_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_likelyshared_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_memAttr_allocate_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_memAttr_cacheable_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_memAttr_device_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_memAttr_ewa_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_mergeA_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_metaWen_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_meta_accessed_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_meta_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_meta_clients_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_meta_dataErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_meta_dirty_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_meta_prefetch_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_meta_state_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_meta_tagErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_mshrId_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_mshrRetry_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_mshrTask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_needHint_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[needHint]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_needProbeAckData_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_off_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_opcode_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_pCrdType_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_param_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[param]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_readProbeDataDown_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_replTask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_reqSource_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_resp_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_retToSrc_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_set_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_size_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_snpHitRelease_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_sourceId_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_srcID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_tagWen_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_tag_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_tgtID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_traceTag_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_txChannel_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_txnID_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_bits_useProbeData_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_vaddr_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_wayMask_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice/mainPipe/task_s5_bits_way_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_reg\[way]} 3
+  slice_pin {r:/WORK/Slice/mainPipe/task_s5_valid_reg} {i:/WORK/Slice/u_core/mainPipe/u_core/s5_valid_reg}
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_0_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[0]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_10_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[10]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_11_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[11]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_12_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[12]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_13_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[13]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_14_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[14]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_15_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[15]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_1_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[1]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_2_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[2]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_3_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[3]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_4_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[4]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_5_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[5]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_6_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[6]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_7_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[7]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_8_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[8]} 64
+  slice_pinw {r:/WORK/Slice/grantBuf/timers_9_reg} {i:/WORK/Slice/u_core/grantBuf/u_core/timers_reg[9]} 64
+  slice_pinw {r:/WORK/Slice/reqBuf/bufferTimer_0_reg} {i:/WORK/Slice/u_core/reqBuf/u_core/bufferTimer_reg[0]} 16
+  slice_pinw {r:/WORK/Slice/reqBuf/bufferTimer_1_reg} {i:/WORK/Slice/u_core/reqBuf/u_core/bufferTimer_reg[1]} 16
+  slice_pinw {r:/WORK/Slice/reqBuf/bufferTimer_2_reg} {i:/WORK/Slice/u_core/reqBuf/u_core/bufferTimer_reg[2]} 16
+  slice_pinw {r:/WORK/Slice/reqBuf/bufferTimer_3_reg} {i:/WORK/Slice/u_core/reqBuf/u_core/bufferTimer_reg[3]} 16
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_off_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_param_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_aliasTask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_allowRetry_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_bufIdx_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_channel_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_chiOpcode_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_cmoAll_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_cmoTask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_corrupt_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_dbID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_denied_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[denied]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_dirty_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dirty]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_dsWen_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_expCompAck_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_fromL2pft_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_fwdNID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_fwdState_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_fwdTxnID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_homeNID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_isKeyword_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_likelyshared_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_memAttr_allocate_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_memAttr_cacheable_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_memAttr_device_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_memAttr_ewa_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_mergeA_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_metaWen_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_accessed_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_clients_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_dataErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_dirty_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_prefetch_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_state_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_meta_tagErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_mshrId_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_mshrRetry_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_mshrTask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_needHint_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_needProbeAckData_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_off_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_opcode_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_pCrdType_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_param_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[param]} 3
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_readProbeDataDown_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_replTask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_reqSource_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_resp_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_retToSrc_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_set_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_size_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_snpHitRelease_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_sourceId_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_srcID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_tagWen_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_tag_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_tgtID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_traceTag_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_txChannel_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_txnID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice/reqArb/mshr_task_s1_bits_useProbeData_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_vaddr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_wayMask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice/reqArb/mshr_task_s1_bits_way_reg} {i:/WORK/Slice/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_off_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_opcode_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_param_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_aliasTask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_allowRetry_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_bufIdx_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_channel_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_chiOpcode_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_cmoAll_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_cmoTask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_corrupt_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_dbID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_denied_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[denied]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_dirty_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[dirty]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_dsWen_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_expCompAck_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_fromL2pft_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_fwdNID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_fwdState_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_fwdTxnID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_homeNID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_isKeyword_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_likelyshared_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_memAttr_allocate_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_memAttr_cacheable_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_memAttr_device_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_memAttr_ewa_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_mergeA_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_metaWen_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_meta_accessed_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_meta_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_meta_clients_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_meta_dataErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_meta_dirty_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_meta_prefetch_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_meta_state_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_meta_tagErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_mshrId_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_mshrRetry_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_mshrTask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_needHint_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[needHint]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_needProbeAckData_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_off_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_opcode_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_pCrdType_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_param_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[param]} 3
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_readProbeDataDown_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_replTask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_reqSource_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_resp_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_retToSrc_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_set_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_size_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_snpHitRelease_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_sourceId_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_srcID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_tagWen_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_tag_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_tgtID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_traceTag_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_txChannel_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_txnID_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice/reqArb/task_s2_bits_useProbeData_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_vaddr_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_wayMask_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice/reqArb/task_s2_bits_way_reg} {i:/WORK/Slice/u_core/reqArb/u_core/task_s2_bits_reg\[way]} 3
+  slice_pin {r:/WORK/Slice/sinkC/beatValids_0_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/beatValids_reg[0][0]}
+  slice_pin {r:/WORK/Slice/sinkC/beatValids_0_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/beatValids_reg[0][1]}
+  slice_pin {r:/WORK/Slice/sinkC/beatValids_1_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/beatValids_reg[1][0]}
+  slice_pin {r:/WORK/Slice/sinkC/beatValids_1_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/beatValids_reg[1][1]}
+  slice_pin {r:/WORK/Slice/sinkC/beatValids_2_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/beatValids_reg[2][0]}
+  slice_pin {r:/WORK/Slice/sinkC/beatValids_2_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/beatValids_reg[2][1]}
+  slice_pin {r:/WORK/Slice/sinkC/beatValids_3_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/beatValids_reg[3][0]}
+  slice_pin {r:/WORK/Slice/sinkC/beatValids_3_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/beatValids_reg[3][1]}
+  slice_pinw {r:/WORK/Slice/sinkC/dataBuf_0_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/dataBuf_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice/sinkC/dataBuf_0_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/dataBuf_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice/sinkC/dataBuf_1_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/dataBuf_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice/sinkC/dataBuf_1_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/dataBuf_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice/sinkC/dataBuf_2_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/dataBuf_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice/sinkC/dataBuf_2_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/dataBuf_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice/sinkC/dataBuf_3_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/dataBuf_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice/sinkC/dataBuf_3_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/dataBuf_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_isKeyword_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_off_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_opcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_param_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_sourceId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_aMergeTask_vaddr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_aliasTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_allowRetry_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_bufIdx_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_channel_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[channel]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_chiOpcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_cmoAll_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_cmoTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_corrupt_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_dbID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]} 12
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_denied_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[denied]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_dsWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_expCompAck_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_fromL2pft_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_fwdNID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_fwdState_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_fwdTxnID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_homeNID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_isKeyword_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[isKeyword]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_likelyshared_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[likelyshared]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_memAttr_allocate_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_memAttr_cacheable_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_memAttr_device_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_memAttr_ewa_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_mergeA_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[mergeA]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_metaWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[metaWen]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_meta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_meta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_meta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_meta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_meta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_meta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_meta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_meta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_mshrId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_mshrRetry_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_mshrTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_needHint_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_needProbeAckData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_off_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[off]} 6
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_opcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_pCrdType_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_param_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[param]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_readProbeDataDown_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_replTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[replTask]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_reqSource_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_resp_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[resp]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_retToSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_set_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[set]} 9
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_size_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[size]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseToClean_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseToInval_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitReleaseWithData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_snpHitRelease_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_sourceId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_srcID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[srcID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_tagWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[tagWen]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_tag_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[tag]} 31
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_tgtID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_traceTag_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[traceTag]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_txChannel_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_txnID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[txnID]} 12
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_0_useProbeData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_vaddr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_wayMask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_0_way_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[0]\[way]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_isKeyword_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_off_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_opcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_param_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_sourceId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_aMergeTask_vaddr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_aliasTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_allowRetry_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_bufIdx_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_channel_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[channel]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_chiOpcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_cmoAll_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_cmoTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_corrupt_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_dbID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]} 12
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_denied_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[denied]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_dsWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_expCompAck_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_fromL2pft_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_fwdNID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_fwdState_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_fwdTxnID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_homeNID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_isKeyword_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[isKeyword]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_likelyshared_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[likelyshared]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_memAttr_allocate_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_memAttr_cacheable_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_memAttr_device_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_memAttr_ewa_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_mergeA_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[mergeA]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_metaWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[metaWen]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_meta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_meta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_meta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_meta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_meta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_meta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_meta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_meta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_mshrId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_mshrRetry_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_mshrTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_needHint_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_needProbeAckData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_off_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[off]} 6
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_opcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_pCrdType_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_param_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[param]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_readProbeDataDown_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_replTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[replTask]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_reqSource_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_resp_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[resp]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_retToSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_set_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[set]} 9
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_size_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[size]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseToClean_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseToInval_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitReleaseWithData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_snpHitRelease_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_sourceId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_srcID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[srcID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_tagWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[tagWen]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_tag_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[tag]} 31
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_tgtID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_traceTag_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[traceTag]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_txChannel_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_txnID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[txnID]} 12
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_1_useProbeData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_vaddr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_wayMask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_1_way_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[1]\[way]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_isKeyword_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_off_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_opcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_param_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_sourceId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_aMergeTask_vaddr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_aliasTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_allowRetry_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_bufIdx_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_channel_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[channel]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_chiOpcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_cmoAll_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_cmoTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_corrupt_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_dbID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]} 12
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_denied_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[denied]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_dsWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_expCompAck_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_fromL2pft_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_fwdNID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_fwdState_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_fwdTxnID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_homeNID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_isKeyword_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[isKeyword]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_likelyshared_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[likelyshared]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_memAttr_allocate_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_memAttr_cacheable_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_memAttr_device_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_memAttr_ewa_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_mergeA_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[mergeA]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_metaWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[metaWen]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_meta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_meta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_meta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_meta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_meta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_meta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_meta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_meta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_mshrId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_mshrRetry_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_mshrTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_needHint_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_needProbeAckData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_off_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[off]} 6
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_opcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_pCrdType_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_param_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[param]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_readProbeDataDown_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_replTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[replTask]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_reqSource_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_resp_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[resp]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_retToSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_set_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[set]} 9
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_size_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[size]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseToClean_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseToInval_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitReleaseWithData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_snpHitRelease_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_sourceId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_srcID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[srcID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_tagWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[tagWen]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_tag_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[tag]} 31
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_tgtID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_traceTag_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[traceTag]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_txChannel_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_txnID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[txnID]} 12
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_2_useProbeData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_vaddr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_wayMask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_2_way_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[2]\[way]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_isKeyword_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_off_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_opcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_param_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_sourceId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_aMergeTask_vaddr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_aliasTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_allowRetry_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_bufIdx_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_channel_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[channel]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_chiOpcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_cmoAll_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_cmoTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_corrupt_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_dbID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]} 12
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_denied_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[denied]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_dsWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_expCompAck_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_fromL2pft_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_fwdNID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_fwdState_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_fwdTxnID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_homeNID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_isKeyword_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[isKeyword]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_likelyshared_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[likelyshared]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_memAttr_allocate_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_memAttr_cacheable_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_memAttr_device_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_memAttr_ewa_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_mergeA_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[mergeA]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_metaWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[metaWen]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_meta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_meta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_meta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_meta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_meta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_meta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_meta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_meta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_meta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_mshrId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_mshrRetry_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_mshrTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_needHint_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_needProbeAckData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_off_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[off]} 6
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_opcode_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_pCrdType_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_param_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[param]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_readProbeDataDown_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_replTask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[replTask]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_reqSource_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_resp_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[resp]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_retToSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_set_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[set]} 9
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_size_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[size]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_state_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseToClean_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseToInval_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitReleaseWithData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_snpHitRelease_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_sourceId_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_srcID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[srcID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_tagWen_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[tagWen]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_tag_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[tag]} 31
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_tgtID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_traceTag_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[traceTag]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_txChannel_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_txnID_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[txnID]} 12
+  slice_pin {r:/WORK/Slice/sinkC/taskBuf_3_useProbeData_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_vaddr_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_wayMask_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice/sinkC/taskBuf_3_way_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskBuf_reg[3]\[way]} 3
+  slice_pin {r:/WORK/Slice/sinkC/taskValids_0_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskValids_reg[0]}
+  slice_pin {r:/WORK/Slice/sinkC/taskValids_1_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskValids_reg[1]}
+  slice_pin {r:/WORK/Slice/sinkC/taskValids_2_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskValids_reg[2]}
+  slice_pin {r:/WORK/Slice/sinkC/taskValids_3_reg} {i:/WORK/Slice/u_core/sinkC/u_core/taskValids_reg[3]}
+  slice_pin {r:/WORK/Slice/txdat/beatValids_0_reg} {i:/WORK/Slice/u_core/txdat/u_core/beatValids_reg[0]}
+  slice_pin {r:/WORK/Slice/txdat/beatValids_1_reg} {i:/WORK/Slice/u_core/txdat/u_core/beatValids_reg[1]}
+  slice_pinw {r:/WORK/Slice/txdat/queue/deq_ptr_value_reg} {i:/WORK/Slice/u_core/txdat/queue/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice/txdat/queue/enq_ptr_value_reg} {i:/WORK/Slice/u_core/txdat/queue/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice/txdat/queueData0/deq_ptr_value_reg} {i:/WORK/Slice/u_core/txdat/queueData0/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice/txdat/queueData0/enq_ptr_value_reg} {i:/WORK/Slice/u_core/txdat/queueData0/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice/txdat/queueData1/deq_ptr_value_reg} {i:/WORK/Slice/u_core/txdat/queueData1/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice/txdat/queueData1/enq_ptr_value_reg} {i:/WORK/Slice/u_core/txdat/queueData1/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_0_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_0_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_10_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[10][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_10_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[10][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_11_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[11][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_11_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[11][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_12_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[12][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_12_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[12][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_13_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[13][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_13_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[13][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_14_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[14][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_14_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[14][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_15_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[15][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_15_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[15][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_1_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_1_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_2_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_2_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_3_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_3_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_4_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[4][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_4_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[4][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_5_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[5][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_5_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[5][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_6_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[6][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_6_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[6][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_7_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[7][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_7_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[7][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_8_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[8][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_8_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[8][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_9_0_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[9][0]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/buffer_9_1_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/buffer_reg[9][1]} 256
+  slice_pinw {r:/WORK/Slice/refillBuf/io_resp_data_data_r_reg} {i:/WORK/Slice/u_core/refillBuf/u_core/r_data_reg} 512
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_0_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_0_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_10_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[10][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_10_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[10][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_11_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[11][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_11_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[11][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_12_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[12][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_12_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[12][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_13_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[13][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_13_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[13][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_14_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[14][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_14_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[14][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_15_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[15][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_15_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[15][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_1_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_1_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_2_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_2_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_3_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_3_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_4_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[4][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_4_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[4][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_5_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[5][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_5_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[5][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_6_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[6][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_6_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[6][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_7_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[7][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_7_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[7][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_8_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[8][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_8_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[8][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_9_0_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[9][0]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/buffer_9_1_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/buffer_reg[9][1]} 256
+  slice_pinw {r:/WORK/Slice/releaseBuf/io_resp_data_data_r_reg} {i:/WORK/Slice/u_core/releaseBuf/u_core/r_data_reg} 512
+  slice_pin {r:/WORK/Slice/directory/errorAll_s3_0_reg} {i:/WORK/Slice/directory/u_core/errorAll_s3_reg[0]}
+  slice_pin {r:/WORK/Slice/directory/errorAll_s3_1_reg} {i:/WORK/Slice/directory/u_core/errorAll_s3_reg[1]}
+  slice_pin {r:/WORK/Slice/directory/errorAll_s3_2_reg} {i:/WORK/Slice/directory/u_core/errorAll_s3_reg[2]}
+  slice_pin {r:/WORK/Slice/directory/errorAll_s3_3_reg} {i:/WORK/Slice/directory/u_core/errorAll_s3_reg[3]}
+  slice_pin {r:/WORK/Slice/directory/errorAll_s3_4_reg} {i:/WORK/Slice/directory/u_core/errorAll_s3_reg[4]}
+  slice_pin {r:/WORK/Slice/directory/errorAll_s3_5_reg} {i:/WORK/Slice/directory/u_core/errorAll_s3_reg[5]}
+  slice_pin {r:/WORK/Slice/directory/errorAll_s3_6_reg} {i:/WORK/Slice/directory/u_core/errorAll_s3_reg[6]}
+  slice_pin {r:/WORK/Slice/directory/errorAll_s3_7_reg} {i:/WORK/Slice/directory/u_core/errorAll_s3_reg[7]}
+  slice_pinw {r:/WORK/Slice/directory/origin_bit_opt/_resetSet_reg} {i:/WORK/Slice/directory/origin_bit_opt/u_core/resetSet_reg} 9
+  slice_pin {r:/WORK/Slice/directory/origin_bit_opt/_resetState_reg} {i:/WORK/Slice/directory/origin_bit_opt/u_core/resetState_reg}
+  slice_pinw {r:/WORK/Slice/directory/replacer_sram_opt/_resetSet_reg} {i:/WORK/Slice/directory/replacer_sram_opt/u_core/resetSet_reg} 9
+  slice_pin {r:/WORK/Slice/directory/replacer_sram_opt/_resetState_reg} {i:/WORK/Slice/directory/replacer_sram_opt/u_core/resetState_reg}
+  slice_pinw {r:/WORK/Slice/directory/tagAll_s3_0_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[0]} 31
+  slice_pinw {r:/WORK/Slice/directory/tagAll_s3_1_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[1]} 31
+  slice_pinw {r:/WORK/Slice/directory/tagAll_s3_2_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[2]} 31
+  slice_pinw {r:/WORK/Slice/directory/tagAll_s3_3_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[3]} 31
+  slice_pinw {r:/WORK/Slice/directory/tagAll_s3_4_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[4]} 31
+  slice_pinw {r:/WORK/Slice/directory/tagAll_s3_5_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[5]} 31
+  slice_pinw {r:/WORK/Slice/directory/tagAll_s3_6_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[6]} 31
+  slice_pinw {r:/WORK/Slice/directory/tagAll_s3_7_reg} {i:/WORK/Slice/directory/u_core/tagAll_s3_reg[7]} 31
+  slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_0/rckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_0/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice/dataStorage/array/array_0_0_0/respReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_0/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_0/wckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_0/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_1/rckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_1/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice/dataStorage/array/array_0_0_1/respReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_1/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_1/wckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_1/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_2/rckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_2/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice/dataStorage/array/array_0_0_2/respReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_2/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_2/wckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_2/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_3/rckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_3/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice/dataStorage/array/array_0_0_3/respReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_3/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_3/wckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_3/u_core/g_mcp.wckEnReg_reg}
+  slice_pinw {r:/WORK/Slice/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
   puts "SLICE_PIN_END Slice ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 810} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=810"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 25262} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=25262"
   }
 }
 if {$top eq "Slice_1"} {
-  # DataStorage_1 530, GrantBuffer 33, MSHRCtl 224, RequestBuffer 12
-  puts "SLICE_PIN_BEGIN Slice_1 expect=799"
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_valid_reg i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_rdy_reg i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_waitG_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_waitG_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_waitG_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_waitG_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_waitG_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_waitG_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_waitG_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[7\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[7\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[8\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[8\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[9\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[9\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[10\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[10\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[11\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[11\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[12\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[12\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[13\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[13\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[14\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[14\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[15\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[15\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[16\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[16\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[17\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[17\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[18\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[18\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[19\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[19\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[20\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[20\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[21\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[21\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[22\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[22\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[23\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[23\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[24\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[24\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[25\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[25\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[26\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[26\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[27\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[27\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[28\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[28\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[29\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[29\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_tag_reg\[30\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[30\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[7\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[7\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_set_reg\[8\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[8\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_opcode_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_opcode_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_opcode_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_param_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_param_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_alias_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_0_task_alias_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_valid_reg i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_rdy_reg i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_waitG_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_waitG_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_waitG_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_waitG_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_waitG_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_waitG_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_waitG_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[7\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[7\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[8\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[8\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[9\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[9\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[10\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[10\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[11\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[11\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[12\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[12\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[13\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[13\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[14\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[14\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[15\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[15\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[16\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[16\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[17\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[17\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[18\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[18\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[19\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[19\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[20\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[20\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[21\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[21\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[22\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[22\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[23\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[23\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[24\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[24\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[25\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[25\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[26\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[26\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[27\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[27\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[28\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[28\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[29\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[29\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_tag_reg\[30\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[30\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[7\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[7\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_set_reg\[8\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[8\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_opcode_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_opcode_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_opcode_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_param_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_param_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_alias_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_1_task_alias_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_valid_reg i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_rdy_reg i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_waitG_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_waitG_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_waitG_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_waitG_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_waitG_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_waitG_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_waitG_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[7\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[7\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[8\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[8\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[9\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[9\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[10\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[10\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[11\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[11\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[12\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[12\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[13\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[13\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[14\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[14\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[15\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[15\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[16\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[16\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[17\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[17\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[18\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[18\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[19\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[19\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[20\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[20\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[21\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[21\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[22\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[22\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[23\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[23\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[24\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[24\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[25\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[25\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[26\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[26\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[27\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[27\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[28\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[28\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[29\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[29\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_tag_reg\[30\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[30\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[7\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[7\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_set_reg\[8\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[8\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_opcode_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_opcode_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_opcode_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_param_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_param_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_alias_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_2_task_alias_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_valid_reg i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_rdy_reg i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_waitG_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_waitG_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_waitG_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_waitG_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_waitG_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_waitG_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_waitG_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[7\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[7\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[8\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[8\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[9\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[9\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[10\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[10\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[11\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[11\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[12\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[12\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[13\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[13\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[14\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[14\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[15\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[15\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[16\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[16\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[17\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[17\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[18\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[18\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[19\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[19\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[20\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[20\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[21\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[21\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[22\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[22\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[23\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[23\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[24\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[24\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[25\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[25\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[26\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[26\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[27\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[27\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[28\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[28\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[29\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[29\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_tag_reg\[30\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[30\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[3\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[4\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[5\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[6\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[7\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[7\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_set_reg\[8\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[8\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_opcode_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_opcode_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_opcode_reg\[2\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_param_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_param_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_alias_reg\[0\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_1/mshrCtl/sourceB/probes_3_task_alias_reg\[1\] i:/WORK/Slice_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_1_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_1_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_2_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_2_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_3_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_3_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_4_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_4_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_5_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_5_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_6_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_6_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_7_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_7_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_8_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_8_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_9_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_9_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_10_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_10_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_11_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_11_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_12_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_12_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_13_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_13_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_14_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_14_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_1/grantBuf/REG_15_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/validPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_1/grantBuf/enable_REG_15_reg i:/WORK/Slice_1/u_core/grantBuf/u_core/histValidPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_1/grantBuf/grantBuf_task_param_reg\[2\] i:/WORK/Slice_1/u_core/grantBuf/u_core/gb_param_reg\[2\]
-  slice_pin r:/WORK/Slice_1/reqBuf/REG_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/validPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_1/reqBuf/REG_1_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/timerClear_reg\[0\]
-  slice_pin r:/WORK/Slice_1/reqBuf/enable_REG_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/histValidPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_1/reqBuf/REG_2_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/validPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_1/reqBuf/REG_3_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/timerClear_reg\[1\]
-  slice_pin r:/WORK/Slice_1/reqBuf/enable_REG_1_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/histValidPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_1/reqBuf/REG_4_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/validPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_1/reqBuf/REG_5_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/timerClear_reg\[2\]
-  slice_pin r:/WORK/Slice_1/reqBuf/enable_REG_2_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/histValidPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_1/reqBuf/REG_6_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/validPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_1/reqBuf/REG_7_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/timerClear_reg\[3\]
-  slice_pin r:/WORK/Slice_1/reqBuf/enable_REG_3_reg i:/WORK/Slice_1/u_core/reqBuf/u_core/histValidPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_reg i:/WORK/Slice_1/dataStorage/u_core/mcpEnPrev_reg
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_1_reg i:/WORK/Slice_1/dataStorage/u_core/enPrev_reg
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_3_reg i:/WORK/Slice_1/dataStorage/u_core/wrEnPrev_reg
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[0\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[1\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[2\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[3\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[4\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[5\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[6\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[7\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[8\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[9\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[10\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[11\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[12\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_2_reg\[13\] i:/WORK/Slice_1/dataStorage/u_core/reqPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[0\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[1\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[2\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[3\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[4\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[5\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[6\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[7\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[8\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[9\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[10\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[11\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[12\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[13\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[14\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[15\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[16\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[16\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[17\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[17\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[18\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[18\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[19\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[19\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[20\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[20\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[21\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[21\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[22\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[22\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[23\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[23\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[24\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[24\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[25\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[25\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[26\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[26\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[27\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[27\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[28\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[28\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[29\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[29\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[30\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[30\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[31\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[31\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[32\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[32\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[33\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[33\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[34\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[34\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[35\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[35\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[36\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[36\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[37\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[37\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[38\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[38\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[39\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[39\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[40\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[40\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[41\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[41\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[42\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[42\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[43\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[43\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[44\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[44\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[45\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[45\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[46\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[46\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[47\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[47\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[48\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[48\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[49\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[49\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[50\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[50\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[51\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[51\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[52\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[52\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[53\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[53\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[54\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[54\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[55\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[55\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[56\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[56\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[57\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[57\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[58\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[58\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[59\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[59\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[60\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[60\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[61\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[61\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[62\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[62\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[63\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[63\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[64\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[64\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[65\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[65\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[66\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[66\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[67\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[67\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[68\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[68\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[69\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[69\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[70\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[70\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[71\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[71\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[72\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[72\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[73\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[73\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[74\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[74\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[75\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[75\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[76\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[76\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[77\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[77\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[78\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[78\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[79\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[79\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[80\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[80\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[81\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[81\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[82\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[82\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[83\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[83\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[84\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[84\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[85\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[85\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[86\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[86\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[87\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[87\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[88\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[88\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[89\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[89\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[90\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[90\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[91\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[91\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[92\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[92\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[93\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[93\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[94\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[94\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[95\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[95\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[96\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[96\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[97\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[97\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[98\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[98\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[99\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[99\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[100\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[100\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[101\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[101\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[102\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[102\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[103\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[103\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[104\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[104\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[105\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[105\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[106\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[106\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[107\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[107\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[108\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[108\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[109\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[109\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[110\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[110\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[111\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[111\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[112\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[112\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[113\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[113\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[114\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[114\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[115\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[115\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[116\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[116\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[117\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[117\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[118\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[118\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[119\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[119\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[120\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[120\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[121\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[121\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[122\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[122\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[123\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[123\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[124\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[124\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[125\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[125\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[126\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[126\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[127\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[127\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[128\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[128\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[129\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[129\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[130\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[130\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[131\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[131\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[132\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[132\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[133\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[133\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[134\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[134\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[135\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[135\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[136\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[136\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[137\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[137\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[138\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[138\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[139\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[139\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[140\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[140\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[141\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[141\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[142\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[142\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[143\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[143\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[144\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[144\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[145\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[145\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[146\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[146\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[147\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[147\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[148\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[148\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[149\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[149\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[150\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[150\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[151\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[151\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[152\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[152\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[153\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[153\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[154\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[154\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[155\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[155\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[156\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[156\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[157\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[157\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[158\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[158\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[159\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[159\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[160\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[160\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[161\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[161\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[162\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[162\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[163\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[163\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[164\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[164\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[165\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[165\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[166\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[166\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[167\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[167\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[168\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[168\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[169\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[169\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[170\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[170\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[171\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[171\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[172\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[172\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[173\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[173\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[174\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[174\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[175\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[175\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[176\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[176\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[177\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[177\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[178\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[178\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[179\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[179\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[180\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[180\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[181\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[181\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[182\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[182\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[183\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[183\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[184\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[184\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[185\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[185\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[186\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[186\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[187\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[187\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[188\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[188\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[189\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[189\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[190\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[190\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[191\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[191\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[192\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[192\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[193\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[193\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[194\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[194\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[195\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[195\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[196\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[196\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[197\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[197\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[198\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[198\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[199\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[199\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[200\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[200\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[201\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[201\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[202\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[202\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[203\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[203\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[204\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[204\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[205\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[205\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[206\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[206\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[207\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[207\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[208\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[208\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[209\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[209\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[210\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[210\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[211\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[211\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[212\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[212\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[213\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[213\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[214\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[214\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[215\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[215\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[216\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[216\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[217\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[217\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[218\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[218\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[219\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[219\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[220\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[220\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[221\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[221\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[222\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[222\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[223\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[223\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[224\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[224\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[225\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[225\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[226\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[226\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[227\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[227\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[228\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[228\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[229\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[229\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[230\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[230\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[231\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[231\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[232\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[232\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[233\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[233\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[234\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[234\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[235\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[235\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[236\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[236\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[237\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[237\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[238\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[238\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[239\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[239\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[240\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[240\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[241\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[241\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[242\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[242\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[243\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[243\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[244\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[244\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[245\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[245\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[246\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[246\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[247\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[247\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[248\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[248\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[249\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[249\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[250\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[250\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[251\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[251\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[252\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[252\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[253\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[253\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[254\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[254\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[255\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[255\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[256\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[256\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[257\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[257\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[258\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[258\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[259\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[259\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[260\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[260\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[261\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[261\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[262\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[262\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[263\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[263\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[264\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[264\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[265\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[265\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[266\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[266\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[267\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[267\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[268\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[268\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[269\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[269\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[270\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[270\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[271\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[271\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[272\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[272\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[273\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[273\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[274\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[274\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[275\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[275\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[276\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[276\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[277\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[277\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[278\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[278\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[279\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[279\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[280\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[280\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[281\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[281\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[282\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[282\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[283\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[283\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[284\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[284\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[285\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[285\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[286\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[286\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[287\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[287\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[288\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[288\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[289\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[289\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[290\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[290\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[291\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[291\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[292\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[292\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[293\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[293\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[294\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[294\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[295\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[295\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[296\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[296\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[297\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[297\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[298\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[298\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[299\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[299\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[300\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[300\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[301\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[301\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[302\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[302\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[303\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[303\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[304\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[304\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[305\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[305\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[306\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[306\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[307\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[307\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[308\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[308\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[309\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[309\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[310\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[310\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[311\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[311\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[312\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[312\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[313\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[313\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[314\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[314\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[315\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[315\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[316\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[316\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[317\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[317\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[318\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[318\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[319\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[319\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[320\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[320\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[321\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[321\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[322\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[322\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[323\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[323\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[324\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[324\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[325\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[325\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[326\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[326\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[327\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[327\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[328\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[328\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[329\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[329\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[330\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[330\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[331\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[331\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[332\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[332\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[333\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[333\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[334\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[334\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[335\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[335\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[336\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[336\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[337\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[337\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[338\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[338\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[339\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[339\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[340\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[340\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[341\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[341\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[342\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[342\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[343\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[343\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[344\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[344\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[345\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[345\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[346\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[346\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[347\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[347\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[348\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[348\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[349\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[349\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[350\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[350\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[351\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[351\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[352\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[352\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[353\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[353\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[354\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[354\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[355\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[355\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[356\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[356\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[357\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[357\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[358\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[358\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[359\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[359\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[360\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[360\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[361\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[361\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[362\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[362\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[363\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[363\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[364\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[364\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[365\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[365\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[366\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[366\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[367\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[367\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[368\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[368\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[369\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[369\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[370\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[370\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[371\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[371\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[372\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[372\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[373\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[373\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[374\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[374\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[375\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[375\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[376\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[376\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[377\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[377\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[378\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[378\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[379\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[379\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[380\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[380\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[381\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[381\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[382\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[382\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[383\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[383\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[384\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[384\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[385\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[385\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[386\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[386\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[387\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[387\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[388\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[388\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[389\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[389\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[390\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[390\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[391\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[391\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[392\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[392\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[393\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[393\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[394\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[394\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[395\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[395\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[396\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[396\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[397\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[397\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[398\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[398\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[399\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[399\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[400\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[400\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[401\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[401\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[402\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[402\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[403\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[403\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[404\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[404\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[405\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[405\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[406\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[406\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[407\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[407\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[408\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[408\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[409\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[409\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[410\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[410\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[411\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[411\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[412\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[412\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[413\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[413\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[414\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[414\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[415\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[415\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[416\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[416\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[417\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[417\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[418\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[418\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[419\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[419\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[420\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[420\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[421\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[421\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[422\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[422\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[423\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[423\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[424\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[424\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[425\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[425\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[426\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[426\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[427\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[427\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[428\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[428\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[429\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[429\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[430\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[430\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[431\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[431\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[432\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[432\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[433\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[433\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[434\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[434\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[435\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[435\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[436\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[436\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[437\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[437\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[438\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[438\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[439\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[439\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[440\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[440\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[441\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[441\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[442\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[442\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[443\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[443\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[444\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[444\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[445\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[445\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[446\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[446\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[447\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[447\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[448\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[448\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[449\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[449\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[450\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[450\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[451\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[451\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[452\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[452\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[453\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[453\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[454\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[454\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[455\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[455\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[456\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[456\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[457\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[457\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[458\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[458\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[459\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[459\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[460\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[460\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[461\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[461\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[462\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[462\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[463\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[463\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[464\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[464\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[465\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[465\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[466\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[466\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[467\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[467\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[468\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[468\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[469\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[469\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[470\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[470\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[471\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[471\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[472\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[472\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[473\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[473\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[474\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[474\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[475\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[475\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[476\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[476\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[477\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[477\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[478\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[478\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[479\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[479\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[480\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[480\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[481\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[481\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[482\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[482\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[483\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[483\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[484\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[484\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[485\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[485\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[486\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[486\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[487\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[487\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[488\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[488\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[489\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[489\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[490\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[490\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[491\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[491\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[492\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[492\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[493\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[493\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[494\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[494\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[495\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[495\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[496\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[496\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[497\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[497\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[498\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[498\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[499\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[499\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[500\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[500\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[501\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[501\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[502\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[502\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[503\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[503\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[504\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[504\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[505\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[505\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[506\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[506\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[507\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[507\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[508\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[508\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[509\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[509\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[510\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[510\]
-  slice_pin r:/WORK/Slice_1/dataStorage/REG_4_reg\[511\] i:/WORK/Slice_1/dataStorage/u_core/wdataPrev_reg\[511\]
-  slice_pin r:/WORK/Slice_1/dataStorage/mbistPl/beReg_reg i:/WORK/Slice_1/dataStorage/mbistPl/u_core/beReg_reg\[0\]
+  # MSHRCtl 1184, MainPipe_1 769, GrantBuffer 1024, RequestBuffer 64, RequestArb 766, SinkC 3592, RXSNP 0, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_1 276, DataStorage_1 16, L2Slice_1 137
+  puts "SLICE_PIN_BEGIN Slice_1 expect=25262"
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_12_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[12]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_13_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[13]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_14_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[14]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_15_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[15]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_1_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[1]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_2_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[2]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_3_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[3]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_4_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[4]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_5_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[5]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_6_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[6]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_7_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[7]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_8_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[8]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/hpm_timers_9_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/hpm_timers_reg[9]} 10
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_0_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[0]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_10_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[10]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_11_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[11]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_12_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[12]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_13_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[13]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_14_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[14]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_15_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[15]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_1_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[1]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_2_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[2]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_3_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[3]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_4_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[4]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_5_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[5]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_6_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[6]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_7_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[7]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_8_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[8]} 64
+  slice_pinw {r:/WORK/Slice_1/mshrCtl/timers_9_reg} {i:/WORK/Slice_1/u_core/mshrCtl/u_core/timers_reg[9]} 64
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s3_valid_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s3_valid_reg}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_off_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_param_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_aliasTask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_allowRetry_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_bufIdx_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_channel_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_chiOpcode_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_cmoAll_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_cmoTask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_corrupt_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_dbID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_denied_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[denied]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_dirty_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_dsWen_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_expCompAck_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_fromL2pft_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_fwdNID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_fwdState_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_fwdTxnID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_homeNID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_isKeyword_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_likelyshared_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_memAttr_allocate_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_memAttr_cacheable_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_memAttr_device_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_memAttr_ewa_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_mergeA_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_metaWen_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_accessed_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_clients_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_dirty_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_state_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_mshrId_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_mshrRetry_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_mshrTask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_needHint_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_needProbeAckData_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_off_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_opcode_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_pCrdType_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_param_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_readProbeDataDown_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_replTask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_reqSource_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_resp_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_retToSrc_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_set_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_size_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_snpHitRelease_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_sourceId_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_srcID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_tagWen_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_tag_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_tgtID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_traceTag_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_txChannel_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_txnID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_bits_useProbeData_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_vaddr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_wayMask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s4_bits_way_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s4_valid_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s4_valid_reg}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_off_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_param_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_aliasTask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_allowRetry_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_bufIdx_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_channel_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_chiOpcode_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_cmoAll_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_cmoTask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_corrupt_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_dbID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_denied_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[denied]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_dirty_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_dsWen_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_expCompAck_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_fromL2pft_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_fwdNID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_fwdState_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_fwdTxnID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_homeNID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_isKeyword_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_likelyshared_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_memAttr_allocate_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_memAttr_cacheable_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_memAttr_device_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_memAttr_ewa_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_mergeA_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_metaWen_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_accessed_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_clients_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_dirty_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_state_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_mshrId_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_mshrRetry_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_mshrTask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_needHint_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_needProbeAckData_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_off_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_opcode_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_pCrdType_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_param_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_readProbeDataDown_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_replTask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_reqSource_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_resp_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_retToSrc_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_set_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_size_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_snpHitRelease_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_sourceId_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_srcID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_tagWen_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_tag_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_tgtID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_traceTag_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_txChannel_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_txnID_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_bits_useProbeData_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_vaddr_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_wayMask_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_1/mainPipe/task_s5_bits_way_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_1/mainPipe/task_s5_valid_reg} {i:/WORK/Slice_1/u_core/mainPipe/u_core/s5_valid_reg}
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_0_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[0]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_10_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[10]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_11_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[11]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_12_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[12]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_13_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[13]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_14_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[14]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_15_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[15]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_1_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[1]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_2_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[2]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_3_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[3]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_4_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[4]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_5_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[5]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_6_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[6]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_7_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[7]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_8_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[8]} 64
+  slice_pinw {r:/WORK/Slice_1/grantBuf/timers_9_reg} {i:/WORK/Slice_1/u_core/grantBuf/u_core/timers_reg[9]} 64
+  slice_pinw {r:/WORK/Slice_1/reqBuf/bufferTimer_0_reg} {i:/WORK/Slice_1/u_core/reqBuf/u_core/bufferTimer_reg[0]} 16
+  slice_pinw {r:/WORK/Slice_1/reqBuf/bufferTimer_1_reg} {i:/WORK/Slice_1/u_core/reqBuf/u_core/bufferTimer_reg[1]} 16
+  slice_pinw {r:/WORK/Slice_1/reqBuf/bufferTimer_2_reg} {i:/WORK/Slice_1/u_core/reqBuf/u_core/bufferTimer_reg[2]} 16
+  slice_pinw {r:/WORK/Slice_1/reqBuf/bufferTimer_3_reg} {i:/WORK/Slice_1/u_core/reqBuf/u_core/bufferTimer_reg[3]} 16
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_off_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_param_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_aliasTask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_allowRetry_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_bufIdx_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_channel_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_chiOpcode_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_cmoAll_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_cmoTask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_corrupt_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_dbID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_denied_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[denied]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_dirty_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_dsWen_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_expCompAck_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_fromL2pft_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_fwdNID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_fwdState_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_fwdTxnID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_homeNID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_isKeyword_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_likelyshared_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_memAttr_allocate_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_memAttr_cacheable_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_memAttr_device_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_memAttr_ewa_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_mergeA_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_metaWen_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_accessed_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_clients_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_dirty_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_state_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_mshrId_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_mshrRetry_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_mshrTask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_needHint_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_needProbeAckData_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_off_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_opcode_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_pCrdType_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_param_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_readProbeDataDown_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_replTask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_reqSource_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_resp_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_retToSrc_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_set_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_size_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_snpHitRelease_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_sourceId_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_srcID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_tagWen_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_tag_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_tgtID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_traceTag_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_txChannel_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_txnID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_useProbeData_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_vaddr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_wayMask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_1/reqArb/mshr_task_s1_bits_way_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_off_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_param_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_aliasTask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_allowRetry_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_bufIdx_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_channel_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_chiOpcode_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_cmoAll_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_cmoTask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_corrupt_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_dbID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_denied_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[denied]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_dirty_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_dsWen_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_expCompAck_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_fromL2pft_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_fwdNID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_fwdState_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_fwdTxnID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_homeNID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_isKeyword_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_likelyshared_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_memAttr_allocate_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_memAttr_cacheable_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_memAttr_device_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_memAttr_ewa_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_mergeA_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_metaWen_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_accessed_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_clients_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_dirty_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_state_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_mshrId_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_mshrRetry_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_mshrTask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_needHint_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_needProbeAckData_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_off_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_opcode_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_pCrdType_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_param_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_readProbeDataDown_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_replTask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_reqSource_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_resp_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_retToSrc_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_set_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_size_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_snpHitRelease_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_sourceId_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_srcID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_tagWen_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_tag_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_tgtID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_traceTag_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_txChannel_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_txnID_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_1/reqArb/task_s2_bits_useProbeData_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_vaddr_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_wayMask_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_1/reqArb/task_s2_bits_way_reg} {i:/WORK/Slice_1/u_core/reqArb/u_core/task_s2_bits_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/beatValids_0_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/beatValids_reg[0][0]}
+  slice_pin {r:/WORK/Slice_1/sinkC/beatValids_0_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/beatValids_reg[0][1]}
+  slice_pin {r:/WORK/Slice_1/sinkC/beatValids_1_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/beatValids_reg[1][0]}
+  slice_pin {r:/WORK/Slice_1/sinkC/beatValids_1_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/beatValids_reg[1][1]}
+  slice_pin {r:/WORK/Slice_1/sinkC/beatValids_2_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/beatValids_reg[2][0]}
+  slice_pin {r:/WORK/Slice_1/sinkC/beatValids_2_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/beatValids_reg[2][1]}
+  slice_pin {r:/WORK/Slice_1/sinkC/beatValids_3_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/beatValids_reg[3][0]}
+  slice_pin {r:/WORK/Slice_1/sinkC/beatValids_3_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/beatValids_reg[3][1]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/dataBuf_0_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/dataBuf_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_1/sinkC/dataBuf_0_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/dataBuf_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_1/sinkC/dataBuf_1_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/dataBuf_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_1/sinkC/dataBuf_1_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/dataBuf_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_1/sinkC/dataBuf_2_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/dataBuf_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_1/sinkC/dataBuf_2_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/dataBuf_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_1/sinkC/dataBuf_3_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/dataBuf_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_1/sinkC/dataBuf_3_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/dataBuf_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_isKeyword_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_off_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_opcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_param_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_sourceId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_aMergeTask_vaddr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_aliasTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_allowRetry_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_bufIdx_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_channel_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_chiOpcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_cmoAll_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_cmoTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_corrupt_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_dbID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_denied_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[denied]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_dsWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_expCompAck_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_fromL2pft_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_fwdNID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_fwdState_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_fwdTxnID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_homeNID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_isKeyword_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_likelyshared_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_memAttr_allocate_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_memAttr_cacheable_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_memAttr_device_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_memAttr_ewa_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_mergeA_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[mergeA]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_metaWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[metaWen]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_mshrId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_mshrRetry_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_mshrTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_needHint_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_needProbeAckData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_off_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[off]} 6
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_opcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_pCrdType_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_param_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[param]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_readProbeDataDown_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_replTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[replTask]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_reqSource_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_resp_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[resp]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_retToSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_set_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[set]} 9
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_size_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[size]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseToClean_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseToInval_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitReleaseWithData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_snpHitRelease_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_sourceId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_srcID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_tagWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_tag_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_tgtID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_traceTag_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_txChannel_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_txnID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_0_useProbeData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_vaddr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_wayMask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_0_way_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[0]\[way]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_isKeyword_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_off_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_opcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_param_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_sourceId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_aMergeTask_vaddr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_aliasTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_allowRetry_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_bufIdx_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_channel_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_chiOpcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_cmoAll_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_cmoTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_corrupt_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_dbID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_denied_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[denied]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_dsWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_expCompAck_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_fromL2pft_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_fwdNID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_fwdState_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_fwdTxnID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_homeNID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_isKeyword_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_likelyshared_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_memAttr_allocate_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_memAttr_cacheable_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_memAttr_device_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_memAttr_ewa_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_mergeA_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[mergeA]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_metaWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[metaWen]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_mshrId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_mshrRetry_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_mshrTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_needHint_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_needProbeAckData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_off_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[off]} 6
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_opcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_pCrdType_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_param_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[param]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_readProbeDataDown_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_replTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[replTask]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_reqSource_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_resp_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[resp]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_retToSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_set_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[set]} 9
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_size_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[size]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseToClean_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseToInval_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitReleaseWithData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_snpHitRelease_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_sourceId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_srcID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_tagWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_tag_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_tgtID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_traceTag_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_txChannel_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_txnID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_1_useProbeData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_vaddr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_wayMask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_1_way_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[1]\[way]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_isKeyword_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_off_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_opcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_param_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_sourceId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_aMergeTask_vaddr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_aliasTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_allowRetry_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_bufIdx_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_channel_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_chiOpcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_cmoAll_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_cmoTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_corrupt_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_dbID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_denied_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[denied]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_dsWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_expCompAck_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_fromL2pft_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_fwdNID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_fwdState_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_fwdTxnID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_homeNID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_isKeyword_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_likelyshared_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_memAttr_allocate_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_memAttr_cacheable_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_memAttr_device_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_memAttr_ewa_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_mergeA_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[mergeA]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_metaWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[metaWen]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_mshrId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_mshrRetry_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_mshrTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_needHint_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_needProbeAckData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_off_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[off]} 6
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_opcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_pCrdType_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_param_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[param]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_readProbeDataDown_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_replTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[replTask]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_reqSource_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_resp_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[resp]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_retToSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_set_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[set]} 9
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_size_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[size]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseToClean_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseToInval_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitReleaseWithData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_snpHitRelease_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_sourceId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_srcID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_tagWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_tag_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_tgtID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_traceTag_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_txChannel_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_txnID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_2_useProbeData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_vaddr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_wayMask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_2_way_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[2]\[way]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_isKeyword_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_off_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_opcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_param_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_sourceId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_aMergeTask_vaddr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_aliasTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_allowRetry_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_bufIdx_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_channel_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_chiOpcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_cmoAll_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_cmoTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_corrupt_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_dbID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_denied_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[denied]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_dsWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_expCompAck_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_fromL2pft_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_fwdNID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_fwdState_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_fwdTxnID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_homeNID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_isKeyword_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_likelyshared_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_memAttr_allocate_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_memAttr_cacheable_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_memAttr_device_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_memAttr_ewa_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_mergeA_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[mergeA]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_metaWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[metaWen]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_meta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_mshrId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_mshrRetry_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_mshrTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_needHint_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_needProbeAckData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_off_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[off]} 6
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_opcode_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_pCrdType_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_param_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[param]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_readProbeDataDown_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_replTask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[replTask]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_reqSource_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_resp_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[resp]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_retToSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_set_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[set]} 9
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_size_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[size]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseToClean_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseToInval_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitReleaseWithData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_snpHitRelease_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_sourceId_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_srcID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_tagWen_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_tag_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_tgtID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_traceTag_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_txChannel_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_txnID_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_1/sinkC/taskBuf_3_useProbeData_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_vaddr_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_wayMask_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_1/sinkC/taskBuf_3_way_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskBuf_reg[3]\[way]} 3
+  slice_pin {r:/WORK/Slice_1/sinkC/taskValids_0_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskValids_reg[0]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskValids_1_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskValids_reg[1]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskValids_2_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskValids_reg[2]}
+  slice_pin {r:/WORK/Slice_1/sinkC/taskValids_3_reg} {i:/WORK/Slice_1/u_core/sinkC/u_core/taskValids_reg[3]}
+  slice_pin {r:/WORK/Slice_1/txdat/beatValids_0_reg} {i:/WORK/Slice_1/u_core/txdat/u_core/beatValids_reg[0]}
+  slice_pin {r:/WORK/Slice_1/txdat/beatValids_1_reg} {i:/WORK/Slice_1/u_core/txdat/u_core/beatValids_reg[1]}
+  slice_pinw {r:/WORK/Slice_1/txdat/queue/deq_ptr_value_reg} {i:/WORK/Slice_1/u_core/txdat/queue/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_1/txdat/queue/enq_ptr_value_reg} {i:/WORK/Slice_1/u_core/txdat/queue/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_1/txdat/queueData0/deq_ptr_value_reg} {i:/WORK/Slice_1/u_core/txdat/queueData0/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_1/txdat/queueData0/enq_ptr_value_reg} {i:/WORK/Slice_1/u_core/txdat/queueData0/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_1/txdat/queueData1/deq_ptr_value_reg} {i:/WORK/Slice_1/u_core/txdat/queueData1/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_1/txdat/queueData1/enq_ptr_value_reg} {i:/WORK/Slice_1/u_core/txdat/queueData1/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_0_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_0_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_10_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[10][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_10_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[10][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_11_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[11][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_11_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[11][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_12_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[12][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_12_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[12][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_13_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[13][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_13_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[13][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_14_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[14][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_14_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[14][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_15_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[15][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_15_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[15][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_1_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_1_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_2_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_2_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_3_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_3_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_4_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[4][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_4_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[4][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_5_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[5][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_5_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[5][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_6_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[6][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_6_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[6][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_7_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[7][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_7_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[7][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_8_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[8][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_8_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[8][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_9_0_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[9][0]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/buffer_9_1_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/buffer_reg[9][1]} 256
+  slice_pinw {r:/WORK/Slice_1/refillBuf/io_resp_data_data_r_reg} {i:/WORK/Slice_1/u_core/refillBuf/u_core/r_data_reg} 512
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_0_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_0_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_10_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[10][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_10_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[10][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_11_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[11][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_11_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[11][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_12_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[12][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_12_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[12][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_13_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[13][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_13_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[13][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_14_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[14][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_14_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[14][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_15_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[15][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_15_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[15][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_1_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_1_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_2_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_2_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_3_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_3_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_4_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[4][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_4_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[4][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_5_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[5][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_5_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[5][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_6_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[6][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_6_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[6][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_7_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[7][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_7_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[7][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_8_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[8][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_8_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[8][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_9_0_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[9][0]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/buffer_9_1_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/buffer_reg[9][1]} 256
+  slice_pinw {r:/WORK/Slice_1/releaseBuf/io_resp_data_data_r_reg} {i:/WORK/Slice_1/u_core/releaseBuf/u_core/r_data_reg} 512
+  slice_pin {r:/WORK/Slice_1/directory/errorAll_s3_0_reg} {i:/WORK/Slice_1/directory/u_core/errorAll_s3_reg[0]}
+  slice_pin {r:/WORK/Slice_1/directory/errorAll_s3_1_reg} {i:/WORK/Slice_1/directory/u_core/errorAll_s3_reg[1]}
+  slice_pin {r:/WORK/Slice_1/directory/errorAll_s3_2_reg} {i:/WORK/Slice_1/directory/u_core/errorAll_s3_reg[2]}
+  slice_pin {r:/WORK/Slice_1/directory/errorAll_s3_3_reg} {i:/WORK/Slice_1/directory/u_core/errorAll_s3_reg[3]}
+  slice_pin {r:/WORK/Slice_1/directory/errorAll_s3_4_reg} {i:/WORK/Slice_1/directory/u_core/errorAll_s3_reg[4]}
+  slice_pin {r:/WORK/Slice_1/directory/errorAll_s3_5_reg} {i:/WORK/Slice_1/directory/u_core/errorAll_s3_reg[5]}
+  slice_pin {r:/WORK/Slice_1/directory/errorAll_s3_6_reg} {i:/WORK/Slice_1/directory/u_core/errorAll_s3_reg[6]}
+  slice_pin {r:/WORK/Slice_1/directory/errorAll_s3_7_reg} {i:/WORK/Slice_1/directory/u_core/errorAll_s3_reg[7]}
+  slice_pinw {r:/WORK/Slice_1/directory/origin_bit_opt/_resetSet_reg} {i:/WORK/Slice_1/directory/origin_bit_opt/u_core/resetSet_reg} 9
+  slice_pin {r:/WORK/Slice_1/directory/origin_bit_opt/_resetState_reg} {i:/WORK/Slice_1/directory/origin_bit_opt/u_core/resetState_reg}
+  slice_pinw {r:/WORK/Slice_1/directory/replacer_sram_opt/_resetSet_reg} {i:/WORK/Slice_1/directory/replacer_sram_opt/u_core/resetSet_reg} 9
+  slice_pin {r:/WORK/Slice_1/directory/replacer_sram_opt/_resetState_reg} {i:/WORK/Slice_1/directory/replacer_sram_opt/u_core/resetState_reg}
+  slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_0_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[0]} 31
+  slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_1_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[1]} 31
+  slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_2_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[2]} 31
+  slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_3_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[3]} 31
+  slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_4_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[4]} 31
+  slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_5_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[5]} 31
+  slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_6_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[6]} 31
+  slice_pinw {r:/WORK/Slice_1/directory/tagAll_s3_7_reg} {i:/WORK/Slice_1/directory/u_core/tagAll_s3_reg[7]} 31
+  slice_pin {r:/WORK/Slice_1/dataStorage/array/array_0_0_0/rckEnReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_0/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_1/dataStorage/array/array_0_0_0/respReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_0/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_1/dataStorage/array/array_0_0_0/wckEnReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_0/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_1/dataStorage/array/array_0_0_1/rckEnReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_1/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_1/dataStorage/array/array_0_0_1/respReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_1/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_1/dataStorage/array/array_0_0_1/wckEnReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_1/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_1/dataStorage/array/array_0_0_2/rckEnReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_2/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_1/dataStorage/array/array_0_0_2/respReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_2/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_1/dataStorage/array/array_0_0_2/wckEnReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_2/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_1/dataStorage/array/array_0_0_3/rckEnReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_3/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_1/dataStorage/array/array_0_0_3/respReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_3/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_1/dataStorage/array/array_0_0_3/wckEnReg_reg} {i:/WORK/Slice_1/dataStorage/array/array_0_0_3/u_core/g_mcp.wckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_1/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice_1/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
   puts "SLICE_PIN_END Slice_1 ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 799} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=799"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 25262} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=25262"
   }
 }
 if {$top eq "Slice_2"} {
-  # DataStorage_2 530, GrantBuffer 33, MSHRCtl 224, RequestBuffer 12
-  puts "SLICE_PIN_BEGIN Slice_2 expect=799"
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_valid_reg i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_rdy_reg i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_waitG_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_waitG_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_waitG_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_waitG_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_waitG_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_waitG_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_waitG_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[7\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[7\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[8\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[8\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[9\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[9\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[10\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[10\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[11\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[11\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[12\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[12\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[13\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[13\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[14\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[14\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[15\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[15\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[16\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[16\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[17\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[17\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[18\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[18\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[19\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[19\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[20\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[20\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[21\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[21\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[22\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[22\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[23\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[23\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[24\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[24\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[25\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[25\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[26\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[26\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[27\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[27\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[28\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[28\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[29\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[29\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_tag_reg\[30\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[30\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[7\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[7\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_set_reg\[8\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[8\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_opcode_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_opcode_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_opcode_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_param_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_param_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_alias_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_0_task_alias_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_valid_reg i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_rdy_reg i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_waitG_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_waitG_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_waitG_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_waitG_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_waitG_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_waitG_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_waitG_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[7\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[7\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[8\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[8\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[9\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[9\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[10\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[10\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[11\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[11\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[12\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[12\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[13\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[13\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[14\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[14\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[15\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[15\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[16\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[16\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[17\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[17\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[18\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[18\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[19\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[19\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[20\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[20\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[21\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[21\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[22\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[22\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[23\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[23\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[24\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[24\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[25\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[25\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[26\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[26\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[27\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[27\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[28\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[28\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[29\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[29\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_tag_reg\[30\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[30\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[7\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[7\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_set_reg\[8\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[8\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_opcode_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_opcode_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_opcode_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_param_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_param_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_alias_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_1_task_alias_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_valid_reg i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_rdy_reg i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_waitG_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_waitG_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_waitG_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_waitG_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_waitG_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_waitG_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_waitG_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[7\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[7\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[8\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[8\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[9\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[9\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[10\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[10\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[11\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[11\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[12\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[12\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[13\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[13\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[14\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[14\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[15\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[15\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[16\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[16\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[17\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[17\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[18\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[18\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[19\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[19\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[20\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[20\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[21\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[21\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[22\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[22\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[23\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[23\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[24\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[24\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[25\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[25\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[26\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[26\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[27\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[27\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[28\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[28\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[29\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[29\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_tag_reg\[30\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[30\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[7\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[7\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_set_reg\[8\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[8\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_opcode_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_opcode_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_opcode_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_param_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_param_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_alias_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_2_task_alias_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_valid_reg i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_rdy_reg i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_waitG_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_waitG_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_waitG_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_waitG_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_waitG_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_waitG_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_waitG_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[7\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[7\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[8\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[8\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[9\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[9\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[10\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[10\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[11\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[11\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[12\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[12\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[13\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[13\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[14\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[14\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[15\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[15\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[16\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[16\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[17\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[17\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[18\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[18\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[19\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[19\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[20\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[20\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[21\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[21\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[22\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[22\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[23\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[23\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[24\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[24\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[25\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[25\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[26\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[26\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[27\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[27\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[28\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[28\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[29\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[29\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_tag_reg\[30\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[30\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[3\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[4\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[5\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[6\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[7\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[7\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_set_reg\[8\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[8\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_opcode_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_opcode_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_opcode_reg\[2\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_param_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_param_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_alias_reg\[0\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_2/mshrCtl/sourceB/probes_3_task_alias_reg\[1\] i:/WORK/Slice_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_1_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_1_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_2_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_2_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_3_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_3_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_4_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_4_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_5_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_5_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_6_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_6_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_7_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_7_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_8_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_8_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_9_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_9_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_10_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_10_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_11_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_11_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_12_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_12_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_13_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_13_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_14_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_14_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_2/grantBuf/REG_15_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/validPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_2/grantBuf/enable_REG_15_reg i:/WORK/Slice_2/u_core/grantBuf/u_core/histValidPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_2/grantBuf/grantBuf_task_param_reg\[2\] i:/WORK/Slice_2/u_core/grantBuf/u_core/gb_param_reg\[2\]
-  slice_pin r:/WORK/Slice_2/reqBuf/REG_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/validPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_2/reqBuf/REG_1_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/timerClear_reg\[0\]
-  slice_pin r:/WORK/Slice_2/reqBuf/enable_REG_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/histValidPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_2/reqBuf/REG_2_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/validPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_2/reqBuf/REG_3_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/timerClear_reg\[1\]
-  slice_pin r:/WORK/Slice_2/reqBuf/enable_REG_1_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/histValidPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_2/reqBuf/REG_4_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/validPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_2/reqBuf/REG_5_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/timerClear_reg\[2\]
-  slice_pin r:/WORK/Slice_2/reqBuf/enable_REG_2_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/histValidPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_2/reqBuf/REG_6_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/validPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_2/reqBuf/REG_7_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/timerClear_reg\[3\]
-  slice_pin r:/WORK/Slice_2/reqBuf/enable_REG_3_reg i:/WORK/Slice_2/u_core/reqBuf/u_core/histValidPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_reg i:/WORK/Slice_2/dataStorage/u_core/mcpEnPrev_reg
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_1_reg i:/WORK/Slice_2/dataStorage/u_core/enPrev_reg
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_3_reg i:/WORK/Slice_2/dataStorage/u_core/wrEnPrev_reg
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[0\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[1\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[2\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[3\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[4\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[5\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[6\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[7\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[8\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[9\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[10\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[11\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[12\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_2_reg\[13\] i:/WORK/Slice_2/dataStorage/u_core/reqPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[0\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[1\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[2\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[3\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[4\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[5\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[6\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[7\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[8\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[9\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[10\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[11\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[12\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[13\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[14\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[15\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[16\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[16\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[17\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[17\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[18\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[18\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[19\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[19\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[20\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[20\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[21\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[21\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[22\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[22\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[23\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[23\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[24\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[24\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[25\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[25\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[26\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[26\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[27\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[27\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[28\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[28\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[29\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[29\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[30\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[30\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[31\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[31\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[32\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[32\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[33\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[33\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[34\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[34\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[35\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[35\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[36\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[36\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[37\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[37\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[38\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[38\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[39\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[39\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[40\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[40\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[41\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[41\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[42\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[42\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[43\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[43\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[44\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[44\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[45\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[45\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[46\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[46\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[47\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[47\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[48\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[48\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[49\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[49\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[50\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[50\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[51\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[51\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[52\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[52\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[53\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[53\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[54\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[54\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[55\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[55\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[56\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[56\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[57\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[57\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[58\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[58\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[59\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[59\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[60\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[60\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[61\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[61\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[62\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[62\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[63\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[63\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[64\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[64\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[65\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[65\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[66\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[66\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[67\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[67\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[68\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[68\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[69\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[69\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[70\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[70\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[71\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[71\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[72\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[72\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[73\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[73\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[74\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[74\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[75\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[75\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[76\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[76\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[77\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[77\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[78\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[78\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[79\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[79\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[80\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[80\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[81\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[81\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[82\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[82\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[83\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[83\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[84\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[84\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[85\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[85\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[86\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[86\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[87\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[87\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[88\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[88\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[89\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[89\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[90\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[90\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[91\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[91\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[92\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[92\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[93\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[93\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[94\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[94\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[95\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[95\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[96\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[96\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[97\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[97\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[98\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[98\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[99\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[99\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[100\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[100\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[101\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[101\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[102\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[102\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[103\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[103\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[104\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[104\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[105\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[105\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[106\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[106\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[107\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[107\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[108\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[108\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[109\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[109\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[110\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[110\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[111\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[111\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[112\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[112\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[113\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[113\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[114\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[114\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[115\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[115\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[116\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[116\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[117\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[117\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[118\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[118\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[119\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[119\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[120\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[120\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[121\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[121\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[122\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[122\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[123\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[123\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[124\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[124\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[125\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[125\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[126\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[126\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[127\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[127\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[128\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[128\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[129\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[129\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[130\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[130\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[131\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[131\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[132\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[132\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[133\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[133\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[134\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[134\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[135\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[135\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[136\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[136\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[137\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[137\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[138\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[138\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[139\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[139\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[140\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[140\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[141\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[141\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[142\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[142\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[143\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[143\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[144\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[144\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[145\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[145\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[146\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[146\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[147\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[147\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[148\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[148\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[149\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[149\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[150\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[150\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[151\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[151\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[152\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[152\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[153\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[153\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[154\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[154\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[155\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[155\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[156\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[156\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[157\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[157\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[158\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[158\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[159\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[159\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[160\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[160\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[161\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[161\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[162\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[162\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[163\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[163\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[164\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[164\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[165\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[165\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[166\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[166\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[167\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[167\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[168\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[168\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[169\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[169\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[170\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[170\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[171\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[171\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[172\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[172\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[173\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[173\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[174\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[174\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[175\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[175\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[176\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[176\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[177\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[177\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[178\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[178\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[179\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[179\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[180\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[180\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[181\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[181\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[182\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[182\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[183\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[183\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[184\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[184\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[185\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[185\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[186\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[186\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[187\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[187\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[188\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[188\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[189\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[189\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[190\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[190\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[191\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[191\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[192\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[192\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[193\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[193\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[194\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[194\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[195\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[195\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[196\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[196\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[197\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[197\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[198\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[198\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[199\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[199\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[200\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[200\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[201\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[201\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[202\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[202\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[203\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[203\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[204\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[204\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[205\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[205\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[206\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[206\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[207\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[207\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[208\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[208\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[209\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[209\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[210\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[210\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[211\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[211\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[212\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[212\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[213\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[213\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[214\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[214\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[215\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[215\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[216\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[216\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[217\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[217\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[218\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[218\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[219\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[219\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[220\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[220\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[221\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[221\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[222\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[222\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[223\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[223\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[224\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[224\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[225\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[225\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[226\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[226\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[227\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[227\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[228\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[228\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[229\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[229\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[230\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[230\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[231\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[231\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[232\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[232\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[233\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[233\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[234\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[234\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[235\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[235\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[236\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[236\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[237\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[237\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[238\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[238\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[239\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[239\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[240\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[240\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[241\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[241\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[242\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[242\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[243\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[243\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[244\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[244\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[245\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[245\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[246\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[246\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[247\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[247\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[248\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[248\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[249\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[249\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[250\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[250\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[251\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[251\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[252\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[252\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[253\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[253\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[254\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[254\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[255\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[255\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[256\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[256\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[257\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[257\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[258\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[258\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[259\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[259\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[260\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[260\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[261\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[261\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[262\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[262\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[263\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[263\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[264\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[264\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[265\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[265\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[266\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[266\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[267\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[267\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[268\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[268\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[269\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[269\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[270\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[270\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[271\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[271\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[272\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[272\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[273\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[273\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[274\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[274\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[275\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[275\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[276\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[276\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[277\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[277\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[278\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[278\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[279\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[279\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[280\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[280\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[281\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[281\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[282\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[282\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[283\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[283\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[284\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[284\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[285\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[285\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[286\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[286\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[287\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[287\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[288\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[288\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[289\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[289\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[290\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[290\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[291\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[291\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[292\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[292\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[293\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[293\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[294\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[294\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[295\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[295\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[296\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[296\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[297\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[297\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[298\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[298\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[299\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[299\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[300\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[300\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[301\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[301\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[302\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[302\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[303\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[303\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[304\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[304\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[305\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[305\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[306\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[306\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[307\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[307\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[308\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[308\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[309\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[309\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[310\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[310\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[311\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[311\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[312\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[312\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[313\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[313\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[314\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[314\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[315\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[315\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[316\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[316\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[317\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[317\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[318\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[318\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[319\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[319\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[320\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[320\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[321\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[321\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[322\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[322\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[323\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[323\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[324\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[324\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[325\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[325\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[326\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[326\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[327\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[327\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[328\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[328\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[329\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[329\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[330\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[330\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[331\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[331\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[332\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[332\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[333\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[333\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[334\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[334\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[335\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[335\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[336\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[336\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[337\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[337\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[338\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[338\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[339\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[339\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[340\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[340\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[341\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[341\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[342\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[342\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[343\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[343\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[344\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[344\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[345\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[345\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[346\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[346\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[347\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[347\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[348\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[348\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[349\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[349\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[350\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[350\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[351\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[351\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[352\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[352\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[353\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[353\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[354\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[354\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[355\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[355\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[356\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[356\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[357\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[357\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[358\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[358\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[359\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[359\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[360\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[360\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[361\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[361\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[362\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[362\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[363\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[363\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[364\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[364\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[365\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[365\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[366\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[366\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[367\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[367\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[368\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[368\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[369\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[369\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[370\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[370\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[371\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[371\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[372\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[372\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[373\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[373\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[374\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[374\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[375\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[375\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[376\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[376\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[377\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[377\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[378\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[378\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[379\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[379\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[380\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[380\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[381\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[381\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[382\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[382\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[383\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[383\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[384\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[384\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[385\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[385\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[386\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[386\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[387\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[387\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[388\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[388\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[389\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[389\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[390\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[390\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[391\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[391\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[392\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[392\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[393\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[393\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[394\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[394\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[395\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[395\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[396\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[396\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[397\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[397\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[398\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[398\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[399\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[399\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[400\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[400\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[401\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[401\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[402\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[402\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[403\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[403\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[404\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[404\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[405\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[405\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[406\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[406\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[407\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[407\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[408\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[408\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[409\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[409\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[410\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[410\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[411\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[411\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[412\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[412\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[413\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[413\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[414\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[414\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[415\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[415\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[416\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[416\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[417\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[417\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[418\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[418\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[419\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[419\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[420\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[420\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[421\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[421\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[422\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[422\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[423\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[423\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[424\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[424\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[425\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[425\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[426\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[426\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[427\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[427\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[428\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[428\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[429\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[429\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[430\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[430\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[431\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[431\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[432\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[432\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[433\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[433\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[434\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[434\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[435\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[435\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[436\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[436\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[437\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[437\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[438\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[438\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[439\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[439\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[440\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[440\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[441\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[441\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[442\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[442\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[443\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[443\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[444\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[444\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[445\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[445\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[446\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[446\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[447\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[447\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[448\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[448\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[449\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[449\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[450\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[450\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[451\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[451\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[452\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[452\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[453\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[453\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[454\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[454\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[455\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[455\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[456\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[456\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[457\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[457\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[458\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[458\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[459\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[459\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[460\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[460\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[461\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[461\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[462\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[462\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[463\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[463\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[464\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[464\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[465\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[465\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[466\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[466\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[467\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[467\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[468\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[468\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[469\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[469\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[470\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[470\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[471\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[471\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[472\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[472\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[473\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[473\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[474\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[474\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[475\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[475\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[476\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[476\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[477\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[477\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[478\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[478\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[479\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[479\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[480\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[480\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[481\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[481\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[482\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[482\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[483\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[483\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[484\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[484\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[485\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[485\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[486\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[486\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[487\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[487\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[488\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[488\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[489\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[489\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[490\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[490\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[491\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[491\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[492\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[492\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[493\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[493\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[494\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[494\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[495\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[495\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[496\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[496\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[497\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[497\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[498\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[498\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[499\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[499\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[500\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[500\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[501\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[501\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[502\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[502\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[503\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[503\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[504\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[504\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[505\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[505\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[506\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[506\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[507\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[507\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[508\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[508\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[509\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[509\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[510\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[510\]
-  slice_pin r:/WORK/Slice_2/dataStorage/REG_4_reg\[511\] i:/WORK/Slice_2/dataStorage/u_core/wdataPrev_reg\[511\]
-  slice_pin r:/WORK/Slice_2/dataStorage/mbistPl/beReg_reg i:/WORK/Slice_2/dataStorage/mbistPl/u_core/beReg_reg\[0\]
+  # MSHRCtl 1184, MainPipe_1 769, GrantBuffer 1024, RequestBuffer 64, RequestArb 766, SinkC 3592, RXSNP 0, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_2 276, DataStorage_2 16, L2Slice_2 137
+  puts "SLICE_PIN_BEGIN Slice_2 expect=25262"
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_12_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[12]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_13_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[13]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_14_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[14]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_15_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[15]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_1_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[1]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_2_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[2]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_3_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[3]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_4_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[4]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_5_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[5]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_6_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[6]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_7_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[7]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_8_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[8]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/hpm_timers_9_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/hpm_timers_reg[9]} 10
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_0_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[0]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_10_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[10]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_11_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[11]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_12_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[12]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_13_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[13]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_14_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[14]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_15_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[15]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_1_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[1]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_2_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[2]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_3_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[3]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_4_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[4]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_5_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[5]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_6_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[6]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_7_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[7]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_8_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[8]} 64
+  slice_pinw {r:/WORK/Slice_2/mshrCtl/timers_9_reg} {i:/WORK/Slice_2/u_core/mshrCtl/u_core/timers_reg[9]} 64
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s3_valid_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s3_valid_reg}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_off_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_param_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_aliasTask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_allowRetry_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_bufIdx_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_channel_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_chiOpcode_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_cmoAll_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_cmoTask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_corrupt_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_dbID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_denied_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[denied]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_dirty_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_dsWen_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_expCompAck_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_fromL2pft_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_fwdNID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_fwdState_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_fwdTxnID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_homeNID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_isKeyword_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_likelyshared_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_memAttr_allocate_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_memAttr_cacheable_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_memAttr_device_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_memAttr_ewa_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_mergeA_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_metaWen_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_accessed_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_clients_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_dirty_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_state_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_mshrId_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_mshrRetry_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_mshrTask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_needHint_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_needProbeAckData_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_off_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_opcode_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_pCrdType_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_param_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_readProbeDataDown_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_replTask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_reqSource_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_resp_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_retToSrc_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_set_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_size_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_snpHitRelease_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_sourceId_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_srcID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_tagWen_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_tag_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_tgtID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_traceTag_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_txChannel_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_txnID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_bits_useProbeData_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_vaddr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_wayMask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s4_bits_way_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s4_valid_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s4_valid_reg}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_off_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_param_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_aliasTask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_allowRetry_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_bufIdx_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_channel_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_chiOpcode_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_cmoAll_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_cmoTask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_corrupt_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_dbID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_denied_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[denied]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_dirty_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_dsWen_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_expCompAck_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_fromL2pft_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_fwdNID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_fwdState_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_fwdTxnID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_homeNID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_isKeyword_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_likelyshared_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_memAttr_allocate_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_memAttr_cacheable_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_memAttr_device_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_memAttr_ewa_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_mergeA_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_metaWen_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_accessed_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_clients_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_dirty_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_state_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_mshrId_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_mshrRetry_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_mshrTask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_needHint_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_needProbeAckData_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_off_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_opcode_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_pCrdType_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_param_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_readProbeDataDown_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_replTask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_reqSource_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_resp_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_retToSrc_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_set_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_size_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_snpHitRelease_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_sourceId_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_srcID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_tagWen_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_tag_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_tgtID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_traceTag_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_txChannel_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_txnID_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_bits_useProbeData_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_vaddr_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_wayMask_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_2/mainPipe/task_s5_bits_way_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_2/mainPipe/task_s5_valid_reg} {i:/WORK/Slice_2/u_core/mainPipe/u_core/s5_valid_reg}
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_0_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[0]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_10_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[10]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_11_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[11]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_12_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[12]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_13_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[13]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_14_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[14]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_15_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[15]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_1_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[1]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_2_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[2]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_3_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[3]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_4_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[4]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_5_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[5]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_6_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[6]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_7_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[7]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_8_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[8]} 64
+  slice_pinw {r:/WORK/Slice_2/grantBuf/timers_9_reg} {i:/WORK/Slice_2/u_core/grantBuf/u_core/timers_reg[9]} 64
+  slice_pinw {r:/WORK/Slice_2/reqBuf/bufferTimer_0_reg} {i:/WORK/Slice_2/u_core/reqBuf/u_core/bufferTimer_reg[0]} 16
+  slice_pinw {r:/WORK/Slice_2/reqBuf/bufferTimer_1_reg} {i:/WORK/Slice_2/u_core/reqBuf/u_core/bufferTimer_reg[1]} 16
+  slice_pinw {r:/WORK/Slice_2/reqBuf/bufferTimer_2_reg} {i:/WORK/Slice_2/u_core/reqBuf/u_core/bufferTimer_reg[2]} 16
+  slice_pinw {r:/WORK/Slice_2/reqBuf/bufferTimer_3_reg} {i:/WORK/Slice_2/u_core/reqBuf/u_core/bufferTimer_reg[3]} 16
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_off_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_param_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_aliasTask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_allowRetry_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_bufIdx_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_channel_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_chiOpcode_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_cmoAll_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_cmoTask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_corrupt_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_dbID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_denied_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[denied]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_dirty_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_dsWen_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_expCompAck_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_fromL2pft_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_fwdNID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_fwdState_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_fwdTxnID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_homeNID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_isKeyword_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_likelyshared_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_memAttr_allocate_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_memAttr_cacheable_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_memAttr_device_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_memAttr_ewa_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_mergeA_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_metaWen_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_accessed_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_clients_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_dirty_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_state_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_mshrId_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_mshrRetry_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_mshrTask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_needHint_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_needProbeAckData_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_off_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_opcode_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_pCrdType_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_param_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_readProbeDataDown_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_replTask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_reqSource_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_resp_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_retToSrc_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_set_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_size_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_snpHitRelease_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_sourceId_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_srcID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_tagWen_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_tag_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_tgtID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_traceTag_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_txChannel_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_txnID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_useProbeData_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_vaddr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_wayMask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_2/reqArb/mshr_task_s1_bits_way_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_off_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_param_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_aliasTask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_allowRetry_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_bufIdx_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_channel_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_chiOpcode_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_cmoAll_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_cmoTask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_corrupt_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_dbID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_denied_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[denied]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_dirty_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_dsWen_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_expCompAck_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_fromL2pft_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_fwdNID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_fwdState_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_fwdTxnID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_homeNID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_isKeyword_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_likelyshared_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_memAttr_allocate_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_memAttr_cacheable_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_memAttr_device_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_memAttr_ewa_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_mergeA_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_metaWen_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_accessed_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_clients_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_dirty_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_state_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_mshrId_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_mshrRetry_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_mshrTask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_needHint_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_needProbeAckData_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_off_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_opcode_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_pCrdType_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_param_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_readProbeDataDown_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_replTask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_reqSource_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_resp_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_retToSrc_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_set_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_size_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_snpHitRelease_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_sourceId_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_srcID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_tagWen_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_tag_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_tgtID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_traceTag_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_txChannel_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_txnID_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_2/reqArb/task_s2_bits_useProbeData_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_vaddr_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_wayMask_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_2/reqArb/task_s2_bits_way_reg} {i:/WORK/Slice_2/u_core/reqArb/u_core/task_s2_bits_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/beatValids_0_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/beatValids_reg[0][0]}
+  slice_pin {r:/WORK/Slice_2/sinkC/beatValids_0_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/beatValids_reg[0][1]}
+  slice_pin {r:/WORK/Slice_2/sinkC/beatValids_1_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/beatValids_reg[1][0]}
+  slice_pin {r:/WORK/Slice_2/sinkC/beatValids_1_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/beatValids_reg[1][1]}
+  slice_pin {r:/WORK/Slice_2/sinkC/beatValids_2_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/beatValids_reg[2][0]}
+  slice_pin {r:/WORK/Slice_2/sinkC/beatValids_2_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/beatValids_reg[2][1]}
+  slice_pin {r:/WORK/Slice_2/sinkC/beatValids_3_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/beatValids_reg[3][0]}
+  slice_pin {r:/WORK/Slice_2/sinkC/beatValids_3_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/beatValids_reg[3][1]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/dataBuf_0_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/dataBuf_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_2/sinkC/dataBuf_0_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/dataBuf_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_2/sinkC/dataBuf_1_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/dataBuf_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_2/sinkC/dataBuf_1_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/dataBuf_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_2/sinkC/dataBuf_2_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/dataBuf_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_2/sinkC/dataBuf_2_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/dataBuf_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_2/sinkC/dataBuf_3_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/dataBuf_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_2/sinkC/dataBuf_3_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/dataBuf_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_isKeyword_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_off_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_opcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_param_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_sourceId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_aMergeTask_vaddr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_aliasTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_allowRetry_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_bufIdx_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_channel_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_chiOpcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_cmoAll_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_cmoTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_corrupt_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_dbID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_denied_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[denied]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_dsWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_expCompAck_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_fromL2pft_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_fwdNID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_fwdState_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_fwdTxnID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_homeNID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_isKeyword_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_likelyshared_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_memAttr_allocate_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_memAttr_cacheable_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_memAttr_device_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_memAttr_ewa_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_mergeA_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[mergeA]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_metaWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[metaWen]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_mshrId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_mshrRetry_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_mshrTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_needHint_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_needProbeAckData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_off_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[off]} 6
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_opcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_pCrdType_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_param_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[param]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_readProbeDataDown_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_replTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[replTask]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_reqSource_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_resp_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[resp]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_retToSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_set_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[set]} 9
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_size_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[size]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseToClean_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseToInval_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitReleaseWithData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_snpHitRelease_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_sourceId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_srcID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_tagWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_tag_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_tgtID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_traceTag_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_txChannel_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_txnID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_0_useProbeData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_vaddr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_wayMask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_0_way_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[0]\[way]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_isKeyword_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_off_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_opcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_param_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_sourceId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_aMergeTask_vaddr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_aliasTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_allowRetry_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_bufIdx_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_channel_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_chiOpcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_cmoAll_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_cmoTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_corrupt_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_dbID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_denied_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[denied]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_dsWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_expCompAck_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_fromL2pft_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_fwdNID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_fwdState_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_fwdTxnID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_homeNID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_isKeyword_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_likelyshared_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_memAttr_allocate_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_memAttr_cacheable_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_memAttr_device_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_memAttr_ewa_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_mergeA_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[mergeA]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_metaWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[metaWen]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_mshrId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_mshrRetry_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_mshrTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_needHint_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_needProbeAckData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_off_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[off]} 6
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_opcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_pCrdType_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_param_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[param]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_readProbeDataDown_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_replTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[replTask]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_reqSource_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_resp_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[resp]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_retToSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_set_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[set]} 9
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_size_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[size]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseToClean_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseToInval_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitReleaseWithData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_snpHitRelease_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_sourceId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_srcID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_tagWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_tag_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_tgtID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_traceTag_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_txChannel_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_txnID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_1_useProbeData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_vaddr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_wayMask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_1_way_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[1]\[way]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_isKeyword_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_off_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_opcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_param_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_sourceId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_aMergeTask_vaddr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_aliasTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_allowRetry_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_bufIdx_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_channel_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_chiOpcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_cmoAll_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_cmoTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_corrupt_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_dbID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_denied_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[denied]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_dsWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_expCompAck_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_fromL2pft_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_fwdNID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_fwdState_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_fwdTxnID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_homeNID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_isKeyword_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_likelyshared_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_memAttr_allocate_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_memAttr_cacheable_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_memAttr_device_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_memAttr_ewa_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_mergeA_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[mergeA]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_metaWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[metaWen]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_mshrId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_mshrRetry_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_mshrTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_needHint_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_needProbeAckData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_off_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[off]} 6
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_opcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_pCrdType_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_param_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[param]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_readProbeDataDown_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_replTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[replTask]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_reqSource_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_resp_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[resp]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_retToSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_set_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[set]} 9
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_size_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[size]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseToClean_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseToInval_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitReleaseWithData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_snpHitRelease_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_sourceId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_srcID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_tagWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_tag_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_tgtID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_traceTag_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_txChannel_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_txnID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_2_useProbeData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_vaddr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_wayMask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_2_way_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[2]\[way]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_isKeyword_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_off_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_opcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_param_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_sourceId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_aMergeTask_vaddr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_aliasTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_allowRetry_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_bufIdx_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_channel_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_chiOpcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_cmoAll_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_cmoTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_corrupt_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_dbID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_denied_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[denied]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_dsWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_expCompAck_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_fromL2pft_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_fwdNID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_fwdState_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_fwdTxnID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_homeNID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_isKeyword_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_likelyshared_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_memAttr_allocate_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_memAttr_cacheable_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_memAttr_device_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_memAttr_ewa_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_mergeA_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[mergeA]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_metaWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[metaWen]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_meta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_mshrId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_mshrRetry_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_mshrTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_needHint_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_needProbeAckData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_off_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[off]} 6
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_opcode_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_pCrdType_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_param_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[param]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_readProbeDataDown_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_replTask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[replTask]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_reqSource_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_resp_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[resp]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_retToSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_set_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[set]} 9
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_size_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[size]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseToClean_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseToInval_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitReleaseWithData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_snpHitRelease_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_sourceId_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_srcID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_tagWen_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_tag_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_tgtID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_traceTag_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_txChannel_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_txnID_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_2/sinkC/taskBuf_3_useProbeData_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_vaddr_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_wayMask_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_2/sinkC/taskBuf_3_way_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskBuf_reg[3]\[way]} 3
+  slice_pin {r:/WORK/Slice_2/sinkC/taskValids_0_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskValids_reg[0]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskValids_1_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskValids_reg[1]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskValids_2_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskValids_reg[2]}
+  slice_pin {r:/WORK/Slice_2/sinkC/taskValids_3_reg} {i:/WORK/Slice_2/u_core/sinkC/u_core/taskValids_reg[3]}
+  slice_pin {r:/WORK/Slice_2/txdat/beatValids_0_reg} {i:/WORK/Slice_2/u_core/txdat/u_core/beatValids_reg[0]}
+  slice_pin {r:/WORK/Slice_2/txdat/beatValids_1_reg} {i:/WORK/Slice_2/u_core/txdat/u_core/beatValids_reg[1]}
+  slice_pinw {r:/WORK/Slice_2/txdat/queue/deq_ptr_value_reg} {i:/WORK/Slice_2/u_core/txdat/queue/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_2/txdat/queue/enq_ptr_value_reg} {i:/WORK/Slice_2/u_core/txdat/queue/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_2/txdat/queueData0/deq_ptr_value_reg} {i:/WORK/Slice_2/u_core/txdat/queueData0/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_2/txdat/queueData0/enq_ptr_value_reg} {i:/WORK/Slice_2/u_core/txdat/queueData0/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_2/txdat/queueData1/deq_ptr_value_reg} {i:/WORK/Slice_2/u_core/txdat/queueData1/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_2/txdat/queueData1/enq_ptr_value_reg} {i:/WORK/Slice_2/u_core/txdat/queueData1/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_0_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_0_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_10_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[10][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_10_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[10][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_11_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[11][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_11_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[11][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_12_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[12][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_12_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[12][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_13_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[13][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_13_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[13][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_14_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[14][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_14_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[14][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_15_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[15][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_15_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[15][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_1_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_1_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_2_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_2_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_3_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_3_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_4_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[4][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_4_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[4][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_5_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[5][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_5_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[5][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_6_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[6][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_6_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[6][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_7_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[7][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_7_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[7][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_8_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[8][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_8_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[8][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_9_0_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[9][0]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/buffer_9_1_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/buffer_reg[9][1]} 256
+  slice_pinw {r:/WORK/Slice_2/refillBuf/io_resp_data_data_r_reg} {i:/WORK/Slice_2/u_core/refillBuf/u_core/r_data_reg} 512
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_0_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_0_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_10_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[10][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_10_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[10][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_11_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[11][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_11_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[11][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_12_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[12][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_12_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[12][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_13_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[13][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_13_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[13][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_14_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[14][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_14_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[14][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_15_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[15][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_15_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[15][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_1_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_1_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_2_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_2_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_3_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_3_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_4_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[4][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_4_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[4][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_5_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[5][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_5_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[5][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_6_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[6][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_6_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[6][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_7_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[7][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_7_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[7][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_8_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[8][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_8_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[8][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_9_0_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[9][0]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/buffer_9_1_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/buffer_reg[9][1]} 256
+  slice_pinw {r:/WORK/Slice_2/releaseBuf/io_resp_data_data_r_reg} {i:/WORK/Slice_2/u_core/releaseBuf/u_core/r_data_reg} 512
+  slice_pin {r:/WORK/Slice_2/directory/errorAll_s3_0_reg} {i:/WORK/Slice_2/directory/u_core/errorAll_s3_reg[0]}
+  slice_pin {r:/WORK/Slice_2/directory/errorAll_s3_1_reg} {i:/WORK/Slice_2/directory/u_core/errorAll_s3_reg[1]}
+  slice_pin {r:/WORK/Slice_2/directory/errorAll_s3_2_reg} {i:/WORK/Slice_2/directory/u_core/errorAll_s3_reg[2]}
+  slice_pin {r:/WORK/Slice_2/directory/errorAll_s3_3_reg} {i:/WORK/Slice_2/directory/u_core/errorAll_s3_reg[3]}
+  slice_pin {r:/WORK/Slice_2/directory/errorAll_s3_4_reg} {i:/WORK/Slice_2/directory/u_core/errorAll_s3_reg[4]}
+  slice_pin {r:/WORK/Slice_2/directory/errorAll_s3_5_reg} {i:/WORK/Slice_2/directory/u_core/errorAll_s3_reg[5]}
+  slice_pin {r:/WORK/Slice_2/directory/errorAll_s3_6_reg} {i:/WORK/Slice_2/directory/u_core/errorAll_s3_reg[6]}
+  slice_pin {r:/WORK/Slice_2/directory/errorAll_s3_7_reg} {i:/WORK/Slice_2/directory/u_core/errorAll_s3_reg[7]}
+  slice_pinw {r:/WORK/Slice_2/directory/origin_bit_opt/_resetSet_reg} {i:/WORK/Slice_2/directory/origin_bit_opt/u_core/resetSet_reg} 9
+  slice_pin {r:/WORK/Slice_2/directory/origin_bit_opt/_resetState_reg} {i:/WORK/Slice_2/directory/origin_bit_opt/u_core/resetState_reg}
+  slice_pinw {r:/WORK/Slice_2/directory/replacer_sram_opt/_resetSet_reg} {i:/WORK/Slice_2/directory/replacer_sram_opt/u_core/resetSet_reg} 9
+  slice_pin {r:/WORK/Slice_2/directory/replacer_sram_opt/_resetState_reg} {i:/WORK/Slice_2/directory/replacer_sram_opt/u_core/resetState_reg}
+  slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_0_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[0]} 31
+  slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_1_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[1]} 31
+  slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_2_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[2]} 31
+  slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_3_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[3]} 31
+  slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_4_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[4]} 31
+  slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_5_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[5]} 31
+  slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_6_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[6]} 31
+  slice_pinw {r:/WORK/Slice_2/directory/tagAll_s3_7_reg} {i:/WORK/Slice_2/directory/u_core/tagAll_s3_reg[7]} 31
+  slice_pin {r:/WORK/Slice_2/dataStorage/array/array_0_0_0/rckEnReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_0/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_2/dataStorage/array/array_0_0_0/respReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_0/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_2/dataStorage/array/array_0_0_0/wckEnReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_0/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_2/dataStorage/array/array_0_0_1/rckEnReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_1/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_2/dataStorage/array/array_0_0_1/respReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_1/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_2/dataStorage/array/array_0_0_1/wckEnReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_1/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_2/dataStorage/array/array_0_0_2/rckEnReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_2/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_2/dataStorage/array/array_0_0_2/respReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_2/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_2/dataStorage/array/array_0_0_2/wckEnReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_2/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_2/dataStorage/array/array_0_0_3/rckEnReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_3/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_2/dataStorage/array/array_0_0_3/respReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_3/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_2/dataStorage/array/array_0_0_3/wckEnReg_reg} {i:/WORK/Slice_2/dataStorage/array/array_0_0_3/u_core/g_mcp.wckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_2/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice_2/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
   puts "SLICE_PIN_END Slice_2 ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 799} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=799"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 25262} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=25262"
   }
 }
 if {$top eq "Slice_3"} {
-  # DataStorage_3 530, GrantBuffer 33, MSHRCtl 224, RequestBuffer 12
-  puts "SLICE_PIN_BEGIN Slice_3 expect=799"
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_valid_reg i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_rdy_reg i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_waitG_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_waitG_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_waitG_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_waitG_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_waitG_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_waitG_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_waitG_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[7\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[7\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[8\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[8\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[9\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[9\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[10\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[10\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[11\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[11\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[12\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[12\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[13\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[13\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[14\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[14\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[15\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[15\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[16\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[16\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[17\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[17\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[18\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[18\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[19\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[19\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[20\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[20\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[21\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[21\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[22\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[22\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[23\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[23\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[24\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[24\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[25\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[25\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[26\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[26\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[27\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[27\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[28\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[28\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[29\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[29\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_tag_reg\[30\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[0\]\[30\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[7\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[7\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_set_reg\[8\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[0\]\[8\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_opcode_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_opcode_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_opcode_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[0\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_param_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_param_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_alias_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[0\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_0_task_alias_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[0\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_valid_reg i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_rdy_reg i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_waitG_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_waitG_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_waitG_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_waitG_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_waitG_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_waitG_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_waitG_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[7\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[7\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[8\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[8\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[9\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[9\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[10\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[10\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[11\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[11\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[12\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[12\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[13\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[13\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[14\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[14\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[15\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[15\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[16\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[16\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[17\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[17\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[18\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[18\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[19\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[19\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[20\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[20\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[21\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[21\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[22\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[22\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[23\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[23\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[24\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[24\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[25\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[25\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[26\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[26\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[27\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[27\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[28\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[28\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[29\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[29\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_tag_reg\[30\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[1\]\[30\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[7\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[7\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_set_reg\[8\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[1\]\[8\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_opcode_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_opcode_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_opcode_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[1\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_param_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_param_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_alias_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[1\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_1_task_alias_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[1\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_valid_reg i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_rdy_reg i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_waitG_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_waitG_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_waitG_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_waitG_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_waitG_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_waitG_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_waitG_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[7\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[7\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[8\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[8\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[9\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[9\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[10\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[10\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[11\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[11\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[12\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[12\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[13\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[13\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[14\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[14\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[15\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[15\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[16\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[16\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[17\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[17\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[18\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[18\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[19\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[19\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[20\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[20\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[21\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[21\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[22\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[22\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[23\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[23\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[24\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[24\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[25\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[25\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[26\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[26\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[27\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[27\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[28\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[28\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[29\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[29\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_tag_reg\[30\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[2\]\[30\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[7\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[7\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_set_reg\[8\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[2\]\[8\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_opcode_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_opcode_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_opcode_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[2\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_param_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_param_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_alias_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[2\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_2_task_alias_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[2\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_valid_reg i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_rdy_reg i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_waitG_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_waitG_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_waitG_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_waitG_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_waitG_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_waitG_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_waitG_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[7\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[7\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[8\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[8\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[9\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[9\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[10\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[10\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[11\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[11\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[12\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[12\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[13\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[13\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[14\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[14\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[15\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[15\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[16\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[16\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[17\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[17\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[18\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[18\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[19\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[19\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[20\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[20\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[21\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[21\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[22\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[22\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[23\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[23\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[24\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[24\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[25\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[25\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[26\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[26\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[27\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[27\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[28\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[28\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[29\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[29\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_tag_reg\[30\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg\[3\]\[30\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[3\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[3\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[4\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[4\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[5\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[5\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[6\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[6\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[7\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[7\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_set_reg\[8\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg\[3\]\[8\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_opcode_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_opcode_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_opcode_reg\[2\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg\[3\]\[2\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_param_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_param_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_param_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_alias_reg\[0\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[3\]\[0\]
-  slice_pin r:/WORK/Slice_3/mshrCtl/sourceB/probes_3_task_alias_reg\[1\] i:/WORK/Slice_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg\[3\]\[1\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_1_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_1_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_2_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_2_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_3_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_3_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_4_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_4_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_5_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_5_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_6_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_6_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_7_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_7_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_8_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_8_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_9_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_9_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_10_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_10_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_11_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_11_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_12_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_12_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_13_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_13_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_14_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_14_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_3/grantBuf/REG_15_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/validPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_3/grantBuf/enable_REG_15_reg i:/WORK/Slice_3/u_core/grantBuf/u_core/histValidPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_3/grantBuf/grantBuf_task_param_reg\[2\] i:/WORK/Slice_3/u_core/grantBuf/u_core/gb_param_reg\[2\]
-  slice_pin r:/WORK/Slice_3/reqBuf/REG_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/validPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_3/reqBuf/REG_1_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/timerClear_reg\[0\]
-  slice_pin r:/WORK/Slice_3/reqBuf/enable_REG_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/histValidPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_3/reqBuf/REG_2_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/validPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_3/reqBuf/REG_3_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/timerClear_reg\[1\]
-  slice_pin r:/WORK/Slice_3/reqBuf/enable_REG_1_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/histValidPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_3/reqBuf/REG_4_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/validPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_3/reqBuf/REG_5_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/timerClear_reg\[2\]
-  slice_pin r:/WORK/Slice_3/reqBuf/enable_REG_2_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/histValidPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_3/reqBuf/REG_6_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/validPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_3/reqBuf/REG_7_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/timerClear_reg\[3\]
-  slice_pin r:/WORK/Slice_3/reqBuf/enable_REG_3_reg i:/WORK/Slice_3/u_core/reqBuf/u_core/histValidPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_reg i:/WORK/Slice_3/dataStorage/u_core/mcpEnPrev_reg
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_1_reg i:/WORK/Slice_3/dataStorage/u_core/enPrev_reg
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_3_reg i:/WORK/Slice_3/dataStorage/u_core/wrEnPrev_reg
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[0\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[1\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[2\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[3\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[4\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[5\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[6\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[7\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[8\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[9\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[10\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[11\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[12\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_2_reg\[13\] i:/WORK/Slice_3/dataStorage/u_core/reqPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[0\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[0\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[1\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[1\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[2\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[2\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[3\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[3\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[4\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[4\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[5\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[5\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[6\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[6\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[7\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[7\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[8\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[8\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[9\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[9\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[10\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[10\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[11\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[11\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[12\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[12\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[13\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[13\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[14\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[14\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[15\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[15\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[16\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[16\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[17\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[17\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[18\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[18\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[19\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[19\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[20\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[20\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[21\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[21\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[22\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[22\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[23\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[23\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[24\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[24\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[25\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[25\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[26\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[26\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[27\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[27\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[28\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[28\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[29\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[29\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[30\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[30\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[31\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[31\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[32\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[32\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[33\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[33\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[34\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[34\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[35\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[35\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[36\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[36\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[37\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[37\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[38\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[38\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[39\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[39\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[40\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[40\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[41\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[41\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[42\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[42\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[43\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[43\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[44\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[44\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[45\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[45\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[46\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[46\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[47\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[47\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[48\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[48\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[49\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[49\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[50\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[50\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[51\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[51\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[52\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[52\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[53\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[53\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[54\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[54\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[55\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[55\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[56\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[56\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[57\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[57\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[58\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[58\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[59\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[59\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[60\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[60\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[61\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[61\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[62\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[62\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[63\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[63\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[64\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[64\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[65\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[65\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[66\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[66\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[67\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[67\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[68\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[68\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[69\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[69\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[70\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[70\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[71\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[71\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[72\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[72\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[73\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[73\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[74\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[74\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[75\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[75\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[76\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[76\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[77\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[77\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[78\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[78\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[79\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[79\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[80\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[80\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[81\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[81\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[82\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[82\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[83\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[83\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[84\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[84\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[85\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[85\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[86\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[86\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[87\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[87\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[88\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[88\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[89\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[89\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[90\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[90\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[91\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[91\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[92\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[92\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[93\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[93\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[94\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[94\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[95\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[95\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[96\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[96\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[97\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[97\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[98\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[98\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[99\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[99\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[100\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[100\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[101\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[101\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[102\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[102\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[103\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[103\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[104\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[104\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[105\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[105\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[106\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[106\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[107\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[107\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[108\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[108\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[109\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[109\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[110\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[110\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[111\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[111\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[112\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[112\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[113\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[113\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[114\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[114\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[115\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[115\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[116\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[116\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[117\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[117\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[118\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[118\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[119\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[119\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[120\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[120\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[121\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[121\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[122\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[122\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[123\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[123\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[124\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[124\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[125\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[125\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[126\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[126\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[127\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[127\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[128\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[128\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[129\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[129\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[130\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[130\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[131\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[131\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[132\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[132\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[133\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[133\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[134\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[134\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[135\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[135\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[136\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[136\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[137\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[137\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[138\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[138\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[139\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[139\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[140\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[140\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[141\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[141\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[142\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[142\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[143\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[143\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[144\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[144\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[145\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[145\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[146\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[146\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[147\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[147\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[148\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[148\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[149\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[149\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[150\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[150\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[151\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[151\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[152\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[152\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[153\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[153\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[154\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[154\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[155\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[155\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[156\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[156\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[157\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[157\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[158\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[158\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[159\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[159\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[160\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[160\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[161\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[161\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[162\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[162\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[163\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[163\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[164\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[164\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[165\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[165\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[166\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[166\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[167\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[167\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[168\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[168\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[169\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[169\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[170\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[170\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[171\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[171\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[172\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[172\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[173\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[173\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[174\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[174\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[175\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[175\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[176\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[176\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[177\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[177\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[178\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[178\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[179\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[179\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[180\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[180\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[181\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[181\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[182\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[182\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[183\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[183\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[184\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[184\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[185\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[185\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[186\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[186\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[187\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[187\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[188\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[188\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[189\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[189\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[190\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[190\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[191\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[191\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[192\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[192\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[193\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[193\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[194\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[194\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[195\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[195\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[196\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[196\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[197\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[197\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[198\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[198\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[199\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[199\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[200\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[200\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[201\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[201\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[202\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[202\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[203\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[203\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[204\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[204\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[205\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[205\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[206\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[206\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[207\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[207\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[208\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[208\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[209\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[209\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[210\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[210\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[211\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[211\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[212\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[212\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[213\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[213\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[214\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[214\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[215\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[215\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[216\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[216\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[217\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[217\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[218\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[218\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[219\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[219\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[220\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[220\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[221\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[221\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[222\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[222\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[223\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[223\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[224\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[224\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[225\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[225\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[226\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[226\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[227\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[227\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[228\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[228\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[229\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[229\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[230\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[230\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[231\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[231\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[232\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[232\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[233\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[233\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[234\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[234\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[235\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[235\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[236\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[236\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[237\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[237\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[238\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[238\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[239\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[239\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[240\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[240\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[241\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[241\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[242\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[242\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[243\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[243\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[244\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[244\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[245\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[245\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[246\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[246\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[247\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[247\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[248\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[248\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[249\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[249\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[250\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[250\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[251\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[251\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[252\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[252\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[253\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[253\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[254\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[254\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[255\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[255\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[256\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[256\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[257\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[257\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[258\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[258\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[259\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[259\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[260\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[260\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[261\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[261\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[262\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[262\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[263\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[263\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[264\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[264\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[265\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[265\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[266\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[266\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[267\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[267\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[268\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[268\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[269\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[269\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[270\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[270\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[271\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[271\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[272\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[272\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[273\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[273\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[274\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[274\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[275\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[275\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[276\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[276\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[277\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[277\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[278\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[278\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[279\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[279\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[280\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[280\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[281\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[281\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[282\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[282\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[283\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[283\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[284\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[284\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[285\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[285\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[286\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[286\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[287\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[287\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[288\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[288\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[289\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[289\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[290\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[290\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[291\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[291\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[292\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[292\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[293\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[293\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[294\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[294\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[295\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[295\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[296\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[296\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[297\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[297\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[298\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[298\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[299\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[299\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[300\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[300\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[301\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[301\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[302\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[302\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[303\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[303\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[304\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[304\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[305\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[305\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[306\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[306\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[307\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[307\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[308\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[308\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[309\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[309\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[310\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[310\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[311\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[311\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[312\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[312\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[313\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[313\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[314\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[314\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[315\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[315\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[316\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[316\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[317\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[317\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[318\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[318\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[319\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[319\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[320\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[320\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[321\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[321\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[322\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[322\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[323\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[323\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[324\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[324\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[325\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[325\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[326\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[326\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[327\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[327\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[328\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[328\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[329\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[329\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[330\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[330\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[331\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[331\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[332\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[332\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[333\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[333\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[334\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[334\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[335\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[335\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[336\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[336\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[337\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[337\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[338\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[338\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[339\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[339\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[340\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[340\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[341\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[341\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[342\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[342\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[343\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[343\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[344\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[344\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[345\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[345\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[346\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[346\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[347\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[347\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[348\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[348\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[349\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[349\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[350\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[350\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[351\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[351\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[352\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[352\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[353\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[353\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[354\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[354\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[355\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[355\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[356\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[356\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[357\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[357\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[358\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[358\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[359\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[359\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[360\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[360\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[361\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[361\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[362\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[362\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[363\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[363\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[364\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[364\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[365\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[365\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[366\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[366\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[367\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[367\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[368\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[368\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[369\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[369\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[370\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[370\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[371\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[371\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[372\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[372\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[373\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[373\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[374\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[374\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[375\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[375\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[376\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[376\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[377\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[377\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[378\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[378\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[379\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[379\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[380\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[380\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[381\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[381\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[382\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[382\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[383\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[383\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[384\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[384\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[385\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[385\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[386\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[386\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[387\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[387\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[388\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[388\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[389\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[389\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[390\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[390\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[391\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[391\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[392\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[392\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[393\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[393\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[394\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[394\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[395\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[395\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[396\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[396\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[397\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[397\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[398\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[398\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[399\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[399\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[400\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[400\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[401\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[401\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[402\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[402\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[403\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[403\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[404\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[404\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[405\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[405\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[406\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[406\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[407\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[407\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[408\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[408\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[409\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[409\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[410\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[410\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[411\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[411\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[412\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[412\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[413\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[413\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[414\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[414\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[415\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[415\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[416\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[416\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[417\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[417\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[418\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[418\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[419\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[419\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[420\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[420\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[421\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[421\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[422\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[422\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[423\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[423\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[424\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[424\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[425\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[425\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[426\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[426\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[427\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[427\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[428\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[428\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[429\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[429\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[430\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[430\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[431\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[431\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[432\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[432\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[433\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[433\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[434\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[434\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[435\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[435\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[436\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[436\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[437\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[437\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[438\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[438\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[439\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[439\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[440\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[440\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[441\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[441\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[442\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[442\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[443\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[443\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[444\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[444\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[445\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[445\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[446\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[446\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[447\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[447\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[448\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[448\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[449\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[449\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[450\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[450\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[451\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[451\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[452\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[452\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[453\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[453\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[454\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[454\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[455\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[455\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[456\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[456\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[457\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[457\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[458\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[458\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[459\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[459\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[460\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[460\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[461\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[461\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[462\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[462\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[463\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[463\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[464\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[464\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[465\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[465\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[466\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[466\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[467\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[467\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[468\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[468\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[469\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[469\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[470\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[470\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[471\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[471\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[472\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[472\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[473\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[473\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[474\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[474\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[475\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[475\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[476\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[476\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[477\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[477\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[478\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[478\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[479\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[479\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[480\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[480\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[481\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[481\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[482\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[482\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[483\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[483\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[484\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[484\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[485\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[485\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[486\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[486\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[487\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[487\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[488\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[488\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[489\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[489\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[490\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[490\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[491\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[491\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[492\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[492\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[493\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[493\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[494\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[494\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[495\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[495\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[496\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[496\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[497\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[497\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[498\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[498\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[499\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[499\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[500\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[500\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[501\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[501\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[502\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[502\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[503\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[503\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[504\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[504\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[505\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[505\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[506\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[506\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[507\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[507\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[508\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[508\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[509\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[509\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[510\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[510\]
-  slice_pin r:/WORK/Slice_3/dataStorage/REG_4_reg\[511\] i:/WORK/Slice_3/dataStorage/u_core/wdataPrev_reg\[511\]
-  slice_pin r:/WORK/Slice_3/dataStorage/mbistPl/beReg_reg i:/WORK/Slice_3/dataStorage/mbistPl/u_core/beReg_reg\[0\]
+  # MSHRCtl 1184, MainPipe_1 769, GrantBuffer 1024, RequestBuffer 64, RequestArb 766, SinkC 3592, RXSNP 0, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory_3 276, DataStorage_3 16, L2Slice_3 137
+  puts "SLICE_PIN_BEGIN Slice_3 expect=25262"
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_12_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[12]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_13_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[13]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_14_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[14]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_15_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[15]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_1_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[1]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_2_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[2]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_3_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[3]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_4_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[4]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_5_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[5]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_6_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[6]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_7_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[7]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_8_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[8]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/hpm_timers_9_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/hpm_timers_reg[9]} 10
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_0_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[0]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_10_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[10]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_11_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[11]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_12_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[12]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_13_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[13]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_14_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[14]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_15_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[15]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_1_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[1]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_2_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[2]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_3_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[3]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_4_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[4]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_5_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[5]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_6_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[6]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_7_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[7]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_8_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[8]} 64
+  slice_pinw {r:/WORK/Slice_3/mshrCtl/timers_9_reg} {i:/WORK/Slice_3/u_core/mshrCtl/u_core/timers_reg[9]} 64
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s3_valid_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s3_valid_reg}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_off_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_param_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_aliasTask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_allowRetry_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_bufIdx_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_channel_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_chiOpcode_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_cmoAll_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_cmoTask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_corrupt_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_dbID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_denied_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[denied]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_dirty_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_dsWen_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_expCompAck_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_fromL2pft_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_fwdNID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_fwdState_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_fwdTxnID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_homeNID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_isKeyword_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_likelyshared_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_memAttr_allocate_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_memAttr_cacheable_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_memAttr_device_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_memAttr_ewa_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_mergeA_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_metaWen_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_accessed_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_clients_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_dirty_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_state_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_mshrId_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_mshrRetry_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_mshrTask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_needHint_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_needProbeAckData_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_off_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_opcode_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_pCrdType_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_param_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_readProbeDataDown_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_replTask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_reqSource_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_resp_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_retToSrc_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_set_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_size_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_snpHitRelease_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_sourceId_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_srcID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_tagWen_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_tag_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_tgtID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_traceTag_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_txChannel_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_txnID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_bits_useProbeData_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_vaddr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_wayMask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s4_bits_way_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s4_valid_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s4_valid_reg}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_off_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_param_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_aliasTask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_allowRetry_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_bufIdx_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_channel_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_chiOpcode_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_cmoAll_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_cmoTask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_corrupt_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_dbID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_denied_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[denied]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_dirty_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_dsWen_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_expCompAck_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_fromL2pft_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_fwdNID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_fwdState_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_fwdTxnID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_homeNID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_isKeyword_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_likelyshared_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_memAttr_allocate_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_memAttr_cacheable_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_memAttr_device_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_memAttr_ewa_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_mergeA_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_metaWen_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_accessed_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_clients_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_dirty_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_state_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_mshrId_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_mshrRetry_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_mshrTask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_needHint_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_needProbeAckData_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_off_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_opcode_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_pCrdType_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_param_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_readProbeDataDown_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_replTask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_reqSource_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_resp_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_retToSrc_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_set_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_size_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_snpHitRelease_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_sourceId_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_srcID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_tagWen_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_tag_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_tgtID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_traceTag_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_txChannel_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_txnID_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_bits_useProbeData_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_vaddr_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_wayMask_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_3/mainPipe/task_s5_bits_way_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_3/mainPipe/task_s5_valid_reg} {i:/WORK/Slice_3/u_core/mainPipe/u_core/s5_valid_reg}
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_0_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[0]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_10_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[10]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_11_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[11]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_12_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[12]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_13_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[13]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_14_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[14]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_15_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[15]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_1_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[1]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_2_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[2]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_3_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[3]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_4_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[4]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_5_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[5]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_6_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[6]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_7_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[7]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_8_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[8]} 64
+  slice_pinw {r:/WORK/Slice_3/grantBuf/timers_9_reg} {i:/WORK/Slice_3/u_core/grantBuf/u_core/timers_reg[9]} 64
+  slice_pinw {r:/WORK/Slice_3/reqBuf/bufferTimer_0_reg} {i:/WORK/Slice_3/u_core/reqBuf/u_core/bufferTimer_reg[0]} 16
+  slice_pinw {r:/WORK/Slice_3/reqBuf/bufferTimer_1_reg} {i:/WORK/Slice_3/u_core/reqBuf/u_core/bufferTimer_reg[1]} 16
+  slice_pinw {r:/WORK/Slice_3/reqBuf/bufferTimer_2_reg} {i:/WORK/Slice_3/u_core/reqBuf/u_core/bufferTimer_reg[2]} 16
+  slice_pinw {r:/WORK/Slice_3/reqBuf/bufferTimer_3_reg} {i:/WORK/Slice_3/u_core/reqBuf/u_core/bufferTimer_reg[3]} 16
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_off_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_param_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_aliasTask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_allowRetry_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_bufIdx_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_channel_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_chiOpcode_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_cmoAll_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_cmoTask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_corrupt_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_dbID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_denied_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[denied]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_dirty_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_dsWen_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_expCompAck_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_fromL2pft_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_fwdNID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_fwdState_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_fwdTxnID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_homeNID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_isKeyword_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_likelyshared_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_memAttr_allocate_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_memAttr_cacheable_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_memAttr_device_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_memAttr_ewa_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_mergeA_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_metaWen_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_accessed_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_clients_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_dirty_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_state_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_mshrId_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_mshrRetry_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_mshrTask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_needHint_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_needProbeAckData_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_off_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_opcode_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_pCrdType_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_param_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_readProbeDataDown_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_replTask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_reqSource_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_resp_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_retToSrc_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_set_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_size_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_snpHitRelease_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_sourceId_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_srcID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_tagWen_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_tag_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_tgtID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_traceTag_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_txChannel_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_txnID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_useProbeData_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_vaddr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_wayMask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_3/reqArb/mshr_task_s1_bits_way_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_isKeyword_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_clients_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_state_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_off_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_opcode_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_param_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_sourceId_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_aMergeTask_vaddr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_aliasTask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[alias_]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_allowRetry_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_bufIdx_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_channel_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[channel]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_chiOpcode_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_cmoAll_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[cmoAll]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_cmoTask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[cmoTask]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_corrupt_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[corrupt]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_dbID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[dbID]} 12
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_denied_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[denied]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_dirty_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[dirty]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_dsWen_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[dsWen]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_expCompAck_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[expCompAck]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_fromL2pft_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_fwdNID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_fwdState_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_fwdTxnID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_homeNID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_isKeyword_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[isKeyword]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_likelyshared_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[likelyshared]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_memAttr_allocate_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_memAttr_cacheable_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_memAttr_device_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_memAttr_ewa_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_mergeA_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[mergeA]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_metaWen_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[metaWen]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_accessed_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_clients_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_clients]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_dirty_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_state_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_mshrId_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_mshrRetry_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_mshrTask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[mshrTask]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_needHint_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[needHint]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_needProbeAckData_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_off_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[off]} 6
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_opcode_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_pCrdType_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_param_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[param]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_readProbeDataDown_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_replTask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[replTask]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_reqSource_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_resp_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[resp]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_retToSrc_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_set_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[set]} 9
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_size_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[size]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseIdx_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseToClean_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseToInval_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitReleaseWithData_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_snpHitRelease_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_sourceId_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_srcID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[srcID]} 11
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_tagWen_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[tagWen]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_tag_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[tag]} 31
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_tgtID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_traceTag_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[traceTag]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_txChannel_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_txnID_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[txnID]} 12
+  slice_pin {r:/WORK/Slice_3/reqArb/task_s2_bits_useProbeData_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_vaddr_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_wayMask_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_3/reqArb/task_s2_bits_way_reg} {i:/WORK/Slice_3/u_core/reqArb/u_core/task_s2_bits_reg\[way]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/beatValids_0_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/beatValids_reg[0][0]}
+  slice_pin {r:/WORK/Slice_3/sinkC/beatValids_0_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/beatValids_reg[0][1]}
+  slice_pin {r:/WORK/Slice_3/sinkC/beatValids_1_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/beatValids_reg[1][0]}
+  slice_pin {r:/WORK/Slice_3/sinkC/beatValids_1_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/beatValids_reg[1][1]}
+  slice_pin {r:/WORK/Slice_3/sinkC/beatValids_2_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/beatValids_reg[2][0]}
+  slice_pin {r:/WORK/Slice_3/sinkC/beatValids_2_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/beatValids_reg[2][1]}
+  slice_pin {r:/WORK/Slice_3/sinkC/beatValids_3_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/beatValids_reg[3][0]}
+  slice_pin {r:/WORK/Slice_3/sinkC/beatValids_3_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/beatValids_reg[3][1]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/dataBuf_0_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/dataBuf_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_3/sinkC/dataBuf_0_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/dataBuf_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_3/sinkC/dataBuf_1_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/dataBuf_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_3/sinkC/dataBuf_1_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/dataBuf_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_3/sinkC/dataBuf_2_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/dataBuf_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_3/sinkC/dataBuf_2_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/dataBuf_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_3/sinkC/dataBuf_3_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/dataBuf_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_3/sinkC/dataBuf_3_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/dataBuf_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_isKeyword_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_off_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_opcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_param_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_sourceId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_aMergeTask_vaddr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_aliasTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_allowRetry_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_bufIdx_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_channel_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_chiOpcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_cmoAll_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_cmoTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_corrupt_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_dbID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_denied_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[denied]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_dsWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_expCompAck_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_fromL2pft_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_fwdNID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_fwdState_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_fwdTxnID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_homeNID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_isKeyword_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_likelyshared_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_memAttr_allocate_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_memAttr_cacheable_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_memAttr_device_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_memAttr_ewa_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_mergeA_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[mergeA]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_metaWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[metaWen]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_mshrId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_mshrRetry_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_mshrTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_needHint_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_needProbeAckData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_off_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[off]} 6
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_opcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_pCrdType_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_param_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[param]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_readProbeDataDown_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_replTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[replTask]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_reqSource_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_resp_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[resp]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_retToSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_set_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[set]} 9
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_size_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[size]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseToClean_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseToInval_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitReleaseWithData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_snpHitRelease_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_sourceId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_srcID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_tagWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_tag_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_tgtID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_traceTag_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_txChannel_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_txnID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_0_useProbeData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_vaddr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_wayMask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_0_way_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[0]\[way]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_isKeyword_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_off_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_opcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_param_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_sourceId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_aMergeTask_vaddr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_aliasTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_allowRetry_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_bufIdx_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_channel_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_chiOpcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_cmoAll_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_cmoTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_corrupt_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_dbID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_denied_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[denied]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_dsWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_expCompAck_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_fromL2pft_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_fwdNID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_fwdState_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_fwdTxnID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_homeNID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_isKeyword_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_likelyshared_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_memAttr_allocate_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_memAttr_cacheable_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_memAttr_device_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_memAttr_ewa_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_mergeA_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[mergeA]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_metaWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[metaWen]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_mshrId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_mshrRetry_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_mshrTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_needHint_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_needProbeAckData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_off_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[off]} 6
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_opcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_pCrdType_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_param_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[param]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_readProbeDataDown_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_replTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[replTask]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_reqSource_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_resp_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[resp]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_retToSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_set_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[set]} 9
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_size_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[size]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseToClean_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseToInval_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitReleaseWithData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_snpHitRelease_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_sourceId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_srcID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_tagWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_tag_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_tgtID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_traceTag_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_txChannel_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_txnID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_1_useProbeData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_vaddr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_wayMask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_1_way_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[1]\[way]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_isKeyword_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_off_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_opcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_param_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_sourceId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_aMergeTask_vaddr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_aliasTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_allowRetry_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_bufIdx_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_channel_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_chiOpcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_cmoAll_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_cmoTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_corrupt_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_dbID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_denied_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[denied]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_dsWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_expCompAck_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_fromL2pft_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_fwdNID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_fwdState_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_fwdTxnID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_homeNID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_isKeyword_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_likelyshared_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_memAttr_allocate_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_memAttr_cacheable_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_memAttr_device_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_memAttr_ewa_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_mergeA_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[mergeA]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_metaWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[metaWen]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_mshrId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_mshrRetry_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_mshrTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_needHint_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_needProbeAckData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_off_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[off]} 6
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_opcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_pCrdType_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_param_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[param]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_readProbeDataDown_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_replTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[replTask]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_reqSource_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_resp_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[resp]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_retToSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_set_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[set]} 9
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_size_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[size]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseToClean_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseToInval_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitReleaseWithData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_snpHitRelease_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_sourceId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_srcID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_tagWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_tag_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_tgtID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_traceTag_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_txChannel_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_txnID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_2_useProbeData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_vaddr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_wayMask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_2_way_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[2]\[way]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_isKeyword_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_off_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]} 6
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_opcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_param_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_sourceId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_aMergeTask_vaddr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]} 44
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_aliasTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_allowRetry_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_bufIdx_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]} 2
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_channel_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[channel]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_chiOpcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]} 7
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_cmoAll_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_cmoTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_corrupt_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_dbID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]} 12
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_denied_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[denied]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_dsWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_expCompAck_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_fromL2pft_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_fwdNID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdNID]} 11
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_fwdState_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdState]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_fwdTxnID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[fwdTxnID]} 12
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_homeNID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[homeNID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_isKeyword_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[isKeyword]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_likelyshared_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[likelyshared]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_memAttr_allocate_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_allocate]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_memAttr_cacheable_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_cacheable]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_memAttr_device_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_device]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_memAttr_ewa_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[memAttr_ewa]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_mergeA_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[mergeA]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_metaWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[metaWen]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_meta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_mshrId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]} 8
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_mshrRetry_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_mshrTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_needHint_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_needProbeAckData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_off_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[off]} 6
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_opcode_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]} 4
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_pCrdType_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]} 4
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_param_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[param]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_readProbeDataDown_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[readProbeDataDown]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_replTask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[replTask]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_reqSource_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[reqSource]} 5
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_resp_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[resp]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_retToSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_set_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[set]} 9
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_size_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[size]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 8
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_state_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_state]} 2
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseMeta_tagErr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_tagErr]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseToClean_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseToClean]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseToInval_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseToInval]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitReleaseWithData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseWithData]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_snpHitRelease_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitRelease]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_sourceId_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[sourceId]} 7
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_srcID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[srcID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_tagWen_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[tagWen]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_tag_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[tag]} 31
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_tgtID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[tgtID]} 11
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_traceTag_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[traceTag]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_txChannel_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[txChannel]} 3
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_txnID_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[txnID]} 12
+  slice_pin {r:/WORK/Slice_3/sinkC/taskBuf_3_useProbeData_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[useProbeData]}
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_vaddr_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[vaddr]} 44
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_wayMask_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[wayMask]} 8
+  slice_pinw {r:/WORK/Slice_3/sinkC/taskBuf_3_way_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskBuf_reg[3]\[way]} 3
+  slice_pin {r:/WORK/Slice_3/sinkC/taskValids_0_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskValids_reg[0]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskValids_1_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskValids_reg[1]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskValids_2_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskValids_reg[2]}
+  slice_pin {r:/WORK/Slice_3/sinkC/taskValids_3_reg} {i:/WORK/Slice_3/u_core/sinkC/u_core/taskValids_reg[3]}
+  slice_pin {r:/WORK/Slice_3/txdat/beatValids_0_reg} {i:/WORK/Slice_3/u_core/txdat/u_core/beatValids_reg[0]}
+  slice_pin {r:/WORK/Slice_3/txdat/beatValids_1_reg} {i:/WORK/Slice_3/u_core/txdat/u_core/beatValids_reg[1]}
+  slice_pinw {r:/WORK/Slice_3/txdat/queue/deq_ptr_value_reg} {i:/WORK/Slice_3/u_core/txdat/queue/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_3/txdat/queue/enq_ptr_value_reg} {i:/WORK/Slice_3/u_core/txdat/queue/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_3/txdat/queueData0/deq_ptr_value_reg} {i:/WORK/Slice_3/u_core/txdat/queueData0/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_3/txdat/queueData0/enq_ptr_value_reg} {i:/WORK/Slice_3/u_core/txdat/queueData0/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_3/txdat/queueData1/deq_ptr_value_reg} {i:/WORK/Slice_3/u_core/txdat/queueData1/u_core/deq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_3/txdat/queueData1/enq_ptr_value_reg} {i:/WORK/Slice_3/u_core/txdat/queueData1/u_core/enq_ptr_reg} 4
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_0_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_0_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_10_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[10][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_10_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[10][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_11_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[11][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_11_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[11][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_12_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[12][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_12_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[12][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_13_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[13][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_13_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[13][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_14_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[14][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_14_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[14][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_15_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[15][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_15_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[15][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_1_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_1_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_2_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_2_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_3_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_3_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_4_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[4][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_4_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[4][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_5_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[5][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_5_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[5][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_6_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[6][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_6_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[6][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_7_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[7][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_7_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[7][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_8_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[8][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_8_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[8][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_9_0_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[9][0]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/buffer_9_1_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/buffer_reg[9][1]} 256
+  slice_pinw {r:/WORK/Slice_3/refillBuf/io_resp_data_data_r_reg} {i:/WORK/Slice_3/u_core/refillBuf/u_core/r_data_reg} 512
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_0_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[0][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_0_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[0][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_10_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[10][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_10_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[10][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_11_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[11][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_11_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[11][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_12_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[12][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_12_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[12][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_13_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[13][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_13_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[13][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_14_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[14][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_14_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[14][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_15_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[15][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_15_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[15][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_1_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[1][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_1_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[1][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_2_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[2][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_2_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[2][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_3_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[3][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_3_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[3][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_4_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[4][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_4_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[4][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_5_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[5][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_5_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[5][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_6_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[6][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_6_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[6][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_7_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[7][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_7_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[7][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_8_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[8][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_8_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[8][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_9_0_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[9][0]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/buffer_9_1_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/buffer_reg[9][1]} 256
+  slice_pinw {r:/WORK/Slice_3/releaseBuf/io_resp_data_data_r_reg} {i:/WORK/Slice_3/u_core/releaseBuf/u_core/r_data_reg} 512
+  slice_pin {r:/WORK/Slice_3/directory/errorAll_s3_0_reg} {i:/WORK/Slice_3/directory/u_core/errorAll_s3_reg[0]}
+  slice_pin {r:/WORK/Slice_3/directory/errorAll_s3_1_reg} {i:/WORK/Slice_3/directory/u_core/errorAll_s3_reg[1]}
+  slice_pin {r:/WORK/Slice_3/directory/errorAll_s3_2_reg} {i:/WORK/Slice_3/directory/u_core/errorAll_s3_reg[2]}
+  slice_pin {r:/WORK/Slice_3/directory/errorAll_s3_3_reg} {i:/WORK/Slice_3/directory/u_core/errorAll_s3_reg[3]}
+  slice_pin {r:/WORK/Slice_3/directory/errorAll_s3_4_reg} {i:/WORK/Slice_3/directory/u_core/errorAll_s3_reg[4]}
+  slice_pin {r:/WORK/Slice_3/directory/errorAll_s3_5_reg} {i:/WORK/Slice_3/directory/u_core/errorAll_s3_reg[5]}
+  slice_pin {r:/WORK/Slice_3/directory/errorAll_s3_6_reg} {i:/WORK/Slice_3/directory/u_core/errorAll_s3_reg[6]}
+  slice_pin {r:/WORK/Slice_3/directory/errorAll_s3_7_reg} {i:/WORK/Slice_3/directory/u_core/errorAll_s3_reg[7]}
+  slice_pinw {r:/WORK/Slice_3/directory/origin_bit_opt/_resetSet_reg} {i:/WORK/Slice_3/directory/origin_bit_opt/u_core/resetSet_reg} 9
+  slice_pin {r:/WORK/Slice_3/directory/origin_bit_opt/_resetState_reg} {i:/WORK/Slice_3/directory/origin_bit_opt/u_core/resetState_reg}
+  slice_pinw {r:/WORK/Slice_3/directory/replacer_sram_opt/_resetSet_reg} {i:/WORK/Slice_3/directory/replacer_sram_opt/u_core/resetSet_reg} 9
+  slice_pin {r:/WORK/Slice_3/directory/replacer_sram_opt/_resetState_reg} {i:/WORK/Slice_3/directory/replacer_sram_opt/u_core/resetState_reg}
+  slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_0_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[0]} 31
+  slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_1_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[1]} 31
+  slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_2_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[2]} 31
+  slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_3_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[3]} 31
+  slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_4_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[4]} 31
+  slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_5_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[5]} 31
+  slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_6_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[6]} 31
+  slice_pinw {r:/WORK/Slice_3/directory/tagAll_s3_7_reg} {i:/WORK/Slice_3/directory/u_core/tagAll_s3_reg[7]} 31
+  slice_pin {r:/WORK/Slice_3/dataStorage/array/array_0_0_0/rckEnReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_0/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_3/dataStorage/array/array_0_0_0/respReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_0/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_3/dataStorage/array/array_0_0_0/wckEnReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_0/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_3/dataStorage/array/array_0_0_1/rckEnReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_1/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_3/dataStorage/array/array_0_0_1/respReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_1/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_3/dataStorage/array/array_0_0_1/wckEnReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_1/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_3/dataStorage/array/array_0_0_2/rckEnReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_2/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_3/dataStorage/array/array_0_0_2/respReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_2/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_3/dataStorage/array/array_0_0_2/wckEnReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_2/u_core/g_mcp.wckEnReg_reg}
+  slice_pin {r:/WORK/Slice_3/dataStorage/array/array_0_0_3/rckEnReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_3/u_core/g_mcp.rckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_3/dataStorage/array/array_0_0_3/respReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_3/u_core/g_mcp.respReg_reg} 2
+  slice_pin {r:/WORK/Slice_3/dataStorage/array/array_0_0_3/wckEnReg_reg} {i:/WORK/Slice_3/dataStorage/array/array_0_0_3/u_core/g_mcp.wckEnReg_reg}
+  slice_pinw {r:/WORK/Slice_3/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice_3/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
   puts "SLICE_PIN_END Slice_3 ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 799} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=799"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 25262} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=25262"
   }
 }

@@ -169,6 +169,12 @@ def drive_expr(name, w):
         return "g0_io_pCrd_%s_query_valid && ($urandom_range(0, 3) == 0)" % k
     if name in ('io_in_a_bits_corrupt', 'io_in_c_bits_corrupt'):
         return '($urandom_range(0, 31) == 0)'
+    if name.startswith('sigFromSrams_') and name.endswith(('_ram_aux_clk', '_ram_aux_ckbp')):
+        # DFT 备用时钟与其选择：恒 0（同 DataStorage / Directory UT）。ClockMux 是普通 mux，tb 在
+        # 门控时钟为高时切 sel 会造出一个与数据同一时刻的时钟沿（实测 seed 1 initreg 0 第 19687 拍：
+        # 宏在 +1ns 处收到一个由 ckbp 翻转产生的沿，两侧对 wmode 的采样顺序不同 -> bore_outdata 失配），
+        # 那是 tb 制造的零延迟竞争，不是电路差异；真实 DFT 下这些信号在时钟静止时才切换。
+        return "1'b0"
     if name.startswith('sigFromSrams_'):
         return '($urandom_range(0, 63) == 0)'
     if name == 'boreChildrenBd_bore_req':
@@ -204,7 +210,8 @@ def tb():
     A('//   · CHI 节点号（srcID/homeNID）压到 0..1；P-Credit grant 只在对应 MSHR 查询时给（1/4 概率）；')
     A('//     RXDAT/RXRSP 只发给处在对应等待状态的 MSHR（pick_target）；E 通道 sink 取 0..16；')
     A('//   · 每 4000 拍一轮三个阶段：常速 2000 拍 / 下游慢 1000 拍（RXDAT/RXRSP 1/32，逼 MSHR 全占）/')
-    A('//     MBIST 窗口 1000 拍（bore req 持续拉高）；SRAM hold/bypass 低频翻；约 1/20000 拍一次异步复位。')
+    A('//     MBIST 窗口 1000 拍（bore req 持续拉高）；SRAM hold/bypass/cgen 低频翻、aux_clk/aux_ckbp 恒 0')
+    A('//     （见 drive_expr 里的说明）；约 1/20000 拍一次异步复位。')
     A('// 厂商 SRAM 叶子（array_*_ext）的存储体：编译带 +define+RANDOMIZE_MEM_INIT，由叶子自带的 initial')
     A('//   块填随机值（模拟上电垃圾；不填则 tag/数据读出全 X、流水在 X 上停摆、比对 X===X 空过），')
     A('//   再随同步表拷到重写侧。')

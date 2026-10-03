@@ -582,69 +582,113 @@ def render(M, widths):
 
 
 # ---------------------------------------------------------------------------
-# FM 匹配前钉点：从各 child 自己签核时用的 fm_pins_pre.tcl **机械收割**，只改层次前缀
+# FM 匹配前钉点：从各 child 自己签核时的 FM 配对报告（matched.rpt）**机械收割**，只改层次前缀
 # ---------------------------------------------------------------------------
-# 这些 child 单独签核时，golden 扁平名与重写件的数组名 FM 自己配不上（或配错），各自带了钉点。
-# 放进 Slice 后对象没变、只是多了一层路径：ref 侧 <child>/ -> Slice/<inst>/，impl 侧
-# <child>/ -> Slice_N/u_core/<inst>/（目录 / 数据阵列在 wrapper 里：Slice_N/<inst>/）。
-# 收割法：用 tclsh 执行 child 的钉点文件，set_user_match 换成"只打印"的桩，$top 设为
-# 该 child 在本变体里的 golden 名 —— 得到的就是 child 签核时**真实**钉过的那组对，不重写规则。
+# 为什么要钉：Slice 闭包 85,315 个比较点里约 25k 个寄存器位两侧叶名不同（golden 扁平名
+# `buffer_0_0_reg[k]` vs 重写数组 `u_core/buffer_reg[0][0][k]` 等），FM 只能靠签名配对——
+# 第一次诊断跑 1.6 小时才配到 63%（60854/85315）、随后每 30 分钟不到 900 点，不收敛。
+# child 单独签核时这些点 FM 都配上了（各自规模小）：它们的 matched.rpt 就是现成的、经 FM
+# 核实过的配对表。放进 Slice 后对象没变、只多一层路径：
+#   ref  <child>/x  ->  <Slice_N>/<inst>/x
+#   impl <child>/y  ->  <Slice_N>/u_core/<inst>/y（目录 / 数据阵列 / MBIST 分发在 wrapper 里：<Slice_N>/<inst>/y）
+# 流程：`--harvest` 读各 child UT 目录下 fm_work/<child>/matched.rpt（诊断跑产物，不入库），
+# 只取**叶名不同**的 DFF 类配对，按位压成 (ref 基名, impl 基名, 位宽) 写进**入库**的
+# verif/ut/Slice/child_pins.tsv；默认 / --check 只读该 tsv 出 fm_pins_pre.tcl，不碰 fm_work。
+# 不是本层自己的寄存器（本层寄存器保留 golden 名，FM 按名配）。
 CHILD_PINS = [   # (UT 目录, 本层实例名, 变体 -> child golden 名)
     ('MSHRCtl', 'mshrCtl', lambda v: 'MSHRCtl'),
+    ('MainPipe_1', 'mainPipe', lambda v: 'MainPipe_1'),
     ('GrantBuffer', 'grantBuf', lambda v: 'GrantBuffer'),
     ('RequestBuffer', 'reqBuf', lambda v: 'RequestBuffer'),
+    ('RequestArb', 'reqArb', lambda v: 'RequestArb'),
+    ('SinkC', 'sinkC', lambda v: 'SinkC'),
+    ('RXSNP', 'rxsnp', lambda v: 'RXSNP'),
+    ('TXDAT', 'txdat', lambda v: 'TXDAT'),
+    ('TXREQ', 'txreq', lambda v: 'TXREQ'),
+    ('TXRSP', 'txrsp', lambda v: 'TXRSP'),
+    ('MSHRBuffer', 'refillBuf', lambda v: 'MSHRBuffer'),
+    ('MSHRBuffer', 'releaseBuf', lambda v: 'MSHRBuffer_1'),
     ('Directory', 'directory', lambda v: 'Directory' + SFX[v]),
     ('DataStorage', 'dataStorage', lambda v: 'DataStorage' + SFX[v]),
+    ('L2Slice', 'mbistPl', lambda v: 'L2Slice' + SFX[v]),
 ]
-TCL_STUB = r"""
-proc set_user_match {r i} { puts "PIN\t$r\t$i"; return 1 }
-proc error {msg} { puts stderr "child pin file error: $msg"; exit 9 }
-set top [lindex $argv 0]
-source [lindex $argv 1]
-"""
+PINS_TSV = REPO / 'verif' / 'ut' / 'Slice' / 'child_pins.tsv'
+PAIR_RE = re.compile(r'Ref\s+(\w+)\s+Name\(Last\)\s+r:/WORK/(\w+)/(\S+)\n\s+Impl\s+(\w+)\s+Name\(Last\)\s+i:/WORK/(\w+)/(\S+)')
+BIT_RE = re.compile(r'^(.*)\[(\d+)\]$')
 
 
-def harvest_pins(var):
-    import subprocess
-    import tempfile
-    pairs = []
-    with tempfile.NamedTemporaryFile('w', suffix='.tcl', delete=False) as f:
-        f.write(TCL_STUB)
-        stub = f.name
-    try:
-        for ut, inst, gname in CHILD_PINS:
-            child = gname(var)
-            pf = REPO / 'verif' / 'ut' / ut / 'fm_pins_pre.tcl'
-            r = subprocess.run(['tclsh', stub, child, str(pf)], stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, universal_newlines=True)
-            if r.returncode != 0:
-                raise SystemExit('收割 %s 钉点失败: %s' % (pf, r.stderr.strip()))
-            ipath = ('%s' % inst) if inst in WRAP_INSTS else ('u_core/%s' % inst)
-            n = 0
-            for ln in r.stdout.splitlines():
-                if not ln.startswith('PIN\t'):
-                    continue
-                _, rr, ii = ln.split('\t')
-                rp, ip = 'r:/WORK/%s/' % child, 'i:/WORK/%s/' % child
-                if not rr.startswith(rp) or not ii.startswith(ip):
-                    raise SystemExit('%s: 钉点路径不以 %s / %s 开头: %s %s' % (pf, rp, ip, rr, ii))
-                pairs.append(('r:/WORK/%s/%s/%s' % (var, inst, rr[len(rp):]),
-                              'i:/WORK/%s/%s/%s' % (var, ipath, ii[len(ip):]), child))
-                n += 1
-    finally:
-        os.unlink(stub)
-    if len({r for r, _, _ in pairs}) != len(pairs) or len({i for _, i, _ in pairs}) != len(pairs):
-        raise SystemExit('%s: 收割到的钉点不是一一对应' % var)
-    return pairs
+def harvest_child(child, ut):
+    """读 child 的 matched.rpt -> [(ref_base, impl_base, width)]；只取叶名不同的 DFF 类点。"""
+    rpt = REPO / 'verif' / 'ut' / ut / 'fm_work' / child / 'matched.rpt'
+    if not rpt.exists():
+        raise SystemExit('缺 %s：先在 verif/ut/%s 跑 make fm-%s FM_MODE=diagnostic-full' % (rpt, ut, child))
+    txt = rpt.read_text()
+    groups = collections.OrderedDict()
+    n = 0
+    for k1, t1, r, k2, t2, i in PAIR_RE.findall(txt):
+        if t1 != child or t2 != child:
+            raise SystemExit('%s: 顶层名不是 %s' % (rpt, child))
+        if not k1.startswith('DFF') and k1 != 'LAT':
+            continue
+        if r.split('/')[-1] == i.split('/')[-1]:
+            continue                       # 叶名相同，FM 按名自配
+        n += 1
+        mr, mi = BIT_RE.match(r), BIT_RE.match(i)
+        if mr and mi and mr.group(2) == mi.group(2):
+            groups.setdefault((mr.group(1), mi.group(1)), set()).add(int(mr.group(2)))
+        else:
+            groups.setdefault((r, i), set()).add(-1)
+    out = []
+    for (rb, ib), bits in groups.items():
+        if bits == {-1}:
+            out.append((rb, ib, 0))
+        elif bits == set(range(len(bits))):
+            out.append((rb, ib, len(bits)))
+        else:
+            for b in sorted(bits):
+                out.append(('%s[%d]' % (rb, b), '%s[%d]' % (ib, b), 0))
+    if sum(max(w, 1) for _, _, w in out) != n:
+        raise SystemExit('%s: 压缩后位数 %d != 收到 %d' % (child, sum(max(w, 1) for _, _, w in out), n))
+    return out
+
+
+def harvest_all():
+    L = ['# child\tref_base\timpl_base\twidth  —— scripts/gen_l2_slice.py --harvest 从各 child fm_work/<child>/matched.rpt 收割（勿手改）',
+         '# width 0 = 标量（名字已含位下标或本就是 1 位）；width W = 两侧都是 [0..W-1] 的位，按位展开。']
+    seen = set()
+    for ut, inst, gname in CHILD_PINS:
+        for v in VARIANTS:
+            child = gname(v)
+            if child in seen:
+                continue
+            seen.add(child)
+            rows = harvest_child(child, ut)
+            for rb, ib, w in rows:
+                L.append('%s\t%s\t%s\t%d' % (child, rb, ib, w))
+    return '\n'.join(L) + '\n'
+
+
+def load_pins_tsv():
+    if not PINS_TSV.exists():
+        raise SystemExit('缺 %s：先跑 gen_l2_slice.py --harvest' % PINS_TSV)
+    rows = collections.defaultdict(list)
+    for ln in PINS_TSV.read_text().splitlines():
+        if not ln or ln.startswith('#'):
+            continue
+        c, rb, ib, w = ln.split('\t')
+        rows[c].append((rb, ib, int(w)))
+    return rows
 
 
 def pins_file():
+    rows = load_pins_tsv()
     L = ['# Slice 家族 FM「匹配前」钉点 —— 自动生成：scripts/gen_l2_slice.py（勿手改）',
          '#',
-         '# 内容 = 各 child 单独签核时用的钉点（verif/ut/{MSHRCtl,GrantBuffer,RequestBuffer,Directory,',
-         '# DataStorage}/fm_pins_pre.tcl），用 tclsh 机械执行收割、只改层次前缀。本层自己的寄存器保留 golden',
-         '# 名，不钉。set_user_match 只是声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。',
+         '# 内容 = 各 child 单独签核时 FM 已核实的配对（child_pins.tsv，由 --harvest 从 matched.rpt 收割），',
+         '# 只改层次前缀。只钉两侧叶名不同的寄存器位；本层自己的寄存器保留 golden 名，FM 按名自配。',
+         '# set_user_match 只是声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。',
          '# fail-closed：逐条数 set_user_match 的返回值；拒一条或总数不等于字面整数就 error。',
+         '# 名字用花括号原样传（含 FM 报告里的 \\[ 转义），不做任何替换。',
          'set ::SLICE_PIN_OK 0',
          'set ::SLICE_PIN_BAD 0',
          'proc slice_pin {r i} {',
@@ -652,19 +696,38 @@ def pins_file():
          '    incr ::SLICE_PIN_BAD',
          '    if {$::SLICE_PIN_BAD <= 10} { puts "SLICE_PIN_FAIL: $r <-> $i" }',
          '  }',
+         '}',
+         'proc slice_pinw {r i w} {',
+         '  for {set b 0} {$b < $w} {incr b} { slice_pin "${r}\\[$b\\]" "${i}\\[$b\\]" }',
          '}']
     for v in VARIANTS:
-        pairs = harvest_pins(v)
-        per = collections.Counter(c for _, _, c in pairs)
+        total = 0
+        body = []
+        per = []
+        for ut, inst, gname in CHILD_PINS:
+            child = gname(v)
+            ipath = inst if inst in WRAP_INSTS else 'u_core/%s' % inst
+            n = 0
+            for rb, ib, w in rows.get(child, []):
+                r = 'r:/WORK/%s/%s/%s' % (v, inst, rb)
+                i = 'i:/WORK/%s/%s/%s' % (v, ipath, ib)
+                if '{' in r + i or '}' in r + i:
+                    raise SystemExit('名字含花括号: %s %s' % (r, i))
+                if w:
+                    body.append('  slice_pinw {%s} {%s} %d' % (r, i, w))
+                    n += w
+                else:
+                    body.append('  slice_pin {%s} {%s}' % (r, i))
+                    n += 1
+            per.append('%s %d' % (child, n))
+            total += n
         L.append('if {$top eq "%s"} {' % v)
-        L.append('  # %s' % ', '.join('%s %d' % kv for kv in sorted(per.items())))
-        L.append('  puts "SLICE_PIN_BEGIN %s expect=%d"' % (v, len(pairs)))
-        for r, i, _ in pairs:
-            L.append('  slice_pin %s %s' % (r.replace('[', '\\[').replace(']', '\\]'),
-                                            i.replace('[', '\\[').replace(']', '\\]')))
+        L.append('  # %s' % ', '.join(per))
+        L.append('  puts "SLICE_PIN_BEGIN %s expect=%d"' % (v, total))
+        L += body
         L.append('  puts "SLICE_PIN_END %s ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"' % v)
-        L.append('  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != %d} {' % len(pairs))
-        L.append('    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=%d"' % len(pairs))
+        L.append('  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != %d} {' % total)
+        L.append('    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=%d"' % total)
         L.append('  }')
         L.append('}')
     return '\n'.join(L) + '\n'
@@ -673,7 +736,12 @@ def pins_file():
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--check', action='store_true', help='只比对不写，有漂移 rc=1')
+    ap.add_argument('--harvest', action='store_true',
+                    help='从各 child fm_work/<child>/matched.rpt 重新收割 child_pins.tsv（需先跑 child 的诊断 FM）')
     args = ap.parse_args()
+    if args.harvest:
+        PINS_TSV.write_text(harvest_all())
+        print('gen_l2_slice: 收割 %s' % PINS_TSV.relative_to(REPO))
     widths = check_variants()
     M = Model()
     files = render(M, widths)
