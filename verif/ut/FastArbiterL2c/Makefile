@@ -16,6 +16,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/FastArbiter.sv $(GOLDEN_RTL)/FastArbiter_1.sv $(GOLD
 
 # FM_VARIANTS 必须写字面名（fm_predict.py 静态解析本文件）。
 FM_VARIANTS = FastArbiter FastArbiter_1 FastArbiter_26
+# vmucp：pendingMask[0] 是与 FastArbiter_2..7 同一个对称结构死位（依据见 verif/fm_target_config/<T>.tcl）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_MERGE_DUP = false
 PORTLINT_ORDER = fail
 
