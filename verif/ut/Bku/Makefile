@@ -30,6 +30,12 @@ FM_VARIANTS = Bku
 FM_MERGE_DUP = false
 FM_REF_DEPS_Bku = $(BKU_LEAVES)
 
+# vmucp：Bku 已在白名单上（verif/fm_target_config/Bku.tcl，20 个 funcReg 死位的对称双射，2026-09-14 依据）。
+# 那份 receipt 产生时 vmucp 不需要 Makefile 开；现行 fm_eq.tcl 要 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true
+# 才开（2026-10-03 本 lane 第一次正式跑没开 ⇒ native SUCCEEDED、unread 20、validator PARTIAL，
+# evidence/a757ff84032a/Bku 留作记录）。standing rule 第 3 条：开了以后 passing 必须正好 +20。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 # 注：G0 那一轮 Bku 的 FM 需要 FM_MERGE_DUP=false（funcReg 在顶层与四个子块各有同值副本，合并 pass
 # 会在 u_core 层次边界两侧做不对称折叠）。本轮起上面已固定为 false。
 
