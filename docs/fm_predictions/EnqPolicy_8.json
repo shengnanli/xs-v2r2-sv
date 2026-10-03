@@ -1,0 +1,10 @@
+{
+  "target": "EnqPolicy_8",
+  "ut": "EnqPolicy",
+  "regs": 0,
+  "outs": 34,
+  "expected": 34,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "agent/iq-entry-leaves 首跑（ddb13c86）。纯组合 0 寄存器，模型 = 顶层 output 位；预测差额 0。"
+}

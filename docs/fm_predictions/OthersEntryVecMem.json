@@ -1,0 +1,10 @@
+{
+  "target": "OthersEntryVecMem",
+  "ut": "OthersEntryVecMem",
+  "regs": 1501,
+  "outs": 2439,
+  "expected": 3940,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "agent/iq-entry-leaves 首跑（ddb13c86）。模型 = golden 闭包寄存器位 + 顶层 output 位，merge_dup=false 故适用；同族 24+9 个已签变体全部 +0。预测差额 0；若有差额，可指认量 = constant_reg + unread，指认不了如实记红。"
+}
