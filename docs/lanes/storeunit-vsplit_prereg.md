@@ -265,3 +265,39 @@ UT：`cd verif/ut/StoreUnit && make run SEED=<1|7|42> INITREG=<+vcs+initreg+0|+v
 已出 receipt 的 VSegmentTrigger / skidBufferConnect / VLSplitPipelineImp / VSSplitPipelineImp 的 impl_closure
 不含该文件，仍有效。下一个 commit 改回原文（`ptrWrap ? sqDiff : sqSum`），上述 4 个目标与 VSegmentUnit 在新 commit
 上出证明；变异 / UT 矩阵作业今后不与 commit 并行（已扫描全部 rtl/memblock：其余文件无变异体文本残留）。
+
+### 对账 C：VSplit 家族 7 目标 + VSegmentTrigger + VSegmentUnit
+
+proof commit：VSegmentTrigger / skidBufferConnect / VLSplitPipelineImp / VSSplitPipelineImp 在 `7b1acd0b`
+（impl_closure 不含被变异体污染的 VLSplitBufferImp.sv，见上节更正）；其余 5 个在 `a29b47bd`。全部 signoff-strict，
+failing / unverified / aborted / unmatched 全 0，dont_verify 无，黑盒 0。`fm_predict.py check` 9 个目标 rc=0「全部对上」。
+
+| 目标 | 预测 | 实测 passing | constant_reg | vmucp | receipt.json sha256 |
+|---|---|---|---|---|---|
+| VSegmentTrigger | 4 | **4** | — | 否 | `a6525426e288d103a3a591c3f052c7262a00148c7e6d243b66cb620d6bb89fda` |
+| skidBufferConnect | 3267 | **3267** | 284 | 否 | `73d31b8ac0173645ac5079cdec38b183e19fb805901f7242cce2fb5daa9f8589` |
+| VLSplitPipelineImp | 3895 | **3895** | 1 | 否 | `d0a698c5e9c3ccd61a0a38d22f260e2ce471051af07dc55a91ef3f4257a507d5` |
+| VSSplitPipelineImp | 3887 | **3887** | 1 | 否 | `ed892c79acb50fed3a6930610fa9764cd83bff01f449c0b14cc4c8ecace770e0` |
+| VLSplitBufferImp | 3154 | **3154** | — | 是 | `c70f18730843ca83def821e8620459a69b0dd9f4f67b15978ea6cad4989f6568` |
+| VSSplitBufferImp | 3502 | **3502** | — | 是 | `5bfd6108e25e154fba35f260225225f34b02e63707b661ec49b7fd8e59833ea0` |
+| VLSplitImp | 7332 | **7332** | 1 | 是 | `191210d8d81f7370b1450b7770c731a5fea49a97a65e7e4812464ffff7e0849f` |
+| VSSplitImp | 7672 | **7672** | 1 | 是 | `5f6eb3a5ef61eb8308f32440f9483c0379fa7d445ea27cb4b385947f85eed850` |
+| VSegmentUnit | 12699 | **12699** | 1 | 是 | `2b9c0f96650ec0c7be660c3884bfc47af9d581c58ff27634996ea81d3d8988cd` |
+
+差额全部为 0；每个 vmucp 目标的 passing 增量正好等于试跑的 unread 数（78 / 80 / 293 / 100 / 22）。
+
+UT（a29b47bd 字节，工作树 clean）：8 个目录（7 个拆分家族 + VSegmentUnit）× seed 1/7/42 × {+0, +random, +<seed>017}
+= 72/72 `checks=200000 errors=0 uncovered=0`；VSegmentTrigger 9/9 同（见 §4.2）。
+
+变异体（seed 1 × +0 × 20k 拍；先确认 OLD 文本恰出现一次、编译失败判 COMPILE_FAIL）：
+- 拆分流水 11 个：两个变体各 11/11 CAUGHT（P7 在 vlsu_pkg 上另跑，560 CAUGHT）。
+- 拆分缓冲 15 个：store 变体 13 CAUGHT；B11（LQ 回绕）/ B12（stop-and-wait）只在 load 变体的 generate 分支里，
+  load 变体 CAUGHT（9292 / 726867）。load 变体 MISSED 的 B6 / B10 / B13 / B14 都在 store 专属路径（load 里不可观测），
+  store 变体分别 CAUGHT（341835 / 8774 / 59 / 2125；B13 余量薄）。B3（index 取 16 位那一档）在 vlsu_pkg 上 67498 CAUGHT。
+- skid 3/3 CAUGHT。
+- 装配壳 S1 / S2 两个变体 UT 都 MISSED → FM 诊断跑：S1 SUCCEEDED（等价变异体：skid 空态时输出口就是输入口，
+  两种取法同值），S2（冲刷判定去掉 level 相等项）FAILED failing 1 —— FM 覆盖。
+- VSegmentUnit 20 个：13 CAUGHT；7 个 UT MISSED，FM 诊断跑：V9 failing 4 / V14 failing 8 / V15 failing 8 /
+  V16 failing 22 / V17（复位值）failing 1 —— FM 覆盖；V5（高 8 字节窗口改成整体右移 64+8k）与 V11（curPtr 翻转少一个
+  条件，被前一分支的复位优先覆盖）FM SUCCEEDED，属等价变异体。V9 / V16 漏在 UT 是因为 tb 只在单元空闲时起新指令，
+  "入口 uop 与在做的指令不同"的情形不出现（这正是 golden 用入口字段的怪癖），归 FM 管。
