@@ -80,3 +80,49 @@ golden 那 12 个死位按 `verif/dead_ref/L2TlbPrefetch.json` 逐条声明 → 
 `+vcs+initreg+random` / `+vcs+initreg+<seed>017`，各 200k 拍，seed 串行。读数见文末对账。
 
 ## 对账（跑完追加，不改上文任何数字）
+
+### A. FM（proof commit `dd55953a`，evidence/dd55953a7513/，全部 `run_proof.sh` 出证、dirty=False）
+
+| 目标 | 口径 | 判决 | passing（预测→实测） | failing | unmatched r/i | unread | const reg | 黑盒 | dont_verify | receipt.json sha256 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Arbiter1_L2TLBImp_Anon | strict | SUCCEEDED | 272→272 | 0 | 0/0 | 0 | 0 | 无 | 否 | `01977b78fe450a459064cbc9f0a55321371adb6d84f9f298a7364c465091a751` |
+| Arbiter2_L2TLBImp_Anon_1 | strict | SUCCEEDED | 109→109 | 0 | 0/0 | 0 | 0 | 无 | 否 | `0c66990af65bf105ac9056aeb82ec0533154a404388605633ec437cc29f5ddfd` |
+| Arbiter3_bitmapReqBundle | strict | SUCCEEDED | 91→91 | 0 | 0/0 | 0 | 0 | 无 | 否 | `3d2528658f383b54cd47412f7411e556f1fbde55d54d79d487afbe773522522e` |
+| Arbiter4_L2TlbMemReqBundle | strict | SUCCEEDED | 58→58 | 0 | 0/0 | 0 | 0 | 无 | 否 | `e839ff022dccc4d05e35c57d381e5bf08c007e4f9b62f2fd0e6d31e6c6564ea7` |
+| Arbiter5_L2TlbWithHptwIdBundle | strict | SUCCEEDED | 55→55 | 0 | 0/0 | 0 | 0 | 无 | 否 | `9da56069f13c703e56716e98600742b76d2e17e4e3e495838f4f46412da3cee5` |
+| L2TlbMissQueue | assembly | SUCCEEDED | 125→125 | 0 | 0/0 | 0 | 0 | ram_40x47 1/1 对称（allow 2 对象） | 否 | `1c0fe8b4d0efe5fdadac68750c5e675792f964d9fcb0aeb803700e855aec6df4` |
+| L2TlbPrefetch | strict | PASS_DEAD_REF（native SUCCEEDED） | 223→223 | 0 | 0/0 | 12（= dead_ref 12 条） | 3 | 无 | 否 | `bd1236a862538d92cd9d1bc49a38663a9daed544d35ed8ac8ca950804cd3f464` |
+
+§2.2 写的"passing 可能少 4"没有发生：W0_data 的 4 位恒 0 引脚照样计入 passing。
+`python3 scripts/fm_predict.py check <7 个目标>` rc=0：6 个逐位相等，L2TlbPrefetch 差 15 = constant_reg 3 + unread 12，被指认。
+
+### B. UT（在 75e81c44 字节上跑；75e81c44..dd55953a 只改 docs 与 verif/dead_ref 说明文字）
+
+各 200k 拍，`make run SEED=<s> INITREG=<t>`，seed 串行：
+
+| UT | 9 档（seed 1/7/42 × 0/random/<seed>017） | checks/档 |
+|---|---|---|
+| L2TlbArbLeaves（5 对） | 全部 errors=0 cov_fail=0 | 21,999,120 |
+| L2TlbMissQueue | 全部 errors=0 cov_fail=0（含 [ADDR] 逐拍地址复核 0 次越界） | 1,597,224 / 1,599,312 / 1,594,480（seed 1/7/42） |
+| L2TlbPrefetch | 全部 errors=0 cov_fail=0 | 599,976 |
+
+覆盖（seed 1，initreg 0，见 tb 的 [COV] 行）：仲裁器每路胜出/无人请求/下游不收各 ≥200；队列 满/空/同拍进出/两指针 39 回绕/
+flush 时非空/flush 同拍入队各 ≥50；预取 fire/held/去重命中/flush 时举着/窗口全满/四种 s2xlate 各 ≥200。
+
+### C. 变异自证（scratchpad 独立 worktree，50k 拍，seed 1 initreg 0；不进库）
+
+| 变异 | UT errors |
+|---|---|
+| A1 Arbiter3 第 0 路 id 常量 6→5 | 25086 |
+| A2 Arbiter5 io_chosen 兜底 4→3 | 3019 |
+| A3 Arbiter4 第 0/1 路优先级对调 | 60912 |
+| A4 Arbiter2_1 第 0 路 gaf 常量 0→1 | 25269 |
+| M1 MissQueue flush 不清 maybe_full | 49188 |
+| M2 MissQueue 指针在 38 回绕 | 36697 |
+| M3 MissQueue isLLptw 入队数据错 | 25032 |
+| P1 Prefetch 去重不看 old_v | 224 |
+| P2 Prefetch s2xlate 优先级对调 | 21999 |
+| P3 Prefetch flush 不清去重窗口 | 224 |
+| P4 Prefetch ValidHold 不被 fire 清 | 11004 |
+
+11/11 被 UT 抓到，无"UT 看不见、只靠 FM"的变异。
