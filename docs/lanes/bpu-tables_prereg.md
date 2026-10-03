@@ -269,3 +269,51 @@ TageBTable 不读，FM 比该寄存器可见）。
 | unread | 192（全部 ref 侧，= verif/dead_ref/Tage_SC.json） |
 | unmatched compare / 黑盒 | 0 / 仅厂商叶子 array_2/3/4/5_ext |
 | mode / verdict / vmucp / merge_dup | signoff-strict / **PASS_DEAD_REF** / true / false |
+
+## 6a. §6 补记（跑前，未改上面任何数字）
+- §6 的预测登记之后、官方证明之前，Tage_SC 又改了一处（commit `312a5d35`）：核输出 `sc_upd_ghist` 的下标范围由 [0:3] 改 [1:3]
+  （第 0 张 SC 表没有 ghist 口，原 [0] 是 256 位无驱动网，FM 报 FM-399 undriven；无扇出，不改任何比对点）。
+  官方证明钉在 `312a5d35`；UT 3×3 在 `312a5d35` 字节上重跑，读数与 §6.2 逐格相同（checks=6500835 errors=0 ×9）。
+
+## 7. 集成者追加：ITTageTable / _1 / _2 / _3 / _4、TageBTable（main 上已有重写件、但无有效 receipt）
+
+### 7.1 现状与处置
+- 重写件沿用：`rtl/frontend/ITTageTable.sv`（683 行，核 xs_ITTageTable_core + xs_MbistPipeIttage_core + ITTageTable wrapper）与
+  `ITTageTable_1..4.sv`（薄 wrapper）、`rtl/frontend/TageBTable.sv`（569 行）；代码区 `_GEN_`/`_T_` = 0；RTL 未改一字节。
+- golden 行数：ITTageTable 336 / _1 333 / _2 380 / _3 379 / _4 383 / TageBTable 396。
+- 原 UT（scripts/gen_zj_ut.py 全随机端口 tb，只跑 initreg 0）从复位后第一拍就比，random 初值档开比第 5 拍即分叉（读出数据来自不复位的
+  SRAM 读出保持寄存器与表项 SRAM —— tb 违反先写后读契约），换成 `verif/ut/ITTageTable/gen_family_tb.py`（dual_tb_lib，带 `--check`，
+  一次生成六个 tb）：比较窗口 = 首次读握手后 3 拍；随机初值档用 initreg 配置文件把厂商叶子与 golden SRAM 包装链（两侧同一份 golden 模块）的存储 / 读出保持寄存器钉 0。
+- FM 处置调整：TageBTable 由 assembly 改 signoff-strict；ITTageTable 家族的厂商叶子 array_6_ext 由"两侧读成白盒"改回审定的两侧黑盒；
+  六个都关 merge_dup（passing 模型严格适用）。子模块（Folded/Splitted SRAM、WrBypass_32/41/43 等）照旧两侧同源 golden；既有钉点（fm_pins.tcl）与 vmucp 依据不变。
+
+### 7.2 UT（在 `34883f55` 的字节上跑；3 seed × 3 档 × 200k，串行）
+
+| 目标 | seed 1（0 / random / 1017） | seed 7（0 / random / 7017） | seed 42（0 / random / 42017） |
+|---|---|---|---|
+| ITTageTable   | checks=1794663 errors=0 ×3 | checks=1790307 errors=0 ×3 | checks=1798713 errors=0 ×3 |
+| ITTageTable_1 | checks=1794663 errors=0 ×3 | checks=1790307 errors=0 ×3 | checks=1798713 errors=0 ×3 |
+| ITTageTable_2 | checks=1790073 errors=0 ×3 | checks=1793133 errors=0 ×3 | checks=1798704 errors=0 ×3 |
+| ITTageTable_3 | checks=1790073 errors=0 ×3 | checks=1793133 errors=0 ×3 | checks=1798704 errors=0 ×3 |
+| ITTageTable_4 | checks=1790073 errors=0 ×3 | checks=1793133 errors=0 ×3 | checks=1798704 errors=0 ×3 |
+| TageBTable    | checks=1591712 errors=0 ×3 | checks=1591712 errors=0 ×3 | checks=1591712 errors=0 ×3 |
+
+覆盖（seed 1，initreg 0）：ITTageTable 读握手 98384 / 读命中 42843 / 分配写 49484 / 正确更新 25193 / reset_u 780；ITTageTable_2 99419 / 31614 / 49758 / 25002 / 760；
+TageBTable 读握手 97998 / 读有效 111895 / 更新 149106；全部输出位都见过 0/1。
+变异（沙箱；seed 1 / initreg 0 / 40k 拍）：ITTageTable_2（基线 350073/0）M1 分配置弱态 2→1 CAUGHT(17704) / M2 旧 ctr 不看写旁路 CAUGHT(4125) /
+M3 更新 tag 的 alt 折叠不左移 CAUGHT(93) / M4 清 u 期间写 u 不屏蔽 CAUGHT(7811)；TageBTable（基线 311712/0）M1 冲突不作废 CAUGHT(17259) /
+M2 旧值不看写旁路 CAUGHT(20894) / M3 写路掩码不换物理 way CAUGHT(12845)。
+
+### 7.3 lane 内非正式试跑（diagnostic-full，不出证，commit `441642ab` 之前的工作树 = 本节 Makefile）
+merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageBTable 396，全部 native SUCCEEDED，failing 0，unmatched 0，unread 空，与模型逐个相等。
+
+### 7.4 跑前预测（★跑完不许改本节★，docs/fm_predictions/*.json）
+
+| 目标 | passing（模型 = 预计） | 其余 |
+|---|---|---|
+| ITTageTable | 682 | failing / unverified / aborted / unread 全 0；unmatched 全 0；黑盒仅 array_6_ext；signoff-strict / SUCCEEDED / vmucp true / merge_dup false |
+| ITTageTable_1 | 682 | 同上 |
+| ITTageTable_2 | 1014 | 同上 |
+| ITTageTable_3 | 1014 | 同上 |
+| ITTageTable_4 | 1014 | 同上 |
+| TageBTable | 396 | 同上（黑盒仅 array_4_ext） |
