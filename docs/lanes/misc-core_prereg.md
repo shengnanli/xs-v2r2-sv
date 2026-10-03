@@ -111,4 +111,21 @@ Bku 的 UT 测不到重写件（CryptoModule 是两侧共用的 golden 定义，
 2. CtrlBlock 里 ExceptionGen 不钉点：独立证明时签名分析全配上，但在 30 万比较点的上下文里未必；若出现 unmatched，先查 rob/exceptionGen 的配对。
 3. CtrlBlock 证明 11 小时级；若 3 小时无进展迹象按规范采样诊断，必要时停下报告。
 
+## 5. 第 2 轮登记（合 main 183593954 之后，跑前提交）
+
+main 合入了 agent/fpu-parents：CSA4to2（evidence/d65d2da418a4）与 Bku 的四个叶子 CountModule / ClmulModule /
+MiscModule / HashModule（evidence/f696c5c84a6d）有了已签重写件。按集成者要求把它们挪进 impl 侧（两侧白盒）：
+
+| 目标 | 改动 | 预测 passing | constant_reg | 其它 |
+|---|---|---|---|---|
+| CSA_Nto2With3to2MainPipeline | CSA4to2 ×3 改 impl 重写件 | **638** | 4 | 非正式试跑 638+4 |
+| FloatFMA | 同上（孙辈） | **1600** | 105 | CSA4to2 纯组合，不增减寄存器（未试跑） |
+| FMA | 同上（曾孙辈） | **4188** | 105 | 同上（未试跑） |
+| VectorFloatFMA | 同上 | **1735** | 103 | 同上（未试跑） |
+| Bku | Count/Clmul/Misc/Hash 改 impl 重写件，只剩 CryptoModule 同源；fm_pins_pre.tcl 追加 countModule.funcReg 9 位钉点（同 BkuLeaves） | **3423** | 456 | vmucp 开；非正式 diagnostic 试跑 3423+456、unread 0 |
+
+全部 failing / unverified / unmatched / unread_notcompared 0，无黑盒、无 dont_verify。
+第 1 轮的 receipt（a757ff84032a / 7ada6dcce967）保留作记录；第 2 轮 receipt 才是这 5 个目标的现行证明。
+CtrlBlock / ExceptionGen / BlockCipherModule / Booth 两个变体不受这次合并影响（闭包不含被改文件），不重跑。
+
 ## 对账（跑完追加，不改上文任何数字）

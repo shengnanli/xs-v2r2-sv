@@ -3,7 +3,11 @@ MODULE = Bku
 RTL_DIR = ../../../rtl
 # 单文件规范：package bku_pkg + xs_Bku_core + golden 同名 wrapper 都在 Bku.sv 里
 RTL_SRCS = $(RTL_DIR)/backend/Bku.sv \
-           $(RTL_DIR)/backend/BlockCipherModule.sv
+           $(RTL_DIR)/backend/BlockCipherModule.sv \
+           $(RTL_DIR)/backend/CountModule.sv \
+           $(RTL_DIR)/backend/ClmulModule.sv \
+           $(RTL_DIR)/backend/MiscModule.sv \
+           $(RTL_DIR)/backend/HashModule.sv
 TB_SRCS = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
@@ -19,9 +23,15 @@ GOLDEN_RTL ?= $(G1_CANONICAL)/golden-rtl
 #   UT：CryptoModule 是两侧共用的 golden 定义，它例化的 BlockCipherModule 在两侧都解析到 golden 那份
 #       （重写件被 derive 改名成 BlockCipherModule_xs，没人例化它）。所以 Bku 的 UT 测不到重写件，
 #       重写件的 UT 在 verif/ut/BlockCipherModule；本层的替换由 FM 兜底。
-BKU_SHARED = CountModule.sv ClmulModule.sv MiscModule.sv CryptoModule.sv HashModule.sv
-BKU_LEAVES = $(BKU_SHARED) BlockCipherModule.sv
-GOLDEN_SRCS = $(GOLDEN_RTL)/Bku.sv $(GOLDEN_RTL)/BlockCipherModule.sv
+#
+# ★同日合 main 后（agent/fpu-parents 签了 CountModule / ClmulModule / MiscModule / HashModule，
+#   evidence/f696c5c84a6d/*）：这四个也改两侧白盒（impl = RTL_SRCS 里的重写件）。只剩 CryptoModule 两侧同源 golden。
+#   UT 里 Bku_xs 直接例化的 count/clmul/misc 解析到重写件（derive 同步改名）；HashModule 与 BlockCipherModule
+#   挂在两侧共用的 golden CryptoModule 下，UT 里两侧都是 golden，由 FM 兜底。
+BKU_REWRITTEN = BlockCipherModule.sv CountModule.sv ClmulModule.sv MiscModule.sv HashModule.sv
+BKU_SHARED = CryptoModule.sv
+BKU_LEAVES = $(BKU_SHARED) $(BKU_REWRITTEN)
+GOLDEN_SRCS = $(GOLDEN_RTL)/Bku.sv $(addprefix $(GOLDEN_RTL)/,$(BKU_REWRITTEN))
 RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(BKU_SHARED))
 
 FM_VARIANTS = Bku

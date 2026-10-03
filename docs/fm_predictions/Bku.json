@@ -6,5 +6,5 @@
   "expected": 3879,
   "merge_dup": "false",
   "model_applicable": true,
-  "note": "misc-core 重证（BlockCipherModule 改两侧白盒 + merge_dup 改 false）：预测 passing 3423 = 模型 3879 - constant_reg 456；vmucp 白名单（fm_target_config/Bku.tcl）的 20 个 funcReg 死位双射计入 passing（非正式 diagnostic 试跑 3403 + unread 20 + constant 456）。"
+  "note": "misc-core 第 2 轮（合 main 183593954 后，CSA4to2 / Bku 四叶子改 impl 重写件）：预测与第 1 轮同（见 docs/lanes/misc-core_prereg.md §5）。"
 }

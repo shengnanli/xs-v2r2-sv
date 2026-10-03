@@ -6,5 +6,5 @@
   "expected": 1705,
   "merge_dup": "false",
   "model_applicable": true,
-  "note": "misc-core 登记：预测 passing 1600 = 模型 1705 - constant_reg 105（压缩树与各格式通路里恒 0 的位）。非正式试跑（钉点 + 怪癖 6/7 修正后）1600 + 105。"
+  "note": "misc-core 第 2 轮（合 main 183593954 后，CSA4to2 / Bku 四叶子改 impl 重写件）：预测与第 1 轮同（见 docs/lanes/misc-core_prereg.md §5）。"
 }
