@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/StridePF
+Implementation : i:/WORK/StridePF
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 21:15:21 2026
+**************************************************
+
+No aborted compare points.
+
+1
