@@ -72,3 +72,21 @@ seed1 三档全部 errors=0。变异 harness 用 cp+mv 还原源文件，mtime �
 1. 若第一跑 passing ≠ 3962，差额先按 receipt 的 constant_reg / unread 指认；指认不了就是核的问题，修 RTL 不改预测。
 2. tdata 数组 vs 扁平名若让签名匹配配错（unmatched ≠ 0），改用 fm_pins_pre.tcl 消名差，不用 set_user_match 修错配。
 3. `tdata_<j>_timing` 没有输入口、只被写 0：两侧次态都是 `~update & q`，预计不会被判常量；若被判 constant_reg 会以 4 位出现在差额里。
+
+## 对账（跑后追加，上文数字不改；lane 主线续跑，机器重启后）
+
+### A. 第一跑（vmucp 关）：evidence/5a3282d30ab1/AtomicsUnit（impl 5a3282d3）
+native SUCCEEDED，passing **3958** / failing 0 / unverified 0 / unmatched compare 0 / 无黑盒 / dont_verify·elab147·relaxed_appvars 皆空；
+constant_reg **4**；unread 62 → strict PARTIAL(strict_unread!=0)。与 §3 预测 3962 差 4 = constant_reg 4（§3"可能出错处 3"预写的 tdata_<j>_timing）。
+62 个 unread 与 §3 三族逐位一致，但形态与预写不同：(b)(c) 6 点是 matched_nc；(a) tdata2[63:50] × 4 = 56 点**两侧未配**
+（ref `tdata_<j>_tdata2_reg[b]` vs impl `u_core/tdata_tdata2_reg[j][b]`，签名匹配配不上死位）——§3"可能出错处 2"的情形。
+修法（f27d65aa）：`verif/ut/AtomicsUnit/fm_pins_pre.tcl` 匹配前 4 × 64 = 256 位 `set_user_match -type cell`（fail-closed），
+`verif/fm_target_config/AtomicsUnit.tcl` 写六条依据，Makefile 开 vmucp。
+
+### B. 第二跑（vmucp 开）：evidence/f27d65aafd36/AtomicsUnit（impl f27d65aa）
+native SUCCEEDED，passing **4020**（= 3958 + 62，真比较），failing / unverified / aborted / unread_notcompared / unmatched 全 0，
+无黑盒、无 dont_verify；constant_reg 4。`fm_predict check AtomicsUnit`：预期 4024、实测 4020、差 4 = constant_reg 4，rc=0。
+receipt sha256 `d46584c3a922c4421d1c60955853955f47510249ac7fd131a6f0a867df3137ad`。
+
+### C. UT（clean rebuild 后，在 f27d65aa 字节上）
+9 档（seed 1/7/42 × initreg 0/random/<seed>017）全部 checks=12398512 errors=0 bad_cov=0。

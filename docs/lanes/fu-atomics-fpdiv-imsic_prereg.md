@@ -74,3 +74,26 @@
   M1/M3 余量薄（11/16），点名。
 - **预测**：passing = **347**（闭包寄存器 310 + output 37）；预期差额由 constant_reg 指认，至少 4 位
   （io_fflags_r_1 的低 4 位恒 0）；failing / unread / unmatched 0；无黑盒。
+
+## 对账（跑后追加，上文数字不改）
+
+| 目标 | 预测 | 实测 passing | 差 / 指认 | failing / unread / unmatched / 黑盒 / dont_verify | evidence | receipt sha256 |
+|---|---|---|---|---|---|---|
+| BranchUnit | 1298 | 1298 | 0 | 全 0 / 无 / 否 | evidence/7bd30c050029/BranchUnit | `ed0b97964e9c818eba30a7055ba628e3d9442155e9651ea2b03852e1f5edbd3b` |
+| JumpUnit | 1299 | 1299 | 0 | 全 0 / 无 / 否 | evidence/7bd30c050029/JumpUnit | `5ff4612ad3ddae9047088297e1b8bbe666100696941e6145b3eb7eea21797125` |
+| Mgu | 144 | 144 | 0 | 全 0 / 无 / 否 | evidence/d09e1997840f/Mgu | `c7cbc81cc4778aa36487a4f10b1a8bae435134c005bd900e7be908a093367e5b` |
+| VFixPoint64b | 104 | 104 | 0 | 全 0 / 无 / 否 | evidence/5a3282d30ab1/VFixPoint64b | `7db3f7fd53f752c633d7b51272e0852e870dfb7bd5b5c46dae6ae6aa2d7a6516` |
+| VIntFixpAlu64b | 465 | 465 | 0 | 全 0 / 无 / 否 | evidence/5a3282d30ab1/VIntFixpAlu64b | `f3fb6a2f532f10d5db4b9a05753b8fbfc53509b4a84e822919862be7afc38cdb` |
+| FloatAdderF32WidenF16MixedPipeline（vmucp 关） | 347 | 324 | 23 = constant_reg 20 + unread 3 | unread 3（matched_nc，同读 golden 子树） → PARTIAL | evidence/5a3282d30ab1/… | 基线，不收绿 |
+| FloatAdderF32WidenF16MixedPipeline（vmucp 开） | 347 | **327** | 20 = constant_reg 20 | 全 0 / 无 / 否 → SUCCEEDED | evidence/2c59d6196113/… | `df303ed637e62946144e34da6839c9ccf7859dc91006275ec1f0010b29ed06bb` |
+
+FloatAdder 的 constant_reg 20：FM 报为 **matched** 常量对（两侧同判常量，Not Compared / Constant reg 20，ref 侧无独占）。
+其中 4 位按构造可指认（io_fflags_r_1 的低 4 位，两侧都是 `{nv, 4'b0}`）；其余 16 位本 lane 没有逐个列出
+（要列需一次 `report_constant_registers` 诊断跑），登记时只写了"至少 4"——**这一点预登记不完整，如实记**。
+`fm_predict check`：BranchUnit/JumpUnit/Mgu/VFixPoint64b/VIntFixpAlu64b 逐位相等；FloatAdder 差额 20 由 receipt constant_reg 指认，rc=0。
+FloatAdder vmucp 第二跑在 2c59d619 上（f27d65aa 之后只提交了 evidence，rtl/verif 字节相同）。
+
+UT 9 档（seed 1/7/42 × initreg 0/random/<seed>017，200k 拍，clean rebuild）：
+- BranchUnit：checks=23200000 errors=0（首轮会话）；JumpUnit：23400000 errors=0；Mgu：400000 errors=0。
+- VFixPoint64b：600000 errors=0 bad_cov=0 × 9；VIntFixpAlu64b：799996 errors=0 bad_cov=0 × 9；
+  FloatAdderF32WidenF16MixedPipeline：399994~399996 errors=0 bad_cov=0 × 9（tb 已加 widen 指数 0x66/0x8F 与 ±0 双零激励，见 5a3282d3 后的 tb）。
