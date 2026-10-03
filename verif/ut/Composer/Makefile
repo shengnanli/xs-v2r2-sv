@@ -160,13 +160,15 @@ VCS += +define+SYNTHESIS +vcs+initreg+random
 # X 的乐观/悲观传播不再一致（实测：seed 1 第 5217 拍 io_out_s3_full_pred_*_br_taken_mask_1 golden=0、重写=X，
 # 源头是未初始化 SRAM 读出的 X 经 SC 和/阈值比较）。X 不是硬件取值，按 CONVENTIONS 改用 initreg 三档：
 #   INITREG=0 / random / <seed>017；后两档用 initreg 配置文件，其余状态随机、厂商 SRAM 行为模型存储钉 0
-#   （两个实例各读"从没写过"的条目时随机值不同 —— tb 先写后读契约，同 verif/ut/ITTage、verif/ut/Tage_SC）。
+#   （两个实例各读"从没写过"的条目时随机值不同 —— tb 先写后读契约，同 verif/ut/ITTage、verif/ut/Tage_SC），
+#   并把两侧同源 golden SRAM 包装链的读出保持寄存器也钉 0；另给 +warmup=4000：前 4000 拍（第一次运行中复位之前）不比，
+#   等两侧各自同源的 golden 子模块（FTB / RAS）里不复位的流水寄存器被随机激励写过一遍。
 INITREG ?= 0
-SRAM_LEAVES = array_1_ext array_2_ext array_3_ext array_4_ext array_5_ext array_6_ext
+SRAM_LEAVES = array_1_ext array_2_ext array_3_ext array_4_ext array_5_ext array_6_ext FoldedSRAMTemplate FoldedSRAMTemplate_1 FoldedSRAMTemplate_20 FoldedSRAMTemplate_22 FoldedSRAMTemplate_24 SRAMTemplate_36 SRAMTemplate_44 SRAMTemplate_45 SRAMTemplate_64 SRAMTemplate_76 SRAMTemplate_78 SplittedSRAMTemplate_2 SplittedSRAMTemplate_23 SplittedSRAMTemplate_25 SplittedSRAMTemplate_27 SplittedSRAMTemplate_3 SplittedSRAMTemplate_4
 ifeq ($(INITREG),0)
 SIM_ARGS += +vcs+initreg+0
 else
-SIM_ARGS += +vcs+initreg+config+$(UT_GEN_DIR)/initreg_$(INITREG).cfg
+SIM_ARGS += +vcs+initreg+config+$(UT_GEN_DIR)/initreg_$(INITREG).cfg +warmup=4000
 endif
 $(UT_GEN_DIR)/initreg_%.cfg: Makefile
 	@mkdir -p $(UT_GEN_DIR)
