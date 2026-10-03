@@ -14,7 +14,8 @@
 # =============================================================================
 
 proc _hperf_pin_dead_op_bits { } {
-    set top $::env(FM_TOP)
+    # 钉点文件在 safe interp 里跑，读不到 env；fm_eq.tcl 只把 top 的值传进来
+    set top $::top
     set refs  [report_unmatched_points -reference      -status unread -list]
     set impls [report_unmatched_points -implementation -status unread -list]
 
