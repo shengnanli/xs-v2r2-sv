@@ -1,0 +1,10 @@
+{
+  "target": "FastArbiter_27",
+  "ut": "Arithmetic200c",
+  "regs": 10,
+  "outs": 417,
+  "expected": 427,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "agent/next200c-takeover 接管节预登记（docs/lanes/newrtl_next200c_prereg.md）"
+}

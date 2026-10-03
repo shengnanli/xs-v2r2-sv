@@ -1,0 +1,9 @@
+{
+  "target": "MieModule",
+  "ut": "CsrDebugTime4",
+  "regs": 11,
+  "outs": 75,
+  "expected": 86,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,168 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T07:51:59Z",
+ "generator": {
+  "run_context_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/cb2892a30a11/Pmp26cfgModule",
+  "version": 1
+ },
+ "impl_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pmp26cfgModule.sv",
+    "sha256": "afd628c6f2191403be8ae4a336ab0406747b530cf60d342d94fe393ef4c1fc73"
+   }
+  ],
+  "golden_sha256": "274c41aeed5fa1c1283da22cf2fe0eb73c32a68db93d1949ebfecd3b229f3112",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_Pmpcfg_core.sv",
+    "sha256": "31b21f2ab925dff4fb3078467efd95aa29ed3857738244f5be4955f9315969cf"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp21cfgModule.sv",
+    "sha256": "28f7db25ee1a0fdd1b2a36b5306491bbd3a68f346f1fcb77be3d0e0e20ca761f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp22cfgModule.sv",
+    "sha256": "8a8dbafc05bb5f51aaffe02ff44e404027b2245bd0efdd646fd7ef88c19fadc3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp23cfgModule.sv",
+    "sha256": "d374c6b35eb49dc532f7c030d4ca1bbfcc36faadf78adaa3c27947b12b01d6f9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp24cfgModule.sv",
+    "sha256": "87bbd77e732f4f96e42ef4ad291ca10a9696ee1f7da6b94b1f9fd407eb579534"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp25cfgModule.sv",
+    "sha256": "05b514b6676012b33002aff197b7ea94e6f3867492ff674bfded986c88c6e22a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp26cfgModule.sv",
+    "sha256": "c188f18d4d47ba09f31b6325ae214f1de6622d7ca293a6d4fef230657a1d0a31"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp27cfgModule.sv",
+    "sha256": "a4096f8a7f8e59944944de78ba17cd71f5874beb0a36460cf2f21c996e15b529"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp28cfgModule.sv",
+    "sha256": "966022d97c6fc1f6cf9d8cdbd5e671740b85bc750d8d367029f359043b9b4036"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp29cfgModule.sv",
+    "sha256": "2601170314487f46294fdb254a76227e9d27e646cd5292e2867eda9c10efd8d9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp30cfgModule.sv",
+    "sha256": "2235599e85a26a2170e3de363009179a0dd75dc16dd1f713e7230c2d72641d7b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pmp31cfgModule.sv",
+    "sha256": "cf2d23b282ed7b603f93460ee4f5b296edca8243cc025a250400f6e103429b82"
+   }
+  ],
+  "impl_sha256": "63d8237f9ba614aa387680330576df016d2a39e7a131dde5c5e1a1390f9b8d89",
+  "repo_impl_files": 12
+ },
+ "native_facts_sha256": "25bd692dee89f18662beb6aca6f6bbf8d41c301bf1afc08ffc606683d951a0f2",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 20,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+ "provisional": false,
+ "receipt_sha256": "3969e959de245b95c8e7220a3e5b418fe07f9da594a2c82c643f0431f806c56e",
+ "reproduce": {
+  "command": "PROOF_COMMIT=cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c scripts/run_proof.sh PmpCfgTailLeaves Pmp26cfgModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "cec22c02fb1253e04366dd3164540b346dfd8e34f21fddf1996d5efaa2860227",
+ "run_id": "PmpCfgTailLeaves-20261003T071724Z-cb2892a3",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "Pmp26cfgModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PmpCfgTailLeaves",
+ "variant": "Pmp26cfgModule",
+ "verdict": "SUCCEEDED"
+}

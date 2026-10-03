@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/McountinhibitModule
+Implementation : i:/WORK/McountinhibitModule
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 03:18:49 2026
+**************************************************
+
+No aborted compare points.
+
+1

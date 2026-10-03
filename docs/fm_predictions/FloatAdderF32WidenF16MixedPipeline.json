@@ -5,6 +5,5 @@
   "outs": 37,
   "expected": 347,
   "merge_dup": "false",
-  "model_applicable": true,
-  "note": "两拍流水；模型=闭包寄存器位310(含两侧同读的golden far/close子树)+output 37；预期constant_reg>=4(io_fflags_r_1低4位恒0)"
+  "model_applicable": true
 }

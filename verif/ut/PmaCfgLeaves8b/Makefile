@@ -14,4 +14,5 @@ include ../../../scripts/ut_common.mk
 # Compile-time switch enables VCS initial-register instrumentation.  The only
 # runtime mode used by this UT is deterministic zero initialization.
 VCS += +define+SYNTHESIS +vcs+initreg+random
-SIM_ARGS = +ncycles=$(NCYCLES) +vcs+initreg+0
+INITREG ?= 0
+SIM_ARGS = +ncycles=$(NCYCLES) +vcs+initreg+$(INITREG)

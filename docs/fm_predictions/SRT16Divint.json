@@ -1,0 +1,10 @@
+{
+  "target": "SRT16Divint",
+  "ut": "SRT16Divint",
+  "regs": 1132,
+  "outs": 33,
+  "expected": 1165,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "regs + outs 模型。预期差额全部为 constant_reg（unread 预测 0）：iter_cons_reg_0/1/3/4 的低 4/3/3/4 位恒 0（14 位），另有 SRT4qdsCons 查表输出在全部 8 行里恒定的位经 sel_cons_reg/spec_cons_reg/sel_reg/spec_reg 初值成为常量寄存器位（数目未逐位推算，以 receipt 的 constant_reg 指认）"
+}

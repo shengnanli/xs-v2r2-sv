@@ -1,0 +1,10 @@
+{
+  "target": "I8DivNr4",
+  "ut": "I8DivNr4",
+  "regs": 94,
+  "outs": 17,
+  "expected": 111,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "regs 94 + outs 17。预期差额 = constant_reg + unread：常量寄存器位 const_d_reg_1[9]/const_d_reg_2[9:8]（恒 0，3 位，stateReg[5] 视 FM 是否判常量另计）；golden 无读者的位 const_d_reg_0[9]/const_d_reg_3[9]（两侧对称，unread 2，stateReg[5] 若不判常量则为第 3 个）"
+}

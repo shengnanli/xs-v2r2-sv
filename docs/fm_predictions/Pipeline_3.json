@@ -1,0 +1,9 @@
+{
+  "target": "Pipeline_3",
+  "ut": "L2PipelineLeaves4",
+  "regs": 92,
+  "outs": 7,
+  "expected": 99,
+  "merge_dup": "false",
+  "model_applicable": true
+}

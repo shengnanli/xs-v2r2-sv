@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/MLevelPermitModule
+Implementation : i:/WORK/MLevelPermitModule
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 03:17:50 2026
+**************************************************
+
+No aborted compare points.
+
+1

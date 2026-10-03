@@ -1,0 +1,9 @@
+{
+  "target": "MiscModule",
+  "ut": "BkuLeaves",
+  "regs": 64,
+  "outs": 64,
+  "expected": 128,
+  "merge_dup": "false",
+  "model_applicable": true
+}

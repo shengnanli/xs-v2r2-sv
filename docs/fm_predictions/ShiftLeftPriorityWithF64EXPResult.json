@@ -1,0 +1,9 @@
+{
+  "target": "ShiftLeftPriorityWithF64EXPResult",
+  "ut": "ShiftPriorityLeaves3",
+  "regs": 0,
+  "outs": 34,
+  "expected": 34,
+  "merge_dup": "false",
+  "model_applicable": true
+}

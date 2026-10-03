@@ -1,0 +1,10 @@
+{
+  "target": "FP_INCVT",
+  "ut": "FP_INCVT",
+  "regs": 425,
+  "outs": 69,
+  "expected": 494,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 494 = 寄存器 425 + 输出 69；预登记 constant_reg 27（fflags[3] DZ、expAdderIn0[12:11]、shamtIn[11:0]、fracSrcLeft[11:0]），预测 passing 467；shamt[10:7] 若被判常量则 463"
+}

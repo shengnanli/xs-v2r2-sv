@@ -223,6 +223,13 @@ def _prose_failing(text):
 # taint 标记(保守方向), 不是 reviewer 0146 P0 说的"多轮里取错轮次"那类 bug。
 _DONTVERIFY = re.compile(r'set_dont_verify_points|Don\'t verify', re.M)
 _ELAB147    = re.compile(r'FMR_ELAB-147', re.M)
+# ★钉点静默落空★（gatefix2，codex_0207 E1 同类）：set_user_match / set_top 等对不存在的
+# 名字**不抛 Tcl 异常**，只在日志里写一行行首 `Error: Unknown name: '<obj>' (FM-036)`。
+# 钉点脚本若拿 catch 判成败，这一行就是"钉了个寂寞"留下的唯一痕迹（实测 SyncDataModule
+# 8 变体 + PipelineConnectPipe / NewPipelineConnectPipe_29/_34 / FauFTBWay，共 5405 行）。
+# 只认**行首** `Error:` —— fm_eq.tcl / 钉点脚本的注释会被原样回显进日志，注释里提到这条
+# 消息时前面一定有 `#` 或缩进，不能被算进来。
+_UNKNOWN_NAME = re.compile(r'^Error: Unknown name', re.M)
 
 
 def _last_table(text):
@@ -803,6 +810,24 @@ def _dead_ref_check(q, decl, unread_points, assembly=False):
 def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allowlist=0,
             dead_ref_decl=None, unread_points=None, bbox_obs=None, bbox_attrs=None,
             allow_decl=None, expect_canonical=None, expect_impl_commit=None):
+    """判定入口。在 _verdict_core 的结论之上只加一条**收紧**：日志里有行首
+    `Error: Unknown name` ⇒ 不得 SUCCEEDED / PASS_DEAD_REF（降为 PARTIAL）。
+    其余结论（ERROR/FAILED/PARTIAL）原样返回；无命中时 q 不多任何键。"""
+    v, q = _verdict_core(log_text, make_rc, mode, expected_top, allowlist, dead_ref_decl,
+                         unread_points, bbox_obs, bbox_attrs, allow_decl,
+                         expect_canonical, expect_impl_commit)
+    n = len(_UNKNOWN_NAME.findall(log_text))
+    if n:
+        q["unknown_name_errors"] = n
+        if v in ("SUCCEEDED", "PASS_DEAD_REF"):
+            q["reason"] = f"unknown_name_errors:{n}(钉点/命令落在不存在的对象上，静默未生效)"
+            return "PARTIAL", q
+    return v, q
+
+
+def _verdict_core(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allowlist=0,
+                  dead_ref_decl=None, unread_points=None, bbox_obs=None, bbox_attrs=None,
+                  allow_decl=None, expect_canonical=None, expect_impl_commit=None):
     q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
          "failing_total": None, "failing_matched": None, "failing_unmatched": None,
          "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,

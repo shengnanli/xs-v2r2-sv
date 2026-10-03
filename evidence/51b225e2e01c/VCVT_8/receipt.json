@@ -1,0 +1,502 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "VCVT_8",
+ "run_id": "VCVT_8-20261003T140629Z-51b225e2e",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/VCVT_8.sv",
+   "kind": "golden",
+   "sha256": "002c82796b997aec36b2410d9c35f4934a6cab19f31ccda126335050bb60045b"
+  },
+  {
+   "path": "golden-rtl/CLZ_6.sv",
+   "kind": "golden",
+   "sha256": "ab095493c436051952c4488367d5a749cbef0760a0bd673063fd5fa660c870dc"
+  },
+  {
+   "path": "golden-rtl/CLZ_7.sv",
+   "kind": "golden",
+   "sha256": "b21bf1dd711de9d6af4d27d9d4326c5bd1cd0f1533dacb3fec376a3ba18288d8"
+  },
+  {
+   "path": "golden-rtl/CLZ_9.sv",
+   "kind": "golden",
+   "sha256": "3c93721a64a74249d4e1c28cd9fa358d97ceeefe3abed6e749b8d77885442559"
+  },
+  {
+   "path": "golden-rtl/CLZ_28.sv",
+   "kind": "golden",
+   "sha256": "de11e0b7c3110e52b150a9d947bc1b5c41b90679b73cea1b72e503097dca36f1"
+  },
+  {
+   "path": "golden-rtl/CLZ_29.sv",
+   "kind": "golden",
+   "sha256": "2f80b4cdc825a06167358d9925ddb8afd2ed7129fb5c2fff87d05e9ee10130e7"
+  },
+  {
+   "path": "golden-rtl/CLZ_30.sv",
+   "kind": "golden",
+   "sha256": "0148b05d5f8a5d1c713605b42fcbca8a1eba488566461897799d90e0e9b29d1e"
+  },
+  {
+   "path": "golden-rtl/CLZ_31.sv",
+   "kind": "golden",
+   "sha256": "e742f0f17e782c6d019267735e24b124807dafd5e06d57599bfd88b67a8e84d7"
+  },
+  {
+   "path": "golden-rtl/ShiftRightJam.sv",
+   "kind": "golden",
+   "sha256": "041c257b44d00abd8b48c24c0aeef2a21ce432821dfc185383475187ca95a232"
+  },
+  {
+   "path": "golden-rtl/ShiftRightJam_2.sv",
+   "kind": "golden",
+   "sha256": "3e26da27bbb0de8125951cca24f5be94fe9684a88da93418a68608924bd850ac"
+  },
+  {
+   "path": "golden-rtl/ShiftRightJam_3.sv",
+   "kind": "golden",
+   "sha256": "0cd07a22be0008e54bafd6903859e020db19cb3b9e3899ccf57d32e2df84964c"
+  },
+  {
+   "path": "golden-rtl/ShiftRightJam_4.sv",
+   "kind": "golden",
+   "sha256": "78609afa2bbb47dde847e0ec2dc68c62524619b7c19d7df63e39e7d1c074c41d"
+  },
+  {
+   "path": "golden-rtl/RoundingUnit_3.sv",
+   "kind": "golden",
+   "sha256": "62d3072438f8ed0d0193a1fac0bc8feafe0ad1d8a2bcae7da8d23f772a9a060c"
+  },
+  {
+   "path": "golden-rtl/RoundingUnit_4.sv",
+   "kind": "golden",
+   "sha256": "caf593719b9f755c9a2cd1eada88e7ae04057e42aa9f04a3da0348987d4d6c98"
+  },
+  {
+   "path": "golden-rtl/RoundingUnit_8.sv",
+   "kind": "golden",
+   "sha256": "a2377a0bf4967ef414f20f2471b9938660cbaffd9f6415b6adc4835f0c8f50b0"
+  },
+  {
+   "path": "golden-rtl/RoundingUnit_9.sv",
+   "kind": "golden",
+   "sha256": "868a5dfadd433af0b2c48a1e7eaecbbef081c6dbec941bd9c4dea8597cecb95a"
+  },
+  {
+   "path": "golden-rtl/RoundingUnit_11.sv",
+   "kind": "golden",
+   "sha256": "3080628663234de6aef80bbe3248280d680941ae2b9fc19ab82165a8a158fe4a"
+  },
+  {
+   "path": "golden-rtl/INT2FP.sv",
+   "kind": "golden",
+   "sha256": "486ed093a1339d432fa7b5ac913c957ea8745d84b4551b90c8d57cf51d0d1b4e"
+  },
+  {
+   "path": "golden-rtl/Estimate7.sv",
+   "kind": "golden",
+   "sha256": "5d52cc784a4b824abce17d0c391f3018e22c3dcc505c31881910a45ee525188e"
+  },
+  {
+   "path": "golden-rtl/CVT64_1.sv",
+   "kind": "golden",
+   "sha256": "96014394c3eb2236d0cc6a5aee9aac691a66ecc49fb9be20d893746899358f39"
+  },
+  {
+   "path": "golden-rtl/VCVT.sv",
+   "kind": "golden",
+   "sha256": "ca89bc6803ee53fff4cbc4c498bb51b862847fafe8065c98cf5b4ea5ea4145f6"
+  },
+  {
+   "path": "golden-rtl/CVT32.sv",
+   "kind": "golden",
+   "sha256": "75a9e0b4570c7727ac83fd3abfc1974edd1ad4ec13e39dc7ece42f585a00524c"
+  },
+  {
+   "path": "golden-rtl/VCVT_1.sv",
+   "kind": "golden",
+   "sha256": "2886ee7687c59de4798b5bf646f1a62d2ffa071b517d2ed2a30b94d550fb620e"
+  },
+  {
+   "path": "golden-rtl/CVT16.sv",
+   "kind": "golden",
+   "sha256": "cf963f5a769403f1433abbb5c83bbc9bc7d73c0d9b7c2be4435a74196d1d9485"
+  },
+  {
+   "path": "golden-rtl/VCVT_2.sv",
+   "kind": "golden",
+   "sha256": "9854a8c67a1b7bc8eb1f197f4abb00f7dea906ae29b3dfeb50fdfff9a561f8fb"
+  },
+  {
+   "path": "golden-rtl/VectorCvt.sv",
+   "kind": "golden",
+   "sha256": "ba4ad54b219cd4e6f16fddd12888f0b18549649235a3619a74f3e99d2362971f"
+  },
+  {
+   "path": "golden-rtl/VectorCvtTop.sv",
+   "kind": "golden",
+   "sha256": "e8504cb28ca7b5cab247bfcd1da3bc3a87d52873943249cd9bbc6f4ec0843981"
+  },
+  {
+   "path": "golden-rtl/Mgu.sv",
+   "kind": "golden",
+   "sha256": "cd54eeeed6220215c40493877ebe52efc04c3f9785f702cf646aa8789fdbf10c"
+  },
+  {
+   "path": "golden-rtl/ByteMaskTailGen.sv",
+   "kind": "golden",
+   "sha256": "effbf95047e8c37d4f1533e5920e5f518574015e5c2c9df9186be5116209a506"
+  },
+  {
+   "path": "golden-rtl/UIntToContLow1s.sv",
+   "kind": "golden",
+   "sha256": "1196c703297a97a4a1888870be786b96439b7221d0fe7ab8a015169ab7e0bb49"
+  },
+  {
+   "path": "golden-rtl/UIntToContLow0s.sv",
+   "kind": "golden",
+   "sha256": "fc473dde42be7e2c0d114d7727c54e7414b753eca85f70de0ccf5de864f42e97"
+  },
+  {
+   "path": "golden-rtl/MaskExtractor.sv",
+   "kind": "golden",
+   "sha256": "8085f1d0ce0e90fd783e62e4663dbcd84ce2b8d28ab1628d5f18927b4c5e7adf"
+  },
+  {
+   "path": "golden-rtl/FP_INCVT.sv",
+   "kind": "golden",
+   "sha256": "bcd33aae592ec439630b06003ac1615290c6049ea3f73e47ae3f24a8e2b37e70"
+  },
+  {
+   "path": "golden-rtl/Rec7Table.sv",
+   "kind": "golden",
+   "sha256": "279535fb1f40cdfd76e369d39dcf03a29ca52539dbf05b697786bdb27ad00093"
+  },
+  {
+   "path": "golden-rtl/Rsqrt7Table.sv",
+   "kind": "golden",
+   "sha256": "14ab4490a1ef381f9e268f1f673a49fb102f62de1a0208bdfa4cc23f601b5b54"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_CLZ_core.sv",
+   "kind": "repo",
+   "sha256": "a78b562f0e9e3cea035fe842d93ec37f274004113fe80305b78fedd68bcaa8af"
+  },
+  {
+   "path": "rtl/common/CLZ_6.sv",
+   "kind": "repo",
+   "sha256": "37767b426ba9e1d7f1e14b23c54b0e8c26b667b7642c717215a65263e94dc3d3"
+  },
+  {
+   "path": "rtl/common/CLZ_7.sv",
+   "kind": "repo",
+   "sha256": "1a35d4e9acbafd5a9778c36d1763d074f9307aac9c8180290235ae4441cb5906"
+  },
+  {
+   "path": "rtl/common/CLZ_9.sv",
+   "kind": "repo",
+   "sha256": "10bce65c3398101b1cc74d86192eb1860b6d1f5df3e3fb370df4faca8f77982b"
+  },
+  {
+   "path": "rtl/common/CLZ_28.sv",
+   "kind": "repo",
+   "sha256": "c36011673f883c59243bc50cd61a7ce82daf73ee11912624e3051cca40732d2a"
+  },
+  {
+   "path": "rtl/common/CLZ_29.sv",
+   "kind": "repo",
+   "sha256": "dcb78cb4dfd5b0747d6fe357ea9ee662cd7b58c9fbfcbf7280111470b80bf398"
+  },
+  {
+   "path": "rtl/common/CLZ_30.sv",
+   "kind": "repo",
+   "sha256": "519470ac3526e6728cbdd37579dd2b50a243b6a17a502d76e831f56f6affa9d4"
+  },
+  {
+   "path": "rtl/common/CLZ_31.sv",
+   "kind": "repo",
+   "sha256": "7b2800ffaca016427affb294315998ba84e4bee91e77e92a14fee1771951a0da"
+  },
+  {
+   "path": "rtl/backend/ShiftRightJam.sv",
+   "kind": "repo",
+   "sha256": "1d2ea1d941fd768b7c8360237a92cfb485324a49c904ef0953f942351e850724"
+  },
+  {
+   "path": "rtl/backend/ShiftRightJam_2.sv",
+   "kind": "repo",
+   "sha256": "a04159db76299d8c1f5be1de77a65727ab8fff604c3169bb61d61485aed2f888"
+  },
+  {
+   "path": "rtl/backend/ShiftRightJam_3.sv",
+   "kind": "repo",
+   "sha256": "4476681ce8024f34bd235fc37284109e6ed462a246b00ca7cb238ac7967f9fc1"
+  },
+  {
+   "path": "rtl/backend/ShiftRightJam_4.sv",
+   "kind": "repo",
+   "sha256": "88cf91002abbc90602aa915fd62dd700dbb835d7b2cdd5ac4f9d7f35d7ff3357"
+  },
+  {
+   "path": "rtl/backend/RoundingUnit_3.sv",
+   "kind": "repo",
+   "sha256": "fc09cf84f3fd7f031e05cfe65df842fc0c04205f08f54f2406bc033258d2a6f2"
+  },
+  {
+   "path": "rtl/backend/RoundingUnit_4.sv",
+   "kind": "repo",
+   "sha256": "3373c452c7fc330691f2528a401d51546548eba4ad54ce545e3dfea75baf7e81"
+  },
+  {
+   "path": "rtl/backend/RoundingUnit_8.sv",
+   "kind": "repo",
+   "sha256": "4afd7f8dc6ed609c7fba53a8cb612734986144343874aa6cab523f38bb4a04eb"
+  },
+  {
+   "path": "rtl/backend/RoundingUnit_9.sv",
+   "kind": "repo",
+   "sha256": "ca55a788138a70901a1f399aba76a0271bd2127c196b14eef439d23b3c96486f"
+  },
+  {
+   "path": "rtl/backend/RoundingUnit_11.sv",
+   "kind": "repo",
+   "sha256": "98e1d9349e0bafe69fe43e580db08ca08320fc71383f9cfc84d62dee941ec434"
+  },
+  {
+   "path": "rtl/backend/INT2FP.sv",
+   "kind": "repo",
+   "sha256": "ec9ba93c80e40416c5253eb69ae7d8c7511e51a9e9efa13e7d2dcd41cdf137c2"
+  },
+  {
+   "path": "rtl/backend/Estimate7.sv",
+   "kind": "repo",
+   "sha256": "8f5688956c1110ac86968acb3101efd2f4b8f9d6c8a35cf44c1c0c73662f60e9"
+  },
+  {
+   "path": "rtl/backend/CVT64_1.sv",
+   "kind": "repo",
+   "sha256": "9962f1e54bf7b6a410fbb8df196778f626764e9f25474f245b149f8bf402d8c7"
+  },
+  {
+   "path": "rtl/backend/VCVT.sv",
+   "kind": "repo",
+   "sha256": "b17941e87bef1d98722b93597664895358a40f2e79a2f68fb6fccd97ada39491"
+  },
+  {
+   "path": "rtl/backend/CVT32.sv",
+   "kind": "repo",
+   "sha256": "1b58af70cc4534362c37b1ef3b9699ad96dc59f0cb49a1c2ec287e573667fe73"
+  },
+  {
+   "path": "rtl/backend/VCVT_1.sv",
+   "kind": "repo",
+   "sha256": "5b9c5ccaf3fc0ccd1d80656b682105bba995cd6af01d6e3276d03293707863b3"
+  },
+  {
+   "path": "rtl/backend/CVT16.sv",
+   "kind": "repo",
+   "sha256": "902f316d9b24c1e7302d89be258f0ed1ff704bb3437b86cd9f9ad832384630bd"
+  },
+  {
+   "path": "rtl/backend/VCVT_2.sv",
+   "kind": "repo",
+   "sha256": "067109e0adf043f9799689f5eee006cbf133fd58d79d59f5e953b4d844e8b1ea"
+  },
+  {
+   "path": "rtl/backend/VectorCvt.sv",
+   "kind": "repo",
+   "sha256": "ad32fd067dd8758789c1c13cdfdc26f1dcf238d9e7ce138121c8eb5431ed744a"
+  },
+  {
+   "path": "rtl/backend/VectorCvtTop.sv",
+   "kind": "repo",
+   "sha256": "f31bdc86be2e5f478859bc157948e9664092336aa503b440a7ef0179f05908cb"
+  },
+  {
+   "path": "rtl/backend/UIntToContLow1s.sv",
+   "kind": "repo",
+   "sha256": "ac3315bfa93de9c0f543eea8ecaa9d6dcad3505f83a0029e980162decc2cc549"
+  },
+  {
+   "path": "rtl/backend/UIntToContLow0s.sv",
+   "kind": "repo",
+   "sha256": "424a1075079ab12bdf8799017eeb0f03451134e00fb91d401e1aca3fdc3eadf9"
+  },
+  {
+   "path": "rtl/backend/MaskExtractor.sv",
+   "kind": "repo",
+   "sha256": "df726e90b8f5bace8232037ab8a326576e788cf51ea3924300144982525535d9"
+  },
+  {
+   "path": "rtl/backend/ByteMaskTailGen.sv",
+   "kind": "repo",
+   "sha256": "9a334754033b50d5c532eefd316a30d39457b0bea51f31b92c81232875287cec"
+  },
+  {
+   "path": "rtl/backend/Mgu.sv",
+   "kind": "repo",
+   "sha256": "40611aa79c3ff5429d13e1ac8c5e6a421bc0d846e60654dcb95959b02e913c7f"
+  },
+  {
+   "path": "rtl/backend/VCVT_8.sv",
+   "kind": "repo",
+   "sha256": "21631a6324172ba36dbd5072d25269debb67de80d091fde85d00bbfe5cec8221"
+  },
+  {
+   "path": "rtl/backend/Rec7Table.sv",
+   "kind": "repo",
+   "sha256": "d3c0b0af3bd340ccdb7a8c87f1d8aba5f626f3ab2b50d3cf7673a9dd1f433789"
+  },
+  {
+   "path": "rtl/backend/Rsqrt7Table.sv",
+   "kind": "repo",
+   "sha256": "71e3e64e00bd71d1b7254ef53977ae9e2f2b4509af4fe55ba914efa65ffdafbc"
+  },
+  {
+   "path": "golden-rtl/FP_INCVT.sv",
+   "kind": "golden",
+   "sha256": "bcd33aae592ec439630b06003ac1615290c6049ea3f73e47ae3f24a8e2b37e70"
+  }
+ ],
+ "impl_commit": "51b225e2e01ca54be3a436c258fc6e36d6ec2603",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "VCVT_8-20261003T140629Z-51b225e2e",
+  "top": "VCVT_8",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 5128,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 5128,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 142,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "VCVT_8",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

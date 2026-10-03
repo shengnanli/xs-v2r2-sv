@@ -1,0 +1,10 @@
+{
+  "target": "fpdiv_r64_block",
+  "ut": "fpdiv_r64_block",
+  "regs": 0,
+  "outs": 172,
+  "expected": 172,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合；模型=顶层 output 位 172（含 24 个结构恒 0 的余数低位）"
+}

@@ -11,12 +11,22 @@ MODULE = ArithVecLeaves5
 # （FM_REF_DEPS_*，相对 golden-rtl 的文件名列表）。
 RTL_DIR  = ../../../rtl
 LEAVES = Adder_chain_rnd DivUnit FDivSqrt VIAluDecoder VIntAdder64b
-RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES)))
+# FDivSqrt 闭包里已有本仓重写件并签核的开方通路（2026-10-03，fpaddpath-sqrtblock lane）：
+#   fpsqrt_r16（verif/ut/fpsqrt_r16）、fpsqrt_r16_block（verif/ut/fpsqrt_r16_block）及其 child
+#   r4_qds / r4_qds_spec / r4_qds_cg / lzc（SRTDivSqrtLeaves10，PROVEN_DIRECT）——impl 改读重写件（两侧白盒）。
+#   ★UT 侧的限度★：impl 的 FloatDivider 仍是 golden 文件，它例化的是 golden 名 fpsqrt_r16，UT 单一 elaboration
+#   里绑到 golden 件（derive 只给 RTL_SRCS 里的模块改名）——所以本 UT 回归不到这条开方通路的重写件；
+#   这条通路的 UT 在 verif/ut/fpsqrt_r16 / fpsqrt_r16_block。FM 两侧分容器，impl 容器里只有重写件，证明覆盖到。
+# 除法通路（2026-10-03，fpu-parents lane）：fpdiv_r64_block（verif/ut/fpdiv_r64_block，evidence/801a0f5c9e49）
+#   impl 改读重写件；它下面的 CSA3to2_20/24、r4_qds_v2/_spec 仍是两侧同源 golden（下面 FDIVSQRT_GOLDEN_IMPL）。
+#   UT 限度同上：impl 的 FloatDividerR64 是 golden 文件、例化 golden 名 fpdiv_r64_block，UT 回归不到重写件，由 FM 覆盖。
+FDIVSQRT_REWRITTEN = lzc r4_qds_cg r4_qds r4_qds_spec fpsqrt_r16_block fpsqrt_r16 fpdiv_r64_block
+RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN)))
 TB_SRCS  = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL   ?= $(G1_CANONICAL)/golden-rtl
-GOLDEN_SRCS  = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(LEAVES)))
+GOLDEN_SRCS  = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN)))
 
 DIVUNIT_DEPS = SRT16DividerDataModule.sv CSA3_2_3956.sv CSA3_2_3960.sv CSA3_2_3962.sv \
                RightShifter.sv
@@ -24,19 +34,31 @@ FDIVSQRT_DEPS = FloatDivider.sv FloatDividerR64.sv fpsqrt_r16.sv fpdiv_r64_block
                 fpsqrt_r16_block.sv CSA3to2_20.sv CSA3to2_24.sv \
                 ShiftLeftPriorityWithLZDResult.sv lzc.sv r4_qds.sv r4_qds_cg.sv \
                 r4_qds_spec.sv r4_qds_v2.sv r4_qds_v2_spec.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(DIVUNIT_DEPS) $(FDIVSQRT_DEPS))
+# impl 侧仍读 golden 的 FDivSqrt 闭包文件（= FDIVSQRT_DEPS 去掉上面 7 个重写件）
+FDIVSQRT_GOLDEN_IMPL = FloatDivider.sv FloatDividerR64.sv \
+                       CSA3to2_20.sv CSA3to2_24.sv ShiftLeftPriorityWithLZDResult.sv \
+                       r4_qds_v2.sv r4_qds_v2_spec.sv
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(DIVUNIT_DEPS) $(FDIVSQRT_GOLDEN_IMPL))
 
-FM_VARIANTS = $(LEAVES)
+# FM_VARIANTS / FM_REF_DEPS 写字面名（scripts/fm_predict.py 按字面解析，不展开 make 变量）
+FM_VARIANTS = Adder_chain_rnd DivUnit FDivSqrt VIAluDecoder VIntAdder64b
 FM_REF_DEPS_DivUnit  = $(DIVUNIT_DEPS)
-FM_REF_DEPS_FDivSqrt = $(FDIVSQRT_DEPS)
+FM_REF_DEPS_FDivSqrt = FloatDivider.sv FloatDividerR64.sv fpsqrt_r16.sv fpdiv_r64_block.sv \
+                fpsqrt_r16_block.sv CSA3to2_20.sv CSA3to2_24.sv \
+                ShiftLeftPriorityWithLZDResult.sv lzc.sv r4_qds.sv r4_qds_cg.sv \
+                r4_qds_spec.sv r4_qds_v2.sv r4_qds_v2_spec.sv
 
 include ../../../scripts/ut_common.mk
 
 # golden 的 `ifndef SYNTHESIS 块（FDivSqrt 的断言调用未定义的 xs_assert_v2 + 随机初值）；
 # 两侧同口径带 SYNTHESIS。
 # initreg：编译期开机制、运行期选取值（ut_common 的 INITREG_TAG 会给日志留档）。
-# 默认 INITREG=0（常量初值）：DivUnit/FDivSqrt 的输出 payload 寄存器无复位，
-# 常量档保证两侧同初态；tb 另有 armed 闸，随机初值档也不会误判。
+# 默认 INITREG=0（常量初值）。验收是 seed 1/7/42 × INITREG=0 / random / <seed>017 九档。
+# DivUnit/FDivSqrt 的输出 payload 与 res_data 的来源寄存器（包装层 isW/fmt + golden 孩子
+# rFinal/qFinal 等）全无复位，两个独立例化在随机档各摇一份上电值：payload 由 tb 的
+# armed 闸（首次接受后）把守，res_data 由 res_armed 闸（首次 out_valid 后）把守。
+# ★原先这里写"随机初值档也不会误判"是错的★：res_data 当时没上闸，random/<seed>017
+# 六档里有五档红在开机十几拍（2026-10-03 divunit-initreg lane，UCLI 定位见 tb.sv 文件头）。
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 INITREG  ?= 0
 SIM_ARGS += +vcs+initreg+$(INITREG)
@@ -64,4 +86,9 @@ FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = $(if $(filter FDivSqrt DivUnit,$*),tru
 # 关掉它是加强不是放宽（不黑盒/不跳点/不约束 ref，比较点只增不减），先例见
 # scripts/fm_eq.tcl 的 merge 经验注记（RenameBuffer/MulUnit）。只作用在 DivUnit，
 # 命令行显式传 FM_MERGE_DUP=... 仍可覆盖（诊断用）。
-FM_MERGE_DUP = $(if $(filter DivUnit,$*),false,)
+# FDivSqrt（2026-10-03，fpaddpath-sqrtblock lane）：开方通路 impl 改读重写件后，merge=on 首跑
+# evidence/194f78e14165/FDivSqrt 出现同一类不对称合并——ref 侧 fpsqrt_r16 的 f_r_s_q[7:0]/f_r_c_q[9:4,1] 等
+# 被合并/判常量，impl 侧对应位不合并（15 个 unmatched），迭代环上 f_r_s_q/f_r_c_q 随之 failing（至少 20，截断）、
+# unverified 291。fpsqrt_r16 单独签核（merge=off，evidence/44292961f2c0）两侧逐位 1:1 证等价。
+# 与 DivUnit 同理关 merge（加强：比较点只增不减，不黑盒不跳点）。
+FM_MERGE_DUP = $(if $(filter DivUnit FDivSqrt,$*),false,)
