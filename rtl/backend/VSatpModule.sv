@@ -17,10 +17,10 @@ module VSatpModule(
   logic [3:0]  reg_MODE;
   logic [15:0] reg_ASID;
   logic [43:0] reg_PPN;
-  logic        mode_legal =
+  wire        mode_legal =
     w_wdata[63:60] == 4'h0 | w_wdata[63:60] == 4'h8 | w_wdata[63:60] == 4'h9;
-  logic        write_legal = w_wen & mode_legal;
-  logic        write_nonvirtual_illegal = w_wen & ~v & ~mode_legal;
+  wire        write_legal = w_wen & mode_legal;
+  wire        write_nonvirtual_illegal = w_wen & ~v & ~mode_legal;
   always @(posedge clock or posedge reset) begin
     if (reset) begin
       reg_MODE <= 4'h0;
