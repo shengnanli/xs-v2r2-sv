@@ -288,3 +288,22 @@ Estimate7、CVT64_1、VCVT、CVT32、VCVT_1、CVT16、VCVT_2、VectorCvt、Vecto
   OQ 同槽读写 ~5.4k、Arbiter16 第 15 路胜出 ~600、无人请求 ~17.8k；Arithmetic FastArbiter 轮转压过固定优先级 ~26.6k、第 4 路胜出 ~11k。
 - 变异 17 个（seed 7、initreg 7017、50k 拍）：16 个首轮即抓到，含原 agent 的 PipelineRegModule_6 / OverrideableQueue 原版
   （复位块里写载荷）；M17（IntBuffer_1 异步复位改同步）首轮漏，原因是 tb 只在 posedge 后比较——加"negedge 输入变化后再比一次"后抓到。
+
+### 接管节：vectorcvt-tree 10 个下游重证的预测（Rec7Table/Rsqrt7Table 已签 @64f5633a1 / receipts b414509b0）
+
+7 个 UT Makefile 把两张表从 RTL_GOLDEN_DEPS 挪进 RTL_SRCS（impl 读重写件），golden 侧改由 GOLDEN_SRCS / FM_REF_DEPS 提供。
+`check_shared_impl_impact --file rtl/backend/Rec7Table.sv rtl/backend/Rsqrt7Table.sv`：受影响的只有本 lane Arithmetic200c 的 8 个
+receipt（同一 UT 闭包），本节不改这两份 rtl 文件，故不失效。fm_predict 的登记沿用 vectorcvt-tree 已入库的 JSON（模型不随此改动变化），
+预测 native passing = 现有 receipt 读数（表是纯组合、两侧被吸收进上层锥，不新增比较点）：
+
+| 目标 | 模型 | 预测 passing（= 现 receipt） | 现 receipt |
+|---|---:|---:|---|
+| Estimate7 | 259 | 244 | 247d48e07809 |
+| CVT64_1 / VCVT | 871 | 816 / 816 | 247d48e07809 |
+| CVT32 / VCVT_1 | 460 | 448 / 448 | 0cb325757095 |
+| CVT16 / VCVT_2 | 193 | 193 / 193 | 247d48e07809 |
+| VectorCvt | 1662 | 1591 | 0cb325757095 |
+| VectorCvtTop | 3335 | 3193 | 0cb325757095 |
+| VCVT_8 | 5270 | 5128 | 0cb325757095 |
+
+全部 vmucp=true（沿用各自 verif/fm_target_config 条目），预期 SUCCEEDED、failing/unread/unmatched 0。
