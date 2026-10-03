@@ -213,3 +213,59 @@ M7 alt 项也更新 u CAUGHT(698) / M8 漏 ftbCloseReq CAUGHT(13362)。
 | failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
 | unmatched 六项 / 黑盒 | 全 0 / 仅厂商叶子 array_6_ext（vendor） |
 | mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / true / false |
+
+## 6. Tage_SC（golden 7,767 行 / child：TageTable ×4、TageBTable、MbistPipeTage、SCTable ×4、MaxPeriodFibonacciLFSR ×2）
+
+### 6.1 结构与子模块处置
+- `rtl/frontend/Tage_SC.sv`（2517 行，`_GEN_`/`_T_` = 0，带本文件导航）：package tage_sc_pkg（resp / 各表 update 口 / TageMeta 结构体，
+  4·5 位饱和、provider 居中值、SC 居中和 sc_sum4、S2 与更新两版 aboveThreshold、LowerMask、PriorityEncoder）+ `xs_Tage_SC_core`
+  （§0 公共外壳 / §1 S1 provider·alt·S1 方向·SC 和 / §2 S2 打拍与 tage_enable / §3 SC S2 推翻 / §4 S3 与 meta / §5 update 锁存 /
+  §6 TAGE 更新·useAltOnNa·分配·tick / §7 SC 阈值与 SC 更新 / §8 各表 update 口 / §9 perf）+ golden 同名 wrapper（gen_bpu_wrappers.py 生成，
+  含 MBIST 子链 childBd_* 直连网的声明，名字与位宽照 golden）。
+- ★perf 初值（bug-for-bug，未加复位）★：s2_provideds / s2_providers / s2_providerResps 等只在 s1_fire 时写、无复位，与 golden 一致；
+  UT 的比较窗口晚于它们首次写入（见 6.2）。
+- ★照搬的怪癖★：provider 都不命中时取第 0 张表；S2/S3 方向输出 = enable & 预测（golden 的 resp_in 里没有这一路）；tage_enable / sc_enable
+  打拍寄存器每槽一份；各表 update 口 pc 取未锁存的 io.update.bits.pc；DontCare 字段按 firtool 取值；scTables 4 张同一份更新掩码。
+- child：TageTable*（PROVEN_DIRECT）、TageBTable（PROVEN_IN_CONE）、MbistPipeTage（PROVEN_DIRECT）、SCTable* / LFSR（本 lane）⇒ 两侧白盒（impl 重写件）。
+  TageTable/TageBTable 的下一层两侧共读 golden，唯 WrBypass 与 WrBypass_33 同住 rtl/frontend/WrBypass.sv，impl 只能有一份定义，故用重写件（PROVEN_DIRECT）。
+  厂商叶子 array_2/3/4/5_ext 两侧黑盒。
+- 写核时修过的 FM 可见问题：always_ff 里 automatic 临时量被 FM 推成 impl-only 寄存器（new_ctr_reg，改到 always_comb）；各表 update 口 pc/ghist
+  从结构体拆成独立数组（钉点可写）。
+
+### 6.2 UT（verif/ut/Tage_SC；逐拍比全部输出；在 `35936708` 的 RTL 字节上跑，之后 Tage_SC 相关 RTL 未改）
+后两档初值同 ITTage：initreg 配置文件，厂商 SRAM 行为模型（array_2/3/4/5_ext）存储钉 0。
+
+| seed | `+vcs+initreg+0` | random（配置文件） | `<seed>017`（配置文件） |
+|---|---|---|---|
+| 1  | checks=6500835 errors=0 PASS | checks=6500835 errors=0 PASS | (1017) checks=6500835 errors=0 PASS |
+| 7  | checks=6500835 errors=0 PASS | checks=6500835 errors=0 PASS | (7017) checks=6500835 errors=0 PASS |
+| 42 | checks=6500835 errors=0 PASS | checks=6500835 errors=0 PASS | (42017) checks=6500835 errors=0 PASS |
+
+比较窗口：前 3000 拍只做"槽有效但 strong_bias=1"的 update（不触发任何表更新）把 updateMeta_* 灌成确定值；之后等四份 s1_fire 与 s2_fire 都见过
+（覆盖 s2_provideds 等 perf 相关无复位寄存器的首次写入）再开比（armed_at=3005）。
+覆盖（seed 1）：provider 命中 72502 / 不自信用 alt 26102 / useAltOnNa 计数器更新 12277 / 分配 27617 / tick 涨满 reset_u 204 / SC 推翻 TAGE 66150 /
+SC 更新 45703 / 基础表更新 54329；结构常量位（meta 高 372 位、pred_cycle bit16+、perf 高 4 位）按结构豁免。
+变异（沙箱；seed 1 / initreg 0 / 40k 拍；基线 checks=1220835 errors=0）：M1 provider 取最短命中 CAUGHT(119178) / M2 不自信也不用 alt CAUGHT(53214) /
+M5 useAltOnNa 复位值 8→7 CAUGHT(5670) / M8 分配不用 LFSR CAUGHT(32609) / M9 uMask 不看 altDiffers CAUGHT(5914) /
+M6 阈值调整上界差一：40k 拍 errors=0，200k 拍 CAUGHT(1911)。
+**UT 结构上看不见、归 FM 的三个**：M3 S2 过阈值不看总和符号（sum>thr-pvdr 已蕴含 sum+pvdr>0，只在 9 位回绕时不同）/
+M4 tick 负饱和判据差一（ctr+dist≡127 不变式下等价，FM 逐寄存器比次态函数可见）/ M7 基础表 taken 不门控（只改 mask=0 那一槽的 takens 寄存器，
+TageBTable 不读，FM 比该寄存器可见）。
+
+### 6.3 lane 内非正式试跑（diagnostic-full，不出证）
+1. 不钉、关 vmucp（commit `92c0dfbf`）：native SUCCEEDED，passing 13146，failing 0，unmatched compare 0；unread = 420 matched_nc +
+   2738(2556) unmatched unread（含 impl-only 的 new_ctr_reg 10 位 —— 即上面修掉的 always_ff 临时量）。
+2. 钉 2843 位（`verif/ut/Tage_SC/fm_pins_pre.tcl`：公共外壳 s1/s2/s3 PC、modified_reset、各表 update 口 pc/ghist、bt pc）+ 开 vmucp（commit `35936708`）：
+   native SUCCEEDED，passing **16112**，failing 0，unmatched 0，unread = 192 条 **仅 ref**：TageTable 子模块 s1_unhashed_idx[48:1] × 4
+   （TageTable 自身签核即 PASS_DEAD_REF 的同一死因）→ `verif/dead_ref/Tage_SC.json` 逐条精确枚举；constant_reg 4（两侧 s2_scTableSums 的 bit0：
+   4 个奇数之和恒为偶数，FM 判常量不比）。
+
+### 6.4 跑前预测（★跑完不许改本节★，docs/fm_predictions/Tage_SC.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | 模型 16308（regs 14454 + outs 678 + 黑盒引脚）；预计 **16112**，差 196 = dead_ref unread 192 + constant_reg 4（逐项指认） |
+| failing / unverified / aborted | 0 / 0 / 0 |
+| unread | 192（全部 ref 侧，= verif/dead_ref/Tage_SC.json） |
+| unmatched compare / 黑盒 | 0 / 仅厂商叶子 array_2/3/4/5_ext |
+| mode / verdict / vmucp / merge_dup | signoff-strict / **PASS_DEAD_REF** / true / false |
