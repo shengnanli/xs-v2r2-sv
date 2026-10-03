@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VectorFloatFMA
+Implementation : i:/WORK/VectorFloatFMA
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:47:28 2026
+**************************************************
+
+No aborted compare points.
+
+1
