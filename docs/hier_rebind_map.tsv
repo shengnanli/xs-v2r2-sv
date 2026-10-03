@@ -2815,6 +2815,8 @@ OpenLLC	slices_3	Slice_4	DEEPER	u_core.slices_3	Slice_4		auto_deeper
 OpenLLC	snLinkMonitor	SNLinkMonitor	DEEPER	u_core.snLinkMonitor	SNLinkMonitor		auto_deeper	
 OpenLLC	snXbar	SNXbar	DEEPER	u_core.snXbar	SNXbar		auto_deeper	
 OpenLLC	topDown	TopDownMonitor_1	DEEPER	u_core.topDown	TopDownMonitor_1		auto_deeper	
+Permutation	vslidednOffset	slidednVs2VdTable	DEEPER	u_core.vslidednOffset	slidednVs2VdTable		auto_deeper	
+Permutation	vslideupOffset	slideupVs2VdTable	DEEPER	u_core.vslideupOffset	slideupVs2VdTable		auto_deeper	
 Pipeline	stages_0	Queue1_L1PrefetchReq	ONE_SITE	u_core.prefetch_stage	Queue1_L1PrefetchReq		auto_one_site	
 Predictor	ctrl_delay	DelayN	SAME_PATH	ctrl_delay	DelayN		auto_same	
 Predictor	ghv_write_datas_0_ppm	PriorityMuxModule_20	INLINE	u_core	-	ghv_wdata,ghv_wen	declared	★本次重写的核心★ golden 给 256 位全局历史的**每一位**配一个写数据优先选择器(256 个实例, 纯组合 0 寄存器)；impl rtl/frontend/Predictor.sv 的 GHV_ 节把 ghv 收成一个 256 位向量 + 一个 generate 循环，256 个实例塌缩成 4 行优先级链 ghv_wdata[n]/ghv_wen[n]。
