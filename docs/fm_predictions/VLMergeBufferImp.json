@@ -1,0 +1,10 @@
+{
+  "target": "VLMergeBufferImp",
+  "ut": "VMergeBuffer",
+  "regs": 21953,
+  "outs": 2483,
+  "expected": 24436,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 24436（regs 21953 + outs 2483）；预计实测 passing 24360（开 vmucp），差 76 由 receipt constant_reg 指认（lane 内诊断试跑实测 Constant reg 76）"
+}

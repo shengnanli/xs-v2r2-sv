@@ -1,0 +1,33 @@
+{
+  "target": "Directory",
+  "ut": "Directory",
+  "regs": 1162,
+  "outs": 244,
+  "expected": 1954,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 548,
+  "bbox": {
+    "array_14_ext": {
+      "insts": 4,
+      "in_bits": 92,
+      "points": 368
+    },
+    "array_15_ext": {
+      "insts": 1,
+      "in_bits": 124,
+      "points": 124
+    },
+    "array_16_ext": {
+      "insts": 1,
+      "in_bits": 28,
+      "points": 28
+    },
+    "array_17_ext": {
+      "insts": 1,
+      "in_bits": 28,
+      "points": 28
+    }
+  },
+  "note": "重登记：Directory 目录用 FM merge 默认（true，见 Makefile：xs_SRAMTemplate_core 非 MCP 形态的 rdata_last_REG 依赖 merge）；第三跑实测 = 模型 - 1 即 merge 合掉的 1 个重复寄存器；本登记先于 pkg 搬家后的第四跑"
+}

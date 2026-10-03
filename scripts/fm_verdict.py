@@ -464,18 +464,40 @@ def _cert_ctx(expect_impl_commit):
             'g1': os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical'}, None
 
 
+def _in_top_root(key, top):
+    """黑盒对象是否位于**本 target 顶层可达**的层次里：路径精确以 `<side>:/WORK/<top>/` 开头。"""
+    side, _design, path = key
+    return path.startswith(f'{side}:/WORK/{top}/')
+
+
 def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None,
-                         expect_impl_commit=None):
+                         expect_impl_commit=None, top=None, diag=None):
     """观测黑盒集合须与声明**精确相等**，且每条类别合法、ref/impl 成对。
-    返回 True 或失败原因串。"""
+    返回 True 或失败原因串。
+
+    ★作用域（codex 0199 裁定 B'）★：只比较当前 target 顶层可达的实例，即路径以
+    `<side>:/WORK/<top>/` 开头的对象。FM 容器里其它 design root（加载/uniquify 生成的
+    辅助设计，如 merge_dup 开时 impl 侧多出的 `/WORK/DataSRAMBank_4_0/...`）下的黑盒
+    不是本 target 的实例，**观测与声明两侧都不参与判决**，只计数写进 diag 供诊断。
+      · top 必须来自已校验的 marker（verdict() 的 q["top"]），调用方不能自由传前缀；
+      · 不做 `_0/_1` 后缀模糊归一、不按 basename/数量放行——顶层 root 内仍逐路径精确比对；
+      · 顶层 root 内多一个、少一个、改路径，照旧 PARTIAL（见 test_assembly_bbox_scope.py）。"""
     if decl is None:
         return 'assembly_no_allow_decl(须 verif/allow/<top>.json 逐对象声明)'
-    declared = {}
+    if not top:
+        return 'assembly_no_top_for_bbox_scope'
+    declared_all = {}
     for e in decl.get('objects', []):
         try:
-            declared[(e['side'], e['design'], e['path'])] = e
+            declared_all[(e['side'], e['design'], e['path'])] = e
         except KeyError:
             return 'assembly_allow_entry_missing_field'
+    declared = {k: e for k, e in declared_all.items() if _in_top_root(k, top)}
+    obs_all = observed
+    observed = {k for k in obs_all if _in_top_root(k, top)}
+    if diag is not None:
+        diag['bbox_aux_observed'] = len(obs_all) - len(observed)
+        diag['bbox_aux_declared'] = len(declared_all) - len(declared)
     if observed != set(declared):
         extra = observed - set(declared)
         missing = set(declared) - observed
@@ -663,12 +685,15 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
         if bbox_obs is None:
             q["reason"] = "assembly_no_bbox_report(须 fm_eq.tcl 导出 black_boxes.rpt)"
             return "PARTIAL", q
+        _diag = {}
         bb = _assembly_bbox_check(bbox_obs, bbox_attrs or {}, allow_decl,
-                                  expect_canonical, expect_impl_commit)
+                                  expect_canonical, expect_impl_commit,
+                                  top=q["top"], diag=_diag)
+        q.update(_diag)
         if bb is not True:
             q["reason"] = bb
             return "PARTIAL", q
-        q["bbox_objects"] = len(bbox_obs)
+        q["bbox_objects"] = len(bbox_obs) - _diag.get("bbox_aux_observed", 0)
         for k in ("unverified", "aborted"):
             if q.get(k) not in (0, None):
                 q["reason"] = f"assembly_{k}!=0"

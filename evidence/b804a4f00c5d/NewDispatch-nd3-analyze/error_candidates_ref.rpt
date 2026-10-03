@@ -1,0 +1,16 @@
+**************************************************
+Report         : error_candidates
+
+Reference      : r:/WORK/NewDispatch
+Implementation : i:/WORK/NewDispatch
+Version        : V-2023.12-SP3
+Date           : Tue Sep 22 03:11:53 2026
+**************************************************
+
+Single error detected in reference.
+
+Recommended error candidate:
+
+    Prim    conserveFlowTotal_0_reg[2]
+
+1

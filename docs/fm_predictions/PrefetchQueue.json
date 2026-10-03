@@ -1,0 +1,9 @@
+{
+  "target": "PrefetchQueue",
+  "ut": "PrefetchQueue",
+  "regs": 3210,
+  "outs": 100,
+  "expected": 3310,
+  "merge_dup": "false",
+  "model_applicable": true
+}

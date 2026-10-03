@@ -1,0 +1,10 @@
+{
+  "target": "VLSplitImp",
+  "ut": "VLSplitImp",
+  "regs": 4961,
+  "outs": 2372,
+  "expected": 7333,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 7333 = 寄存器 4961 + 输出 2372；预期差额 = constant_reg 1（splitPipeline.s1_in_r_sew[2]）；vmucp 打开后 293 个对称死位转 passing；预测 passing=7332"
+}

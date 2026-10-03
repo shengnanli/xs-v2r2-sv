@@ -1,0 +1,10 @@
+{
+  "target": "IssueQueueVfmaVialuFixVfalu",
+  "ut": "IssueQueueVfmaVialuFixVfalu",
+  "regs": 19747,
+  "outs": 3489,
+  "expected": 23236,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "iqfam：模型 = golden 闭包寄存器位 + output 位；诊断跑(062e0583) constant_reg=141，开 vmucp 后预期实测 23095"
+}

@@ -2,7 +2,7 @@
  "schema": "xs-v2-sv-dead-ref-v1",
  "target": "L2TlbPrefetch",
  "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
- "rationale": "golden-only cone-dead: golden 的 old_reqs_0..3 是 reg [37:0]（整 38 位 VPN），但去重比较只读 [37:3]（L2TlbPrefetch.sv:121-128 `old_reqs_N[37:3] == _next_line_T_1`），而写入值 next_req 的低 3 位由 `{_next_line_T_1, 3'h0}` 恒置 0 —— 即 old_reqs_N[2:0] 写得进、零功能扇出，是 firtool 保留整字宽度留下的死位。可读核只寄存被比较的 35 位“行 VPN”（rtl/memblock/L2TlbPrefetch.sv 的 old_reqs 声明），impl 侧 unread=0。G1 实跑观测 unmatched-unread(ref)=12 且与本声明精确相等；native FM SUCCEEDED，passing=223 / failing=0 / unmatched compare points=0 / unmatched_impl=0 / 无黑盒 / 无 dont_verify / 无 ELAB-147。非 waiver：全部可达比对点仍被 FM 证明等价。对照实验（2026-09-14）：把 impl 也做成 38 位以求“两侧对称死位 + vmucp 真比”，FM 反而给出 12(12) —— ref `old_reqs_0_reg[0]` 与 impl `old_reqs_reg[0][0]` 名字不同，unread 点不走签名匹配、只靠名字，配不上对；那条路要么人工强配、要么把数组拆成四个同名寄存器牺牲可读性，两者都比本声明更差，故取本声明。",
+ "rationale": "golden-only cone-dead: golden 的 old_reqs_0..3 是 reg [37:0]（整 38 位 VPN），但去重比较只读 [37:3]（L2TlbPrefetch.sv:121-128 `old_reqs_N[37:3] == _next_line_T_1`），而写入值 next_req 的低 3 位由 `{_next_line_T_1, 3'h0}` 恒置 0 —— 即 old_reqs_N[2:0] 写得进、零功能扇出，是 firtool 保留整字宽度留下的死位。可读核只寄存被比较的 35 位“行 VPN”（rtl/memblock/L2TlbPrefetch.sv 的 old_line 声明（2026-10-03 l2tlb-leaves 重写后改名）），impl 侧 unread=0。G1 实跑观测 unmatched-unread(ref)=12 且与本声明精确相等；native FM SUCCEEDED，passing=223 / failing=0 / unmatched compare points=0 / unmatched_impl=0 / 无黑盒 / 无 dont_verify / 无 ELAB-147。非 waiver：全部可达比对点仍被 FM 证明等价。对照实验（2026-09-14）：把 impl 也做成 38 位以求“两侧对称死位 + vmucp 真比”，FM 反而给出 12(12) —— ref `old_reqs_0_reg[0]` 与 impl `old_reqs_reg[0][0]` 名字不同，unread 点不走签名匹配、只靠名字，配不上对；那条路要么人工强配、要么把数组拆成四个同名寄存器牺牲可读性，两者都比本声明更差，故取本声明。",
  "entries": [
   {
    "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_0_reg[0]",

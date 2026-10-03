@@ -13,6 +13,7 @@
   - B 跨文件包 -> 退出 1，且 finding 里含 CROSS_FILE_PACKAGE
   - C $unit import -> 退出 1，且 finding 里含 UNIT_SCOPE_IMPORT
   - D `timescale  -> 退出 1，且 finding 里含 TIMESCALE_DIRECTIVE（.sv 与 .svh 各一例）
+B 类另外钉一个不该误报的形态：只在**注释里**提到兄弟文件的包（无编译依赖）。
 C 类另外钉两个**不该误报**的合法形态（模块头 import 的两种写法），防止闸把正确代码判红。
 D 类同样钉一个不该误报的形态：**被注释掉的** `timescale（讲解用的注释很常见，
 闸若连注释都报，下一个人就会去关掉这道闸）。
@@ -49,6 +50,11 @@ CLEAN = {
         'module Commented (output logic o);\n  assign o = \'0;\nendmodule\n'),
     # 干净 .svh：判据 D 会扫 .svh，这里钉住不误报
     'uncore/clean_inc.svh': ('// 纯端口片段，无编译单元级指令\n  , output logic spare\n'),
+    # 合法形态 4：**注释里**提到兄弟文件的包（MissEntry.sv:234 的真实形态）——判据 B 不许误报
+    'frontend/Mention.sv': (
+        '  // 表与 Foo.sv foo_pkg::IDX 是同一张（只是讲解，无编译依赖）\n'
+        '/* 块注释里的 bar_pkg::IDX 同样不算 */\n'
+        'module Mention (output logic o);\n  assign o = \'0;\nendmodule\n'),
     # 跨文件使用公共包 —— 合法（包住在 *_common_pkg.sv）
     'frontend/Baz.sv': (
         'module Baz\n  import shared_pkg::*;\n(output logic [W-1:0] o);\n'
@@ -61,6 +67,15 @@ CASES = [
      'DUPLICATE_PACKAGE'),
     ('B 跨文件共享包藏在兄弟模块文件里', {'frontend/User.sv':
         'module User\n  import foo_pkg::*;\n(output logic [IDX-1:0] o);\n'
+        '  assign o = \'0;\nendmodule\n'},
+     'CROSS_FILE_PACKAGE'),
+    ('B 跨文件包用限定名引用（不 import，同行带尾注释）', {'frontend/User2.sv':
+        'module User2 (output logic [foo_pkg::IDX-1:0] o);  // 注释不影响代码部分\n'
+        '  assign o = \'0;\nendmodule\n'},
+     'CROSS_FILE_PACKAGE'),
+    ('B 注释与代码同行：注释前的真实引用照抓', {'frontend/User3.sv':
+        'module User3 (output logic o);\n'
+        '  localparam int K = bar_pkg::IDX; /* bar_pkg 在 Bar.sv */\n'
         '  assign o = \'0;\nendmodule\n'},
      'CROSS_FILE_PACKAGE'),
     ('C $unit 作用域 import（行首）', {'frontend/Unit.sv':

@@ -1,0 +1,9 @@
+{
+  "target": "CustomL1Hint",
+  "ut": "L2MainPipeLeaves",
+  "regs": 234,
+  "outs": 34,
+  "expected": 268,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "PMPChecker_12",
+  "ut": "PMPChecker",
+  "regs": 326,
+  "outs": 5,
+  "expected": 331,
+  "merge_dup": "false",
+  "model_applicable": true
+}

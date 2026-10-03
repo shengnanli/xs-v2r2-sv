@@ -1,0 +1,9 @@
+{
+  "target": "VSipModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 0,
+  "outs": 223,
+  "expected": 223,
+  "merge_dup": "false",
+  "model_applicable": true
+}

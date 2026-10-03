@@ -1,0 +1,10 @@
+{
+  "target": "AtomicsUnit",
+  "ut": "AtomicsUnit",
+  "regs": 2075,
+  "outs": 1949,
+  "expected": 4024,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "时序；预计 62 个对称 unread（tdata2[63:50]x4=56 + dcache_resp_id[5:1]=5 + difftest_fuop_r[8]=1），分两跑：无 vmucp 3962 / 有 vmucp 4024"
+}

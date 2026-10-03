@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/DecodeStage
+Implementation : i:/WORK/DecodeStage
+Version        : V-2023.12-SP3
+Date           : Sun Sep 27 01:01:24 2026
+**************************************************
+
+No aborted compare points.
+
+1

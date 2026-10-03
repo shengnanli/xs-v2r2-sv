@@ -43,6 +43,10 @@ endmodule
   （空包是噪音）。
 - 跨模块共享类型放子系统级公共包：`rtl/<subsys>/<subsys>_common_pkg.sv`，
   数量克制（每个子系统至多一个）。
+  **例外：独立包文件 `rtl/<subsys>/<pkg>.sv`**（2026-10-03 用户批准）——当某个包只被
+  一个家族使用、且并进 `<subsys>_common_pkg.sv` 会让无关的已签目标因闭包字节变化而
+  STALE 需重证时，允许单独成文件（先例 `alu_pkg.sv`、`stdfreelist_pkg.sv`、
+  `vmergebuffer_pkg.sv`）。仍须满足 package 作用域闸：一个包只在一个文件里定义。
 - **共享辅助件**：不对应任何 golden 模块、被多个核复用的经典结构
   （如树形 PLRU——Chisel 把它内联进各使用者），抽成 `rtl/common/xs_<Name>.sv`
   独立文件（无 wrapper，命名无 `_core` 后缀），一处实现 + 讲透，胜过处处内联。
@@ -85,6 +89,21 @@ endmodule
    与 `SIM_ARGS += +vcs+initreg+$(INITREG)`（选取值）。
 
    所以「两轮」= **同一个 simv 跑两次**，不是编两次。
+
+   ★`+vcs+initreg+random` 的种子来自 `+ntb_random_seed`，seed 0/1 退化（2026-09-28 实测）★：
+   同一个 simv、两个同构实例、各一个 32 位不复位寄存器，`./simv +ntb_random_seed=<s> +vcs+initreg+random`：
+
+       s=0  -> A=00000000 B=00000000      （等于 +vcs+initreg+0）
+       s=1  -> A=ffffffff B=ffffffff      （等于 +vcs+initreg+1，两实例相同）
+       s=7  -> A=466c4b8c B=80076200      （真随机，两实例不同）
+       s=42 -> A=2684734d B=802c4400
+
+   `scripts/ut_common.mk` 的 run 目标恒带 `+ntb_random_seed=$(SEED)`，而全仓 UT 的 seed 集合是
+   1/7/42 —— 所以**每个 UT 的「seed 1 × random」档实际是全 1 档**，只有 seed 7/42 在随机。
+   第二个实例的熵也偏低（高字节恒 0x80、低字节常为 0）。不影响 FM 签核（FM 是证明，UT 是回归），
+   但报告里「3 seed × random」应理解为「2 个真随机 + 1 个全 1」。要第三个真随机档，
+   显式给数值种子 `+vcs+initreg+<n>`（n 非 0/1，如 `<seed>017`），它不受 ntb 种子影响。
+   复现：`scratchpad/initreg-probe-q7/t.sv`（两实例、`always_ff x<=x`、#1 打印）。
    编译带 `+define+SYNTHESIS +vcs+initreg+random`；
    VCS 环境：`VCS_ARCH_OVERRIDE=linux` 必配 `-full64`。
 

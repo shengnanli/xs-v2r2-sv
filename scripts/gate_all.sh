@@ -44,6 +44,9 @@ run "重复/分叉闸"       python3 scripts/equality_dup_lint.py
 # 重名（vset_pkg / xs_predecode_pkg），UT+FM 全绿、10 道闸全过，整芯片 elaborate 第一次
 # 跑就 Error-[SV-PPD]。修完立刻配闸，否则下一个共用包还会这么长出来。
 run "package 作用域闸"   python3 scripts/check_pkg_scope.py
+# assembly 黑盒对称性的作用域（codex 0199 裁定 B'）：只比 /WORK/<top>/ 下可达实例；
+# 负测：顶层内多/缺/改路径、无 top、前缀伪装、顶层内不对称都必须仍判不过。
+run "assembly 黑盒作用域负测" python3 scripts/test_assembly_bbox_scope.py
 # package 闸的负测（codex 0158 §3 续）：闸"跑了且退出 0"不等于"它会响"。
 # 这里在临时 rtl 树里逐条判据各种一个病（包重名 / 跨文件共享包 / $unit 作用域 import），
 # 要求闸每次都红；同时钉住两种合法的模块头 import 写法不许被误报。
@@ -63,6 +66,13 @@ run "证书判据元负例"     env XSSV_CERT_TEST_SABOTAGE=all python3 scripts/
 # recompute_closure_at 只复算 kind=='repo'，golden 条目被整个跳过 ⇒ D57 原九条一条不响。
 run "证书 golden-in-impl" python3 scripts/test_proof_certificate_grandchild.py
 run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_certificate_grandchild.py
+# codex 0158 §1 的三项最小功能审查（APPROVED_MEMORY_MACRO_MODEL 入表前置）：
+# 先负测（合成夹具，每条判据一正一反，秒级不读 golden），再对 verif/ram_model_parents.tsv
+# 登记的每一条在 golden 现文件上复算 M1/M2/M3。★此前两条都没进 gate_all★——脚本在、能跑、
+# 没人跑；2026-09-27 扩多写口/多实例/输入偏移三种形态时一并挂上。
+run "RAM 模型审查负测"    python3 scripts/test_audit_ram_memory_model.py
+run "RAM 模型审查复算"    python3 scripts/audit_ram_memory_model.py --check
+run "RAM 人工复核窄出口负测" python3 scripts/test_audit_ram_manual_review.py
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
 # WBArbiter 反饥饿状态机的可达性表：verif/ut/WBArbiterVariants/tb.sv 的覆盖判据是
@@ -137,21 +147,12 @@ run "钉点调用序列闸"     python3 scripts/pin_call_equiv.py --check
 # 却都没人要求它们去登记 —— 正是这道闸设计时说的"忘了加就静默漏"。
 # 这里先把名字放进来：`[ -f "$g" ]` 会跳过尚未合入的文件，所以提前登记无害，
 # 合入当天自动生效，不用再记得回来加一次。
-for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
-         scripts/gen_sram_wrappers.py scripts/gen_ndaux.py \
-         scripts/gen_npc_missing3.py scripts/gen_splittedsram.py \
-         scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
-         scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
-         scripts/gen_newdispatch_tb.py scripts/gen_tlbnb_family.py \
-         scripts/gen_predictor.py scripts/gen_rob.py \
-         scripts/gen_rob_ut.py scripts/gen_sbuffer.py \
-         scripts/gen_sbuffer_tb.py scripts/gen_tlbsw_family.py \
-         scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
-         scripts/gen_rob_iface.py scripts/gen_fubusy_wbarb.py \
-         scripts/gen_l2tlb.py scripts/gen_lqreplay.py \
-         scripts/gen_lqreplay_ut.py scripts/gen_xstile_closure.py \
-         scripts/gen_ptwcache.py; do
-  [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
+# ★生成器幂等闸：自动扫描★（2026-09-29 改）。原来是手写列表，每条 lane 合并都在这一行
+# 冲突，而且照样漏挂（最后一次漏了 4 个）。现在由 check_gen_gate_complete.py 列出
+# "scripts/gen_*.py 里所有带 --check 的，减去本文件别处已单独调用的"，逐个跑 --check。
+# 新生成器只要自带 --check 就自动进闸；不带的必须进 NO_CHECK 写理由（完备性闸管）。
+for g in $(python3 scripts/check_gen_gate_complete.py --list-autoscan); do
+  run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
 # 所以挂了 --check 的要手动登记。gen_tb_variant.py 生成 tb_1/tb_2/tb_3.sv 三份 tb。
@@ -249,6 +250,7 @@ run "覆盖证据链闸"       python3 scripts/check_coverage_provenance.py --st
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
 # 好处是新加的生成器自动进闸，不会因为"忘了挂 --check"再敞一个口。
+run "生成器幂等库调用负测"  python3 scripts/test_gen_idempotent.py --selftest
 run "生成器幂等 verif/ut/*"  python3 scripts/test_gen_idempotent.py
 # 仿真 collateral 闸（codex 0160 §Canonical simulation collateral）：
 # verif/sim/collateral/ 是「干净 checkout 能跑起仿真」所缺的 13 个生成物（207 KiB）——
@@ -276,6 +278,9 @@ run "层次重绑表幂等"     python3 scripts/hier_map.py --check
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 90 秒）—— 顺序照层次重绑闸的先例。
 run "perf 重绑闸负测"    python3 scripts/test_perf_rebind_gate.py
 run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
+# 2026-10-02：--check 从「整份 == 考古骨架」改为「机械部分逐字」（核方程手写落地后整份比对永远红）。
+# 判的块见 gen_storequeue.py:check_regions；先跑它的正反测（每块单点变异必须打红）。
+run "StoreQueue 机械部分负测" python3 scripts/gen_storequeue.py --selftest
 run "StoreQueue 骨架幂等" python3 scripts/gen_storequeue.py --check
 run "StoreQueue tb 幂等"  python3 scripts/gen_storequeue_ut.py --check
 # perf 分档闸（codex 0162 D3）：重绑表只回答"绑上了没有"，不回答"这条差异挡不挡里程碑"。

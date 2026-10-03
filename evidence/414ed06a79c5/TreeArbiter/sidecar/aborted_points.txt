@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/TreeArbiter
+Implementation : i:/WORK/TreeArbiter
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 15:01:48 2026
+**************************************************
+
+No aborted compare points.
+
+1

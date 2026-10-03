@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/DelayQueue_1
+Implementation : i:/WORK/DelayQueue_1
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 20:47:10 2026
+**************************************************
+
+No failing compare points.
+
+1

@@ -1,0 +1,18 @@
+{
+  "target": "Queue10_GrantBuffer_Anon",
+  "ut": "GrantBuffer",
+  "regs": 9,
+  "outs": 95,
+  "expected": 205,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 101,
+  "bbox": {
+    "ram_10x89": {
+      "insts": 1,
+      "in_bits": 101,
+      "points": 101
+    }
+  },
+  "note": "修正登记（codex 0202 后）：ram_10x89 由 inline 改为两侧对称黑盒（regimeA），Memory 10x89=890 位寄存器不再是比较点，换成黑盒输入引脚 101 位（R0_addr4+R0_en1+R0_clk1+W0_addr4+W0_en1+W0_clk1+W0_data89），同 L2TlbMissQueue 先例（125==模型）。预测 passing 205 SUCCEEDED，failing/unverified/unmatched 0，unread 0，constant_reg 0；唯一允许的指认项是 receipt 的 constant_reg/unread"
+}

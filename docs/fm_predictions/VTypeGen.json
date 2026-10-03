@@ -1,0 +1,10 @@
+{
+  "target": "VTypeGen",
+  "ut": "VTypeGen",
+  "regs": 16,
+  "outs": 8,
+  "expected": 24,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "merge_dup=false（Makefile FM_MERGE_DUP=false）⇒ 模型适用。闭包=VTypeGen 本层 2 个 vtype 寄存器（vtypeArch/vtypeSpec 各 8 位=16 位，异步复位 illegal=1）+ 子模块 VsetModule（纯组合，两侧完整 elaborate：ref 侧 golden VsetModule.sv，impl 侧 vset_pkg 纯函数内联）；outs=5 个输出端口共 8 位。预期 unread 0、constant_reg 0：strict 首跑应 native SUCCEEDED、passing=24、failing 0、unmatched 0/0。golden VsetModule 的 vl/vlmax 输出在 VTypeGen 里悬空（cone-dead 组合逻辑，不是寄存器、不产生比较点），不应出现任何 unmatched/unread。"
+}

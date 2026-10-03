@@ -1,0 +1,9 @@
+{
+  "target": "MissReadyGen",
+  "ut": "DCacheLeaves",
+  "regs": 0,
+  "outs": 412,
+  "expected": 412,
+  "merge_dup": "false",
+  "model_applicable": true
+}

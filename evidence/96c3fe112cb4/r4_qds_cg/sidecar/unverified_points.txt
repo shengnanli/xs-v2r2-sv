@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/r4_qds_cg
+Implementation : i:/WORK/r4_qds_cg
+Version        : V-2023.12-SP3
+Date           : Wed Sep 30 23:48:47 2026
+**************************************************
+
+No unverified compare points.
+
+1

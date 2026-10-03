@@ -1,0 +1,10 @@
+{
+  "target": "IssueQueueFaluFmac",
+  "ut": "IssueQueueFaluFmac",
+  "regs": 15767,
+  "outs": 1093,
+  "expected": 16860,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "iqfam：模型 = golden 闭包寄存器位 + output 位；诊断跑(b3a9f6c8) constant_reg=77，开 vmucp 后预期实测 16783"
+}

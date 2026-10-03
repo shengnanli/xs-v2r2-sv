@@ -1,0 +1,10 @@
+{
+  "target": "VSSplitPipelineImp",
+  "ut": "VSSplitPipelineImp",
+  "regs": 1437,
+  "outs": 2451,
+  "expected": 3888,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 3888 = 寄存器 1437 + 输出 2451；预期差额 = constant_reg 1（s1_in_r_sew[2]）；预测 passing=3887"
+}

@@ -1,0 +1,9 @@
+{
+  "target": "MMIOBridgeEntry_4",
+  "ut": "MMIOBridgeLeaves",
+  "regs": 429,
+  "outs": 533,
+  "expected": 962,
+  "merge_dup": "false",
+  "model_applicable": true
+}

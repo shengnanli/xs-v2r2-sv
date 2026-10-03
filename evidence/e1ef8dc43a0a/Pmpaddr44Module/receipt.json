@@ -1,0 +1,252 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Pmpaddr44Module",
+ "run_id": "PmpaddrLeaves20-20260927T150137Z-e1ef8dc4",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Pmpaddr44Module.sv",
+   "kind": "golden",
+   "sha256": "c8c82b4ea42150b77a274c221f83bfc803f03bd6ce01fd7dd4de24ac596cfd8e"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Pmpaddr33Module.sv",
+   "kind": "repo",
+   "sha256": "619b158445777f361dde62fd386093f31b9362df84e718fa34b1baf441db72cf"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr34Module.sv",
+   "kind": "repo",
+   "sha256": "c47dcb3699ae08da3c53b8129cab25a9ae894a3b8540f5c1437a7e75285400ef"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr35Module.sv",
+   "kind": "repo",
+   "sha256": "5e7418df32afae66a534fa57af7d05fe35bca9a732617016fa960c3014393022"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr36Module.sv",
+   "kind": "repo",
+   "sha256": "e8ad924814351c3a03fb6f854665aed744515e9d11c6c5d00ae8e4eece53f444"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr37Module.sv",
+   "kind": "repo",
+   "sha256": "76476230321618342ae09b0af92632c0a7553c74920490242dafe5e4970c2e31"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr38Module.sv",
+   "kind": "repo",
+   "sha256": "eb26b04bf2efdf47ed1e87511aac7fdb4815cd35783ab5672a69b51a947f61da"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr39Module.sv",
+   "kind": "repo",
+   "sha256": "f85e30bb5aa65975453f428bdcf2570fff134dcdef0bed4a6e79c24f29b5ec63"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr40Module.sv",
+   "kind": "repo",
+   "sha256": "49f4661acd2753ec901c1c5e6f988b630b953e025f8128c825490300a166b99d"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr41Module.sv",
+   "kind": "repo",
+   "sha256": "38baf17c1c9a49f9023da3c38f121bcdcff7921bb50567fad31444afd49915fc"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr42Module.sv",
+   "kind": "repo",
+   "sha256": "d8a77f3a483754801d6beb0586fa5c1affd4707c4f5f0546a0e402203322e1fb"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr43Module.sv",
+   "kind": "repo",
+   "sha256": "d0ec5548b3cc049044fcdb263eb85376c8a6efe1bc5f6f7521edd12fda7c6454"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr44Module.sv",
+   "kind": "repo",
+   "sha256": "49055ecf911e863d86acea2f17302f7f1fd88892633b683f5f5d13888a8bfdbb"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr45Module.sv",
+   "kind": "repo",
+   "sha256": "a8919e269ae8f283d7153eaf12f228d8bb475c90d0b236b211aab999e3a14a24"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr46Module.sv",
+   "kind": "repo",
+   "sha256": "88a07d56870c9914b88e73140daad5890166a95e21d425b13e2536c4f7a92f9f"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr47Module.sv",
+   "kind": "repo",
+   "sha256": "51ac26b8180ac88378faaa5e6527a8e23f6806d8bd577138d542c0f1fcfebeac"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr48Module.sv",
+   "kind": "repo",
+   "sha256": "20f1aaea061df0e7dae1f62db55a125cdd30682b1f93e39bfaea777e8b7fab28"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr49Module.sv",
+   "kind": "repo",
+   "sha256": "acb4ef9dab62e97f755343ab05c14f9824d7a84c84feacf5f9c01d54e33bef35"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr50Module.sv",
+   "kind": "repo",
+   "sha256": "100339abdf3ced6bff8dc91ac64a6bbdcf0a99810fee9155ecf59f067113f2b7"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr51Module.sv",
+   "kind": "repo",
+   "sha256": "3486506d986844f3fcea6c07ddb4d6abc569a8148836790f64e9d42c51769f55"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr52Module.sv",
+   "kind": "repo",
+   "sha256": "e54d0db2b70b084255f8d915604ef8627c51b6688dbdc3671de93b0ebd438206"
+  }
+ ],
+ "impl_commit": "e1ef8dc43a0a8b19d44c2571e6b0eca74048fb59",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "PmpaddrLeaves20-20260927T150137Z-e1ef8dc4",
+  "top": "Pmpaddr44Module",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 128,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 128,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Pmpaddr44Module",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

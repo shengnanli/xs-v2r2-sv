@@ -1,0 +1,10 @@
+{
+  "target": "DecodeUnit",
+  "ut": "DecodeUnit",
+  "regs": 0,
+  "outs": 442,
+  "expected": 442,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "merge_dup=false（Makefile FM_MERGE_DUP=false，本目标 0 寄存器，关掉只为让模型按构造适用）⇒ 模型适用。闭包=DecodeUnit 本层（纯组合，0 寄存器）+ 子模块 FPDecoder/UopInfoGen（两侧各自 elaborate，重写件均已签核，均无寄存器）；outs=125 个输出端口共 442 位。预期 unread 0、constant_reg 0：strict 首跑应 native SUCCEEDED、passing=442、failing 0、unmatched 0/0。差额若非 0 没有可指认项，一律按失配诊断。"
+}

@@ -1,0 +1,9 @@
+{
+  "target": "PipelineRegModule_2",
+  "ut": "PipelineRegModule",
+  "regs": 1568,
+  "outs": 1569,
+  "expected": 3137,
+  "merge_dup": "false",
+  "model_applicable": true
+}

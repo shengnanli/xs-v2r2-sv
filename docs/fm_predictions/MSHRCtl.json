@@ -1,0 +1,10 @@
+{
+  "target": "MSHRCtl",
+  "ut": "MSHRCtl",
+  "regs": 12037,
+  "outs": 3645,
+  "expected": 15682,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额=constant_reg 37（25 无钉点即有 + 12 sourceB waitG[6:4]）；5238 对称死位 vmucp 实比"
+}

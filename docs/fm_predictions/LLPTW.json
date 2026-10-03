@@ -1,0 +1,9 @@
+{
+  "target": "LLPTW",
+  "ut": "LLPTW",
+  "regs": 4526,
+  "outs": 1078,
+  "expected": 5604,
+  "merge_dup": "false",
+  "model_applicable": true
+}

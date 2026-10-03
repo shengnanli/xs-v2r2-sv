@@ -1,0 +1,9 @@
+{
+  "target": "CMOUnit",
+  "ut": "CMOUnit",
+  "regs": 73,
+  "outs": 59,
+  "expected": 132,
+  "merge_dup": "false",
+  "model_applicable": true
+}

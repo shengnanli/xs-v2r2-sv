@@ -1,0 +1,290 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "BypassNetwork",
+ "run_id": "BypassNetwork-20260928T171104Z-ccf7f50a",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/BypassNetwork.sv",
+   "kind": "golden",
+   "sha256": "38d0869dfdf65274e8f47ef9c6e1137336724c6652ca2c46319523bd623c7e5b"
+  },
+  {
+   "path": "golden-rtl/ImmExtractor.sv",
+   "kind": "golden",
+   "sha256": "9ea53f4b55ed7dda85d2d01a771437c1590df91dab893c6f7f62c7a0b8e31cb4"
+  },
+  {
+   "path": "golden-rtl/ImmExtractor_2.sv",
+   "kind": "golden",
+   "sha256": "c3df397f7267aab5397c69accafb3fa9f8318c0dc9caf74bfb3b095a6a809abd"
+  },
+  {
+   "path": "golden-rtl/ImmExtractor_12.sv",
+   "kind": "golden",
+   "sha256": "7ea4c002996ba8647c76d96fddca321068fa027f34741da1f00929268718e24d"
+  },
+  {
+   "path": "golden-rtl/ImmExtractor_37.sv",
+   "kind": "golden",
+   "sha256": "48ca6a0b648f2940d6ea674c8ab429edf2d0d95fcfaa3179b7d6c0a14a50dcfa"
+  },
+  {
+   "path": "golden-rtl/ImmExtractor_57.sv",
+   "kind": "golden",
+   "sha256": "bd56d307b45a3e4f1009073d71e864fe9d880a481cf6831961d72d71774a2041"
+  },
+  {
+   "path": "golden-rtl/UIntExtractor_27_000011100000000000001010101.sv",
+   "kind": "golden",
+   "sha256": "5b9e078741e1b7fb6f96ad812811dac631a18afb47882e9b1bc254b450bbe6b5"
+  },
+  {
+   "path": "golden-rtl/UIntExtractor_27_000000000000001010100000000.sv",
+   "kind": "golden",
+   "sha256": "a4fe1c0e962350312051f7926164a1b849a558cff3e4cc116f6060e0299afb0c"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/ImmExtractor.sv",
+   "kind": "repo",
+   "sha256": "e1018270a67932d305ae30f5e58b6be046699907fd887d0087514d4bb84d5d94"
+  },
+  {
+   "path": "rtl/backend/ImmExtractor_2.sv",
+   "kind": "repo",
+   "sha256": "0b63449470f52204d3a543fdfe9b202f8050b14d0f116ca3458636e233be5630"
+  },
+  {
+   "path": "rtl/backend/ImmExtractor_12.sv",
+   "kind": "repo",
+   "sha256": "4c2d1cc75663fcc0eb4ae83d298cf6ead0fac9ba1612f6c13d9d4130c6bf0d12"
+  },
+  {
+   "path": "rtl/backend/ImmExtractor_37.sv",
+   "kind": "repo",
+   "sha256": "2236892bb29681cb9c003a7d1dfb70e4a326f3aeb03efa896ac96f4666f67573"
+  },
+  {
+   "path": "rtl/backend/ImmExtractor_57.sv",
+   "kind": "repo",
+   "sha256": "0ab91842381b01a7b56d7104a6dcfb4dd340979425ddd5171906ce8f978e4dc7"
+  },
+  {
+   "path": "rtl/backend/BypassNetwork.sv",
+   "kind": "repo",
+   "sha256": "e50d612fd93857ac68944a20c1e2c385ac53a5ee26373eadf625d91e2d4dc962"
+  }
+ ],
+ "impl_commit": "ccf7f50a4e5aad76a92c3fb2efb3485184dbf974",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "94c0777b106e00d1a8ef380f0568a7b9db8130df7755567eb27880586d85f7d6"
+  },
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/BypassNetwork.json",
+    "sha256": "622d8cae21705ede565c9f5f31456b77ec5c5430832392baf05b38318688c487"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "BypassNetwork-20260928T171104Z-ccf7f50a",
+  "top": "BypassNetwork",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 27719,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 64,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[100]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[101]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[102]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[103]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[104]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[105]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[106]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[107]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[108]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[109]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[110]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[111]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[112]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[113]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[114]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[115]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[116]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[117]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[118]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[119]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[120]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[121]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[122]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[123]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[124]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[125]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[126]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[127]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[64]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[65]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[66]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[67]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[68]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[69]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[70]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[71]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[72]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[73]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[74]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[75]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[76]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[77]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[78]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[79]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[80]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[81]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[82]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[83]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[84]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[85]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[86]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[87]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[88]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[89]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[90]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[91]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[92]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[93]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[94]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[95]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[96]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[97]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[98]",
+    "r:/WORK/BypassNetwork/bypassDataVec_r_8_reg[99]"
+   ],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "PASS_DEAD_REF",
+ "verdict_detail": {
+  "passing": 27719,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": 64,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "BypassNetwork",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "dead_ref_points": 64
+ }
+}

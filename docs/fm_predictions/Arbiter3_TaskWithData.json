@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter3_TaskWithData",
+  "ut": "L2MainPipeLeaves",
+  "regs": 0,
+  "outs": 899,
+  "expected": 899,
+  "merge_dup": "false",
+  "model_applicable": true
+}

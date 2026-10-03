@@ -136,8 +136,8 @@ MUTANTS = [
 
     ('M3', 'replaceRC 拿寄存器里的 regCacheIdx 去比，而不是 currentStatus 的 —— '
            '本轮实际踩到的 bug：enq 条目在入队延迟窗口里两者不同',
-     "          rc_replaced[s] |= iq_wen[w] & (iq_rc_dest[w] == cur_rc_idx[s]);",
-     "          rc_replaced[s] |= iq_wen[w] & (iq_rc_dest[w] == r_rc_idx[s]);",
+     "          rc_replaced[s] |= iq_wen[w][RC_WEN] & (iq_rc_dest[w] == cur_rc_idx[s]);",
+     "          rc_replaced[s] |= iq_wen[w][RC_WEN] & (iq_rc_dest[w] == r_rc_idx[s]);",
      lambda v: (v.has_rc, '没有 regcache 的变体里 rc_replaced 够不到任何输出')),
 
     ('M4', 'ShiftLoadDependency 忘了「本路唤醒自己就是某条 load 流水」那一位的常数 1',
@@ -156,8 +156,8 @@ MUTANTS = [
                 'c1 恒 0，删掉这一项改不动任何行为 —— 这条要靠 Ldu/StaMou/StdMoud 去证')),
 
     ('M6', 'deqSuccess 忘了被 srcLoadCancel 门控 —— 被撤销的那拍仍当作发射成功清条目',
-     "    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS) & ~(|cur_ld_cancel);",
-     "    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS);",
+     "    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS) & ~(|cur_ld_cancel)\n",
+     "    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS)\n",
      lambda v: (v.n_ld_cancel > 0, '没有 ldCancel 的变体里 cur_ld_cancel 恒 0')),
 
     ('M7', 'comp 条目的 canIssueBypass 没接上 —— 0 周期 IQ 唤醒的 uop 晚一拍才能发射',
@@ -219,11 +219,53 @@ MUTANTS = [
      lambda v: (v.n_ld_cancel > 0,
                 '没有 ldCancel 的变体里影子恒 0，寄存器原值与移位后的次态都是 0')),
 
+    # ---- 访存变体（StaMou / VlduVstu*）接入时加的六条：E4 needFeedBack 与 E5 vecMem ----
+    ('M17', 'StaMou 形访存响应的窗口写成 timer==3 —— golden 是 issueTimer[1]'
+            '（timer 2 与 3 两档都走 slowResp，EntriesStaMou.sv:19340）',
+     "      if (MEM_RESP_MODE == 1 && tm[1]) begin",
+     "      if (MEM_RESP_MODE == 1 && (&tm)) begin",
+     lambda v: (v.mem_resp_mode == 1, '只有 StaMou 形（MEM_RESP_MODE=1）走这一支')),
+
+    ('M18', '访存向量形的响应命中只比 sqIdx、漏了 lqIdx —— golden 要求两者同时相等'
+            '（EntriesVlduVstu.sv:21238-21256）',
+     "                      & ((MEM_RESP_MODE != 2) | (mem_lq_idx[m] == ety_lq));",
+     "                      ;",
+     lambda v: (v.mem_resp_mode == 2, 'StaMou 形本来就只比 sqIdx')),
+
+    ('M19', '访存向量形的多路响应写成「最后命中者覆盖」而不是按位或 —— '
+            '本家族已知坑一（Mux1H 选择非 one-hot 时 golden 按位或）的又一处',
+     "            x_resp_bits [i]    |= mem_resp[m];",
+     "            x_resp_bits [i]     = mem_resp[m];",
+     lambda v: (v.mem_resp_mode == 2 and len(v.mem_srcs) > 1, '只有一路来源时覆盖与按位或相同')),
+
+    ('M20', '访存向量变体的 deqSuccess 漏了 r_issued 门控 —— timer==3 的访存响应按 '
+            '{sqIdx,lqIdx} 能打中一条还没发射的条目（EnqEntryVecMem_2.sv:1475）',
+     "                   & (~HAS_VEC_MEM | r_issued);",
+     "                   ;",
+     lambda v: (v.has_vec_mem, '其余变体没有这一项')),
+
+    ('M21', 'blocked 次态漏了 isVleff 条件 —— 所有 lqIdx 不是队头的 uop 都被挡住',
+     "    u_blocked = HAS_VEC_MEM & (r_vm[VM_LQ_LSB +: VM_LQ_W] != lq_deq_ptr)\n"
+     "                            & r_payload[B_VLEFF];",
+     "    u_blocked = HAS_VEC_MEM & (r_vm[VM_LQ_LSB +: VM_LQ_W] != lq_deq_ptr);",
+     lambda v: (v.has_vec_mem, '其余变体 blocked 次态恒 0')),
+
+    ('M22', 'vecReplayMask/MbIdx 的更新多加了 resp.valid 门控 —— golden 只看响应的 '
+            'isVecPartReplay 位（EnqEntryVecMem_2.sv:2398），与 isVecPartReplay 自己的'
+            '门控不对称；把两者"统一"就是这个错',
+     "        end else if (resp_vpr) begin",
+     "        end else if (resp_valid & resp_vpr) begin",
+     lambda v: (v.has_vec_mem, '其余变体没有这组寄存器')),
+
     ('M12', 'issueResp 的 4 档常量表里，timer0 那档从 BLOCK 改成 SUCCESS',
      "        resp_bits_tab[d][k]  = OG_HAS_BITS[k] ? og_resp[k][d] : OG_CONST_RESP[k];",
      "        resp_bits_tab[d][k]  = OG_HAS_BITS[k] ? og_resp[k][d]\n"
      "                             : ((k == 0) ? RESP_SUCCESS : OG_CONST_RESP[k]);",
-     lambda v: (True, 'issueResp 的 timer0 档每个变体都用')),
+     lambda v: (v.og_has_bits[0] == 0,
+                'timer0 档是**真 resp 端口**（og_has_bits[0]=1：Ldu/StaMou/StdMoud/Alu* 等）时'
+                '根本不读 OG_CONST_RESP[0]，改常量是空变异。★2026-09-28 实测更正★：原判据'
+                '写死 True，StaMou 上跑出"逃逸"，查下去是 golden 的表'
+                ' `{2\'h0, 2\'h0, og1, og0}` 两档都是真端口')),
 ]
 
 

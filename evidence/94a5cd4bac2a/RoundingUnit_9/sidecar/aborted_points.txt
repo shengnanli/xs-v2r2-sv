@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/RoundingUnit_9
+Implementation : i:/WORK/RoundingUnit_9
+Version        : V-2023.12-SP3
+Date           : Tue Sep 29 11:38:12 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -1,0 +1,10 @@
+{
+  "target": "Uncache",
+  "ut": "Uncache",
+  "regs": 6757,
+  "outs": 860,
+  "expected": 7617,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing=7617 = expected（constant_reg 0）；201 个对称 matched-unread（entry vaddr[2:0] 48、f1 paddr[2:0] 9、f1 ptag addr[2:0] 144）vmucp 开后实比进 passing；试跑(vmucp 关) passing 7416 + unread 201"
+}

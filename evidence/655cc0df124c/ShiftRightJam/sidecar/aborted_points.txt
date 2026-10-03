@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ShiftRightJam
+Implementation : i:/WORK/ShiftRightJam
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 09:30:18 2026
+**************************************************
+
+No aborted compare points.
+
+1

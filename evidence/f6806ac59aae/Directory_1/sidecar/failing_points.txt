@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Directory_1
+Implementation : i:/WORK/Directory_1
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 17:06:48 2026
+**************************************************
+
+No failing compare points.
+
+1

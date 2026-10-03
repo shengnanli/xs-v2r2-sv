@@ -1,0 +1,9 @@
+{
+  "target": "PMPEntryHandleModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 1472,
+  "outs": 2112,
+  "expected": 3584,
+  "merge_dup": "false",
+  "model_applicable": true
+}

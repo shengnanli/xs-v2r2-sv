@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/slideupVs2VdTable
+Implementation : i:/WORK/slideupVs2VdTable
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 11:11:00 2026
+**************************************************
+
+No aborted compare points.
+
+1

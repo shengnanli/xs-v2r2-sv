@@ -1,0 +1,9 @@
+{
+  "target": "RequestArb",
+  "ut": "RequestArb",
+  "regs": 779,
+  "outs": 1058,
+  "expected": 1837,
+  "merge_dup": "false",
+  "model_applicable": true
+}

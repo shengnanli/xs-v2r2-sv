@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter3_TaskBundle",
+  "ut": "L2MainPipeLeaves",
+  "regs": 0,
+  "outs": 71,
+  "expected": 71,
+  "merge_dup": "false",
+  "model_applicable": true
+}

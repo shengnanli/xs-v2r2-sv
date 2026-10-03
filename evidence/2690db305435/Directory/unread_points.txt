@@ -1,0 +1,45 @@
+ref	r:/WORK/Directory/mbistPl/addrRdReg_reg[9]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[0]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[1]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[2]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[3]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[4]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[5]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[6]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[7]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[8]
+ref	r:/WORK/Directory/mbistPl/addrReg_reg[9]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrRdReg_reg[9]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[0]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[1]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[2]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[3]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[4]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[5]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[6]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[7]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[8]
+impl	i:/WORK/Directory/mbistPl/u_core/u_ctrl/addrReg_reg[9]
+impl	i:/WORK/Directory/metaArray/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Directory/origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Directory/replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Directory/tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Directory/tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Directory/tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Directory/tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg
+matched_nc	{r:/WORK/Directory/req_s2_wayMask_reg[0]} {i:/WORK/Directory/u_core/req_s2_wayMask_reg[0]}
+matched_nc	{r:/WORK/Directory/req_s2_wayMask_reg[1]} {i:/WORK/Directory/u_core/req_s2_wayMask_reg[1]}
+matched_nc	{r:/WORK/Directory/req_s2_wayMask_reg[2]} {i:/WORK/Directory/u_core/req_s2_wayMask_reg[2]}
+matched_nc	{r:/WORK/Directory/req_s2_wayMask_reg[3]} {i:/WORK/Directory/u_core/req_s2_wayMask_reg[3]}
+matched_nc	{r:/WORK/Directory/req_s2_wayMask_reg[4]} {i:/WORK/Directory/u_core/req_s2_wayMask_reg[4]}
+matched_nc	{r:/WORK/Directory/req_s2_wayMask_reg[5]} {i:/WORK/Directory/u_core/req_s2_wayMask_reg[5]}
+matched_nc	{r:/WORK/Directory/req_s2_wayMask_reg[6]} {i:/WORK/Directory/u_core/req_s2_wayMask_reg[6]}
+matched_nc	{r:/WORK/Directory/req_s2_wayMask_reg[7]} {i:/WORK/Directory/u_core/req_s2_wayMask_reg[7]}
+matched_nc	{r:/WORK/Directory/req_s3_wayMask_reg[0]} {i:/WORK/Directory/u_core/req_s3_wayMask_reg[0]}
+matched_nc	{r:/WORK/Directory/req_s3_wayMask_reg[1]} {i:/WORK/Directory/u_core/req_s3_wayMask_reg[1]}
+matched_nc	{r:/WORK/Directory/req_s3_wayMask_reg[2]} {i:/WORK/Directory/u_core/req_s3_wayMask_reg[2]}
+matched_nc	{r:/WORK/Directory/req_s3_wayMask_reg[3]} {i:/WORK/Directory/u_core/req_s3_wayMask_reg[3]}
+matched_nc	{r:/WORK/Directory/req_s3_wayMask_reg[4]} {i:/WORK/Directory/u_core/req_s3_wayMask_reg[4]}
+matched_nc	{r:/WORK/Directory/req_s3_wayMask_reg[5]} {i:/WORK/Directory/u_core/req_s3_wayMask_reg[5]}
+matched_nc	{r:/WORK/Directory/req_s3_wayMask_reg[6]} {i:/WORK/Directory/u_core/req_s3_wayMask_reg[6]}
+matched_nc	{r:/WORK/Directory/req_s3_wayMask_reg[7]} {i:/WORK/Directory/u_core/req_s3_wayMask_reg[7]}

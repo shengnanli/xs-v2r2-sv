@@ -1,0 +1,9 @@
+{
+  "target": "CounterFilter",
+  "ut": "CounterFilter",
+  "regs": 201,
+  "outs": 3,
+  "expected": 204,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,73 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "CtrlBlock",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "golden-only cone-dead（在 CtrlBlock 边界）：golden Rob.sv 的 reg [7:0] walkCycle / waitRabWalkCycle（Rob.sv:71254/71256）对应 Rob.scala:1350-1357 的 walkCycle/waitRabWalkCycle = RegInit(0.U(8.W))，只服务 XSPerfHistogram（walkRobCycleHist / walkRabExtraCycleHist / walkTotalCycleHist）。在 golden Rob.sv 内：写侧 walkCycle <= 0 / walkCycle + 1（_waitRabWalkCycle_T_3，Rob.sv:232221/242622-242625），waitRabWalkCycle <= ... ? 0 : walkCycle + 1；读侧只有 walkCycle 自增自环、喂 waitRabWalkCycle 的次态，以及 wire *_probe（Rob.sv:71255/71257）。★*_probe 唯一的读者是 golden SimTop.sv:15518-15526 的 perf XMR bore（perfCnt_bore_8083/8084/8085 → perf 直方图），不在 Rob/CtrlBlock 的任何输出端口、任何其他寄存器的锥里★，所以在 CtrlBlock 这层是只写自身的孤立环。可读核 rtl/backend/Rob.sv:2378-2379 只保留了这两个 logic 声明、没有驱动（Rob 168720 钉点里也没有它们），impl 侧不存在对应寄存器。这条 perf 语义在重写后是否复现，由 main 的 docs/perf_bore_unbound.tsv（walkRabExtraCycleHist_* 等，T3_REG_LEAF / NO_SIGNOFF_BOUNDARY）单独记账，不属本目标功能等价。观测来源：evidence/ebf657d20722/CtrlBlock（Rob 两侧白盒、native SUCCEEDED、failing 0、unmatched 0、无 dont_verify）unread_points 的 ref 侧恰为这 16 条；非 waiver，其余全部可达比对点仍由 FM 证明等价。",
+ "observed_points": 16,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/waitRabWalkCycle_reg[0]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/waitRabWalkCycle_reg[1]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/waitRabWalkCycle_reg[2]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/waitRabWalkCycle_reg[3]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/waitRabWalkCycle_reg[4]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/waitRabWalkCycle_reg[5]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/waitRabWalkCycle_reg[6]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/waitRabWalkCycle_reg[7]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/walkCycle_reg[0]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/walkCycle_reg[1]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/walkCycle_reg[2]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/walkCycle_reg[3]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/walkCycle_reg[4]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/walkCycle_reg[5]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/walkCycle_reg[6]",
+   "class": "golden_only_probe_counter_self_loop"
+  },
+  {
+   "ref_path": "r:/WORK/CtrlBlock/rob/walkCycle_reg[7]",
+   "class": "golden_only_probe_counter_self_loop"
+  }
+ ]
+}

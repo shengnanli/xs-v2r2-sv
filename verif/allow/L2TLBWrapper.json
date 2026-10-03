@@ -1,0 +1,24 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "L2TLBWrapper",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "assembly 边界声明：L2TLBWrapper 只有一个子模块 L2TLB（共享 MMU 顶层，本仓已有重写 rtl/memblock/L2TLB.sv，其 FM 为条件绿：assembly native SUCCEEDED 但 8 个 child 未签核）。本层两侧都把 L2TLB 作对称黑盒（FM_INTERFACE_ONLY=L2TLB，impl 侧读 golden L2TLB.sv 只取接口），只证外壳 glue（端口直通 + 19 个 perf 计数两拍寄存）。L2TLB 尚无已签核证书，故**故意不填 certificate_sha256**：判定据此停在条件绿，指名挂着 L2TLB。★不许把 class 改成 vendor_macro 绕过★。",
+ "objects": [
+  {
+   "side": "r",
+   "design": "L2TLB",
+   "path": "r:/WORK/L2TLBWrapper/ptw",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "L2TLB"
+  },
+  {
+   "side": "i",
+   "design": "L2TLB",
+   "path": "i:/WORK/L2TLBWrapper/ptw",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "L2TLB"
+  }
+ ]
+}

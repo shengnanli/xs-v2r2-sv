@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VStvecModule
+Implementation : i:/WORK/VStvecModule
+Version        : V-2023.12-SP3
+Date           : Thu Oct  1 11:26:18 2026
+**************************************************
+
+No aborted compare points.
+
+1

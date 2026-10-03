@@ -1,0 +1,10 @@
+{
+  "target": "DataPath",
+  "ut": "DataPath",
+  "regs": 59535,
+  "outs": 78744,
+  "expected": 138279,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额 = constant_reg 150 + dead_ref 21（RegCache 半区位，golden-only）；vmucp 后 481 个对称死位进 passing；见 docs/lanes/datapath_prereg.md §C.4"
+}

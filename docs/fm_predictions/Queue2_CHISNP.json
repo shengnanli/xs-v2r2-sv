@@ -1,0 +1,9 @@
+{
+  "target": "Queue2_CHISNP",
+  "ut": "L2Queues",
+  "regs": 199,
+  "outs": 100,
+  "expected": 299,
+  "merge_dup": "false",
+  "model_applicable": true
+}

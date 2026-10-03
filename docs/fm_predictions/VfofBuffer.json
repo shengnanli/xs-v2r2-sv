@@ -1,0 +1,10 @@
+{
+  "target": "VfofBuffer",
+  "ut": "VfofBuffer",
+  "regs": 739,
+  "outs": 866,
+  "expected": 1605,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "739 寄存器位（uop 载荷 729 + vl 8 + hasException 1 + valid 1，全异步复位、全有真次态）+ 866 output 位；不预期常量寄存器"
+}

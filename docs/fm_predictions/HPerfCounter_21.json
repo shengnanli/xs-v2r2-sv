@@ -1,0 +1,10 @@
+{
+  "target": "HPerfCounter_21",
+  "ut": "HPerfMonitor_3",
+  "regs": 68,
+  "outs": 6,
+  "expected": 74,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "寄存器全无复位；模型=闭包寄存器位+输出位"
+}

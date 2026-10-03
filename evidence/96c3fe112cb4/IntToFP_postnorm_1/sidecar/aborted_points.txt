@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/IntToFP_postnorm_1
+Implementation : i:/WORK/IntToFP_postnorm_1
+Version        : V-2023.12-SP3
+Date           : Wed Sep 30 23:48:02 2026
+**************************************************
+
+No aborted compare points.
+
+1

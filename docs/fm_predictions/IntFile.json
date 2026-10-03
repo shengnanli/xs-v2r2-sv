@@ -1,0 +1,10 @@
+{
+  "target": "IntFile",
+  "ut": "IntFile",
+  "regs": 640,
+  "outs": 75,
+  "expected": 715,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "constant_reg: eidelivery[63:1] 两侧恒 0（IntFile 63 / IMSIC 9×63=567）"
+}

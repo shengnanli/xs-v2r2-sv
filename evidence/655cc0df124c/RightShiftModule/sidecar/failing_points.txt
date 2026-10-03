@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/RightShiftModule
+Implementation : i:/WORK/RightShiftModule
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 09:33:26 2026
+**************************************************
+
+No failing compare points.
+
+1

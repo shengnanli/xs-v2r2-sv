@@ -1,0 +1,10 @@
+{
+  "target": "VIntMisc64b",
+  "ut": "VIntMisc64b",
+  "regs": 0,
+  "outs": 176,
+  "expected": 176,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合，0 寄存器：预测 passing=176 = expected（5 个输出共 176 位）；子模块 CLZ_6/7/9/11 两侧白盒（ref golden、impl 重写件）"
+}

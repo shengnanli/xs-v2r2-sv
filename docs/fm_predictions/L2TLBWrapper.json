@@ -1,0 +1,17 @@
+{
+  "target": "L2TLBWrapper",
+  "ut": "L2TLBWrapper",
+  "regs": 228,
+  "outs": 3589,
+  "expected": 5139,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 1322,
+  "bbox": {
+    "L2TLB": {
+      "insts": 1,
+      "in_bits": 1322,
+      "points": 1322
+    }
+  }
+}

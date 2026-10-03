@@ -1,0 +1,22 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "GrantBuffer",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "assembly 边界声明：黑盒**只有** codex 0202 单条审定的 firtool 行为级存储宏 ram_10x89（verif/vendor_boundary.tsv 表尾，golden sha256 7cdc3e1c…），两侧对称各恰好 1 个：pftRespQueue（两侧同名的 Queue10_GrantBuffer_Anon 实例）里的 ram_ext。其余 child —— Queue16_GrantQueueTask / Queue16_GrantQueueData ×2 / Queue10_GrantBuffer_Anon 本体 —— 以及它们的 ram_16x25 / ram_data_16x256（2 的幂，D60 两侧同源 inline）在本目标里**不黑盒**：ref 读 golden 文件、impl 读 rtl/uncore 可读件，两侧完整 elaborate，不依赖其证书，故没有 green_child 条目。",
+ "objects": [
+  {
+   "side": "i",
+   "design": "ram_10x89",
+   "path": "i:/WORK/GrantBuffer/pftRespQueue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "ram_10x89",
+   "path": "r:/WORK/GrantBuffer/pftRespQueue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}

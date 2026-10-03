@@ -565,6 +565,12 @@ def gen_rtl_body(ov, L, ctx):
     c.append('.deq_port_idx_write(%s)' % p('io_commonIn_deqPortIdxWrite', "1'b0"))
     c.append('.resp_valid(io_commonIn_issueResp_valid)')
     c.append('.resp_bits(io_commonIn_issueResp_bits_resp)')
+    # 访存向量状态组（核 HAS_VEC_MEM，§2.6c）：本生成器覆盖的变体都不带它，
+    # 入口钉 0、出口不接（核在 HAS_VEC_MEM=0 时一个寄存器都不产出）。
+    # 真遇到带它的变体（OthersEntryVecMem* / EnqEntryVecMem*）必须先扩本生成器。
+    assert not v.has_vec_mem, f'{v.top}: 访存向量变体，本生成器尚未覆盖'
+    c.append(".enq_vm('0), .enq_vpr('0), .enq_vr_mask('0), .enq_vr_mbidx('0)")
+    c.append(".lq_deq_ptr('0), .resp_vpr('0), .resp_vr_mask('0), .resp_vr_mbidx('0)")
     c.append('  // enq 条目的 transSel = 「本拍被搬到 simp/comp 去了」-> enqReady/clear')
     c.append('.trans_sel(io_commonIn_transSel)')
     # ---- 输出 ----

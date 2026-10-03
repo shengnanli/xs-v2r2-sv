@@ -1,0 +1,10 @@
+{
+  "target": "Og2ForVector",
+  "ut": "Og2ForVector",
+  "regs": 10291,
+  "outs": 10337,
+  "expected": 20628,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 20628 = regs 10291 + outs 10337；预测 passing=20628（fm_pins_pre 钉 10291 位，全部比较，无常量无 unread）"
+}

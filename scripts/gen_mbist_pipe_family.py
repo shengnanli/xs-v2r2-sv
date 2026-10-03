@@ -41,6 +41,16 @@ OUT_DIR = os.path.join(REPO, 'rtl', 'dft')
 
 MODS = sorted(os.path.basename(p)[:-3] for p in glob.glob(G + '/MbistPipe*.sv'))
 
+# 家族外、但由 --scan-adjacent 机器判定"可原样套本核"的同总线节点（agent/l2slice 并入）。
+# 它们**不进** MODS：gen_mbist_ut.py 的 24 变体 tb 与 docs/mbist_pipe_family.json 都按 MODS
+# 生成，混进去会改动已出证 UT 的字节。这里只借用 parse_golden / check_invariants /
+# verify_reduce 三道机器校验 + emit_variant，产物另放、UT 另立（verif/ut/L2Slice）。
+EXTRA_MODS = ['L2Slice', 'L2Slice_1', 'L2Slice_2', 'L2Slice_3',
+              # extraHold 叶子：读/写使能用 2 位展宽寄存器，核是 rtl/dft/xs_mbist_hold_leaf_core.sv
+              'L2DataStorage', 'L2DataStorage_1', 'L2DataStorage_2', 'L2DataStorage_3',
+              # Directory_1..3 层的普通叶子（slice 0 的 L2Directory 另有已签核的手写件 rtl/uncore/L2Directory.sv，不在此列）
+              'L2Directory_1', 'L2Directory_2', 'L2Directory_3']
+
 # 每个变体服务哪个存储阵列：由 golden 的例化关系机械抓出来的（父模块 + 与本
 # pipe 的 toSRAM/toNextPipeline 网线相连的实例类型），写进薄文件头供读者定位。
 SERVES = {
@@ -68,6 +78,17 @@ SERVES = {
  'MbistPipeSc_3':          ('SCTable_3',     'TAGE-SC 统计校正表 3 的 SRAMTemplate_68 x2'),
  'MbistPipeSms':           ('MemBlock',      'SMS 空间访存流预取器的表'),
  'MbistPipeTage':          ('Tage_SC',       'TAGE 4 张预测表 + TageBTable 基础表 + us 表'),
+ 'L2Slice':                ('Slice',         'L2 slice 0 的 MBIST 子树：child0=Directory 层(L2Directory)、child1=DataStorage 层(L2DataStorage)'),
+ 'L2Slice_1':              ('Slice_1',       'L2 slice 1 的 MBIST 子树：child0=Directory 层(L2Directory_1)、child1=DataStorage 层(L2DataStorage_1)'),
+ 'L2Slice_2':              ('Slice_2',       'L2 slice 2 的 MBIST 子树：child0=Directory 层(L2Directory_2)、child1=DataStorage 层(L2DataStorage_2)'),
+ 'L2DataStorage':          ('DataStorage',   'L2 slice 0 数据阵列 GatedSplittedSRAM 的 4 个 137 位 bank（extraHold 多周期 SRAM）'),
+ 'L2DataStorage_1':        ('DataStorage_1', 'L2 slice 1 数据阵列 GatedSplittedSRAM_1 的 4 个 bank（extraHold）'),
+ 'L2DataStorage_2':        ('DataStorage_2', 'L2 slice 2 数据阵列 GatedSplittedSRAM_2 的 4 个 bank（extraHold）'),
+ 'L2DataStorage_3':        ('DataStorage_3', 'L2 slice 3 数据阵列 GatedSplittedSRAM_3 的 4 个 bank（extraHold）'),
+ 'L2Directory_1':          ('Directory_1',   'L2 slice 1 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
+ 'L2Directory_2':          ('Directory_2',   'L2 slice 2 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
+ 'L2Directory_3':          ('Directory_3',   'L2 slice 3 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
+ 'L2Slice_3':              ('Slice_3',       'L2 slice 3 的 MBIST 子树：child0=Directory 层(L2Directory_3)、child1=DataStorage 层(L2DataStorage_3)'),
 }
 
 
@@ -227,6 +248,13 @@ def parse_golden(mod):
     def sl(w, full):
         return '' if w == full else (r'\[%d:0\]' % (w - 1) if w > 1 else r'\[0\]')
 
+    # extraHold 叶子：golden 没有 wenReg/renReg，改为 2 位 wen/renStretched（见 xs_mbist_hold_leaf_core.sv）
+    hold = 'wenStretched' in regs
+    assert not (hold and isnode), '%s: extraHold 只见于叶子' % mod
+    if hold:
+        assert regs['wenStretched'] == 2 and regs['renStretched'] == 2 and 'wenReg' not in regs, mod
+    R['hold'] = hold
+    ren, wen = (r'renStretched\[0\]', r'wenStretched\[0\]') if hold else ('renReg', 'wenReg')
     if not isnode:
         for c in child:
             k, sfx = c['idx'], ('' if c['idx'] == 0 else '_%d' % c['idx'])
@@ -243,8 +271,8 @@ def parse_golden(mod):
                         r"assign %s%d_addr_rd = doSpread%s \? addrRdReg%s : \d+'h0;" % (pfx, k, sfx, a),
                         r"assign %s%d_wdata = dataInReg%s;" % (pfx, k, d),
                         r"assign %s%d_wmask = beReg%s;" % (pfx, k, be),
-                        r"assign %s%d_re = doSpread%s & renReg;" % (pfx, k, sfx),
-                        r"assign %s%d_we = doSpread%s & wenReg;" % (pfx, k, sfx),
+                        r"assign %s%d_re = doSpread%s & %s;" % (pfx, k, sfx, ren),
+                        r"assign %s%d_we = doSpread%s & %s;" % (pfx, k, sfx, wen),
                         r"assign %s%d_ack = reqReg;" % (pfx, k)):
                 assert take(pat), '%s child%d: golden 里没有模板语句 %s' % (mod, k, pat)
             mo = take(r"assign %s%d_selectedOH = (.*);" % (pfx, k))
@@ -378,7 +406,104 @@ def wdecl(w):
     return '' if w == 1 else '[%d:0] ' % (w - 1)
 
 
+def emit_hold_variant(R):
+    """extraHold 叶子（L2DataStorage*）：例化 xs_mbist_hold_leaf_core。"""
+    m = R['module']
+    ch = R['child']
+    parent, serves = SERVES[m]
+    lo, hi = min(R['all_ids']), max(R['all_ids'])
+    maxids = max(len(c['ids']) for c in ch)
+    L = []
+    A = L.append
+    A('// %s.sv —— MBIST 分发树的 extraHold 叶子节点：%s' % (m, serves))
+    A('//')
+    A('// 本变体参数（全部从 G1 golden 逐根量出来，见 scripts/gen_mbist_pipe_family.py）：')
+    A('//   拓扑      叶子（extraHold）：直接驱动 SRAM 的 bore 口，%d 个 child（toSRAM_0..%d）' % (R['nchild'], R['nchild'] - 1))
+    A('//   例化于    %s' % parent)
+    A('//   MBIST array id  0x%02X..0x%02X（共 %d 个），故 ARRAY_W = clog2(0x%X+1) = %d 位'
+      % (lo, hi, len(R['all_ids']), hi, R['ARRAY_W']))
+    A('//   上游总线  addr/addr_rd %d 位  indata/outdata %d 位  be %d 位' % (R['ADDR_W'], R['DATA_W'], R['BE_W']))
+    A('//   规模      golden %d 行 / %d 端口；本文件只做参数化例化 + 端口展平，逻辑全在 xs_mbist_hold_leaf_core'
+      % (len(open(os.path.join(G, m + '.sv')).read().splitlines()), len(R['ports'])))
+    A('//')
+    A('// 各 child 认领的 array id 与端口宽度：')
+    for c in ch:
+        ids = ('0x%02X' % c['ids'][0]) if len(c['ids']) == 1 else ('0x%02X..0x%02X' % (c['ids'][0], c['ids'][-1]))
+        A('//   child %-2d  id %-13s array %d 位  addr %-2d  data %-3d  be %-2d  selectedOH %d 位'
+          % (c['idx'], ids, c['ARRAY_W'], c['ADDR_W'], c['DATA_W'], c['BE_W'], c['OH_W']))
+    A('//')
+    A('// extraHold 与普通叶子的区别讲在 rtl/dft/xs_mbist_hold_leaf_core.sv 文件头；')
+    A('// 分发树整体讲在 rtl/dft/xs_mbist_pipe_core.sv 文件头。')
+    A('')
+    A('// BEGIN GENERATED(%s) —— 由 scripts/gen_mbist_pipe_family.py 从 G1 golden 生成' % m)
+    A('module %s (' % m)
+    A(',\n'.join('  %-6s logic %s%s' % (d, wdecl(w), n) for n, d, w in R['ports']))
+    A(');')
+    A('')
+    A('  localparam int unsigned N_CHILD = %d;' % R['nchild'])
+    A('  localparam int unsigned MAX_IDS = %d;' % maxids)
+    A('  localparam int unsigned ARRAY_W = %d;' % R['ARRAY_W'])
+    A('  localparam int unsigned ADDR_W  = %d;' % R['ADDR_W'])
+    A('  localparam int unsigned DATA_W  = %d;' % R['DATA_W'])
+    A('  localparam int unsigned BE_W    = %d;' % R['BE_W'])
+    A('')
+    A('  logic [ARRAY_W-1:0] ch_array      [N_CHILD];')
+    A('  logic               ch_ack        [N_CHILD];')
+    A('  logic               ch_writeen    [N_CHILD];')
+    A('  logic [BE_W-1:0]    ch_wmask      [N_CHILD];')
+    A('  logic [ADDR_W-1:0]  ch_addr       [N_CHILD];')
+    A('  logic [DATA_W-1:0]  ch_wdata      [N_CHILD];')
+    A('  logic               ch_readen     [N_CHILD];')
+    A('  logic [ADDR_W-1:0]  ch_addr_rd    [N_CHILD];')
+    A('  logic [MAX_IDS-1:0] ch_selectedOH [N_CHILD];')
+    A('  logic [DATA_W-1:0]  ch_rdata      [N_CHILD];')
+    A('')
+    A('  xs_mbist_hold_leaf_core #(')
+    A('    .N_CHILD (N_CHILD),')
+    A('    .ARRAY_W (ARRAY_W),')
+    A('    .BE_W    (BE_W),')
+    A('    .ADDR_W  (ADDR_W),')
+    A('    .DATA_W  (DATA_W),')
+    A("    .ID_LO   ('{%s})," % ', '.join("'h%02X" % c['ids'][0] for c in ch))
+    A("    .ID_CNT  ('{%s})," % ', '.join(str(len(c['ids'])) for c in ch))
+    A('    .MAX_IDS (MAX_IDS)')
+    A('  ) u_core (')
+    A('    .clock (clock), .reset (reset),')
+    A('    .mbist_array (mbist_array), .mbist_all (mbist_all), .mbist_req (mbist_req),')
+    A('    .mbist_ack (mbist_ack), .mbist_writeen (mbist_writeen), .mbist_be (mbist_be),')
+    A('    .mbist_addr (mbist_addr), .mbist_indata (mbist_indata), .mbist_readen (mbist_readen),')
+    A('    .mbist_addr_rd (mbist_addr_rd), .mbist_outdata (mbist_outdata),')
+    A('    .ch_array (ch_array), .ch_ack (ch_ack), .ch_writeen (ch_writeen), .ch_wmask (ch_wmask),')
+    A('    .ch_addr (ch_addr), .ch_wdata (ch_wdata), .ch_readen (ch_readen), .ch_addr_rd (ch_addr_rd),')
+    A('    .ch_selectedOH (ch_selectedOH), .ch_rdata (ch_rdata)')
+    A('  );')
+    A('')
+    A('  // 端口展平：核按上游最大位宽给，这里截到每个 child 的实宽；读数据反向零扩展。')
+
+    def cut(sig, w, full):
+        return sig if w == full else '%s[%d:0]' % (sig, w - 1)
+    for c in ch:
+        k = c['idx']
+        A('  // ---- child %d ----' % k)
+        A('  assign toSRAM_%d_addr       = %s;' % (k, cut('ch_addr[%d]' % k, c['ADDR_W'], R['ADDR_W'])))
+        A('  assign toSRAM_%d_addr_rd    = %s;' % (k, cut('ch_addr_rd[%d]' % k, c['ADDR_W'], R['ADDR_W'])))
+        A('  assign toSRAM_%d_wdata      = %s;' % (k, cut('ch_wdata[%d]' % k, c['DATA_W'], R['DATA_W'])))
+        A('  assign toSRAM_%d_wmask      = %s;' % (k, cut('ch_wmask[%d]' % k, c['BE_W'], R['BE_W'])))
+        A('  assign toSRAM_%d_re         = ch_readen[%d];' % (k, k))
+        A('  assign toSRAM_%d_we         = ch_writeen[%d];' % (k, k))
+        A('  assign toSRAM_%d_ack        = ch_ack[%d];' % (k, k))
+        A('  assign toSRAM_%d_selectedOH = %s;' % (k, cut('ch_selectedOH[%d]' % k, c['OH_W'], maxids)))
+        A('  assign toSRAM_%d_array      = %s;' % (k, cut('ch_array[%d]' % k, c['ARRAY_W'], R['ARRAY_W'])))
+        A("  assign ch_rdata[%d]         = DATA_W'(toSRAM_%d_rdata);" % (k, k))
+    A('')
+    A('endmodule')
+    A('// END GENERATED(%s)' % m)
+    return '\n'.join(L) + '\n'
+
+
 def emit_variant(R):
+    if R.get('hold'):
+        return emit_hold_variant(R)
     m = R['module']
     kind = R['kind']
     ch = R['child']
@@ -562,17 +687,31 @@ def main():
     nleaf = sum(1 for R in Rs if R['kind'] == 'leaf')
     print('   叶子 %d 个 / 中间节点 %d 个；child 总数 %d'
           % (nleaf, len(Rs) - nleaf, sum(R['nchild'] for R in Rs)))
+    Xs = []
+    for m in EXTRA_MODS:
+        R = parse_golden(m)
+        check_invariants(R)
+        nx = verify_reduce(R) + verify_selected_oh(R)
+        Xs.append(R)
+        print('   家族外节点 %-10s 同样套进模板（%d 次逐位符号执行/穷举通过）' % (m, nx))
     if a.check:
+        # 产物漂移也算失败：磁盘上的薄文件必须逐字节等于本次生成结果。
+        drift = [R['module'] for R in Rs + Xs
+                 if not os.path.exists(os.path.join(OUT_DIR, R['module'] + '.sv'))
+                 or open(os.path.join(OUT_DIR, R['module'] + '.sv')).read() != emit_variant(R)]
+        if drift:
+            print('DRIFT: %s 与生成结果不一致（重跑本脚本）' % ' '.join(drift))
+            return 1
         return 0
     os.makedirs(OUT_DIR, exist_ok=True)
-    for R in Rs:
+    for R in Rs + Xs:
         path = os.path.join(OUT_DIR, R['module'] + '.sv')
         txt = emit_variant(R)
         if not os.path.exists(path) or open(path).read() != txt:
             open(path, 'w').write(txt)
-    json.dump([{k: v for k, v in R.items() if not k.startswith('_')} for R in Rs],
+    json.dump([{k: v for k, v in R.items() if not k.startswith('_') and k != 'hold'} for R in Rs],
               open(os.path.join(REPO, 'docs', 'mbist_pipe_family.json'), 'w'), indent=1)
-    print('\n生成 %d 个变体薄文件 -> %s' % (len(Rs), OUT_DIR))
+    print('\n生成 %d 个变体薄文件 -> %s' % (len(Rs) + len(Xs), OUT_DIR))
     return 0
 
 

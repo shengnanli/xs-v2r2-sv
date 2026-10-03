@@ -1,0 +1,7 @@
+# run	2026-09-28T19:22:51Z	ut_dir=TXDAT
+commit	e0ca514e710b1acca42f506ce8e8d6d92e70cc8a
+head_before	e0ca514e710b1acca42f506ce8e8d6d92e70cc8a
+head_after	e0ca514e710b1acca42f506ce8e8d6d92e70cc8a
+worktree_digest_before	c881372ab9e7a09ae1f674ea51a9f81a0d0db9f40175c8553c654afe1684ae5b
+worktree_digest_after	c881372ab9e7a09ae1f674ea51a9f81a0d0db9f40175c8553c654afe1684ae5b
+targets	TXDAT

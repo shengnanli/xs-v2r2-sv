@@ -1,0 +1,4 @@
+impl	i:/WORK/SplittedSRAM_5/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/SplittedSRAM_5/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/SplittedSRAM_5/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/SplittedSRAM_5/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg

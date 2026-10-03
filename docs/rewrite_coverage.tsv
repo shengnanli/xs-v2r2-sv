@@ -21,26 +21,25 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	544	551	98.7
-unique_design_written	172	1191	14.4
-unique_design_proven	155	1191	13.0
-golden_lines_written	2177952	3902283	55.8
-golden_lines_proven	1299583	3902283	33.3
+fm_targets_configured	1140	1152	99.0
+unique_design_written	657	1191	55.2
+unique_design_proven	643	1191	54.0
+golden_lines_written	3041544	3902283	77.9
+golden_lines_proven	2697642	3902283	69.1
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2009246	3349905	60.0
-incore_golden_lines_proven	1135129	3349905	33.9
+incore_golden_lines_written	2871564	3349905	85.7
+incore_golden_lines_proven	2531914	3349905	75.6
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
-outcore_golden_lines_written	168706	552378	30.5
-outcore_golden_lines_proven	164454	552378	29.8
+outcore_golden_lines_written	169980	552378	30.8
+outcore_golden_lines_proven	165728	552378	30.0
 #
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	18	534	3.4
-#   合计 7776 golden 行
-#   DuplicatedTagArray                            651 行
+legacy_proven_unanchored	16	1133	1.4
+#   合计 6555 golden 行
 #   ITTageTable                                   336 行
 #   ITTageTable_1                                 333 行
 #   ITTageTable_2                                 380 行
@@ -53,67 +52,63 @@ legacy_proven_unanchored	18	534	3.4
 #   MuxBundle                                     230 行
 #   SNXbar                                        557 行
 #   SRAMTemplate_128                              230 行
-#   SourceB                                       570 行
 #   SubDirectory                                  516 行
 #   SubDirectory_1                                824 行
 #   TLBuffer_13                                   917 行
 #   TageBTable                                    396 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
-#   EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v         69994 行
-#   EntriesAluCsrFenceDiv                           62428 行
-#   EntriesAluMulBkuBrhJmp                          64348 行
-#   EntriesFaluFcvtF2vFmacFdiv                      36359 行
-#   EntriesFaluFmac                                 31646 行
-#   EntriesFaluFmacFdiv                             34614 行
-#   EntriesVfdivVidiv                               24681 行
-#   EntriesVfmaVialuFixVfalu                        38682 行
-#   EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf    41795 行
+#   AtomicsUnit                                      1181 行
+#   CommitIDModule                                     97 行
+#   FDPrefetcherMonitor                               111 行
+#   HPerfCounter                                      575 行
+#   HPerfMonitor                                     1520 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
-#   NewDispatch                                    100983 行
+#   L2TLBWrapper                                     1018 行
+#   Mgu                                               651 行
 #   OpenLLC                                          4252 行
 #   PtwCache                                        45308 行
 #   Rob                                            266227 行
-#   SSIT                                            35104 行
 #   StorePipe                                          93 行
+#   fpsqrt_vector_r16                                1014 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 # ★只列核内★：核外的另列在本表末尾，不要从那里接活
 remaining_design	golden_lines	variants	scope
 Backend	79590	1	REWRITE_L
-LoadQueueUncache	59051	1	REWRITE_L
-CtrlBlock	57635	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
 Slice	45020	5	REWRITE_L
-EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
-EntriesVlduVstu	39935	1	REWRITE_L
-Scheduler	33927	4	REWRITE_L
-EntriesStaMou	29558	1	-
-DataPath	25618	1	REWRITE_L
 DCache	23854	1	REWRITE_L
-WbDataPath	21416	1	REWRITE_L
 NewCSR	15945	1	REWRITE_L
 ExeUnit	15312	13	REWRITE_L
-MSHRCtl	14590	1	REWRITE_M
-VLMergeBufferImp	14173	1	-
 XSCore	13423	1	REWRITE_L
 LoadUnit	13028	1	REWRITE_L
-Directory	11098	5	REWRITE_M
 Frontend	10940	1	REWRITE_L
-DecodeStage	10850	1	REWRITE_L
-LsqWrapper	10584	1	REWRITE_L
-MutiLevelPrefetchFilter	10466	1	-
-LoadQueueRAW	10261	1	REWRITE_L
-DiffRatStateBuffer	10187	1	-
-WaitTable	9481	1	-
-MainPipe	9208	3	REWRITE_L
-MissQueue	9125	1	REWRITE_L
-LoadQueue	8336	1	REWRITE_L
 OthersEntryVecMem	8182	4	-
+Tage_SC	7767	1	REWRITE_L
+TL2CHICoupledL2	7663	1	REWRITE_L
+FauFTB	6885	1	REWRITE_L
+EnqEntryVecMem	6486	2	-
+ExuBlock	5454	3	REWRITE_L
+BlockCipherModule	3995	1	-
+L2Top	3779	1	REWRITE_L
+PatternHistoryTable	3739	1	-
+fpsqrt_r16_block	3575	1	-
+Dispatcher	3419	13	-
+FTB	3378	1	REWRITE_L
+SRT16Divint	3072	3	-
+FloatFMA	3027	1	-
+MMIOBridge	2673	1	-
+ExceptionGen	2636	1	-
+ITTage	2429	1	REWRITE_L
+RegCacheAgeTimer	2346	2	-
+Queue2_TLBundleA	2189	11	-
+RegCacheAgeDetector	2119	2	-
+XSTile	2077	1	REWRITE_L
 #
 # ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
-#   让人看得见它们的存在，别当成"还没人接的活"★  合计 354539 行
+#   让人看得见它们的存在，别当成"还没人接的活"★  合计 352600 行
 #   TLToAXI4                                    68788 行  variants=2
 #   NCB200                                      36161 行  variants=2
 #   Domain                                      26885 行  variants=2

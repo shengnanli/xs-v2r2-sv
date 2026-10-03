@@ -1,0 +1,9 @@
+{
+  "target": "MissEntry",
+  "ut": "MissEntry",
+  "regs": 1806,
+  "outs": 2519,
+  "expected": 4325,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "VldMergeUnit",
+  "ut": "VldMergeUnit",
+  "regs": 1135,
+  "outs": 1135,
+  "expected": 2270,
+  "merge_dup": "false",
+  "model_applicable": true
+}

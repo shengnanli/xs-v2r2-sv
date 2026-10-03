@@ -1,0 +1,9 @@
+{
+  "target": "LqMaskModule",
+  "ut": "LqRawCam",
+  "regs": 1016,
+  "outs": 64,
+  "expected": 1080,
+  "merge_dup": "false",
+  "model_applicable": true
+}

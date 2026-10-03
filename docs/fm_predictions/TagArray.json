@@ -1,0 +1,17 @@
+{
+  "target": "TagArray",
+  "ut": "TagArray",
+  "regs": 194,
+  "outs": 345,
+  "expected": 737,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 198,
+  "bbox": {
+    "array_8_ext": {
+      "insts": 2,
+      "in_bits": 99,
+      "points": 198
+    }
+  }
+}

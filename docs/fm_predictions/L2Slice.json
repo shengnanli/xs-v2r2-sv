@@ -1,0 +1,9 @@
+{
+  "target": "L2Slice",
+  "ut": "L2Slice",
+  "regs": 316,
+  "outs": 450,
+  "expected": 766,
+  "merge_dup": "false",
+  "model_applicable": true
+}

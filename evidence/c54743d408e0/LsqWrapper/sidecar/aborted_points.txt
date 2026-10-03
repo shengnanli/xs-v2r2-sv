@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/LsqWrapper
+Implementation : i:/WORK/LsqWrapper
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 21:12:00 2026
+**************************************************
+
+No aborted compare points.
+
+1

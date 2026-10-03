@@ -1,0 +1,10 @@
+{
+  "target": "VfRFReadArbiter",
+  "ut": "DataPathArb",
+  "regs": 96,
+  "outs": 167,
+  "expected": 263,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "N=1 WBArbiter 的 cancelCounter_0 三位 FM 判常量（Constant reg = 3 x N=1 个数），差额应全由 receipt constant_reg 指认；见 docs/lanes/datapath_prereg.md §A.3"
+}

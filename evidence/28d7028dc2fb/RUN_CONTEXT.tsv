@@ -1,0 +1,8 @@
+# run	2026-09-22T06:46:38Z	ut_dir=HPTW
+commit	28d7028dc2fb28618faa88ff338d62c9833b8543
+head_before	28d7028dc2fb28618faa88ff338d62c9833b8543
+head_after	28d7028dc2fb28618faa88ff338d62c9833b8543
+worktree_digest_before	12492749f490dcfc4a69a19f7d3dcf6ee9d3487669634361a0f9979f7d88c595
+worktree_digest_after	12492749f490dcfc4a69a19f7d3dcf6ee9d3487669634361a0f9979f7d88c595
+targets	HPTW
+driver	mmu5-lane proof.sh（= run_proof.sh 去掉 readability_audit 拦截；该审计在本 commit 上 rc=1，红项为 rtl/backend/Rob.sv 的 E 类导航腐烂，main 继承）

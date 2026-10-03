@@ -1,0 +1,9 @@
+{
+  "target": "MainPipe_1",
+  "ut": "MainPipe_1",
+  "regs": 2473,
+  "outs": 4193,
+  "expected": 6666,
+  "merge_dup": "false",
+  "model_applicable": true
+}

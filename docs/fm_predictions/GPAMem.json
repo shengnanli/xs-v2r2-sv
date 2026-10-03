@@ -1,0 +1,9 @@
+{
+  "target": "GPAMem",
+  "ut": "GPAMem",
+  "regs": 3938,
+  "outs": 57,
+  "expected": 3995,
+  "merge_dup": "false",
+  "model_applicable": true
+}

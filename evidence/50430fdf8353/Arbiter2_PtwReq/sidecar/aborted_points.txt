@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Arbiter2_PtwReq
+Implementation : i:/WORK/Arbiter2_PtwReq
+Version        : V-2023.12-SP3
+Date           : Tue Sep 29 11:37:40 2026
+**************************************************
+
+No aborted compare points.
+
+1

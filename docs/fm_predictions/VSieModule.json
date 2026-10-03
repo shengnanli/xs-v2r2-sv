@@ -1,0 +1,9 @@
+{
+  "target": "VSieModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 50,
+  "outs": 234,
+  "expected": 284,
+  "merge_dup": "false",
+  "model_applicable": true
+}

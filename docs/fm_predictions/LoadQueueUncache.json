@@ -1,0 +1,10 @@
+{
+  "target": "LoadQueueUncache",
+  "ut": "LoadQueueUncache",
+  "regs": 38266,
+  "outs": 6671,
+  "expected": 44937,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "第1跑(7c7701af)登记值45241多算304: Makefile 用 $(addsuffix) 写条目依赖, 模型读不到 16 个 UncacheEntry, 按黑盒输入位 1689/个计而非寄存器位 1670/个(16x19=304); 改字面列表后模型=44937=38266 DFF(与第1跑 FM DFF 36645+1616+5 逐位相等)+6671 port"
+}

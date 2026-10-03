@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Queue16_HintQueueEntry
+Implementation : i:/WORK/Queue16_HintQueueEntry
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 17:59:52 2026
+**************************************************
+
+No failing compare points.
+
+1

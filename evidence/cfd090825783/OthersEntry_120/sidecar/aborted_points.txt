@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/OthersEntry_120
+Implementation : i:/WORK/OthersEntry_120
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 02:44:31 2026
+**************************************************
+
+No aborted compare points.
+
+1

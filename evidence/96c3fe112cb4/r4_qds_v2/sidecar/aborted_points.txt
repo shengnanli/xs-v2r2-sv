@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/r4_qds_v2
+Implementation : i:/WORK/r4_qds_v2
+Version        : V-2023.12-SP3
+Date           : Wed Sep 30 23:46:28 2026
+**************************************************
+
+No aborted compare points.
+
+1

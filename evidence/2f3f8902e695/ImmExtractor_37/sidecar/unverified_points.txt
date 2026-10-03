@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/ImmExtractor_37
+Implementation : i:/WORK/ImmExtractor_37
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 11:47:51 2026
+**************************************************
+
+No unverified compare points.
+
+1

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VIntAdder64b
+Implementation : i:/WORK/VIntAdder64b
+Version        : V-2023.12-SP3
+Date           : Thu Oct  1 08:23:10 2026
+**************************************************
+
+No aborted compare points.
+
+1

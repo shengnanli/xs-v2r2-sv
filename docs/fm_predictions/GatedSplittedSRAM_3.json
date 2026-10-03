@@ -1,0 +1,17 @@
+{
+  "target": "GatedSplittedSRAM_3",
+  "ut": "DataStorage",
+  "regs": 568,
+  "outs": 1096,
+  "expected": 2272,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 608,
+  "bbox": {
+    "array_18_ext": {
+      "insts": 4,
+      "in_bits": 152,
+      "points": 608
+    }
+  }
+}

@@ -40,16 +40,44 @@ NO_CHECK = {
     'gen_g1_manifest.py':  '产物是 golden 清单快照，输入是只读的 G1-canonical，幂等性由 G1 的 chmod a-w 保证',
     'gen_mbist_ut.py':     '产出 UT 脚手架，已由 scripts/test_gen_idempotent.py 在 verif/ut/* 那一层统一重跑验过',
     'gen_zj_ut.py':        '同上：产出 UT 脚手架，归 test_gen_idempotent.py 那一层管',
+    'gen_l2slice_ut.py':   '同上：UT 脚手架，参数在各 verif/ut/<D>/gen.py 里，由 test_gen_idempotent.py 逐目录重跑验',
 }
 
 
-def gated_generators():
-    """从 gate_all.sh 里解析出被逐个挂闸的 scripts/gen_*.py。"""
+AUTOSCAN_MARK = 'check_gen_gate_complete.py --list-autoscan'
+
+
+def _has_check(p):
+    return '--check' in p.read_text(encoding='utf-8', errors='replace')
+
+
+def explicit_generators():
+    """gate_all.sh 里**逐个点名**调用的 scripts/gen_*.py。"""
     txt = GATE.read_text(encoding='utf-8', errors='replace')
     return set(re.findall(r'scripts/(gen_[A-Za-z0-9_]+\.py)', txt))
 
 
+def autoscan_generators():
+    """自动扫描进闸的：带 --check、且 gate_all.sh 别处没单独点名的 scripts/gen_*.py。"""
+    exp = explicit_generators()
+    return sorted(p.name for p in (REPO / 'scripts').glob('gen_*.py')
+                  if _has_check(p) and p.name not in exp)
+
+
+def gated_generators():
+    """进闸 = 点名的 ∪ 自动扫描的（后者只在 gate_all.sh 确实挂了自动扫描循环时才算）。"""
+    txt = GATE.read_text(encoding='utf-8', errors='replace')
+    gated = explicit_generators()
+    if AUTOSCAN_MARK in txt:
+        gated |= set(autoscan_generators())
+    return gated
+
+
 def main():
+    if '--list-autoscan' in sys.argv[1:]:
+        for n in autoscan_generators():
+            print('scripts/' + n)
+        return 0
     gated = gated_generators()
     fails = []
     ok_gated, ok_exempt = [], []

@@ -1,0 +1,212 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Pmaaddr31Module",
+ "run_id": "PmpaddrLeaves53_63Pma31-20260928T133821Z-655cc0df",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Pmaaddr31Module.sv",
+   "kind": "golden",
+   "sha256": "70d98ead3a0aab4f14d369ba0d55ad35c0286d9ea7fef851a4eab87d46270339"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Pmpaddr53Module.sv",
+   "kind": "repo",
+   "sha256": "5701055ac1d5e8e9df62b51032a7dac27112fa1ff81a7484bcccbeba7bec1e70"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr54Module.sv",
+   "kind": "repo",
+   "sha256": "57856cc0189a92b983dd726a1478a28f3335754ff08fb14dacfba74cfec68893"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr55Module.sv",
+   "kind": "repo",
+   "sha256": "a52dac67c3e52c753f1c8164b08d9889255909e3920c0b98db649da35cd74ac9"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr56Module.sv",
+   "kind": "repo",
+   "sha256": "d9fa8055f98eb3bb70fc0c3d45b22e508591115a3790b025849740957313af0e"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr57Module.sv",
+   "kind": "repo",
+   "sha256": "c959af0a0a212dcb4bd22090f0e437acaf841db1db68e2ae683925de6a60ca2c"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr58Module.sv",
+   "kind": "repo",
+   "sha256": "484634a32d044cccabedc4aa4b36e2ef5c74d6f168798d15c1317c49f1a28cbe"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr59Module.sv",
+   "kind": "repo",
+   "sha256": "67b8d337a88ec75e5f4a91881798040b14fdb165a53a19cd34ca7a8ce9e7d198"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr60Module.sv",
+   "kind": "repo",
+   "sha256": "0805a74f4cc91ba5d29c66ef89dc19e7f1e997042df4c5f3ccee1caa09f76ba9"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr61Module.sv",
+   "kind": "repo",
+   "sha256": "4d939940785e9682221f522fb8f0376ec91ffc4bd3b3d0dc0993e2f18dbdac3d"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr62Module.sv",
+   "kind": "repo",
+   "sha256": "8736069f904f8cbe4f2e4dd7a2439a4f6b2198ade79df63a7ee28935fe8c1785"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr63Module.sv",
+   "kind": "repo",
+   "sha256": "2a82a20c61f2f6abacddf03edacf2c003f498c82af22d997ba23eb0b1949ae12"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr31Module.sv",
+   "kind": "repo",
+   "sha256": "84d4cd872f4c29513fc5ddd3e36d692e8af2811b42312377dcd74c89ef467bfe"
+  }
+ ],
+ "impl_commit": "655cc0df124cbffacd3d780ccf623524cbb116b5",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "PmpaddrLeaves53_63Pma31-20260928T133821Z-655cc0df",
+  "top": "Pmaaddr31Module",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 128,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 128,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Pmaaddr31Module",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

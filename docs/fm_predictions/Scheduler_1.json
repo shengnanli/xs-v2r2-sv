@@ -1,0 +1,10 @@
+{
+  "target": "Scheduler_1",
+  "ut": "Scheduler_1",
+  "regs": 49980,
+  "outs": 956,
+  "expected": 50936,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "iqfam：模型 = golden 闭包寄存器位 + output 位；诊断跑(3f915ccd) constant_reg=231，开 vmucp 后预期实测 50705"
+}

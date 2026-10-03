@@ -1,0 +1,17 @@
+{
+  "target": "DataStorage",
+  "ut": "DataStorage",
+  "regs": 1273,
+  "outs": 651,
+  "expected": 2532,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 608,
+  "bbox": {
+    "array_18_ext": {
+      "insts": 4,
+      "in_bits": 152,
+      "points": 608
+    }
+  }
+}

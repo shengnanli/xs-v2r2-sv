@@ -12,6 +12,20 @@
 #   1 design        golden RAM 模型的字面 module 名（与 registry 第 1 列同名）
 #   2 parent_ref    ref 侧例化它的 golden 文件（相对 $(GOLDEN_RTL)）
 #   3 parent_impl   impl 侧例化它的重写文件（相对仓库根）
+#   4 addr_contract （可选）M3 形态 B「输入偏移地址」所依赖的接口契约，形如
+#                   `value<Vmax@<出处>`。形态 A（环形指针归纳证明）不需要，留 `-`。
+#                   ★写了契约不等于证明了契约★：脚本只核「契约充分」（Vmax + K <= depth 且
+#                   2^w <= depth）并把每个 V/F 的名字打印出来；契约本身成立与否是父级之外的
+#                   事实（DiffRatStateBuffer：robIdx 是 CircularQueuePtr(RobSize=160)，
+#                   value ∈ [0,159] 由 Rob 维护），审定条目的 rationale 必须把这一点写明。
+#   5 m3_manual_review （可选，codex 0203 裁定 X）impl 侧 M3 为 MANUAL 时的一次性人工复核绑定：
+#                   `<codex 消息号>;<path>=<sha256>;…`。只对 audit_ram_memory_model.py 里
+#                   硬编码名单 MANUAL_REVIEW_DESIGNS 内的 design 生效；绑定须含 parent_impl
+#                   本身，任一绑定文件字节变化即退回 MANUAL（须重新复核）。不放行 FAIL，不用于 ref 侧。
 # ---------------------------------------------------------------------------
-# design	parent_ref	parent_impl
-ram_40x47	Queue40_L2TlbMQBundle.sv	rtl/memblock/L2TlbMissQueue.sv
+# design	parent_ref	parent_impl	addr_contract	m3_manual_review
+ram_40x47	Queue40_L2TlbMQBundle.sv	rtl/memblock/L2TlbMissQueue.sv	-
+diff_rat_state_bank_320x776	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer.sv	value<160@robIdx=CircularQueuePtr(RobSize=160),value∈[0,159] 由 Rob 维护
+stateBankTags_320x3	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer.sv	value<160@robIdx=CircularQueuePtr(RobSize=160),value∈[0,159] 由 Rob 维护
+# ram_10x89 M3 impl 侧人工复核结论（codex 0202，原写在第 4 列，第 4 列只放形态 B 契约，故移到注释）：M3 impl 侧人工复核（codex 0202）：地址来自 xs_ChiselQueue_core #(.DEPTH(10),.FLOW(1)) 的 enq_ptr/deq_ptr，复位 0、唯一更新 next_ptr、p==9 回 0，归纳 ∈[0,9]；非形态 B 接口契约
+ram_10x89	Queue10_GrantBuffer_Anon.sv	rtl/uncore/Queue10_GrantBuffer_Anon.sv	-	codex_0202;rtl/uncore/Queue10_GrantBuffer_Anon.sv=f3966df0733c17eb6e49e83a69c14019c7d3855c79435b833a8a157a20553d55;rtl/common/xs_ChiselQueue_core.sv=dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689

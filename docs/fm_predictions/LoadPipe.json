@@ -1,0 +1,9 @@
+{
+  "target": "LoadPipe",
+  "ut": "LoadPipe",
+  "regs": 554,
+  "outs": 758,
+  "expected": 1312,
+  "merge_dup": "false",
+  "model_applicable": true
+}

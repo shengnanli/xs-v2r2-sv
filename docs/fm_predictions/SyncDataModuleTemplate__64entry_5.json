@@ -1,0 +1,9 @@
+{
+  "target": "SyncDataModuleTemplate__64entry_5",
+  "ut": "SyncDataModule",
+  "regs": 3934,
+  "outs": 57,
+  "expected": 3991,
+  "merge_dup": "true",
+  "model_applicable": false
+}

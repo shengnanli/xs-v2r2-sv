@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Arbiter2_L2TLBImp_Anon_1
+Implementation : i:/WORK/Arbiter2_L2TLBImp_Anon_1
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:01:59 2026
+**************************************************
+
+No aborted compare points.
+
+1

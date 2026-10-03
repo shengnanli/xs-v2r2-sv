@@ -1,0 +1,9 @@
+{
+  "target": "TreeArbiter",
+  "ut": "DCacheLeaves",
+  "regs": 0,
+  "outs": 981,
+  "expected": 981,
+  "merge_dup": "false",
+  "model_applicable": true
+}

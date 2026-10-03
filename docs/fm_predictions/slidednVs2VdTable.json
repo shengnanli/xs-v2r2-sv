@@ -1,0 +1,10 @@
+{
+  "target": "slidednVs2VdTable",
+  "ut": "SlideVs2VdTable",
+  "regs": 0,
+  "outs": 7,
+  "expected": 7,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合 0 寄存器：预测 passing = expected（输出位数）"
+}

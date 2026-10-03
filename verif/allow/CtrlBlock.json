@@ -1,0 +1,120 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "CtrlBlock",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "assembly 边界声明（CtrlBlock 是后端控制块装配层；wrapper 直接例化 22 个 child，两侧路径同名同数）。第 2 轮（agent/ctrlblock 合入 main 231b615d 之后）：只剩 8 个存储叶子实例的对称接口黑盒，★不再有 green_child★——原先 12 个 green_child 实例（6 个 child 目标：pcMem=SyncDataModuleTemplate_BackendPC_64entry、snpt=SnapshotGenerator_14、DelayN_15×2、DelayN_17、PipelineConnectPipe×6、PipeGroupConnect）全部两侧白盒展开：ref 用 golden，impl 用重写件（snpt 例外：重写件的共享核文件与 golden 同名 wrapper 撞名，impl 侧用 golden 体，两侧同源 UNCHANGED_GOLDEN_DEP）。原因：D57 证书要求 certificate.impl_commit == POLICY.freeze_commit，而 freeze_commit 仍是 null，green_child 在任何 commit 上都过不了闸、make_receipt 也拒绝出 receipt。★Rob 不在黑盒里★：ref golden Rob.sv、impl rtl/backend/Rob.sv 两侧白盒，CtrlBlock 是 Rob 那 448 位 debug_otherPdest 悬空输出的第一个可观测边界（codex 0169 D3）。DecodeStage/FusionDecoder/Rename/RenameTableWrapper/RedirectGenerator/Trace/MemCtrl/GPAMem/NewDispatch 及 Rob 的 8 个 child 仍两侧同源 golden elaborate（UNCHANGED_GOLDEN_DEP；这些 child 的重写件已在 main，但换进 impl 需把各自的钉点/dead_ref/vmucp 配置重定位到 CtrlBlock 层次，属下一轮）。APPROVED_MEMORY_MACRO_MODEL 8 个实例（深度 160/320 非 2 的幂，inline 触发 FMR_ELAB-147→FM-262→set_top 失败）：两侧对称接口黑盒。diff_rat_state_bank_320x776（6 实例）/ stateBankTags_320x3 已入 verif/vendor_boundary.tsv（codex 0158 §1 单条审定）；★dt_pcTransType_160x2（rob/dt_pcTransType_ext）仍是候选、未入 vendor_boundary.tsv★——fm_verdict 的 assembly 闸不查表，所以本声明里它的 class 只是照 schema 填的候选类别，不等于已批准；入表须 codex 单条审定（M1 多读写口模板 / M2 / M3）。",
+ "objects": [
+  {
+   "side": "r",
+   "design": "dt_pcTransType_160x2",
+   "path": "r:/WORK/CtrlBlock/rob/dt_pcTransType_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "dt_pcTransType_160x2",
+   "path": "i:/WORK/CtrlBlock/rob/dt_pcTransType_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_0_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_0_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_1_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_1_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_2_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_2_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_3_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_3_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_4_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_4_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_5_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "diff_rat_state_bank_320x776",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_5_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "stateBankTags_320x3",
+   "path": "r:/WORK/CtrlBlock/rat/diffRatBuffer/stateBankTags_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "stateBankTags_320x3",
+   "path": "i:/WORK/CtrlBlock/rat/diffRatBuffer/stateBankTags_ext",
+   "attrs": "i",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}

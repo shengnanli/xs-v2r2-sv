@@ -1,0 +1,9 @@
+{
+  "target": "LqExceptionBuffer",
+  "ut": "LqExceptionBuffer",
+  "regs": 1136,
+  "outs": 131,
+  "expected": 1267,
+  "merge_dup": "false",
+  "model_applicable": true
+}

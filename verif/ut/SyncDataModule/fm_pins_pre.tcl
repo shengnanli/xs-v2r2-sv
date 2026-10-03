@@ -199,3 +199,28 @@ if {$top eq "SyncDataModuleTemplate__64entry_4"} {
   }
   puts "SDM_PIN($top): pinned=$_n miss=$_miss"
 }
+
+if {$top eq "SyncDataModuleTemplate__64entry_5"} {
+  set _flds { {gpaddr 0 56} {isForVSnonLeafPTE 56 1} }
+  set _n 0; set _miss 0
+  for {set b 0} {$b < 4} {incr b} {
+    for {set e 0} {$e < 16} {incr e} {
+      foreach _f $_flds {
+        lassign $_f suf off w
+        for {set k 0} {$k < $w} {incr k} {
+          set rlist [list "r:/WORK/$top/dataBanks_${b}/data_${e}_${suf}_reg\[$k\]"]
+          if {$w == 1} {
+            lappend rlist "r:/WORK/$top/dataBanks_${b}/data_${e}_${suf}_reg"
+          }
+          set ipath "i:/WORK/$top/u_core/g_bank\[$b\].dataBank/data_reg\[$e\]\[[expr {$off+$k}]\]"
+          set ok 0
+          foreach rp $rlist {
+            if {![catch {set_user_match $rp $ipath}]} { incr _n; set ok 1; break }
+          }
+          if {!$ok} { incr _miss }
+        }
+      }
+    }
+  }
+  puts "SDM_PIN($top): pinned=$_n miss=$_miss"
+}

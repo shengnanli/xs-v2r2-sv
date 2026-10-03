@@ -1,0 +1,18 @@
+{
+  "target": "GrantBuffer",
+  "ut": "GrantBuffer",
+  "regs": 10622,
+  "outs": 1033,
+  "expected": 11756,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 101,
+  "bbox": {
+    "ram_10x89": {
+      "insts": 1,
+      "in_bits": 101,
+      "points": 101
+    }
+  },
+  "note": "修正登记（codex 0202 后）：pftRespQueue.ram_ext(ram_10x89) 由 inline 改为两侧对称黑盒，模型 12545 -> 11756（-890 存储位 +101 黑盒输入引脚）。预测 failing/unverified/unmatched 0，SUCCEEDED；差额 = unread（vmucp 关；§12.3 已登记 ≥1056：timers 1024 + REG 16 + enable_REG 16）+ constant_reg（§12.3 已登记 ≥68：grantQueue 存储 grantid 高 4 位 16x4 + grantBuf_grantid 高 4 位），即 passing ≤ 11756-1056-68=10632"
+}

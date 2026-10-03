@@ -1,0 +1,9 @@
+{
+  "target": "HvipModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 53,
+  "outs": 118,
+  "expected": 171,
+  "merge_dup": "false",
+  "model_applicable": true
+}

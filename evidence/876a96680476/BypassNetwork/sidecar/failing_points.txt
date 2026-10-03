@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/BypassNetwork
+Implementation : i:/WORK/BypassNetwork
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 13:09:03 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[0]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][0]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[10]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][10]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[11]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][11]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[12]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][12]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[13]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][13]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[14]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][14]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[15]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][15]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[16]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][16]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[17]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][17]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[18]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][18]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[19]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][19]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[1]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][1]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[20]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][20]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[21]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][21]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[22]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][22]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[23]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][23]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[24]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][24]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[25]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][25]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[26]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][26]
+
+  Ref  DFF        r:/WORK/BypassNetwork/bypassDataVec_r_2_reg[27]
+  Impl DFF        i:/WORK/BypassNetwork/u_core/byp_data_reg[2][27]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

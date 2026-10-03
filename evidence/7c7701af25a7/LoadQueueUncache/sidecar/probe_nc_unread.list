@@ -1,0 +1,5 @@
+{{r:/WORK/LoadQueueUncache/freeList/freeSlotCnt_reg[0]} {i:/WORK/LoadQueueUncache/u_core/freeList/u_core/freeSlotCnt_reg[0]}}
+{{r:/WORK/LoadQueueUncache/freeList/freeSlotCnt_reg[1]} {i:/WORK/LoadQueueUncache/u_core/freeList/u_core/freeSlotCnt_reg[1]}}
+{{r:/WORK/LoadQueueUncache/freeList/freeSlotCnt_reg[2]} {i:/WORK/LoadQueueUncache/u_core/freeList/u_core/freeSlotCnt_reg[2]}}
+{{r:/WORK/LoadQueueUncache/freeList/freeSlotCnt_reg[3]} {i:/WORK/LoadQueueUncache/u_core/freeList/u_core/freeSlotCnt_reg[3]}}
+{{r:/WORK/LoadQueueUncache/freeList/freeSlotCnt_reg[4]} {i:/WORK/LoadQueueUncache/u_core/freeList/u_core/freeSlotCnt_reg[4]}}

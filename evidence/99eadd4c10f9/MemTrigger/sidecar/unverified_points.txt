@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/MemTrigger
+Implementation : i:/WORK/MemTrigger
+Version        : V-2023.12-SP3
+Date           : Mon Sep 28 01:10:08 2026
+**************************************************
+
+No unverified compare points.
+
+1

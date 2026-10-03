@@ -1,0 +1,8 @@
+# run	2026-09-22T07:28:44Z	ut_dir=Bitmap
+commit	46fb5c533f75690955db205b1e09410b66bcdc77
+head_before	46fb5c533f75690955db205b1e09410b66bcdc77
+head_after	46fb5c533f75690955db205b1e09410b66bcdc77
+worktree_digest_before	0fc702a1d9597847c0c47e33b2f3b0bab6ebff6a74b70657b584172ca61d0809
+worktree_digest_after	0fc702a1d9597847c0c47e33b2f3b0bab6ebff6a74b70657b584172ca61d0809
+targets	Bitmap
+driver	mmu5-lane proof.sh（= run_proof.sh 去掉 readability_audit 拦截；该审计在本 commit 上 rc=1，红项为 rtl/backend/Rob.sv 的 E 类导航腐烂，main 继承）

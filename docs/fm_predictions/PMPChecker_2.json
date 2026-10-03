@@ -1,0 +1,9 @@
+{
+  "target": "PMPChecker_2",
+  "ut": "PMPChecker",
+  "regs": 2,
+  "outs": 2,
+  "expected": 4,
+  "merge_dup": "false",
+  "model_applicable": true
+}

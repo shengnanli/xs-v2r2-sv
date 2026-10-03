@@ -22,3 +22,4 @@ DelayReg_23	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；gold
 DelayReg_24	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
 DelayReg_25	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
 DelayReg_26	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+IntSyncSyncCrossingSink	excluded:simtop_only	SUCCEEDED	golden 里只被 SimMMIO 例化（仿真外壳，在 XSTop 根之外）。codex csr-leaves-15 批次顺带重写并签核（evidence/400717601f67/IntSyncSyncCrossingSink/，SUCCEEDED）；2026-10-03 gatefix lane 发现缺声明致 universe 冻结闸 C2 残余 1，用户批准补声明。不计入覆盖率分母。
