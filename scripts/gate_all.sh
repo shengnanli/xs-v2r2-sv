@@ -250,6 +250,7 @@ run "覆盖证据链闸"       python3 scripts/check_coverage_provenance.py --st
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
 # 好处是新加的生成器自动进闸，不会因为"忘了挂 --check"再敞一个口。
+run "生成器幂等库调用负测"  python3 scripts/test_gen_idempotent.py --selftest
 run "生成器幂等 verif/ut/*"  python3 scripts/test_gen_idempotent.py
 # 仿真 collateral 闸（codex 0160 §Canonical simulation collateral）：
 # verif/sim/collateral/ 是「干净 checkout 能跑起仿真」所缺的 13 个生成物（207 KiB）——
@@ -277,6 +278,9 @@ run "层次重绑表幂等"     python3 scripts/hier_map.py --check
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 90 秒）—— 顺序照层次重绑闸的先例。
 run "perf 重绑闸负测"    python3 scripts/test_perf_rebind_gate.py
 run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
+# 2026-10-02：--check 从「整份 == 考古骨架」改为「机械部分逐字」（核方程手写落地后整份比对永远红）。
+# 判的块见 gen_storequeue.py:check_regions；先跑它的正反测（每块单点变异必须打红）。
+run "StoreQueue 机械部分负测" python3 scripts/gen_storequeue.py --selftest
 run "StoreQueue 骨架幂等" python3 scripts/gen_storequeue.py --check
 run "StoreQueue tb 幂等"  python3 scripts/gen_storequeue_ut.py --check
 # perf 分档闸（codex 0162 D3）：重绑表只回答"绑上了没有"，不回答"这条差异挡不挡里程碑"。

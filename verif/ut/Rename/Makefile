@@ -5,7 +5,8 @@ RTL_DIR = ../../../rtl
 # (wrapper 由本目录 gen_rename.py 生成)。子模块全部是本仓已重写并签核的件，白盒例化：
 #   CompressUnit(压缩判定)、MEFreeList(整数)、StdFreeList/_1/_2/_3(fp/vec/v0/vl)、
 #   SnapshotGenerator.sv(FreeList 家族共用的快照存储核)。
-RTL_SRCS = $(RTL_DIR)/backend/Rename.sv \
+RTL_SRCS = $(RTL_DIR)/backend/stdfreelist_pkg.sv \
+           $(RTL_DIR)/backend/Rename.sv \
            $(RTL_DIR)/backend/CompressUnit.sv \
            $(RTL_DIR)/backend/MEFreeList.sv \
            $(RTL_DIR)/backend/StdFreeList.sv \

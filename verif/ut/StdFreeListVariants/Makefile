@@ -5,7 +5,8 @@ RTL_DIR = ../../../rtl
 # 三个变体文件各自只有一个设参数 + 端口展平的 wrapper(gen_variants.py 生成)。
 # 快照存储走 SnapshotGenerator.sv 里的家族共核 xs_SnapshotGenerator_core(已独立签核)，
 # 它在 RTL_SRCS(会 derive 改名、只进 impl 侧)，不是 RTL_GOLDEN_DEPS。
-RTL_SRCS = $(RTL_DIR)/backend/StdFreeList.sv \
+RTL_SRCS = $(RTL_DIR)/backend/stdfreelist_pkg.sv \
+           $(RTL_DIR)/backend/StdFreeList.sv \
            $(RTL_DIR)/backend/SnapshotGenerator.sv \
            $(RTL_DIR)/backend/StdFreeList_1.sv \
            $(RTL_DIR)/backend/StdFreeList_2.sv \

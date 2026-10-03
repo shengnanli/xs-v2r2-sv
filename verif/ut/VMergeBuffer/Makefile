@@ -1,7 +1,8 @@
 # VMergeBuffer UT —— 向量访存合并缓冲家族（VLMergeBufferImp / VSMergeBufferImp），一个 tb 两对。
 #
-# 单文件规范：package vmergebuffer_pkg + 参数化核 xs_VMergeBuffer_core + VLMergeBufferImp wrapper
-# 都在 rtl/memblock/VLMergeBufferImp.sv；VSMergeBufferImp.sv 只是 store 变体的薄 wrapper。
+# 参数化核 xs_VMergeBuffer_core + VLMergeBufferImp wrapper 在 rtl/memblock/VLMergeBufferImp.sv；
+# VSMergeBufferImp.sv 只是 store 变体的薄 wrapper；两者共用的 package vmergebuffer_pkg 在
+# rtl/memblock/vmergebuffer_pkg.sv（单独成文件，免得 VS 依赖 VL 的编译顺序）。
 # 子模块全部白盒例化本仓已签核的重写件（UT 里派生成 *_xs）：
 #   FreeList（load 槽位表）/ FreeList_1（store 槽位表，核在 FreeList.sv）、
 #   NewPipelineConnectPipe_29（写回口流水缓冲，核在 rtl/common/PipelineConnect.sv）。
@@ -9,7 +10,8 @@
 MODULE = VMergeBuffer
 
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/common/PipelineConnect.sv \
+RTL_SRCS = $(RTL_DIR)/memblock/vmergebuffer_pkg.sv \
+           $(RTL_DIR)/common/PipelineConnect.sv \
            $(RTL_DIR)/uncore/NewPipelineConnectPipe_29.sv \
            $(RTL_DIR)/memblock/FreeList.sv \
            $(RTL_DIR)/memblock/FreeList_1.sv \

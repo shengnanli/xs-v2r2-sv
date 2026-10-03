@@ -19,11 +19,12 @@
 //      把槽位还给 FreeList。若有 flow 没命中（需要发射队列重放），则只反馈"重放"、不释放条目。
 //   redirect（分支误预测/异常冲刷）把 robIdx 在重定向点之后的条目直接作废并释放。
 //
-// 本文件 = package vmergebuffer_pkg + 参数化核 xs_VMergeBuffer_core + golden 同名 wrapper
+// 本文件 = 参数化核 xs_VMergeBuffer_core + golden 同名 wrapper
 // VLMergeBufferImp（load：16 条目 / 2 入队口 / 3 流水写回口 / 2 出队口，数据合并逻辑在场）。
 // store 变体 VSMergeBufferImp（16 条目 / 1 / 1 / 1，无数据）只是一个薄 wrapper，见同目录
 // VSMergeBufferImp.sv。子模块全部白盒例化本仓已签核的重写件：FreeList / FreeList_1（槽位表）、
-// NewPipelineConnectPipe_29（写回口的单拍流水缓冲）。
+// NewPipelineConnectPipe_29（写回口的单拍流水缓冲）。两个变体共用的 package vmergebuffer_pkg
+// 住在同目录 vmergebuffer_pkg.sv。
 //
 // 机械派生区（struct 成员表、uop 透传字段的存储、流水缓冲的端口连线、两个 wrapper）由
 // scripts/gen_vmergebuf.py 从 G1 golden 端口表生成，`// BEGIN GENERATED(<tag>)` 标记，勿手改。
@@ -43,229 +44,28 @@
 //     口 1 只在至少两个条目完成时才有效；没有条目完成时条目号取 0。
 //   · 本单元只有 16 条目，条目号 4 位恰好覆盖，可以直接用信号下标访问条目数组；
 //     但宽度 < 4 位的"口号"一律用 for + 比较选择（避免 Formality 的越界下标告警）。
-// 本文件导航（共 2445 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L271   xs_VMergeBuffer_core —— 合并缓冲的可读核
-//   L299   §1 小工具：异常向量的"按功能单元挑选"
-//   L301   条目里只存本单元会产生的那 6 个异常位
-//   L387   §2 条目状态
-//   L389   控制位
-//   L424   §3 入队：向 FreeList 要槽位
-//   L484   §4 redirect：robIdx 在重定向点之后的已分配条目作废
-//   L496   §5 同拍多口写同一条目：合并矩阵
-//   L498   mergePortMatrix[i][j]：口 j 与口 i 写同一条目且 j 在 i 之后
-//   L612   §6 异常写回：同一条目的多个异常 flow 里挑元素号最小的
-//   L614   口 i 负责它所写条目
-//   L694   §7 计数写回
-//   L727   §8 load 版数据合并：flow 数据先在当拍拼好、打一拍后写回条目
-//   L729   两条路径，由 alignedType[2] 选：
-//   L846   §9 完成与出队选择
-//   L889   §10 出队输出：写回
-//   L1196  §11 条目寄存器更新
-//   L1198  控制位：入队置位 -> redirect 作废 -> 没命中置 needRSReplay -> 完成置 uopFinish ->
-//   L1560  VLMergeBufferImp —— golden 同名 wrapper
-//   L1562  BEGIN GENERATED(wrapper_VLMergeBufferImp)
+// 本文件导航（共 2245 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L71    xs_VMergeBuffer_core —— 合并缓冲的可读核
+//   L99    §1 小工具：异常向量的"按功能单元挑选"
+//   L101   条目里只存本单元会产生的那 6 个异常位
+//   L187   §2 条目状态
+//   L189   控制位
+//   L224   §3 入队：向 FreeList 要槽位
+//   L284   §4 redirect：robIdx 在重定向点之后的已分配条目作废
+//   L296   §5 同拍多口写同一条目：合并矩阵
+//   L298   mergePortMatrix[i][j]：口 j 与口 i 写同一条目且 j 在 i 之后
+//   L412   §6 异常写回：同一条目的多个异常 flow 里挑元素号最小的
+//   L414   口 i 负责它所写条目
+//   L494   §7 计数写回
+//   L527   §8 load 版数据合并：flow 数据先在当拍拼好、打一拍后写回条目
+//   L529   两条路径，由 alignedType[2] 选：
+//   L646   §9 完成与出队选择
+//   L689   §10 出队输出：写回
+//   L996   §11 条目寄存器更新
+//   L998   控制位：入队置位 -> redirect 作废 -> 没命中置 needRSReplay -> 完成置 uopFinish ->
+//   L1360  VLMergeBufferImp —— golden 同名 wrapper
+//   L1362  BEGIN GENERATED(wrapper_VLMergeBufferImp)
 //
-
-package vmergebuffer_pkg;
-
-  // ---- KunminghuV2Config 下的规模常量（由 golden 端口/寄存器宽度核实）----
-  localparam int MB_SIZE  = 16;   // VlMergeBufferSize == VsMergeBufferSize
-  localparam int MB_IDX_W = 4;    // log2(MB_SIZE)：mBIndex 宽度
-  localparam int VLEN     = 128;
-  localparam int VLENB    = 16;   // VLEN/8：每字节一位的 mask 宽度
-  localparam int FLOW_W   = 5;    // flowIdxBits：flowNum / replayFlowNum 宽度
-  localparam int ELEM_W   = 8;    // elemIdxBits：elemIdx / vstart / vl / vlmax 宽度
-  localparam int ROB_W    = 8;    // robIdx.value 宽度
-
-  // ---- ExceptionVec（24 位）与两类功能单元会产生的异常号（FuConfig.exceptionOut）----
-  localparam int EXC_BREAKPOINT = 3;
-  //   load : breakPoint(3) loadAddrMisaligned(4) loadAccessFault(5) loadPageFault(13)
-  //          hardwareError(19) loadGuestPageFault(21)
-  localparam logic [23:0] VLDU_EXC_SEL = 24'h28_2038;
-  //   store: breakPoint(3) storeAddrMisaligned(6) storeAccessFault(7) storePageFault(15)
-  //          hardwareError(19) storeGuestPageFault(23)
-  localparam logic [23:0] VSTU_EXC_SEL = 24'h88_80C8;
-
-  // ---- TriggerAction ----
-  localparam logic [3:0] TRIGGER_BREAKPOINT_EXP = 4'd0;  // 触发断点异常
-  localparam logic [3:0] TRIGGER_DEBUG_MODE     = 4'd1;  // 进入 debug mode（isDmode）
-
-  // ---- 端口 struct：成员名 = golden 扁平端口名去掉 `io_<口>_<i>_bits_` 前缀 ----
-  //  exceptionVec_<n> 收成 24 位向量 exceptionVec[n]；toLsq 的 feedback_<n> 收成 feedback[n]。
-  //  各 struct 是两个变体端口的并集；某变体没有的成员由 wrapper 补常量（见文件头）。
-  // BEGIN GENERATED(structs)
-  // DynInst 在本单元进出的字段（入队请求 uop 与写回 uop 的并集）
-  typedef struct packed {
-    logic [23:0]         exceptionVec;
-    logic [3:0]          trigger;
-    logic [8:0]          fuOpType;
-    logic                vecWen;
-    logic                v0Wen;
-    logic                vlWen;
-    logic                flushPipe;
-    logic                vpu_vill;
-    logic                vpu_vma;
-    logic                vpu_vta;
-    logic [1:0]          vpu_vsew;
-    logic [2:0]          vpu_vlmul;
-    logic                vpu_specVill;
-    logic                vpu_specVma;
-    logic                vpu_specVta;
-    logic [1:0]          vpu_specVsew;
-    logic [2:0]          vpu_specVlmul;
-    logic                vpu_vm;
-    logic [7:0]          vpu_vstart;
-    logic [2:0]          vpu_frm;
-    logic                vpu_fpu_isFpToVecInst;
-    logic                vpu_fpu_isFP32Instr;
-    logic                vpu_fpu_isFP64Instr;
-    logic                vpu_fpu_isReduction;
-    logic                vpu_fpu_isFoldTo1_2;
-    logic                vpu_fpu_isFoldTo1_4;
-    logic                vpu_fpu_isFoldTo1_8;
-    logic [1:0]          vpu_vxrm;
-    logic [6:0]          vpu_vuopIdx;
-    logic                vpu_lastUop;
-    logic [127:0]        vpu_vmask;
-    logic [7:0]          vpu_vl;
-    logic [2:0]          vpu_nf;
-    logic [1:0]          vpu_veew;
-    logic                vpu_isReverse;
-    logic                vpu_isExt;
-    logic                vpu_isNarrow;
-    logic                vpu_isDstMask;
-    logic                vpu_isOpMask;
-    logic                vpu_isMove;
-    logic                vpu_isDependOldVd;
-    logic                vpu_isWritePartVd;
-    logic                vpu_isVleff;
-    logic [7:0]          psrc_2;
-    logic [7:0]          pdest;
-    logic                robIdx_flag;
-    logic [7:0]          robIdx_value;
-    logic                debugInfo_eliminatedMove;
-    logic [63:0]         debugInfo_renameTime;
-    logic [63:0]         debugInfo_dispatchTime;
-    logic [63:0]         debugInfo_enqRsTime;
-    logic [63:0]         debugInfo_selectTime;
-    logic [63:0]         debugInfo_issueTime;
-    logic [63:0]         debugInfo_writebackTime;
-    logic [63:0]         debugInfo_runahead_checkpoint_id;
-    logic [63:0]         debugInfo_tlbFirstReqTime;
-    logic [63:0]         debugInfo_tlbRespTime;
-    logic [55:0]         debug_seqNum_seqNum;
-    logic [7:0]          debug_seqNum_uopIdx;
-    logic                replayInst;
-    logic [6:0]          uopIdx;
-    logic                lqIdx_flag;
-    logic [6:0]          lqIdx_value;
-    logic                sqIdx_flag;
-    logic [5:0]          sqIdx_value;
-  } mb_uop_t;
-
-  // redirect：重定向点 robIdx 与 level
-  typedef struct packed {
-    logic                valid;
-    logic                robIdx_flag;
-    logic [7:0]          robIdx_value;
-    logic                level;
-  } mb_redirect_t;
-
-  // fromSplit.req：VSplit 发来的一条 uop（MergeBufferReq）
-  typedef struct packed {
-    logic                valid;
-    logic [15:0]         mask;
-    logic [49:0]         vaddr;
-    logic [4:0]          flowNum;
-    logic [127:0]        data;
-    logic [2:0]          vdIdx;
-    logic                fof;
-    logic [7:0]          vlmax;
-    mb_uop_t             uop;
-  } mb_enq_req_t;
-
-  // fromPipeline：一个 flow 的写回（VecPipelineFeedbackIO）；sourceType/flushState 无端口，恒由 wrapper 补常量
-  typedef struct packed {
-    logic                valid;
-    logic [3:0]          mBIndex;
-    logic [3:0]          trigger;
-    logic [23:0]         exceptionVec;
-    logic                hasException;
-    logic [63:0]         vaddr;
-    logic                vaNeedExt;
-    logic [63:0]         gpaddr;
-    logic                isForVSnonLeafPTE;
-    logic [7:0]          vstart;
-    logic [15:0]         vecTriggerMask;
-    logic [7:0]          elemIdx;
-    logic [15:0]         mask;
-    logic [2:0]          alignedType;
-    logic [3:0]          reg_offset;
-    logic [7:0]          elemIdxInsideVd;
-    logic [127:0]        vecdata;
-    logic                hit;
-    logic [4:0]          splitIndex;
-    logic [2:0]          sourceType;
-    logic                flushState;
-  } mb_pipe_t;
-
-  // uopWriteback：写回后端的 MemExuOutput
-  typedef struct packed {
-    logic                valid;
-    logic [127:0]        data;
-    logic [2:0]          vdIdx;
-    logic [2:0]          vdIdxInField;
-    mb_uop_t             uop;
-  } mb_wb_t;
-
-  // toLsq：FeedbackToLsqIO
-  typedef struct packed {
-    logic                valid;
-    logic                robidx_flag;
-    logic [7:0]          robidx_value;
-    logic [6:0]          uopidx;
-    logic [63:0]         vaddr;
-    logic                vaNeedExt;
-    logic [63:0]         gpaddr;
-    logic                isForVSnonLeafPTE;
-    logic [1:0]          feedback;
-    logic [7:0]          vl;
-    logic [23:0]         exceptionVec;
-  } mb_lsq_t;
-
-  // feedback：给发射队列的 RSFeedback
-  typedef struct packed {
-    logic                valid;
-    logic                robIdx_flag;
-    logic [7:0]          robIdx_value;
-    logic                hit;
-    logic                flushState;
-    logic [3:0]          sourceType;
-    logic                sqIdx_flag;
-    logic [5:0]          sqIdx_value;
-    logic                lqIdx_flag;
-    logic [6:0]          lqIdx_value;
-    logic                isVecPartReplay;
-    logic [15:0]         vecReplayMask;
-    logic [3:0]          vecReplayMbIdx;
-  } mb_fb_t;
-  // END GENERATED
-
-  // DynInst.fuOpType 的 LSUOpType.isAllUS：unit-stride / whole-register / masked 三类
-  function automatic logic is_all_us(input logic [8:0] fuOpType);
-    return fuOpType[6:5] == 2'b00 && (fuOpType[8] ^ fuOpType[7]);
-  endfunction
-
-  // RobPtr.needFlush(redirect)：重定向有效，且 robIdx 在重定向点之后
-  // （level=1 表示"连重定向点这条自己也冲"）。isAfter 用 {flag,value} 环形比较。
-  function automatic logic need_flush(input logic flag, input logic [ROB_W-1:0] value,
-                                      input mb_redirect_t r);
-    logic is_after;
-    is_after = flag ^ r.robIdx_flag ^ (value > r.robIdx_value);
-    return r.valid && ((r.level && flag == r.robIdx_flag && value == r.robIdx_value) || is_after);
-  endfunction
-
-endpackage
 
 // =============================================================================
 // xs_VMergeBuffer_core —— 合并缓冲的可读核（load/store 两变体共用）

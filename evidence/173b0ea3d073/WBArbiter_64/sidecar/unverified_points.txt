@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/WBArbiter_64
+Implementation : i:/WORK/WBArbiter_64
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 20:53:53 2026
+**************************************************
+
+No unverified compare points.
+
+1

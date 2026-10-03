@@ -8,7 +8,8 @@
 用法：
     gen_storequeue.py --dump-ports      # 打印端口表（调试）
     gen_storequeue.py --emit-wrapper    # 打印 golden 同名 wrapper 的端口段 + 连线段
-    gen_storequeue.py --check           # 幂等校验（与仓库内文件比对）
+    gen_storequeue.py --check           # 机械部分逐字校验（见 check_regions）
+    gen_storequeue.py --selftest        # check_regions 的正反测
 """
 from __future__ import print_function
 import argparse, re, sys, pathlib
@@ -173,6 +174,55 @@ def core_port_lines(chans, scalars):
             continue
         lines.append('  %-6s %-26s %-24s' % (d, 'logic ' + sv_range(w), nm))
     return lines
+
+
+# perf 观测探针（TRAP-11）：golden StoreQueue 内部的 `*_probe` 线，SimTop 以 XMR 引用。
+# 可读核把它们按同名导到 wrapper 层，供 scripts/perf_rebind.py 原样重绑。
+# ★不属于 golden 1003 根端口契约★：只在核与 wrapper 之间，wrapper 对外端口一根不多。
+# 名单与位宽是端口契约的一部分 —— 由生成器持有，核端口表与 wrapper 接线都从这里来。
+PERF_PROBES = [
+    ('[5:0]', 'validCount_probe'),
+    ('', '_io_sqFull_T_probe'),
+    ('', '_io_sqFull_T_probe_0'),
+    ('', 'exHalf_probe'),
+    ('', 'empty_probe'),
+    ('', 'exHalf_1_probe'),
+    ('', 'empty_1_probe'),
+    ('', 'mmioDoReq_probe'),
+    ('', 'perfEvents_0_2_probe'),
+    ('', 'perfEvents_2_2_probe'),
+    ('', 'vpmaskNotEqual_probe'),
+    ('', 'vpmaskNotEqual_1_probe'),
+    ('', 'vpmaskNotEqual_2_probe'),
+    ('', 'vaddrMatchFailed_probe'),
+    ('', 'vaddrMatchFailed_1_probe'),
+    ('', 'vaddrMatchFailed_2_probe'),
+]
+
+
+def emit_core_header(chans, scalars):
+    """xs_StoreQueue_core 的 module 头 + 端口表（到 `);` 为止）。机械部分，--check 逐字比对。"""
+    out = ['module xs_StoreQueue_core',
+           '  import storequeue_pkg::*;',
+           '(',
+           '  input  logic                      clock,',
+           '  input  logic                      reset,']
+    pl = core_port_lines(chans, scalars)
+    for l in pl:
+        out.append(l + ',')
+    out.append('')
+    out.append('  // ---- perf 观测探针（★golden 同名导出，见 TRAP-11★）----')
+    out.append('  // 这 16 根在 golden 里是 StoreQueue 内部的 `*_probe` 线，SimTop 用绝对层次引用')
+    out.append('  // (XMR) 把它们引到 LogPerfEndpoint 去喂性能计数器。可读核把它们**按同名引到')
+    out.append('  // wrapper 层**，perf 台账（scripts/perf_rebind.py）就能按名字原样重绑，')
+    out.append("  // 而不必去复制 golden 的组合锥、更不必接 '0 冒充已绑。")
+    out.append('  // ★这些端口不属于 golden 的 1003 根端口契约★：它们只出现在可读核与 wrapper')
+    out.append('  //   之间，wrapper 的对外端口表一根没多（port_contract_lint 仍然逐位对齐）。')
+    for i, (w, n) in enumerate(PERF_PROBES):
+        out.append('  %-6s %-26s %s%s' % ('output', 'logic ' + sv_range(w), n,
+                                         ',' if i != len(PERF_PROBES) - 1 else ''))
+    out.append(');')
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -360,6 +410,71 @@ def outmap(path=GOLDEN):
         rows.append('%s\t%s\t%s\t%d\t%s' % (n, w if w else '[0:0]', kind, cn, det))
     return '\n'.join(rows) + '\n'
 
+def emit_wrapper(chans, scalars):
+    """golden 同名 wrapper 整个 module（`module StoreQueue(` 到 `endmodule`）。
+    全部机械生成，--check 逐字比对。"""
+    out = []
+    out.append('module StoreQueue(')
+    allp = [(d, w, n) for d, w, n in parse_ports()]
+    for i, (d, w, n) in enumerate(allp):
+        out.append('  %-6s %-10s %s%s' % (d, sv_range(w).strip(), n,
+                                          ',' if i != len(allp) - 1 else ''))
+    out.append(');')
+    out.append('')
+    # §9-G 扁平端口 <-> 结构体数组接线 + u_core 例化（机械生成，不手写）
+    # ★wrapper 也要 import★：下面的接线声明用了 storequeue_pkg 里的 struct 类型。
+    # 漏了这一行 VCS 报的是 "memory of unknown type"（把未知类型当成存储器声明），
+    # 错误信息一个字都不提 import，很容易看岔。
+    out.append('  import storequeue_pkg::*;')
+    out.append('')
+    out.append('  // 扁平 golden 端口 <-> 可读核结构体数组的接线。')
+    out.append('  // ★本段全部由 gen_storequeue.py 机械生成★：字段顺序直接取自')
+    out.append('  //   emit_pkg_structs 用的同一张 chans 表，所以 packed struct 的位序')
+    out.append('  //   与这里的赋值**按构造**一致，不存在手写错位的可能。')
+    out.append('')
+    for prefix, info in chans.items():
+        base = prefix.replace('io_', '')
+        n = info['n']
+        for d, suffix in (('input', 'in'), ('output', 'out')):
+            fl = [(w, f) for dd, w, f in info['fields'] if dd == d]
+            if not fl:
+                continue
+            tn = struct_name(prefix) + '_' + suffix
+            out.append('  %s %s_%s [%d];' % (tn, base, suffix, n))
+            for i in range(n):
+                for w, f in fl:
+                    flat = '%s_%d_%s' % (prefix, i, f)
+                    if d == 'input':
+                        out.append('  assign %s_%s[%d].%s = %s;' % (base, suffix, i, f, flat))
+                    else:
+                        out.append('  assign %s = %s_%s[%d].%s;' % (flat, base, suffix, i, f))
+            out.append('')
+    out.append('  // ---- perf 观测探针（golden 同名；SimTop 的 XMR 直接引这里）----')
+    out.append('  // 只在 wrapper 内部声明，不进对外端口表。')
+    for w, n in PERF_PROBES:
+        out.append('  wire %-8s %s;' % (w, n))
+    out.append('')
+    out.append('  xs_StoreQueue_core u_core (')
+    conn = ['    .clock(clock)', '    .reset(reset)']
+    for prefix, info in chans.items():
+        base = prefix.replace('io_', '')
+        for d, suffix in (('input', 'in'), ('output', 'out')):
+            if not [1 for dd, w, f in info['fields'] if dd == d]:
+                continue
+            conn.append('    .%s_%s(%s_%s)' % (base, suffix, base, suffix))
+    for d, w, n in scalars:
+        if n in ('clock', 'reset'):
+            continue
+        conn.append('    .%s(%s)' % (n, n))
+    for w, n in PERF_PROBES:
+        conn.append('    .%s(%s)' % (n, n))
+    out.append(',\n'.join(conn))
+    out.append('  );')
+    out.append('')
+    out.append('endmodule')
+    return out
+
+
 def emit(chans, scalars):
     S = []          # (锚点名, 标题) -> 行号，最后回填导航
     out = []
@@ -430,15 +545,7 @@ def emit(chans, scalars):
 
     # ---- core ----
     sec('§2 xs_StoreQueue_core —— 可读核')
-    out.append('module xs_StoreQueue_core')
-    out.append('  import storequeue_pkg::*;')
-    out.append('(')
-    out.append('  input  logic                      clock,')
-    out.append('  input  logic                      reset,')
-    pl = core_port_lines(chans, scalars)
-    for i, l in enumerate(pl):
-        out.append(l + (',' if i != len(pl) - 1 else ''))
-    out.append(');')
+    out += emit_core_header(chans, scalars)
     out.append('')
 
     sec('§3 per-entry 状态 —— ★复位域是 golden 实测，不是照 Chisel 抄★')
@@ -623,57 +730,7 @@ def emit(chans, scalars):
 
     # ---- wrapper ----
     sec('§10 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）')
-    out.append('module StoreQueue(')
-    allp = [(d, w, n) for d, w, n in parse_ports()]
-    for i, (d, w, n) in enumerate(allp):
-        out.append('  %-6s %-10s %s%s' % (d, sv_range(w).strip(), n,
-                                          ',' if i != len(allp) - 1 else ''))
-    out.append(');')
-    out.append('')
-    # §9-G 扁平端口 <-> 结构体数组接线 + u_core 例化（机械生成，不手写）
-    # ★wrapper 也要 import★：下面的接线声明用了 storequeue_pkg 里的 struct 类型。
-    # 漏了这一行 VCS 报的是 "memory of unknown type"（把未知类型当成存储器声明），
-    # 错误信息一个字都不提 import，很容易看岔。
-    out.append('  import storequeue_pkg::*;')
-    out.append('')
-    out.append('  // 扁平 golden 端口 <-> 可读核结构体数组的接线。')
-    out.append('  // ★本段全部由 gen_storequeue.py 机械生成★：字段顺序直接取自')
-    out.append('  //   emit_pkg_structs 用的同一张 chans 表，所以 packed struct 的位序')
-    out.append('  //   与这里的赋值**按构造**一致，不存在手写错位的可能。')
-    out.append('')
-    for prefix, info in chans.items():
-        base = prefix.replace('io_', '')
-        n = info['n']
-        for d, suffix in (('input', 'in'), ('output', 'out')):
-            fl = [(w, f) for dd, w, f in info['fields'] if dd == d]
-            if not fl:
-                continue
-            tn = struct_name(prefix) + '_' + suffix
-            out.append('  %s %s_%s [%d];' % (tn, base, suffix, n))
-            for i in range(n):
-                for w, f in fl:
-                    flat = '%s_%d_%s' % (prefix, i, f)
-                    if d == 'input':
-                        out.append('  assign %s_%s[%d].%s = %s;' % (base, suffix, i, f, flat))
-                    else:
-                        out.append('  assign %s = %s_%s[%d].%s;' % (flat, base, suffix, i, f))
-            out.append('')
-    out.append('  xs_StoreQueue_core u_core (')
-    conn = ['    .clock(clock)', '    .reset(reset)']
-    for prefix, info in chans.items():
-        base = prefix.replace('io_', '')
-        for d, suffix in (('input', 'in'), ('output', 'out')):
-            if not [1 for dd, w, f in info['fields'] if dd == d]:
-                continue
-            conn.append('    .%s_%s(%s_%s)' % (base, suffix, base, suffix))
-    for d, w, n in scalars:
-        if n in ('clock', 'reset'):
-            continue
-        conn.append('    .%s(%s)' % (n, n))
-    out.append(',\n'.join(conn))
-    out.append('  );')
-    out.append('')
-    out.append('endmodule')
+    out += emit_wrapper(chans, scalars)
 
     # ---- 回填导航 ----
     # ★不用行号算术★：先用占位符拼出最终文本，再**在成品里搜分节标题的真实行号**
@@ -692,6 +749,89 @@ def emit(chans, scalars):
     return text
 
 
+def check_regions(got, chans, scalars):
+    """★--check 的契约★（2026-10-02 gatefix 重定）：只比**机械部分**，但机械部分逐字比。
+
+    历史：--check 原先要求 rtl/memblock/StoreQueue.sv **整份**等于 emit() 的骨架。那只在
+    「考古骨架」阶段成立；本文件 docstring 自己写着「功能方程一律手写」，655ef9fb 起核心方程
+    手写落地（FM 签核在案），整份比对从此**永远红**——常红的闸没有信号，等于没有闸。
+    现在判的是生成器真正持有的那几块，每块都必须**逐字**等于生成器输出：
+      R1 storequeue_pkg 里每个通道 struct（emit_pkg_structs）原样、按序出现在 package 内；
+      R2 xs_StoreQueue_core 的 module 头+端口表（emit_core_header，含 PERF_PROBES）逐字相等；
+      R3 golden 同名 wrapper 整个 module（emit_wrapper：1003 根端口、扁平<->结构体接线、
+         探针线、u_core 例化）到文件尾逐字相等，且 module StoreQueue 恰好一个。
+    手写区（pkg 的指针函数/参数、核体方程、文件头注释）不归生成器管，不在此判。
+    返回失败原因列表（空 = 通过）。"""
+    bad = []
+    m = re.search(r'^package storequeue_pkg;\n(.*?)^endpackage\b', got, re.S | re.M)
+    if not m:
+        bad.append('R1 找不到 package storequeue_pkg ... endpackage')
+    else:
+        pkg = m.group(1)
+        st = '\n'.join(emit_pkg_structs(chans))
+        if st not in pkg:
+            # 定位第一个对不上的 struct
+            blocks = st.split('\n\n')
+            first = next((b.strip().splitlines()[-1] for b in blocks if b.strip() and b not in pkg), '?')
+            bad.append('R1 package 内通道 struct 与生成器不一致（首个: %s）' % first)
+    hdr = '\n'.join(emit_core_header(chans, scalars))
+    if got.count('\nmodule xs_StoreQueue_core\n') != 1:
+        bad.append('R2 module xs_StoreQueue_core 应恰好出现 1 次')
+    elif hdr not in got:
+        i = got.index('\nmodule xs_StoreQueue_core\n') + 1
+        j = got.find('\n);', i)
+        import difflib
+        d = [l for l in difflib.unified_diff(got[i:j + 3].splitlines(), hdr.splitlines(),
+                                             lineterm='') if l[:1] in '+-'][2:6]
+        bad.append('R2 xs_StoreQueue_core 端口表与生成器不一致: %s' % ' | '.join(d))
+    w = '\n'.join(emit_wrapper(chans, scalars)) + '\n'
+    n_w = len(re.findall(r'^module StoreQueue\(', got, re.M))
+    if n_w != 1:
+        bad.append('R3 module StoreQueue( 应恰好出现 1 次（实际 %d）' % n_w)
+    else:
+        i = re.search(r'^module StoreQueue\(', got, re.M).start()
+        if got[i:] != w:
+            import difflib
+            d = [l for l in difflib.unified_diff(got[i:].splitlines(), w.splitlines(),
+                                                 lineterm='') if l[:1] in '+-'][2:6]
+            bad.append('R3 wrapper 与生成器不一致（到文件尾逐字）: %s' % ' | '.join(d))
+    return bad
+
+
+def selftest(chans, scalars, got):
+    """正反测：每条机械判据都要能被单点变异打红；手写区变异不得误报。"""
+    cases = []
+    cases.append(('pos:当前文件', got, True))
+    cases.append(('pos:手写核体改动不归生成器管',
+                  got.replace('\nendmodule\n', '\n  // hand edit\nendmodule\n', 1), True))
+    wi = got.index('\nmodule StoreQueue(')
+    wa = re.search(r'^  assign io_\S+ = \S+;$', got[wi:], re.M).group(0)
+    cases.append(('neg:R3 wrapper 接线改一根',
+                  got[:wi] + got[wi:].replace(wa, wa.replace('= ', '= ~'), 1), False))
+    cases.append(('neg:R3 wrapper 少一根探针连线',
+                  got.replace(',\n    .vaddrMatchFailed_2_probe(vaddrMatchFailed_2_probe)', '', 1), False))
+    cases.append(('neg:R3 文件尾追加漂移', got + '// drift\n', False))
+    cases.append(('neg:R3 wrapper 重复一份', got + got[got.index('\nmodule StoreQueue(') + 1:], False))
+    st0 = emit_pkg_structs(chans)
+    fl = next(l for l in st0 if l.startswith('    logic [') )
+    cases.append(('neg:R1 struct 字段位宽改动', got.replace(fl, fl.replace('logic [', 'logic [1+', 1), 1), False))
+    cases.append(('neg:R2 核端口表少一根探针',
+                  got.replace('  output logic                      vaddrMatchFailed_2_probe\n', '', 1), False))
+    cases.append(('neg:R2 核端口改名',
+                  got.replace('  input  logic [5:0]                io_hartId               ,',
+                              '  input  logic [5:0]                io_hartid               ,', 1), False))
+    fails = 0
+    for name, text, want_ok in cases:
+        changed = (text != got) or name.startswith('pos:当前')
+        bad = check_regions(text, chans, scalars)
+        ok = (not bad) == want_ok and changed
+        fails += not ok
+        print('  %-4s %-32s %s' % ('ok' if ok else 'FAIL', name,
+                                   ('变异没生效' if not changed else (bad[0][:80] if bad else '通过'))))
+    print('gen_storequeue --selftest: %d 条，失败 %d' % (len(cases), fails))
+    return 1 if fails else 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--dump-ports', action='store_true')
@@ -700,11 +840,16 @@ def main():
                     help='输出驱动分解表 -> docs/storequeue_output_map.tsv')
     ap.add_argument('--emit', action='store_true')
     ap.add_argument('--check', action='store_true',
-                    help='幂等校验：重新生成并与仓库内 rtl/memblock/StoreQueue.sv 比对，'
+                    help='机械部分逐字校验（见 check_regions）+ outmap 校验，'
                          '不一致则退出码 1（供 gate_all.sh 调用）')
+    ap.add_argument('--selftest', action='store_true')
     ap.add_argument('-o', '--out')
     a = ap.parse_args()
     ports = parse_ports()
+    if a.selftest:
+        chans, scalars = split_channels(ports)
+        tgt = pathlib.Path(__file__).resolve().parent.parent / 'rtl' / 'memblock' / 'StoreQueue.sv'
+        return selftest(chans, scalars, tgt.read_text())
     if a.dump_ports:
         for d, w, n in ports:
             print('%-6s %-10s %s' % (d, w, n))
@@ -723,23 +868,19 @@ def main():
             print('FAIL gen_storequeue --check: %s 与 golden 不一致（跑 --outmap 重生成）' % OUTMAP)
             return 1
         chans, scalars = split_channels(ports)
-        want = emit(chans, scalars)
+        emit(chans, scalars)          # 骨架仍须能渲染（导航回填 fail-closed 在里面）
         tgt = pathlib.Path(__file__).resolve().parent.parent / 'rtl' / 'memblock' / 'StoreQueue.sv'
         if not tgt.exists():
             print('FAIL gen_storequeue --check: %s 不存在' % tgt)
             return 1
-        got = tgt.read_text()
-        if got != want:
-            import difflib
-            d = list(difflib.unified_diff(got.splitlines(), want.splitlines(),
-                                          'repo', 'regen', lineterm=''))
-            print('FAIL gen_storequeue --check: %s 与生成器输出不一致 (%d 行差异)'
-                  % (tgt, len(d)))
-            for line in d[:40]:
-                print(line)
+        bad = check_regions(tgt.read_text(), chans, scalars)
+        if bad:
+            print('FAIL gen_storequeue --check: %s 机械部分与生成器不一致：' % tgt)
+            for b in bad:
+                print('  - ' + b)
             return 1
-        print('PASS gen_storequeue --check: %s 与生成器输出一致 (%d 行)'
-              % (tgt, want.count(chr(10))))
+        print('PASS gen_storequeue --check: %s 机械部分（R1 通道 struct / R2 核端口表 / '
+              'R3 wrapper 整 module）逐字一致；outmap 一致' % tgt)
         return 0
     if a.emit:
         chans, scalars = split_channels(ports)

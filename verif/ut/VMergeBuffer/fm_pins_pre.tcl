@@ -90,12 +90,13 @@ set _mb_pipe29_fields {
 }
 
 proc _mb_prepin {top fields} {
-    switch -exact -- $top {
-        VLMergeBufferImp { set ndeq 2 }
-        VSMergeBufferImp { set ndeq 1 }
-        default { error "MB_PREPIN_BAD_TOP=$top" }
+    if {$top eq "VLMergeBufferImp"} {
+        set ndeq 2; set expect 2046
+    } elseif {$top eq "VSMergeBufferImp"} {
+        set ndeq 1; set expect 1023
+    } else {
+        error "MB_PREPIN_BAD_TOP=$top"
     }
-    set expect [expr {1023 * $ndeq}]
     puts "MB_PREPIN_BEGIN top=$top expect=$expect"
     set n 0
     for {set d 0} {$d < $ndeq} {incr d} {

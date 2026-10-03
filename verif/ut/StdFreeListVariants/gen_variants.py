@@ -28,7 +28,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent.parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 OUT_DIR = REPO / 'rtl' / 'backend'
-PKG = REPO / 'rtl' / 'backend' / 'StdFreeList.sv'
+PKG = REPO / 'rtl' / 'backend' / 'stdfreelist_pkg.sv'
 
 # 变体表：(golden 顶层, commit 侧 Wen 字段名, 包里参数名前缀, 一句话说明)
 # 数字**不写在这里**：SIZE/NUM_LOGIC 现场从 golden 与 stdfreelist_pkg 两处读出并互证。

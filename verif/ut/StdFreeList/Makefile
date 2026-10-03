@@ -10,7 +10,8 @@ RTL_DIR = ../../../rtl
 # 不是 RTL_GOLDEN_DEPS —— 后者的语义是"不 derive 不改名、UT 两侧共用同一定义"
 # （ut_common.mk:36），给厂商 SRAM 宏那类文件用的。MulUnit 就踩在这个区别上：
 # 它的乘法叶子在 RTL_GOLDEN_DEPS 里，改指必须换变量而不是换路径。
-RTL_SRCS = $(RTL_DIR)/backend/StdFreeList.sv \
+RTL_SRCS = $(RTL_DIR)/backend/stdfreelist_pkg.sv \
+           $(RTL_DIR)/backend/StdFreeList.sv \
            $(RTL_DIR)/backend/SnapshotGenerator.sv
 TB_SRCS = tb.sv
 

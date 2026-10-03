@@ -3,8 +3,9 @@
 """gen_vmergebuf.py —— VMergeBuffer 家族（VLMergeBufferImp / VSMergeBufferImp）的机械派生区。
 
 产物（全部从 G1 golden 端口表现场读出，不抄手）：
-  rtl/memblock/VLMergeBufferImp.sv
+  rtl/memblock/vmergebuffer_pkg.sv
     · GENERATED(structs)         package 里的端口 struct：成员 = 两个变体端口的并集
+  rtl/memblock/VLMergeBufferImp.sv
     · GENERATED(deq_pipe)        核里 NewPipelineConnectPipe_29 的端口连线
     · GENERATED(uop_store)       核里"入队照抄、出队原样送出"的 uop 字段：每字段一个数组
     · GENERATED(wrapper_VLMergeBufferImp)   golden 同名 wrapper（端口逐行照 golden）
@@ -30,6 +31,7 @@ import sys
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
+RTL_PKG = REPO / 'rtl' / 'memblock' / 'vmergebuffer_pkg.sv'
 RTL_VL = REPO / 'rtl' / 'memblock' / 'VLMergeBufferImp.sv'
 RTL_VS = REPO / 'rtl' / 'memblock' / 'VSMergeBufferImp.sv'
 TB = REPO / 'verif' / 'ut' / 'VMergeBuffer' / 'tb.sv'
@@ -91,7 +93,7 @@ def golden_entry_fields(mod):
     excs = {int(m.group(1)) for n in names for m in [re.fullmatch(r'exceptionVec_(\d+)', n)] if m}
     assert excs == EXC_NOS[mod], f'{mod}: golden 条目异常位 {sorted(excs)} != exceptionOut'
     sel = int(re.search(VARIANTS[mod]['exc'] + r" = 24'h([0-9A-Fa-f_]+);",
-                        RTL_VL.read_text()).group(1).replace('_', ''), 16)
+                        RTL_PKG.read_text()).group(1).replace('_', ''), 16)
     assert sel == sum(1 << b for b in excs), f'{mod}: 包里的 {VARIANTS[mod]["exc"]} 与 golden 不一致'
     return {n for n in names if not n.startswith('exceptionVec_')} | {'exceptionVec'}
 
@@ -703,12 +705,17 @@ def gen_pins_pre():
         '}',
         '',
         'proc _mb_prepin {top fields} {',
-        '    switch -exact -- $top {',
-        f'        VLMergeBufferImp {{ set ndeq {ndeq["VLMergeBufferImp"]} }}',
-        f'        VSMergeBufferImp {{ set ndeq {ndeq["VSMergeBufferImp"]} }}',
-        '        default { error "MB_PREPIN_BAD_TOP=$top" }',
+        # 期望数量写成**字面整数**（test_fm_pins_wellformed P3：期望数量须声明，不能是运行期算式）；
+        # 数值仍由生成器按 total × 出队口数算出，与 golden 对账过的 total 同源。
+        # 用 `if {$top eq "..."}` 而不是 switch：pin_call_equiv.py 按这个形态发现变体，
+        # switch 形态下它只会拿 UT 目录名当 $top 跑、撞 default 分支（桩环境下 rc=1，闸量不到）。
+        f'    if {{$top eq "VLMergeBufferImp"}} {{',
+        f'        set ndeq {ndeq["VLMergeBufferImp"]}; set expect {total * ndeq["VLMergeBufferImp"]}',
+        f'    }} elseif {{$top eq "VSMergeBufferImp"}} {{',
+        f'        set ndeq {ndeq["VSMergeBufferImp"]}; set expect {total * ndeq["VSMergeBufferImp"]}',
+        '    } else {',
+        '        error "MB_PREPIN_BAD_TOP=$top"',
         '    }',
-        f'    set expect [expr {{{total} * $ndeq}}]',
         '    puts "MB_PREPIN_BEGIN top=$top expect=$expect"',
         '    set n 0',
         '    for {set d 0} {$d < $ndeq} {incr d} {',
@@ -752,8 +759,10 @@ def main():
     check = '--check' in sys.argv[1:]
     uop, groups, pipe29 = build_structs()
     outputs = {}
+    t = RTL_PKG.read_text()
+    t = replace_region(t, 'structs', gen_structs(uop, groups), RTL_PKG)
+    outputs[RTL_PKG] = t
     t = RTL_VL.read_text()
-    t = replace_region(t, 'structs', gen_structs(uop, groups), RTL_VL)
     t = replace_region(t, 'deq_pipe', gen_deq_pipe(uop, groups, pipe29), RTL_VL)
     t = replace_region(t, 'uop_store', gen_uop_store(uop), RTL_VL)
     t = replace_region(t, 'wrapper_VLMergeBufferImp', gen_wrapper('VLMergeBufferImp', uop, groups), RTL_VL)
