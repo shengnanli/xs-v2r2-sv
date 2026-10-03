@@ -68,3 +68,31 @@ seed 串行。复跑：`cd verif/ut/<UT> && make run SEED=<s> INITREG=<档>`。�
   PTWRepeaterNB 不依赖 xs_SkidBuffer_core，不受影响。
 - 首批证明（97d5fc20）中 PTWRepeaterNB / skidBufferConnect 在钉点阶段退出（Tcl 把双引号里的 `[N]` 当命令替换），
   修在 17364e53（钉点路径改花括号），PTWRepeaterNB 在修复后的 commit 上重证。
+
+### 对账（2026-10-03）
+
+FM（`scripts/run_proof.sh`，detached clean worktree；`python3 scripts/fm_predict.py check <T>` rc=0）：
+
+| 目标 | 证明 commit | 判决 | passing 预测/实测 | failing / unmatched / 黑盒 / dont_verify |
+|---|---|---|---|---|
+| MMIOBridgeEntry / _2 / _4 / _8 | 97d5fc20 | SUCCEEDED ×4 | 962 / 962 ×4 | 0 / 0 / 0 / 无 |
+| Arbiter16_CHIDAT | 97d5fc20 | SUCCEEDED | 371 / 371 | 0 / 0 / 0 / 无 |
+| BusPerfMonitor | 97d5fc20 | SUCCEEDED | 2719 / 2719 | 0 / 0 / 0 / 无 |
+| Arbiter3_L2TLBImp_Anon | 97d5fc20 | SUCCEEDED | 1120 / 1120 | 0 / 0 / 0 / 无 |
+| TLXbar_6 | 97d5fc20 | SUCCEEDED | 564 / 564 | 0 / 0 / 0 / 无 |
+| TLXbar_5 | 97d5fc20 | SUCCEEDED | 4446 / 4446 | 0 / 0 / 0 / 无（无钉点即配上） |
+| PTWRepeaterNB | 17364e53 | SUCCEEDED | 628 / 628 | 0 / 0 / 0 / 无（钉点 312/312） |
+| L2TLBWrapper | 97d5fc20 | native SUCCEEDED，判定 PARTIAL | 5139 / 5139 | 0 / 0 / L2TLB×2 对称（声明）/ 无；`green_child_certificate_not_in_commit:L2TLB` ⇒ 不出 receipt（与 L2TLB 本体同一处境） |
+
+差额全部为 0。skidBufferConnect 撤出（见上方追记）。
+
+UT（seed 1/7/42 串行，各 200k 拍）：MMIOBridgeLeaves / BusArbLeaves / PTWRepeaterNB / TLXbar_6 / TLXbar_5 各 9 档
+（initreg 0 / random / <seed>017）errors=0 cov_fail=0；L2TLBWrapper 6 档（initreg 0 / 1）errors=0，覆盖闸
+（a_fire/d_fire/tlb_req/tlb_resp/后半程活着/perf 非零）全过。
+
+变异自检（scratchpad harness，seed 7 / initreg 0 / 20k 拍，16/16 CAUGHT）：
+MMIOBridgeEntry 核 5 个（allowRetry 1→0 89k、DBIDRespOrd 漏判 166k、TXDAT 校验极性 80k、RXDAT ready 去 s_txreq 门控 213k、
+corrupt 漏 poison 1946 ←余量最薄）；PTWRepeaterNB 2 个（flush 不清 sent 8.7k、resp_ready 恒 1 388k）；
+共享仲裁器/TLXbar_6 3 个（mask 不做 leftOR 4.4k、in0 D 回程 source 判据改 [4] 37.7k、缓存控制区掩码 0xFF→0x7F 55k）；
+TLXbar_5 4 个（多拍期间不锁 state 473k、A 两拍判据恒 0 172k、E 的 sink→bank 映射反向 29.6k、D 回程 icache/ptw 前缀互换 113k）；
+L2TLBWrapper 1 个（perf 少打一拍 20k）。
