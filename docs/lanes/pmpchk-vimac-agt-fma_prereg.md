@@ -160,3 +160,12 @@ vmucp 只比 matched 的 unread 点。§2.4 / §3.3 把"FM 自己配上"写成�
 （VIMac64b 钉 uopIdxS1/S2 整 6 位 × 2 = 12，fail-closed；AGT 钉 1 位），其余预测数字不变。
 钉后非正式试跑：VIMac64b SUCCEEDED passing **921** / unread 0 / constant_reg 80；
 ActiveGenerationTable SUCCEEDED passing **1730** / unread 0。正式复跑见对账 B。
+
+## 对账 B（正式 run_proof @e7a91a91，evidence/e7a91a910053/）
+
+| 目标 | verdict | passing | failing | unmatched | unread | constant_reg | 预测 | 差额指认 |
+|---|---|---|---|---|---|---|---|---|
+| VIMac64b | SUCCEEDED | 921 | 0 | 0(0) | 0 | 80 | 921 | 1001−921 = 80 = constant_reg |
+| ActiveGenerationTable | SUCCEEDED | 1730 | 0 | 0(0) | 0 | 0 | 1730 | 0 |
+
+`python3 scripts/fm_predict.py check VIMac64b ActiveGenerationTable` → 全部对上。
