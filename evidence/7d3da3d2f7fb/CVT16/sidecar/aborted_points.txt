@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/CVT16
+Implementation : i:/WORK/CVT16
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 05:52:59 2026
+**************************************************
+
+No aborted compare points.
+
+1

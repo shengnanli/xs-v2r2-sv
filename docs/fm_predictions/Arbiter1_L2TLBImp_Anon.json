@@ -1,0 +1,10 @@
+{
+  "target": "Arbiter1_L2TLBImp_Anon",
+  "ut": "L2TlbArbLeaves",
+  "regs": 0,
+  "outs": 272,
+  "expected": 272,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合仲裁器：passing 预测 = 顶层 output 位，无寄存器、无黑盒、无常量点"
+}

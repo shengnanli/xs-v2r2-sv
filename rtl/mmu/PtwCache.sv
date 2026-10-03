@@ -139,7 +139,7 @@
 //        实测：改之前 20k 拍里这一处贡献 275 个 golden=X / impl=定值 的失配。
 //     2. 写使能：`if (写) reg <= 值` 同样 X-乐观，而 firtool 展开的是
 //        `next = ~清零 & (写? 值 : 旧值)` 这个每拍都算的表达式。l0_bitmap 照这个形状写。
-// 本文件导航（共 6494 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 6500 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L59    它在 MMU 里的位置
 //   L66    五级存储
 //   L79    四级流水
@@ -151,36 +151,36 @@
 //   L145   追清到哪了 —— 全部追清，逐节列出
 //   L176   两条 X 语义的坑
 //   L187   xs_ptwcache_pkg —— 几何、类型与编码
-//   L841   §1 四级流水与反压
-//   L886   §2 三份 dup 的归属与 flush
-//   L917   §3 存储声明
-//   L958   §4 复位域
-//   L969   §5 时钟门控与 SRAM 端口仲裁
-//   L1002  §6 各级 refill 使能
-//   L1012  §7 替换策略状态
-//   L1031  §6.1 PTE 谓词
-//   L1145  §6.2 回填写数据
-//   L1239  §7.1 PseudoLRU —— 位布局与两个方程
-//   L1296  §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」
-//   L1325  §7.3 受害者选择
-//   L1368  §9 各级回填使能与回填载荷
-//   L1439  §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值
-//   L2052  §12 流水载荷与两个 1 拍脉冲
-//   L2099  §13 命中判定的两个公共写法
-//   L2138  §14 l3 / l2 命中
-//   L2251  §15 sp 命中的取数
-//   L2306  §16 l1 / l0 命中
-//   L2464  §16.1 命中选数 —— stageCheck 级把"命中那一路"的字段挑出来
-//   L2953  §17 refill bypass —— "你要的那条，这一拍正好在回填路上"
-//   L3028  §18 stageResp 的命中结果快照 resp_res
-//   L3040  §19 io.resp 装配
-//   L3514  §20 perf 事件
-//   L3543  §21 sfence / hfence 失效
-//   L3725  §21.1 五级的失效掩码 —— "这一拍要把哪些位从 v 向量里打掉"
-//   L3804  §22 bitmap wakeup —— 上层查完 bitmap 回来"补票"
-//   L3875  §11 时序：两个 always_ff，复位域划分照抄 golden
-//   L4192  §8 追清进度台账
-//   L4209  §9 子模块例化
+//   L843   §1 四级流水与反压
+//   L888   §2 三份 dup 的归属与 flush
+//   L919   §3 存储声明
+//   L960   §4 复位域
+//   L971   §5 时钟门控与 SRAM 端口仲裁
+//   L1004  §6 各级 refill 使能
+//   L1014  §7 替换策略状态
+//   L1033  §6.1 PTE 谓词
+//   L1147  §6.2 回填写数据
+//   L1241  §7.1 PseudoLRU —— 位布局与两个方程
+//   L1298  §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」
+//   L1327  §7.3 受害者选择
+//   L1370  §9 各级回填使能与回填载荷
+//   L1441  §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值
+//   L2054  §12 流水载荷与两个 1 拍脉冲
+//   L2101  §13 命中判定的两个公共写法
+//   L2140  §14 l3 / l2 命中
+//   L2253  §15 sp 命中的取数
+//   L2312  §16 l1 / l0 命中
+//   L2470  §16.1 命中选数 —— stageCheck 级把"命中那一路"的字段挑出来
+//   L2959  §17 refill bypass —— "你要的那条，这一拍正好在回填路上"
+//   L3034  §18 stageResp 的命中结果快照 resp_res
+//   L3046  §19 io.resp 装配
+//   L3520  §20 perf 事件
+//   L3549  §21 sfence / hfence 失效
+//   L3731  §21.1 五级的失效掩码 —— "这一拍要把哪些位从 v 向量里打掉"
+//   L3810  §22 bitmap wakeup —— 上层查完 bitmap 回来"补票"
+//   L3881  §11 时序：两个 always_ff，复位域划分照抄 golden
+//   L4198  §8 追清进度台账
+//   L4215  §9 子模块例化
 //
 
 // =============================================================================
@@ -299,7 +299,9 @@ package xs_ptwcache_pkg;
     pte_perm_t       perm;
     logic [1:0]      level;
     logic            v;
-    logic            prefetch;
+    // ★没有 prefetch★（第 3 轮 FM 实测）：命中项的 prefetch 位走 sp_pre_c/sp_pre_ck 那一份，
+    // 打拍进 check 级的整条 struct 里再存一位就是 impl 独有的死寄存器
+    // （golden 只有 spPre 一份；FM 报 sp_hitdata_ck[prefetch] impl-only unmatched-unread）。
   } sp_hit_t;
 
   typedef struct packed {
@@ -2270,7 +2272,6 @@ module xs_PtwCache_core(
     sp_pick.perm     = e.perm;
     sp_pick.level    = e.level;
     sp_pick.v        = e.v;
-    sp_pick.prefetch = e.prefetch;
   endfunction
 
   always_comb begin
@@ -2286,7 +2287,12 @@ module xs_PtwCache_core(
                          & sp_hitdata_c.v;
   assign sp_hit_c        = sp_bitmap_gate ? 1'b0 : sp_hit_or;
   assign sp_jmp_bitmap_c = sp_bitmap_gate & sp_hit_or;
-  assign sp_pre_c        = sp_hitdata_c.prefetch;
+  // prefetch 位单独选（与 sp_hitdata_c 同一条优先级链、同一个 tie-break），不进 struct。
+  always_comb begin
+    sp_pre_c = sp_entry[SP_N-1].prefetch;
+    for (int i = SP_N-2; i >= 0; i--)
+      sp_pre_c = sp_hitvec[i] ? sp_entry[i].prefetch : sp_pre_c;
+  end
 
   always_ff @(posedge clock) begin
     if (sram_read_fire) begin
@@ -2296,7 +2302,7 @@ module xs_PtwCache_core(
     if (left_fire_delay) begin
       sp_hit_ck        <= sp_hit_c;
       sp_hitdata_ck    <= sp_hitdata_c;
-      sp_pre_ck        <= sp_hitdata_c.prefetch;
+      sp_pre_ck        <= sp_pre_c;
       sp_valid_ck      <= sp_hitdata_c.v;
       sp_jmp_bitmap_ck <= sp_jmp_bitmap_c;
     end

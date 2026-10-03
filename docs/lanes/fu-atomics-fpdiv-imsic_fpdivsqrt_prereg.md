@@ -43,3 +43,24 @@
   可能出错处：(a) 核把 golden 的扁平标量寄存器（out_sign_0_q … m_pos_2_for_nxt_cycle_s0_qds_3_q）收成向量/数组（out_sign_q[k]、m_pos_2_q[k]），
   名字不同，靠 FM 签名匹配配对；57 个寄存器规模小，预期能配上，配不上再补 fm_pins_pre.tcl；(b) 若 FM 把某些 D 端恒常量的位判 constant_reg，
   差额应由 receipt 的 constant_reg 指认；(c) 本节无任何 FM 试跑。
+
+## 对账（跑后追加，上文数字不改；lane 主线续跑，机器重启后）
+
+### fpdiv_r64_block_vector
+- FM（evidence/84f9dc6e021a/fpdiv_r64_block_vector，signoff-strict）：native SUCCEEDED，passing **256** = 预测，failing / unverified /
+  unread / unmatched 全 0，无黑盒，无 dont_verify。receipt sha256 `236779fc51f97b7caef269e71cd79644be0e145c5e9c0cbdefa68c52253e3257`。
+  `fm_predict check` 逐位相等。
+- UT 9 档（clean rebuild，seed 1/7/42 × initreg 0/random/<seed>017 × 200k）：全部 checks=4400000 errors=0 bad_cov=0。
+  （此前目录里有一份 `sim_7_initreg0.log` 报 errors=1435，是 M5 变异体跑完留下的带 tag 副本，不是正式档；已被本次 9 档覆盖。）
+
+### fpsqrt_vector_r16
+- FM（evidence/5a3282d30ab1/fpsqrt_vector_r16，impl 5a3282d3，signoff-strict）：native SUCCEEDED，passing **526**，failing / unverified /
+  unread / unmatched 全 0，无黑盒，无 dont_verify；constant_reg 1。预测 527，差 1 = constant_reg 1（§2"可能出错处 (b)"），`fm_predict check` rc=0。
+  该常量位本 lane 未逐个点名（要点名需一次 report_constant_registers 诊断跑）。receipt sha256
+  `7f1bb1405fe8bc183452536d927d05c1032a5b59c1e4308dac6178c7cef0f505`。
+- ★UT 覆盖闸更正★：首次 9 档里 errors 全 0，但 seed1/7 的 initreg 0 与 <seed>017 档 bad_cov=4..10（"output bit stuck"），
+  只有全 1 档绿。查下去是**判据本身两处错**，不是 RTL：
+  (1) 只跟踪了 fflags 低 16 位（20 位端口），且要求 DZ/OF/UF 三列见过 1——golden `assign fflags_o` 里这三列是字面 3'h0，开方不可能置位；
+  (2) 结果符号位（res[63]）只能由 sqrt(-0) 置 1，而零操作数没带符号。全 1 初值档"绿"是因为 finish 窗口混进了未写寄存器的上电值，
+  判据量到的是上电值不是功能。修法：跟踪全部 20 位、DZ/OF/UF 列只要求见过 0（依据写进 tb 文件头）、零操作数随机符号。
+  修后 9 档（clean rebuild）：checks=449328 / 449726 / 449768（seed 1/7/42）errors=0 bad_cov=0，9 档全绿。

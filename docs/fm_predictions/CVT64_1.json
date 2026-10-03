@@ -1,0 +1,10 @@
+{
+  "target": "CVT64_1",
+  "ut": "CVT64_1",
+  "regs": 802,
+  "outs": 69,
+  "expected": 871,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "含 golden FP_INCVT 闭包；差额候选 = INT2FP/Estimate7 同上 + FP_INCVT 内常量寄存器（两侧同源）"
+}

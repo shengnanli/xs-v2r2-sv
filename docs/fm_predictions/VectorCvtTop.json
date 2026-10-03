@@ -1,0 +1,10 @@
+{
+  "target": "VectorCvtTop",
+  "ut": "VectorCvtTop",
+  "regs": 3167,
+  "outs": 168,
+  "expected": 3335,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额 = 子树各件差额之和 + 本层常量位；VCVT_8 另含 Mgu 子树"
+}

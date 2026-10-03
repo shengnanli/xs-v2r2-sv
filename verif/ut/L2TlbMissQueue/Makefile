@@ -34,9 +34,9 @@ TB_SRCS = tb.sv
 #
 # 3) inline 会改变本目标证明的含义：重写核 rtl/memblock/L2TlbMissQueue.sv 是**有意**
 #    把存储折叠成与 golden 同名的 ram_40x47 叶子并依赖它两侧都不展开的（见该文件
-#    69-84 行自带注释）。拓扑两侧本就不同 —— ref 经 Queue40_L2TlbMQBundle 到
+#    文件头"存储"一条）。拓扑两侧本就不同 —— ref 经 Queue40_L2TlbMQBundle 到
 #    io_out_q/ram_ext（L2TlbMissQueue.sv:111 -> Queue40_L2TlbMQBundle.sv:169），
-#    impl 自己直接例化 mem_ext（:114）。按设计名计数两侧各 1 个，
+#    impl 核 xs_L2TlbMissQueue_core 直接例化 ram_ext。按设计名计数两侧各 1 个，
 #    fm_verdict.py 的对称性判据（比 design 名实例条数、不比实例路径）已经满足。
 #
 # 当前状态（scripts/check_closure_symmetry.py --only L2TlbMissQueue 实测）：
@@ -54,7 +54,7 @@ TB_SRCS = tb.sv
 #      M2 端口与读写行为和实现边界一致：两侧各 1 个例化、8 端口逐名相同、常量连接相同；
 #      M3 父级不依赖越界地址：两侧 enq/deq 指针**归纳可证** ∈[0,39]（基例 0、归纳步 +1、
 #         在 39 处被互斥守卫回卷），所以 2^6=64 与深度 40 之间那 24 个地址任何可达状态都取不到。
-#    本 tb 另有逐拍运行期复核（addr_errors）把 M3 这条在 200k 拍 × 3 seed 上再钉一遍。
+#    本 tb 另有逐拍运行期复核（gen.py 里的 [ADDR] 检查，越界计入 errors）把 M3 这条在 200k 拍 × 3 seed 上再钉一遍。
 #
 # ★入表不让任何东西转绿★（codex 0158 原文）：
 #    "A clean native result, not registry membership, turns the target green."
@@ -70,15 +70,18 @@ FM_MODE = assembly
 FM_ALLOWLIST ?= 1
 FM_VARIANTS = L2TlbMissQueue
 
+PORTLINT_ORDER = fail
+
 include ../../../scripts/ut_common.mk
 
-# 这里**不再**自定义 simv 规则。原先本文件有一条 override:
-#     simv: ...; $(VCS) +define+SYNTHESIS $(RTL_SRCS) $(GOLDEN_SRCS) $(TB_SRCS) ...
-# 它直接编 $(RTL_SRCS)（原文件，wrapper 与 golden 同名）而不是 ut_gen/ 里派生出的
-# _xs 副本，于是 tb 例化的 L2TlbMissQueue_xs 根本不存在：
-#     Error-[CFCILFBI] Cannot find cell 'L2TlbMissQueue_xs' in liblist
-# ——也就是说这个 UT 从来没有真正编译通过过（make 只打一行
-# "warning: overriding recipe for target 'simv'" 就把公共规则顶掉了）。
-# 删掉 override，改用 ut_common.mk 的公共规则（编 $(UT_SRCS)）。
+# tb 由本目录 gen.py 生成（dual_tb_lib；arm 门控 + ram 地址逐拍复核写在 gen.py 头注）。
+# 两处都要给：编译期打开机制，运行期选取值（0 / random / <seed>017 三档，见 CONVENTIONS initreg 节）
+INITREG  ?= 0
 VCS      += +define+SYNTHESIS +vcs+initreg+random
-SIM_ARGS += +vcs+initreg+0
+SIM_ARGS += +vcs+initreg+$(INITREG)
+
+.PHONY: gentb gencheck
+gentb:
+	python3 gen.py
+gencheck:
+	python3 gen.py --check

@@ -1,247 +1,199 @@
 // =============================================================================
-// xs_l2tlbprefetch_pkg —— L2TlbPrefetch 可读重写的类型与参数
+// L2TlbPrefetch.sv —— L2TLB 的"下一行"页表预取器
 //
-// 设计来源：
-//   XiangShan/src/main/scala/xiangshan/cache/mmu/L2TlbPrefetch.scala class L2TlbPrefetch
-//   XiangShan/src/main/scala/xiangshan/cache/mmu/MMUBundle.scala L2TlbWithHptwIdBundle
+// 对应 Chisel: xiangshan.cache.mmu.L2TlbPrefetch（src/main/scala/xiangshan/cache/mmu/L2TlbPrefetch.scala）
+//
+// 在 L2TLB 里的位置：
+//     arb2 出口（进 page cache 的那一路，且是 itlb/dtlb 真请求）──in(vpn)──> L2TlbPrefetch
+//     L2TlbPrefetch ──out──> arb2 第 4 路（Arbiter5_L2TlbWithHptwIdBundle，优先级最低）
+//
+// 机制（三步，下面的核按这三步分节）：
+//   1. 训练：每来一个被访问的 vpn，就猜"下一条页表 cacheline"马上也要用。一条 cacheline
+//      装 8 个 PTE（sector = vpn[2:0]），所以 next_line = {vpn[37:3] + 1, 3'b000}。
+//      next_req = RegEnable(next_line, in.valid)：只要有输入就打一拍锁下来（不管去没去重）。
+//   2. 去重：记住最近 4 条**已经发出去**的预取（old_reqs / old_v，old_index 轮转写）。
+//      当拍的 next_line 若和其中某条有效记录同一行，就不再产生预取。
+//   3. 发出：v = ValidHold(input_valid, out.fire, flush) —— 产生后一直举着，直到被 arb2 接走或被
+//      flush 冲掉；接走那拍把 next_req 记进去重窗口。出口 s2xlate 按当前虚拟化模式现算，
+//      source 恒为 prefetchID（=2，被 firtool 折进 arb2，本模块无该端口），isHptwReq/hptwId 同理。
+//   flush = sfence 或 satp/vsatp/hgatp/priv.virt 任一变化：去重窗口清空、在途预取作废。
+//
+// ★注意时序上的一个不对称（照抄 golden）★：去重用的是**当拍组合** next_line，而发出去的是
+//   **上一次** in.valid 时锁的 next_req。input_valid 置 v 的那拍 next_req 同时被改写，所以两者在
+//   v 拉起时是同一个值；但 v 举着期间若又来 in.valid（去重命中或未命中都会改写 next_req），
+//   发出去的就是最新那条 —— 预取器本来就是尽力而为，Chisel 原文如此。
+//
+// ★与 golden 的一处有意差别：去重窗口只存 35 位"行号" vpn[37:3]★
+//   golden 存整 38 位，但低 3 位写入值恒 0（来自 next_line 的补 0）、比较时也不读 —— 写得进、零扇出。
+//   本文件只存被比较的 35 位。FM 上 golden 那 12 个死位（old_reqs_0..3_reg[2:0]）在 impl 侧无对应点，
+//   逐条声明在 verif/dead_ref/L2TlbPrefetch.json（PASS_DEAD_REF，impl 侧 unread=0）。
+//
+// golden 214 行 / 16 端口，纯叶子（无子模块）。
 // =============================================================================
-package xs_l2tlbprefetch_pkg;
 
-  localparam int VPN_W        = 38;  // vpnLen
-  localparam int SECTOR_BITS  = 3;   // PtwL0SectorIdxLen：sector 内 4KB PTE 索引位宽
-  localparam int LINE_VPN_W   = VPN_W - SECTOR_BITS; // 去掉 sector 位后的“行 VPN” = 35
-  localparam int SOURCE_W     = 2;   // bSourceWidth
-  localparam int OLD_REC_N    = 4;   // 最近预取记录条数（去重窗口）
-  localparam int OLD_IDX_W    = 2;   // log2Ceil(OLD_REC_N)
+package l2tlbprefetch_pkg;
 
-  // prefetchID = PtwWidth = 2（见 MMUConst.scala）。预取请求的 source 标记。
-  localparam logic [SOURCE_W-1:0] PREFETCH_ID = 2'h2;
+  localparam int VPN_W       = 38;               // vpnLen
+  localparam int SECTOR_W    = 3;                // sectortlbwidth：一条页表 cacheline 8 个 PTE
+  localparam int LINE_W      = VPN_W - SECTOR_W; // 行号 vpn[37:3]，35 位
+  localparam int OLD_REC_N   = 4;                // OldRecordSize：去重窗口条数
+  localparam int OLD_IDX_W   = 2;                // log2Ceil(OldRecordSize)
 
-  // s2xlate 模式编码（与 ptw 一致）。
-  localparam logic [1:0] NO_S2XLATE  = 2'h0;
-  localparam logic [1:0] ONLY_STAGE1 = 2'h1;
-  localparam logic [1:0] ONLY_STAGE2 = 2'h2;
-  localparam logic [1:0] ALL_STAGE   = 2'h3;
-
-  // L2TLB 内部请求 bundle（L2TlbWithHptwIdBundle 中 prefetch 用到的字段）。
-  typedef struct packed {
-    logic [VPN_W-1:0]    vpn;
-    logic [1:0]          s2xlate;
-    logic [SOURCE_W-1:0] source;
-  } l2tlb_req_info_t;
-
-  // 取“下一行”的行首 VPN：把 VPN 去掉 sector 位后 +1，再补回 sector 位为 0。
-  // 预取下一条 cacheline 的页表项（顺序流预取）。
-  function automatic logic [VPN_W-1:0] get_next_line(input logic [VPN_W-1:0] vpn);
-    return {vpn[VPN_W-1:SECTOR_BITS] + 1'b1, {SECTOR_BITS{1'b0}}};
-  endfunction
-
-  // 两个 VPN 是否落在同一 cacheline（去 sector 位后相等）。用于去重。
-  function automatic logic same_line(
-    input logic [VPN_W-1:0] a, input logic [VPN_W-1:0] b
-  );
-    return a[VPN_W-1:SECTOR_BITS] == b[VPN_W-1:SECTOR_BITS];
-  endfunction
+  // s2xlate 编码（MMUConst：noS2xlate / onlyStage1 / onlyStage2 / allStage）
+  localparam logic [1:0] NO_S2XLATE  = 2'd0;
+  localparam logic [1:0] ONLY_STAGE1 = 2'd1;
+  localparam logic [1:0] ONLY_STAGE2 = 2'd2;
+  localparam logic [1:0] ALL_STAGE   = 2'd3;
 
 endpackage
 
-// =============================================================================
-// xs_L2TlbPrefetch_core —— L2TLB 顺序流预取器（可读 SystemVerilog 重写）
-//
-// 设计意图来自 L2TlbPrefetch.scala class L2TlbPrefetch。它是 L2TLB 前端一个
-// 极简的“下一行”页表预取器：每当上游送来一个被访问的 VPN，就推测下一条
-// cacheline 的页表项也会很快被用到，于是生成一个指向 next_line 的预取请求
-// 注入 L2TLB 的请求仲裁。为避免重复预取，维护一个最近 OLD_REC_N=4 条的
-// 预取记录窗口做去重。
-//
-// 微架构要点（对照 Scala）：
-//   1. next_line = get_next_line(in.vpn)：把 VPN 去 sector 位 +1 后补 0，
-//      指向下一条 cacheline 的首个页表项。
-//   2. 去重 already_have：next_line 与记录窗口中任一“有效且同行”的旧请求
-//      命中则丢弃，input_valid 拉低。
-//   3. v = ValidHold(input_valid, out.fire, flush)：预取请求一旦产生就保持
-//      valid，直到被 L2TLB 接收（out.fire）或被 flush 冲掉。
-//   4. s2xlate 按当前虚拟化/vsatp/hgatp 模式选择（allStage/onlyStage1/onlyStage2/noS2）。
-//   5. out.fire 时把 next_req 写入记录窗口（环形指针 old_index 轮转），flush 清空窗口。
-//
-// 注意 next_req 是 next_line 打一拍的版本（RegEnable(next_line, in.valid)），
-// 而去重 already_have 与 input_valid 用的是当拍组合 next_line。
-// =============================================================================
-
 module xs_L2TlbPrefetch_core
-  import xs_l2tlbprefetch_pkg::*;
+  import l2tlbprefetch_pkg::*;
 (
-  input  logic              clock,
-  input  logic              reset,
-
-  input  logic              sfence_valid,
-  input  logic              satp_changed,
-  input  logic [3:0]        vsatp_mode,
-  input  logic              vsatp_changed,
-  input  logic [3:0]        hgatp_mode,
-  input  logic              hgatp_changed,
-  input  logic              priv_virt,
-  input  logic              priv_virt_changed,
-
-  input  logic              in_valid,
-  input  logic [VPN_W-1:0]  in_vpn,
-
-  input  logic              out_ready,
-  output logic              out_valid,
-  output l2tlb_req_info_t   out_req_info
+  input  logic             clock,
+  input  logic             reset,
+  input  logic             flush,        // sfence 或任一地址翻译 CSR 变化
+  // 虚拟化模式（决定预取请求走几级翻译）
+  input  logic             priv_virt,
+  input  logic [3:0]       vsatp_mode,
+  input  logic [3:0]       hgatp_mode,
+  // 训练输入：一次被访问的 vpn
+  input  logic             in_valid,
+  input  logic [VPN_W-1:0] in_vpn,
+  // 预取请求出口
+  input  logic             out_ready,
+  output logic             out_valid,
+  output logic [VPN_W-1:0] out_vpn,
+  output logic [1:0]       out_s2xlate
 );
 
-  genvar gi;
+  // ---------------------------------------------------------------------------
+  // 1. 训练：算出"下一行"，有输入就锁进 next_req
+  // ---------------------------------------------------------------------------
+  // next_line 的行号 = 访问行号 + 1（35 位回绕加法），sector 位补 0。
+  logic [LINE_W-1:0] next_line_no;
+  logic [VPN_W-1:0]  next_req;      // 无复位（golden 同），初值靠第一次 in.valid 写入
+
+  assign next_line_no = in_vpn[VPN_W-1:SECTOR_W] + 1'b1;
+
+  always_ff @(posedge clock) begin
+    if (in_valid)
+      next_req <= {next_line_no, {SECTOR_W{1'b0}}};
+  end
 
   // ---------------------------------------------------------------------------
-  // 最近预取记录窗口（去重）
+  // 2. 去重：最近 OLD_REC_N 条已发出的预取行号
   // ---------------------------------------------------------------------------
-  // old_reqs 只用于去重（same_line 仅比较去 sector 位后的“行 VPN” [37:3]），
-  //   而写入值 next_req 的低 sector 位恒 0（get_next_line 补 0）。故 old_reqs[i][2:0]
-  //   在两侧都零扇出（golden 存 38 位、低 3 位是 golden-only dead-ref）。这里只存被比较的
-  //   行 VPN（35 位），impl 侧不留任何死寄存器位。
-  //   FM 影响：golden 那 12 个死位（old_reqs_0..3_reg[2:0]）在本侧无对应点，实跑为
-  //   unmatched-unread(ref)=12 / impl=0，按 PASS_DEAD_REF 逐条声明在
-  //   verif/dead_ref/L2TlbPrefetch.json（含反向实验记录：impl 也做成 38 位反而变 12(12)，
-  //   因为 unread 点只按名字配对，数组名 old_reqs_reg[0][0] 配不上 old_reqs_0_reg[0]）。
-  logic [OLD_REC_N-1:0][LINE_VPN_W-1:0] old_reqs;   // 只存行 VPN [37:3]
-  logic [OLD_REC_N-1:0]            old_v;
-  logic [OLD_IDX_W-1:0]            old_index;
-  logic [VPN_W-1:0]                next_req;  // RegEnable(next_line, in_valid)
-  logic                            v;         // 预取请求 valid 保持位
+  // old_line 无复位、old_v 异步复位（golden 同）。old_index 是下一条记录写到哪一槽的轮转指针。
+  logic [LINE_W-1:0]    old_line [OLD_REC_N];
+  logic [OLD_REC_N-1:0] old_v;
+  logic [OLD_IDX_W-1:0] old_index;
 
-  // flush = sfence.vma 或任一地址翻译上下文 CSR 变化。golden L2TlbPrefetch.sv:117
-  // 的 wire flush 是五项 OR：satp/vsatp/hgatp 内容变了、以及 V 位（priv.virt）变了，
-  // 之前记下的预取窗口与在途预取请求都失效，必须整体作废。
-  wire flush = sfence_valid || satp_changed || vsatp_changed || hgatp_changed
-            || priv_virt_changed;
-
-  // 当拍计算的“下一行” VPN。
-  wire [VPN_W-1:0] next_line = get_next_line(in_vpn);
-
-  // 去重：next_line 是否已在记录窗口中（有效且同行）。old_reqs 已是行 VPN，直接与
-  //   next_line 的行段 [37:3] 比较。
-  logic already_have;
+  logic already_have;   // 当拍 next_line 已在窗口里
   always_comb begin
     already_have = 1'b0;
     for (int i = 0; i < OLD_REC_N; i++)
-      already_have |= old_v[i] && (old_reqs[i] == next_line[VPN_W-1:SECTOR_BITS]);
+      already_have |= old_v[i] && (old_line[i] == next_line_no);
   end
 
-  // 本拍是否产生一个新的预取（未被 flush、未重复）。
-  wire input_valid = in_valid && !flush && !already_have;
+  // 本拍产生一条新的预取
+  logic input_valid;
+  assign input_valid = in_valid && !flush && !already_have;
 
-  // 预取请求被 L2TLB 接收。
-  wire out_fire = out_valid && out_ready;
+  // 预取被 arb2 接走：记进 old_index 那一槽、指针前进；flush 只清有效位（行号留着无所谓）。
+  logic out_fire;
+  assign out_fire = out_ready && out_valid;
 
-  // ---------------------------------------------------------------------------
-  // s2xlate 模式选择（MuxCase 优先级：allStage > onlyStage1 > onlyStage2 > noS2）
-  // ---------------------------------------------------------------------------
-  logic [1:0] s2xlate;
+  logic [OLD_REC_N-1:0] write_here;   // 本拍写哪一槽（独热或全 0）
   always_comb begin
-    if      (priv_virt && (vsatp_mode != 4'h0) && (hgatp_mode != 4'h0)) s2xlate = ALL_STAGE;
-    else if (priv_virt && (vsatp_mode != 4'h0))                          s2xlate = ONLY_STAGE1;
-    else if (priv_virt && (hgatp_mode != 4'h0))                          s2xlate = ONLY_STAGE2;
-    else                                                                 s2xlate = NO_S2XLATE;
+    for (int i = 0; i < OLD_REC_N; i++)
+      write_here[i] = out_fire && (old_index == OLD_IDX_W'(i));
   end
 
-  // ---------------------------------------------------------------------------
-  // 输出
-  // ---------------------------------------------------------------------------
-  assign out_valid          = v;
-  assign out_req_info.vpn   = next_req;
-  assign out_req_info.s2xlate = s2xlate;
-  assign out_req_info.source  = PREFETCH_ID;
-
-  // ---------------------------------------------------------------------------
-  // 时序逻辑
-  // ---------------------------------------------------------------------------
-  // next_req：in.valid 拍锁存 next_line（无复位，与 golden 一致）。
   always_ff @(posedge clock) begin
-    if (in_valid)
-      next_req <= next_line;
+    for (int i = 0; i < OLD_REC_N; i++)
+      if (write_here[i])
+        old_line[i] <= next_req[VPN_W-1:SECTOR_W];
   end
 
-  // 记录窗口写入：out.fire 时把 next_req 写到 old_index 指向的槽。
-  // old_reqs 无复位（与 golden 一致），old_v 有复位。
-  generate
-    for (gi = 0; gi < OLD_REC_N; gi = gi + 1) begin : g_rec
-      wire slot_we = out_fire && (old_index == gi[OLD_IDX_W-1:0]);
-      always_ff @(posedge clock) begin
-        if (slot_we)
-          old_reqs[gi] <= next_req[VPN_W-1:SECTOR_BITS];  // 只存行 VPN（低 3 位恒 0，不存）
-      end
-      always_ff @(posedge clock or posedge reset) begin
-        if (reset)
-          old_v[gi] <= 1'b0;
-        else
-          old_v[gi] <= !flush && (slot_we || old_v[gi]);
-      end
-    end
-  endgenerate
-
-  // 环形写指针 old_index：out.fire 时 +1（到顶回 0）。
-  // valid 保持 v = ValidHold(input_valid, out.fire, flush)。
   always_ff @(posedge clock or posedge reset) begin
-    if (reset) begin
-      old_index <= '0;
-      v         <= 1'b0;
-    end else begin
-      if (out_fire)
-        old_index <= (old_index == OLD_REC_N - 1) ? '0 : old_index + 1'b1;
-      v <= !flush && (input_valid || (!out_fire && v));
-    end
+    if (reset)
+      old_v <= '0;
+    else
+      old_v <= flush ? '0 : (old_v | write_here);
   end
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset)
+      old_index <= '0;
+    else if (out_fire)
+      old_index <= (old_index == OLD_IDX_W'(OLD_REC_N - 1)) ? '0 : old_index + 1'b1;
+  end
+
+  // ---------------------------------------------------------------------------
+  // 3. 发出：ValidHold 举着请求，s2xlate 现算
+  // ---------------------------------------------------------------------------
+  // ValidHold(infire, outfire, flush)：新请求置位；没新请求时被接走则清；flush 一律清。
+  logic v;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset)
+      v <= 1'b0;
+    else
+      v <= !flush && (input_valid || (v && !out_fire));
+  end
+
+  // 虚拟化下：VS 级与 G 级都开 = 两级；只开 VS = 只走第一级；只开 G = 只走第二级。
+  // 非虚拟化 = 不走二级翻译。（MuxCase 优先级照 Scala 顺序）
+  logic vs_on, g_on;
+  assign vs_on = priv_virt && (vsatp_mode != 4'd0);
+  assign g_on  = priv_virt && (hgatp_mode != 4'd0);
+
+  always_comb begin
+    if (vs_on && g_on) out_s2xlate = ALL_STAGE;
+    else if (vs_on)    out_s2xlate = ONLY_STAGE1;
+    else if (g_on)     out_s2xlate = ONLY_STAGE2;
+    else               out_s2xlate = NO_S2XLATE;
+  end
+
+  assign out_valid = v;
+  assign out_vpn   = next_req;
 
 endmodule
 
-// 下面的 wrapper 是机械端口适配，核心逻辑在 xs_L2TlbPrefetch_core。
-// （原注释称由 xs-v2r2-sv/scripts/gen_l2tlbprefetch.py 生成，但仓库里没有该脚本；本文件手工维护。）
-
-// ---------------------------------------------------------------------------
-// golden 同名 wrapper
-// ---------------------------------------------------------------------------
-
-module L2TlbPrefetch import xs_l2tlbprefetch_pkg::*; (
-  input  clock,
-  input  reset,
-  input  io_sfence_valid,
-  input  io_csr_satp_changed,
-  input  [3:0] io_csr_vsatp_mode,
-  input  io_csr_vsatp_changed,
-  input  [3:0] io_csr_hgatp_mode,
-  input  io_csr_hgatp_changed,
-  input  io_csr_priv_virt,
-  input  io_csr_priv_virt_changed,
-  input  io_in_valid,
-  input  [37:0] io_in_bits_vpn,
-  input  io_out_ready,
-  output io_out_valid,
-  output [37:0] io_out_bits_req_info_vpn,
-  output [1:0] io_out_bits_req_info_s2xlate
+// golden 同名 wrapper：端口逐名逐宽同 golden，只做改名与 flush 五项 OR。
+module L2TlbPrefetch (
+  input  logic        clock,
+  input  logic        reset,
+  input  logic        io_sfence_valid,
+  input  logic        io_csr_satp_changed,
+  input  logic [3:0]  io_csr_vsatp_mode,
+  input  logic        io_csr_vsatp_changed,
+  input  logic [3:0]  io_csr_hgatp_mode,
+  input  logic        io_csr_hgatp_changed,
+  input  logic        io_csr_priv_virt,
+  input  logic        io_csr_priv_virt_changed,
+  input  logic        io_in_valid,
+  input  logic [37:0] io_in_bits_vpn,
+  input  logic        io_out_ready,
+  output logic        io_out_valid,
+  output logic [37:0] io_out_bits_req_info_vpn,
+  output logic [1:0]  io_out_bits_req_info_s2xlate
 );
 
-  l2tlb_req_info_t out_req_info_bus;
-
   xs_L2TlbPrefetch_core u_core (
-    .clock(clock),
-    .reset(reset),
-    .sfence_valid(io_sfence_valid),
-    .satp_changed(io_csr_satp_changed),
-    .vsatp_mode(io_csr_vsatp_mode),
-    .vsatp_changed(io_csr_vsatp_changed),
-    .hgatp_mode(io_csr_hgatp_mode),
-    .hgatp_changed(io_csr_hgatp_changed),
-    .priv_virt(io_csr_priv_virt),
-    .priv_virt_changed(io_csr_priv_virt_changed),
-    .in_valid(io_in_valid),
-    .in_vpn(io_in_bits_vpn),
-    .out_ready(io_out_ready),
-    .out_valid(io_out_valid),
-    .out_req_info(out_req_info_bus)
+    .clock       (clock),
+    .reset       (reset),
+    .flush       (io_sfence_valid | io_csr_satp_changed | io_csr_vsatp_changed
+                  | io_csr_hgatp_changed | io_csr_priv_virt_changed),
+    .priv_virt   (io_csr_priv_virt),
+    .vsatp_mode  (io_csr_vsatp_mode),
+    .hgatp_mode  (io_csr_hgatp_mode),
+    .in_valid    (io_in_valid),
+    .in_vpn      (io_in_bits_vpn),
+    .out_ready   (io_out_ready),
+    .out_valid   (io_out_valid),
+    .out_vpn     (io_out_bits_req_info_vpn),
+    .out_s2xlate (io_out_bits_req_info_s2xlate)
   );
-
-  assign io_out_bits_req_info_vpn     = out_req_info_bus.vpn;
-  assign io_out_bits_req_info_s2xlate = out_req_info_bus.s2xlate;
 
 endmodule

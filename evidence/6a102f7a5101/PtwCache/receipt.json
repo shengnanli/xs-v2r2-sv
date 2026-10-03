@@ -1,0 +1,506 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "PtwCache",
+ "run_id": "PtwCache-20260922T063326Z-6a102f7a",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/PtwCache.sv",
+   "kind": "golden",
+   "sha256": "a8fbb7f57b2ddc52dd1b7be285ea2f7e9b3a6220241f4569487d3d7a40c437da"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAM_1.sv",
+   "kind": "golden",
+   "sha256": "ffce4dd9a09c764222e9ff11fd03c0c7a77749fd8a78562d8ca73d32d8e76454"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAM_2.sv",
+   "kind": "golden",
+   "sha256": "7faa80236d7cb8b46ea6f5fd6c3e4186a0e2b5620b70cc62bd9f6ec737e5cd71"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_128.sv",
+   "kind": "golden",
+   "sha256": "0d1965c5a1d31882b5fae1d9b0a2efd18928ac3955c71d575f72c05171ab21f0"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_129.sv",
+   "kind": "golden",
+   "sha256": "0149f6fa64b325c5d467ed4b8ec932d8c1b609b9c5aaca5fc83db64fd3b41f81"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_143.sv",
+   "kind": "golden",
+   "sha256": "a2b10a06e8c5062e0867ecce92871418e613517f7a59a5886d45cba3131ed37c"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "kind": "golden",
+   "sha256": "12b982ce66cef8f888260e0fa1411988033043a620a736a1dc8be54a36a60c96"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv",
+   "kind": "golden",
+   "sha256": "5610aced301c5109da388bb13fd702ae9b93aa10d74d1f78e42bfe1a1191a29b"
+  },
+  {
+   "path": "golden-rtl/array_10.sv",
+   "kind": "golden",
+   "sha256": "281c2817af3c21798a260c35a3cbafcdba2e61bc9d9940a729ba43c27c6b0b2f"
+  },
+  {
+   "path": "golden-rtl/array_11.sv",
+   "kind": "golden",
+   "sha256": "3c45cea38a26687b43ea069e9adafa65f5388daf845e9988698cc1541c439524"
+  },
+  {
+   "path": "golden-rtl/array_10_ext.v",
+   "kind": "golden",
+   "sha256": "fe8f6db403ae1d8778c5778c3acb63dce6408dd57c521ca80715a30a7ae72f07"
+  },
+  {
+   "path": "golden-rtl/array_11_ext.v",
+   "kind": "golden",
+   "sha256": "69a1bc43f15de9c58efadc11869359fb614d0000c15c2e6c92ac754be2e723cb"
+  },
+  {
+   "path": "golden-rtl/MbistPipePtwL0.sv",
+   "kind": "golden",
+   "sha256": "c2fdb742871f7550b69a10c350fabb4aa7678cf76da96899a9f4e55042caaf1a"
+  },
+  {
+   "path": "golden-rtl/MbistPipePtwL1.sv",
+   "kind": "golden",
+   "sha256": "011f5ecfadf1f3912174c1e19239b12ecae3c73de75ae5653abe03133e0e4f37"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/mmu/PtwCache.sv",
+   "kind": "repo",
+   "sha256": "25105e164af4bb8bdf65d1fb651212c0f0851480444dff933a62e8e9c59a46e7"
+  },
+  {
+   "path": "rtl/dft/MbistPipePtwL0.sv",
+   "kind": "repo",
+   "sha256": "f9063dc85f5a46a1044dfa746bfd5deaf837ef276d0ae92190fa07c3dfe9874a"
+  },
+  {
+   "path": "rtl/dft/MbistPipePtwL1.sv",
+   "kind": "repo",
+   "sha256": "a92e9e3931a186f1aba05282eafb04f124b3424c9fdf650931a61e8e59c0119a"
+  },
+  {
+   "path": "rtl/dft/xs_mbist_pipe_core.sv",
+   "kind": "repo",
+   "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAM_1.sv",
+   "kind": "golden",
+   "sha256": "ffce4dd9a09c764222e9ff11fd03c0c7a77749fd8a78562d8ca73d32d8e76454"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAM_2.sv",
+   "kind": "golden",
+   "sha256": "7faa80236d7cb8b46ea6f5fd6c3e4186a0e2b5620b70cc62bd9f6ec737e5cd71"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_128.sv",
+   "kind": "golden",
+   "sha256": "0d1965c5a1d31882b5fae1d9b0a2efd18928ac3955c71d575f72c05171ab21f0"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_129.sv",
+   "kind": "golden",
+   "sha256": "0149f6fa64b325c5d467ed4b8ec932d8c1b609b9c5aaca5fc83db64fd3b41f81"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_143.sv",
+   "kind": "golden",
+   "sha256": "a2b10a06e8c5062e0867ecce92871418e613517f7a59a5886d45cba3131ed37c"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "kind": "golden",
+   "sha256": "12b982ce66cef8f888260e0fa1411988033043a620a736a1dc8be54a36a60c96"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv",
+   "kind": "golden",
+   "sha256": "5610aced301c5109da388bb13fd702ae9b93aa10d74d1f78e42bfe1a1191a29b"
+  },
+  {
+   "path": "golden-rtl/array_10.sv",
+   "kind": "golden",
+   "sha256": "281c2817af3c21798a260c35a3cbafcdba2e61bc9d9940a729ba43c27c6b0b2f"
+  },
+  {
+   "path": "golden-rtl/array_11.sv",
+   "kind": "golden",
+   "sha256": "3c45cea38a26687b43ea069e9adafa65f5388daf845e9988698cc1541c439524"
+  },
+  {
+   "path": "golden-rtl/array_10_ext.v",
+   "kind": "golden",
+   "sha256": "fe8f6db403ae1d8778c5778c3acb63dce6408dd57c521ca80715a30a7ae72f07"
+  },
+  {
+   "path": "golden-rtl/array_11_ext.v",
+   "kind": "golden",
+   "sha256": "69a1bc43f15de9c58efadc11869359fb614d0000c15c2e6c92ac754be2e723cb"
+  }
+ ],
+ "impl_commit": "6a102f7a5101ef0ccd0ff8abf477d8fa7c66e0ac",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "PtwCache-20260922T063326Z-6a102f7a",
+  "top": "PtwCache",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 143717,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 20
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 60,
+   "unread_impl": 61,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_0_0/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_0/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_0_1/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_1/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_0_2/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_2/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_0_3/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_3/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_0_4/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_4/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_0_5/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_5/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_0_6/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_6/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_0_7/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_0_7/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_1_0/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_0/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_1_1/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_1/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_1_2/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_2/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_1_3/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_3/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_1_4/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_4/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_1_5/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_5/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_1_6/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_6/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l0/array_0_1_7/array/array/array_11_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l0_sram/array_0_1_7/array/array/array_11_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/l1/array_0_0_0/array/array/array_10_ext/reg_RW0_ren_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/u_l1_sram/array_0_0_0/array/array/array_10_ext/reg_RW0_ren_reg"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/resp_res_l1_pre_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/resp_res_l1_reg\\[pre]"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/resp_res_l2_pre_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/resp_res_l2_reg\\[pre]"
+    },
+    {
+     "ref_path": "r:/WORK/PtwCache/resp_res_l3_pre_reg",
+     "impl_path": "i:/WORK/PtwCache/u_core/resp_res_l3_reg\\[pre]"
+    }
+   ],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [
+    "r:/WORK/PtwCache/data_resp_r_0_entries_prefetch_reg",
+    "r:/WORK/PtwCache/data_resp_r_1_entries_prefetch_reg",
+    "r:/WORK/PtwCache/hitPre_r_1_reg",
+    "r:/WORK/PtwCache/hitPre_r_reg",
+    "r:/WORK/PtwCache/l1_ramDatas_0_entries_prefetch_reg",
+    "r:/WORK/PtwCache/l1_ramDatas_1_entries_prefetch_reg",
+    "r:/WORK/PtwCache/l2Pre_reg",
+    "r:/WORK/PtwCache/l2_0_prefetch_reg",
+    "r:/WORK/PtwCache/l2_10_prefetch_reg",
+    "r:/WORK/PtwCache/l2_11_prefetch_reg",
+    "r:/WORK/PtwCache/l2_12_prefetch_reg",
+    "r:/WORK/PtwCache/l2_13_prefetch_reg",
+    "r:/WORK/PtwCache/l2_14_prefetch_reg",
+    "r:/WORK/PtwCache/l2_15_prefetch_reg",
+    "r:/WORK/PtwCache/l2_1_prefetch_reg",
+    "r:/WORK/PtwCache/l2_2_prefetch_reg",
+    "r:/WORK/PtwCache/l2_3_prefetch_reg",
+    "r:/WORK/PtwCache/l2_4_prefetch_reg",
+    "r:/WORK/PtwCache/l2_5_prefetch_reg",
+    "r:/WORK/PtwCache/l2_6_prefetch_reg",
+    "r:/WORK/PtwCache/l2_7_prefetch_reg",
+    "r:/WORK/PtwCache/l2_8_prefetch_reg",
+    "r:/WORK/PtwCache/l2_9_prefetch_reg",
+    "r:/WORK/PtwCache/l3Pre_r_reg",
+    "r:/WORK/PtwCache/l3_0_prefetch_reg",
+    "r:/WORK/PtwCache/l3_10_prefetch_reg",
+    "r:/WORK/PtwCache/l3_11_prefetch_reg",
+    "r:/WORK/PtwCache/l3_12_prefetch_reg",
+    "r:/WORK/PtwCache/l3_13_prefetch_reg",
+    "r:/WORK/PtwCache/l3_14_prefetch_reg",
+    "r:/WORK/PtwCache/l3_15_prefetch_reg",
+    "r:/WORK/PtwCache/l3_1_prefetch_reg",
+    "r:/WORK/PtwCache/l3_2_prefetch_reg",
+    "r:/WORK/PtwCache/l3_3_prefetch_reg",
+    "r:/WORK/PtwCache/l3_4_prefetch_reg",
+    "r:/WORK/PtwCache/l3_5_prefetch_reg",
+    "r:/WORK/PtwCache/l3_6_prefetch_reg",
+    "r:/WORK/PtwCache/l3_7_prefetch_reg",
+    "r:/WORK/PtwCache/l3_8_prefetch_reg",
+    "r:/WORK/PtwCache/l3_9_prefetch_reg",
+    "r:/WORK/PtwCache/mbistPlL0/addrRdReg_reg[6]",
+    "r:/WORK/PtwCache/mbistPlL0/addrReg_reg[0]",
+    "r:/WORK/PtwCache/mbistPlL0/addrReg_reg[1]",
+    "r:/WORK/PtwCache/mbistPlL0/addrReg_reg[2]",
+    "r:/WORK/PtwCache/mbistPlL0/addrReg_reg[3]",
+    "r:/WORK/PtwCache/mbistPlL0/addrReg_reg[4]",
+    "r:/WORK/PtwCache/mbistPlL0/addrReg_reg[5]",
+    "r:/WORK/PtwCache/mbistPlL0/addrReg_reg[6]",
+    "r:/WORK/PtwCache/mbistPlL1/addrRdReg_reg[2]",
+    "r:/WORK/PtwCache/mbistPlL1/addrReg_reg[0]",
+    "r:/WORK/PtwCache/mbistPlL1/addrReg_reg[1]",
+    "r:/WORK/PtwCache/mbistPlL1/addrReg_reg[2]",
+    "r:/WORK/PtwCache/wakeup_req_delay_tag_reg[3]",
+    "r:/WORK/PtwCache/wakeup_req_delay_tag_reg[4]",
+    "r:/WORK/PtwCache/wakeup_req_delay_tag_reg[5]",
+    "r:/WORK/PtwCache/wakeup_req_delay_tag_reg[6]",
+    "r:/WORK/PtwCache/wakeup_req_delay_tag_reg[7]",
+    "r:/WORK/PtwCache/wakeup_req_delay_tag_reg[8]",
+    "r:/WORK/PtwCache/wakeup_req_delay_way_info_reg[0]",
+    "r:/WORK/PtwCache/wakeup_req_way_info_reg[0]"
+   ],
+   "unmatched_unread_impl": [
+    "i:/WORK/PtwCache/u_core/l1_ramdata_reg[0]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l1_ramdata_reg[1]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l1_resp_r_reg[0]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l1_resp_r_reg[1]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[0]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[10]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[11]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[12]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[13]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[14]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[15]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[1]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[2]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[3]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[4]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[5]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[6]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[7]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[8]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_entry_reg[9]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l2_pre_ck_reg",
+    "i:/WORK/PtwCache/u_core/l2_pre_r_reg",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[0]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[10]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[11]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[12]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[13]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[14]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[15]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[1]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[2]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[3]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[4]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[5]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[6]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[7]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[8]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_entry_reg[9]\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/l3_pre_ck_reg",
+    "i:/WORK/PtwCache/u_core/l3_pre_r_reg",
+    "i:/WORK/PtwCache/u_core/sp_hitdata_ck_reg\\[prefetch]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrRdReg_reg[6]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[0]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[1]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[2]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[3]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[4]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[5]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l0/u_core/addrReg_reg[6]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l1/u_core/addrRdReg_reg[2]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l1/u_core/addrReg_reg[0]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l1/u_core/addrReg_reg[1]",
+    "i:/WORK/PtwCache/u_core/u_mbist_l1/u_core/addrReg_reg[2]",
+    "i:/WORK/PtwCache/u_core/wk_d_tag_reg[3]",
+    "i:/WORK/PtwCache/u_core/wk_d_tag_reg[4]",
+    "i:/WORK/PtwCache/u_core/wk_d_tag_reg[5]",
+    "i:/WORK/PtwCache/u_core/wk_d_tag_reg[6]",
+    "i:/WORK/PtwCache/u_core/wk_d_tag_reg[7]",
+    "i:/WORK/PtwCache/u_core/wk_d_tag_reg[8]",
+    "i:/WORK/PtwCache/u_core/wk_d_way_reg[0]",
+    "i:/WORK/PtwCache/u_core/wk_way_reg[0]"
+   ],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "PARTIAL",
+ "verdict_detail": {
+  "passing": 143717,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": 61,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "PtwCache",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": "strict_unread!=0",
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

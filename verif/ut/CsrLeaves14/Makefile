@@ -15,4 +15,8 @@ FM_VARIANTS = $(LEAVES)
 
 include ../../../scripts/ut_common.mk
 
-VCS += +define+SYNTHESIS
+# initreg：编译期开机制、运行期选取值（两处都要给，见 CONVENTIONS）。
+#   INITREG=0 / random / <seed>017（第三个真随机档）
+VCS      += +define+SYNTHESIS +vcs+initreg+random
+INITREG  ?= random
+SIM_ARGS += +vcs+initreg+$(INITREG)

@@ -1,0 +1,3 @@
+matched_nc	{r:/WORK/FloatAdderF32WidenF16MixedPipeline/U_close_path/U_CS4_io_adder_op0_r_reg[23]} {i:/WORK/FloatAdderF32WidenF16MixedPipeline/u_core/U_close_path/U_CS4_io_adder_op0_r_reg[23]}
+matched_nc	{r:/WORK/FloatAdderF32WidenF16MixedPipeline/U_close_path/U_Lshift_io_src_r_reg[24]} {i:/WORK/FloatAdderF32WidenF16MixedPipeline/u_core/U_close_path/U_Lshift_io_src_r_reg[24]}
+matched_nc	{r:/WORK/FloatAdderF32WidenF16MixedPipeline/U_far_path/U_FS1/io_result_r_2_reg[0]} {i:/WORK/FloatAdderF32WidenF16MixedPipeline/u_core/U_far_path/U_FS1/io_result_r_2_reg[0]}

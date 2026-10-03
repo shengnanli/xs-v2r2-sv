@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/CVT64_1
+Implementation : i:/WORK/CVT64_1
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 05:53:37 2026
+**************************************************
+
+No failing compare points.
+
+1

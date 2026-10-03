@@ -15,13 +15,13 @@
 #         are unchanged" 就是靠这一列判的。
 #
 # tier A_FUNC_ASSERT     369
-# tier B_CONTROL       13029
-# tier C_DIAG          10611
+# tier B_CONTROL       13023
+# tier C_DIAG          10617
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED        8082
-# status GAP            15927
+# status MEASURED        8052
+# status GAP            15957
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -125,7 +125,7 @@ ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.in1ToN	[
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_13	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_14	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.Vfalu	Vfalu OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VFAlu	no	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.Vfcvt	Vfcvt OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VCVT_8	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.Vfcvt	Vfcvt OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VCVT_8	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.Vipu	VIPU OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VIPU	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_14	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_14	no	assert_is_cycle_visible_behavior	
@@ -17764,37 +17764,37 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.load_filter_
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.load_filter_load_entry	tlb_req_count	C_DIAG	MEASURED	1	0	0	PTWFilterEntry	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry._GEN_75
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.load_filter_load_entry	tlb_req_count_filtered	C_DIAG	GAP	1	0	1	PTWFilterEntry	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry._GEN_76
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.load_filter_load_entry	tlb_resp_count	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter0	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_22
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter1	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_26
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter2	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_27
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter3	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_28
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter4	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_29
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter5	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_30
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter6	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_31
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter7	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_32
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter8	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_33
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	inflight_cycle	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_25
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	ptw_req_count	B_CONTROL	MEASURED	1	1	0	PTWFilterEntry_1	no	FC/read_by_logic:PTWFilterEntry_1._inflight_counter_T_probe	enqvalid_1 ? _GEN_41 | v_7 : _GEN_10 | v_7); sent_0 <= _inflight_counter_T_probe & issueindex == 3'h0 | (enqv…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	ptw_req_cycle	B_CONTROL	MEASURED	1	1	0	PTWFilterEntry_1	no	FC/read_by_logic:PTWFilterEntry_1.inflight_counter_probe	inflight_counter; wire [2:0] inflight_counter_probe = inflight_counter; wire _GEN_22 = counter == 4'h0; wire …
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	ptw_resp_count	B_CONTROL	MEASURED	1	1	0	PTWFilterEntry_1	no	FC/own_port:PTWFilterEntry_1.io_ptw_resp_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	tlb_req_count	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_23
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	tlb_req_count_filtered	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_24
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter0	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_22
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter1	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_26
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter2	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_27
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter3	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_28
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter4	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_29
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter5	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_30
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter6	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_31
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter7	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_32
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	counter8	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_33
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	inflight_cycle	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_25
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	ptw_req_count	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._inflight_counter_T_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	ptw_req_cycle	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter.inflight_counter_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	ptw_resp_count	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter.io_ptw_resp_valid_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	tlb_req_count	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_23
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	tlb_req_count_filtered	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_24
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.prefetch_filter_prefetch_entry	tlb_resp_count	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter0	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_22
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter1	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_26
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter2	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_27
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter3	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_28
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter4	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_29
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter5	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_30
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter6	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_31
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter7	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_32
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter8	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_33
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	inflight_cycle	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_25
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	ptw_req_count	B_CONTROL	MEASURED	1	1	0	PTWFilterEntry_1	no	FC/read_by_logic:PTWFilterEntry_1._inflight_counter_T_probe	enqvalid_1 ? _GEN_41 | v_7 : _GEN_10 | v_7); sent_0 <= _inflight_counter_T_probe & issueindex == 3'h0 | (enqv…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	ptw_req_cycle	B_CONTROL	MEASURED	1	1	0	PTWFilterEntry_1	no	FC/read_by_logic:PTWFilterEntry_1.inflight_counter_probe	inflight_counter; wire [2:0] inflight_counter_probe = inflight_counter; wire _GEN_22 = counter == 4'h0; wire …
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	ptw_resp_count	B_CONTROL	MEASURED	1	1	0	PTWFilterEntry_1	no	FC/own_port:PTWFilterEntry_1.io_ptw_resp_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	tlb_req_count	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_23
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	tlb_req_count_filtered	C_DIAG	MEASURED	1	0	0	PTWFilterEntry_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWFilterEntry_1._GEN_24
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter0	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_22
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter1	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_26
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter2	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_27
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter3	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_28
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter4	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_29
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter5	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_30
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter6	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_31
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter7	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_32
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	counter8	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_33
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	inflight_cycle	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_25
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	ptw_req_count	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._inflight_counter_T_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	ptw_req_cycle	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter.inflight_counter_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	ptw_resp_count	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter.io_ptw_resp_valid_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	tlb_req_count	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_23
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	tlb_req_count_filtered	C_DIAG	GAP	1	0	1	PTWNewFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PTWNewFilter._GEN_24
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlbRepeater.store_filter_store_entry	tlb_resp_count	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlb_ld_tlb_ld	access0	B_CONTROL	GAP	1	1	1	TLBNonBlock	yes	FC/read_by_logic:TLBNonBlock._GEN_55	ast_REG & portTranslateEnable_0; reg r; wire _GEN_56 = _GEN_55 & r; wire _GEN_57 = _GEN_55 & miss_read_0; reg…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dtlb_ld_tlb_ld	access1	B_CONTROL	GAP	1	1	1	TLBNonBlock	yes	FC/read_by_logic:TLBNonBlock._GEN_59	REG_1 & portTranslateEnable_1; reg r_2; wire _GEN_60 = _GEN_59 & r_2; wire _GEN_61 = _GEN_59 & miss_read_1; r…

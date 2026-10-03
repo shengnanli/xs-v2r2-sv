@@ -49,3 +49,31 @@ event_op_0/1/2 与 event_op_2_reg 的 [4:3]（combine 只看 op[2:0]，两侧同
 UT 插曲：首个 9 档矩阵 seed1×ir0 报 errors=1023757，原因是变异脚本用 mv 恢复原文件、保留旧 mtime，
 make 认为 simv 比源新，跑的仍是最后一个变异体（M2c，20k 拍 102542 错 × 10 ≈ 1.02M，量级吻合）。
 已删 simv/csrc 全量重编后重跑；矩阵读数见对账 2。
+
+## 对账 2：vmucp 复跑（evidence/5a3282d30ab1，impl 5a3282d3，lane 主线续跑）
+
+| 目标 | 预测 | 实测 | 判定 |
+|---|---|---|---|
+| HPerfCounter_21 | 74 | **74**（failing / unread / unmatched 0） | SUCCEEDED（receipt 见 evidence/5a3282d30ab1/HPerfCounter_21） |
+| HPerfMonitor_3  | 688 | 656 + **failing 16** + unread 16↔16 未配 | **FAILED** |
+
+HPerfMonitor_3 失配根因（不是 RTL 差异）：golden 有一个 reg 名字就叫 `event_op_2_reg`（第二级算子），
+它的 DFF 单元名是 `event_op_2_reg_reg`；第一级 reg `event_op_2` 的 DFF 单元名恰好也是 `event_op_2_reg`。
+于是 `perfEvents_hpc/event_op_2_reg[3]` 既是第一级的**单元**名、又是第二级 Q 端的**线**名，
+不带类型的 `set_user_match` 绑到了线上 —— FM 报 "matched by user" 只有 120/160（本地诊断跑，钉点改成匹配前后），
+差的 40 正是 8 × event_op_2 的 5 位；第一级死位 [4:3] 仍是未配 unread（自由割点），下游第二级 [4:3] 因此失配 16 点。
+修法：钉点改成匹配前 `fm_pins_pre.tcl` + `set_user_match -type cell`（8 × 4 × 5 = 160 全钉，fail-closed），删除旧 fm_pins.tcl。
+本地诊断跑（不出 receipt）：matched by user 160/160，passing **688**，SUCCEEDED。正式复跑见对账 3。
+
+## 对账 3：正式复跑（evidence/f27d65aafd36，impl f27d65aa，钉点 fm_pins_pre.tcl -type cell）
+
+| 目标 | 预测 | 实测 passing | failing / unread / unmatched / 黑盒 / dont_verify | 判定 | receipt sha256 |
+|---|---|---|---|---|---|
+| HPerfCounter_21 | 74 | **74** | 0 / 0 / 0 / 0 / 否 | SUCCEEDED | `8b025481faaa7d7fd9ac5e7a8fffc8170b9a070867ed7217c816dfc51132b870` |
+| HPerfMonitor_3  | 688 | **688** | 0 / 0 / 0 / 0 / 否 | SUCCEEDED | `2b0124e7f6592cc948f9399f66be76fca9c27bead2628290013a3be516feeba7` |
+
+`fm_predict check HPerfCounter_21 HPerfMonitor_3` 逐位相等 rc=0。钉点日志 `HPERF_PIN_PRE_END ok=160 bad=0`，FM "matched by user 160"。
+UT（clean rebuild，f27d65aa 字节）：9 档全部 checks=1799928 errors=0 bad_cov=0。
+已知闸状态：`scripts/pin_call_equiv.py --check` 全仓本就红（大量目标"基线表里没有"），本 lane 的两份新钉点文件也落在
+"基线表里没有这一条"；其中 AtomicsUnit 的那份还报"桩环境下就抛了"——桩 `set_user_match {a b}` 不接受 `-type` 选项
+（真 fm_shell `help -verbose set_user_match` 列有 `[-type port|net|cell|pin]`）。桩与基线表是共享件，本 lane 没动，留给 gatefix。
