@@ -1,0 +1,9 @@
+{
+  "target": "Debug",
+  "ut": "CsrDebugTime4",
+  "regs": 4,
+  "outs": 173,
+  "expected": 177,
+  "merge_dup": "false",
+  "model_applicable": true
+}

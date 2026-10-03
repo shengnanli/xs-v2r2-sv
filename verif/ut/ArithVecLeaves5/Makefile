@@ -17,7 +17,10 @@ LEAVES = Adder_chain_rnd DivUnit FDivSqrt VIAluDecoder VIntAdder64b
 #   ★UT 侧的限度★：impl 的 FloatDivider 仍是 golden 文件，它例化的是 golden 名 fpsqrt_r16，UT 单一 elaboration
 #   里绑到 golden 件（derive 只给 RTL_SRCS 里的模块改名）——所以本 UT 回归不到这条开方通路的重写件；
 #   这条通路的 UT 在 verif/ut/fpsqrt_r16 / fpsqrt_r16_block。FM 两侧分容器，impl 容器里只有重写件，证明覆盖到。
-FDIVSQRT_REWRITTEN = lzc r4_qds_cg r4_qds r4_qds_spec fpsqrt_r16_block fpsqrt_r16
+# 除法通路（2026-10-03，fpu-parents lane）：fpdiv_r64_block（verif/ut/fpdiv_r64_block，evidence/801a0f5c9e49）
+#   impl 改读重写件；它下面的 CSA3to2_20/24、r4_qds_v2/_spec 仍是两侧同源 golden（下面 FDIVSQRT_GOLDEN_IMPL）。
+#   UT 限度同上：impl 的 FloatDividerR64 是 golden 文件、例化 golden 名 fpdiv_r64_block，UT 回归不到重写件，由 FM 覆盖。
+FDIVSQRT_REWRITTEN = lzc r4_qds_cg r4_qds r4_qds_spec fpsqrt_r16_block fpsqrt_r16 fpdiv_r64_block
 RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN)))
 TB_SRCS  = tb.sv
 
@@ -31,8 +34,8 @@ FDIVSQRT_DEPS = FloatDivider.sv FloatDividerR64.sv fpsqrt_r16.sv fpdiv_r64_block
                 fpsqrt_r16_block.sv CSA3to2_20.sv CSA3to2_24.sv \
                 ShiftLeftPriorityWithLZDResult.sv lzc.sv r4_qds.sv r4_qds_cg.sv \
                 r4_qds_spec.sv r4_qds_v2.sv r4_qds_v2_spec.sv
-# impl 侧仍读 golden 的 FDivSqrt 闭包文件（= FDIVSQRT_DEPS 去掉上面 6 个重写件）
-FDIVSQRT_GOLDEN_IMPL = FloatDivider.sv FloatDividerR64.sv fpdiv_r64_block.sv \
+# impl 侧仍读 golden 的 FDivSqrt 闭包文件（= FDIVSQRT_DEPS 去掉上面 7 个重写件）
+FDIVSQRT_GOLDEN_IMPL = FloatDivider.sv FloatDividerR64.sv \
                        CSA3to2_20.sv CSA3to2_24.sv ShiftLeftPriorityWithLZDResult.sv \
                        r4_qds_v2.sv r4_qds_v2_spec.sv
 RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(DIVUNIT_DEPS) $(FDIVSQRT_GOLDEN_IMPL))

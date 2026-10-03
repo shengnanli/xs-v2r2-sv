@@ -1,0 +1,10 @@
+{
+  "target": "Arbiter3_PfGenReq",
+  "ut": "Pipeline200c",
+  "regs": 0,
+  "outs": 72,
+  "expected": 72,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "agent/next200c-takeover 接管节预登记（docs/lanes/newrtl_next200c_prereg.md）"
+}

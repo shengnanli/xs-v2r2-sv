@@ -1,0 +1,9 @@
+{
+  "target": "XRetPermitModule",
+  "ut": "CsrDebugTime4",
+  "regs": 0,
+  "outs": 6,
+  "expected": 6,
+  "merge_dup": "false",
+  "model_applicable": true
+}

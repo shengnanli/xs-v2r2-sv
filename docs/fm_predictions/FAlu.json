@@ -5,5 +5,6 @@
   "outs": 732,
   "expected": 2742,
   "merge_dup": "false",
-  "model_applicable": true
+  "model_applicable": true,
+  "note": "adder64 prereg §3（FAlu 重证）：预测 passing=2575 + constant_reg 167（与上一版 receipt evidence/194f78e14165 相同），钉 23 对 + vmucp"
 }

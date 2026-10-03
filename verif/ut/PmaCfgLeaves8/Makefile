@@ -15,4 +15,5 @@ include ../../../scripts/ut_common.mk
 # The selected runtime initialization mode is intentionally supplied through
 # SIM_ARGS, never as a compile-time +vcs+initreg+0 option.
 VCS += +define+SYNTHESIS +vcs+initreg+random
-SIM_ARGS = +ncycles=$(NCYCLES) +vcs+initreg+0
+INITREG ?= 0
+SIM_ARGS = +ncycles=$(NCYCLES) +vcs+initreg+$(INITREG)

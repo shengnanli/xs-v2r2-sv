@@ -1,0 +1,9 @@
+{
+  "target": "L2Cache",
+  "ut": "L2Cache",
+  "regs": 318,
+  "outs": 896,
+  "expected": 1214,
+  "merge_dup": "false",
+  "model_applicable": true
+}
