@@ -17,7 +17,10 @@ fail-closed（生成期）：golden 寄存器名与位宽从 G1 golden 现读；
 fail-closed（运行期）：生成的 tcl 逐条数 set_user_match 返回值（catch 只用来计数失败），成功数必须等于字面总数，否则 error。
 
 父级：PARENTS 里的父目标（Composer）的 fm_pins_pre.tcl 里维护一个 GENERATED(bpu-child-pins) 区，
-  把各预测器子实例的钉点加实例前缀并入；父级自己的钉点在区外、不碰。
+  把各预测器子实例的钉点加实例前缀并入；父级自己的钉点在区外、不碰。父级另并入子模块自证时 FM 自己给出的
+  寄存器配对（verif/ut/<父级>/child_pairs/<子模块>.tsv）：父级规模下签名分析在子模块内部的对称结构上配不全
+  （Composer 诊断跑实测 18136 个 unmatched compare point），配对本身是 FM 在子模块证明里的结论，不是人工指定；
+  与规则钉点重叠时以 FM 配对为准（只差位号写法）；合并后仍须单射。
 
 用法：
     python3 scripts/gen_bpu_stagepc_pins.py            # 生成全部目标（幂等）
@@ -162,10 +165,30 @@ PBEGIN = "# BEGIN GENERATED(bpu-child-pins) —— scripts/gen_bpu_stagepc_pins.
 PEND = "# END GENERATED(bpu-child-pins)\n"
 
 
+def child_matched_pairs(parent, child):
+    """子模块自证时 FM 自己给出的寄存器配对（verif/ut/<parent>/child_pairs/<child>.tsv，
+    由 scripts/extract_fm_matched_pairs.py 从与 receipt 同字节的那次子模块 FM 跑抽出）。"""
+    p = os.path.join(REPO, "verif", "ut", parent, "child_pairs", child + ".tsv")
+    out = []
+    for ln in open(p):
+        if ln.startswith("#") or not ln.strip():
+            continue
+        r, i = ln.rstrip("\n").split("\t")
+        out.append((r, i))
+    return out
+
+
 def render_parent(parent):
     prs = []
     for child, pfx in PARENTS[parent]:
-        prs += pairs_for(child, pfx)
+        rule = pairs_for(child, pfx)
+        seen = dict(rule)
+        for r, i in child_matched_pairs(parent, child):
+            r, i = pfx + r, pfx + i
+            # 同一 ref 两边都有时以 FM 自己的配对为准（实测只差写法：规则写打平位号 [i][5]，
+            # FM 报告写结构体字段名 [i]\[offset][0]，两者在子模块证明里都钉得上、指同一个寄存器位）
+            seen[r] = i
+        prs += sorted(seen.items())
     if len(set(r for r, _ in prs)) != len(prs) or len(set(i for _, i in prs)) != len(prs):
         die("%s: 子实例钉点合并后不是单射" % parent)
     n = len(prs)
@@ -196,7 +219,7 @@ def render_parent(parent):
 
 
 def esc(x):
-    return x.replace("[", "\\[").replace("]", "\\]")
+    return x.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
 
 
 def render(top):

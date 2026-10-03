@@ -12,7 +12,9 @@
 #     UT 里 golden 侧读 COMPOSER_GOLDEN_ONLY，重写侧读改名后的重写件。
 #   · FTB / RAS 两个预测器、4 个 DelayN、以及 TageTable / ITTageTable / TageBTable 的下一层（Folded/Splitted SRAM、
 #     WrBypass_32/41/43 等）照旧两侧同源用 golden（RTL_GOLDEN_DEPS）。
-#   · 厂商 SRAM 宏 array_*_ext.v 的处置不变（同前：两侧读同一份）。
+#   · 厂商 SRAM 叶子 array_*_ext.v：改回审定的厂商边界（verif/vendor_boundary.tsv：FM 两侧黑盒，.v 只给 VCS）。
+#     之前两侧读成白盒（两侧同一份子树时无妨）；子树换成重写件后，叶子里的存储阵列在父级规模下 FM 配不上
+#     （诊断跑 8192 个 tage/bt 存储位 unmatched），而各预测器自己的签核本来就是叶子黑盒。
 MODULE = Composer
 
 RTL_DIR = ../../../rtl
@@ -101,19 +103,14 @@ RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
                   $(GOLDEN_RTL)/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv \
                   $(GOLDEN_RTL)/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv \
                   $(GOLDEN_RTL)/sram_array_1p512x24m12s1h0l1b_bp_tage.sv \
-                  $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv \
-                  $(GOLDEN_RTL)/array_1_ext.v \
-                  $(GOLDEN_RTL)/array_2_ext.v \
-                  $(GOLDEN_RTL)/array_3_ext.v \
-                  $(GOLDEN_RTL)/array_4_ext.v \
-                  $(GOLDEN_RTL)/array_5_ext.v \
-                  $(GOLDEN_RTL)/array_6_ext.v
+                  $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv
 
 # golden 侧独有：三个预测器（FauFTB / Tage_SC / ITTage）及其重写过的整棵子树，impl 侧用 RTL_SRCS 里的重写件。
 COMPOSER_GOLDEN_ONLY = FauFTB.sv FauFTBWay.sv ITTage.sv ITTageTable.sv ITTageTable_1.sv ITTageTable_2.sv ITTageTable_3.sv ITTageTable_4.sv IndexableCAMTemplate.sv IndexableCAMTemplate_33.sv MaxPeriodFibonacciLFSR.sv MbistPipeIttage.sv MbistPipeIttage_1.sv MbistPipeIttage_2.sv MbistPipeIttage_3.sv MbistPipeIttage_4.sv MbistPipeSc.sv MbistPipeSc_1.sv MbistPipeSc_2.sv MbistPipeSc_3.sv MbistPipeTage.sv RegionWays.sv SCTable.sv SCTable_1.sv SCTable_2.sv SCTable_3.sv SRAMTemplate_68.sv TageBTable.sv TageTable.sv TageTable_1.sv TageTable_2.sv TageTable_3.sv Tage_SC.sv WrBypass.sv WrBypass_33.sv data_mem_0_8x3.sv data_mem_16x12.sv
-GOLDEN_SRCS = $(GOLDEN_RTL)/Composer.sv $(addprefix $(GOLDEN_RTL)/,$(COMPOSER_GOLDEN_ONLY))
+GOLDEN_SRCS = $(GOLDEN_RTL)/Composer.sv $(addprefix $(GOLDEN_RTL)/,$(COMPOSER_GOLDEN_ONLY)) \
+              $(addprefix $(GOLDEN_RTL)/,array_1_ext.v array_2_ext.v array_3_ext.v array_4_ext.v array_5_ext.v array_6_ext.v)
 FM_VARIANTS = Composer
-FM_REF_DEPS_Composer = ClockGate.sv DelayN.sv DelayNWithValid.sv DelayNWithValid_1.sv DelayN_1.sv FTB.sv FTBBank.sv FauFTB.sv FauFTBWay.sv FoldedSRAMTemplate.sv FoldedSRAMTemplate_1.sv FoldedSRAMTemplate_20.sv FoldedSRAMTemplate_22.sv FoldedSRAMTemplate_24.sv ITTage.sv ITTageTable.sv ITTageTable_1.sv ITTageTable_2.sv ITTageTable_3.sv ITTageTable_4.sv IndexableCAMTemplate.sv IndexableCAMTemplate_32.sv IndexableCAMTemplate_33.sv IndexableCAMTemplate_41.sv IndexableCAMTemplate_43.sv MaxPeriodFibonacciLFSR.sv MbistClockGateCell.sv MbistPipeFtb.sv MbistPipeIttage.sv MbistPipeIttage_1.sv MbistPipeIttage_2.sv MbistPipeIttage_3.sv MbistPipeIttage_4.sv MbistPipeSc.sv MbistPipeSc_1.sv MbistPipeSc_2.sv MbistPipeSc_3.sv MbistPipeTage.sv RAS.sv RASStack.sv RegionWays.sv SCTable.sv SCTable_1.sv SCTable_2.sv SCTable_3.sv SRAMTemplate_36.sv SRAMTemplate_44.sv SRAMTemplate_45.sv SRAMTemplate_64.sv SRAMTemplate_68.sv SRAMTemplate_76.sv SRAMTemplate_78.sv SplittedSRAMTemplate_2.sv SplittedSRAMTemplate_23.sv SplittedSRAMTemplate_25.sv SplittedSRAMTemplate_27.sv SplittedSRAMTemplate_3.sv SplittedSRAMTemplate_4.sv TageBTable.sv TageTable.sv TageTable_1.sv TageTable_2.sv TageTable_3.sv Tage_SC.sv WrBypass.sv WrBypass_32.sv WrBypass_33.sv WrBypass_41.sv WrBypass_43.sv array_1.sv array_2.sv array_3.sv array_4.sv array_5.sv array_6.sv data_mem_0_4x2.sv data_mem_0_8x3.sv data_mem_16x12.sv data_mem_8x4.sv sram_array_1p128x24m6s1h0l1b_bp_sc.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv sram_array_1p512x24m12s1h0l1b_bp_tage.sv sram_array_1p512x40m10s1h0l1b_bp_ftb.sv array_1_ext.v array_2_ext.v array_3_ext.v array_4_ext.v array_5_ext.v array_6_ext.v
+FM_REF_DEPS_Composer = ClockGate.sv DelayN.sv DelayNWithValid.sv DelayNWithValid_1.sv DelayN_1.sv FTB.sv FTBBank.sv FauFTB.sv FauFTBWay.sv FoldedSRAMTemplate.sv FoldedSRAMTemplate_1.sv FoldedSRAMTemplate_20.sv FoldedSRAMTemplate_22.sv FoldedSRAMTemplate_24.sv ITTage.sv ITTageTable.sv ITTageTable_1.sv ITTageTable_2.sv ITTageTable_3.sv ITTageTable_4.sv IndexableCAMTemplate.sv IndexableCAMTemplate_32.sv IndexableCAMTemplate_33.sv IndexableCAMTemplate_41.sv IndexableCAMTemplate_43.sv MaxPeriodFibonacciLFSR.sv MbistClockGateCell.sv MbistPipeFtb.sv MbistPipeIttage.sv MbistPipeIttage_1.sv MbistPipeIttage_2.sv MbistPipeIttage_3.sv MbistPipeIttage_4.sv MbistPipeSc.sv MbistPipeSc_1.sv MbistPipeSc_2.sv MbistPipeSc_3.sv MbistPipeTage.sv RAS.sv RASStack.sv RegionWays.sv SCTable.sv SCTable_1.sv SCTable_2.sv SCTable_3.sv SRAMTemplate_36.sv SRAMTemplate_44.sv SRAMTemplate_45.sv SRAMTemplate_64.sv SRAMTemplate_68.sv SRAMTemplate_76.sv SRAMTemplate_78.sv SplittedSRAMTemplate_2.sv SplittedSRAMTemplate_23.sv SplittedSRAMTemplate_25.sv SplittedSRAMTemplate_27.sv SplittedSRAMTemplate_3.sv SplittedSRAMTemplate_4.sv TageBTable.sv TageTable.sv TageTable_1.sv TageTable_2.sv TageTable_3.sv Tage_SC.sv WrBypass.sv WrBypass_32.sv WrBypass_33.sv WrBypass_41.sv WrBypass_43.sv array_1.sv array_2.sv array_3.sv array_4.sv array_5.sv array_6.sv data_mem_0_4x2.sv data_mem_0_8x3.sv data_mem_16x12.sv data_mem_8x4.sv sram_array_1p128x24m6s1h0l1b_bp_sc.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv sram_array_1p512x24m12s1h0l1b_bp_tage.sv sram_array_1p512x40m10s1h0l1b_bp_ftb.sv
 
 # ---------------------------------------------------------------------------
 # matched-unread 加强（FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true）
