@@ -1,0 +1,228 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/StimecmpModule
+Implementation : i:/WORK/StimecmpModule
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 03:21:41 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    Mgtu
+
+       Instances : 0
+
+e *    MidelegModule
+
+       Instances : 0
+
+e *    MipModule
+
+       Instances : 0
+
+e *    MiselectModule
+
+       Instances : 0
+
+e *    MnstatusModule
+
+       Instances : 0
+
+e *    MretEventModule
+
+       Instances : 0
+
+e *    MseccfgModule
+
+       Instances : 0
+
+e *    Mstateen0Module
+
+       Instances : 0
+
+e *    Mstateen1Module
+
+       Instances : 0
+
+e *    Mstateen2Module
+
+       Instances : 0
+
+e *    Mstateen3Module
+
+       Instances : 0
+
+e *    MtinstModule
+
+       Instances : 0
+
+e *    SatpModule
+
+       Instances : 0
+
+e *    SbpctlModule
+
+       Instances : 0
+
+e *    ScounterenModule
+
+       Instances : 0
+
+e *    SenvcfgModule
+
+       Instances : 0
+
+e *    SiselectModule
+
+       Instances : 0
+
+e *    SlvpredctlModule
+
+       Instances : 0
+
+e *    SmblockctlModule
+
+       Instances : 0
+
+e *    SpfctlModule
+
+       Instances : 0
+
+e *    SretEventModule
+
+       Instances : 0
+
+e *    SrnctlModule
+
+       Instances : 0
+
+e *    Sstateen0Module
+
+       Instances : 0
+
+e *    TrapInstMod
+
+       Instances : 0
+
+e *    TrapTvalMod
+
+       Instances : 0
+
+e *    xs_CsrStateEnable_core
+
+       Instances : 0
+
+e *    xs_Mgtu_core
+
+       Instances : 0
+
+e *    xs_MidelegModule_core
+
+       Instances : 0
+
+e *    xs_MipModule_core
+
+       Instances : 0
+
+e *    xs_MiselectModule_core
+
+       Instances : 0
+
+e *    xs_MnstatusModule_core
+
+       Instances : 0
+
+e *    xs_MretEventModule_core
+
+       Instances : 0
+
+e *    xs_MseccfgModule_core
+
+       Instances : 0
+
+e *    xs_Mstateen0Module_core
+
+       Instances : 0
+
+e *    xs_MtinstModule_core
+
+       Instances : 0
+
+e *    xs_SatpModule_core
+
+       Instances : 0
+
+e *    xs_SbpctlModule_core
+
+       Instances : 0
+
+e *    xs_ScounterenModule_core
+
+       Instances : 0
+
+e *    xs_SenvcfgModule_core
+
+       Instances : 0
+
+e *    xs_SiselectModule_core
+
+       Instances : 0
+
+e *    xs_SlvpredctlModule_core
+
+       Instances : 0
+
+e *    xs_SmblockctlModule_core
+
+       Instances : 0
+
+e *    xs_SpfctlModule_core
+
+       Instances : 0
+
+e *    xs_SretEventModule_core
+
+       Instances : 0
+
+e *    xs_SrnctlModule_core
+
+       Instances : 0
+
+e *    xs_Sstateen0Module_core
+
+       Instances : 0
+
+e *    xs_TrapInstMod_core
+
+       Instances : 0
+
+e *    xs_TrapTvalMod_core
+
+       Instances : 0
+
+
+1
+

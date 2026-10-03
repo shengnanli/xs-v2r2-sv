@@ -1,0 +1,8 @@
+ref	r:/WORK/Iprio2Module_1/reg_PrioMEI_reg[0]
+ref	r:/WORK/Iprio2Module_1/reg_PrioMEI_reg[1]
+ref	r:/WORK/Iprio2Module_1/reg_PrioMEI_reg[2]
+ref	r:/WORK/Iprio2Module_1/reg_PrioMEI_reg[3]
+ref	r:/WORK/Iprio2Module_1/reg_PrioMEI_reg[4]
+ref	r:/WORK/Iprio2Module_1/reg_PrioMEI_reg[5]
+ref	r:/WORK/Iprio2Module_1/reg_PrioMEI_reg[6]
+ref	r:/WORK/Iprio2Module_1/reg_PrioMEI_reg[7]

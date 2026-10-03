@@ -2,7 +2,15 @@
 // Adder_chain_rnd / VIAluDecoder / VIntAdder64b 是纯组合叶：每拍全随机驱动、#1 后逐输出比对。
 // DivUnit / FDivSqrt 是时序包装层：共享 clock/reset/flush 激励，in_valid 50%、out_ready 75%、
 // flush 约 3%；其输出 payload 寄存器无复位，两侧上电初值在随机初值档位下可能不同，
-// 故 payload 比对由 armed 闸（首次接受后置位）把守；握手/数据输出恒比对（$isunknown 守卫）。
+// 故 payload 比对由 armed 闸（首次接受后置位）把守；握手恒比对（$isunknown 守卫）。
+// res_data 由 res_armed 闸把守（2026-10-03，divunit-initreg lane 诊断）：res_data 是无复位寄存器
+// 的组合函数——DivUnit = isW(包装层 ctrlReg_isW) × isHi × rFinal/qFinal(golden 孩子
+// SRT16DividerDataModule，state[5] 才写)；FDivSqrt = outCtrl_r_fpu_fmt(包装层) × fdiv 结果。
+// 第一次出结果（golden out_valid=1）之前这些寄存器只有上电值，两个独立例化在
+// +vcs+initreg+random / +<seed>017 下各摇一份 ⇒ 必然不等（UCLI 实测 seed1/1017 第 6 拍：
+// 两侧 state 同为 idle、out_valid=0，只有 isW/rFinal/qFinal 上电值不同；第一次 out_valid
+// 后两侧 rFinal/qFinal 逐位相同，此后 200k 拍零误）。同 CONVENTIONS「暖机窗口」定式。
+// 闸只遮第一次出结果之前那十几拍；之后 out_valid=0 的拍也照比（bug-for-bug，不是只比有效拍）。
 // 覆盖闸（防"DUT 没动也全绿"）：checks/toggled/fires + 每模块专项计数（sew 桶、18 条译码、
 // 13 个 opcode、widen/is_sub/eew、除法/开方接受数、flush 数）。
 `timescale 1ns/1ps
@@ -646,6 +654,11 @@ module tb;
   longint fd_in_fires, fd_out_fires, fd_sqrt_fires, fd_div_fires;
   longint fd_fmt_fires [4];
   bit du_armed, fd_armed;
+  localparam int QUIET_AFTER_RESET = 8;
+  localparam int RESET_PERIOD = 25000;
+  int quiet_left = 0;
+  bit du_res_armed, fd_res_armed;          // 第一次 golden out_valid 后置位（见文件头）
+  longint du_res_gated, fd_res_gated;      // 闸遮掉的拍数（报出来，证明只遮了开机那一小段）
 
 
   // ================= 激励 =================
@@ -744,7 +757,10 @@ module tb;
     // —— DivUnit：握手/数据恒比对；无复位 payload 由 armed 闸把守 ——
     cmp("du.in_ready",  64'(g_du_io_in_ready), 64'(i_du_io_in_ready));
     cmp("du.out_valid", 64'(g_du_io_out_valid), 64'(i_du_io_out_valid));
-    cmp("du.res_data",  g_du_io_out_bits_res_data, i_du_io_out_bits_res_data);
+    if (du_res_armed || g_du_io_out_valid)
+      cmp("du.res_data",  g_du_io_out_bits_res_data, i_du_io_out_bits_res_data);
+    else
+      du_res_gated++;
     if (du_armed) begin
       cmp("du.ctrl", g_du_ctrl_c, i_du_ctrl_c);
       cmp("du.perf", g_du_perf_c, i_du_perf_c);
@@ -753,7 +769,10 @@ module tb;
     // —— FDivSqrt ——
     cmp("fd.in_ready",  64'(g_fd_io_in_ready), 64'(i_fd_io_in_ready));
     cmp("fd.out_valid", 64'(g_fd_io_out_valid), 64'(i_fd_io_out_valid));
-    cmp("fd.res_data",  g_fd_io_out_bits_res_data, i_fd_io_out_bits_res_data);
+    if (fd_res_armed || g_fd_io_out_valid)
+      cmp("fd.res_data",  g_fd_io_out_bits_res_data, i_fd_io_out_bits_res_data);
+    else
+      fd_res_gated++;
     cmp("fd.fflags",    64'(g_fd_io_out_bits_res_fflags), 64'(i_fd_io_out_bits_res_fflags));
     if (fd_armed) begin
       cmp("fd.ctrl", g_fd_ctrl_c, i_fd_ctrl_c);
@@ -832,6 +851,7 @@ module tb;
       if (~du_io_in_bits_ctrl_fuOpType[1]) du_sign_fires++;
     end
     if (g_du_io_out_valid && du_io_out_ready) du_out_fires++;
+    if (g_du_io_out_valid) du_res_armed = 1'b1;
     if (fd_io_in_valid && g_fd_io_in_ready) begin
       fd_in_fires++;
       fd_armed = 1'b1;
@@ -839,6 +859,7 @@ module tb;
       fd_fmt_fires[fd_io_in_bits_ctrl_fpu_fmt]++;
     end
     if (g_fd_io_out_valid && fd_io_out_ready) fd_out_fires++;
+    if (g_fd_io_out_valid) fd_res_armed = 1'b1;
   endtask
 
   // ================= 主流程 =================
@@ -855,20 +876,33 @@ module tb;
     du_in_fires = 0; du_out_fires = 0; du_isw_fires = 0; du_sign_fires = 0; flush_cycles = 0;
     fd_in_fires = 0; fd_out_fires = 0; fd_sqrt_fires = 0; fd_div_fires = 0;
     du_armed = 0; fd_armed = 0;
+    du_res_armed = 0; fd_res_armed = 0; du_res_gated = 0; fd_res_gated = 0;
 
     drive_all();   // 先清成一组确定值
     reset = 1'b1;
     repeat (5) @(posedge clock);
     @(negedge clock) reset = 1'b0;
     for (int unsigned c = 0; c < NCYCLES; c++) begin
-      // 中途再复位一次，覆盖复位路径（两侧同拍同源）
-      if (c == NCYCLES/2) begin
+      // 中途再复位，覆盖复位路径（两侧同拍同源）。原先只在 NCYCLES/2 复位一次；
+      // 现每 RESET_PERIOD 拍再复位一次（含 NCYCLES/2）——单次复位后静默窗能否
+      // 暴露「给无复位寄存器加复位」取决于复位前最后一笔的 fmt/isW，一次只有约一半机会。
+      if (c == NCYCLES/2 || (c != 0 && c % RESET_PERIOD == 0)) begin
         reset = 1'b1;
         repeat (3) @(posedge clock);
         @(negedge clock) reset = 1'b0;
+        quiet_left = QUIET_AFTER_RESET;
       end
       @(negedge clock);
       drive_all();
+      // 中途复位后的静默窗：两除法器不接新操作，让 res_data 在 out_valid=0 下读
+      // 复位前留下的无复位寄存器（isW/fmt/rFinal/qFinal）——重写件若给它们加了复位，
+      // 在这里现形（变异 M1/M2，见 Makefile 注释）。不加这个窗，复位后 1~2 拍就有
+      // 新接受把这些寄存器覆盖掉，加复位的变异体 UT 抓不到。
+      if (quiet_left > 0) begin
+        du_io_in_valid = 1'b0;
+        fd_io_in_valid = 1'b0;
+        quiet_left--;
+      end
       #1 check_all();
       sample_all();
       @(posedge clock);
@@ -894,6 +928,11 @@ module tb;
                du_in_fires, du_out_fires, du_isw_fires, du_sign_fires, flush_cycles,
                fd_in_fires, fd_out_fires, fd_sqrt_fires, fd_div_fires,
                fd_fmt_fires[0], fd_fmt_fires[1], fd_fmt_fires[2], fd_fmt_fires[3]);
+      $display("COV res_data gated cycles (before first out_valid): du=%0d fd=%0d", du_res_gated, fd_res_gated);
+      if (du_res_gated > 1000 || fd_res_gated > 1000) begin
+        $display("TEST FAILED (res_armed gate covered too many cycles: du=%0d fd=%0d)", du_res_gated, fd_res_gated);
+        $fatal(1);
+      end
       if (errors != 0) begin $display("TEST FAILED (mismatch)"); $fatal(1); end
       if (checks == 0) begin $display("TEST FAILED (coverage: no comparison happened)"); $fatal(1); end
       if (toggled < N_TOG) begin

@@ -1,0 +1,10 @@
+{
+  "target": "DivUnit",
+  "ut": "ArithVecLeaves5",
+  "regs": 2407,
+  "outs": 725,
+  "expected": 3132,
+  "merge_dup": "$(if",
+  "model_applicable": false,
+  "note": "fpu-parents 重证（impl 改读重写件 fpdiv_r64_block）：预测同上一版 receipt evidence/f19ef593a8df（FDivSqrt 2052 = 2082 − constant_reg 30）"
+}

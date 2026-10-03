@@ -1,0 +1,41 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "HPerfCounter_13",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "G1 golden stores event_op_0, event_op_1, event_op_2, and delayed event_op_2_reg as five-bit registers, but reduction logic reads only operation bits [2:0]. Bits [4:3] are golden-only cone-dead operation encoding storage; the readable shared RTL stores only [2:0], preserving every consumed operation bit and therefore correctly has no impl counterparts. Strict FM observed exactly these eight ref unread points with impl unread=0, failing=0, unmatched=0, and native SUCCEEDED.",
+ "observed_points": 8,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/HPerfCounter_13/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfCounter_13/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfCounter_13/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfCounter_13/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfCounter_13/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfCounter_13/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfCounter_13/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfCounter_13/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  }
+ ]
+}

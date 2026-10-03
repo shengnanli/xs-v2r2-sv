@@ -1,0 +1,138 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T11:48:26Z",
+ "generator": {
+  "run_context_worktree_digest": "aab9acf99aca22084f37133ae4fe3604ccf4855a6b770f4635079cc3ea9af028",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "/tmp/newrtl200c-proof-hperf-head-1791027538974072161/HPerfCounter",
+  "version": 1
+ },
+ "impl_commit": "92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/HPerfCounter.sv",
+    "sha256": "9480f692cfa256d4bcd9168861b19f13aa631e6acd255100f5a4893f0681e817"
+   }
+  ],
+  "golden_sha256": "d38c4ae027734bd13d3b6291671a18d09ada40ea88e87fec0be5428f7c1acb43",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_HPerfCounter_core.sv",
+    "sha256": "1e64a61c65e6b45878e700697f06018baaf397a65559fdd6f388b66ebc65c75b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter.sv",
+    "sha256": "ecd9589ae0f4e0dae7b9b55cd4b2f1c2960ca632b052cb582356b3e28c3264f7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter_13.sv",
+    "sha256": "a56525f0a125a3b0ef84947167599e733e6c2bc4d6620604026ef4c7aeaba790"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter_8.sv",
+    "sha256": "157252b291b61e88363827f472377efff78ba7b58b4d8af506ebcf41bffbd791"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/BusErrorUnit.sv",
+    "sha256": "94d3bcd4c7080ab0db302b96e43a9804036aafad4c5e185fd2a5f2509bf75f69"
+   }
+  ],
+  "impl_sha256": "1979751e6f2e9302bf08e3936fdc97fc9c7a098bd83686c8a6ff6d54fa35ec32",
+  "repo_impl_files": 5
+ },
+ "native_facts_sha256": "4bc41595ffb51795b02181336eaf322d2dc065fc6e4cf4eb3415def151320a95",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 66,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 8
+  }
+ },
+ "proof_commit": "92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6",
+ "proof_config": {
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/HPerfCounter.json",
+    "sha256": "3d3506f7e24824486ea9113e2cc99bf3be7a15b2fbcc5a5f85c90f2bc49e6dd6"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "07203604b6cf71b9fb3d5747fd14a377044c446e2a685e300683281665f6b5a3",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "aab9acf99aca22084f37133ae4fe3604ccf4855a6b770f4635079cc3ea9af028",
+ "provisional": false,
+ "receipt_sha256": "5375fa25fc4c976a63de4ede403b77de0da116f01f5389e4e9089d99f62096cf",
+ "reproduce": {
+  "command": "PROOF_COMMIT=92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6 scripts/run_proof.sh BusHPerfCounter200c HPerfCounter",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "96af57ea0eee7e3705c28e207130cf0f932de502f416388912da0f3e0a9fb818",
+ "run_id": "BusHPerfCounter200c-20261003T114004Z-92a50405c",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "HPerfCounter",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "BusHPerfCounter200c",
+ "variant": "HPerfCounter",
+ "verdict": "PASS_DEAD_REF"
+}

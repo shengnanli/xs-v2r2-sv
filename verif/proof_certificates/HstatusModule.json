@@ -1,0 +1,208 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T07:39:15Z",
+ "generator": {
+  "run_context_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/cb2892a30a11/HstatusModule",
+  "version": 1
+ },
+ "impl_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/HstatusModule.sv",
+    "sha256": "885e475fe2ae952fa70be0bd988ad7babbb6af50f52311fb8bd7ff27a53f8642"
+   }
+  ],
+  "golden_sha256": "6cc014c014d86a3b705312a141ea2da85f4e4f49d5d5aac5a73320d072b5d600",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_CsrEpcTvec_core.sv",
+    "sha256": "25a69dc47b5274a711717c606959dd3be5d9623627e450bb6cd5a27c23577f30"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_CsrTrapValue_core.sv",
+    "sha256": "c80e5f7b85a3b44b2d1e936eaf332a82cf760bc4579d4e46fa0a65df9d685898"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/DpcModule.sv",
+    "sha256": "e9c8e9a06427f913f577c81d94c88224d94d0f545e4e08b24275ab82908d8a7b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/DretEventModule.sv",
+    "sha256": "e84ceb35f5d21371c1b82937121865ed79384679205e11713793957660dbca1b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HcounterenModule.sv",
+    "sha256": "c9f971a5aa74ceca2af06f3ee4d672e26d7f19ecfff5ac3d9f974254df45f64b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HedelegModule.sv",
+    "sha256": "ef60a1f5c73230a7fc786fe1580f90c3ac050ac61862f9a70c5477f9738fac7b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HenvcfgModule.sv",
+    "sha256": "55d7e88a08b2a80dae78eb11afec2c9d4f29118459524fc51fc900550a9c1115"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HgatpModule.sv",
+    "sha256": "597708d4755f98aaf8b3d8216c1e3818e54e73093b64a3992c59d7d04bb6a727"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HidelegModule.sv",
+    "sha256": "2fad5d66a90fb85cacc26720343f6e59a2cef81f0e6470fd95f4f33f645ad25a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Hstateen0Module.sv",
+    "sha256": "66763579070577d3756a931e2a25ddd048f9c715c3e8f87c09f319482affa508"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Hstateen1Module.sv",
+    "sha256": "a7cac0e311ebe834445e5c38c6430747866a669372f92343ae544c95e1f165ec"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Hstateen2Module.sv",
+    "sha256": "fd089afc71a7e5e9bc470e165309244588a5f292c5e4e35079342804c0ba89c2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Hstateen3Module.sv",
+    "sha256": "64182713cd68f86956452632bc6c7e91550e148cfe3d3c2ab4c134838cabb5be"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HstatusModule.sv",
+    "sha256": "a7f52fae9c6eea71c1c1023b6ff3af91fc03661bc0136c5e918b5f8b830812c1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HtimedeltaModule.sv",
+    "sha256": "5d84b7f3c505fa66035a62aca2fb6ce935fcb1931b6a838628027e44972b4a62"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HtinstModule.sv",
+    "sha256": "c636f86b2f7b955dc666af49fcac471b889e32a64d76f32749e5431302300f96"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HtvalModule.sv",
+    "sha256": "7c645e661113b045365b36ae0df49ce5ab14fd44226dab260644517f1a739731"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HvictlModule.sv",
+    "sha256": "ede67fe6f8dbad6c9f4e15a9e2360d5653ff3d38301b8a0be07b0ce9eee9be66"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Hviprio1Module.sv",
+    "sha256": "9f4cb7f5da8e4d2cafba38fb43194c08a5a49b3d6f9ccbebd711af5a9b3986e8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Hviprio2Module.sv",
+    "sha256": "30dade252643840601dbd0976aa3e4438d20c02401d7e57e21dc05f6c3af08ec"
+   }
+  ],
+  "impl_sha256": "823ba5366d663abcba97683b023e4b7ea680bb8806989cf315bd694a43511d07",
+  "repo_impl_files": 20
+ },
+ "native_facts_sha256": "e8688be4773c491b9529b3a3948f473b6aee3ec81435de2fe9e7a3c49e223135",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 94,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+ "provisional": false,
+ "receipt_sha256": "911a9bb74c6fef6d6df9752203fb2c8464d041449a78261daa74fec46707ffd9",
+ "reproduce": {
+  "command": "PROOF_COMMIT=cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c scripts/run_proof.sh csr_dh HstatusModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "413bb8dfd251b09155a9af70c8aca01f6903e1090ebc7ae6e7456769a7bf190d",
+ "run_id": "CsrDhLeaves-20261003T071720Z-cb2892a3",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "HstatusModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "csr_dh",
+ "variant": "HstatusModule",
+ "verdict": "SUCCEEDED"
+}

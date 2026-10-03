@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Mhpmcounter20Module
+Implementation : i:/WORK/Mhpmcounter20Module
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:43:03 2026
+**************************************************
+
+No aborted compare points.
+
+1
