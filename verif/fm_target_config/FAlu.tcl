@@ -29,4 +29,17 @@
 # 三者打开后必须复验「passing 恰好 +4 / +5 / +7 且 failing 仍为 0」——
 # passing 不增即说明 FM 没真去比，那是空转，不算过(见本轮证据 evidence/)。
 
+# ---- 2026-10-03 fpaddpath-sqrtblock lane：far/close 子树 impl 改读重写件后 ----
+# 上述同一组死位两侧名字不再相同（golden firtool 名 vs 重写核字段名），且无扇出签名 → FM 配不上（unmatched unread），
+# vmucp 单开空转。由本目标 UT 目录的 fm_pins.tcl 字面钉 4 对（含恒 0 的 U_CS4_io_adder_op1_r_reg[23]，钉上后归回
+# constant_reg），再交 vmucp 实比；判据仍是上面六条（passing 与上一版 receipt 相同、failing/unmatched 全 0）。
+
+# ---- 2026-10-03 fpu-parents lane（group adder64）：F32 加法器本体 / F64 close path（连 child）/ F64 打拍加法器 impl 改读重写件后 ----
+# 诊断跑（diagnostic-full，不产 receipt；只有旧 4 对钉点）：16(16) unmatched compare + 7(7) unmatched unread。
+#   unread 7 = 旧 F32 那 4 点 + F64 close path 的 CS4 op0/op1 MSB 与左移源 MSB（与 FpAddPathF64W 同三点，此前两侧同读 golden 按名配上）；
+#   compare 16 = 三组同源双份寄存器在 FAlu 上下文里扇出签名对称、FM 分不清谁对谁（F32 fadd0_result1_r/_r_1 低位 5×2、
+#   F64 U_Lshift_io_src_r/lshift_result_head_is_one_r_1 低 2 位 ×2、close_fraction_result_r/EA_sub_value_r）。
+# verif/ut/FAlu/fm_pins.tcl 改为字面 23 对（7 对死位 + 16 对双份），钉上后诊断跑：passing 2575 / constant_reg 167 /
+#   unread 0 / unmatched 0，与上一版 receipt（evidence/194f78e14165/FAlu）逐数相同。判据仍是上面六条。
+
 fm_target_vmucp_allow

@@ -2,7 +2,7 @@
 // fpsqrt_vector_r16.sv —— 向量浮点开方器顶层（基 16 = 每拍 2 个基 4 根位，f16×4 / f32×2 / f64×1）
 //
 // 在哪一层：yunsuan VectorFloatDivider 里与除法器并列的开方通路；本件是开方器的控制 + 前后处理，
-//   每拍的 SRT 迭代由 child fpsqrt_r16_block（golden 件，两侧同读）完成。
+//   每拍的 SRT 迭代由 child fpsqrt_r16_block（本仓重写件，fpaddpath-sqrtblock lane 签核）完成。
 // 设计源：yunsuan/vector/vfsqrt/fpsqrt_vector_r16.scala。golden 里 vector_mode_i 已折成常量 1、
 //   fp_aIsFpCanonicalNAN 折成常量 0，于是 res_is_sqrt_2 / early_finish / 标量结果通路全部消失，
 //   端口表只剩本文件 wrapper 列出的 12 个。
@@ -28,7 +28,7 @@
 //   - PRE_0 的 need_2 路径只改写 rt_q[42:0] / rt_m1_q[51:0] / mask_q[3:0] / iter_num_q[1:0]，其余位保留旧值。
 //   - 余数非零判断把四条通道并排加（nr_f_r 67 位，通道之间插 1 位"进位挡板"：f16 时为 0 挡住，否则为 1 放行）。
 //   - rm 编码 0 RNE / 1 RTZ / 2 RDN / 3 RUP / 4 RMM；RTZ/RDN 与 5..7 都不进位。
-// 子模块：lzc / lzc_3 / lzc_4、r4_qds_cg ×4（本仓已签核重写件）；fpsqrt_r16_block（无重写件，两侧同读 golden）。
+// 子模块：lzc / lzc_3 / lzc_4、r4_qds_cg ×4、fpsqrt_r16_block（均为本仓已签核重写件）。
 // golden 对照：G1-canonical/golden-rtl/fpsqrt_vector_r16.sv
 // =============================================================================
 module xs_fpsqrt_vector_r16_core (
@@ -237,7 +237,7 @@ module xs_fpsqrt_vector_r16_core (
   end
 
   // ---------------------------------------------------------------------------
-  // §3 迭代主体（child，golden 件两侧同读）
+  // §3 迭代主体（child fpsqrt_r16_block）
   // ---------------------------------------------------------------------------
   logic [55:0] nxt_rt;  logic [52:0] nxt_rt_m1;  logic [63:0] nxt_f_r_s, nxt_f_r_c;
   logic [3:0][6:0] nxt_nr7, nxt_m_neg_1, nxt_m_neg_0, nxt_m_pos_1, nxt_m_pos_2;

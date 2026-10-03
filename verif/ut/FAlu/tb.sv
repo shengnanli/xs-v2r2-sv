@@ -286,6 +286,13 @@ module tb;
     drive();
   end
 
+  // ★initreg 档的比对窗口（2026-10-03 fpu-parents lane 补）★：payload 寄存器 RegEnable(fire)、不复位，
+  // +vcs+initreg+random/<n> 下两个实例上电值各摇各的；在第一次 io_in 握手写进去之前读它们是 tb 违反契约
+  // （CONVENTIONS「读一个从没写过、而且不复位的寄存器」）。io_in_ready / io_out_valid（复位域）始终比，
+  // 其余 payload 从第一次 io_in_valid & io_in_ready（复位撤销后）的下一拍起每拍比，之后不再关窗。
+  bit payload_armed = 0;
+  always @(posedge clk) if (!reset && io_in_valid && g_io_in_ready) payload_armed <= 1;
+
   always @(negedge clk) begin
     #4;
     checks++;
@@ -293,7 +300,7 @@ module tb;
     if (g_io_out_valid === 1'b1) cov_outvalid++;
     if ((^g_io_out_bits_res_fflags) !== 1'bx)
       for (int k = 0; k < 5; k++)
-        if (g_io_out_bits_res_fflags[k] === 1'b1) cov_fflag[k]++;
+        if (payload_armed && g_io_out_bits_res_fflags[k] === 1'b1) cov_fflag[k]++;
     if ((^g_io_out_bits_res_data) === 1'bx) cov_res_x++; else cov_res_known++;
     if (g_io_in_ready !== i_io_in_ready) begin
       errors++;
@@ -303,83 +310,83 @@ module tb;
       errors++;
       $display("[%0t] io_out_valid mismatch: g=%h i=%h", $time, g_io_out_valid, i_io_out_valid);
     end
-    if (g_io_out_bits_ctrl_robIdx_flag !== i_io_out_bits_ctrl_robIdx_flag) begin
+    if (payload_armed && g_io_out_bits_ctrl_robIdx_flag !== i_io_out_bits_ctrl_robIdx_flag) begin
       errors++;
       $display("[%0t] io_out_bits_ctrl_robIdx_flag mismatch: g=%h i=%h", $time, g_io_out_bits_ctrl_robIdx_flag, i_io_out_bits_ctrl_robIdx_flag);
     end
-    if (g_io_out_bits_ctrl_robIdx_value !== i_io_out_bits_ctrl_robIdx_value) begin
+    if (payload_armed && g_io_out_bits_ctrl_robIdx_value !== i_io_out_bits_ctrl_robIdx_value) begin
       errors++;
       $display("[%0t] io_out_bits_ctrl_robIdx_value mismatch: g=%h i=%h", $time, g_io_out_bits_ctrl_robIdx_value, i_io_out_bits_ctrl_robIdx_value);
     end
-    if (g_io_out_bits_ctrl_pdest !== i_io_out_bits_ctrl_pdest) begin
+    if (payload_armed && g_io_out_bits_ctrl_pdest !== i_io_out_bits_ctrl_pdest) begin
       errors++;
       $display("[%0t] io_out_bits_ctrl_pdest mismatch: g=%h i=%h", $time, g_io_out_bits_ctrl_pdest, i_io_out_bits_ctrl_pdest);
     end
-    if (g_io_out_bits_ctrl_rfWen !== i_io_out_bits_ctrl_rfWen) begin
+    if (payload_armed && g_io_out_bits_ctrl_rfWen !== i_io_out_bits_ctrl_rfWen) begin
       errors++;
       $display("[%0t] io_out_bits_ctrl_rfWen mismatch: g=%h i=%h", $time, g_io_out_bits_ctrl_rfWen, i_io_out_bits_ctrl_rfWen);
     end
-    if (g_io_out_bits_ctrl_fpWen !== i_io_out_bits_ctrl_fpWen) begin
+    if (payload_armed && g_io_out_bits_ctrl_fpWen !== i_io_out_bits_ctrl_fpWen) begin
       errors++;
       $display("[%0t] io_out_bits_ctrl_fpWen mismatch: g=%h i=%h", $time, g_io_out_bits_ctrl_fpWen, i_io_out_bits_ctrl_fpWen);
     end
-    if (g_io_out_bits_ctrl_fpu_wflags !== i_io_out_bits_ctrl_fpu_wflags) begin
+    if (payload_armed && g_io_out_bits_ctrl_fpu_wflags !== i_io_out_bits_ctrl_fpu_wflags) begin
       errors++;
       $display("[%0t] io_out_bits_ctrl_fpu_wflags mismatch: g=%h i=%h", $time, g_io_out_bits_ctrl_fpu_wflags, i_io_out_bits_ctrl_fpu_wflags);
     end
-    if (g_io_out_bits_res_data !== i_io_out_bits_res_data) begin
+    if (payload_armed && g_io_out_bits_res_data !== i_io_out_bits_res_data) begin
       errors++;
       $display("[%0t] io_out_bits_res_data mismatch: g=%h i=%h", $time, g_io_out_bits_res_data, i_io_out_bits_res_data);
     end
-    if (g_io_out_bits_res_fflags !== i_io_out_bits_res_fflags) begin
+    if (payload_armed && g_io_out_bits_res_fflags !== i_io_out_bits_res_fflags) begin
       errors++;
       $display("[%0t] io_out_bits_res_fflags mismatch: g=%h i=%h", $time, g_io_out_bits_res_fflags, i_io_out_bits_res_fflags);
     end
-    if (g_io_out_bits_perfDebugInfo_eliminatedMove !== i_io_out_bits_perfDebugInfo_eliminatedMove) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_eliminatedMove !== i_io_out_bits_perfDebugInfo_eliminatedMove) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_eliminatedMove mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_eliminatedMove, i_io_out_bits_perfDebugInfo_eliminatedMove);
     end
-    if (g_io_out_bits_perfDebugInfo_renameTime !== i_io_out_bits_perfDebugInfo_renameTime) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_renameTime !== i_io_out_bits_perfDebugInfo_renameTime) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_renameTime mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_renameTime, i_io_out_bits_perfDebugInfo_renameTime);
     end
-    if (g_io_out_bits_perfDebugInfo_dispatchTime !== i_io_out_bits_perfDebugInfo_dispatchTime) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_dispatchTime !== i_io_out_bits_perfDebugInfo_dispatchTime) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_dispatchTime mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_dispatchTime, i_io_out_bits_perfDebugInfo_dispatchTime);
     end
-    if (g_io_out_bits_perfDebugInfo_enqRsTime !== i_io_out_bits_perfDebugInfo_enqRsTime) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_enqRsTime !== i_io_out_bits_perfDebugInfo_enqRsTime) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_enqRsTime mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_enqRsTime, i_io_out_bits_perfDebugInfo_enqRsTime);
     end
-    if (g_io_out_bits_perfDebugInfo_selectTime !== i_io_out_bits_perfDebugInfo_selectTime) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_selectTime !== i_io_out_bits_perfDebugInfo_selectTime) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_selectTime mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_selectTime, i_io_out_bits_perfDebugInfo_selectTime);
     end
-    if (g_io_out_bits_perfDebugInfo_issueTime !== i_io_out_bits_perfDebugInfo_issueTime) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_issueTime !== i_io_out_bits_perfDebugInfo_issueTime) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_issueTime mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_issueTime, i_io_out_bits_perfDebugInfo_issueTime);
     end
-    if (g_io_out_bits_perfDebugInfo_writebackTime !== i_io_out_bits_perfDebugInfo_writebackTime) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_writebackTime !== i_io_out_bits_perfDebugInfo_writebackTime) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_writebackTime mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_writebackTime, i_io_out_bits_perfDebugInfo_writebackTime);
     end
-    if (g_io_out_bits_perfDebugInfo_runahead_checkpoint_id !== i_io_out_bits_perfDebugInfo_runahead_checkpoint_id) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_runahead_checkpoint_id !== i_io_out_bits_perfDebugInfo_runahead_checkpoint_id) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_runahead_checkpoint_id mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_runahead_checkpoint_id, i_io_out_bits_perfDebugInfo_runahead_checkpoint_id);
     end
-    if (g_io_out_bits_perfDebugInfo_tlbFirstReqTime !== i_io_out_bits_perfDebugInfo_tlbFirstReqTime) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_tlbFirstReqTime !== i_io_out_bits_perfDebugInfo_tlbFirstReqTime) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_tlbFirstReqTime mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_tlbFirstReqTime, i_io_out_bits_perfDebugInfo_tlbFirstReqTime);
     end
-    if (g_io_out_bits_perfDebugInfo_tlbRespTime !== i_io_out_bits_perfDebugInfo_tlbRespTime) begin
+    if (payload_armed && g_io_out_bits_perfDebugInfo_tlbRespTime !== i_io_out_bits_perfDebugInfo_tlbRespTime) begin
       errors++;
       $display("[%0t] io_out_bits_perfDebugInfo_tlbRespTime mismatch: g=%h i=%h", $time, g_io_out_bits_perfDebugInfo_tlbRespTime, i_io_out_bits_perfDebugInfo_tlbRespTime);
     end
-    if (g_io_out_bits_debug_seqNum_seqNum !== i_io_out_bits_debug_seqNum_seqNum) begin
+    if (payload_armed && g_io_out_bits_debug_seqNum_seqNum !== i_io_out_bits_debug_seqNum_seqNum) begin
       errors++;
       $display("[%0t] io_out_bits_debug_seqNum_seqNum mismatch: g=%h i=%h", $time, g_io_out_bits_debug_seqNum_seqNum, i_io_out_bits_debug_seqNum_seqNum);
     end
-    if (g_io_out_bits_debug_seqNum_uopIdx !== i_io_out_bits_debug_seqNum_uopIdx) begin
+    if (payload_armed && g_io_out_bits_debug_seqNum_uopIdx !== i_io_out_bits_debug_seqNum_uopIdx) begin
       errors++;
       $display("[%0t] io_out_bits_debug_seqNum_uopIdx mismatch: g=%h i=%h", $time, g_io_out_bits_debug_seqNum_uopIdx, i_io_out_bits_debug_seqNum_uopIdx);
     end

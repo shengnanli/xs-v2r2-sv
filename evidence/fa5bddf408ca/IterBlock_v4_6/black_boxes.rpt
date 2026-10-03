@@ -1,0 +1,80 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/IterBlock_v4_6
+Implementation : i:/WORK/IterBlock_v4_6
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 08:33:26 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    CSA3_2
+
+       Instances : 0
+
+e *    CSA3_2_3987
+
+       Instances : 0
+
+e *    CSA3_2_4111
+
+       Instances : 0
+
+e *    Conversion
+
+       Instances : 0
+
+e *    Conversion_8
+
+       Instances : 0
+
+e *    IterBlock_v4
+
+       Instances : 0
+
+e *    IterBlock_v4_4
+
+       Instances : 0
+
+e *    xs_CSA3_2_core
+
+       Instances : 0
+
+e *    xs_Conversion_8_core
+
+       Instances : 0
+
+e *    xs_Conversion_core
+
+       Instances : 0
+
+e *    xs_IterBlock_v4_core
+
+       Instances : 0
+
+
+1
+

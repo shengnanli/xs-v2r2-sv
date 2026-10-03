@@ -1,15 +1,22 @@
 MODULE = FloatAdderF32WidenF16MixedPipeline
 
 # FloatAdderF32WidenF16MixedPipeline（f32/f16/加宽混合浮点加法器 lane，两拍流水）。
-# golden 直接 child：FarPathF32WidenF16MixedPipeline / ClosePathF32WidenF16MixedPipeline ——
-#   coverage_three_axis.tsv 标 MISSING + PROVEN_IN_CONE（本仓没有重写件，只在 FAlu 的闭包里被同源证过）。
-#   处置照 verif/ut/FAlu 先例：这两件及其孙子（FarPathF32WidenF16MixedAdderPipeline /
-#   FarShiftRightWithMuxInvFirst_2 / Adder_2 / ClosePathF32WidenF16MixedPipelineAdder(_2) /
-#   CloseShiftLeftWithMux_1）两侧**同读 golden**（RTL_GOLDEN_DEPS 与 FM_REF_DEPS 同一列表），
-#   不设黑盒。★这不是"child 已重写"：本证明覆盖的是顶层 glue + 第 0/1 拍的全部控制与比较逻辑，
-#   far/close 两条数据路径的内部是 golden 对 golden。★
+# golden 直接 child：FarPathF32WidenF16MixedPipeline / ClosePathF32WidenF16MixedPipeline 及其孙子
+#   （FarPathF32WidenF16MixedAdderPipeline / FarShiftRightWithMuxInvFirst_2 / Adder_2 /
+#   ClosePathF32WidenF16MixedPipelineAdder(_2) / CloseShiftLeftWithMux_1）——全部已有本仓重写件并各自签核
+#   （far/close 两条路径与切段加法器由 fpaddpath-sqrtblock lane 签核，verif/ut/FpAddPathF32W16）。
+#   → 两侧白盒：ref 读 golden 同名件（FM_REF_DEPS），impl 读重写件（RTL_SRCS）。无黑盒、无两侧同读 golden 的文件。
+#   （此前 fpaddpath-sqrtblock 之前这棵子树两侧同读 golden，见 evidence/2c59d6196113 那一版。）
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/FloatAdderF32WidenF16MixedPipeline.sv
+RTL_SRCS = $(RTL_DIR)/backend/Adder_2.sv \
+           $(RTL_DIR)/backend/FarShiftRightWithMuxInvFirst_2.sv \
+           $(RTL_DIR)/backend/FarPathF32WidenF16MixedAdderPipeline.sv \
+           $(RTL_DIR)/backend/FarPathF32WidenF16MixedPipeline.sv \
+           $(RTL_DIR)/backend/ClosePathF32WidenF16MixedPipelineAdder.sv \
+           $(RTL_DIR)/backend/ClosePathF32WidenF16MixedPipelineAdder_2.sv \
+           $(RTL_DIR)/backend/CloseShiftLeftWithMux_1.sv \
+           $(RTL_DIR)/backend/ClosePathF32WidenF16MixedPipeline.sv \
+           $(RTL_DIR)/backend/FloatAdderF32WidenF16MixedPipeline.sv
 TB_SRCS  = tb.sv
 
 FPADD_GOLDEN_SUBTREE = FarPathF32WidenF16MixedPipeline.sv \
@@ -21,16 +28,20 @@ FPADD_GOLDEN_SUBTREE = FarPathF32WidenF16MixedPipeline.sv \
                        ClosePathF32WidenF16MixedPipelineAdder_2.sv \
                        CloseShiftLeftWithMux_1.sv
 
-GOLDEN_SRCS = $(GOLDEN_RTL)/FloatAdderF32WidenF16MixedPipeline.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(FPADD_GOLDEN_SUBTREE))
+GOLDEN_SRCS = $(GOLDEN_RTL)/FloatAdderF32WidenF16MixedPipeline.sv $(addprefix $(GOLDEN_RTL)/,$(FPADD_GOLDEN_SUBTREE))
 
 FM_VARIANTS = FloatAdderF32WidenF16MixedPipeline
-FM_REF_DEPS_FloatAdderF32WidenF16MixedPipeline = $(FPADD_GOLDEN_SUBTREE)
+# FM_REF_DEPS 写字面名（scripts/fm_predict.py 按字面解析）
+FM_REF_DEPS_FloatAdderF32WidenF16MixedPipeline = FarPathF32WidenF16MixedPipeline.sv \
+    FarPathF32WidenF16MixedAdderPipeline.sv FarShiftRightWithMuxInvFirst_2.sv Adder_2.sv \
+    ClosePathF32WidenF16MixedPipeline.sv ClosePathF32WidenF16MixedPipelineAdder.sv \
+    ClosePathF32WidenF16MixedPipelineAdder_2.sv CloseShiftLeftWithMux_1.sv
 
 # 关 merge_dup：golden 顶层有两份同源打拍（io_fp_c_r / io_fflags_r）等，关掉后 fm_predict 模型严格适用
 FM_MERGE_DUP = false
 
-# vmucp（加强不是放宽）：3 个 unread 点全在两侧同读的 golden 子树里，依据见 verif/fm_target_config/FloatAdderF32WidenF16MixedPipeline.tcl。
+# vmucp（加强不是放宽）：far/close 子树里两侧对称的死位（子树改读重写件后名字不同，由本目录 fm_pins.tcl
+# 字面钉对再实比），依据见 verif/fm_target_config/FloatAdderF32WidenF16MixedPipeline.tcl。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail

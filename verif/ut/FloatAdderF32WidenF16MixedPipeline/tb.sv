@@ -1,6 +1,6 @@
 // =============================================================================
 // tb —— FloatAdderF32WidenF16MixedPipeline UT：golden 与重写件 FloatAdderF32WidenF16MixedPipeline_xs
-// 双例化（far/close 子树两侧都是 golden 件），同时钟同激励，每拍比 fp_c / fflags。
+// 双例化（golden 实例读 golden far/close 子树，重写件读重写子树 *_xs），同时钟同激励，每拍比 fp_c / fflags。
 //
 // 复位域：顶层与子树的寄存器全部 RegEnable(fire) 不复位；子树是独立的流水级，所以 +random 档下
 //   要等两次 fire 之后（顶层与子树的寄存器都已被写过）才比对。fire 四分之三的拍为 1。

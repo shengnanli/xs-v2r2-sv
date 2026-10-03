@@ -1,0 +1,10 @@
+{
+  "target": "FloatAdderWidenFormat",
+  "ut": "FloatAdderWidenFormat",
+  "regs": 0,
+  "outs": 256,
+  "expected": 256,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 256 = 0 寄存器 + 256 输出位（含 110 个两侧结构恒 0 输出位）；预测 passing 256，constant_reg 0，无 vmucp"
+}

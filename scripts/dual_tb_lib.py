@@ -67,13 +67,16 @@ class Pair(object):
                给"不复位的数据寄存器要先被写过一次，两侧初值才一致"的情形用；
                表达式同 cov 的 @ 替换规则。arm 之前的拍数会打印出来。
     arm_delay  全部 arm 条件满足之后再多等几拍才开始比（读出数据还要过一级锁存的情形）
+    has_reset  clocked=True 时 golden 是否有 reset 端口（默认 True）。False 给"只有 clock、
+               寄存器全不复位"的模块用（如 NewCSR 的 Debug）：clock 仍接 tb 的 clk，
+               不驱动 reset；不复位寄存器靠 warmup/arm 冲刷。
     mode_period 每隔多少拍重抽一次 <pfx>mode（0..15），供 stim 做分阶段偏置
     decls      模块级 SV 声明（stim 要用的辅助 function / 变量），原样放进 tb 模块体
     """
 
     def __init__(self, top, pfx, clocked=False, stim="", cov=(), exempt=(),
                  warmup=0, mode_period=4000, reset_period=40000, cov_min=100, arm=(),
-                 decls="", arm_delay=0):
+                 decls="", arm_delay=0, has_reset=True):
         self.top = top
         self.pfx = pfx
         self.clocked = clocked
@@ -87,10 +90,13 @@ class Pair(object):
         self.arm = list(arm)
         self.decls = decls
         self.arm_delay = arm_delay
+        self.has_reset = has_reset
         self.ports = golden_ports(top)
         names = [n for _, _, n in self.ports]
-        if clocked and ("clock" not in names or "reset" not in names):
+        if clocked and ("clock" not in names or (has_reset and "reset" not in names)):
             raise SystemExit(f"{top}: clocked=True 但 golden 无 clock/reset 端口")
+        if clocked and not has_reset and "reset" in names:
+            raise SystemExit(f"{top}: has_reset=False 但 golden 有 reset 端口")
 
     def subst(self, expr):
         outs = {n for d, _, n in self.ports if d == "output"}
@@ -157,7 +163,9 @@ def render(pairs, header, ncycles=200000):
             if d != "input" or (p.clocked and n in ("clock", "reset")):
                 continue
             L.append(f"      {x}{n} = {rand_expr(w)};")
-        if p.clocked and p.reset_period:
+        if p.clocked and not p.has_reset:
+            pass
+        elif p.clocked and p.reset_period:
             L.append(f"      {x}reset = (cyc < RESET_CYC) || ($urandom_range(0, {p.reset_period - 1}) == 0);")
         elif p.clocked:
             L.append(f"      {x}reset = (cyc < RESET_CYC);")

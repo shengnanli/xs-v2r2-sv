@@ -1,0 +1,9 @@
+{
+  "target": "FarPathF32WidenF16MixedAdderPipeline",
+  "ut": "FpAddPathF32W16",
+  "regs": 32,
+  "outs": 25,
+  "expected": 57,
+  "merge_dup": "false",
+  "model_applicable": true
+}

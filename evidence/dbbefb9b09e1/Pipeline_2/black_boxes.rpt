@@ -1,0 +1,60 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/Pipeline_2
+Implementation : i:/WORK/Pipeline_2
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 11:45:51 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    Pipeline_10
+
+       Instances : 0
+
+e *    Pipeline_11
+
+       Instances : 0
+
+e *    Pipeline_3
+
+       Instances : 0
+
+e *    Queue1_PrefetchResp
+
+       Instances : 0
+
+e *    Queue1_UInt32
+
+       Instances : 0
+
+e *    xs_ChiselQueue1_core
+
+       Instances : 0
+
+
+1
+

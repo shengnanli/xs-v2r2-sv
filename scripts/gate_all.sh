@@ -131,6 +131,10 @@ run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
 # 先跑双向负测（真守卫专属必须判绿 / 真改了钉的点必须判红 —— 只判红的实现和恒等判绿的
 # 实现都会在这里露馅），再对着基线表 docs/pin_call_seq.tsv 核对。两条加起来约 12 秒。
 run "钉点调用序列闸负测"  python3 scripts/pin_call_equiv.py --selftest
+# 钉点静默落空（codex_0207 E1）：set_user_match 对不存在的名字不抛异常，只留一行行首
+# `Error: Unknown name`。fm_verdict 见到它就不许给 SUCCEEDED/PASS_DEAD_REF。双向负测：
+# 注入一行 -> 红；注释/缩进里提到同一串 -> 仍绿；修之前的真实日志 -> 红（秒级）。
+run "钉点落空判据负测"    python3 scripts/test_unknown_name_verdict.py
 run "钉点调用序列闸"     python3 scripts/pin_call_equiv.py --check
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
@@ -310,6 +314,10 @@ run "共享件影响闸自证"  python3 scripts/check_shared_impl_impact.py --se
 run "written 驱动下限自证"  python3 scripts/rewritten_floor.py --selftest
 run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
 run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
+# perf 初值设定闸（codex 0207 P1）：主比较两侧必须 Z0（无 RANDOMIZE_*、编译期 initreg、
+# 运行期 +vcs+initreg+0），凭据是 assert.log 里 verif/sim/perf_cfg_stamp.sv 现场打的 [PERFCFG]。
+# 负测：各缺一项 / 两侧不一致 → perf_compare rc 3；正例 rc 0；设定对但数差 1 → rc 1（无容差）。
+run "perf 初值设定闸负测"  python3 scripts/test_perf_init_contract.py
 
 # passing 预测模型自校准（docs/tlbsw23_passing_prediction.md）：
 # 模型 = 闭包触发器位数 + 顶层 output 位数。6 个已签核点必须逐位命中，

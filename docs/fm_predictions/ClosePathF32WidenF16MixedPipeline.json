@@ -1,0 +1,9 @@
+{
+  "target": "ClosePathF32WidenF16MixedPipeline",
+  "ut": "FpAddPathF32W16",
+  "regs": 100,
+  "outs": 62,
+  "expected": 162,
+  "merge_dup": "false",
+  "model_applicable": true
+}

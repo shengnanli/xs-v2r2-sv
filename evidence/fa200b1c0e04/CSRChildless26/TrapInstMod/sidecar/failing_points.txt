@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/TrapInstMod
+Implementation : i:/WORK/TrapInstMod
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:39:47 2026
+**************************************************
+
+No failing compare points.
+
+1

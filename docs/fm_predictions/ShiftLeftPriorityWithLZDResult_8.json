@@ -1,0 +1,9 @@
+{
+  "target": "ShiftLeftPriorityWithLZDResult_8",
+  "ut": "ShiftPriorityLeaves3",
+  "regs": 0,
+  "outs": 15,
+  "expected": 15,
+  "merge_dup": "false",
+  "model_applicable": true
+}

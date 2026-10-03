@@ -22,7 +22,8 @@
   B 无未分类      tier 列必须落在封闭词表内，且 X_UNRESOLVED 计数必须为 0。
   C 两表自洽      gap 台账的行集合 ≡ tier 台账里 status=GAP 的行集合（双向，不许单边）。
   D 证据可复跑    mismatch 台账头部必须钉住 commit、两份 assert.log 的路径与
-                  **完整 64 位** sha256、以及 dump_times_equal=True。
+                  **完整 64 位** sha256、以及 dump_times_equal=True；
+                  且 init_contract=Z0、两侧 [PERFCFG] 现判 Z0 且运行条件一致（codex 0207 P1）。
                   ★截断的 hash 不算证据（D62）★ —— 所以这里逐字符校验长度与字符集。
   E 豁免现算      mismatch 台账每一行：计数器必须在 tier 台账里；记录的 tier 与
                   owner_rewritten 必须与 tier 台账当前值一致；verdict 必须等于用
@@ -147,6 +148,14 @@ def main():
         check('D 头部有 %s' % k, bool(h.get(k)), '缺失')
     check('D dump_times_equal', h.get('dump_times_equal') == 'True',
           '两侧 dump 时刻不同 ⇒ D_INVARIANT 档的前提失效，比对不可信')
+    # codex 0207 P1：台账必须出自两侧 Z0 的比较。头部的 golden_cfg/impl_cfg 是
+    # perf_compare 从两份 assert.log 的 [PERFCFG] 行原样抄来的（那两份日志的 sha256 也在头部），
+    # 这里用同一个 init_contract() 现场复判，不认 init_contract 那一列的自述。
+    check('D init_contract=Z0', h.get('init_contract') == 'Z0',
+          '缺失或不是 Z0: %r' % h.get('init_contract'))
+    cprob = PC.init_contract(PC.parse_cfg(h['golden_cfg']) if h.get('golden_cfg') else None,
+                             PC.parse_cfg(h['impl_cfg']) if h.get('impl_cfg') else None)
+    check('D 两侧初值设定 Z0 且一致', not cprob, ' | '.join(cprob[:3]))
 
     # ---- E 豁免现算
     miss_key, stale, bad_v, blocking = [], [], [], []

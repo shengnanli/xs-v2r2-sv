@@ -1,0 +1,10 @@
+{
+  "target": "FarPathF16Pipeline",
+  "ut": "FpAddPathF16",
+  "regs": 98,
+  "outs": 27,
+  "expected": 125,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "ClosePathF16Pipeline 预测 passing=113：模型 114 - constant_reg 1（U_CS4_io_adder_op1_r[10] 恒 0）；FarPathF16Pipeline 预测 125 = 模型"
+}

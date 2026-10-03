@@ -1,0 +1,10 @@
+{
+  "target": "FastArbiter",
+  "ut": "FastArbiterL2c",
+  "regs": 8,
+  "outs": 104,
+  "expected": 112,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing 111 = expected - constant_reg 1（rrGrantMask_reg[0]，Scala false.B 恒 0，两侧对称）；pendingMask_reg[0] 为对称 matched-unread，vmucp 开后实比进 passing"
+}

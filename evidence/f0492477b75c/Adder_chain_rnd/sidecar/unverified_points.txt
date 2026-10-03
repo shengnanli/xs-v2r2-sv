@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/Adder_chain_rnd
+Implementation : i:/WORK/Adder_chain_rnd
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 11:48:28 2026
+**************************************************
+
+No unverified compare points.
+
+1

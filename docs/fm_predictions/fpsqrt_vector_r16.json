@@ -5,6 +5,5 @@
   "outs": 86,
   "expected": 527,
   "merge_dup": "false",
-  "model_applicable": true,
-  "note": "时序件；模型=golden 寄存器位 441 + 顶层 output 位 86；fpsqrt_r16_block 两侧同读 golden（0 reg）"
+  "model_applicable": true
 }

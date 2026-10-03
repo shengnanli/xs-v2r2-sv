@@ -1,0 +1,9 @@
+{
+  "target": "AsyncResetSynchronizerPrimitiveShiftReg_d3_i0",
+  "ut": "AsyncResetSyncPrim_d3_i0",
+  "regs": 3,
+  "outs": 1,
+  "expected": 4,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,10 @@
+{
+  "target": "IMSIC_WRAP",
+  "ut": "IMSIC_WRAP",
+  "regs": 6376,
+  "outs": 172,
+  "expected": 6548,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing 5972 = expected 6548 - constant_reg 576（与 IMSIC 自身 receipt evidence/d18495248b31/IMSIC 逐位相同；IMSIC_WRAP 0 行逻辑）"
+}

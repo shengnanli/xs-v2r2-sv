@@ -1,0 +1,10 @@
+{
+  "target": "SyncDataModuleTemplate__64entry_2",
+  "ut": "SyncDataModule",
+  "regs": 1040,
+  "outs": 26,
+  "expected": 1066,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "gatefix2/codex_0207 E1 重证前登记：fm_pins_pre.tcl 1 位字段/整宽载荷点名改正后的重跑"
+}
