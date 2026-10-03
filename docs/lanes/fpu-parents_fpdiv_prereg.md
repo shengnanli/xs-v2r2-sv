@@ -60,3 +60,13 @@ M5 −D 多加 1 ⇒ 20001 / 12443；M6 7 位余数片取错位 ⇒ 17969 / 5512
 
 可能出错处：输出里有 24 个结构恒 0 位（余数 sum/carry 的低 12 位），同族 fpdiv_r64_block_vector 的先例里常量输出位
 照常计入 passing；若这里被 FM 归到别的类别，差额就是这 24 位。登记前未做任何 FM 试跑。
+
+## 对账 §1（fpdiv_r64_block）
+
+| 目标 | 证明 commit | 结果 | 模型 / 预测 / 实测 passing | failing / unverified / unread / unmatched | 黑盒 / dont_verify | receipt sha256 |
+|---|---|---|---|---|---|---|
+| fpdiv_r64_block | `801a0f5c9` | SUCCEEDED | 172 / 172 / **172**（逐位相等） | 0 / 0 / 0 / 0 | 0 / 无 | `d2d21731979a44e0d6093f6bde5a85aa69b28ef52285751146577230d4025bdb` |
+
+`python3 scripts/fm_predict.py check fpdiv_r64_block` rc=0；24 个结构恒 0 输出位照常计入 passing（与登记的先例一致）。
+receipt：`evidence/801a0f5c9e49/fpdiv_r64_block/receipt.json`。
+复跑：`PROOF_COMMIT=801a0f5c9 bash scripts/run_proof.sh fpdiv_r64_block fpdiv_r64_block < /dev/null`
