@@ -1,0 +1,9 @@
+{
+  "target": "TrainFilter_1",
+  "ut": "TrainFilter",
+  "regs": 765,
+  "outs": 53,
+  "expected": 818,
+  "merge_dup": "false",
+  "model_applicable": true
+}

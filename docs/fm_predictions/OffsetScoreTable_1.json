@@ -1,0 +1,9 @@
+{
+  "target": "OffsetScoreTable_1",
+  "ut": "OffsetScoreTable",
+  "regs": 585,
+  "outs": 80,
+  "expected": 665,
+  "merge_dup": "false",
+  "model_applicable": true
+}
