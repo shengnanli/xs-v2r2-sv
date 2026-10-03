@@ -17,7 +17,7 @@
   S5 一侧两个实例                             S6 class 不是 APPROVED_MEMORY_MACRO_MODEL
   C0 fm_verdict 在 HEAD 上验 GrantBuffer 证书：Slice 通过
   C1 GrantBuffer 证书失效（在没有证书的 commit 上验）→ 红
-  C2 GrantBuffer 证书字节被篡改（声明 sha 与证书不符）→ 红
+  C2 GrantBuffer impl 闭包字节变了 → 红    C3 golden 闭包字节变了 → 红    C4 G1 不同源 → 红
 用法: python3 scripts/test_audit_ram_manual_review.py
 """
 import hashlib
@@ -65,7 +65,7 @@ def main():
     if fails:
         print(f'test_audit_ram_manual_review: ★{len(fails)} 条不过★ {fails}')
         return 1
-    print('test_audit_ram_manual_review: 全过（M3 复核 1 正 + 7 负；父级范围 2 正 + 8 负）')
+    print('test_audit_ram_manual_review: 全过（M3 复核 1 正 + 7 负；父级范围 2 正 + 10 负）')
     return 0
 
 
@@ -113,16 +113,24 @@ def scope_cases():
          'verif/proof_certificates/GrantBuffer.json']).decode().strip()
     parent = nocert + '~1' if nocert else 'HEAD'
     chk('C1 证书不在该 commit', F._ram_parent_scope_check(decl, 'Slice', parent, canon), False)
-    # 证书被篡改：直接用 validate_child_certificate 的 declared sha 不符路径
-    import proof_certificate as PC
-    repo = PC.Repo(REPO)
-    _doc, blob, _err = PC.load_certificate(repo, repo.rev_parse('HEAD'), 'GrantBuffer')
-    bad = ('0' if (blob or 'x')[0] != '0' else '1') + (blob or '')[1:]
-    r = PC.validate_child_certificate(repo, repo.rev_parse('HEAD'), 'GrantBuffer', bad,
-                                      expect_canonical=canon,
-                                      policy=PC.load_policy(repo, repo.rev_parse('HEAD'))[0],
-                                      fm_targets={'GrantBuffer': None}, fm_targets_unresolved=[])
-    chk('C2 证书 sha 不符', r, False)
+    # 证书失效：GrantBuffer 闭包里任一文件字节变了（在证书副本里把一条 impl sha 翻一位来模拟）
+    import types
+    ctx, _e = F._cert_ctx('HEAD')
+    real = ctx['PC']
+
+    def tamper(field):
+        def _load(repo, commit, target):
+            doc, blob, err = real.load_certificate(repo, commit, target)
+            doc = copy.deepcopy(doc)
+            ents = doc['input_closure'][field]
+            ents[0]['sha256'] = ('0' if ents[0]['sha256'][0] != '0' else '1') + ents[0]['sha256'][1:]
+            return doc, blob, err
+        shim = types.SimpleNamespace(**{k: getattr(real, k) for k in dir(real) if not k.startswith('__')})
+        shim.load_certificate = _load
+        return dict(ctx, PC=shim)
+    chk('C2 impl 闭包字节变了', F._child_cert_current(tamper('impl'), 'GrantBuffer', canon), False)
+    chk('C3 golden 闭包字节变了', F._child_cert_current(tamper('golden'), 'GrantBuffer', canon), False)
+    chk('C4 G1 canonical 不同源', F._child_cert_current(ctx, 'GrantBuffer', 'G1-deadbeef'), False)
     return fails
 
 

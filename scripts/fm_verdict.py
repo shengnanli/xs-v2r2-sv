@@ -528,6 +528,62 @@ def _disabled_empty_module_check(declared, attrs, top, q, expect_impl_commit,
     return True
 
 
+def _child_cert_current(ctx, child, expect_canonical):
+    """codex 0206 D3 的「GrantBuffer 当前证书有效」：child 的 tracked 证书在父 commit 上仍描述
+    **同一份被证明的东西**。逐条复用 proof_certificate 的 D57 判据：证书来自该 commit、schema 合格、
+    target 对、verdict 合格、G1 同源、工具/钉死 appvar 与 policy 一致、allow 声明字节未变、
+    impl 与脚本闭包在父 commit 上逐字节复算一致、golden 闭包（含 impl 侧挂的 golden 存储模型）
+    与 G1 MANIFEST 一致、证书 commit 是父 commit 的祖先。
+    与 green_child 的两处差别（照实写明，不是放宽 green_child）：
+      · 不要求 impl_commit == policy.freeze_commit —— 那条是冻结日 green_child 计绿用的；这里只问
+        「此刻 child 的证明是否仍然成立」，与 check_shared_impl_impact 的 STALE 口径一致；
+      · impl 侧挂的 golden（GrantBuffer 的 ram_16x25 / ram_data_16x256 两侧同源存储模型）不要求
+        自身是 FM target 并持证，只要求字节与 G1 MANIFEST 相同（3c 同口径）。
+    返回 True 或失败原因串（fail-closed）。"""
+    PC, repo, c, pol = ctx['PC'], ctx['repo'], ctx['commit'], ctx['policy']
+    doc, _blob, err = PC.load_certificate(repo, c, child)
+    if err:
+        return f'certificate:{err}'
+    errs = PC.validate_document(doc)
+    if errs:
+        return f'certificate_invalid:{errs[0]}'
+    if doc.get('target') != child:
+        return 'certificate_target_mismatch'
+    if doc.get('verdict') not in (pol.get('qualifying_verdicts') or list(PC.QUALIFYING_VERDICTS)):
+        return f'certificate_verdict_not_qualifying:{doc.get("verdict")}'
+    if expect_canonical and doc.get('g1_canonical_id') != expect_canonical:
+        return 'certificate_canonical_mismatch'
+    if pol.get('g1_canonical_id') and doc.get('g1_canonical_id') != pol['g1_canonical_id']:
+        return 'certificate_canonical_not_policy'
+    pt = pol['tool']
+    if any(doc['tool'].get(k) != pt.get(k) for k in ('name', 'version', 'build')):
+        return 'certificate_tool_policy_mismatch'
+    av = doc['proof_config'].get('entry_appvars_readback') or {}
+    for k, want in pol['pinned_entry_appvars'].items():
+        if av.get(k) != want:
+            return f'certificate_appvar_policy_mismatch:{k}'
+    import hashlib
+    for kind, rec in (doc['proof_config'].get('declarations') or {}).items():
+        blob = repo.show(c, rec.get('path') or '')
+        if blob is None or hashlib.sha256(blob).hexdigest() != rec.get('sha256'):
+            return f'certificate_declaration_changed:{rec.get("path")}'
+    for name, ents in (('impl', doc['input_closure']['impl']),
+                       ('script', doc['script_closure']['entries'])):
+        ok, changed, missing = PC.recompute_closure_at(repo, c, ents)
+        if missing or changed or ok == 0:
+            return f'certificate_{name}_closure_stale:{(missing or changed or ["empty"])[0]}'
+    man = PC._g1_manifest(ctx['g1'])
+    if not man:
+        return 'certificate_g1_manifest_unavailable'
+    for e in list(doc['input_closure']['golden']) + PC.impl_golden_entries(doc):
+        base = e['path'].split('/')[-1]
+        if man.get(base) != e['sha256']:
+            return f'certificate_golden_changed:{base}'
+    if not repo.is_ancestor(doc['impl_commit'], c):
+        return 'certificate_commit_not_ancestor'
+    return True
+
+
 def _ram_parent_scope_check(declared, top, expect_impl_commit, expect_canonical):
     """codex 0206 D3：MANUAL_REVIEW 的 ram_* 只能出现在授权父级的授权路径上；经由已签 child
     授权的（Slice×4 经 GrantBuffer），child 的 tracked 证书须在本次父 commit 上仍然有效。"""
@@ -545,14 +601,7 @@ def _ram_parent_scope_check(declared, top, expect_impl_commit, expect_canonical)
             ctx, cerr = _cert_ctx(expect_impl_commit)
             if cerr:
                 return f'ram_parent_scope_via_{via}:{cerr}'
-            _doc, blob_sha, err = ctx['PC'].load_certificate(ctx['repo'], ctx['commit'], via)
-            if err:
-                return f'ram_parent_scope_via_{via}_certificate:{err}'
-            r = ctx['PC'].validate_child_certificate(
-                ctx['repo'], ctx['commit'], via, blob_sha,
-                expect_canonical=expect_canonical, policy=ctx['policy'],
-                fm_targets=ctx['targets'], fm_targets_unresolved=ctx['unresolved'],
-                g1_root=ctx['g1'])
+            r = _child_cert_current(ctx, via, expect_canonical)
             if r is not True:
                 return f'ram_parent_scope_via_{via}:{r}'
     return True
