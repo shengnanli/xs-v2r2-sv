@@ -1,0 +1,9 @@
+{
+  "target": "StridePF",
+  "ut": "StridePF",
+  "regs": 220,
+  "outs": 0,
+  "expected": 220,
+  "merge_dup": "false",
+  "model_applicable": true
+}

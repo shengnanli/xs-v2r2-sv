@@ -74,3 +74,44 @@
 - 可能出错：(1) 载荷打包——golden 的 miss/meta_prefetch（TF_1）、paddr/pc（SMS）是分开的寄存器，impl 是一根
   payload 向量的切片，位级一一对应但名字对不上，靠签名匹配；(2) 三级流水寄存器 golden 名 `ld_in_reordered_res_0_1_<k>_*`
   ↔ impl `a_*[k]` 等；(3) 本节无 FM 试跑。
+
+## 4. StrideMetaArray / StridePF / PrefetchQueue / PrefetchReqBuffer（各自单文件：核 + golden 同名 wrapper）
+
+- **StrideMetaArray**（rtl/memblock/，L1 stride 预取器 PC 步长表）：10 项 {pre_vaddr, stride, conf, hash_pc}，
+  s0 pc 哈希 CAM + 10 路（非 2 的幂）树形 PLRU（核内 plru10_* 两个函数，编码照 rocket-chip），
+  s1 分配/更新（stride_valid / 饱和置信度 / conf<=1 才改 stride），s2 算地址（ratio 2/5），s3/s4 发 L1/L2 预取。
+  io.flush 恒 0 留下 10 个 RegNext（有复位、恒 0）。无子模块。golden 1403 行 / impl 318 行 / `_GEN_`=0。
+  UT 9 档 200k errors=0；覆盖（seed 1 +0）hit 77283 / alloc 36740 / pf 1543 / notready 19602 / conf3 3538 / stride_invalid 15123。
+  变异（seed 7 +0 20k）：M1 PLRU 根方向反 CAUGHT(1038)、M2 stride_valid 排除块号 1→2 CAUGHT(492)、
+  M3 去掉 conf<=1 门控 CAUGHT(309)；M4 L2 ratio 5→4、M5 ready 恒 1 见对账。
+- **StridePF**（rtl/memblock/，SMS 的 PC 步长检测器）：本配置 stride_en=0、s2_gen_req 未接 → golden 被 DCE 到
+  **没有输出端口**，只剩去抖 + 16 项 pc CAM + s1 命中/分配打拍 + 16 路 PLRU（复用 rtl/common/xs_PlruReplacer，
+  已在 WrBypass 签核中证过）。golden 705 行 / impl 141 行。UT 逐拍比两侧全部 53 个寄存器（层次引用，不复位的
+  三组只在写过之后比）：seed 7 +0 200k errors=0（矩阵跑中）；覆盖 hit 54839 / alloc 26282 / dedup 24969 / s1drop 27180。
+- **PrefetchQueue**（rtl/l2/，L2 预取出口"只留最新"队列）：32 项、永远 ready、空则直通、满则丢最老；载荷 99 位
+  对队列透明（核按一根总线处理，wrapper 拼拆）。全复位。golden 1651 行 / impl 123 行。
+  UT seed 7 +0 200k errors=0（矩阵跑中）；覆盖 full_drop 32750 / flow 8563 / deq 58853 / wrap 1579。
+- **PrefetchReqBuffer**（rtl/l2/，VBOP 虚地址预取请求缓冲）：16 项；s0 三重丢弃（同块/全等/无空位）+ 最低位优先
+  找空位打一拍写入；TLB 口按 s1/s2/s3 三级 one-hot 记账，回答打一拍后与 PMP 回答一起判 fired / 首 miss 重放
+  （replayCnt=10）/ 再 miss 作废 / 异常作废；PF 口仲裁发出即作废。子模块 RRArbiterInit_14（TLB）/ _15（PF）
+  均 PROVEN_DIRECT → 两侧白盒（ref golden、impl rtl/common 重写件），无黑盒。golden 1713 行 / impl 394 行。
+  UT 带 1 拍 TLB 响应模型；seed 7 +0 200k errors=0（覆盖门槛 match 671<1000 调激励后矩阵重跑中）。
+- 预测（docs/fm_predictions/*.json）：
+
+| 目标 | passing | 其余 |
+|---|---|---|
+| StrideMetaArray   | **993**（827 + 166）  | 10 个 RegNext(flush=0)（golden `last_REG*` ↔ impl `flush_q[i]`，有复位恒 0）可能被折成 constant_reg → 实测预计 983 + constant_reg 10；failing 0 / unmatched 全 0 / 无黑盒 / SUCCEEDED |
+| StridePF          | **220**（220 + 0）    | 无输出端口，全部是寄存器比较点；failing 0 / unmatched 全 0 / SUCCEEDED |
+| PrefetchQueue     | **3310**（3210 + 100）| failing 0 / unmatched 全 0 / SUCCEEDED |
+| PrefetchReqBuffer | **2938**（2786 + 152）| 含两侧白盒仲裁器的寄存器；failing 0 / unmatched 全 0 / 黑盒 0 / SUCCEEDED |
+
+- 可能出错：StrideMetaArray 的 s1_index 越界读第 0 项用循环选择器；PrefetchReqBuffer 的 TLB 发出寄存器是
+  RegEnable(常量)（isPrefetch 粘住 / kill、no_translate 在 valid 时清 0），已照 golden 写；PrefetchQueue 的
+  载荷寄存器 golden 按字段分、impl 一根 99 位总线，靠签名匹配。本节无 FM 试跑。
+
+## 5. TrainFilter 第二轮（第一轮 FM 抓到真差异）
+
+第一轮（c8313ce2）TrainFilter FAILED：failing 5 = train_req.valid 端口 + deqPtr 4 位。根因：深 6 的 deqPtr.value
+是 3 位，越界值 6/7 时 golden 的 `when(deqPtr === i.U)` 没有一项命中 → valid=0，而核写成"越界读第 0 项的 valid"。
+UT 不可达（指针永不越界）。修法：核里 deq 选择器 valid 默认 0（9bf5ad8c）。TrainFilter_1（深 4，2 位指针无越界）
+与 SMSTrainFilter（深 8）不受影响，但共用核字节变了，三者一起重证。预测不变（1678 / 818 / 2751，各减 constant_reg 1 /1 /0）。

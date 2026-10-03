@@ -1,0 +1,9 @@
+{
+  "target": "StrideMetaArray",
+  "ut": "StrideMetaArray",
+  "regs": 827,
+  "outs": 166,
+  "expected": 993,
+  "merge_dup": "false",
+  "model_applicable": true
+}
