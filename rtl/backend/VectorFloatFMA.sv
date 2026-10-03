@@ -51,6 +51,8 @@
 //   6. Scala 端口 frs1 / is_frs1 / is_vec / fp_*IsFpCanonicalNAN 在 golden 里已被常量折叠掉
 //      （父模块接的是 is_frs1=0、is_vec=1、CanonicalNAN=0），本文件按 golden 的端口表写。
 //   7. 结果恰为 0（和为 0）时符号只看 RDN；fflags 给 0。
+//   8. 格式寄存器 is_fp64 / is_fp32 逐级各打一拍，处处按"先 fp64、再 fp32、否则 f16"的优先级用；
+//      唯一的例外是 S1 的 c 高段加 1 器：f32_1 的加 1 位只看 is_fp32（不被 is_fp64 压住）。
 //
 // 子模块：BoothEncoderF64F32F16_3（本仓重写）、CSA3to2（本仓重写）、
 //   CSA_Nto2With3to2MainPipeline（27->2 压缩树，内含一级寄存器；本仓未重写，UT / FM 两侧都用 golden 原件）。
@@ -1063,6 +1065,10 @@ module xs_VectorFloatFMA_core (
   // 对齐后的 c 的低 2W 位摆到通道自己那一段，作为第三个加数。
   logic [SUM_W-1:0] csa_in_b, csa_in_c;
   logic [CHI_W-1:0] c_high_all, c_high_ones;
+  // c 高段"加 1"加在哪些通道的最低位上。★f32_1 那一位只看 is_fp32，不让位给 is_fp64★（怪癖 8）：
+  // 两个格式寄存器不会同时为 1，功能上与"在用通道"无差别，但形式验证把它们当独立状态，必须照 golden 写。
+  logic [NUM_LANE-1:0] plus1_lanes;
+  assign plus1_lanes = {active_s1[6:3], is_fp32_s0_q, active_s1[1:0]};
   always_comb begin
     csa_in_b    = tree_carry;
     csa_in_c    = '0;
@@ -1070,11 +1076,11 @@ module xs_VectorFloatFMA_core (
     c_high_ones = '0;
     for (int unsigned l = 0; l < NUM_LANE; l++) begin
       if (active_s1[l]) begin
-        csa_in_b[LANE_SUM_LSB[l]]    = lane_carry_in[l];
-        csa_in_c                     = csa_in_c | (lane_c_low[l] << LANE_SUM_LSB[l]);
-        c_high_all                   = c_high_all | (lane_c_high[l] << LANE_CHI_LSB[l]);
-        c_high_ones[LANE_CHI_LSB[l]] = 1'b1;
+        csa_in_b[LANE_SUM_LSB[l]] = lane_carry_in[l];
+        csa_in_c                  = csa_in_c | (lane_c_low[l] << LANE_SUM_LSB[l]);
+        c_high_all                = c_high_all | (lane_c_high[l] << LANE_CHI_LSB[l]);
       end
+      if (plus1_lanes[l]) c_high_ones[LANE_CHI_LSB[l]] = 1'b1;
     end
   end
 
