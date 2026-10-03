@@ -278,3 +278,33 @@ replay_all 6166 / getGpa 21194 / rob_head 68421。
 | failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
 | unmatched 六项 / 黑盒 | 全 0（`PMP_PIN_END … ok=6664 bad=0`）/ 无 |
 | mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / true / false |
+
+# 对账 C. TLB（跑完追加；§3 未改一字）
+
+| 项 | 值 |
+|---|---|
+| 跑前登记 / proof commit | `6571efce8ce6d3e8c9085a3063f3a065392f8432`（登记与证明同一 commit） |
+| 证据目录 | `evidence/6571efce8ce6/TLB/` |
+| receipt sha256 | `a8e4a56cb8c11a0c2db384a0f200c507670e2d47524c28adc914aa2708f2e27a` |
+
+| 预测 | 实测 passing | 差 | failing/unverified/aborted/unread_nc | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|
+| 11118 | 11118 | 0 | 0/0/0/0 | 全 0（`TLB_PIN_END ok=95 bad=0`） | 无（3 子模块两侧白盒） | SUCCEEDED |
+
+`fm_predict.py check TLB` → 「全部对上」。mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify 无 / fm.log 行首 Error 0 /
+impl_worktree_dirty false。复跑：`PROOF_COMMIT=6571efce8ce6d3e8c9085a3063f3a065392f8432 bash scripts/run_proof.sh TLB TLB < /dev/null`
+
+# 对账 D. PTWFilterEntry（跑完追加；§4 未改一字）
+
+| 项 | 值 |
+|---|---|
+| 跑前登记 / proof commit | `6571efce8ce6d3e8c9085a3063f3a065392f8432` |
+| 证据目录 | `evidence/6571efce8ce6/PTWFilterEntry/` |
+| receipt sha256 | `fa743f01e447920bf09f6277b2a70792a4badbaf7a8fbae616419fc76f766c85` |
+
+| 预测 | 实测 passing | 差 | failing/unverified/aborted/unread_nc | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|
+| 757 | 757 | 0 | 0/0/0/0 | 全 0 | 无 | SUCCEEDED |
+
+`fm_predict.py check PTWFilterEntry` → 「全部对上」。mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify 无。
+复跑：`PROOF_COMMIT=6571efce8ce6d3e8c9085a3063f3a065392f8432 bash scripts/run_proof.sh PTWFilterEntry PTWFilterEntry < /dev/null`
