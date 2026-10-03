@@ -477,12 +477,19 @@ TARGETS = {
 RTL_GENERATORS = [gen_prefetchfilter_rtl, gen_tlb_rtl, gen_ptwfe_rtl, gen_pmp_rtl]
 
 
-def gen_pins(top, rule, tag):
+def gen_pins(top, rule, tag, design=None, ref_pre=None, impl_pre=None, note=None):
+    """design/ref_pre/impl_pre：在父级里钉子模块时用（例：L2TLB 里的 pmp 实例）。"""
+    design = design or top
+    ref_pre = ref_pre if ref_pre is not None else "r:/WORK/%s/" % design
+    impl_pre = impl_pre if impl_pre is not None else "i:/WORK/%s/u_core/" % design
     regs = golden_top_regs(top)
     total = sum(w for _, w in regs)
     seen = set()
     o = []
-    o.append("# %s FM「匹配前」钉点 —— 自动生成：scripts/gen_mmuleaf.py（勿手改）" % top)
+    o.append("# %s FM「匹配前」钉点 —— 自动生成：scripts/gen_mmuleaf.py（勿手改）" % design)
+    if note:
+        for ln in note:
+            o.append("# " + ln)
     o.append("#")
     o.append("# 只消 golden 展平寄存器名与重写核 generate 块/数组/语义名之间的命名鸿沟（规则见生成器）。")
     o.append("# set_user_match 只是声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。")
@@ -494,11 +501,11 @@ def gen_pins(top, rule, tag):
     o.append("set ::%s_PIN_BAD 0" % tag)
     o.append("proc %s_pin {g i w} {" % tag.lower())
     o.append("  if {$w == 1} {")
-    o.append("    set pairs [list \"r:/WORK/%s/${g}_reg\" \"i:/WORK/%s/u_core/${i}\"]" % (top, top))
+    o.append("    set pairs [list \"%s${g}_reg\" \"%s${i}\"]" % (ref_pre, impl_pre))
     o.append("  } else {")
     o.append("    set pairs {}")
     o.append("    for {set b 0} {$b < $w} {incr b} {")
-    o.append("      lappend pairs \"r:/WORK/%s/${g}_reg\\[$b\\]\" \"i:/WORK/%s/u_core/${i}\\[$b\\]\"" % (top, top))
+    o.append("      lappend pairs \"%s${g}_reg\\[$b\\]\" \"%s${i}\\[$b\\]\"" % (ref_pre, impl_pre))
     o.append("    }")
     o.append("  }")
     o.append("  foreach {r m} $pairs {")
@@ -508,7 +515,7 @@ def gen_pins(top, rule, tag):
     o.append("    }")
     o.append("  }")
     o.append("}")
-    o.append("puts \"%s_PIN_BEGIN %s expect=$::%s_PIN_EXPECT\"" % (tag, top, tag))
+    o.append("puts \"%s_PIN_BEGIN %s expect=$::%s_PIN_EXPECT\"" % (tag, design, tag))
     for n, w in regs:
         hits = rule(n)
         if len(hits) != 1:
@@ -520,7 +527,7 @@ def gen_pins(top, rule, tag):
             raise SystemExit("gen_mmuleaf: %s 两个 golden 寄存器映射到同一个重写寄存器 %s（不是双射）" % (top, key))
         seen.add(key)
         o.append("%s_pin %s %s %d" % (tag.lower(), n, esc(base + "_reg" + idx), w))
-    o.append("puts \"%s_PIN_END %s ok=$::%s_PIN_OK bad=$::%s_PIN_BAD\"" % (tag, top, tag, tag))
+    o.append("puts \"%s_PIN_END %s ok=$::%s_PIN_OK bad=$::%s_PIN_BAD\"" % (tag, design, tag, tag))
     o.append("if {$::%s_PIN_BAD != 0} { error \"%s_PIN_MISS=$::%s_PIN_BAD\" }" % (tag, tag, tag))
     o.append("if {$::%s_PIN_OK != %d} { error \"%s_PIN_COUNT=$::%s_PIN_OK expect=%d\" }"
              % (tag, total, tag, tag, total))
@@ -533,6 +540,12 @@ def targets():
         out[os.path.join(REPO, "verif", "ut", ut, "fm_pins_pre.tcl")] = gen_pins(top, rule, tag)
     path, text = gen_tlb_post_pins()
     out[path] = text
+    # L2TLB 里的 pmp 实例：impl 侧改用 PMP 重写件后，两侧内部寄存器名字不同，整表逐位钉
+    out[os.path.join(REPO, "verif", "ut", "L2TLB", "fm_pins_pre.tcl")] = gen_pins(
+        "PMP", pmp_rule, "L2TLBPMP", design="L2TLB",
+        ref_pre="r:/WORK/L2TLB/pmp/", impl_pre="i:/WORK/L2TLB/u_core/u_pmp/u_core/",
+        note=["L2TLB 的 pmp 子模块：ref = golden PMP（实例名 pmp），impl = PMP 重写件（u_core/u_pmp/u_core 下）。",
+              "规则与 verif/ut/PMP/fm_pins_pre.tcl 完全相同（同一个 pmp_rule），只换路径前缀。"])
     for g in RTL_GENERATORS:
         path, text = g()
         out[path] = text
