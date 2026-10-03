@@ -4,7 +4,12 @@
 // 不连任何信号。它在 t=1 往 stderr（= assert.log，与 [PERF ] 行同一个文件、
 // 同一个 sha256）打印一行 [PERFCFG]，内容全部由仿真器**现场测得**，不靠人填：
 //
-//   randomize_defines  编译期实际定义了哪些 RANDOMIZE_* 宏（`ifdef 现查）；none = 都没定义
+//   randomize_defines  编译期实际定义了哪些影响初值的 RANDOMIZE_* 宏（`ifdef 现查）；none = 都没定义。
+//                      本文件编在文件表最后，看得到 RTL 文本里泄漏出来的宏：firtool 的派生宏
+//                      `RANDOMIZE（REG_INIT/MEM_INIT 任一定义即被 RTL 定义）也在查。
+//                      不查 RANDOMIZE_DELAY：golden 每个 firtool 文件头都自己
+//                      `define RANDOMIZE_DELAY 0.002（1998 个文件），它只在 `ifdef RANDOMIZE 块里用，
+//                      Z0 下这些块不生成；查它只会把 RTL 文本误判成编译设定（实测踩过）。
 //   initreg_plusarg    运行期 +vcs+initreg+<v> 的 <v>（VCS 未给时报 random）
 //   initreg_probe_reg  一个 64 位无初值 reg 在 t=1 的值：
 //                        0…0 ⇔ 编译期有 +vcs+initreg+random 且运行期 +vcs+initreg+0
@@ -36,9 +41,6 @@ module perf_cfg_stamp;
 `endif
 `ifdef RANDOMIZE_INVALID_ASSIGN
     defs = {defs, "INVALID_ASSIGN,"};
-`endif
-`ifdef RANDOMIZE_DELAY
-    defs = {defs, "DELAY,"};
 `endif
 `ifdef RANDOMIZE
     defs = {defs, "RANDOMIZE,"};
