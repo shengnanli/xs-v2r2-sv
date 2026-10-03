@@ -341,3 +341,9 @@ merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageB
 全部 mode = signoff-strict、allowlist 0、dont_verify 无、elab147 无；merge_dup=false；vmucp：SCTable×4 / FauFTB / ITTage / Tage_SC / ITTageTable×5 / TageBTable 为 true（依据见 verif/fm_target_config/<T>.tcl），LFSR / RegionWays 为 false。
 `python3 scripts/fm_predict.py check <T>` 全部「对上」（Tage_SC 为「差额被指认：constant_reg 4 + unread 192」）；`python3 scripts/check_lane_receipts.py /home/eda/xs-env/wt-bpu-tables` rc=0。
 复跑：`PROOF_COMMIT=<proof commit> bash scripts/run_proof.sh <UT 目录> <T> < /dev/null`（UT 目录：LFSR→MaxPeriodFibonacciLFSR，SCTable_* → SCTable，ITTageTable_k → ITTageTable_k，其余同名）。
+
+## 8. 跑前补记：SCTable 家族 / Tage_SC 重证（commit `fa804162`，上面各节未改一字）
+- 全仓 package 作用域闸（scripts/check_pkg_scope.py）报 CROSS_FILE_PACKAGE：sctable_pkg 定义在 SCTable.sv、被 SCTable_1/_2/_3.sv 引用。
+  按 CONVENTIONS「独立包文件」例外移到 `rtl/frontend/sctable_pkg.sv`（包内容逐字不变，只是换文件）；SCTable_1/_2/_3 的生成头注释同步改。
+- 这让 SCTable×4 与 Tage_SC（以及 Composer）的 impl 闭包字节变化，§对账里它们的 receipt（`1b420e20` / `312a5d35`）随之 STALE。
+  在 `fa804162` 上重跑 UT 3×3 与官方证明；预测不变（SCTable×4：1123；Tage_SC：16112 / PASS_DEAD_REF，差 196 = constant_reg 4 + dead_ref 192）。
