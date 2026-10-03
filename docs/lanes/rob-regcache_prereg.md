@@ -169,9 +169,7 @@ unmatched 0、unread 6 且全部是 ref 侧（= verif/dead_ref/RegCache.json 声
 
 批 A 23 个：22 CAUGHT，M22（deqPtrOH 去回绕）MISSED，预期 MISS_FM——无读者，FM 的 vmucp 比较 deqPtrOH 覆盖。
 批 B 16 个：首轮 11 CAUGHT；SRT 的 N10（needCorr 去掉 r≠0 项）/ N16（RightShifter msb 去掉 r≠0 门控）MISSED ⇒ 给 tb 加
-"整除"激励档后两条 CAUGHT；N12 / N13（首商位阈值表、-m 查表各改一项）仍 MISSED——SRT 选择有冗余，改一个阈值项不改变商，
-外部不可观测；FM 侧诊断：N12 passing 1803 SUCCEEDED（逻辑等价于 golden？否——见下）、N13 FAILED（45 failing，qPrevReg/
-rudPmNegReg 被比出）。N12 的阈值改动落在 mInitPos2 第 3 项：FM 也判等价，说明该项改动在可达状态下等价于原值？★不是★——
-FM 比较的是寄存器 qPrevReg 的下一态，N12 仍 SUCCEEDED 意味着该表项在 FM 的组合锥里被 rSumInitTrunc 的取值范围吸收
-（rSumInitTrunc 最高位恒 0，≥ 16 与 ≥ 18 在 4 位可达域 [0,15] 上同为假）——即该表项本身在 golden 里就是不可达阈值，属等价变异。
+"整除"激励档后两条 CAUGHT；N12 / N13 仍 MISSED，改跑 FM 侧诊断：N13（-m 查表改一项）FM FAILED（45 failing，rudPmNegReg/qPrevReg 被比出）⇒ FM 覆盖；
+N12（首商位阈值 mInitPos2 第 3 项 10000→10010）FM 仍 SUCCEEDED 1803——是**等价变异**：比较对象 rSumInitTrunc = {1'b0, 4 位}，
+可达值 ≤ 15，`>= 16` 与 `>= 18` 恒同为假，该表项在 golden 里本就不起作用。
 N14（quotSignReg 去掉 pre_1 写 1 的项）MISSED，预期 MISS_FM（值不被用到，寄存器比较点由 FM 覆盖）。
