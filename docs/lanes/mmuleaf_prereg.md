@@ -308,3 +308,21 @@ impl_worktree_dirty false。复跑：`PROOF_COMMIT=6571efce8ce6d3e8c9085a3063f3a
 
 `fm_predict.py check PTWFilterEntry` → 「全部对上」。mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify 无。
 复跑：`PROOF_COMMIT=6571efce8ce6d3e8c9085a3063f3a065392f8432 bash scripts/run_proof.sh PTWFilterEntry PTWFilterEntry < /dev/null`
+
+# 对账 E. PMP（跑完追加；§5 未改一字）
+
+| 项 | 值 |
+|---|---|
+| 跑前登记 commit | `6571efce`（是 proof commit 的祖先） |
+| proof commit | `4b8bfeb38497dbce9f3883bea7c237246d2d96c0`（相对登记只多了 L2TLB 的 Makefile/钉点与生成器的 L2TLB 段；PMP.sv 字节未变） |
+| 证据目录 | `evidence/4b8bfeb38497/PMP/` |
+| receipt sha256 | `ba0ea79926333f8820b0b6d7d573fd99ae1ac8f541d152a1731681e5308729cd` |
+
+| 预测 | 实测 passing | 差 | failing/unverified/aborted/unread_nc | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|
+| 13096 | 13096 | 0 | 0/0/0/0 | 全 0（`PMP_PIN_END ok=6664 bad=0`） | 无 | SUCCEEDED |
+
+`fm_predict.py check PMP` → 「全部对上」。fm.log 行首 Error 0，impl_worktree_dirty false。
+变异补跑（崩溃后在新沙箱重跑）：M6 cfg CSR 步长 / M7 cfg 写不重算 mask CAUGHT；M9 wdata 无使能、M10 mask 优先级翻转 UT 存活 ——
+前者只在 wen_reg=1 时被读（观测等价），后者是 5.1 所述可达状态下不出现的组合；两者都由 FM 覆盖（M10 正是第一版 FM FAILED 的那一类）。
+复跑：`PROOF_COMMIT=4b8bfeb38497dbce9f3883bea7c237246d2d96c0 bash scripts/run_proof.sh PMP PMP < /dev/null`
