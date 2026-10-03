@@ -144,3 +144,16 @@ child：lzc、r4_qds_cg（PROVEN_DIRECT）、fpsqrt_r16_block（本 lane §2）�
 | fpsqrt_r16 | 385（314 + 71） | 1（`m_pos_1_for_nxt_cycle_s0_qds_0_q[0]`：cg 表里 m_pos_1 的 bit0 恒 0） | **384** | unread 0 / failing 0 / unmatched 0 / 无黑盒 / SUCCEEDED |
 
 可能出错处：重写件寄存器名与 golden 不同（nr_f_r_7b_q vs nr_f_r_7b_for_nxt_cycle_s0_qds_0_q 等），靠签名配对；若出现 unmatched 先查配对。
+
+## 对账 §2 §3（证明 commit `44292961f`）
+
+| 目标 | 结果 | 模型 / 预测 / 实测 passing | constant_reg | unread / unmatched / 黑盒 / dont_verify | receipt sha256 |
+|---|---|---|---|---|---|
+| fpsqrt_r16_block | SUCCEEDED | 413 / 413 / **413**（逐位相等） | 0 | 0 / 0 / 0 / 无 | `55d4871c4b19bfd1be2aa423026cc67538e09a56a2cb70b283ebf01d609462c5` |
+| fpsqrt_r16 | SUCCEEDED | 385 / 384 / **382** | **3** | 0 / 0 / 0 / 无 | `f5f75be9c021d41554c7f3e033d9992abbe2f6f0ad23826aa48030bfe1819843` |
+
+fpsqrt_r16 差额指认（★预测错了，照实记★）：预登记猜的常量位 `m_pos_1_q[0]` FM 并未判常量（它照常成为 passing 点）；
+实测 3 个 constant_reg 是 `f_r_c_q[3:1]`（ref DFF0X ↔ impl DFF0，两侧都恒 0：标量开方只用 lane0，初值低段 `{c_init[7:0], 8'b0}`
+与 block 输出在这几位恒 0）。逐名来源：scratchpad 诊断跑 `report_not_compared_points`（不产 receipt）。
+`python3 scripts/fm_predict.py check fpsqrt_r16_block fpsqrt_r16` rc=0（模型 385 − 实测 382 = constant_reg 3）。
+复跑：`PROOF_COMMIT=44292961f bash scripts/run_proof.sh fpsqrt_r16_block fpsqrt_r16_block < /dev/null`（fpsqrt_r16 同理）。
