@@ -1,0 +1,193 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T07:51:48Z",
+ "generator": {
+  "run_context_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/cb2892a30a11/Pma29cfgModule",
+  "version": 1
+ },
+ "impl_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pma29cfgModule.sv",
+    "sha256": "5f6e0b62601dc34220b1256c0f6fbe0181f2adb47b1af5ac44763959b830b560"
+   }
+  ],
+  "golden_sha256": "d329e634a9ce8b8a9e7b04801e94c5886bdafc97f90409cd4da9aa93f7859853",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_Pmacfg_core.sv",
+    "sha256": "207624cc35aef6d1504b276e7c52a3290973a33c6a3ce085357a1c8d51bad6fd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma16cfgModule.sv",
+    "sha256": "f79fde13962a56c582b0b77826907614fe620a50b78cc2d4d37d1b98ef16db07"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma17cfgModule.sv",
+    "sha256": "50b185c9b705e42b23947faf8a06c3dcf7c9c3ce9591903f668bcb08e819db64"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma18cfgModule.sv",
+    "sha256": "a21465f50458c0d118bba1919e2a79deb77510a1a7734c9339c132b5c0ac2878"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma19cfgModule.sv",
+    "sha256": "91a93e804bb73a4f204a45e615ae6732176c7c5aad5a54cfb3a84d75d048a8b9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma20cfgModule.sv",
+    "sha256": "9da53579b4af48a6e013c695d5c81fe338240ac2bd71bf69ef64280abab79dea"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma21cfgModule.sv",
+    "sha256": "5b3da860907a6cb45d2564eb5b95d879b3e6e3862c2cf5b61b3eba830c784e38"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma22cfgModule.sv",
+    "sha256": "089e601c16c4794e4654d6b0649b380e54c2a28c02f4cef8aa437c0d24f1eeff"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma23cfgModule.sv",
+    "sha256": "f029d8b6c9d61445d8405618208bf2057e1f644c26a810848868bd93ac7a9977"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma24cfgModule.sv",
+    "sha256": "b53be9d89f5828cc6113073113f29a2791cfb8bf41c376e620550cbfbb01db5d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma25cfgModule.sv",
+    "sha256": "f4f3b7e4078c201bcef013d5a697cef0cd7d2a49378727495b154385fc5daa27"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma26cfgModule.sv",
+    "sha256": "f26e22c784cf19319f669fc95dcb41c1549891351e244d74a82df4b18b0307b7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma27cfgModule.sv",
+    "sha256": "620c917b099ddb3ef719b20a80e280dc7bfddcf3f05d2e1bd05204dc73c74a53"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma28cfgModule.sv",
+    "sha256": "4b4afdbb5026572ece82229e8b6bdf29d9cb832761833ea79b4f013337af2c5c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma29cfgModule.sv",
+    "sha256": "9a6241087fd6e7c3f0b85163b01c1f6455cd82cf791fc570d03cdb7559ad790b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma30cfgModule.sv",
+    "sha256": "7d512741a16316c7cc40ccd8842da5f5fb82b73f43f6d4516465bdd51749f472"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Pma31cfgModule.sv",
+    "sha256": "8d0bfbe8e1ddd50ea4ad968a30f01a914cb206e40b2fa33cfbc201dd230f0583"
+   }
+  ],
+  "impl_sha256": "912adc6196052bdfa6fb494c6de355d2a78ac01246c8046b73ae69ee932e7228",
+  "repo_impl_files": 17
+ },
+ "native_facts_sha256": "c8317c27e27ddd3b011f02c1e3e0130e0518835f7033b3ae8addcb7183757bbf",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 24,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+ "provisional": false,
+ "receipt_sha256": "7e40725f41a855290274ba4440e5fc4393a685abe29e87be27b264b4346932b5",
+ "reproduce": {
+  "command": "PROOF_COMMIT=cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c scripts/run_proof.sh PmaCfgTailLeaves Pma29cfgModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "277102279ec3c4987c5f381d138c275c7b32b612234328a4c18a0345cad2b73c",
+ "run_id": "PmaCfgTailLeaves-20261003T071724Z-cb2892a3",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "Pma29cfgModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PmaCfgTailLeaves",
+ "variant": "Pma29cfgModule",
+ "verdict": "SUCCEEDED"
+}

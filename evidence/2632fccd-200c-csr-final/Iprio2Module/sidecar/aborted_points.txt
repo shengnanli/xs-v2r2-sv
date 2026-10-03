@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Iprio2Module
+Implementation : i:/WORK/Iprio2Module
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 07:21:56 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -1,0 +1,73 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "Iprio0Module_1",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "Golden reg_PrioMSI and reg_PrioMTI are reset and written but never feed rdata or any output cone; the implementation therefore omits these golden-only dead registers while preserving all observable priority fields, and strict FM must observe no implementation unread state.",
+ "observed_points": 16,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMSI_reg[0]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMSI_reg[1]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMSI_reg[2]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMSI_reg[3]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMSI_reg[4]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMSI_reg[5]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMSI_reg[6]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMSI_reg[7]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMTI_reg[0]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMTI_reg[1]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMTI_reg[2]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMTI_reg[3]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMTI_reg[4]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMTI_reg[5]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMTI_reg[6]",
+   "class": "golden_only_cone_dead"
+  },
+  {
+   "ref_path": "r:/WORK/Iprio0Module_1/reg_PrioMTI_reg[7]",
+   "class": "golden_only_cone_dead"
+  }
+ ]
+}
