@@ -1,0 +1,9 @@
+{
+  "target": "MbistIntfL2",
+  "ut": "MbistIntfL2",
+  "regs": 0,
+  "outs": 319,
+  "expected": 319,
+  "merge_dup": "false",
+  "model_applicable": true
+}

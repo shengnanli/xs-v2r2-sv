@@ -1,0 +1,137 @@
+// HPerfCounter.sv — readable wrapper for the event reduction leaf.
+// The explicit table below preserves reserved holes and variant timing.
+// Four registered stages match HardwarePerfMonitor's observable latency.
+
+module HPerfCounter (
+  input  logic clock,
+  input  logic [63:0] io_hpm_event,
+  input  logic [5:0] io_events_sets_1_value,
+  input  logic [5:0] io_events_sets_2_value,
+  input  logic [5:0] io_events_sets_3_value,
+  input  logic [5:0] io_events_sets_4_value,
+  input  logic [5:0] io_events_sets_5_value,
+  input  logic [5:0] io_events_sets_6_value,
+  input  logic [5:0] io_events_sets_7_value,
+  input  logic [5:0] io_events_sets_8_value,
+  input  logic [5:0] io_events_sets_9_value,
+  input  logic [5:0] io_events_sets_10_value,
+  input  logic [5:0] io_events_sets_11_value,
+  input  logic [5:0] io_events_sets_12_value,
+  input  logic [5:0] io_events_sets_13_value,
+  input  logic [5:0] io_events_sets_14_value,
+  input  logic [5:0] io_events_sets_15_value,
+  input  logic [5:0] io_events_sets_16_value,
+  input  logic [5:0] io_events_sets_17_value,
+  input  logic [5:0] io_events_sets_18_value,
+  input  logic [5:0] io_events_sets_19_value,
+  input  logic [5:0] io_events_sets_20_value,
+  input  logic [5:0] io_events_sets_21_value,
+  input  logic [5:0] io_events_sets_22_value,
+  input  logic [5:0] io_events_sets_23_value,
+  input  logic [5:0] io_events_sets_25_value,
+  input  logic [5:0] io_events_sets_26_value,
+  input  logic [5:0] io_events_sets_27_value,
+  input  logic [5:0] io_events_sets_28_value,
+  input  logic [5:0] io_events_sets_29_value,
+  input  logic [5:0] io_events_sets_30_value,
+  input  logic [5:0] io_events_sets_31_value,
+  input  logic [5:0] io_events_sets_32_value,
+  input  logic [5:0] io_events_sets_33_value,
+  input  logic [5:0] io_events_sets_34_value,
+  input  logic [5:0] io_events_sets_35_value,
+  input  logic [5:0] io_events_sets_36_value,
+  input  logic [5:0] io_events_sets_37_value,
+  input  logic [5:0] io_events_sets_38_value,
+  input  logic [5:0] io_events_sets_39_value,
+  input  logic [5:0] io_events_sets_40_value,
+  input  logic [5:0] io_events_sets_41_value,
+  input  logic [5:0] io_events_sets_42_value,
+  input  logic [5:0] io_events_sets_43_value,
+  input  logic [5:0] io_events_sets_44_value,
+  input  logic [5:0] io_events_sets_45_value,
+  input  logic [5:0] io_events_sets_46_value,
+  input  logic [5:0] io_events_sets_47_value,
+  input  logic [5:0] io_events_sets_48_value,
+  input  logic [5:0] io_events_sets_49_value,
+  input  logic [5:0] io_events_sets_50_value,
+  input  logic [5:0] io_events_sets_51_value,
+  input  logic [5:0] io_events_sets_52_value,
+  input  logic [5:0] io_events_sets_53_value,
+  input  logic [5:0] io_events_sets_54_value,
+  input  logic [5:0] io_events_sets_55_value,
+  input  logic [5:0] io_events_sets_56_value,
+  input  logic [5:0] io_events_sets_57_value,
+  output logic [5:0] io_perf_0_value
+);
+  logic [5:0] event_values [0:63];
+  assign event_values[0] = 6'h0;
+  assign event_values[1] = io_events_sets_1_value;
+  assign event_values[2] = io_events_sets_2_value;
+  assign event_values[3] = io_events_sets_3_value;
+  assign event_values[4] = io_events_sets_4_value;
+  assign event_values[5] = io_events_sets_5_value;
+  assign event_values[6] = io_events_sets_6_value;
+  assign event_values[7] = io_events_sets_7_value;
+  assign event_values[8] = io_events_sets_8_value;
+  assign event_values[9] = io_events_sets_9_value;
+  assign event_values[10] = io_events_sets_10_value;
+  assign event_values[11] = io_events_sets_11_value;
+  assign event_values[12] = io_events_sets_12_value;
+  assign event_values[13] = io_events_sets_13_value;
+  assign event_values[14] = io_events_sets_14_value;
+  assign event_values[15] = io_events_sets_15_value;
+  assign event_values[16] = io_events_sets_16_value;
+  assign event_values[17] = io_events_sets_17_value;
+  assign event_values[18] = io_events_sets_18_value;
+  assign event_values[19] = io_events_sets_19_value;
+  assign event_values[20] = io_events_sets_20_value;
+  assign event_values[21] = io_events_sets_21_value;
+  assign event_values[22] = io_events_sets_22_value;
+  assign event_values[23] = io_events_sets_23_value;
+  assign event_values[24] = 6'h0;
+  assign event_values[25] = io_events_sets_25_value;
+  assign event_values[26] = io_events_sets_26_value;
+  assign event_values[27] = io_events_sets_27_value;
+  assign event_values[28] = io_events_sets_28_value;
+  assign event_values[29] = io_events_sets_29_value;
+  assign event_values[30] = io_events_sets_30_value;
+  assign event_values[31] = io_events_sets_31_value;
+  assign event_values[32] = io_events_sets_32_value;
+  assign event_values[33] = io_events_sets_33_value;
+  assign event_values[34] = io_events_sets_34_value;
+  assign event_values[35] = io_events_sets_35_value;
+  assign event_values[36] = io_events_sets_36_value;
+  assign event_values[37] = io_events_sets_37_value;
+  assign event_values[38] = io_events_sets_38_value;
+  assign event_values[39] = io_events_sets_39_value;
+  assign event_values[40] = io_events_sets_40_value;
+  assign event_values[41] = io_events_sets_41_value;
+  assign event_values[42] = io_events_sets_42_value;
+  assign event_values[43] = io_events_sets_43_value;
+  assign event_values[44] = io_events_sets_44_value;
+  assign event_values[45] = io_events_sets_45_value;
+  assign event_values[46] = io_events_sets_46_value;
+  assign event_values[47] = io_events_sets_47_value;
+  assign event_values[48] = io_events_sets_48_value;
+  assign event_values[49] = io_events_sets_49_value;
+  assign event_values[50] = io_events_sets_50_value;
+  assign event_values[51] = io_events_sets_51_value;
+  assign event_values[52] = io_events_sets_52_value;
+  assign event_values[53] = io_events_sets_53_value;
+  assign event_values[54] = io_events_sets_54_value;
+  assign event_values[55] = io_events_sets_55_value;
+  assign event_values[56] = io_events_sets_56_value;
+  assign event_values[57] = io_events_sets_57_value;
+  assign event_values[58] = 6'h0;
+  assign event_values[59] = 6'h0;
+  assign event_values[60] = 6'h0;
+  assign event_values[61] = 6'h0;
+  assign event_values[62] = 6'h0;
+  assign event_values[63] = 6'h0;
+  xs_HPerfCounter_core #(
+    .EVENT_INDEX_BITS(6), .TABLE_SIZE(64)
+  ) u_core (
+    .clock(clock), .hpm_event(io_hpm_event),
+    .event_values(event_values), .perf_value(io_perf_0_value)
+  );
+endmodule

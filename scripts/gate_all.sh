@@ -131,6 +131,10 @@ run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
 # 先跑双向负测（真守卫专属必须判绿 / 真改了钉的点必须判红 —— 只判红的实现和恒等判绿的
 # 实现都会在这里露馅），再对着基线表 docs/pin_call_seq.tsv 核对。两条加起来约 12 秒。
 run "钉点调用序列闸负测"  python3 scripts/pin_call_equiv.py --selftest
+# 钉点静默落空（codex_0207 E1）：set_user_match 对不存在的名字不抛异常，只留一行行首
+# `Error: Unknown name`。fm_verdict 见到它就不许给 SUCCEEDED/PASS_DEAD_REF。双向负测：
+# 注入一行 -> 红；注释/缩进里提到同一串 -> 仍绿；修之前的真实日志 -> 红（秒级）。
+run "钉点落空判据负测"    python3 scripts/test_unknown_name_verdict.py
 run "钉点调用序列闸"     python3 scripts/pin_call_equiv.py --check
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族

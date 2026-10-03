@@ -1,0 +1,10 @@
+{
+  "target": "CSA4to2",
+  "ut": "CSA4to2",
+  "regs": 0,
+  "outs": 214,
+  "expected": 214,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 214 = 0 寄存器 + 214 输出位；预测 passing 214，constant_reg 0，无 vmucp"
+}

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Hpmcounter14Module
+Implementation : i:/WORK/Hpmcounter14Module
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:36:15 2026
+**************************************************
+
+No aborted compare points.
+
+1

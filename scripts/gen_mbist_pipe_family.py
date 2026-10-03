@@ -51,7 +51,10 @@ EXTRA_MODS = ['L2Slice', 'L2Slice_1', 'L2Slice_2', 'L2Slice_3',
               # Directory_1..3 层的普通叶子（slice 0 的 L2Directory 另有已签核的手写件 rtl/uncore/L2Directory.sv，不在此列）
               'L2Directory_1', 'L2Directory_2', 'L2Directory_3',
               # L2TLB bitmap cache 的叶子（agent/fe-mem-misc 并入，UT 另立 verif/ut/MbistBitmapCache）
-              'MbistBitmapCache']
+              'MbistBitmapCache',
+              # L2 顶层 MBIST 分发级（agent/csr-l2-leaves 并入）：child0 的 array 端口 1 位宽，
+              # golden 把它折成 `doSpread & arrayReg[0]`，parse_golden 已认这一形状。
+              'L2Cache']
 
 # 每个变体服务哪个存储阵列：由 golden 的例化关系机械抓出来的（父模块 + 与本
 # pipe 的 toSRAM/toNextPipeline 网线相连的实例类型），写进薄文件头供读者定位。
@@ -92,6 +95,7 @@ SERVES = {
  'L2Directory_3':          ('Directory_3',   'L2 slice 3 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
  'MbistBitmapCache':       ('BitmapCache',   'L2TLB bitmap cache 的 SplittedSRAM 4 块物理 SRAM（2 way 组 x 2 数据段，每块 90 位宽）'),
  'L2Slice_3':              ('Slice_3',       'L2 slice 3 的 MBIST 子树：child0=Directory 层(L2Directory_3)、child1=DataStorage 层(L2DataStorage_3)'),
+ 'L2Cache':                ('TL2CHICoupledL2', 'L2 顶层 MBIST 分发级（实例 mbistPl）：child0=Prefetcher(MbistPipeL2Prefetcher)、child1..4=Slice/Slice_1/Slice_2/Slice_3'),
 }
 
 
@@ -307,7 +311,13 @@ def parse_golden(mod):
             assert P['%s%d_outdata' % (pfx, k)][1] == c['DATA_W']
             a, d, be, ar = (sl(c['ADDR_W'], R['ADDR_W']), sl(c['DATA_W'], R['DATA_W']),
                             sl(c['BE_W'], R['BE_W']), sl(c['ARRAY_W'], AW))
-            for pat in (r"assign %s%d_array = doSpread%s \? arrayReg%s : \d+'h0;" % (pfx, k, sfx, ar),
+            # 1 位宽 child array（L2Cache child0：id 0..1）firtool 把 `doSpread ? arrayReg[0] : 1'h0`
+            # 折成了 `doSpread & arrayReg[0]`，两种写法逐位等价，都认。
+            if c['ARRAY_W'] == 1 and take(r"assign %s%d_array = doSpread%s & arrayReg\[0\];" % (pfx, k, sfx)):
+                arr_pat = ()
+            else:
+                arr_pat = (r"assign %s%d_array = doSpread%s \? arrayReg%s : \d+'h0;" % (pfx, k, sfx, ar),)
+            for pat in arr_pat + (
                         r"assign %s%d_all = doSpread%s & allReg;" % (pfx, k, sfx),
                         r"assign %s%d_req = reqReg;" % (pfx, k),
                         r"assign %s%d_writeen = doSpread%s & wenReg;" % (pfx, k, sfx),

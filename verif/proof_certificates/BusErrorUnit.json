@@ -1,0 +1,133 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T11:48:13Z",
+ "generator": {
+  "run_context_worktree_digest": "aab9acf99aca22084f37133ae4fe3604ccf4855a6b770f4635079cc3ea9af028",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "/tmp/newrtl200c-proof-hperf-head-1791027538974072161/BusErrorUnit",
+  "version": 1
+ },
+ "impl_commit": "92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BusErrorUnit.sv",
+    "sha256": "349834a305c3de147aeda500d59f4cf0e8505df14d6ccbfb8ed7b6e584c34086"
+   }
+  ],
+  "golden_sha256": "6e4393374b036a6d11f3661dd150fff8bc6ace60abb085d4c041b0c80dba73e6",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_HPerfCounter_core.sv",
+    "sha256": "1e64a61c65e6b45878e700697f06018baaf397a65559fdd6f388b66ebc65c75b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter.sv",
+    "sha256": "ecd9589ae0f4e0dae7b9b55cd4b2f1c2960ca632b052cb582356b3e28c3264f7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter_13.sv",
+    "sha256": "a56525f0a125a3b0ef84947167599e733e6c2bc4d6620604026ef4c7aeaba790"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter_8.sv",
+    "sha256": "157252b291b61e88363827f472377efff78ba7b58b4d8af506ebcf41bffbd791"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/BusErrorUnit.sv",
+    "sha256": "94d3bcd4c7080ab0db302b96e43a9804036aafad4c5e185fd2a5f2509bf75f69"
+   }
+  ],
+  "impl_sha256": "1979751e6f2e9302bf08e3936fdc97fc9c7a098bd83686c8a6ff6d54fa35ec32",
+  "repo_impl_files": 5
+ },
+ "native_facts_sha256": "db57064bea909fc60e50b6655e23ce0e3877c880c7c8ee41149afa64d7fe0389",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 145,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "aab9acf99aca22084f37133ae4fe3604ccf4855a6b770f4635079cc3ea9af028",
+ "provisional": false,
+ "receipt_sha256": "301638a35bb2d8ab4257656e82e49e05bc2e2707377ab8e114fd1c7e780071f6",
+ "reproduce": {
+  "command": "PROOF_COMMIT=92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6 scripts/run_proof.sh BusHPerfCounter200c BusErrorUnit",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "40a10b1b19934a8fae399f30bce37fda656bd30487280d1438ee657321ef60df",
+ "run_id": "BusHPerfCounter200c-20261003T114046Z-92a50405c",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "BusErrorUnit",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "BusHPerfCounter200c",
+ "variant": "BusErrorUnit",
+ "verdict": "SUCCEEDED"
+}

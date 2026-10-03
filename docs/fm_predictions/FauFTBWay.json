@@ -1,0 +1,10 @@
+{
+  "target": "FauFTBWay",
+  "ut": "FauFTBWay",
+  "regs": 77,
+  "outs": 62,
+  "expected": 139,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "gatefix2/codex_0207 E1 同类：match_packed_payload 改正后重证前登记"
+}

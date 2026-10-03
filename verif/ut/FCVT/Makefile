@@ -1,20 +1,34 @@
 MODULE = FCVT
 
 RTL_DIR = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/FCVT.sv
+RTL_SRCS = $(RTL_DIR)/backend/FCVT.sv \
+           $(RTL_DIR)/common/xs_CLZ_core.sv \
+           $(RTL_DIR)/common/CLZ_6.sv \
+           $(RTL_DIR)/backend/ShiftRightJam.sv \
+           $(RTL_DIR)/backend/RoundingUnit_3.sv \
+           $(RTL_DIR)/backend/RoundingUnit_4.sv \
+           $(RTL_DIR)/backend/FP_INCVT.sv
 TB_SRCS = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL ?= $(G1_CANONICAL)/golden-rtl
 
-# FPCVT 及其闭包（fudian 浮点转换器，不是本轮重写目标）：
-# 已逐字节核对 G0 与 G1 这 7 个文件完全一致，故两侧同源 elaborate，不设黑盒。
-FCVT_LEAVES = FPCVT.sv CVT64.sv FP_INCVT.sv \
+# FPCVT 子树（FPCVT -> CVT64 -> FP_INCVT -> CLZ_6 / ShiftRightJam / RoundingUnit_3 / RoundingUnit_4）：
+#   FPCVT / CVT64 —— PROVEN_IN_CONE、本仓无重写件：两侧同源 golden（RTL_GOLDEN_DEPS），不设黑盒。
+#   FP_INCVT 及其 4 个 child —— 2026-10-03 起（agent/fpu-parents，incvt 组）两侧白盒：ref 读 golden，
+#     impl 读本仓重写件（RTL_SRCS）。FM：impl 容器里 golden CVT64 例化的 FP_INCVT 解析到重写件 —— 真对比。
+#   ★UT 限度★：CVT64 是两侧共用的 golden 定义，它例化的 FP_INCVT 在两侧都解析到 golden 那份
+#     （重写件被 derive 改名成 FP_INCVT_xs，没人例化它），所以本 UT 回归不到重写件；
+#     重写件的 UT 在 verif/ut/FP_INCVT，本层的替换由 FM 兜底。
+#   此前（evidence/80e9b96e8eb6 的 receipt）7 个文件全部两侧同源 golden（已逐字节核对 G0 与 G1 一致）。
+FCVT_SHARED = FPCVT.sv CVT64.sv
+FCVT_LEAVES = $(FCVT_SHARED) FP_INCVT.sv \
               RoundingUnit_3.sv RoundingUnit_4.sv \
               ShiftRightJam.sv CLZ_6.sv
 
-GOLDEN_SRCS = $(GOLDEN_RTL)/FCVT.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(FCVT_LEAVES))
+GOLDEN_SRCS = $(GOLDEN_RTL)/FCVT.sv $(GOLDEN_RTL)/FP_INCVT.sv $(GOLDEN_RTL)/RoundingUnit_3.sv \
+              $(GOLDEN_RTL)/RoundingUnit_4.sv $(GOLDEN_RTL)/ShiftRightJam.sv $(GOLDEN_RTL)/CLZ_6.sv
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(FCVT_SHARED))
 
 FM_VARIANTS = FCVT
 FM_REF_DEPS_FCVT = $(FCVT_LEAVES)
@@ -71,3 +85,9 @@ include ../../../scripts/ut_common.mk
 # golden 里 `ifndef SYNTHESIS 的断言块调用未定义函数 xs_assert_v2，
 # 且随机初始化 initial 块也只在非 SYNTHESIS 下出现——定义 SYNTHESIS 与 FM 侧口径一致。
 VCS += +define+SYNTHESIS
+
+# initreg 三档（2026-10-03，agent/fpu-parents 补接）：此前本 UT 没有 initreg 机制，只跑默认上电值。
+#   编译期打开机制、运行期选值：INITREG=0 / random / <seed>017（CONVENTIONS：seed 1 的 random 档退化为全 1）。
+VCS      += +vcs+initreg+random
+INITREG  ?= 0
+SIM_ARGS += +vcs+initreg+$(INITREG)

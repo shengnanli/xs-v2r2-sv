@@ -1,0 +1,153 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T07:42:30Z",
+ "generator": {
+  "run_context_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/cb2892a30a11/MedelegModule",
+  "version": 1
+ },
+ "impl_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MedelegModule.sv",
+    "sha256": "cb23cb01f96997241f538a5a50586516294d6f2a3ab493514c40917e480abc02"
+   }
+  ],
+  "golden_sha256": "2b30b690e820be91481653ed54c98c6b13ce6898734d4766c8187fd7737e462d",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MLevelPermitModule.sv",
+    "sha256": "297f28ecc3175b44101575bc218774d56df0b51d9be3fab45572fe4e43d522e7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MbmcModule.sv",
+    "sha256": "e7024b36c500be64aa006bbd3fa61fd6987fa8333ee674ba947f99e19b7ed6cb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/McontextModule.sv",
+    "sha256": "7f3b628975762ccd89a136d335345454f82ad5a181cb5bf5cc620ec053a3829f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/McorepwrModule.sv",
+    "sha256": "ce06f5c42566988b29ffdbf9bf05bd6646d67b9a37e65a91969a01a25fc659a8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/McounterenModule.sv",
+    "sha256": "1a4454d0bd0ab223320b49e9a87cb40a860b02aa649bfaef97369f28a9355a11"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/McountinhibitModule.sv",
+    "sha256": "9316d8ab5219d03ce45a12ee3e89929e23af6b234b3b12f944e89eb5d8b8efb3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MedelegModule.sv",
+    "sha256": "60b8e5f43da4a8298d043953e50188b6393cd4add67f2f8ff58319a7b5d2a6fc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MenvcfgModule.sv",
+    "sha256": "02c640fc04bffc794f3eead0df7766ea271b0f7602bfb2a19efe52ae6ee020b4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MflushpwrModule.sv",
+    "sha256": "893f46eb2b344e4b5ad5c8de944b7a2c08f4ba5f24a55c6d8eb5457e80d346b1"
+   }
+  ],
+  "impl_sha256": "e83372f9b930201873d43a43dfdce0e095c3e92f46628c850d1d1efebde61046",
+  "repo_impl_files": 9
+ },
+ "native_facts_sha256": "29ef9f4d579e5946dc1172f4953cdd2083074d19067f13e2de53608f73ac235b",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 104,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+ "provisional": false,
+ "receipt_sha256": "b0b6816ef0ff9dae7bdaf5b40e05368b823c79c0d1b4763344fe5297d418ab8f",
+ "reproduce": {
+  "command": "PROOF_COMMIT=cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c scripts/run_proof.sh csr_m MedelegModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "0be874c09d97433e8869f0d54d9345aa6056f8c500c223757e01ea2e27c0db1e",
+ "run_id": "csr_m-20261003T071721Z-cb2892a3",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "MedelegModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "csr_m",
+ "variant": "MedelegModule",
+ "verdict": "SUCCEEDED"
+}

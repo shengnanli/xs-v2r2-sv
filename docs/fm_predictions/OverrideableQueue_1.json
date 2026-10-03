@@ -1,0 +1,10 @@
+{
+  "target": "OverrideableQueue_1",
+  "ut": "Pipeline200c",
+  "regs": 252,
+  "outs": 62,
+  "expected": 314,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "agent/next200c-takeover 接管节预登记（docs/lanes/newrtl_next200c_prereg.md）"
+}

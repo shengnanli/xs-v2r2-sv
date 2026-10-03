@@ -1,0 +1,10 @@
+{
+  "target": "FastArbiter_26",
+  "ut": "FastArbiterL2c",
+  "regs": 8,
+  "outs": 69,
+  "expected": 77,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing 76 = expected - constant_reg 1（rrGrantMask_reg[0]）；pendingMask_reg[0] 对称 matched-unread，vmucp 开后进 passing"
+}
