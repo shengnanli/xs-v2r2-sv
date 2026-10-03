@@ -1,0 +1,23 @@
+{
+  "target": "DCache",
+  "ut": "DCache",
+  "regs": 75421,
+  "outs": 3626,
+  "expected": 82495,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 3448,
+  "bbox": {
+    "array_7_ext": {
+      "insts": 32,
+      "in_bits": 83,
+      "points": 2656
+    },
+    "array_8_ext": {
+      "insts": 8,
+      "in_bits": 99,
+      "points": 792
+    }
+  },
+  "note": "diagnostic(merge_dup=false, 2026-10-03) 实测 passing+failing=82086, constant_reg 411, BBPin 3450(模型 3448, +2 未指认)；预测正式跑 passing 82086 = 模型 82495 - constant_reg 411 + 2；impl 独有 unread 40（xs_SRAMTemplate_core rdata_last_REG）→ verdict 预期 PARTIAL"
+}
