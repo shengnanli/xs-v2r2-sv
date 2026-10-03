@@ -115,3 +115,11 @@
 是 3 位，越界值 6/7 时 golden 的 `when(deqPtr === i.U)` 没有一项命中 → valid=0，而核写成"越界读第 0 项的 valid"。
 UT 不可达（指针永不越界）。修法：核里 deq 选择器 valid 默认 0（9bf5ad8c）。TrainFilter_1（深 4，2 位指针无越界）
 与 SMSTrainFilter（深 8）不受影响，但共用核字节变了，三者一起重证。预测不变（1678 / 818 / 2751，各减 constant_reg 1 /1 /0）。
+
+## 6. SMSTrainFilter 第二轮（vmucp）
+
+第一轮（058ddde1，在 9bf5ad8c 修复之后）：native SUCCEEDED passing 2743 / failing 0 / unmatched 0，
+validator PARTIAL：unread 8 = ref enqPtrExt_3/4 的 flag+value 8 位 ↔ impl enq_flag/enq_value[3..4] 8 位，
+两侧对称死位（分配下标 PopCount ≤ 2，3/4 号指针永不被读）。按 vmucp standing rule 六条加
+verif/fm_target_config/SMSTrainFilter.tcl + Makefile 开 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS。
+预测：passing **2751**（= 2743 + 8 = 模型 2751），unread 0，其余全零，SUCCEEDED。

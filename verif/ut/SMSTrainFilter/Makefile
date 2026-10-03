@@ -11,6 +11,10 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/SMSTrainFilter.sv
 FM_VARIANTS = SMSTrainFilter
 FM_MERGE_DUP = false
 
+# ★vmucp：依据见 verif/fm_target_config/SMSTrainFilter.tcl★ —— 8 位两侧对称死位
+# （store 训练口被裁后永不被读的 3/4 号入队指针）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
