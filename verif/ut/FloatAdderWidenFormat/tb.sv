@@ -8,7 +8,7 @@
 // 激励：每个 16 位 / 32 位元素的指数按类别挑（0 = 非规格/零、1、中间、全 1 附近、全 1），尾数含
 //   全 0 / 全 1 / 单个 1 游走（非规格数的每个移位量）/ 随机；uop_idx 1/2。
 // 覆盖判据（写进 PASS）：f16 非规格数 10 种移位量、f32 非规格数 23 种移位量各 >= 50 次；
-//   oracle 比对的 f16/f32 元素各 >= 50000；Inf/NaN、零各 >= 1000；每个输出位见过 0 和 1（结构恒 0 的低位除外）。
+//   oracle 比对的 f16/f32 元素各 >= 50000；源的高/低半（及两个 f16）互不相同的拍 >= 一半；Inf/NaN、零各 >= 1000；每个输出位见过 0 和 1（结构恒 0 的低位除外）。
 // =============================================================================
 `timescale 1ns/1ps
 module tb;
@@ -28,7 +28,7 @@ module tb;
     .io_widen_a_f32_0(i_a0), .io_widen_b_f32_0(i_b0), .io_widen_a_f32_1(i_a1), .io_widen_b_f32_1(i_b1),
     .io_widen_a_f64(i_a64), .io_widen_b_f64(i_b64));
 
-  longint oracle16 = 0, oracle32 = 0, special = 0, zeros = 0;
+  longint oracle16 = 0, oracle32 = 0, special = 0, zeros = 0, halves_differ = 0;
   longint den16 [10], den32 [23];
   logic [63:0] seen0 [6], seen1 [6];
 
@@ -69,9 +69,17 @@ module tb;
     if (m != 0 && $urandom_range(0, 3) == 0) m = m | (23'($urandom) >> ($urandom_range(0, 23)));
     return {1'($urandom), e, m};
   endfunction
+  // ★逐个调用存进变量再拼★：实测 VCS 会把同一拼接里重复的 {mk16(), mk16(), ...} 只求值一次
+  //   （四个半字完全相同，"uop_idx 选高/低半"这类错就看不见了——变异 M3 因此漏网，见 prereg）。
   function automatic logic [63:0] mk64();
-    if ($urandom_range(0, 1)) return {mk16(), mk16(), mk16(), mk16()};
-    return {mk32(), mk32()};
+    logic [15:0] h0, h1, h2, h3;
+    logic [31:0] w0, w1;
+    if ($urandom_range(0, 1)) begin
+      h0 = mk16(); h1 = mk16(); h2 = mk16(); h3 = mk16();
+      return {h3, h2, h1, h0};
+    end
+    w0 = mk32(); w1 = mk32();
+    return {w1, w0};
   endfunction
 
   // ---- 独立 IEEE oracle ----
@@ -130,6 +138,7 @@ module tb;
     for (cyc = 0; cyc < NCYCLES; cyc++) begin
       wa = mk64(); wb = mk64(); uop_idx = $urandom;
       if ($urandom_range(0, 15) == 0) wa = {$urandom, $urandom};
+      if (wa[63:32] != wa[31:0] && wb[63:32] != wb[31:0] && wa[31:16] != wa[15:0]) halves_differ++;
       #1;
       `CMP(0, g_a0, i_a0, "widen_a_f32_0")
       `CMP(1, g_b0, i_b0, "widen_b_f32_0")
@@ -150,7 +159,7 @@ module tb;
     bad = 0;
     for (int k = 0; k < 10; k++) if (den16[k] < 50) begin bad++; $display("COVER f16 denormal shift %0d = %0d", k, den16[k]); end
     for (int k = 0; k < 23; k++) if (den32[k] < 50) begin bad++; $display("COVER f32 denormal shift %0d = %0d", k, den32[k]); end
-    if (oracle16 < 50000 || oracle32 < 50000 || special < 1000 || zeros < 1000) bad++;
+    if (oracle16 < 50000 || oracle32 < 50000 || special < 1000 || zeros < 1000 || halves_differ < NCYCLES / 2) bad++;
     // 结构恒 0：f32 输出低 13 位、f64 输出低 29 位
     for (int k = 0; k < 4; k++) must[k] = 64'hFFFF_E000;
     must[4] = 64'hFFFF_FFFF_E000_0000; must[5] = must[4];
@@ -159,8 +168,8 @@ module tb;
       if ((seen0[k] & must[k]) != must[k]) begin bad++; $display("COVER out%0d never-0 bits %h", k, must[k] & ~seen0[k]); end
       if (seen1[k] & ~must[k]) begin bad++; $display("ERROR out%0d structural-zero bit went 1", k); end
     end
-    $display("checks=%0d errors=%0d oracle_f16=%0d oracle_f32=%0d special(Inf/NaN)=%0d zero=%0d",
-             checks, errors, oracle16, oracle32, special, zeros);
+    $display("checks=%0d errors=%0d oracle_f16=%0d oracle_f32=%0d special(Inf/NaN)=%0d zero=%0d halves_differ=%0d",
+             checks, errors, oracle16, oracle32, special, zeros, halves_differ);
     $write("den16_by_shift:"); for (int k = 0; k < 10; k++) $write(" %0d", den16[k]); $display("");
     $write("den32_by_shift:"); for (int k = 0; k < 23; k++) $write(" %0d", den32[k]); $display("");
     if (errors == 0 && bad == 0) $display("TEST PASSED");
