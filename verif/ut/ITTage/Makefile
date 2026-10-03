@@ -9,7 +9,8 @@ MODULE = ITTage
 #   ⇒ **两侧白盒**：ref = golden 同名件，impl = 重写件（下面 RTL_SRCS）。
 #   ITTageTable 的下一层（FoldedSRAMTemplate_22/24、SplittedSRAMTemplate_25/27、SRAMTemplate_76/78、WrBypass_41/43、
 #   IndexableCAMTemplate_41/43、data_mem_0_4x2、SRAM 宏链）沿用 ITTageTable 自己签核时的处置：两侧共读 golden 同一份
-#   （RTL_GOLDEN_DEPS）；厂商叶子 array_6_ext 两侧黑盒。MbistPipeIttage* 在重写 ITTageTable 里由 xs_MbistPipeIttage_core
+#   （RTL_GOLDEN_DEPS）。厂商叶子 array_6_ext 按 verif/vendor_boundary.tsv 两侧黑盒：.v 只给 VCS（GOLDEN_SRCS），
+#   不进 FM 任一侧（ITTageTable 自己的 Makefile 曾把它读进 FM 两侧当白盒，本目标改回审定的厂商边界）。MbistPipeIttage* 在重写 ITTageTable 里由 xs_MbistPipeIttage_core
 #   实现（ref 侧为 golden MbistPipeIttage*）。
 RTL_DIR  = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/common/xs_BpuStagePc.sv \
@@ -29,17 +30,21 @@ IT_GRAND = ClockGate.sv MbistClockGateCell.sv \
            SplittedSRAMTemplate_25.sv SplittedSRAMTemplate_27.sv \
            SRAMTemplate_76.sv SRAMTemplate_78.sv \
            WrBypass_41.sv WrBypass_43.sv IndexableCAMTemplate_41.sv IndexableCAMTemplate_43.sv \
-           data_mem_0_4x2.sv array_6.sv array_6_ext.v sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
+           data_mem_0_4x2.sv array_6.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
 RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(IT_GRAND))
 
 IT_CHILDREN = ITTageTable.sv ITTageTable_1.sv ITTageTable_2.sv ITTageTable_3.sv ITTageTable_4.sv \
               MbistPipeIttage.sv MbistPipeIttage_1.sv MbistPipeIttage_2.sv MbistPipeIttage_3.sv MbistPipeIttage_4.sv \
               RegionWays.sv MaxPeriodFibonacciLFSR.sv
-GOLDEN_SRCS = $(GOLDEN_RTL)/ITTage.sv $(addprefix $(GOLDEN_RTL)/,$(IT_CHILDREN))
+GOLDEN_SRCS = $(GOLDEN_RTL)/ITTage.sv $(addprefix $(GOLDEN_RTL)/,$(IT_CHILDREN)) $(GOLDEN_RTL)/array_6_ext.v
 
 FM_VARIANTS = ITTage
 FM_REF_DEPS_ITTage = $(IT_CHILDREN) $(IT_GRAND)
 FM_MERGE_DUP = false
+
+# ★匹配前钉点 fm_pins_pre.tcl（scripts/gen_bpu_stagepc_pins.py 生成，本层全部寄存器逐位）★：不钉时 Matching 30 分钟未结束。
+# ★vmucp：依据见 verif/fm_target_config/ITTage.tcl★
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
