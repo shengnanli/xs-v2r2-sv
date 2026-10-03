@@ -83,3 +83,33 @@ impl 独有 unread 40 = 共享核 `rtl/common/xs_SRAMTemplate_core.sv` 的 `g_no
 同方程、无读者、golden 无对应寄存器；BankedDataArray 内 32 个、DuplicatedTagArray 内 8 个。子模块签核时靠 merge_dup=true 合掉，
 本目标必须 merge_dup=false（D2）。消除它要改共享核（holdRead 关时不生成该寄存器），会动 43 个 SRAM wrapper 的 impl 闭包、
 牵动已签目标重签，需集成者裁定。本 lane 不改。
+
+## 对账（跑完追加，不改上文任何数字）
+
+### A. 正式 FM（proof commit 87e3cdf8，evidence/87e3cdf8490e/DCache/，receipt.json sha256 d2133bb9e6a7d8bc79f7db955d26f4509849152f8abc2a0ccf4386aa75497bc2）
+assembly、vmucp 开、merge_dup=false：native **SUCCEEDED**，passing **82086**（= §4.2 预测，差 0），failing 0 / unverified 0 /
+aborted 0 / unmatched 0(0)，constant_reg 411，dont_verify/elab147/relaxed appvar 皆空，钉点 DC_PREPIN_END n=12677。
+判定 **PARTIAL**，两条原因（都不是 RTL 失配）：
+1. impl 独有 unread 40 = 共享核 xs_SRAMTemplate_core 的 rdata_last_REG（§4.3，预测到）；
+2. `assembly_bbox_set_mismatch: extra=4, observed_not_declared=i:/WORK/DCache/stu_0`：两侧的 StorePipe（stu_0 / stu_1）
+   在 golden 与重写件里都是**空模块**（0 输出、0 寄存器），FM 自动把空模块当黑盒（black_boxes.rpt 属性 e），两侧各 2 个。
+   **跑前没有预见到**。按任务要求不为 StorePipe 加黑盒声明；golden 侧不可改，这 4 个黑盒在任何 impl 写法下都存在，
+   需集成者裁定是否允许一个「空模块（无输出）」类的 allow 对象。
+`fm_predict check`：模型 82495 − 实测 82086 = 409；工具按 constant_reg 411 + unread 40 = 451 指认，余额 −42 判红。
+实际构成：409 = 411（constant_reg）− 2（FM BBPin 3450 比模型 3448 多 2，未指认）；unread 40 是 impl 独有寄存器，
+不在 golden 模型里，不该进指认额 —— 工具口径与本目标不符，照实记录为红。
+
+### B. UT（9/9，各 200k 拍）
+seed 1/7/42 × {initreg 0, glue, glue017}：全部 checks=199977 errors=0 TEST PASSED cov_fail=0
+（seed 1 档在 9f69ce34，seed 7/42 档在 1998a657；两者之间 rtl/memblock/DCache.sv 与 tb 未改，只有 FDPrefetcherMonitor 补无读者组合线）。
+seed 1 / initreg 0 覆盖：D→MissQueue 41026、ReleaseAck 13489、非法 opcode 412、forward_D 两拍末拍 19190、probe 被挡 23977、
+PLRU 同组多口 14276、原子回 LSU 1436、store replay 3592、release 14901、LR 保留集作废 40、四路错误各 3786..5933、
+pf good/bad 1655/115、同拍预取标志 3、伪 ECC tag/data ready 158347/58008。
+"原子回应只给 MissQueue" 0（MainPipe 的 atomic_resp 只在 AMO 来源拉高，结构上不可达）。
+
+### C. 变异自检（seed 7 / initreg 0 / 30k 拍）
+CAUGHT 6：M1 CBOAck 不归 MissQueue（32684）、M2 PLRU 折叠顺序反（1484493）、M3 错误优先级 ldu0 先（1129）、
+M4 forward_D last 丢 isKeyword（36315）、M5 perf 只打一拍（208364）、M9 保留集作废丢 lrsc valid（10）。
+SURVIVED 3：M6 probe 别名位取 address[13:12]（tb 的 L2 模型按构造让 data[2:1]=paddr[13:12]，UT 看不见；FM 逐点比较覆盖）；
+M7 原子回应不查 source（非 AMO 来源结构上不可达，UT/FM 都等价——等价变异）；
+M8 fdp useful_prefetch 门控改动（FDPrefetcherMonitor 0 输出，golden 同样无观察者：UT 与 FM 都不可观测）。
