@@ -31,3 +31,19 @@ FM 起跑之前提交；跑完在文末「对账」追加，★不修改已提�
 - **预测**：模型 expected=6548（寄存器 6376 + 输出 172）。可指认缺口：9 个 IntFile 的 eidelivery[63:1] ⇒ constant_reg **567**；
   预测 passing = **5981**；其余全 0；无黑盒；SUCCEEDED。登记 `docs/fm_predictions/IMSIC.json`。
 - 可能出错处：核内部 topeis 用 unpacked 数组端口、九个文件用 generate 命名 g_file[i].intFile 对 golden intFile_i，靠签名匹配。
+
+## 对账（跑后追加；上文数字不改）
+
+| 目标 | 预测 passing | 实测 passing | 预测 constant_reg | 实测 constant_reg | failing/unmatched/黑盒/dont_verify | verdict |
+|---|---|---|---|---|---|---|
+| IntFile | 652 | **651** | 63 | **64** | 0/0/0/否 | SUCCEEDED（证明 commit d18495248b31） |
+| IMSIC | 5981 | **5972** | 567 | **576** | 0/0/0/否 | SUCCEEDED（证明 commit d18495248b31） |
+
+- **差额指认**：每个 IntFile 多 1 个常量寄存器，登记时漏数了 **eies_0[0]**。golden 里它的复位值为 0，唯一写入口是
+  CSR 写 `& 64'hFFFF_FFFF_FFFF_FFFE`（bit0ReadOnlyZero），没有任何别的通路置位它，所以两侧都恒 0。
+  对照组 eips_0[0] 虽然 CSR 写同样清 bit0，但 seteipnum=0 能置位它，所以不是常量；漏数的原因就是把两者当成了同一类。
+  IMSIC 的差额 9 = 9 个 IntFile × 1，同一原因，没有其他差额。
+- `fm_predict.py check` 两目标 rc=0（差额 = constant_reg，全部被指认）。
+- IMSIC UT 9 档：全部 checks=1999980 errors=0 bad_cov=0（seed 1/7/42 × initreg 0/random/<seed>017 × 200k）。
+- receipt sha256：IntFile `57e0d1d4aebfc6bd8080f09d6af5b961caaa8706c8ddc88756b40e186523fab3`，
+  IMSIC `5685941138380d672c4e36022acb83e26d759ad76bd77b193b15a160cc1bc122`。
