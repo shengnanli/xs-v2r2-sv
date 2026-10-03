@@ -25,6 +25,10 @@ FM_REF_DEPS_ClosePathFloatAdderF64WidenPipeline = ClosePathAdder.sv ClosePathAdd
 # 关掉后逐个比，fm_predict 的模型（寄存器位 + 输出位）严格适用。
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：仅 close path，其 3 个 unread 点是两侧对称的死位（本目录 fm_pins.tcl 字面钉对后实比），
+# 依据见 verif/fm_target_config/ClosePathFloatAdderF64WidenPipeline.tcl；无 unread 的加法器不开。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = $(if $(filter ClosePathFloatAdderF64WidenPipeline,$*),true,)
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

@@ -43,6 +43,10 @@ FM_REF_DEPS_FloatAdderF32F16MixedPipeline = FarPathF32WidenF16MixedPipeline.sv \
 # 关掉后逐个比，fm_predict 的模型（寄存器位 + 输出位）严格适用。
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：far/close 子树里两侧对称的死位（本目录 fm_pins.tcl 字面钉对再实比），
+# 依据见 verif/fm_target_config/FloatAdderF32F16MixedPipeline.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
