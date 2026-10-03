@@ -14,4 +14,5 @@ PORTLINT_ORDER = fail
 # Constant initreg keeps both independently elaborated instances aligned before their first write.
 include ../../../scripts/ut_common.mk
 VCS += +define+SYNTHESIS +vcs+initreg+random
-SIM_ARGS += +vcs+initreg+0
+INITREG ?= 0
+SIM_ARGS = +ncycles=$(NCYCLES) +vcs+initreg+$(INITREG)

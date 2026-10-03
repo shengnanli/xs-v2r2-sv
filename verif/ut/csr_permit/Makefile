@@ -11,4 +11,6 @@ FM_VARIANTS = IndirectCSRPermitModule
 
 include ../../../scripts/ut_common.mk
 
-VCS += +define+SYNTHESIS
+VCS += +define+SYNTHESIS +vcs+initreg+random
+INITREG ?= 0
+SIM_ARGS = +ncycles=$(NCYCLES) +vcs+initreg+$(INITREG)

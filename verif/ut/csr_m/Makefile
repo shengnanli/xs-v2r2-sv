@@ -10,5 +10,5 @@ FM_VARIANTS = $(LEAVES)
 PORTLINT_ORDER = fail
 include ../../../scripts/ut_common.mk
 VCS += +define+SYNTHESIS +vcs+initreg+random
-INITREG ?= +vcs+initreg+0
-SIM_ARGS += $(INITREG)
+INITREG ?= 0
+SIM_ARGS = +ncycles=$(NCYCLES) +vcs+initreg+$(INITREG)
