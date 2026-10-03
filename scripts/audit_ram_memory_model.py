@@ -721,6 +721,80 @@ MANUAL_REVIEW_DESIGNS = {
 BRIDGE_OUTBOX = pathlib.Path('/home/eda/xs-env/.agent-bridge/outbox')
 
 
+# ---------------------------------------------------------------------------
+# 父级授权范围（codex 0206 D3）
+#
+# MANUAL_REVIEW_DESIGNS 只说「这个 design 的 M3 可以按人工复核放行」，**不说它能在哪些
+# 父级里被两侧对称黑盒**。0202 的授权限于 GrantBuffer / Queue10_GrantBuffer_Anon 当前闭包；
+# 0206 D3 把它显式扩到 Slice/Slice_1/Slice_2/Slice_3 四个父级，但只限这些父级里
+# **已签 GrantBuffer 子树** grantBuf.pftRespQueue 下的同一个 ram_ext。
+#
+# 表项：design -> {父级 target: (授权消息号, 经由的已签 child, 父级内相对路径)}
+#   via_child=None：父级就是 0202 原授权里的目标本身；
+#   via_child='GrantBuffer'：须在父 commit 上验 GrantBuffer 的 tracked 证书仍然有效
+#   （fm_verdict 做，因为那要 commit 上下文）。
+# 父级内相对路径：ref 侧 r:/WORK/<T>/<rel>，impl 侧 i:/WORK/<T>/u_core/<rel>（wrapper 例化可读核
+# 多一层 u_core）或 i:/WORK/<T>/<rel>，两侧**各恰好一个**、且归一后路径相同。
+# 表外的父级、表外的 ram_*、同一父级里别的路径，一律拒绝。
+MANUAL_REVIEW_PARENTS = {
+    'ram_10x89': {
+        'GrantBuffer':              ('codex_0202', None, 'pftRespQueue/ram_ext'),
+        'Queue10_GrantBuffer_Anon': ('codex_0202', None, 'ram_ext'),
+        'Slice':                    ('codex_0206', 'GrantBuffer', 'grantBuf/pftRespQueue/ram_ext'),
+        'Slice_1':                  ('codex_0206', 'GrantBuffer', 'grantBuf/pftRespQueue/ram_ext'),
+        'Slice_2':                  ('codex_0206', 'GrantBuffer', 'grantBuf/pftRespQueue/ram_ext'),
+        'Slice_3':                  ('codex_0206', 'GrantBuffer', 'grantBuf/pftRespQueue/ram_ext'),
+    },
+}
+# 0202 的精确绑定（golden 文件 sha256 + 端口签名），与 verif/vendor_boundary.tsv 第 5/7 列相同。
+MANUAL_REVIEW_GOLDEN = {
+    'ram_10x89': ('7cdc3e1c7dd131d409d1ed2b639b7cdb1f5ef12bad423815e50fed20fa6c2f0f',
+                  'input [3:0] R0_addr;input R0_en;input R0_clk;output [88:0] R0_data;'
+                  'input [3:0] W0_addr;input W0_en;input W0_clk;input [88:0] W0_data'),
+}
+
+
+def check_parent_scope(design, target, objects, golden_rtl=None):
+    """返回 (ok, msg, via_child)。objects = 该父级 allow 里 design==design 的条目
+    （每条含 side/path/attrs/class）。只做与 commit 无关的静态判据；via_child 的证书由调用方验。"""
+    table = MANUAL_REVIEW_PARENTS.get(design)
+    if table is None:
+        return False, f'{design} 不在父级授权表里（表硬编码，不推广到其它 ram_*）', None
+    if target not in table:
+        return False, f'{design} 未授权在父级 {target} 里黑盒（授权父级：{",".join(sorted(table))}）', None
+    msg_id, via, rel = table[target]
+    if not list(BRIDGE_OUTBOX.glob(f'*_{msg_id}_*.md')):
+        return False, f'bridge outbox 里找不到授权消息 {msg_id}', None
+    want_sha, want_ports = MANUAL_REVIEW_GOLDEN[design]
+    g = pathlib.Path(golden_rtl or (pathlib.Path(DEFAULT_G1) / 'golden-rtl'))
+    gf = g / f'{design}.sv'
+    if not gf.is_file():
+        return False, f'golden 里找不到 {gf}', None
+    cur = hashlib.sha256(gf.read_bytes()).hexdigest()
+    if cur != want_sha:
+        return False, f'golden {design}.sv sha256 {cur[:16]} != 授权绑定 {want_sha[:16]}', None
+    vb = REPO / 'verif' / 'vendor_boundary.tsv'
+    row = [ln.split('\t') for ln in vb.read_text().splitlines()
+           if ln.split('\t')[0] == design] if vb.is_file() else []
+    if len(row) != 1 or len(row[0]) < 7 or row[0][4] != want_sha or row[0][6] != want_ports:
+        return False, f'verif/vendor_boundary.tsv 的 {design} 行与授权绑定（sha256/端口签名）不符', None
+    want = {('r', f'r:/WORK/{target}/{rel}'),
+            ('i', f'i:/WORK/{target}/{rel}'), ('i', f'i:/WORK/{target}/u_core/{rel}')}
+    got = [(o.get('side'), o.get('path')) for o in objects]
+    for o in objects:
+        if o.get('class') != 'APPROVED_MEMORY_MACRO_MODEL':
+            return False, f'{o.get("path")} 的 class={o.get("class")!r} 不是 APPROVED_MEMORY_MACRO_MODEL', None
+    bad = [x for x in got if x not in want]
+    if bad:
+        return False, f'{design} 出现在授权路径之外：{bad[0][1]}（只许 {rel}）', None
+    n_r = sum(1 for sd, _ in got if sd == 'r')
+    n_i = sum(1 for sd, _ in got if sd == 'i')
+    if n_r != 1 or n_i != 1:
+        return False, f'{target} 里 {design} 两侧实例不对称/不唯一（ref={n_r}, impl={n_i}，须各恰好 1）', None
+    return True, (f'{design}@{target}:{rel} 在 {msg_id} 授权内'
+                  + (f'（经由已签 {via}，证书须另验）' if via else '')), via
+
+
 def check_manual_review(design, review, parent_impl):
     """返回 (ok, msg)。review 为 parent-map 第 5 列原文（可为 None）。"""
     if design not in MANUAL_REVIEW_DESIGNS:

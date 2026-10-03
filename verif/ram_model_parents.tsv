@@ -23,6 +23,10 @@
 #                   硬编码名单 MANUAL_REVIEW_DESIGNS 内的 design 生效；绑定须含 parent_impl
 #                   本身，任一绑定文件字节变化即退回 MANUAL（须重新复核）。不放行 FAIL，不用于 ref 侧。
 # ---------------------------------------------------------------------------
+# 父级授权范围（codex 0206 D3）：本表第 5 列只管 M3 能否按人工复核放行；ram_10x89 能在哪些父级里两侧
+# 对称黑盒，由 scripts/audit_ram_memory_model.py 的 MANUAL_REVIEW_PARENTS 硬编码（0202：GrantBuffer /
+# Queue10_GrantBuffer_Anon；codex_0206：Slice/Slice_1/Slice_2/Slice_3，仅限 grantBuf/pftRespQueue/ram_ext，
+# 且 fm_verdict 在父 commit 上验 GrantBuffer 的 tracked 证书 verif/proof_certificates/GrantBuffer.json）。
 # design	parent_ref	parent_impl	addr_contract	m3_manual_review
 ram_40x47	Queue40_L2TlbMQBundle.sv	rtl/memblock/L2TlbMissQueue.sv	-
 diff_rat_state_bank_320x776	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer.sv	value<160@robIdx=CircularQueuePtr(RobSize=160),value∈[0,159] 由 Rob 维护

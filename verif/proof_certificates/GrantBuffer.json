@@ -1,0 +1,185 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T11:54:22Z",
+ "generator": {
+  "run_context_worktree_digest": "8aa3e641144d1a986e48f44e32f211dc28eb094290248676648365c89d2b5843",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/deb72ce588a2/GrantBuffer",
+  "version": 1
+ },
+ "impl_commit": "deb72ce588a2f2884d08fefac28ebab23fc77cfd",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/GrantBuffer.sv",
+    "sha256": "dd6b2299a77d1edd9964bdb5db395587546541027bfd5aa89cbe9ead8e5e8b76"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue16_GrantQueueTask.sv",
+    "sha256": "87b1cc1a57524db285fe3eafb3bf388cc9937220e8b0a78796df71d873fdf8db"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue16_GrantQueueData.sv",
+    "sha256": "64768bc55308c6db27290e892bc8f76ab98963ce6bd72fe60f70473a42cb0592"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue10_GrantBuffer_Anon.sv",
+    "sha256": "5433d97238aa4ce78e34a34f47a49f5170f8d9253440329264d1db366fd06716"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_16x25.sv",
+    "sha256": "8b8d39c2fc1a2a7568c6e97593b4c0b4059f510471a5eb1d786b4f67277a645c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_data_16x256.sv",
+    "sha256": "fbaf26b94de42cedbe31ccf5d8795b481c1bcdb5c9095eac776fc5b28e479cf0"
+   }
+  ],
+  "golden_sha256": "7673c116cd92af98b9894e690b4f1a2ba6f0f0decbc28b0dac724732e454a137",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/GrantBuffer.sv",
+    "sha256": "b038e70b0ddc9cdf44bf2367a475429514f273de77eafcda888966ae2c5bed8b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_ChiselQueue_core.sv",
+    "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue16_GrantQueueTask.sv",
+    "sha256": "6a7b84928df37a28918938c423c270e20d1b7e2f73a729d37dd639ae8f9fb65c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue16_GrantQueueData.sv",
+    "sha256": "53596927fad32889e3e43f8077caf194f54b482782d51a7d2368885447072ea1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue10_GrantBuffer_Anon.sv",
+    "sha256": "f3966df0733c17eb6e49e83a69c14019c7d3855c79435b833a8a157a20553d55"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_16x25.sv",
+    "sha256": "8b8d39c2fc1a2a7568c6e97593b4c0b4059f510471a5eb1d786b4f67277a645c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_data_16x256.sv",
+    "sha256": "fbaf26b94de42cedbe31ccf5d8795b481c1bcdb5c9095eac776fc5b28e479cf0"
+   }
+  ],
+  "impl_sha256": "6b6ad44cfbda21937d0a6740caccb3c0fdb57b44476f8d8de9524ad52890bbfb",
+  "repo_impl_files": 5
+ },
+ "native_facts_sha256": "8d0978f866dacb61f6727c987019790375facb61fa1b8a577d6aab2ee7d81122",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 11752,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "deb72ce588a2f2884d08fefac28ebab23fc77cfd",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/GrantBuffer.json",
+    "sha256": "84eb8e99f69b89ff20482cae1686e587106a6f55ac7b015693128a8b748276c0"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "1",
+  "fm_mode": "assembly",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "1dcd15ba7118dbb3a3f0bea115068562d0bfc1bd46ffca9dba553fc2208a8c92"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "8012c75e7f8b8c1a71496b2507567feab3a0575d8e44c344c462cfe28a1ad480",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "8aa3e641144d1a986e48f44e32f211dc28eb094290248676648365c89d2b5843",
+ "provisional": false,
+ "receipt_sha256": "dfdf6186c17c67b42103908d8a216800508de3659398c3decf5febf3f64eb7bd",
+ "reproduce": {
+  "command": "PROOF_COMMIT=deb72ce588a2f2884d08fefac28ebab23fc77cfd scripts/run_proof.sh GrantBuffer GrantBuffer",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "5d346f7578c7c0884b8d3d6a0bdc7973123ae16deb015813ba8b7a84c4cbb6aa",
+ "run_id": "GrantBuffer-20260929T081404Z-deb72ce5",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/GrantBuffer.tcl",
+    "sha256": "b68f9400589567e02c83bc0df4977913d480b883755fed560a40edfebe0b51aa"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/GrantBuffer/fm_pins_pre.tcl",
+    "sha256": "1dcd15ba7118dbb3a3f0bea115068562d0bfc1bd46ffca9dba553fc2208a8c92"
+   }
+  ],
+  "sha256": "3af570952bee9f5a9b8547abd6f7370c7920fa3460f3996e69813ae62ae5849e"
+ },
+ "target": "GrantBuffer",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "GrantBuffer",
+ "variant": "GrantBuffer",
+ "verdict": "SUCCEEDED"
+}
