@@ -1,0 +1,10 @@
+{
+  "target": "VectorFloatDividerR64",
+  "ut": "VectorFloatDividerR64",
+  "regs": 563,
+  "outs": 86,
+  "expected": 649,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 649 = 寄存器 563 + 输出 86；预测 constant_reg 0"
+}

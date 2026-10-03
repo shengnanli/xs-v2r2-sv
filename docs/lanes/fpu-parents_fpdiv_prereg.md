@@ -70,3 +70,90 @@ M5 −D 多加 1 ⇒ 20001 / 12443；M6 7 位余数片取错位 ⇒ 17969 / 5512
 `python3 scripts/fm_predict.py check fpdiv_r64_block` rc=0；24 个结构恒 0 输出位照常计入 passing（与登记的先例一致）。
 receipt：`evidence/801a0f5c9e49/fpdiv_r64_block/receipt.json`。
 复跑：`PROOF_COMMIT=801a0f5c9 bash scripts/run_proof.sh fpdiv_r64_block fpdiv_r64_block < /dev/null`
+
+## 2. VectorFloatDividerR64（UT 目录 `verif/ut/VectorFloatDividerR64`）
+
+### 2.1 结构与 child 处置
+
+golden 2039 行（`_GEN_`/`_T_` 612 处）→ impl `rtl/backend/VectorFloatDividerR64.sv` 966 行，代码区 `_GEN_`/`_T_` 0（<1500 行，无需导航）。
+可读核 `xs_VectorFloatDividerR64_core`：§0 小工具（舍入判定 / 上溢取 ∞ / on-the-fly 商转换 / 预缩放 / 非规格右移量函数）→
+§1 状态机 → §2 操作数按格式拆进 4 条通道 → §3 特殊值分类与 PRE_0 锁存 → §4 左规 → §5 指数差 → §6 商/除数寄存器与预缩放 →
+§7 迭代核与初始余数打包 → §8 on-the-fly 三级 → §9 收尾（选 Q/Q−1、右移、舍入）→ §10 上溢与 POST_0 结果 → §11 POST_1 结果 →
+§12 寄存器写入（各状态项按位或）→ §13 输出与标志。38 个寄存器名与 golden 逐字相同（只多一层 `u_core/`），位宽逐位一致，
+复位域照抄（仅 fsm_q 异步复位）；不需要 fm_pins。golden 里 is_vec 恒 1、is_frs* 恒 0，标量通路被 firtool 消掉，文件头写明。
+child：ShiftLeftPriorityWithLZDResult ×2 / _6 ×2 / _8 ×4、fpdiv_r64_block_vector ×1（及其 CSA3to2_20/24、r4_qds_v2/_spec）。
+coverage 第 3 列：fpdiv_r64_block_vector 等 PROVEN_DIRECT；_6 / _8 表里写 MISSING/UNPROVEN 但**表滞后**——rtl/backend 下已有重写件
+（agent/k3-returned，commit 84ab6f364）且有正式 receipt（evidence/1bf831352049/ShiftLeftPriorityWithLZDResult_{6,8}，SUCCEEDED）。
+处置 = 全部两侧白盒（ref golden / impl 重写件），无黑盒。
+
+### 2.2 UT（commit `514072c47` 的字节，200k 拍，9 档）
+
+差分：start_ready / finish_valid 每拍比；fpdiv_res / fflags 自 golden 首次进 POST_0 起每拍比（此前读的是不复位寄存器的上电值）。
+**独立 IEEE 754 oracle**（tb 内宽整数算术）：每个未被 flush 的合法操作，在 finish_valid 首拍逐元素（f64×1 / f32×2 / f16×4）
+算正确舍入商（5 种 rm；rm 5..7 golden 不进位、上溢取最大有限数，按 RTZ 建模）+ 规范 NaN + NV/DZ/OF/UF/NX（UF 按 RISC-V
+"舍入后判 tiny"），与重写件输出逐位比。
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=799986 errors=0，oracle 17588 次 0 错 PASSED | 同 PASSED（seed 1 的 random 档退化为全 1） | initreg+1017 同 PASSED |
+| 7  | checks=799974 errors=0，oracle 17578 次 0 错 PASSED | 同 PASSED | initreg+7017 同 PASSED |
+| 42 | checks=799990 errors=0，oracle 17569 次 0 错 PASSED | 同 PASSED | initreg+42017 同 PASSED |
+
+覆盖（seed 1，判据写在 tb 里）：操作 19041 次；3 格式 × 5 rm 每格 1052..1177；非法格式 265 次、f64 的 rm 5..7 673 次；
+结果类别 规格/非规格/上溢/NaN/∞/0 = 19428/7256/3710/5728/2586/2560（按元素计）；标志 NV/DZ/OF/UF/NX = 2953/1261/3710/6602/24350；
+flush 打断 978 次、finish 反压 6048 拍、f64 除数为 2 的幂 1655 次；fpdiv_res 64 位、fflags 20 位逐位翻转。
+（注：第一次 9 档批跑在 30 分钟后台时限处被停，停在 seed 42 的第 1 档；seed 42 三档随后单独重跑，结果如表。）
+
+变异自检（scratchpad 拷贝施变、独立 simv，seed 7 / 20k 拍）：V2 f64 通道初始余数 bit41 的 f16 标志 ⇒ errors 225 / oracle 36；
+V3 RMM 判进位用末位 ⇒ 874 / 154；V4 UF 去掉"舍入后没进位"项 ⇒ 108 / 78；V5 f32 通道 2 的幂初值格式条件 ⇒ 34 / 3；
+V6 预缩放表 sel=6 少一项 ⇒ 420 / 28；V7 通道 1 标志门控 ⇒ 3166 / 414；V8 Q−1 舍入借用 Q+1 的判据取反 ⇒ 466 / 118。
+V1（f64 上溢比较改看全 13 位）未被抓到——**等价变异**：bit12=1（负）时 13 位无符号比较与低 12 位比较同为真，其余情形相同。
+7/7 非等价变异全部被差分与 oracle 同时抓到。
+
+复跑：`cd verif/ut/VectorFloatDividerR64 && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 2.3 跑前预测（★跑完不许改本节★）
+
+| 目标 | 模型 | 预测 constant_reg | 预测 passing | 其余 |
+|---|---:|---:|---:|---|
+| VectorFloatDividerR64 | 649（寄存器 563 + 输出 86） | 0 | **649** | unread 0 / failing 0 / unverified 0 / unmatched 0，无黑盒，无 vmucp，SUCCEEDED |
+
+可能出错处：(1) 寄存器名只差 `u_core/` 层次，预期按名配上；若有 unmatched 先查配对。(2) 是否有被 FM 判为常量或 unread 的寄存器位
+没有逐位分析过（结构上找不到恒定位；f_r_s/f_r_c 的个别低位可能无读者），若出现，差额应正好等于这些位数。登记前未做任何 FM 试跑。
+
+## 3. 父级重证：FDivSqrt（ArithVecLeaves5，commit `0fb6429ab` 起 impl 读重写件 fpdiv_r64_block）
+
+### 3.1 改动与范围
+
+核实闭包：FDivSqrt → FloatDivider → FloatDividerR64 → **fpdiv_r64_block**（VectorFloatDividerR64 不在 FDivSqrt 闭包里；
+VectorFloatDividerR64 的父 VectorFloatDivider / VFDivSqrt 均 UNPROVEN，无已签父级可重证）。
+`verif/ut/ArithVecLeaves5/Makefile`：fpdiv_r64_block 从 impl 侧 golden 列表移进 `FDIVSQRT_REWRITTEN`（RTL_SRCS）；其 child
+CSA3to2_20/24、r4_qds_v2/_spec 仍两侧同源 golden；`FM_REF_DEPS_FDivSqrt` 不变（ref 全 golden）。
+同一 UT 的另 4 个变体 impl 闭包成员随之变化（rtl 字节未变），照 fpaddpath-sqrtblock §4 先例一并重跑。
+
+### 3.2 UT（`0fb6429ab` 字节，9 档）
+
+★UT 限度★：impl 的 FloatDividerR64 是 golden 文件，单一 elaboration 里例化 golden 名 fpdiv_r64_block，UT 回归不到重写件（FM 覆盖）。
+
+| seed | `+0` | `+random` | `+<seed>017` |
+|---|---|---|---|
+| 1  | checks=5199973 errors=0 PASSED | checks=5199973 errors=0 PASSED（全 1 档） | errors=7 FAILED |
+| 7  | checks=5199994 errors=0 PASSED | errors=6 FAILED | errors=6 FAILED |
+| 42 | checks=5199991 errors=0 PASSED | errors=5 FAILED | errors=5 FAILED |
+
+★5 档失配全部是基线既有★：失配行全在 `du.res_data`（DivUnit 不复位 payload 寄存器的随机初值，Makefile 注明该 UT 只用常量档）。
+在改动前一个 commit `4dd44d242` 的字节（scratch git archive）上复跑这 5 档，MISMATCH 行逐行相同（7/6/6/5/5 行），与本次改动无关。
+
+### 3.3 跑前预测（★跑完不许改本节★）
+
+golden 闭包未变，所以预测 = 上一版 receipt（evidence/f19ef593a8df，fpaddpath-sqrtblock 对账 §4）。
+
+| 目标 | 模型 | 预测 passing | 其余 |
+|---|---:|---:|---|
+| FDivSqrt | 2082（寄存器 1351 + 输出 731） | **2052**（constant_reg 30） | vmucp 开（白名单 verif/fm_target_config/FDivSqrt.tcl 不变），merge 关，failing / unverified / unread / unmatched 0 |
+| Adder_chain_rnd | 85 | **85** | 全 0 |
+| DivUnit | 3132 | **3132** | vmucp 开、merge 关，全 0 |
+| VIAluDecoder | 12 | **12** | 全 0 |
+| VIntAdder64b | 160 | **160** | 全 0 |
+
+可能出错处：fpdiv_r64_block 纯组合，FloatDividerR64 的寄存器集合不变，预期逐位同上一版；若 FDivSqrt 偏离，先查 merge/配对。
