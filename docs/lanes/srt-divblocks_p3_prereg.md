@@ -54,3 +54,36 @@ vl=0 / vstart≥vl / prestart / tail(vta) / 掩掉(vma) / active 合并），透
 **official 复核判据**（`bash scripts/run_proof.sh VIDiv VIDiv`）：SUCCEEDED；passing **13876**；failing 0；unread 0；
 unmatched 全 0；constant_reg 8；黑盒 0；dont_verify false；fm.log 含 `VIDIV_PINS: 1604 / 1604 points pinned`。
 fm_predict 对账：13884 − 13876 = 8 = constant_reg。
+
+## 6. 对账（跑完追加）
+
+### 6.1 UT（RTL 字节 = `ad190dab`，tb = `3878df05`；九档全 TEST PASSED，errors 0）
+
+| seed | initreg 0 / random / `<seed>017`（三档逐字相同） |
+|---|---|
+| 1 | 对拍 200,000 拍；oracle 14,233 条 uop / 106,698 个元素；冲刷生效 279、未命中 140；只对拍 2,380 |
+| 7 | 200,000；14,284 / 108,288；279 / 132；2,382 |
+| 42 | 200,000；14,260 / 108,080；254 / 133；2,330 |
+
+覆盖（seed 1）：sew0..3 = 3550/3598/3472/3613 条；vl=0 2603、vstart≥vl 1356；元素级 prestart 5470、tail 置 1 11069 /
+保留 10404、掩掉置 1 4672 / 保留 4527、active 41832、除零 8074、最小值÷-1 2414；反压 11219。
+
+★首跑九档 errors 23/19/7（`ad190dab` 上的 tb）——**tb bug，不是 RTL**：生成 uop 时 narrow/dstMask 分支把
+「非除法 opType（含 needClearMask 的 0x84/0x86）只对拍」的标记覆盖回「查 oracle」，于是这些 uop 被误送 oracle
+（失配全是 fu=0x084/0x086 或随机 opType 的 uop）；golden 与重写件的逐拍对拍一次未失配。修 tb（`3878df05`）后重跑如上表。
+
+### 6.2 变异自检（scratch 沙箱，seed 1 / 20k 拍）：10 个里 8 个 CAUGHT
+
+冲刷 level 项、忙时 robIdx 来源、商/余数选择位、vm、vl=0 保旧值、vdIdx 位段、有符号位、pdest 透传均抓到。
+MISSED 2 个：R8 去掉握手拍的保持旁路——只影响 in.fire 那一拍的 Mgu 输入，而那一拍 out_valid 必为 0，UT 只在 valid 时比
+写回数据，结构上看不见；FM 对 `io_out_bits_res_data` 端口在所有状态下比较，由 FM 覆盖。R10 去掉 VectorIdiv out_ready 的
+valid 门控——VectorIdiv 只在 OUTPUT 态（=valid）用 ready，变异体组合等价，不是漏检。
+
+### 6.3 FM 对账（official，signoff-strict，commit `9193a2e0`）
+
+| 目标 | expected | passing | failing | unread | unmatched | constant | 钉点 | 差额 | receipt |
+|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| VIDiv | 13884 | 13876 | 0 | 0 | 0 | 8 | 1604/1604 | 8 = constant_reg | `evidence/9193a2e0077d/VIDiv` |
+
+§4 预测（constant 8、unread 100、vmucp 后 passing 13876）逐项命中；`fm_predict.py check VIDiv` 全部对上；
+`check_lane_receipts.py` rc=0。
