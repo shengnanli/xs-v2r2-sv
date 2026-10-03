@@ -257,8 +257,18 @@ def emit_wrapper(ports, core, out_assign, sconn):
 # --------------------------------------------------------------------------
 # 钉点：golden 寄存器 -> 核内名字
 # --------------------------------------------------------------------------
-SNAP_OFF = {'NOS_value': (0, 5), 'NOS_flag': (5, 1), 'TOSR_value': (6, 5), 'TOSR_flag': (11, 1),
-            'TOSW_value': (12, 5), 'TOSW_flag': (17, 1), 'sctr': (18, 3), 'ssp': (21, 4)}
+# 结构体寄存器在 FM 里的名字是按字段展开的：<名>_reg\[字段]\[子字段][位]（单比特字段不带 [位]）
+SNAP_FIELD = {'ssp': ('ssp',), 'sctr': ('sctr',), 'TOSW_flag': ('tosw', 'flag'), 'TOSW_value': ('tosw', 'value'),
+              'TOSR_flag': ('tosr', 'flag'), 'TOSR_value': ('tosr', 'value'),
+              'NOS_flag': ('nos', 'flag'), 'NOS_value': ('nos', 'value')}
+SNAP_W = {'ssp': 4, 'sctr': 3, 'TOSW_flag': 1, 'TOSW_value': 5, 'TOSR_flag': 1, 'TOSR_value': 5,
+          'NOS_flag': 1, 'NOS_value': 5}
+
+
+def sfield(reg, path, b):
+    """结构体位的 FM 名字：reg_reg\[f1]\[f2][b]。"""
+    n = reg + '_reg' + ''.join('\\[%s]' % f for f in path)
+    return n if b is None else '%s[%d]' % (n, b)
 
 
 def reg_rule(name, w):
@@ -288,9 +298,9 @@ def reg_rule(name, w):
         i = simple[name]
         return bits(name, lambda b: '%s_reg' % i if b is None else '%s_reg[%d]' % (i, b))
     if name == 'updateMeta_TOSW_flag':
-        return bits(name, lambda b: 'upd_tosw_reg[5]')
+        return bits(name, lambda b: sfield('upd_tosw', ('flag',), None))
     if name == 'updateMeta_TOSW_value':
-        return bits(name, lambda b: 'upd_tosw_reg[%d]' % b)
+        return bits(name, lambda b: sfield('upd_tosw', ('value',), b))
     m = re.fullmatch(r's1_pc_dup_(\d)', name)
     if m:
         d = int(m.group(1))
@@ -301,11 +311,11 @@ def reg_rule(name, w):
         seg_name = ['hi', 'mid', 'lo'][seg]
         return bits(name, lambda b: 's%s_pc_%s_reg[%d][%d]' % (st, seg_name, d, b))
     for pre, i in (('s3_meta_', 's3_snap'), ('redirect_next_bits_r_cfiUpdate_', 'rd_snap')):
-        if name.startswith(pre) and name[len(pre):] in SNAP_OFF:
-            off, sw = SNAP_OFF[name[len(pre):]]
-            if sw != w:
-                fail('%s 宽度 %d != 快照字段宽 %d' % (name, w, sw))
-            return bits(name, lambda b: '%s_reg[%d]' % (i, off + (b or 0)))
+        f = name[len(pre):]
+        if name.startswith(pre) and f in SNAP_FIELD:
+            if SNAP_W[f] != w:
+                fail('%s 宽度 %d != 快照字段宽 %d' % (name, w, SNAP_W[f]))
+            return bits(name, lambda b, f=f, i=i: sfield(i, SNAP_FIELD[f], b))
     return None
 
 
