@@ -1,0 +1,113 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T07:40:44Z",
+ "generator": {
+  "run_context_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/cb2892a30a11/IndirectCSRPermitModule",
+  "version": 1
+ },
+ "impl_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndirectCSRPermitModule.sv",
+    "sha256": "80344565cbdd3fce1abf9e7c4c3c052c61f17a624b95f64a69d69d2963a347a5"
+   }
+  ],
+  "golden_sha256": "bc03e92c5674df3bcc7cb1a3268ff3148f6738e3fdcd90b75819f6f6ea94859a",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IndirectCSRPermitModule.sv",
+    "sha256": "4c1d8f60dbd17fa39643b1e6d499fdad2f3a8b862b4fa5495f39287cde02560a"
+   }
+  ],
+  "impl_sha256": "a9f169a89d94dcdab7123d955baf649a8711cb433fa5015f4b2ba322c65ea5cb",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "bb0f1d6b4cfd5af5bbcebfdfe7de8c4aba43171880c5b9792ae5232319dc7eff",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 2,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+ "provisional": false,
+ "receipt_sha256": "1178a0f4c17e53ab7a846b9b679520565c65f545d35057a08f3bafd9743f2549",
+ "reproduce": {
+  "command": "PROOF_COMMIT=cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c scripts/run_proof.sh csr_permit IndirectCSRPermitModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "1161bcf299467b91ce637a1a8ea73cee801b24025192a4383d2cc9df2194d6b0",
+ "run_id": "IndirectCSRPermitModule-20261003T071721Z-cb2892a3",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "IndirectCSRPermitModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "csr_permit",
+ "variant": "IndirectCSRPermitModule",
+ "verdict": "SUCCEEDED"
+}
