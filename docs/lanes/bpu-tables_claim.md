@@ -11,3 +11,4 @@
 - `Tage_SC`
 - `ITTage`
 - `FauFTB`
+- `ITTageTable` `ITTageTable_1` `ITTageTable_2` `ITTageTable_3` `ITTageTable_4` `TageBTable`（2026-10-03 集成者追加：ITTage/Tage_SC 的 child，补 UT 9 档 + official FM 出证）
