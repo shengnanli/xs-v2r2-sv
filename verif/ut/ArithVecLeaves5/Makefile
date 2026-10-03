@@ -11,12 +11,19 @@ MODULE = ArithVecLeaves5
 # （FM_REF_DEPS_*，相对 golden-rtl 的文件名列表）。
 RTL_DIR  = ../../../rtl
 LEAVES = Adder_chain_rnd DivUnit FDivSqrt VIAluDecoder VIntAdder64b
-RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES)))
+# FDivSqrt 闭包里已有本仓重写件并签核的开方通路（2026-10-03，fpaddpath-sqrtblock lane）：
+#   fpsqrt_r16（verif/ut/fpsqrt_r16）、fpsqrt_r16_block（verif/ut/fpsqrt_r16_block）及其 child
+#   r4_qds / r4_qds_spec / r4_qds_cg / lzc（SRTDivSqrtLeaves10，PROVEN_DIRECT）——impl 改读重写件（两侧白盒）。
+#   ★UT 侧的限度★：impl 的 FloatDivider 仍是 golden 文件，它例化的是 golden 名 fpsqrt_r16，UT 单一 elaboration
+#   里绑到 golden 件（derive 只给 RTL_SRCS 里的模块改名）——所以本 UT 回归不到这条开方通路的重写件；
+#   这条通路的 UT 在 verif/ut/fpsqrt_r16 / fpsqrt_r16_block。FM 两侧分容器，impl 容器里只有重写件，证明覆盖到。
+FDIVSQRT_REWRITTEN = lzc r4_qds_cg r4_qds r4_qds_spec fpsqrt_r16_block fpsqrt_r16
+RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN)))
 TB_SRCS  = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL   ?= $(G1_CANONICAL)/golden-rtl
-GOLDEN_SRCS  = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(LEAVES)))
+GOLDEN_SRCS  = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(LEAVES) $(FDIVSQRT_REWRITTEN)))
 
 DIVUNIT_DEPS = SRT16DividerDataModule.sv CSA3_2_3956.sv CSA3_2_3960.sv CSA3_2_3962.sv \
                RightShifter.sv
@@ -24,7 +31,11 @@ FDIVSQRT_DEPS = FloatDivider.sv FloatDividerR64.sv fpsqrt_r16.sv fpdiv_r64_block
                 fpsqrt_r16_block.sv CSA3to2_20.sv CSA3to2_24.sv \
                 ShiftLeftPriorityWithLZDResult.sv lzc.sv r4_qds.sv r4_qds_cg.sv \
                 r4_qds_spec.sv r4_qds_v2.sv r4_qds_v2_spec.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(DIVUNIT_DEPS) $(FDIVSQRT_DEPS))
+# impl 侧仍读 golden 的 FDivSqrt 闭包文件（= FDIVSQRT_DEPS 去掉上面 6 个重写件）
+FDIVSQRT_GOLDEN_IMPL = FloatDivider.sv FloatDividerR64.sv fpdiv_r64_block.sv \
+                       CSA3to2_20.sv CSA3to2_24.sv ShiftLeftPriorityWithLZDResult.sv \
+                       r4_qds_v2.sv r4_qds_v2_spec.sv
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(DIVUNIT_DEPS) $(FDIVSQRT_GOLDEN_IMPL))
 
 FM_VARIANTS = $(LEAVES)
 FM_REF_DEPS_DivUnit  = $(DIVUNIT_DEPS)
