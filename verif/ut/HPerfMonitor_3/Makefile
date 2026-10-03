@@ -15,6 +15,10 @@ FM_REF_DEPS_HPerfMonitor_3 = HPerfCounter_21.sv
 # 关 merge_dup：fm_predict 的模型（寄存器位 + 输出位）只在关掉时严格适用；加强不是放宽
 FM_MERGE_DUP = false
 
+# 两目标的算子寄存器 [4:3] 两侧同为死位（依据与期望数见 verif/fm_target_config/<T>.tcl）；
+# 路径差由同目录 fm_pins.tcl 钉配，开 vmucp 让 FM 实际比较这些点。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

@@ -48,24 +48,27 @@ module xs_HPerfCounter_core #(
 
   // ---- S1：事件选择与算子打拍 ----
   logic [W-1:0] events_incr_value [4];
-  logic [4:0]   event_op [3];
+  // 三个算子各 5 位，但 combine 只看低 3 位：[4:3] 两侧（golden 同为 5 位寄存器）都是死位。
+  // 名字照抄 golden 的 event_op_0/1/2（不用数组），让 FM 按名把这些死位一一配上，再由
+  // verif/fm_target_config/HPerfCounter_21.tcl 打开 vmucp 实际比较。
+  logic [4:0]   event_op_0, event_op_1, event_op_2;
   always_ff @(posedge clock) begin
     events_incr_value[0] <= pick(event_set, hpm_event[7:0]);
     events_incr_value[1] <= pick(event_set, hpm_event[17:10]);
     events_incr_value[2] <= pick(event_set, hpm_event[27:20]);
     events_incr_value[3] <= pick(event_set, hpm_event[37:30]);
-    event_op[0] <= hpm_event[44:40];
-    event_op[1] <= hpm_event[49:45];
-    event_op[2] <= hpm_event[54:50];
+    event_op_0 <= hpm_event[44:40];
+    event_op_1 <= hpm_event[49:45];
+    event_op_2 <= hpm_event[54:50];
   end
 
   // ---- S2：两两组合 ----
   logic [W-1:0] event_step_reg [2];
   logic [4:0]   event_op_2_reg;
   always_ff @(posedge clock) begin
-    event_step_reg[0] <= combine(events_incr_value[0], events_incr_value[1], event_op[0]);
-    event_step_reg[1] <= combine(events_incr_value[2], events_incr_value[3], event_op[1]);
-    event_op_2_reg    <= event_op[2];
+    event_step_reg[0] <= combine(events_incr_value[0], events_incr_value[1], event_op_0);
+    event_step_reg[1] <= combine(events_incr_value[2], events_incr_value[3], event_op_1);
+    event_op_2_reg    <= event_op_2;
   end
 
   // ---- S3/S4：最终组合 + 两拍输出打拍 ----
