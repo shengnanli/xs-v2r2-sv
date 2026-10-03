@@ -1,0 +1,78 @@
+== RegCacheAgeDetector rc=2
+# report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
+set _fh [open fm_work/$top/unread_points.txt w]
+foreach _p [lsort -unique [report_unmatched_points -reference -status unread -list]] {
+foreach _p [lsort -unique [report_unmatched_points -implementation -status unread -list]] {
+foreach _p [lsort -unique [report_matched_points -not_compared -status unread -list]] {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+Verification SUCCEEDED
+ 136 Passing compare points
+FM_RESULT: Verification SUCCEEDED for RegCacheAgeDetector
+== RegCacheAgeDetector_1 rc=2
+# report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
+set _fh [open fm_work/$top/unread_points.txt w]
+foreach _p [lsort -unique [report_unmatched_points -reference -status unread -list]] {
+foreach _p [lsort -unique [report_unmatched_points -implementation -status unread -list]] {
+foreach _p [lsort -unique [report_matched_points -not_compared -status unread -list]] {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+Verification SUCCEEDED
+ 78 Passing compare points
+FM_RESULT: Verification SUCCEEDED for RegCacheAgeDetector_1
+== RegCacheAgeTimer rc=2
+# report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
+set _fh [open fm_work/$top/unread_points.txt w]
+foreach _p [lsort -unique [report_unmatched_points -reference -status unread -list]] {
+foreach _p [lsort -unique [report_unmatched_points -implementation -status unread -list]] {
+foreach _p [lsort -unique [report_matched_points -not_compared -status unread -list]] {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+Verification SUCCEEDED
+ 160 Passing compare points
+FM_RESULT: Verification SUCCEEDED for RegCacheAgeTimer
+== RegCacheAgeTimer_1 rc=2
+# report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
+set _fh [open fm_work/$top/unread_points.txt w]
+foreach _p [lsort -unique [report_unmatched_points -reference -status unread -list]] {
+foreach _p [lsort -unique [report_unmatched_points -implementation -status unread -list]] {
+foreach _p [lsort -unique [report_matched_points -not_compared -status unread -list]] {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+Verification SUCCEEDED
+ 98 Passing compare points
+FM_RESULT: Verification SUCCEEDED for RegCacheAgeTimer_1
+== RegCacheDataModule_1 rc=2
+# report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
+set _fh [open fm_work/$top/unread_points.txt w]
+foreach _p [lsort -unique [report_unmatched_points -reference -status unread -list]] {
+foreach _p [lsort -unique [report_unmatched_points -implementation -status unread -list]] {
+foreach _p [lsort -unique [report_matched_points -not_compared -status unread -list]] {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+Verification SUCCEEDED
+ 2264 Passing compare points
+FM_RESULT: Verification SUCCEEDED for RegCacheDataModule_1
+== RegCacheDataModule rc=2
+# report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
+set _fh [open fm_work/$top/unread_points.txt w]
+foreach _p [lsort -unique [report_unmatched_points -reference -status unread -list]] {
+foreach _p [lsort -unique [report_unmatched_points -implementation -status unread -list]] {
+foreach _p [lsort -unique [report_matched_points -not_compared -status unread -list]] {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+Verification SUCCEEDED
+ 2528 Passing compare points
+FM_RESULT: Verification SUCCEEDED for RegCacheDataModule

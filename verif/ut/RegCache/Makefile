@@ -1,4 +1,4 @@
-# 自动生成：scripts/gen_zj_ut.py 的配套 Makefile（零判断批 G0->G1 迁移）
+# RegCache Makefile（原为 scripts/gen_zj_ut.py 零判断批的配套；2026-10-03 tb 改由本目录 gen.py 生成）
 MODULE = RegCache
 
 RTL_DIR = ../../../rtl
@@ -54,20 +54,29 @@ TB_SRCS = tb.sv
 #       UT 可立刻回归），再考虑 set_user_match。
 #     → 已结：实跑 unmatched = 0，层次/例化名差异确实不构成问题，不用改名。
 # ---------------------------------------------------------------------------
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/RegCacheAgeDetector.sv \
-                  $(GOLDEN_RTL)/RegCacheAgeDetector_1.sv \
-                  $(GOLDEN_RTL)/RegCacheAgeTimer.sv \
-                  $(GOLDEN_RTL)/RegCacheAgeTimer_1.sv \
-                  $(GOLDEN_RTL)/RegCacheDataModule.sv \
-                  $(GOLDEN_RTL)/RegCacheDataModule_1.sv
+# ★ 两侧读重写件（agent/rob-regcache，2026-10-03）★
+#   6 个子模块已由本 lane 重写签核（verif/ut/RegCacheLeaves：RegCacheDataModule{,_1} /
+#   RegCacheAgeTimer{,_1} / RegCacheAgeDetector{,_1}，三个家族核 + 薄 wrapper）。
+#   impl 侧从"与 ref 同源的 golden 子模块"（原 RTL_GOLDEN_DEPS）改为读这 6 个重写件，
+#   ref 侧不变（golden RegCache + 6 个 golden 子模块）。子模块仍两侧白盒，无黑盒。
+#   UT 双例化：golden 侧照旧编 golden 子模块（GOLDEN_SRCS），重写侧经 derive 改名 _xs。
+RC_CHILDREN = RegCacheDataModule RegCacheDataModule_1 RegCacheAgeTimer RegCacheAgeTimer_1 \
+              RegCacheAgeDetector RegCacheAgeDetector_1
+RTL_SRCS += $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(RC_CHILDREN)))
 
-# golden 双例化：golden 顶（子模块闭包见 RTL_GOLDEN_DEPS，两侧共用同一份定义）。
-GOLDEN_SRCS = $(GOLDEN_RTL)/RegCache.sv
+# golden 双例化：golden 顶 + 6 个 golden 子模块。
+GOLDEN_SRCS = $(GOLDEN_RTL)/RegCache.sv $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(RC_CHILDREN)))
 
 FM_VARIANTS = RegCache
 FM_REF_DEPS_RegCache = RegCacheAgeDetector.sv RegCacheAgeDetector_1.sv RegCacheAgeTimer.sv RegCacheAgeTimer_1.sv RegCacheDataModule.sv RegCacheDataModule_1.sv
 
 include ../../../scripts/ut_common.mk
 
+# initreg 九档（agent/rob-regcache）：编译期开机制，运行期 INITREG 选 0 / random / <seed>017。
 VCS += +define+SYNTHESIS +vcs+initreg+random
-SIM_ARGS += +vcs+initreg+0
+INITREG ?= 0
+SIM_ARGS += +vcs+initreg+$(INITREG)
+
+.PHONY: gencheck
+gencheck:
+	python3 gen.py --check
