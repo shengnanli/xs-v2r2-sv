@@ -3,11 +3,16 @@
   "ut": "DCache",
   "regs": 75421,
   "outs": 3626,
-  "expected": 82495,
+  "expected": 82497,
   "merge_dup": "false",
   "model_applicable": true,
-  "bbin": 3448,
+  "bbin": 3450,
   "bbox": {
+    "StorePipe": {
+      "insts": 2,
+      "in_bits": 1,
+      "points": 2
+    },
     "array_7_ext": {
       "insts": 32,
       "in_bits": 83,
@@ -19,5 +24,5 @@
       "points": 792
     }
   },
-  "note": "sramcore-d1d2d3 跑前登记（codex 0206 D1+D2）：merge_dup=false 模型适用。预测 passing 82086 = 模型 82495 - constant_reg 411 + 2（+2 = 上一跑 BBPin 实测 3450 比模型 3448 多的 2 点，推测是 StorePipe 空壳 stu_0/stu_1 各 1 位输入 io_lsu_req_valid 的 BBPin，跑后从 matched 报告核实）；D1 删掉的 40 个 rdata_last_REG 是 impl 独有 unread（无 golden 对家、不计 passing），故 passing 不变、unread 40→0；StorePipe×4 黑盒由 disabled_empty_module 声明 → verdict 预期 SUCCEEDED；failing/unverified/aborted/unmatched 0、constant_reg 411 不变。"
+  "note": "sramcore-d1d2d3 二次登记（模型修正后重证）：fm_passing_model 把 fm_verdict.DISABLED_EMPTY_MODULES 里的 StorePipe 计为 FM 自动 empty 黑盒（2 实例 × 1 位输入 = BBPin +2），模型 82497 = regs 75421 + outs 3626 + bbin 3450。预测 passing 82086 = 82497 − constant_reg 411；unread 0；verdict SUCCEEDED。上一跑（evidence/ce9d0692bc8e/DCache）实测 82086 / BBPin 3450 与此一致，fm_predict check 当时因旧登记 82495 余额 −2 判红，重证只为让登记早于证明。"
 }
