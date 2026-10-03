@@ -63,7 +63,8 @@ run() {
   local maxc=${3:-20000}
   shift; shift || true; shift || true
   [ -x "$dd/build/simv" ] || die "no $dd/build/simv — 先 build"
-  local rundir=$dd/run/$(basename "$bin" .bin)-$maxc
+  local tag; tag=$(printf '%s' "$*" | tr -cs 'A-Za-z0-9=' '_')
+  local rundir=$dd/run/$(basename "$bin" .bin)-$maxc${tag:+-$tag}
   mkdir -p "$rundir"
   log "run $side: $(basename "$bin") max-cycles=$maxc +vcs+initreg+0 $*"
   ( cd "$rundir" && VCS_ARCH_OVERRIDE=linux "$dd/build/simv" \
