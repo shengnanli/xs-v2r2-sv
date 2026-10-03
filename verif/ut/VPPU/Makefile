@@ -32,3 +32,7 @@ include ../../../scripts/ut_common.mk
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 INITREG  ?= 0
 SIM_ARGS += +vcs+initreg+$(INITREG)
+
+# vmucp（加强不是放宽）：child Permutation 内 128 个两侧对称死位（vmask_uop_reg0[127:16]、
+# vs1_next_reg0/1[127:120]）在 VPPU 层仍无读者；依据与跑前预登记的复核判据见 verif/fm_target_config/VPPU.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true

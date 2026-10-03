@@ -1,0 +1,10 @@
+{
+  "target": "VPPU",
+  "ut": "VPPU",
+  "regs": 4628,
+  "outs": 791,
+  "expected": 5419,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 5419 = regs 4628（本层 1284 + Permutation 3344）+ outs 791；预测 passing=5405（vmucp 开，Permutation 内 128 位对称死位纳入比较），差 14 = constant_reg（Permutation 签核时同一批 14 位）"
+}
