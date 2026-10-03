@@ -88,3 +88,20 @@ I8DivNr4 差额模型（预期全部落在 constant_reg + unread 上）：
 2. IterBlock 核里 specB 的 `q_j` 接自己的 `q_j_2` 输出（golden 同此接法，非组合环）；若 FM 报 loop，即属此处。
 3. I8DivNr4 的 `const_d_reg[0:3]` 数组名与 golden 平铺 `const_d_reg_0..3` 的配对靠 FM 名字匹配；若 unmatched，属命名而非逻辑。
 4. 本节之前**没有做过任何 FM 试跑**（含诊断跑）。
+
+## 5. I8DivNr4 补登（签核跑之前提交；§4 的数字不改）
+
+基线诊断跑（`make fm-I8DivNr4 FM_MODE=diagnostic-full`，commit `a5e76872`，不进 evidence）：
+native SUCCEEDED / passing **106** / failing 0 / unmatched compare 0 / constant reg **1** / unread **4**（4(4) unmatched）。
+对 §4 预测（104–106，unread 2–3）：passing 落在区间上沿；**unread 4 超出预测 2–3**——`const_d_reg_1[9]`、`const_d_reg_2[9]`
+我预测 FM 会判常量，实际 FM 不对无读者的寄存器做常量归类，它们和 `const_d_reg_0[9]`/`const_d_reg_3[9]` 一样记作 unread；
+被判常量的 1 位不是这两位（`stateReg[5]` 或 `const_d_reg_2[8]` 之一，未单独指认）。106 + 1 + 4 = 111 = expected，差额全部指认。
+4 个 unread 是 unmatched（golden 平铺 `const_d_reg_<k>_reg[9]` vs 核数组 `u_core/const_d_reg_reg[<k>][9]`），故：
+1. `verif/ut/I8DivNr4/fm_pins_pre.tcl`：4 对 set_user_match（返回值计数、字面守卫 4、error 中止）——诊断跑 4/4 pinned，
+   4 对全部转为 matched-unread，unmatched 各项 0；
+2. `verif/fm_target_config/I8DivNr4.tcl`（`fm_target_vmucp_allow`）+ Makefile `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true`
+   ——诊断跑 passing 110 / unread 0 / constant reg 1。
+
+**签核跑复核判据**（`bash scripts/run_proof.sh I8DivNr4 I8DivNr4`）：verdict SUCCEEDED，passing **110**（= 106 + 4），failing 0，
+unread 0，unmatched 全 0，constant_reg 1，blackbox 0，dont_verify false，fm.log 含 `I8DIVNR4_PINS: dead const_d_reg_k[9] 4 / 4 points pinned`。
+fm_predict 对账：expected 111 − actual 110 = 1 = constant_reg 1 + unread 0。

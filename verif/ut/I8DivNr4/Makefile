@@ -25,3 +25,7 @@ include ../../../scripts/ut_common.mk
 INITREG  ?= 0
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)
+
+# 除数倍数寄存器四档的 bit 9 两侧都无读者（死位），钉点见 fm_pins_pre.tcl；
+# 按 vmucp standing rule 让 FM 真去比这 4 位（白名单 verif/fm_target_config/I8DivNr4.tcl）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
