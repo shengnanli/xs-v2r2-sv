@@ -1,138 +1,39 @@
-// Rsqrt7Table: 7-bit arithmetic lookup table for the floating-point approximation path.
-// The table is combinational and enumerates all 128 binary inputs explicitly.
-// Values were re-derived from the G1 equations and checked against the golden truth table.
-module Rsqrt7Table (input logic [6:0] src, output logic [6:0] out);
-  always_comb begin
-    case (src)
-      7'h00: out = 7'h34;
-      7'h01: out = 7'h33;
-      7'h02: out = 7'h32;
-      7'h03: out = 7'h30;
-      7'h04: out = 7'h2f;
-      7'h05: out = 7'h2e;
-      7'h06: out = 7'h2c;
-      7'h07: out = 7'h2b;
-      7'h08: out = 7'h2a;
-      7'h09: out = 7'h29;
-      7'h0a: out = 7'h28;
-      7'h0b: out = 7'h27;
-      7'h0c: out = 7'h26;
-      7'h0d: out = 7'h24;
-      7'h0e: out = 7'h23;
-      7'h0f: out = 7'h22;
-      7'h10: out = 7'h21;
-      7'h11: out = 7'h20;
-      7'h12: out = 7'h1f;
-      7'h13: out = 7'h1e;
-      7'h14: out = 7'h1e;
-      7'h15: out = 7'h1d;
-      7'h16: out = 7'h1c;
-      7'h17: out = 7'h1b;
-      7'h18: out = 7'h1a;
-      7'h19: out = 7'h19;
-      7'h1a: out = 7'h18;
-      7'h1b: out = 7'h17;
-      7'h1c: out = 7'h17;
-      7'h1d: out = 7'h16;
-      7'h1e: out = 7'h15;
-      7'h1f: out = 7'h14;
-      7'h20: out = 7'h13;
-      7'h21: out = 7'h13;
-      7'h22: out = 7'h12;
-      7'h23: out = 7'h11;
-      7'h24: out = 7'h10;
-      7'h25: out = 7'h10;
-      7'h26: out = 7'h0f;
-      7'h27: out = 7'h0e;
-      7'h28: out = 7'h0e;
-      7'h29: out = 7'h0d;
-      7'h2a: out = 7'h0c;
-      7'h2b: out = 7'h0c;
-      7'h2c: out = 7'h0b;
-      7'h2d: out = 7'h0a;
-      7'h2e: out = 7'h0a;
-      7'h2f: out = 7'h09;
-      7'h30: out = 7'h09;
-      7'h31: out = 7'h08;
-      7'h32: out = 7'h07;
-      7'h33: out = 7'h07;
-      7'h34: out = 7'h06;
-      7'h35: out = 7'h06;
-      7'h36: out = 7'h05;
-      7'h37: out = 7'h04;
-      7'h38: out = 7'h04;
-      7'h39: out = 7'h03;
-      7'h3a: out = 7'h03;
-      7'h3b: out = 7'h02;
-      7'h3c: out = 7'h02;
-      7'h3d: out = 7'h01;
-      7'h3e: out = 7'h01;
-      7'h3f: out = 7'h00;
-      7'h40: out = 7'h7f;
-      7'h41: out = 7'h7d;
-      7'h42: out = 7'h7b;
-      7'h43: out = 7'h79;
-      7'h44: out = 7'h77;
-      7'h45: out = 7'h76;
-      7'h46: out = 7'h74;
-      7'h47: out = 7'h72;
-      7'h48: out = 7'h71;
-      7'h49: out = 7'h6f;
-      7'h4a: out = 7'h6d;
-      7'h4b: out = 7'h6c;
-      7'h4c: out = 7'h6a;
-      7'h4d: out = 7'h69;
-      7'h4e: out = 7'h67;
-      7'h4f: out = 7'h66;
-      7'h50: out = 7'h64;
-      7'h51: out = 7'h63;
-      7'h52: out = 7'h61;
-      7'h53: out = 7'h60;
-      7'h54: out = 7'h5f;
-      7'h55: out = 7'h5d;
-      7'h56: out = 7'h5c;
-      7'h57: out = 7'h5b;
-      7'h58: out = 7'h5a;
-      7'h59: out = 7'h58;
-      7'h5a: out = 7'h57;
-      7'h5b: out = 7'h56;
-      7'h5c: out = 7'h55;
-      7'h5d: out = 7'h54;
-      7'h5e: out = 7'h53;
-      7'h5f: out = 7'h52;
-      7'h60: out = 7'h50;
-      7'h61: out = 7'h4f;
-      7'h62: out = 7'h4e;
-      7'h63: out = 7'h4d;
-      7'h64: out = 7'h4c;
-      7'h65: out = 7'h4b;
-      7'h66: out = 7'h4a;
-      7'h67: out = 7'h49;
-      7'h68: out = 7'h48;
-      7'h69: out = 7'h47;
-      7'h6a: out = 7'h46;
-      7'h6b: out = 7'h46;
-      7'h6c: out = 7'h45;
-      7'h6d: out = 7'h44;
-      7'h6e: out = 7'h43;
-      7'h6f: out = 7'h42;
-      7'h70: out = 7'h41;
-      7'h71: out = 7'h40;
-      7'h72: out = 7'h3f;
-      7'h73: out = 7'h3f;
-      7'h74: out = 7'h3e;
-      7'h75: out = 7'h3d;
-      7'h76: out = 7'h3c;
-      7'h77: out = 7'h3b;
-      7'h78: out = 7'h3b;
-      7'h79: out = 7'h3a;
-      7'h7a: out = 7'h39;
-      7'h7b: out = 7'h38;
-      7'h7c: out = 7'h38;
-      7'h7d: out = 7'h37;
-      7'h7e: out = 7'h36;
-      7'h7f: out = 7'h35;
-      default: out = 7'hxx;
-    endcase
-  end
+// =============================================================================
+// Rsqrt7Table —— vfrsqrt7（平方根倒数估计，7 位精度）的 128 项查找表
+//
+// 在哪一层：向量浮点转换单元的 Estimate7（被 CVT16 / CVT32 / Estimate7 各例化一份），
+//   Scala：yunsuan/vector/VectorConvert/Estimate7.scala `class Rsqrt7Table extends Table(...)`。
+// 表的含义：下标 = {规格化后带偏置指数的最低位, 有效数小数部分高 6 位}（CVT16/CVT32 里的 sig_in7）；
+//   值 = 1/sqrt(x) 有效数的高 7 位（RVV 规范 vfrsqrt7 表）。前 64 项是指数最低位为 0 的情形，后 64 项为 1。
+// 机制：纯组合查表，128 个输入全有定义（Scala 用 decoder + TruthTable，默认值 BitPat.N 用不到），
+//   golden 被 firtool 展成按位与或式；这里还原成 Scala 那张表本身，每行 8 项、十进制、与 Scala 逐行对应。
+// 无状态、无时钟。golden 对照：G1-canonical/golden-rtl/Rsqrt7Table.sv
+// =============================================================================
+module Rsqrt7Table (
+  input  logic [6:0] src,
+  output logic [6:0] out
+);
+
+  // ---- 查找表：下标 0..127，值为 7 位估计结果（与 Scala Seq 逐项同序）----
+  localparam logic [6:0] TABLE [128] = '{
+     52,  51,  50,  48,  47,  46,  44,  43,  // [  0..  7]
+     42,  41,  40,  39,  38,  36,  35,  34,  // [  8.. 15]
+     33,  32,  31,  30,  30,  29,  28,  27,  // [ 16.. 23]
+     26,  25,  24,  23,  23,  22,  21,  20,  // [ 24.. 31]
+     19,  19,  18,  17,  16,  16,  15,  14,  // [ 32.. 39]
+     14,  13,  12,  12,  11,  10,  10,   9,  // [ 40.. 47]
+      9,   8,   7,   7,   6,   6,   5,   4,  // [ 48.. 55]
+      4,   3,   3,   2,   2,   1,   1,   0,  // [ 56.. 63]
+    // ---- 后 64 项 ----
+    127, 125, 123, 121, 119, 118, 116, 114,  // [ 64.. 71]
+    113, 111, 109, 108, 106, 105, 103, 102,  // [ 72.. 79]
+    100,  99,  97,  96,  95,  93,  92,  91,  // [ 80.. 87]
+     90,  88,  87,  86,  85,  84,  83,  82,  // [ 88.. 95]
+     80,  79,  78,  77,  76,  75,  74,  73,  // [ 96..103]
+     72,  71,  70,  70,  69,  68,  67,  66,  // [104..111]
+     65,  64,  63,  63,  62,  61,  60,  59,  // [112..119]
+     59,  58,  57,  56,  56,  55,  54,  53   // [120..127]
+  };
+
+  assign out = TABLE[src];
 endmodule

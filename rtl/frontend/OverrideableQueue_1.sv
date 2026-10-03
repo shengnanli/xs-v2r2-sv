@@ -1,78 +1,75 @@
-// Four-entry circular overrideable queue.
-// Pipeline/control leaf: producer-valid writes are recorded in the next slot;
-// reads advance only on output handshake and payload stays stable while stalled.
-module OverrideableQueue_1(
-  input         clock,
-  input         reset,
-  input         io_in_valid,
-  input  [4:0] io_in_bits_pht_index,
-  input  [12:0] io_in_bits_pht_tag,
-  input  [15:0] io_in_bits_region_bits,
-  input  [15:0] io_in_bits_region_bit_single,
-  input  [3:0] io_in_bits_region_offset,
-  input  [3:0] io_in_bits_access_cnt,
-  input         io_in_bits_decr_mode,
-  input         io_in_bits_single_update,
-  input         io_in_bits_has_been_signal_updated,
-  input         io_out_ready,
-  output        io_out_valid,
-  output [4:0] io_out_bits_pht_index,
-  output [12:0] io_out_bits_pht_tag,
-  output [15:0] io_out_bits_region_bits,
-  output [15:0] io_out_bits_region_bit_single,
-  output [3:0] io_out_bits_region_offset,
-  output [3:0] io_out_bits_access_cnt,
-  output        io_out_bits_decr_mode,
-  output        io_out_bits_single_update,
-  output        io_out_bits_has_been_signal_updated
+// =============================================================================
+// OverrideableQueue_1 —— SMS 预取器 PHT 更新（AGT 逐出表项）的 4 项可覆盖队列（evict_queue）
+//
+// 在哪一层：MemBlock / SMS 预取器的 PatternHistoryTable（mem/prefetch/SMSPrefetcher.scala
+//   `evict_queue = Module(new OverrideableQueue(new AGTEntry, smsParams.pht_lookup_queue_size))`，size = 4）。
+//   AGT（活跃区域表）逐出一个表项时把它的访问模式（io.agt_update）送来写回 PHT；
+//   PHT 的 s0 级 evict 优先于 lookup，下游 s1 被阻塞时在这里排队。
+// 机制：可覆盖环形队列——入口不反压，满了覆盖；全部逻辑在共享核 rtl/common/xs_OverrideableQueue_core.sv，
+//   本文件只把 AGTEntry 的 9 个字段按端口顺序 MSB 优先拼成一根 61 位载荷。
+// golden 对照：G1-canonical/golden-rtl/OverrideableQueue_1.sv（338 行）
+// =============================================================================
+module OverrideableQueue_1 (
+  input  logic        clock,
+  input  logic        reset,
+  input  logic        io_in_valid,
+  input  logic [4:0]  io_in_bits_pht_index,
+  input  logic [12:0] io_in_bits_pht_tag,
+  input  logic [15:0] io_in_bits_region_bits,
+  input  logic [15:0] io_in_bits_region_bit_single,
+  input  logic [3:0]  io_in_bits_region_offset,
+  input  logic [3:0]  io_in_bits_access_cnt,
+  input  logic        io_in_bits_decr_mode,
+  input  logic        io_in_bits_single_update,
+  input  logic        io_in_bits_has_been_signal_updated,
+  input  logic        io_out_ready,
+  output logic        io_out_valid,
+  output logic [4:0]  io_out_bits_pht_index,
+  output logic [12:0] io_out_bits_pht_tag,
+  output logic [15:0] io_out_bits_region_bits,
+  output logic [15:0] io_out_bits_region_bit_single,
+  output logic [3:0]  io_out_bits_region_offset,
+  output logic [3:0]  io_out_bits_access_cnt,
+  output logic        io_out_bits_decr_mode,
+  output logic        io_out_bits_single_update,
+  output logic        io_out_bits_has_been_signal_updated
 );
-  logic [4:0] entries_pht_index [0:3];
-  logic [12:0] entries_pht_tag [0:3];
-  logic [15:0] entries_region_bits [0:3];
-  logic [15:0] entries_region_bit_single [0:3];
-  logic [3:0] entries_region_offset [0:3];
-  logic [3:0] entries_access_cnt [0:3];
-  logic        entries_decr_mode [0:3];
-  logic        entries_single_update [0:3];
-  logic        entries_has_been_signal_updated [0:3];
-  logic [3:0] valid_slots;
-  logic [1:0] read_ptr;
-  logic [1:0] write_ptr;
-  wire read_valid = valid_slots[read_ptr];
-  wire dequeue = io_out_ready & read_valid;
-  assign io_out_valid = read_valid;
-  assign io_out_bits_pht_index = entries_pht_index[read_ptr];
-  assign io_out_bits_pht_tag = entries_pht_tag[read_ptr];
-  assign io_out_bits_region_bits = entries_region_bits[read_ptr];
-  assign io_out_bits_region_bit_single = entries_region_bit_single[read_ptr];
-  assign io_out_bits_region_offset = entries_region_offset[read_ptr];
-  assign io_out_bits_access_cnt = entries_access_cnt[read_ptr];
-  assign io_out_bits_decr_mode = entries_decr_mode[read_ptr];
-  assign io_out_bits_single_update = entries_single_update[read_ptr];
-  assign io_out_bits_has_been_signal_updated = entries_has_been_signal_updated[read_ptr];
-  always @(posedge clock or posedge reset) begin
-    if (reset) begin
-      valid_slots <= 4'b0;
-      read_ptr <= 2'b0;
-      write_ptr <= 2'b0;
-    end else begin
-      if (io_in_valid) begin
-        entries_pht_index[write_ptr] <= io_in_bits_pht_index;
-        entries_pht_tag[write_ptr] <= io_in_bits_pht_tag;
-        entries_region_bits[write_ptr] <= io_in_bits_region_bits;
-        entries_region_bit_single[write_ptr] <= io_in_bits_region_bit_single;
-        entries_region_offset[write_ptr] <= io_in_bits_region_offset;
-        entries_access_cnt[write_ptr] <= io_in_bits_access_cnt;
-        entries_decr_mode[write_ptr] <= io_in_bits_decr_mode;
-        entries_single_update[write_ptr] <= io_in_bits_single_update;
-        entries_has_been_signal_updated[write_ptr] <= io_in_bits_has_been_signal_updated;
-        valid_slots[write_ptr] <= 1'b1;
-        write_ptr <= write_ptr + 2'd1;
-      end
-      if (dequeue) begin
-        valid_slots[read_ptr] <= io_in_valid && (write_ptr == read_ptr);
-        read_ptr <= read_ptr + 2'd1;
-      end
-    end
-  end
+
+  localparam int unsigned W = 5 + 13 + 16 + 16 + 4 + 4 + 1 + 1 + 1;   // = 61
+
+  logic [W-1:0] in_payload;
+  logic [W-1:0] out_payload;
+
+  assign in_payload = {io_in_bits_pht_index,
+                       io_in_bits_pht_tag,
+                       io_in_bits_region_bits,
+                       io_in_bits_region_bit_single,
+                       io_in_bits_region_offset,
+                       io_in_bits_access_cnt,
+                       io_in_bits_decr_mode,
+                       io_in_bits_single_update,
+                       io_in_bits_has_been_signal_updated};
+
+  xs_OverrideableQueue_core #(
+    .N(4),
+    .W(W)
+  ) u_core (
+    .clock    (clock),
+    .reset    (reset),
+    .in_valid (io_in_valid),
+    .in_bits  (in_payload),
+    .out_ready(io_out_ready),
+    .out_valid(io_out_valid),
+    .out_bits (out_payload)
+  );
+
+  assign {io_out_bits_pht_index,
+          io_out_bits_pht_tag,
+          io_out_bits_region_bits,
+          io_out_bits_region_bit_single,
+          io_out_bits_region_offset,
+          io_out_bits_access_cnt,
+          io_out_bits_decr_mode,
+          io_out_bits_single_update,
+          io_out_bits_has_been_signal_updated} = out_payload;
 endmodule

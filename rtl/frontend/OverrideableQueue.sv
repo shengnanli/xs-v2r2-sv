@@ -1,58 +1,59 @@
-// Four-entry circular overrideable queue.
-// Pipeline/control leaf: producer-valid writes are recorded in the next slot;
-// reads advance only on output handshake and payload stays stable while stalled.
-module OverrideableQueue(
-  input         clock,
-  input         reset,
-  input         io_in_valid,
-  input  [4:0] io_in_bits_pht_index,
-  input  [12:0] io_in_bits_pht_tag,
-  input  [39:0] io_in_bits_region_paddr,
-  input  [39:0] io_in_bits_region_vaddr,
-  input  [3:0] io_in_bits_region_offset,
-  input         io_out_ready,
-  output        io_out_valid,
-  output [4:0] io_out_bits_pht_index,
-  output [12:0] io_out_bits_pht_tag,
-  output [39:0] io_out_bits_region_paddr,
-  output [39:0] io_out_bits_region_vaddr,
-  output [3:0] io_out_bits_region_offset
+// =============================================================================
+// OverrideableQueue —— SMS 预取器 PHT 查询请求的 4 项可覆盖队列（lookup_queue）
+//
+// 在哪一层：MemBlock / SMS 预取器的 PatternHistoryTable（mem/prefetch/SMSPrefetcher.scala
+//   `lookup_queue = Module(new OverrideableQueue(new PhtLookup, smsParams.pht_lookup_queue_size))`，size = 4）。AGT 在 s2 级发出的 PHT 查询
+//   （io.s2_agt_lookup：pht_index/pht_tag + 区域物理/虚拟地址 + 触发偏移）先进这里；PHT 的 s0 级
+//   evict 优先、lookup 其次，轮不到时在这里排队。
+// 机制：可覆盖环形队列——入口不反压，满了覆盖；全部逻辑在共享核 rtl/common/xs_OverrideableQueue_core.sv，
+//   本文件只把 5 个载荷字段按端口顺序 MSB 优先拼成一根 102 位载荷。
+// golden 对照：G1-canonical/golden-rtl/OverrideableQueue.sv（271 行）
+// =============================================================================
+module OverrideableQueue (
+  input  logic        clock,
+  input  logic        reset,
+  input  logic        io_in_valid,
+  input  logic [4:0]  io_in_bits_pht_index,
+  input  logic [12:0] io_in_bits_pht_tag,
+  input  logic [39:0] io_in_bits_region_paddr,
+  input  logic [39:0] io_in_bits_region_vaddr,
+  input  logic [3:0]  io_in_bits_region_offset,
+  input  logic        io_out_ready,
+  output logic        io_out_valid,
+  output logic [4:0]  io_out_bits_pht_index,
+  output logic [12:0] io_out_bits_pht_tag,
+  output logic [39:0] io_out_bits_region_paddr,
+  output logic [39:0] io_out_bits_region_vaddr,
+  output logic [3:0]  io_out_bits_region_offset
 );
-  logic [4:0] entries_pht_index [0:3];
-  logic [12:0] entries_pht_tag [0:3];
-  logic [39:0] entries_region_paddr [0:3];
-  logic [39:0] entries_region_vaddr [0:3];
-  logic [3:0] entries_region_offset [0:3];
-  logic [3:0] valid_slots;
-  logic [1:0] read_ptr;
-  logic [1:0] write_ptr;
-  wire read_valid = valid_slots[read_ptr];
-  wire dequeue = io_out_ready & read_valid;
-  assign io_out_valid = read_valid;
-  assign io_out_bits_pht_index = entries_pht_index[read_ptr];
-  assign io_out_bits_pht_tag = entries_pht_tag[read_ptr];
-  assign io_out_bits_region_paddr = entries_region_paddr[read_ptr];
-  assign io_out_bits_region_vaddr = entries_region_vaddr[read_ptr];
-  assign io_out_bits_region_offset = entries_region_offset[read_ptr];
-  always @(posedge clock or posedge reset) begin
-    if (reset) begin
-      valid_slots <= 4'b0;
-      read_ptr <= 2'b0;
-      write_ptr <= 2'b0;
-    end else begin
-      if (io_in_valid) begin
-        entries_pht_index[write_ptr] <= io_in_bits_pht_index;
-        entries_pht_tag[write_ptr] <= io_in_bits_pht_tag;
-        entries_region_paddr[write_ptr] <= io_in_bits_region_paddr;
-        entries_region_vaddr[write_ptr] <= io_in_bits_region_vaddr;
-        entries_region_offset[write_ptr] <= io_in_bits_region_offset;
-        valid_slots[write_ptr] <= 1'b1;
-        write_ptr <= write_ptr + 2'd1;
-      end
-      if (dequeue) begin
-        valid_slots[read_ptr] <= io_in_valid && (write_ptr == read_ptr);
-        read_ptr <= read_ptr + 2'd1;
-      end
-    end
-  end
+
+  localparam int unsigned W = 5 + 13 + 40 + 40 + 4;   // = 102
+
+  logic [W-1:0] in_payload;
+  logic [W-1:0] out_payload;
+
+  assign in_payload = {io_in_bits_pht_index,
+                       io_in_bits_pht_tag,
+                       io_in_bits_region_paddr,
+                       io_in_bits_region_vaddr,
+                       io_in_bits_region_offset};
+
+  xs_OverrideableQueue_core #(
+    .N(4),
+    .W(W)
+  ) u_core (
+    .clock    (clock),
+    .reset    (reset),
+    .in_valid (io_in_valid),
+    .in_bits  (in_payload),
+    .out_ready(io_out_ready),
+    .out_valid(io_out_valid),
+    .out_bits (out_payload)
+  );
+
+  assign {io_out_bits_pht_index,
+          io_out_bits_pht_tag,
+          io_out_bits_region_paddr,
+          io_out_bits_region_vaddr,
+          io_out_bits_region_offset} = out_payload;
 endmodule

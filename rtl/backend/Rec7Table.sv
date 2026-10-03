@@ -1,138 +1,39 @@
-// Rec7Table: 7-bit arithmetic lookup table for the floating-point approximation path.
-// The table is combinational and enumerates all 128 binary inputs explicitly.
-// Values were re-derived from the G1 equations and checked against the golden truth table.
-module Rec7Table (input logic [6:0] src, output logic [6:0] out);
-  always_comb begin
-    case (src)
-      7'h00: out = 7'h7f;
-      7'h01: out = 7'h7d;
-      7'h02: out = 7'h7b;
-      7'h03: out = 7'h79;
-      7'h04: out = 7'h77;
-      7'h05: out = 7'h75;
-      7'h06: out = 7'h74;
-      7'h07: out = 7'h72;
-      7'h08: out = 7'h70;
-      7'h09: out = 7'h6e;
-      7'h0a: out = 7'h6d;
-      7'h0b: out = 7'h6b;
-      7'h0c: out = 7'h69;
-      7'h0d: out = 7'h68;
-      7'h0e: out = 7'h66;
-      7'h0f: out = 7'h64;
-      7'h10: out = 7'h63;
-      7'h11: out = 7'h61;
-      7'h12: out = 7'h60;
-      7'h13: out = 7'h5e;
-      7'h14: out = 7'h5d;
-      7'h15: out = 7'h5b;
-      7'h16: out = 7'h5a;
-      7'h17: out = 7'h58;
-      7'h18: out = 7'h57;
-      7'h19: out = 7'h55;
-      7'h1a: out = 7'h54;
-      7'h1b: out = 7'h53;
-      7'h1c: out = 7'h51;
-      7'h1d: out = 7'h50;
-      7'h1e: out = 7'h4f;
-      7'h1f: out = 7'h4d;
-      7'h20: out = 7'h4c;
-      7'h21: out = 7'h4b;
-      7'h22: out = 7'h4a;
-      7'h23: out = 7'h48;
-      7'h24: out = 7'h47;
-      7'h25: out = 7'h46;
-      7'h26: out = 7'h45;
-      7'h27: out = 7'h44;
-      7'h28: out = 7'h42;
-      7'h29: out = 7'h41;
-      7'h2a: out = 7'h40;
-      7'h2b: out = 7'h3f;
-      7'h2c: out = 7'h3e;
-      7'h2d: out = 7'h3d;
-      7'h2e: out = 7'h3c;
-      7'h2f: out = 7'h3b;
-      7'h30: out = 7'h3a;
-      7'h31: out = 7'h39;
-      7'h32: out = 7'h38;
-      7'h33: out = 7'h37;
-      7'h34: out = 7'h36;
-      7'h35: out = 7'h35;
-      7'h36: out = 7'h34;
-      7'h37: out = 7'h33;
-      7'h38: out = 7'h32;
-      7'h39: out = 7'h31;
-      7'h3a: out = 7'h30;
-      7'h3b: out = 7'h2f;
-      7'h3c: out = 7'h2e;
-      7'h3d: out = 7'h2d;
-      7'h3e: out = 7'h2c;
-      7'h3f: out = 7'h2b;
-      7'h40: out = 7'h2a;
-      7'h41: out = 7'h29;
-      7'h42: out = 7'h28;
-      7'h43: out = 7'h28;
-      7'h44: out = 7'h27;
-      7'h45: out = 7'h26;
-      7'h46: out = 7'h25;
-      7'h47: out = 7'h24;
-      7'h48: out = 7'h23;
-      7'h49: out = 7'h23;
-      7'h4a: out = 7'h22;
-      7'h4b: out = 7'h21;
-      7'h4c: out = 7'h20;
-      7'h4d: out = 7'h1f;
-      7'h4e: out = 7'h1f;
-      7'h4f: out = 7'h1e;
-      7'h50: out = 7'h1d;
-      7'h51: out = 7'h1c;
-      7'h52: out = 7'h1c;
-      7'h53: out = 7'h1b;
-      7'h54: out = 7'h1a;
-      7'h55: out = 7'h19;
-      7'h56: out = 7'h19;
-      7'h57: out = 7'h18;
-      7'h58: out = 7'h17;
-      7'h59: out = 7'h17;
-      7'h5a: out = 7'h16;
-      7'h5b: out = 7'h15;
-      7'h5c: out = 7'h15;
-      7'h5d: out = 7'h14;
-      7'h5e: out = 7'h13;
-      7'h5f: out = 7'h13;
-      7'h60: out = 7'h12;
-      7'h61: out = 7'h11;
-      7'h62: out = 7'h11;
-      7'h63: out = 7'h10;
-      7'h64: out = 7'h0f;
-      7'h65: out = 7'h0f;
-      7'h66: out = 7'h0e;
-      7'h67: out = 7'h0e;
-      7'h68: out = 7'h0d;
-      7'h69: out = 7'h0c;
-      7'h6a: out = 7'h0c;
-      7'h6b: out = 7'h0b;
-      7'h6c: out = 7'h0b;
-      7'h6d: out = 7'h0a;
-      7'h6e: out = 7'h09;
-      7'h6f: out = 7'h09;
-      7'h70: out = 7'h08;
-      7'h71: out = 7'h08;
-      7'h72: out = 7'h07;
-      7'h73: out = 7'h07;
-      7'h74: out = 7'h06;
-      7'h75: out = 7'h05;
-      7'h76: out = 7'h05;
-      7'h77: out = 7'h04;
-      7'h78: out = 7'h04;
-      7'h79: out = 7'h03;
-      7'h7a: out = 7'h03;
-      7'h7b: out = 7'h02;
-      7'h7c: out = 7'h02;
-      7'h7d: out = 7'h01;
-      7'h7e: out = 7'h01;
-      7'h7f: out = 7'h00;
-      default: out = 7'hxx;
-    endcase
-  end
+// =============================================================================
+// Rec7Table —— vfrec7（倒数估计，7 位精度）的 128 项查找表
+//
+// 在哪一层：向量浮点转换单元的 Estimate7（被 CVT16 / CVT32 / Estimate7 各例化一份），
+//   Scala：yunsuan/vector/VectorConvert/Estimate7.scala `class Rec7Table extends Table(...)`。
+// 表的含义：下标 = 规格化后有效数小数部分的高 7 位（CVT16/CVT32 里的 sig_in7）；值 = 1/x 有效数的高 7 位（RVV 规范 vfrec7 表）；
+//   前 64 项对应有效数 [1.0,1.5)，后 64 项对应 [1.5,2.0)。
+// 机制：纯组合查表，128 个输入全有定义（Scala 用 decoder + TruthTable，默认值 BitPat.N 用不到），
+//   golden 被 firtool 展成按位与或式；这里还原成 Scala 那张表本身，每行 8 项、十进制、与 Scala 逐行对应。
+// 无状态、无时钟。golden 对照：G1-canonical/golden-rtl/Rec7Table.sv
+// =============================================================================
+module Rec7Table (
+  input  logic [6:0] src,
+  output logic [6:0] out
+);
+
+  // ---- 查找表：下标 0..127，值为 7 位估计结果（与 Scala Seq 逐项同序）----
+  localparam logic [6:0] TABLE [128] = '{
+    127, 125, 123, 121, 119, 117, 116, 114,  // [  0..  7]
+    112, 110, 109, 107, 105, 104, 102, 100,  // [  8.. 15]
+     99,  97,  96,  94,  93,  91,  90,  88,  // [ 16.. 23]
+     87,  85,  84,  83,  81,  80,  79,  77,  // [ 24.. 31]
+     76,  75,  74,  72,  71,  70,  69,  68,  // [ 32.. 39]
+     66,  65,  64,  63,  62,  61,  60,  59,  // [ 40.. 47]
+     58,  57,  56,  55,  54,  53,  52,  51,  // [ 48.. 55]
+     50,  49,  48,  47,  46,  45,  44,  43,  // [ 56.. 63]
+    // ---- 后 64 项 ----
+     42,  41,  40,  40,  39,  38,  37,  36,  // [ 64.. 71]
+     35,  35,  34,  33,  32,  31,  31,  30,  // [ 72.. 79]
+     29,  28,  28,  27,  26,  25,  25,  24,  // [ 80.. 87]
+     23,  23,  22,  21,  21,  20,  19,  19,  // [ 88.. 95]
+     18,  17,  17,  16,  15,  15,  14,  14,  // [ 96..103]
+     13,  12,  12,  11,  11,  10,   9,   9,  // [104..111]
+      8,   8,   7,   7,   6,   5,   5,   4,  // [112..119]
+      4,   3,   3,   2,   2,   1,   1,   0   // [120..127]
+  };
+
+  assign out = TABLE[src];
 endmodule

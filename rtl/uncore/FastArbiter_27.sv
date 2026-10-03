@@ -1,8 +1,18 @@
-// Five-input CHI response arbiter with remembered pending requests.
-// The shared core implements the G1 arbitration timing: asynchronous reset,
-// lowest pending lane at or above the previous winner, then fixed-priority fallback.
-// Payload fields absent from lanes 0..3 are driven to zero before the mux.
-// This keeps the one-hot mux explicit and makes the lane shape auditable.
+// =============================================================================
+// FastArbiter_27 —— L2 的 CHI TXDAT 汇流：4 个 slice + MMIOBridge 共 5 路发往 CHI 的数据拍
+//
+// 例化者：TL2CHICoupledL2.sv（实例 txdat_arb；Scala coupledL2/tl2chi/TL2CHICoupledL2.scala
+//   `fastArb(slices.map(_.io.out.tx.dat) :+ mmio.io.tx.dat, txdat, Some("txdat"))`）。
+//   第 0..3 路 = 4 个 L2 slice 的 TXDAT（写回 / snoop 响应数据），第 4 路 = MMIOBridge（uncache 写数据）。
+// 语义：utility.FastArbiter —— 轮转 + "挂起记忆"（上一拍落选的路下一拍优先），异步复位；
+//   仲裁逻辑全部在共享核 rtl/common/xs_FastArbiter_core.sv（已签核，机制讲在那里），本文件只做端口对位。
+// ★各路端口面不一样★（golden 端口表实测）：
+//   slice 那 4 路不驱动 qos/cBusy/tagOp/tag/tu/rsvdc（Scala 里是 0），firtool 删掉了这些输入端口；
+//   只有第 4 路（MMIOBridge）全字段都有。拼载荷时在缺字段的位置填 0。
+//   因为核的载荷选择是 Mux1H（按位或），出口这些字段 = "第 4 路被选中时的值，否则 0"，与 golden 一致。
+// 载荷：CHIDAT 21 个字段、411 位，用 packed struct 按 io_out_bits_* 端口顺序排列，结构体即字段表。
+// golden 对照：G1-canonical/golden-rtl/FastArbiter_27.sv（359 行）
+// =============================================================================
 module FastArbiter_27(
   input          clock,
   input          reset,
@@ -121,6 +131,7 @@ module FastArbiter_27(
   output [31:0]  io_out_bits_dataCheck,
   output [3:0]   io_out_bits_poison
 );
+  // ---- CHIDAT 载荷字段表（顺序 = io_out_bits_* 端口顺序）----
   typedef struct packed {
     logic [3:0] qos;
     logic [10:0] tgtID;
@@ -144,7 +155,7 @@ module FastArbiter_27(
     logic [31:0] dataCheck;
     logic [3:0] poison;
   } response_payload_t;
-  localparam int PAYLOAD_WIDTH = 411;
+  localparam int PAYLOAD_WIDTH = $bits(response_payload_t);   // = 411
   response_payload_t lane_0, lane_1, lane_2, lane_3, lane_4;
   logic [4:0] valid_lanes;
   logic [4:0] ready_lanes;
@@ -152,6 +163,7 @@ module FastArbiter_27(
   logic [PAYLOAD_WIDTH-1:0] selected_payload_bits;
   response_payload_t selected_payload;
 
+  // ---- 各路载荷：slice 0..3 缺的字段填 0，第 4 路（MMIOBridge）全字段 ----
   assign lane_0.qos = 4'h0;
   assign lane_0.tgtID = io_in_0_bits_tgtID;
   assign lane_0.txnID = io_in_0_bits_txnID;
@@ -257,6 +269,7 @@ module FastArbiter_27(
   assign lane_4.data = io_in_4_bits_data;
   assign lane_4.dataCheck = io_in_4_bits_dataCheck;
   assign lane_4.poison = io_in_4_bits_poison;
+  // ---- 打包成核的输入（核的位 k = 第 k 路）----
   assign valid_lanes = {io_in_4_valid, io_in_3_valid, io_in_2_valid, io_in_1_valid, io_in_0_valid};
   assign lane_payloads[0] = lane_0;
   assign lane_payloads[1] = lane_1;
@@ -264,10 +277,21 @@ module FastArbiter_27(
   assign lane_payloads[3] = lane_3;
   assign lane_payloads[4] = lane_4;
 
-  xs_FastArbiter_core #(.N(5), .W(PAYLOAD_WIDTH)) u_arbiter (
-    .clock(clock), .reset(reset), .in_valid(valid_lanes), .in_bits(lane_payloads),
-    .in_ready(ready_lanes), .out_ready(io_out_ready),
-    .out_valid(io_out_valid), .out_bits(selected_payload_bits));
+  // ---- 仲裁核：5 路、411 位载荷 ----
+  xs_FastArbiter_core #(
+    .N(5),
+    .W(PAYLOAD_WIDTH)
+  ) u_arbiter (
+    .clock    (clock),
+    .reset    (reset),
+    .in_valid (valid_lanes),
+    .in_bits  (lane_payloads),
+    .in_ready (ready_lanes),
+    .out_ready(io_out_ready),
+    .out_valid(io_out_valid),
+    .out_bits (selected_payload_bits)
+  );
+  // ---- 出口拆分 ----
   assign selected_payload = selected_payload_bits;
   assign io_in_0_ready = ready_lanes[0];
   assign io_in_1_ready = ready_lanes[1];

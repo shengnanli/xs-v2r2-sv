@@ -1,42 +1,53 @@
-// FliDTable: 5-bit floating-point lookup table used by the arithmetic datapath.
-// Each entry is an explicit value from the G1 combinational truth table; no state is present.
-// The case form keeps the lookup readable while preserving every legal binary input result.
-module FliDTable (input logic [4:0] src, output logic [15:0] out);
-  always_comb begin
-    case (src)
-      5'h00: out = 16'hbff0;
-      5'h01: out = 16'h0010;
-      5'h02: out = 16'h3ef0;
-      5'h03: out = 16'h3f00;
-      5'h04: out = 16'h3f70;
-      5'h05: out = 16'h3f80;
-      5'h06: out = 16'h3fb0;
-      5'h07: out = 16'h3fc0;
-      5'h08: out = 16'h3fd0;
-      5'h09: out = 16'h3fd4;
-      5'h0a: out = 16'h3fd8;
-      5'h0b: out = 16'h3fdc;
-      5'h0c: out = 16'h3fe0;
-      5'h0d: out = 16'h3fe4;
-      5'h0e: out = 16'h3fe8;
-      5'h0f: out = 16'h3fec;
-      5'h10: out = 16'h3ff0;
-      5'h11: out = 16'h3ff4;
-      5'h12: out = 16'h3ff8;
-      5'h13: out = 16'h3ffc;
-      5'h14: out = 16'h4000;
-      5'h15: out = 16'h4004;
-      5'h16: out = 16'h4008;
-      5'h17: out = 16'h4010;
-      5'h18: out = 16'h4020;
-      5'h19: out = 16'h4030;
-      5'h1a: out = 16'h4060;
-      5'h1b: out = 16'h4070;
-      5'h1c: out = 16'h40e0;
-      5'h1d: out = 16'h40f0;
-      5'h1e: out = 16'h7ff0;
-      5'h1f: out = 16'h7ff8;
-      default: out = 16'hxxxx;
-    endcase
-  end
+// =============================================================================
+// FliDTable —— FLI.D 指令的 32 项常数表（5 位立即数 -> 16 位浮点位型）
+//
+// 在哪一层：后端 IntFPToVec（标量浮点 -> 向量寄存器那条通路）执行 Zfa 扩展的 fli.d rd, imm 时，
+//   用 rs1 字段的 5 位编码查这张表得到常数（Scala：xiangshan/backend/fu/fpu/FliTable.scala）。
+// 输出含义：双精度 FP64 的高 16 位（低 48 位恒 0，由 IntFPToVec 补）。
+// 机制：纯组合查表，32 个输入全有定义（Scala 用 decoder + TruthTable，默认值 BitPat.N 永远用不到），
+//   golden 被 firtool 展成按位与或式；这里还原成 Scala 那张表本身，逐项附 Scala 的注释。
+// 无状态、无时钟。golden 对照：G1-canonical/golden-rtl/FliDTable.sv
+// =============================================================================
+module FliDTable (
+  input  logic [4:0]  src,
+  output logic [15:0] out
+);
+
+  // ---- 常数表：下标 = fli 立即数编码，值 = 浮点位型（与 Scala Seq 逐项同序）----
+  localparam logic [15:0] FLI_TABLE [32] = '{
+    16'hBFF0,  //  0: -1.0
+    16'h0010,  //  1: minimum positive normal
+    16'h3EF0,  //  2: 1.0 * 2^-16
+    16'h3F00,  //  3: 1.0 * 2^-15
+    16'h3F70,  //  4: 1.0 * 2^-8
+    16'h3F80,  //  5: 1.0 * 2^-7
+    16'h3FB0,  //  6: 1.0 * 2^-4
+    16'h3FC0,  //  7: 1.0 * 2^-3
+    16'h3FD0,  //  8: 0.25
+    16'h3FD4,  //  9: 0.3125
+    16'h3FD8,  // 10: 0.375
+    16'h3FDC,  // 11: 0.4375
+    16'h3FE0,  // 12: 0.5
+    16'h3FE4,  // 13: 0.625
+    16'h3FE8,  // 14: 0.75
+    16'h3FEC,  // 15: 0.875
+    16'h3FF0,  // 16: 1.0
+    16'h3FF4,  // 17: 1.25
+    16'h3FF8,  // 18: 1.5
+    16'h3FFC,  // 19: 1.75
+    16'h4000,  // 20: 2.0
+    16'h4004,  // 21: 2.5
+    16'h4008,  // 22: 3
+    16'h4010,  // 23: 4
+    16'h4020,  // 24: 8
+    16'h4030,  // 25: 16
+    16'h4060,  // 26: 2^7
+    16'h4070,  // 27: 2^8
+    16'h40E0,  // 28: 2^15
+    16'h40F0,  // 29: 2^16
+    16'h7FF0,  // 30: +inf
+    16'h7FF8   // 31: CNaN
+  };
+
+  assign out = FLI_TABLE[src];
 endmodule

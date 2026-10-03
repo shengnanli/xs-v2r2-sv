@@ -1,11 +1,35 @@
 `timescale 1ns/1ps
-// Differential UT for Pipeline200c; golden vs derived implementation.
+// Differential UT for Pipeline200c: golden (g_*) vs rewritten (x_*, *_xs) side by side, same random inputs.
+// Takeover changes (agent/next200c-takeover):
+//   * warm-up phase after the first reset writes every non-reset register (OverrideableQueue entries,
+//     PipelineRegModule_6 payload, SatpFlushMod snapshot) before comparing, so +vcs+initreg+random /
+//     +vcs+initreg+<n> runs do not compare per-instance random power-up values;
+//   * random mid-run reset pulses on the async-reset modules (reset is held while inputs keep toggling,
+//     so a payload register wrongly placed in the reset always-block is caught);
+//   * Arbiter16 valids are made sparse on 1/4 of the cycles so the low-priority / fallback lanes win;
+//   * outputs compared twice per cycle (after the negedge input change, and after the posedge), so a
+//     synchronous reset where golden is asynchronous is visible;
+//   * coverage counters; every counter must be non-zero or the test fails.
 module tb;
   parameter integer NCYCLES = 200000;
   logic clock = 1'b0;
   integer errors = 0;
   integer checks = 0;
   integer cycle = 0;
+  integer rst_left = 0;
+  integer cov_rst_pulses = 0;
+  integer cov_preg_fire_in_reset = 0;
+  integer cov_preg_stall = 0;
+  integer cov_oq_overwrite = 0;
+  integer cov_oq_same_slot_rw = 0;
+  integer cov_oq1_overwrite = 0;
+  integer cov_oq1_deq = 0;
+  integer cov_a16_win15 = 0;
+  integer cov_a16_idle = 0;
+  integer cov_pfgen_lane2 = 0;
+  integer cov_pfreq_idle = 0;
+  integer cov_hint_lane3 = 0;
+  integer cov_satp_wen = 0;
   always #5 clock = ~clock;
 
   wire Arbiter16_TLBundleD_g_io_in_0_ready;
@@ -1708,6 +1732,63 @@ module tb;
     end
   endtask
 
+  task automatic bias_inputs;
+    begin
+      if ($urandom % 4 == 0) begin
+        Arbiter16_TLBundleD_io_in_0_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_1_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_2_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_3_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_4_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_5_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_6_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_7_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_8_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_9_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_10_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_11_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_12_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_13_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_14_valid = ($urandom % 16 == 0);
+        Arbiter16_TLBundleD_io_in_15_valid = ($urandom % 16 == 0);
+      end
+    end
+  endtask
+
+  task automatic sample_coverage;
+    begin
+      if (PipelineRegModule_6_reset && PipelineRegModule_6_io_in_valid && g_PipelineRegModule_6.io_in_ready)
+        cov_preg_fire_in_reset = cov_preg_fire_in_reset + 1;
+      if (!PipelineRegModule_6_reset && g_PipelineRegModule_6.io_out_valid && !PipelineRegModule_6_io_out_ready)
+        cov_preg_stall = cov_preg_stall + 1;
+      if (!OverrideableQueue_reset && OverrideableQueue_io_in_valid &&
+          g_OverrideableQueue.valids_0 && g_OverrideableQueue.valids_1 &&
+          g_OverrideableQueue.valids_2 && g_OverrideableQueue.valids_3)
+        cov_oq_overwrite = cov_oq_overwrite + 1;
+      if (!OverrideableQueue_reset && OverrideableQueue_io_in_valid && OverrideableQueue_io_out_ready &&
+          g_OverrideableQueue.io_out_valid && g_OverrideableQueue.wr_ptr == g_OverrideableQueue.rd_ptr)
+        cov_oq_same_slot_rw = cov_oq_same_slot_rw + 1;
+      if (!OverrideableQueue_1_reset && OverrideableQueue_1_io_in_valid &&
+          g_OverrideableQueue_1.valids_0 && g_OverrideableQueue_1.valids_1 &&
+          g_OverrideableQueue_1.valids_2 && g_OverrideableQueue_1.valids_3)
+        cov_oq1_overwrite = cov_oq1_overwrite + 1;
+      if (!OverrideableQueue_1_reset && g_OverrideableQueue_1.io_out_valid && OverrideableQueue_1_io_out_ready)
+        cov_oq1_deq = cov_oq1_deq + 1;
+      if (Arbiter16_TLBundleD_io_out_ready && Arbiter16_TLBundleD_io_in_15_valid && g_Arbiter16_TLBundleD.io_in_15_ready)
+        cov_a16_win15 = cov_a16_win15 + 1;
+      if (!g_Arbiter16_TLBundleD.io_out_valid)
+        cov_a16_idle = cov_a16_idle + 1;
+      if (Arbiter3_PfGenReq_io_in_2_valid && g_Arbiter3_PfGenReq.io_in_2_ready)
+        cov_pfgen_lane2 = cov_pfgen_lane2 + 1;
+      if (!g_Arbiter4_PrefetchReq.io_out_valid)
+        cov_pfreq_idle = cov_pfreq_idle + 1;
+      if (g_Arbiter4_L2ToL1Hint.io_chosen == 2'd3 && Arbiter4_L2ToL1Hint_io_in_3_valid)
+        cov_hint_lane3 = cov_hint_lane3 + 1;
+      if (SatpFlushMod_in_satp_valid || SatpFlushMod_in_vsatp_valid)
+        cov_satp_wen = cov_satp_wen + 1;
+    end
+  endtask
+
   initial begin
     zero_inputs();
     OverrideableQueue_reset = 1'b1;
@@ -1718,13 +1799,49 @@ module tb;
     OverrideableQueue_reset = 1'b0;
     OverrideableQueue_1_reset = 1'b0;
     PipelineRegModule_6_reset = 1'b0;
+    // ---- warm-up: write all non-reset state on both sides, no comparison ----
+    repeat (8) begin
+      @(negedge clock);
+      drive_inputs();
+      OverrideableQueue_io_in_valid = 1'b1;
+      OverrideableQueue_io_out_ready = 1'b0;
+      OverrideableQueue_1_io_in_valid = 1'b1;
+      OverrideableQueue_1_io_out_ready = 1'b0;
+      PipelineRegModule_6_io_in_valid = 1'b1;
+      PipelineRegModule_6_io_out_ready = 1'b1;
+      SatpFlushMod_in_satp_valid = 1'b1;
+    end
     repeat (NCYCLES) begin
       @(negedge clock);
       cycle = cycle + 1;
       drive_inputs();
+      bias_inputs();
+      if (rst_left > 0)
+        rst_left = rst_left - 1;
+      else if ($urandom % 512 == 0) begin
+        rst_left = 1 + $urandom % 3;
+        cov_rst_pulses = cov_rst_pulses + 1;
+      end
+      OverrideableQueue_reset = (rst_left > 0);
+      OverrideableQueue_1_reset = (rst_left > 0);
+      PipelineRegModule_6_reset = (rst_left > 0);
+      #1;
+      sample_coverage();
+      // mid-cycle compare: an async reset raised at this negedge must already have cleared state
+      compare_outputs();
       @(posedge clock);
       #1;
       compare_outputs();
+    end
+    $display("COVERAGE rst_pulses=%0d preg_fire_in_reset=%0d preg_stall=%0d oq_overwrite=%0d oq_same_slot_rw=%0d",
+             cov_rst_pulses, cov_preg_fire_in_reset, cov_preg_stall, cov_oq_overwrite, cov_oq_same_slot_rw);
+    $display("COVERAGE oq1_overwrite=%0d oq1_deq=%0d a16_win15=%0d a16_idle=%0d pfgen_lane2=%0d pfreq_idle=%0d hint_lane3=%0d satp_wen=%0d",
+             cov_oq1_overwrite, cov_oq1_deq, cov_a16_win15, cov_a16_idle, cov_pfgen_lane2, cov_pfreq_idle, cov_hint_lane3, cov_satp_wen);
+    if (cov_rst_pulses == 0 || cov_preg_fire_in_reset == 0 || cov_preg_stall == 0 || cov_oq_overwrite == 0 ||
+        cov_oq_same_slot_rw == 0 || cov_oq1_overwrite == 0 || cov_oq1_deq == 0 || cov_a16_win15 == 0 ||
+        cov_a16_idle == 0 || cov_pfgen_lane2 == 0 || cov_pfreq_idle == 0 || cov_hint_lane3 == 0 || cov_satp_wen == 0) begin
+      $display("COVERAGE HOLE: at least one counter is zero");
+      errors = errors + 1;
     end
     $display("Pipeline200c UT: checks=%0d errors=%0d", checks, errors);
     if (errors == 0) $display("TEST PASSED");

@@ -1,11 +1,21 @@
 `timescale 1ns/1ps
-// Differential UT for Arithmetic200c; golden vs derived implementation.
+// Differential UT for Arithmetic200c: golden (g_*) vs rewritten (x_*, *_xs) side by side, same random inputs.
+// Takeover changes (agent/next200c-takeover): random mid-run reset pulses on FastArbiter_27 / IntBuffer_1/_2,
+// outputs compared twice per cycle (after negedge input change and after posedge, catches sync-vs-async reset),
+// coverage counters (round-robin overriding fixed priority, stall, MMIO lane 4 wins, irq toggles);
+// every counter must be non-zero or the test fails. Tables get all 32/128 inputs many times (uniform src).
 module tb;
   parameter integer NCYCLES = 200000;
   logic clock = 1'b0;
   integer errors = 0;
   integer checks = 0;
   integer cycle = 0;
+  integer rst_left = 0;
+  integer cov_rst_pulses = 0;
+  integer cov_fa_rr_override = 0;
+  integer cov_fa_stall = 0;
+  integer cov_fa_lane4 = 0;
+  integer cov_irq_toggle = 0;
   always #5 clock = ~clock;
 
   logic FastArbiter_27_reset;
@@ -746,6 +756,26 @@ module tb;
     end
   endtask
 
+  task automatic sample_coverage;
+    logic [4:0] v;
+    logic [4:0] r;
+    begin
+      v = {FastArbiter_27_io_in_4_valid, FastArbiter_27_io_in_3_valid, FastArbiter_27_io_in_2_valid,
+           FastArbiter_27_io_in_1_valid, FastArbiter_27_io_in_0_valid};
+      r = {g_FastArbiter_27.io_in_4_ready, g_FastArbiter_27.io_in_3_ready, g_FastArbiter_27.io_in_2_ready,
+           g_FastArbiter_27.io_in_1_ready, g_FastArbiter_27.io_in_0_ready};
+      // winner is not the lowest valid lane -> the pending/round-robin path decided
+      if (!FastArbiter_27_reset && FastArbiter_27_io_out_ready && (r & v) != 0 && (r & v) != (v & (~v + 5'd1)))
+        cov_fa_rr_override = cov_fa_rr_override + 1;
+      if (!FastArbiter_27_reset && g_FastArbiter_27.io_out_valid && !FastArbiter_27_io_out_ready)
+        cov_fa_stall = cov_fa_stall + 1;
+      if (!FastArbiter_27_reset && r[4] && v[4])
+        cov_fa_lane4 = cov_fa_lane4 + 1;
+      if (!IntBuffer_1_reset && (IntBuffer_1_auto_in_0 != g_IntBuffer_1.auto_out_0))
+        cov_irq_toggle = cov_irq_toggle + 1;
+    end
+  endtask
+
   initial begin
     zero_inputs();
     FastArbiter_27_reset = 1'b1;
@@ -760,9 +790,28 @@ module tb;
       @(negedge clock);
       cycle = cycle + 1;
       drive_inputs();
+      if (rst_left > 0)
+        rst_left = rst_left - 1;
+      else if ($urandom % 512 == 0) begin
+        rst_left = 1 + $urandom % 3;
+        cov_rst_pulses = cov_rst_pulses + 1;
+      end
+      FastArbiter_27_reset = (rst_left > 0);
+      IntBuffer_1_reset = (rst_left > 0);
+      IntBuffer_2_reset = (rst_left > 0);
+      #1;
+      sample_coverage();
+      // mid-cycle compare: an async reset raised at this negedge must already have cleared state
+      compare_outputs();
       @(posedge clock);
       #1;
       compare_outputs();
+    end
+    $display("COVERAGE rst_pulses=%0d fa_rr_override=%0d fa_stall=%0d fa_lane4=%0d irq_toggle=%0d",
+             cov_rst_pulses, cov_fa_rr_override, cov_fa_stall, cov_fa_lane4, cov_irq_toggle);
+    if (cov_rst_pulses == 0 || cov_fa_rr_override == 0 || cov_fa_stall == 0 || cov_fa_lane4 == 0 || cov_irq_toggle == 0) begin
+      $display("COVERAGE HOLE: at least one counter is zero");
+      errors = errors + 1;
     end
     $display("Arithmetic200c UT: checks=%0d errors=%0d", checks, errors);
     if (errors == 0) $display("TEST PASSED");

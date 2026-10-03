@@ -1,6 +1,8 @@
 MODULE = Pipeline200c
 RTL_DIR = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/uncore/Arbiter16_TLBundleD.sv \
+RTL_SRCS = $(RTL_DIR)/frontend/xs_FixedPriorityArbiter_core.sv \
+           $(RTL_DIR)/common/xs_OverrideableQueue_core.sv \
+           $(RTL_DIR)/uncore/Arbiter16_TLBundleD.sv \
            $(RTL_DIR)/frontend/Arbiter3_PfGenReq.sv \
            $(RTL_DIR)/frontend/Arbiter4_L2ToL1Hint.sv \
            $(RTL_DIR)/frontend/Arbiter4_PrefetchReq.sv \
@@ -27,6 +29,12 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Arbiter16_TLBundleD.sv \
               $(GOLDEN_RTL)/SatpFlushMod.sv
 FM_VARIANTS = Arbiter16_TLBundleD Arbiter3_PfGenReq Arbiter4_L2ToL1Hint Arbiter4_PrefetchReq CSA4to2_15 MbistIntfFrontend MbistIntfMemBlk NfMappedElemIdx OverrideableQueue OverrideableQueue_1 PipelineRegModule_6 SatpFlushMod
 PORTLINT_ORDER = fail
+# 不合并重复寄存器：比较点 = 寄存器位 + 输出位，fm_predict 模型精确适用（加强，不是放宽）。
+FM_MERGE_DUP = false
 include ../../../scripts/ut_common.mk
-VCS += +define+SYNTHESIS
+# initreg：编译期开机制、运行期选取值（两处都要给，见 CONVENTIONS）。
+# 三档：INITREG=0（全 0）/ random（seed 1 退化为全 1）/ <seed>017（与 ntb 种子无关的真随机）。
+INITREG ?= 0
+VCS += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+$(INITREG)
 VCS_ARCH_OVERRIDE := linux
