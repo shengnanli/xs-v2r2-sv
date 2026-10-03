@@ -79,3 +79,68 @@ Close 的 op1[23] 被 FM 归回 constant_reg（4），passing 与预测逐位相
 全零 / 无 dont_verify、无 elab147、无黑盒 / tcl 进 sidecar script_closure。首跑 receipt 留档 `evidence/3e88b302e777/`。
 
 复跑：`PROOF_COMMIT=<commit> bash scripts/run_proof.sh FpAddPathF32W16 <T> < /dev/null`
+
+## 2. fpsqrt_r16_block（UT 目录 `verif/ut/fpsqrt_r16_block`）
+
+### 2.1 结构与 child 处置
+
+golden 3575 行（firtool 平铺，`_GEN_`/`_T_` 1386 处）→ impl `rtl/backend/fpsqrt_r16_block.sv` 668 行，`_GEN_`/`_T_` 0。
+可读核分三层：`xs_fpsqrt_r16_step`（一级 radix-4：×4 + 段切口、5 候选投机 CSA、on-the-fly 的 Q/QM 候选、
+r4_qds_cg 比较常数、按数位 Mux1H）→ `xs_fpsqrt_r16_lane`（s0 r4_qds → step → s1 r4_qds_spec → step → 下一拍余数估计
+预算）→ `xs_fpsqrt_r16_block_core`（拆包 4 条 lane、段切口位置、拼包）；golden 同名 wrapper 逐 lane 标量端口 ↔ 数组。
+child：r4_qds ×4 / r4_qds_spec ×4 / r4_qds_cg ×40，coverage 第 3 列均 PROVEN_DIRECT → 两侧白盒（ref golden / impl 重写件）。
+纯组合，零寄存器，无 fm_pins。
+
+### 2.2 UT（commit `d35151c72` 的字节，200k 次组合调用）
+
+差分（golden vs `_xs`，28 个输出口）+ **独立 oracle**：闭环开方——按 Scala fpsqrt_r16 的初始化公式为每个元素
+（f16×4 / f32×2 / f64×1）装初态，把重写件输出喂回迭代 3/6/13 次，再逐元素与 tb 内逐位恢复法的整数平方根
+`isqrt(X·2^(F+1))` 对照（余数符号选 Q / QM，且 余数==0 ⇔ 完全平方）。
+
+| seed | `+vcs+initreg+0` | `+random` | `+<seed>017` |
+|---|---|---|---|
+| 1  | checks=5655565 errors=0 PASSED | 同 PASSED | PASSED |
+| 7  | checks=5656681 errors=0 PASSED | 同 PASSED | PASSED |
+| 42 | checks=5656172 errors=0 PASSED | 同 PASSED | PASSED |
+
+覆盖（seed 1）：闭环 f16/f32/f64 = 7936/7873/8075 次，oracle 结果取 Q / QM = 34298 / 21267，完全平方 17530；
+4 条 lane 的 s0/s1 五个数位全出现；28 个输出逐位翻转（结构恒定位除外：nxt_f_r_c_o[1]、cg 查表恒定位）。
+复跑：`cd verif/ut/fpsqrt_r16_block && make run SEED=<s> INITREG=<0|random|<s>017>`
+
+### 2.3 跑前预测
+
+| 目标 | 模型 | 预测 passing | 其余 |
+|---|---:|---:|---|
+| fpsqrt_r16_block | 413（0 寄存器 + 413 输出位） | **413** | failing / unverified / unmatched / unread 0，constant_reg 0，无黑盒，无 vmucp，SUCCEEDED |
+
+可能出错处：纯组合大锥（4 lane × 2 级 × 5 候选），若 FM 不收敛按规范 30 分钟采样。登记前未做 FM 试跑。
+
+## 3. fpsqrt_r16（UT 目录 `verif/ut/fpsqrt_r16`）
+
+### 3.1 结构与 child 处置
+
+golden 559 行（`_GEN_`/`_T_` 57）→ impl `rtl/backend/fpsqrt_r16.sv` 441 行，`_GEN_`/`_T_` 0。§0 寄存器 / §1 预解码 /
+§2 迭代初始化 / §3 child / §4 状态机 / §5 后处理分节；寄存器集合与位宽逐字对齐 golden（与已签的 fpsqrt_vector_r16 同一结构）。
+child：lzc、r4_qds_cg（PROVEN_DIRECT）、fpsqrt_r16_block（本 lane §2）连同 r4_qds*，全部两侧白盒。
+
+### 3.2 UT（commit `8a71cf568` 的字节，200k 拍）
+
+差分（start_ready/finish_valid 每拍比，结果/标志在 finish_valid 时比）+ **独立 IEEE oracle**（tb 内逐位恢复法整数平方根，
+规格化 + 偶指数 + 按 rm 舍入，特殊值按 IEEE；仅 ±0/+Inf/尾数全 0 的 NX 不比，原因见 tb 头）。
+
+| seed | `+0` | `+random` | `+<seed>017` |
+|---|---|---|---|
+| 1  | checks=509384 errors=0 PASSED | PASSED | PASSED |
+| 7  | checks=509752 errors=0 PASSED | PASSED | PASSED |
+| 42 | checks=509616 errors=0 PASSED | PASSED | PASSED |
+
+覆盖（seed 1）：finish 40298，oracle 比对 36139，余数为负 13637，舍入进位溢出 149，flush 打断迭代 1323，非规格数两拍初始化 3459；
+3 格式 × 5 rm、9 类操作数 × 3 格式全过门槛；输出逐位翻转。
+
+### 3.3 跑前预测
+
+| 目标 | 模型 | 预测 constant_reg | 预测 passing | 其余 |
+|---|---:|---:|---:|---|
+| fpsqrt_r16 | 385（314 + 71） | 1（`m_pos_1_for_nxt_cycle_s0_qds_0_q[0]`：cg 表里 m_pos_1 的 bit0 恒 0） | **384** | unread 0 / failing 0 / unmatched 0 / 无黑盒 / SUCCEEDED |
+
+可能出错处：重写件寄存器名与 golden 不同（nr_f_r_7b_q vs nr_f_r_7b_for_nxt_cycle_s0_qds_0_q 等），靠签名配对；若出现 unmatched 先查配对。
