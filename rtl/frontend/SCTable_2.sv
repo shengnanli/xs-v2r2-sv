@@ -4,7 +4,7 @@
 // 核体与机制说明见 SCTable.sv（package sctable_pkg + xs_SCTable_core）。
 // 本文件只有 golden 同名 wrapper：端口展平 + 本档 MBIST 流水 MbistPipeSc_2。
 // =============================================================================
-// BEGIN GENERATED(sctable_wrapper) —— scripts/gen_sctable.py 生成，勿手改
+// BEGIN GENERATED(sctable-family) —— scripts/gen_sctable.py 生成，勿手改
 module SCTable_2
   import sctable_pkg::*;
 (
@@ -145,4 +145,4 @@ module SCTable_2
   );
 
 endmodule
-// END GENERATED(sctable_wrapper)
+// END GENERATED(sctable-family)

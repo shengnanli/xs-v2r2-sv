@@ -18,74 +18,6 @@
 // valid 一旦置位就不再清（只有复位能清），与 golden 一致。
 // golden 的 XSError（多重命中）断言在 SYNTHESIS 下不存在，本文件不写。
 // =============================================================================
-module RegionWays(
-  input         clock,
-  input         reset,
-  input  [3:0]  io_req_pointer_0,
-  input  [3:0]  io_req_pointer_1,
-  input  [3:0]  io_req_pointer_2,
-  input  [3:0]  io_req_pointer_3,
-  input  [3:0]  io_req_pointer_4,
-  output        io_resp_hit_0,
-  output        io_resp_hit_1,
-  output        io_resp_hit_2,
-  output        io_resp_hit_3,
-  output        io_resp_hit_4,
-  output [29:0] io_resp_region_0,
-  output [29:0] io_resp_region_1,
-  output [29:0] io_resp_region_2,
-  output [29:0] io_resp_region_3,
-  output [29:0] io_resp_region_4,
-  input  [29:0] io_update_region_0,
-  input  [29:0] io_update_region_1,
-  output        io_update_hit_0,
-  output        io_update_hit_1,
-  output [3:0]  io_update_pointer_0,
-  output [3:0]  io_update_pointer_1,
-  input         io_write_valid,
-  input  [29:0] io_write_region,
-  output [3:0]  io_write_pointer
-);
-
-  logic [3:0]  req_pointer   [5];
-  logic        resp_hit      [5];
-  logic [29:0] resp_region   [5];
-  logic [29:0] update_region [2];
-  logic        update_hit    [2];
-  logic [3:0]  update_pointer[2];
-
-  assign req_pointer = '{io_req_pointer_0, io_req_pointer_1, io_req_pointer_2,
-                         io_req_pointer_3, io_req_pointer_4};
-  assign update_region = '{io_update_region_0, io_update_region_1};
-
-  xs_RegionWays_core u_core (
-    .clock          (clock),
-    .reset          (reset),
-    .req_pointer    (req_pointer),
-    .resp_hit       (resp_hit),
-    .resp_region    (resp_region),
-    .update_region  (update_region),
-    .update_hit     (update_hit),
-    .update_pointer (update_pointer),
-    .write_valid    (io_write_valid),
-    .write_region   (io_write_region),
-    .write_pointer  (io_write_pointer)
-  );
-
-  assign {io_resp_hit_0, io_resp_hit_1, io_resp_hit_2, io_resp_hit_3, io_resp_hit_4} =
-         {resp_hit[0], resp_hit[1], resp_hit[2], resp_hit[3], resp_hit[4]};
-  assign io_resp_region_0    = resp_region[0];
-  assign io_resp_region_1    = resp_region[1];
-  assign io_resp_region_2    = resp_region[2];
-  assign io_resp_region_3    = resp_region[3];
-  assign io_resp_region_4    = resp_region[4];
-  assign io_update_hit_0     = update_hit[0];
-  assign io_update_hit_1     = update_hit[1];
-  assign io_update_pointer_0 = update_pointer[0];
-  assign io_update_pointer_1 = update_pointer[1];
-
-endmodule
-
 module xs_RegionWays_core #(
   parameter int unsigned NUM_ENTRIES = 16,
   parameter int unsigned REGION_W    = 30,
@@ -202,5 +134,73 @@ module xs_RegionWays_core #(
       regions[write_pointer].region <= write_region;
     end
   end
+
+endmodule
+
+module RegionWays(
+  input         clock,
+  input         reset,
+  input  [3:0]  io_req_pointer_0,
+  input  [3:0]  io_req_pointer_1,
+  input  [3:0]  io_req_pointer_2,
+  input  [3:0]  io_req_pointer_3,
+  input  [3:0]  io_req_pointer_4,
+  output        io_resp_hit_0,
+  output        io_resp_hit_1,
+  output        io_resp_hit_2,
+  output        io_resp_hit_3,
+  output        io_resp_hit_4,
+  output [29:0] io_resp_region_0,
+  output [29:0] io_resp_region_1,
+  output [29:0] io_resp_region_2,
+  output [29:0] io_resp_region_3,
+  output [29:0] io_resp_region_4,
+  input  [29:0] io_update_region_0,
+  input  [29:0] io_update_region_1,
+  output        io_update_hit_0,
+  output        io_update_hit_1,
+  output [3:0]  io_update_pointer_0,
+  output [3:0]  io_update_pointer_1,
+  input         io_write_valid,
+  input  [29:0] io_write_region,
+  output [3:0]  io_write_pointer
+);
+
+  logic [3:0]  req_pointer   [5];
+  logic        resp_hit      [5];
+  logic [29:0] resp_region   [5];
+  logic [29:0] update_region [2];
+  logic        update_hit    [2];
+  logic [3:0]  update_pointer[2];
+
+  assign req_pointer = '{io_req_pointer_0, io_req_pointer_1, io_req_pointer_2,
+                         io_req_pointer_3, io_req_pointer_4};
+  assign update_region = '{io_update_region_0, io_update_region_1};
+
+  xs_RegionWays_core u_core (
+    .clock          (clock),
+    .reset          (reset),
+    .req_pointer    (req_pointer),
+    .resp_hit       (resp_hit),
+    .resp_region    (resp_region),
+    .update_region  (update_region),
+    .update_hit     (update_hit),
+    .update_pointer (update_pointer),
+    .write_valid    (io_write_valid),
+    .write_region   (io_write_region),
+    .write_pointer  (io_write_pointer)
+  );
+
+  assign {io_resp_hit_0, io_resp_hit_1, io_resp_hit_2, io_resp_hit_3, io_resp_hit_4} =
+         {resp_hit[0], resp_hit[1], resp_hit[2], resp_hit[3], resp_hit[4]};
+  assign io_resp_region_0    = resp_region[0];
+  assign io_resp_region_1    = resp_region[1];
+  assign io_resp_region_2    = resp_region[2];
+  assign io_resp_region_3    = resp_region[3];
+  assign io_resp_region_4    = resp_region[4];
+  assign io_update_hit_0     = update_hit[0];
+  assign io_update_hit_1     = update_hit[1];
+  assign io_update_pointer_0 = update_pointer[0];
+  assign io_update_pointer_1 = update_pointer[1];
 
 endmodule

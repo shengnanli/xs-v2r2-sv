@@ -3,7 +3,7 @@
 """gen_sctable.py —— SCTable 家族（SCTable / _1 / _2 / _3）的 wrapper 机械派生区。
 
 生成内容（全部从 G1 golden 端口表机械推出）：
-  · rtl/frontend/SCTable.sv 里 `BEGIN GENERATED(sctable_wrapper)` 区：历史长度 0 那一档的 wrapper；
+  · rtl/frontend/SCTable.sv 里 `BEGIN GENERATED(sctable-family)` 区：历史长度 0 那一档的 wrapper；
   · rtl/frontend/SCTable_1.sv / _2.sv / _3.sv：整份薄文件（只有 wrapper）。
 wrapper 做三件事：golden 同名端口表 -> 打包/展平给 xs_SCTable_core（核在 SCTable.sv）；
 例化本档的 MBIST 流水 MbistPipeSc_N（各档只差 MBIST 阵列编号，模块名不同所以放 wrapper）。
@@ -175,8 +175,8 @@ def wrapper(mod, hist_len, pipe):
     return "\n".join(L) + "\n"
 
 
-BEGIN = "// BEGIN GENERATED(sctable_wrapper) —— scripts/gen_sctable.py 生成，勿手改\n"
-END = "// END GENERATED(sctable_wrapper)\n"
+BEGIN = "// BEGIN GENERATED(sctable-family) —— scripts/gen_sctable.py 生成，勿手改\n"
+END = "// END GENERATED(sctable-family)\n"
 
 
 def thin_file(mod, hist_len, pipe):

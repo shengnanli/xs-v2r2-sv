@@ -290,7 +290,7 @@ module xs_SCTable_core
 
 endmodule
 
-// BEGIN GENERATED(sctable_wrapper) —— scripts/gen_sctable.py 生成，勿手改
+// BEGIN GENERATED(sctable-family) —— scripts/gen_sctable.py 生成，勿手改
 module SCTable
   import sctable_pkg::*;
 (
@@ -429,4 +429,4 @@ module SCTable
   );
 
 endmodule
-// END GENERATED(sctable_wrapper)
+// END GENERATED(sctable-family)
