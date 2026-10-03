@@ -1,0 +1,9 @@
+{
+  "target": "skidBufferConnect",
+  "ut": "skidBufferConnect",
+  "regs": 1775,
+  "outs": 1776,
+  "expected": 3551,
+  "merge_dup": "false",
+  "model_applicable": true
+}

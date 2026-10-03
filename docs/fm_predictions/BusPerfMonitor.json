@@ -1,0 +1,9 @@
+{
+  "target": "BusPerfMonitor",
+  "ut": "BusArbLeaves",
+  "regs": 0,
+  "outs": 2719,
+  "expected": 2719,
+  "merge_dup": "false",
+  "model_applicable": true
+}

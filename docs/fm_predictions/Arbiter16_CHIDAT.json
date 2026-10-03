@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter16_CHIDAT",
+  "ut": "MMIOBridgeLeaves",
+  "regs": 0,
+  "outs": 371,
+  "expected": 371,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "PTWRepeaterNB",
+  "ut": "PTWRepeaterNB",
+  "regs": 314,
+  "outs": 314,
+  "expected": 628,
+  "merge_dup": "false",
+  "model_applicable": true
+}

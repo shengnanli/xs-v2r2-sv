@@ -1,0 +1,9 @@
+{
+  "target": "TLXbar_5",
+  "ut": "TLXbar_5",
+  "regs": 64,
+  "outs": 4382,
+  "expected": 4446,
+  "merge_dup": "false",
+  "model_applicable": true
+}

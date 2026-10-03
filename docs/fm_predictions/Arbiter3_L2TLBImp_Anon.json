@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter3_L2TLBImp_Anon",
+  "ut": "BusArbLeaves",
+  "regs": 0,
+  "outs": 1120,
+  "expected": 1120,
+  "merge_dup": "false",
+  "model_applicable": true
+}
