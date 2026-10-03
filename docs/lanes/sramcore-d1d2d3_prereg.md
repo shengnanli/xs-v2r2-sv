@@ -58,3 +58,21 @@ DataStorage_2 若 passing 与预测不同 = 该位可观测，按真 bug 报首�
 
 - `python3 scripts/test_disabled_empty_module.py`：1 正 + 14 负（sha 不符、多/少实例、impl 有寄存器/输出/例化、别的 design、u 非 e、混入别的 unresolved、父级不是 DCache、父级 unmatched/native/dont_verify、golden 正文有 output）
 - `python3 scripts/test_audit_ram_manual_review.py`：原 1 正 7 负 + 父级范围 S0（6 个授权父级）/ S1 别的父级 / S2 别的 ram / S3 别的路径 / S4 不对称 / S5 一侧两个 / S6 class 不对 / C0 HEAD 证书有效 / C1 证书不在 commit / C2 impl 闭包变 / C3 golden 闭包变 / C4 G1 不同源
+
+## 7. 跑后对账（只追加，不改上文）
+
+FM（`bash scripts/run_proof.sh <ut> <T> < /dev/null`，全部 native SUCCEEDED、判定 SUCCEEDED，failing/unverified/aborted/unmatched/unread 0，无 dont_verify）：
+
+| 目标 | 预测 passing | 实测 | constant_reg | 黑盒对象 | evidence |
+|---|---|---|---|---|---|
+| DCache | 82086 | 82086 | 411 | 84（array_7_ext 64 + array_8_ext 16 + StorePipe 4） | evidence/f009d7b3c6d1/DCache（正式）；ce9d0692bc8e/DCache 同读数，但当时登记 82495 未计 StorePipe BBPin，check 余额 −2 判红，故改模型、重登记、重证 |
+| Slice / _1 / _2 / _3 | 68305 / 68308 / 68310 / 68311 | 同左 | 1540 | 24 | evidence/ce9d0692bc8e/Slice* |
+| DataStorage / _1 / _2 / _3 | 2532 / 2533 / 2534 / 2534 | 同左 | — | 8 | evidence/ce9d0692bc8e/DataStorage* |
+| GatedSplittedSRAM ×4 | 2272 | 2272 | — | 8 | evidence/ce9d0692bc8e/GatedSplittedSRAM* |
+
+DCache 实测 BBPin 3450 = 模型 3448 + StorePipe 2 实例 × 1 位输入（fm_passing_model 修正后模型 82497，差 411 = constant_reg）。
+DataStorage_2 位宽修正前后 passing 均为 2534：补回的 bit5 不可观测（golden 只到 mbistBd_array 探针 wire），不是功能 bug，按 golden 位宽修正。
+`python3 scripts/fm_predict.py check <13 个目标>` rc=0「全部对上」；`python3 scripts/check_lane_receipts.py <worktree>` rc=0。
+
+UT（200k 拍，errors 全 0）：DCache 9/9（checks=199977/档，cov_fail=0）；Slice 9/9（checks=267200000/档，cover_zero=0）；
+DataStorage 9/9（checks=3200000/档，rd/wr/err 覆盖各变体约 5 万/5 万/3 万）。D1 前的 SRAMTemplate（holdRead=1 变体）20k 冒烟也 PASS。
