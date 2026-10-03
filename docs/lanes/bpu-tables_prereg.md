@@ -167,3 +167,49 @@ M7 hit 不受 ubtb_enable 门控：30k 拍 errors=0（关使能的阶段没抽�
 | failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
 | unmatched 六项 / 黑盒 | 全 0 / 无 |
 | mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / true / false |
+
+## 5. ITTage（golden 2,429 行 / child：ITTageTable ×5、RegionWays、MaxPeriodFibonacciLFSR）
+
+### 5.1 结构与子模块处置
+- `rtl/frontend/ITTage.sv`（1623 行，`_GEN_`/`_T_` = 0，带本文件导航）：package ittage_pkg（offset / update 口 / meta 结构体，8 位饱和、
+  PriorityEncoder(全 0→7)、LowerMask）+ `xs_ITTage_core`（§0 公共外壳 PC / §1 S1 是否查表 / §2 S2 provider·alt 选择、目标拼接、分配候选 /
+  §3 S3 打拍与 meta / §4 update 锁存 / §5 更新决策与 tick / §6 各表 update 口）+ golden 同名 wrapper（scripts/gen_bpu_wrappers.py 生成：
+  端口表、7 个子实例（实例名同 golden）、透传赋值；每根子模块连线要么是 golden 原样接的顶层口，要么被规则认领，否则拒绝生成）。
+- ★照搬的怪癖★：provider/alt 都不足时 first/second 取第 0 张表的数据（ParallelSelectTwo 归并树的结果）；分配 PriorityEncoder 全 0 时为 7；
+  各表 update 口的 pc 取未锁存的 io.update.bits.pc；DontCare 字段（分配项 correct/oldCtr、alt 项 u）按 firtool 取值。
+- child：ITTageTable/_1.._4（PROVEN_IN_CONE，重写件）、RegionWays / LFSR（本 lane）⇒ 两侧白盒。ITTageTable 的下一层两侧共读 golden；
+  厂商叶子 array_6_ext 两侧黑盒（.v 只给 VCS）。
+- 写核时修过两处 FM 可见问题：按表号变量下标索引 5 项数组触发 FMR_ELAB-147（改逐表比较选通）；各表 update 口寄存器原为结构体数组，
+  改成按字段数组（钉点可写、Matching 不再超时）。
+
+### 5.2 UT（verif/ut/ITTage；逐拍比全部输出 2728 位；在 `35936708` 的 RTL 字节上跑，之后 ITTage 相关 RTL 未改）
+后两档初值用 initreg 配置文件（其余随机、厂商 SRAM 行为模型存储钉 0：表项 SRAM 无复位，两实例读"从没写过"的条目时随机值不同 ——
+tb 先写后读契约；不钉时 seed 42 random 档开比第一拍 meta 目标位即不同）。
+
+| seed | `+vcs+initreg+0` | random（配置文件） | `<seed>017`（配置文件） |
+|---|---|---|---|
+| 1  | checks=35656276 errors=0 PASS | checks=35656276 errors=0 PASS | (1017) checks=35656276 errors=0 PASS |
+| 7  | checks=35656276 errors=0 PASS | checks=35656276 errors=0 PASS | (7017) checks=35656276 errors=0 PASS |
+| 42 | checks=35656276 errors=0 PASS | checks=35656276 errors=0 PASS | (42017) checks=35656276 errors=0 PASS |
+
+比较窗口：前 3000 拍只做不触发表更新的 update，把按各自有效位锁存的 updateMeta_* 灌成确定值；之后等四份 s2_fire 都见过再开比（armed_at=3004）。
+覆盖（seed 1）：provider 命中 23805 / alt 命中 22558 / 用 alt 目标 7709 / 区域表命中 95774 / 分配 8725 / 写 RegionWays 8471 / reset_u 33 /
+更新 provider 37111 / 更新 alt 2368；结构常量位（meta 高 334 位、alt 表号最高位、pred_cycle bit16+）按结构豁免，其余输出位都见过 0/1。
+变异（沙箱；seed 1 / initreg 0 / 40k 拍；基线 checks=6696276 errors=0）：M1 provider 取最短命中 CAUGHT(45175) / M2 不自信也不用 alt CAUGHT(12484) /
+M3 忽略 usePCRegion CAUGHT(31168) / M4 tick 方向反 CAUGHT(708) / M5 表更新 pc 用锁存那份 CAUGHT(69657) / M6 分配不用 LFSR CAUGHT(11735) /
+M7 alt 项也更新 u CAUGHT(698) / M8 漏 ftbCloseReq CAUGHT(13362)。
+
+### 5.3 lane 内非正式试跑（diagnostic-full，不出证）
+1. 不钉（commit `b3760421`）：Matching 30 分钟未结束，按后台时限停掉（未出数）。
+2. 钉本层全部 3301 位（`verif/ut/ITTage/fm_pins_pre.tcl`）、关 vmucp（commit `35936708`，array_6_ext 当时两侧读成白盒）：native SUCCEEDED，passing 84846，
+   failing 0，unmatched 0，unread 2172 全部 matched_nc（各表 update 口 ghist/pc 高位、update_ghist_r / update_r_pc 未读位、公共外壳 PC 未读位、子模块 MBIST 地址寄存器等）。
+3. array_6_ext 改回两侧黑盒 + 开 vmucp（commit `cee28122`）：native SUCCEEDED，passing **10426**，unread 空，`BPU_PINS: 3301 / 3301 pinned`。
+
+### 5.4 跑前预测（★跑完不许改本节★，docs/fm_predictions/ITTage.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | 模型 **10426**（regs 6402 + outs 2728，另含黑盒引脚）；预计 10426，差 0 |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched 六项 / 黑盒 | 全 0 / 仅厂商叶子 array_6_ext（vendor） |
+| mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / true / false |
