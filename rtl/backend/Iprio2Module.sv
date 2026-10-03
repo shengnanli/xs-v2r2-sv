@@ -15,8 +15,6 @@ module Iprio2Module(
   logic [7:0] prio_vsei;
   logic [7:0] prio_sgei;
   logic [7:0] prio_lcofi;
-  logic [7:0] prio_14;
-  logic [7:0] prio_15;
 
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
@@ -24,15 +22,11 @@ module Iprio2Module(
       prio_vsei <= 8'h00;
       prio_sgei <= 8'h00;
       prio_lcofi <= 8'h00;
-      prio_14 <= 8'h00;
-      prio_15 <= 8'h00;
     end else if (w_wen) begin
       prio_sei <= w_wdata[15:8];
       prio_vsei <= w_wdata[23:16];
       prio_sgei <= w_wdata[39:32];
       prio_lcofi <= w_wdata[47:40];
-      prio_14 <= w_wdata[55:48];
-      prio_15 <= w_wdata[63:56];
     end
   end
 

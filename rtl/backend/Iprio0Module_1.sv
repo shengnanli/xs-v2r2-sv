@@ -69,26 +69,20 @@ module Iprio0Module_1(
 
   logic [7:0] prio_ssi;
   logic [7:0] prio_vssi;
-  logic [7:0] prio_msi;
   logic [7:0] prio_sti;
   logic [7:0] prio_vsti;
-  logic [7:0] prio_mti;
 
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       prio_ssi <= 8'h00;
       prio_vssi <= 8'h00;
-      prio_msi <= 8'h00;
       prio_sti <= 8'h00;
       prio_vsti <= 8'h00;
-      prio_mti <= 8'h00;
     end else if (w_wen) begin
       prio_ssi <= w_wdata[15:8];
       prio_vssi <= w_wdata[23:16];
-      prio_msi <= w_wdata[31:24];
       prio_sti <= w_wdata[47:40];
       prio_vsti <= w_wdata[55:48];
-      prio_mti <= w_wdata[63:56];
     end
   end
 
