@@ -613,7 +613,47 @@ CHILD_PINS = [   # (UT 目录, 本层实例名, 变体 -> child golden 名)
     ('L2Slice', 'mbistPl', lambda v: 'L2Slice' + SFX[v]),
 ]
 PINS_TSV = REPO / 'verif' / 'ut' / 'Slice' / 'child_pins.tsv'
-PAIR_RE = re.compile(r'Ref\s+(\w+)\s+Name\(Last\)\s+r:/WORK/(\w+)/(\S+)\n\s+Impl\s+(\w+)\s+Name\(Last\)\s+i:/WORK/(\w+)/(\S+)')
+# 配对方式 Name / Func / User 都收（Func = FM 按功能配上的、User = child 自己的 set_user_match）。
+PAIR_RE = re.compile(r'Ref\s+(\w+)\s+(?:Name|Func|User)\(Last\)\s+r:/WORK/(\w+)/(\S+)\n\s+Impl\s+(\w+)\s+(?:Name|Func|User)\(Last\)\s+i:/WORK/(\w+)/(\S+)')
+# child 自带的钉点文件：钉的对象在 child 里可能是 not-compared（unread），不进 matched.rpt，
+# 另用 tclsh 执行该文件收割（set_user_match 换成只打印的桩）。
+CHILD_PIN_FILES = {'MSHRCtl': 'MSHRCtl', 'GrantBuffer': 'GrantBuffer', 'RequestBuffer': 'RequestBuffer',
+                   'Directory': 'Directory', 'DataStorage': 'DataStorage'}
+TCL_STUB = r'''
+proc set_user_match {r i} { puts "PIN\t$r\t$i"; return 1 }
+proc error {msg} { puts stderr "child pin file error: $msg"; exit 9 }
+set top [lindex $argv 0]
+source [lindex $argv 1]
+'''
+
+
+def child_pin_file_pairs(child, ut):
+    import subprocess
+    import tempfile
+    pf = REPO / 'verif' / 'ut' / ut / 'fm_pins_pre.tcl'
+    if ut not in CHILD_PIN_FILES or not pf.exists():
+        return []
+    with tempfile.NamedTemporaryFile('w', suffix='.tcl', delete=False) as f:
+        f.write(TCL_STUB)
+        stub = f.name
+    try:
+        r = subprocess.run(['tclsh', stub, child, str(pf)], stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, universal_newlines=True)
+    finally:
+        os.unlink(stub)
+    if r.returncode != 0:
+        raise SystemExit('收割 %s 钉点失败: %s' % (pf, r.stderr.strip()))
+    out = []
+    rp, ip = 'r:/WORK/%s/' % child, 'i:/WORK/%s/' % child
+    for ln in r.stdout.splitlines():
+        if ln.startswith('PIN\t'):
+            _, rr, ii = ln.split('\t')
+            if not rr.startswith(rp) or not ii.startswith(ip):
+                raise SystemExit('%s: 钉点路径前缀不对: %s %s' % (pf, rr, ii))
+            out.append((rr[len(rp):], ii[len(ip):]))
+    return out
+
+
 BIT_RE = re.compile(r'^(.*)\[(\d+)\]$')
 
 
@@ -625,7 +665,12 @@ def harvest_child(child, ut):
     txt = rpt.read_text()
     groups = collections.OrderedDict()
     n = 0
-    for k1, t1, r, k2, t2, i in PAIR_RE.findall(txt):
+    triples = PAIR_RE.findall(txt)
+    seen_r = {r for _, _, r, _, _, _ in triples}
+    for r, i in child_pin_file_pairs(child, ut):
+        if r not in seen_r:
+            triples.append(('DFF', child, r, 'DFF', child, i))
+    for k1, t1, r, k2, t2, i in triples:
         if t1 != child or t2 != child:
             raise SystemExit('%s: 顶层名不是 %s' % (rpt, child))
         if not k1.startswith('DFF') and k1 != 'LAT':
