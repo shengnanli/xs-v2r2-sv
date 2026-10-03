@@ -67,3 +67,20 @@ M6 CS2 舍入判定加"b 非零"门控（b 指数为 0 时 exp_equal 恒为 1，
    但 CS_0123 那两份的 bit11 一个死一个活，已钉死死的那份（U_Lshift_io_src_r[11] ↔ cs_selected_q[11]）。
 3. far 预测无常量位、无死位；若出现，说明 FS1 的 bit0 链或 sticky 原料有我没看到的 DCE。
 4. 本节登记前没做过任何 FM 试跑。
+
+## 对账 §1（证明 commit `114e5cc01`，登记 commit 同一个——登记在先、证明钉在登记 commit 上）
+
+| 目标 | 结果 | 模型 / 预测 / 实测 passing | constant_reg | unread（unread_notcompared） | unmatched（六项） | failing / unverified | 黑盒 / dont_verify / elab147 | receipt.json sha256 |
+|---|---|---|---:|---:|---:|---|---|---|
+| FarPathF16Pipeline | SUCCEEDED | 125 / 125 / **125**（逐位相等） | 0 | 0 | 0 | 0 / 0 | 0 / 无 / 无 | `0795b6bfb8428220a5f7ad4d6b7088a973ca875e7a57c073cda73bf61fb6b530` |
+| ClosePathF16Pipeline | SUCCEEDED | 114 / 113 / **113** | 1 | 0（vmucp 开） | 0 | 0 / 0 | 0 / 无 / 无 | `22f7038b8d7768265b238bb149a4fb246330562ac356d6d2ce4e96c924192661` |
+
+`python3 scripts/fm_predict.py check FarPathF16Pipeline ClosePathF16Pipeline` rc=0（Far 逐位相等；Close 差 1 = constant_reg 1）。
+Close 的 constant_reg 1 个：FM 只给计数，逐名归属按 golden 字面（`U_CS4_io_adder_op1_r <= {1'h0, …}`，bit10 恒 0）推定，未另跑诊断取名。
+vmucp 六条：精确绑定（钉点回显 `FPADD16_PIN_END top=ClosePathF16Pipeline n=3 expect=3`）/ 双射（3↔3 字面配对）/
+真比较（unread_notcompared 0，两个死位 op0[10]、src[11] 进入 passing：113 = 114 − 1 constant）/ 全零 / 无 dont_verify、无 elab147、无黑盒、
+无放宽 appvar / `verif/fm_target_config/ClosePathF16Pipeline.tcl` 进 sidecar script_closure（evidence/114e5cc0185f/ClosePathF16Pipeline/sidecar/sourced_002_ClosePathF16Pipeline.tcl）。
+
+receipt：`evidence/114e5cc0185f/{FarPathF16Pipeline,ClosePathF16Pipeline}/`（已 `git add -f`，commit `64105fa3a`）。
+复跑：`PROOF_COMMIT=114e5cc01 bash scripts/run_proof.sh FpAddPathF16 <FarPathF16Pipeline|ClosePathF16Pipeline> < /dev/null`
+父级 FloatAdderF16Pipeline 为 UNPROVEN（无已签父级，无重证）。
