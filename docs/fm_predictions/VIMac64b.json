@@ -1,0 +1,9 @@
+{
+  "target": "VIMac64b",
+  "ut": "VIMac64b",
+  "regs": 929,
+  "outs": 72,
+  "expected": 1001,
+  "merge_dup": "false",
+  "model_applicable": true
+}

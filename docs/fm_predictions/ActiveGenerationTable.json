@@ -1,0 +1,9 @@
+{
+  "target": "ActiveGenerationTable",
+  "ut": "ActiveGenerationTable",
+  "regs": 1564,
+  "outs": 166,
+  "expected": 1730,
+  "merge_dup": "false",
+  "model_applicable": true
+}
