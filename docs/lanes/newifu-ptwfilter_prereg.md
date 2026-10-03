@@ -132,9 +132,40 @@ checks≈8.4e7 errors=0 cov_fail=0。
    重写核同样不建（`f3_pd_valid_q[15:1]`、`f3_hasHalfValid_q[15:2]`）；若建了会出现 impl 侧 unmatched。
 4. MMIO 状态寄存器 4 位、状态 12..15 两侧都是"保持"；若 FM 对 enum 做了 don't-care 化简，可能出现失配。
 
-## 4. PTWFilter
+## 4. PTWFilter（golden 2,565 行 / 150 端口；child DelayN_1 ×1）
 
-（起跑前在此追加）
+### 4.1 结构与子模块处置
+
+- 本配置下 PTWFilter 是 ITLB 用的老式 `PTWFilter`（Repeater.scala L441，Width=3 / Size=8 / FenceDelay=2），
+  **不例化 PTWFilterEntry**（那是 PTWNewFilter 的 child，归 mmuleaf lane）；唯一 child 是 flush 延迟 `DelayN_1`
+  （`docs/coverage_three_axis.tsv`：GOLDEN_REUSE / PROVEN_DIRECT，`rtl/common/DelayN_1.sv` + `xs_DelayN_core`），
+  两侧白盒，无黑盒。
+- 可读核 `rtl/mmu/PTWFilter.sv`：包内 `ptw_resp_hit`（PtwRespS2.hit 三种 s2xlate 的命中判据）/ §0 flush /
+  §1 状态 / §2 回应侧 / §3 请求第 0 拍 / §4 第 1 拍去重入队 / §5 发 L2TLB / §6 队列更新 / §7 回 ITLB。
+  L2TLB 回应打一拍的寄存器用一个 packed struct（`ptwResp_q`，字段名 = golden 后缀）。
+- 钉点 `verif/ut/PTWFilter/fm_pins_pre.tcl`：顶层 95 个 golden 寄存器 / **759 位**（struct 字段的 FM 对象名形如
+  `ptwResp_q_reg[s1_entry_tag][3]`，用 20 行玩具模块探针验过 set_user_match 能配上）；flush_delay 的 2 位交给
+  FM 自动配对（DelayN_1 两侧结构不同名：golden REG/REG_1 vs 重写 u_core/g_chain.stage）。
+
+### 4.2 UT（verif/ut/PTWFilter）
+
+受约束随机（回应照 golden 队列项造 tag，见 `gen.py` 文件头）。读数见「对账」。
+登记时已有的读数：seed 7 × +random 40k 拍 checks=2636106 errors=0（覆盖闸只差 flush_kills_resp 26<50，200k 拍够）。
+注：issue_filtered 路径（要发的项被上一拍回应覆盖）在本激励下几乎到不了，由 FM 兜。
+
+变异自检：见「对账」（登记时正在跑）。
+
+### 4.3 跑前预测
+
+| 项 | 预测 |
+|---|---|
+| 模型 passing | **1077**（闭包寄存器 761 = 顶层 759 + DelayN_1 2；输出 316），`docs/fm_predictions/PTWFilter.json` |
+| constant_reg / unread | **0 / 0**：所有寄存器都有读者（ptwResp 全部字段直通输出；getGpa 经 PriorityMux 输出） |
+| 实测 passing 预测 | **1077** |
+| 其余 | failing 0 / unverified 0 / unmatched 0 / 无黑盒 / 无 vmucp / SUCCEEDED |
+
+可能出错的地方：(1) 没做过 FM 试跑；(2) flush_delay 内部 2 位靠自动配对；(3) `ptw_resp_hit` 里 allStage 的
+level = min(s1,s2) 与 n 的三种组合是最容易抄错的地方，UT 的 hit_allS1 / hit_napot 覆盖项专门盯它。
 
 ## 对账
 

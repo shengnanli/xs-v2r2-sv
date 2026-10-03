@@ -192,7 +192,7 @@ def pin_target(top, rules, name):
 
 def tcl_path(expr):
     """`a/b.c[1][2]` 形式的核内寄存器表达式 -> FM 对象名（数组名后加 _reg，方括号转义）。"""
-    m = re.fullmatch(r"([\w/.]+?)((?:\[\d+\])*)", expr)
+    m = re.fullmatch(r"([\w/.]+?)((?:\[\w+\])*)", expr)
     if not m:
         raise SystemExit("钉点目标写法不认识: %s" % expr)
     return m.group(1) + "_reg" + m.group(2).replace("[", "\\[").replace("]", "\\]")
@@ -329,6 +329,23 @@ NEWIFU_RULES = [
     (r"io_perf_(\d+)_value_REG_1", r"perf_q[1][\1]"),
 ]
 
+PTWFILTER_RULES = [
+    (r"(v|vpn|s2xlate|getGpa)_(\d)", r"\1_q[\2]"),
+    (r"(enqPtr|issPtr|deqPtr|mayFullDeq|mayFullIss|counter|inflight_counter)", r"\1_q"),
+    # ptwResp 是一个 packed struct 寄存器：Formality 的名字是 ptwResp_q_reg[<字段>][<下标>]...
+    (r"ptwResp_(s1_ppn_low|s1_valididx|s1_pteidx)_(\d)", r"ptwResp_q[\1][\2]"),
+    (r"ptwResp_(s2xlate|s1_addr_low|s1_pf|s1_af|s2_gpf|s2_gaf|s[12]_entry_\w+)", r"ptwResp_q[\1]"),
+    (r"ptwResp_valid_last_REG", r"ptwResp_valid_q"),
+    (r"io_tlb_resp_bits_data_getGpa_REG", r"resp_getGpa_q"),
+    (r"tlb_req_(\d)_valid_last_REG", r"tlb_req_valid_q[\1]"),
+    (r"tlb_req_(\d)_bits_r_(vpn|s2xlate|getGpa)", r"tlb_req_\2_q[\1]"),
+    (r"oldMatchVec_last_REG(?:_(\d))?", lambda m: "oldMatch_q[%d]" % int(m[1] or 0)),
+    # newMatchVec(i)(j) 的 9 个 GatedValidRegNext 按 3*i+j 编号，只有 j<i 的 3 个有读者留了下来
+    (r"newMatchVec_last_REG_3", r"newMatch10_q"),
+    (r"newMatchVec_last_REG_6", r"newMatch20_q"),
+    (r"newMatchVec_last_REG_7", r"newMatch21_q"),
+]
+
 PINS = {         # top -> [(golden 模块, ref 前缀, impl 前缀, 规则表)]
     "PredChecker": [("PredChecker", "", "u_core/", PRED_CHECKER_RULES)],
     "FrontendTrigger": [("FrontendTrigger", "", "u_core/", FRONTEND_TRIGGER_RULES)],
@@ -336,11 +353,14 @@ PINS = {         # top -> [(golden 模块, ref 前缀, impl 前缀, 规则表)]
     "NewIFU": [("NewIFU", "", "u_core/", NEWIFU_RULES),
                ("PredChecker", "predChecker/", "u_core/u_predChecker/", PRED_CHECKER_RULES),
                ("FrontendTrigger", "frontendTrigger/", "u_core/u_frontendTrigger/", FRONTEND_TRIGGER_RULES)],
+    # PTWFilter：只钉顶层寄存器；flush_delay（DelayN_1，2 个寄存器）交给 FM 自动配对
+    "PTWFilter": [("PTWFilter", "", "u_core/", PTWFILTER_RULES)],
 }
 WRAPPERS = {     # top -> rtl 相对路径
     "PredChecker": "rtl/frontend/PredChecker.sv",
     "FrontendTrigger": "rtl/frontend/FrontendTrigger.sv",
     "NewIFU": "rtl/frontend/NewIFU.sv",
+    "PTWFilter": "rtl/mmu/PTWFilter.sv",
 }
 
 
