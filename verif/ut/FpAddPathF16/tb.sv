@@ -20,7 +20,8 @@
 //   或不会被选用，这里只做 golden vs 重写的差分。
 // 覆盖（写进 PASS 判据，按重写件内部信号统计）：close 五个候选选择 sel_cs0..4 各 >= 200；far 的
 //   正常/溢出 × 不进位/进位四格各 >= 200、上溢 >= 50、移位溢出 >= 200；rm 0..4 都出现；oracle 比对
-//   far / close 各 >= 20000 次；每个输出位都见过 0 和 1（golden 字面 0 的 fflags 位只要求见过 0）。
+//   far / close 各 >= 20000 次；激励含 1/16 的"移位溢出边界"（指数差 11..16、小数尾数只剩最低几位，
+//   专打 sticky 在 14/15 位门限上的取舍）；每个输出位都见过 0 和 1（golden 字面 0 的 fflags 位只要求见过 0）。
 // =============================================================================
 `timescale 1ns/1ps
 module tb;
@@ -211,6 +212,16 @@ module tb;
     is_sub     = $urandom;
     if ($urandom_range(0, 7) == 0) begin          // 1/8 完全随机
       fp_a = $urandom; fp_b = $urandom;
+      return;
+    end
+    if ($urandom_range(0, 15) == 0) begin         // 1/16 移位溢出边界：小数只剩最低几位、指数差 11..16
+      ea = 5'($urandom_range(12, 30));
+      eb = ea - 5'($urandom_range(11, 16));
+      if (eb == 5'd1 && $urandom_range(0, 1)) eb = 5'd0;           // 非规格数（有效指数同为 1）
+      ma = pick_mant();
+      mb = 10'(1) << $urandom_range(0, 2);
+      if ($urandom_range(0, 1)) begin fp_a = {1'($urandom), ea, ma}; fp_b = {1'($urandom), eb, mb}; end
+      else begin fp_b = {1'($urandom), ea, ma}; fp_a = {1'($urandom), eb, mb}; end
       return;
     end
     ea = pick_exp();
