@@ -80,3 +80,26 @@ passing 必须正好等于上表；任一不符即停下诊断，不改登记。
 2. IMSIC_WRAP 的 constant_reg 若不是 576，按 receipt 逐项指认（重写 IMSIC 闭包与 IMSIC 自身 receipt 同字节）。
 3. timeModule 的 `reg_time` 不复位：FM 用 initreg 无关的寄存器对应，不应受影响；若出 unverified 再诊断。
 4. Pipeline_10 两级同型 Queue1_UInt32：两个实例的同名寄存器可能被 FM 交叉配；若出 failing 先查配对。
+
+## 5. 对账（跑后追加；上文未改）
+
+- FM：16/16 signoff-strict SUCCEEDED，failing 0 / unverified 0 / unmatched 0 / 黑盒 0 / dont_verify 无 / fm_pins 无。
+  14 个 @2f9bb8a2（evidence/2f9bb8a2b814/*），Pipeline_2/_3 @dbbefb9b（evidence/dbbefb9b09e1/*）。
+  `fm_predict.py check` 16 目标 rc=0：12 个逐位相等；IMSIC_WRAP 差 576 = constant_reg 576、FastArbiter/_1/_26 差 1 =
+  constant_reg 1，均与登记时写明的指认一致。`check_lane_receipts.py` rc=0。
+- ★预测 vs 实测的一处偏差（第 3 节漏登）★：Pipeline_2 / Pipeline_3 首跑 @2f9bb8a2 native SUCCEEDED 但 strict PARTIAL，
+  passing 201 / 13，unread 5 / 86 —— 全部是 child 深度 1 队列 ram 里 deq 侧无读者的对称死存储位
+  （ram_reg[94..98] / ram_reg[0..85]，两侧 matched_nc 双射，与 child Queue1_PrefetchTrain / Queue1_PrefetchResp
+  独立签核时同一组点、同样走 vmucp）。我登记时只按 child 的 passing 填了数，没写到要开 vmucp。
+  按 vmucp standing rule 补 `verif/fm_target_config/Pipeline_2.tcl` / `Pipeline_3.tcl`（dbbefb9b）后重证：
+  unread 5/86 -> 0，passing 正好 +5 / +86（201->206、13->99），等于第 2 节登记值。首跑 PARTIAL 证据未收录（不是绿）。
+- FastArbiter / _1 / _26 的 vmucp 精确绑定（第 3 节判据）：另用 `FM_MODE=diagnostic-full` vmucp 关各跑一次（不出 receipt），
+  unread_points 各恰好 1 行 `matched_nc pendingMask_reg[0] <-> u_core/pendingMask_reg[0]`，passing 110/16/75，
+  vmucp 开后 111/17/76，正好 +1。
+- 第 4 节风险 1（名字配不上）未发生：签名/名字分析全配上，不需要 fm_pins。风险 4（Pipeline_10 交叉配）未发生。
+- UT：8 个目录 × seed 1/7/42 × initreg {0, random, <seed>017} = 72 档，每档 200k 拍，全 errors=0、覆盖闸全过。
+  L2PipelineLeaves4 首轮 seed42×random / 42017 两档各 2 个失配（Pipeline_10.io_out_bits，cyc 8/9）——tb 的 arm 条件
+  在复位期间就满足、而复位中入队不会推进到第二级，第二级存储仍是两侧各自随机初值；属 tb 假失配，RTL 未动，
+  arm 加 `!reset`（bbea0bd9）后该目录 9 档全部重跑 errors=0。
+- 变异自检（scratchpad 副本，seed 7 / 10k 拍 / initreg 0）：18/18 被抓，含 2 个复位域变异
+  （timeModule 去掉控制位异步复位、AsyncReset 同步器异步改同步）。
