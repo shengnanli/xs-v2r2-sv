@@ -1,5 +1,6 @@
 // Readable implementation derived from G1-canonical/golden-rtl/SstcInterruptGen.sv.
 // Interrupt state is sampled only when the corresponding time/cmp/config input changes.
+// Comparisons are formed from the sampled time and compare values without adding state.
 module SstcInterruptGen(
   input  logic        clock,
   input  logic        reset,

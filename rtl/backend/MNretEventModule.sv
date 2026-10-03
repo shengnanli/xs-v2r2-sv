@@ -1,5 +1,6 @@
 // Readable implementation derived from G1-canonical/golden-rtl/MNretEventModule.sv.
 // This is the combinational state/target generation for the MNRET event.
+// The combinational outputs select the return privilege and translated target PC.
 module MNretEventModule(
   input  logic       valid,
   input  logic       in_mnstatus_MNPV,

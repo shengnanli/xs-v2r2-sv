@@ -1,5 +1,6 @@
 // xs_Trigger_core.sv — canonical Sdtrig mcontrol6 and match-value register cores.
 // Four trigger slots share these exact state machines; wrappers retain golden names.
+// Register writes are filtered by the supplied policy inputs before architectural readback.
 module xs_trigger_tdata1_core (
   input  logic clock,
   input  logic reset,

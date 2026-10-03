@@ -1,6 +1,7 @@
 // VSstatusModule.sv — virtual-supervisor status state and trap/return updates.
 // FS/VS dirty transitions, SDT visibility, trap entry, sret, and CSR writes are retained.
 // Reset and field priority follow the G1 status CSR semantics exactly.
+// Explicit state names below separate CSR writes from trap/return priority and dirty-state updates.
 module VSstatusModule(
   input         clock,
   input         reset,
@@ -43,27 +44,27 @@ module VSstatusModule(
 );
 
   logic       sdt_effective;
-  logic       reg_SIE;
-  logic       reg_SPIE;
-  logic       reg_SPP;
-  logic [1:0] reg_VS;
-  logic [1:0] reg_FS;
-  logic       reg_SUM;
-  logic       reg_MXR;
-  logic       reg_SDT;
-  logic       fs_dirty_set = (robCommit_fsDirty | writeFCSR) & isVirtMode;
-  logic       vs_dirty_set =
+  logic       sie_q;
+  logic       spie_q;
+  logic       spp_q;
+  logic [1:0] vs_q;
+  logic [1:0] fs_q;
+  logic       sum_q;
+  logic       mxr_q;
+  logic       sdt_q;
+  wire        fs_dirty_set = (robCommit_fsDirty | writeFCSR) & isVirtMode;
+  wire        vs_dirty_set =
     (robCommit_vsDirty | writeVCSR | robCommit_vstart_valid & (|robCommit_vstart_bits))
     & isVirtMode;
   `ifndef SYNTHESIS
     always @(posedge clock) begin
-      if (fs_dirty_set & ~reset & reg_FS == 2'h0) begin
+      if (fs_dirty_set & ~reset & fs_q == 2'h0) begin
         if (`ASSERT_VERBOSE_COND_)
           $fwrite(32'h80000002, "Assertion failed: The vsstatus.FS should not be Off when set dirty, please check decode\n    at VirtualSupervisorLevel.scala:32 assert(reg.FS =/= ContextStatus.Off, \"The vsstatus.FS should not be Off when set dirty, please check decode\")\n");
         if (`STOP_COND_)
           xs_assert_v2(`__FILE__, `__LINE__);
       end
-      if (vs_dirty_set & ~reset & reg_VS == 2'h0) begin
+      if (vs_dirty_set & ~reset & vs_q == 2'h0) begin
         if (`ASSERT_VERBOSE_COND_)
           $fwrite(32'h80000002, "Assertion failed: The vsstatus.VS should not be Off when set dirty, please check decode\n    at VirtualSupervisorLevel.scala:37 assert(reg.VS =/= ContextStatus.Off, \"The vsstatus.VS should not be Off when set dirty, please check decode\")\n");
         if (`STOP_COND_)
@@ -71,79 +72,79 @@ module VSstatusModule(
       end
     end // always @(posedge)
   `endif // not def SYNTHESIS
-  assign sdt_effective = menvcfg_DTE & henvcfg_DTE & reg_SDT;
-  logic       s_level_write = w_wen | retFromS_vsstatus_valid | trapToVS_vsstatus_valid;
+  assign sdt_effective = menvcfg_DTE & henvcfg_DTE & sdt_q;
+  wire        s_level_write = w_wen | retFromS_vsstatus_valid | trapToVS_vsstatus_valid;
+  // Next-state equations make the trap/return/write priority explicit.
   always @(posedge clock or posedge reset) begin
     if (reset) begin
-      reg_SIE <= 1'h0;
-      reg_SPIE <= 1'h0;
-      reg_SPP <= 1'h0;
-      reg_VS <= 2'h0;
-      reg_FS <= 2'h0;
-      reg_SUM <= 1'h0;
-      reg_MXR <= 1'h0;
-      reg_SDT <= 1'h0;
-    end
-    else begin
-      reg_SIE <=
-        ~(menvcfg_DTE & henvcfg_DTE & w_wdata[24] & w_wen)
-        & (s_level_write
-             ? retFromS_vsstatus_valid & retFromS_vsstatus_bits_SIE
-               | trapToVS_vsstatus_valid & trapToVS_vsstatus_bits_SIE | w_wen & w_wdata[1]
-             : reg_SIE);
+      sie_q <= 1'b0;
+      spie_q <= 1'b0;
+      spp_q <= 1'b0;
+      vs_q <= 2'b0;
+      fs_q <= 2'b0;
+      sum_q <= 1'b0;
+      mxr_q <= 1'b0;
+      sdt_q <= 1'b0;
+    end else begin
+      sie_q <= ~(menvcfg_DTE & henvcfg_DTE & w_wdata[24] & w_wen) &
+        (s_level_write ?
+          ((retFromS_vsstatus_valid & retFromS_vsstatus_bits_SIE) |
+           (trapToVS_vsstatus_valid & trapToVS_vsstatus_bits_SIE) |
+           (w_wen & w_wdata[1])) : sie_q);
       if (s_level_write) begin
-        reg_SPIE <=
-          retFromS_vsstatus_valid & retFromS_vsstatus_bits_SPIE | trapToVS_vsstatus_valid
-          & trapToVS_vsstatus_bits_SPIE | w_wen & w_wdata[5];
-        reg_SPP <=
-          retFromS_vsstatus_valid & retFromS_vsstatus_bits_SPP | trapToVS_vsstatus_valid
-          & trapToVS_vsstatus_bits_SPP | w_wen & w_wdata[8];
+        spie_q <= (retFromS_vsstatus_valid & retFromS_vsstatus_bits_SPIE) |
+          (trapToVS_vsstatus_valid & trapToVS_vsstatus_bits_SPIE) |
+          (w_wen & w_wdata[5]);
+        spp_q <= (retFromS_vsstatus_valid & retFromS_vsstatus_bits_SPP) |
+          (trapToVS_vsstatus_valid & trapToVS_vsstatus_bits_SPP) |
+          (w_wen & w_wdata[8]);
       end
       if (vs_dirty_set)
-        reg_VS <= 2'h3;
+        vs_q <= 2'h3;
       else if (w_wen)
-        reg_VS <= w_wdata[10:9];
+        vs_q <= w_wdata[10:9];
       if (fs_dirty_set)
-        reg_FS <= 2'h3;
+        fs_q <= 2'h3;
       else if (w_wen)
-        reg_FS <= w_wdata[14:13];
+        fs_q <= w_wdata[14:13];
       if (w_wen) begin
-        reg_SUM <= w_wdata[18];
-        reg_MXR <= w_wdata[19];
+        sum_q <= w_wdata[18];
+        mxr_q <= w_wdata[19];
       end
-      if (w_wen | retFromSSDT_vsstatus_valid | retFromM_vsstatus_valid
-          | retFromMN_vsstatus_valid | retFromD_vsstatus_valid | trapToVS_vsstatus_valid)
-        reg_SDT <=
-          retFromM_vsstatus_valid & retFromM_vsstatus_bits_SDT | retFromMN_vsstatus_valid
-          & retFromMN_vsstatus_bits_SDT | retFromD_vsstatus_valid
-          & retFromD_vsstatus_bits_SDT | trapToVS_vsstatus_valid
-          & trapToVS_vsstatus_bits_SDT | w_wen & w_wdata[24];
+      if (w_wen | retFromSSDT_vsstatus_valid | retFromM_vsstatus_valid |
+          retFromMN_vsstatus_valid | retFromD_vsstatus_valid |
+          trapToVS_vsstatus_valid)
+        sdt_q <= (retFromM_vsstatus_valid & retFromM_vsstatus_bits_SDT) |
+          (retFromMN_vsstatus_valid & retFromMN_vsstatus_bits_SDT) |
+          (retFromD_vsstatus_valid & retFromD_vsstatus_bits_SDT) |
+          (trapToVS_vsstatus_valid & trapToVS_vsstatus_bits_SDT) |
+          (w_wen & w_wdata[24]);
     end
   end // always @(posedge, posedge)
   
-  assign rdata =
-    {(&reg_FS) | (&reg_VS),
-     38'h100,
-     sdt_effective,
-     4'h0,
-     reg_MXR,
-     reg_SUM,
-     3'h0,
-     reg_FS,
-     2'h0,
-     reg_VS,
-     reg_SPP,
-     2'h0,
-     reg_SPIE,
-     3'h0,
-     reg_SIE,
-     1'h0};
-  assign regOut_SIE = reg_SIE;
-  assign regOut_SPIE = reg_SPIE;
-  assign regOut_SPP = reg_SPP;
-  assign regOut_VS = reg_VS;
-  assign regOut_FS = reg_FS;
-  assign regOut_SUM = reg_SUM;
-  assign regOut_MXR = reg_MXR;
-  assign regOut_SDT = sdt_effective;
+  assign rdata = {
+    (fs_q == 2'h3) | (vs_q == 2'h3),
+    38'h100,
+    menvcfg_DTE & henvcfg_DTE & sdt_q,
+    4'b0,
+    mxr_q,
+    sum_q,
+    3'b0,
+    fs_q,
+    2'b0,
+    vs_q,
+    spp_q,
+    2'b0,
+    spie_q,
+    3'b0,
+    sie_q,
+    1'b0};
+  assign regOut_SIE = sie_q;
+  assign regOut_SPIE = spie_q;
+  assign regOut_SPP = spp_q;
+  assign regOut_VS = vs_q;
+  assign regOut_FS = fs_q;
+  assign regOut_SUM = sum_q;
+  assign regOut_MXR = mxr_q;
+  assign regOut_SDT = menvcfg_DTE & henvcfg_DTE & sdt_q;
 endmodule

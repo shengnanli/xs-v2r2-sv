@@ -1,5 +1,6 @@
 // Readable implementation derived from G1-canonical/golden-rtl/MhpmeventModule.sv.
 // mhpmevent fields are WARL: only event operation types 0, 1, 2, and 4 are accepted.
+// State updates are clocked with reset priority; readback exposes the implemented fields.
 module MhpmeventModule(
   input  logic        clock,
   input  logic        reset,

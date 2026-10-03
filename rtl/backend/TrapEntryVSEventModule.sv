@@ -1,6 +1,7 @@
 // TrapEntryVSEventModule.sv — privilege-specific trap-entry event transformation.
 // This leaf translates trap causes, saved state, and target addresses for the CSR block.
 // Address-mode and virtualization cases intentionally preserve the G1 reset/field semantics.
+// The VS trap path prioritizes interrupt causes before forming translated PC and tval outputs.
 module TrapEntryVSEventModule(
   input         clock,
   input         reset,
@@ -59,144 +60,249 @@ module TrapEntryVSEventModule(
   output        out_targetPc_bits_raiseIAF,
   output        out_targetPc_bits_raiseIGPF
 );
+  // Internal procedural nets keep the recovered module port declarations unchanged.
+  logic out_privState_valid_i;
+  logic [1:0] out_privState_bits_PRVM_i;
+  logic out_privState_bits_V_i;
+  logic out_vsstatus_valid_i;
+  logic out_vsstatus_bits_SIE_i;
+  logic out_vsstatus_bits_SPIE_i;
+  logic out_vsstatus_bits_UBE_i;
+  logic out_vsstatus_bits_SPP_i;
+  logic [1:0] out_vsstatus_bits_VS_i;
+  logic [1:0] out_vsstatus_bits_FS_i;
+  logic [1:0] out_vsstatus_bits_XS_i;
+  logic out_vsstatus_bits_SUM_i;
+  logic out_vsstatus_bits_MXR_i;
+  logic out_vsstatus_bits_SDT_i;
+  logic [1:0] out_vsstatus_bits_UXL_i;
+  logic out_vsstatus_bits_SD_i;
+  logic out_vsepc_valid_i;
+  logic [62:0] out_vsepc_bits_epc_i;
+  logic out_vscause_valid_i;
+  logic out_vscause_bits_Interrupt_i;
+  logic [62:0] out_vscause_bits_ExceptionCode_i;
+  logic out_vstval_valid_i;
+  logic [63:0] out_vstval_bits_ALL_i;
+  logic out_targetPc_valid_i;
+  logic [63:0] out_targetPc_bits_pc_i;
+  logic out_targetPc_bits_raiseIPF_i;
+  logic out_targetPc_bits_raiseIAF_i;
+  logic out_targetPc_bits_raiseIGPF_i;
 
+
+  // Assertions use semantic exception classes so the datapath below stays readable.
+  wire unsupported_vs_mode = valid & ~reset & ~in_privState_V;
+  wire unsupported_interrupt = valid & in_causeNO_Interrupt &
+    ~in_virtualInterruptIsHvictlInject & ~reset &
+    ~((in_causeNO_ExceptionCode == 63'h2) |
+      (in_causeNO_ExceptionCode == 63'h6) |
+      (in_causeNO_ExceptionCode == 63'hA) |
+      (in_causeNO_ExceptionCode == 63'h2F) |
+      (in_causeNO_ExceptionCode == 63'h17) |
+      (in_causeNO_ExceptionCode == 63'h2E) |
+      (in_causeNO_ExceptionCode == 63'h2D) |
+      (in_causeNO_ExceptionCode == 63'h16) |
+      (in_causeNO_ExceptionCode == 63'h2C) |
+      (in_causeNO_ExceptionCode == 63'h2B) |
+      (in_causeNO_ExceptionCode == 63'h15) |
+      (in_causeNO_ExceptionCode == 63'h2A) |
+      (in_causeNO_ExceptionCode == 63'h29) |
+      (in_causeNO_ExceptionCode == 63'h14) |
+      (in_causeNO_ExceptionCode == 63'h28) |
+      (in_causeNO_ExceptionCode == 63'h27) |
+      (in_causeNO_ExceptionCode == 63'h13) |
+      (in_causeNO_ExceptionCode == 63'h26) |
+      (in_causeNO_ExceptionCode == 63'h25) |
+      (in_causeNO_ExceptionCode == 63'h12) |
+      (in_causeNO_ExceptionCode == 63'h24) |
+      (in_causeNO_ExceptionCode == 63'h23) |
+      (in_causeNO_ExceptionCode == 63'h11) |
+      (in_causeNO_ExceptionCode == 63'h22) |
+      (in_causeNO_ExceptionCode == 63'h21) |
+      (in_causeNO_ExceptionCode == 63'h10) |
+      (in_causeNO_ExceptionCode == 63'h20) |
+      (in_causeNO_ExceptionCode == 63'h3F) |
+      (in_causeNO_ExceptionCode == 63'h1F) |
+      (in_causeNO_ExceptionCode == 63'h3E) |
+      (in_causeNO_ExceptionCode == 63'h3D) |
+      (in_causeNO_ExceptionCode == 63'h1E) |
+      (in_causeNO_ExceptionCode == 63'h3C) |
+      (in_causeNO_ExceptionCode == 63'h3B) |
+      (in_causeNO_ExceptionCode == 63'h1D) |
+      (in_causeNO_ExceptionCode == 63'h3A) |
+      (in_causeNO_ExceptionCode == 63'h39) |
+      (in_causeNO_ExceptionCode == 63'h1C) |
+      (in_causeNO_ExceptionCode == 63'h38) |
+      (in_causeNO_ExceptionCode == 63'h37) |
+      (in_causeNO_ExceptionCode == 63'h1B) |
+      (in_causeNO_ExceptionCode == 63'h36) |
+      (in_causeNO_ExceptionCode == 63'h35) |
+      (in_causeNO_ExceptionCode == 63'h1A) |
+      (in_causeNO_ExceptionCode == 63'h34) |
+      (in_causeNO_ExceptionCode == 63'h33) |
+      (in_causeNO_ExceptionCode == 63'h19) |
+      (in_causeNO_ExceptionCode == 63'h32) |
+      (in_causeNO_ExceptionCode == 63'h31) |
+      (in_causeNO_ExceptionCode == 63'h18) |
+      (in_causeNO_ExceptionCode == 63'h30) |
+      (in_causeNO_ExceptionCode == 63'hD));
   `ifndef SYNTHESIS
     always @(posedge clock) begin
-      if (valid & ~reset & ~in_privState_V) begin
+      if (unsupported_vs_mode) begin
         if (`ASSERT_VERBOSE_COND_)
           $fwrite(32'h80000002, "Assertion failed: The mode must be VU or VS when entry VS mode\n    at TrapEntryVSEvent.scala:29 assert(in.privState.isVirtual, \"The mode must be VU or VS when entry VS mode\")\n");
         if (`STOP_COND_)
           xs_assert_v2(`__FILE__, `__LINE__);
       end
-      if (valid & in_causeNO_Interrupt & ~in_virtualInterruptIsHvictlInject & ~reset
-          & ~(in_causeNO_ExceptionCode == 63'h2 | in_causeNO_ExceptionCode == 63'h6
-              | in_causeNO_ExceptionCode == 63'hA | in_causeNO_ExceptionCode == 63'h2F
-              | in_causeNO_ExceptionCode == 63'h17 | in_causeNO_ExceptionCode == 63'h2E
-              | in_causeNO_ExceptionCode == 63'h2D | in_causeNO_ExceptionCode == 63'h16
-              | in_causeNO_ExceptionCode == 63'h2C | in_causeNO_ExceptionCode == 63'h2B
-              | in_causeNO_ExceptionCode == 63'h15 | in_causeNO_ExceptionCode == 63'h2A
-              | in_causeNO_ExceptionCode == 63'h29 | in_causeNO_ExceptionCode == 63'h14
-              | in_causeNO_ExceptionCode == 63'h28 | in_causeNO_ExceptionCode == 63'h27
-              | in_causeNO_ExceptionCode == 63'h13 | in_causeNO_ExceptionCode == 63'h26
-              | in_causeNO_ExceptionCode == 63'h25 | in_causeNO_ExceptionCode == 63'h12
-              | in_causeNO_ExceptionCode == 63'h24 | in_causeNO_ExceptionCode == 63'h23
-              | in_causeNO_ExceptionCode == 63'h11 | in_causeNO_ExceptionCode == 63'h22
-              | in_causeNO_ExceptionCode == 63'h21 | in_causeNO_ExceptionCode == 63'h10
-              | in_causeNO_ExceptionCode == 63'h20 | in_causeNO_ExceptionCode == 63'h3F
-              | in_causeNO_ExceptionCode == 63'h1F | in_causeNO_ExceptionCode == 63'h3E
-              | in_causeNO_ExceptionCode == 63'h3D | in_causeNO_ExceptionCode == 63'h1E
-              | in_causeNO_ExceptionCode == 63'h3C | in_causeNO_ExceptionCode == 63'h3B
-              | in_causeNO_ExceptionCode == 63'h1D | in_causeNO_ExceptionCode == 63'h3A
-              | in_causeNO_ExceptionCode == 63'h39 | in_causeNO_ExceptionCode == 63'h1C
-              | in_causeNO_ExceptionCode == 63'h38 | in_causeNO_ExceptionCode == 63'h37
-              | in_causeNO_ExceptionCode == 63'h1B | in_causeNO_ExceptionCode == 63'h36
-              | in_causeNO_ExceptionCode == 63'h35 | in_causeNO_ExceptionCode == 63'h1A
-              | in_causeNO_ExceptionCode == 63'h34 | in_causeNO_ExceptionCode == 63'h33
-              | in_causeNO_ExceptionCode == 63'h19 | in_causeNO_ExceptionCode == 63'h32
-              | in_causeNO_ExceptionCode == 63'h31 | in_causeNO_ExceptionCode == 63'h18
-              | in_causeNO_ExceptionCode == 63'h30
-              | in_causeNO_ExceptionCode == 63'hD)) begin
+      if (unsupported_interrupt) begin
         if (`ASSERT_VERBOSE_COND_)
           $fwrite(32'h80000002, "Assertion failed: The VS mode can only handle VSEI, VSTI, VSSI and local interrupts\n    at TrapEntryVSEvent.scala:48 assert(\n");
         if (`STOP_COND_)
           xs_assert_v2(`__FILE__, `__LINE__);
       end
-    end // always @(posedge)
-  `endif // not def SYNTHESIS
-  wire [62:0] highPrioTrapNO =
-    (in_causeNO_ExceptionCode == 63'h2 | in_causeNO_ExceptionCode == 63'h6
-     | in_causeNO_ExceptionCode == 63'hA) & in_causeNO_Interrupt
-      ? 63'(in_causeNO_ExceptionCode - 63'h1)
-      : in_causeNO_ExceptionCode;
-  wire        trapPC_isBare_v_PrvmIsM = &in_iMode_PRVM;
-  wire        trapPC_isBare_isModeM = trapPC_isBare_v_PrvmIsM;
-  wire        trapPC_isBare_PrvmIsU = in_iMode_PRVM == 2'h0;
-  wire        trapPC_isBare_PrvmIsS = in_iMode_PRVM == 2'h1;
-  wire        _trapPC_isSv48_calc = trapPC_isBare_PrvmIsU | trapPC_isBare_PrvmIsS;
-  wire        _trapPC_isSv48x4_calc2 = in_oldVsatp_MODE == 4'h0;
-  wire        _instrAddrTransType_x1_calc1 = in_hgatp_MODE == 4'h0;
-  wire        _instrAddrTransType_x4_calc1 = in_hgatp_MODE == 4'h8;
-  wire        _instrAddrTransType_x5_calc1 = in_hgatp_MODE == 4'h9;
-  wire [63:0] trapPC =
-    (trapPC_isBare_isModeM | _trapPC_isSv48_calc & ~in_iMode_V & in_oldSatp_MODE == 4'h0
-     | in_iMode_V & _trapPC_isSv48x4_calc2 & _instrAddrTransType_x1_calc1
-       ? {16'h0, in_trapPc[47:0]}
-       : 64'h0)
-    | (_trapPC_isSv48_calc & ~in_iMode_V & in_oldSatp_MODE == 4'h8 | in_iMode_V
-       & in_oldVsatp_MODE == 4'h8
-         ? {{25{in_trapPc[38]}}, in_trapPc[38:0]}
-         : 64'h0)
-    | (in_iMode_V & _trapPC_isSv48x4_calc2 & _instrAddrTransType_x4_calc1
-         ? {23'h0, in_trapPc[40:0]}
-         : 64'h0)
-    | (_trapPC_isSv48_calc & ~in_iMode_V & in_oldSatp_MODE == 4'h9 | in_iMode_V
-       & in_oldVsatp_MODE == 4'h9
-         ? {{16{in_trapPc[47]}}, in_trapPc[47:0]}
-         : 64'h0)
-    | (in_iMode_V & _trapPC_isSv48x4_calc2 & _instrAddrTransType_x5_calc1
-         ? {14'h0, in_trapPc}
-         : 64'h0);
-  wire        isFetchExcp =
-    ~in_causeNO_Interrupt & (highPrioTrapNO == 63'h1 | highPrioTrapNO == 63'hC);
-  wire        isBpExcp = ~in_causeNO_Interrupt & highPrioTrapNO == 63'h3;
-  wire        isFetchBkpt = isBpExcp & in_isFetchBkpt;
-  wire        tvalFillMemVaddr =
-    ~in_causeNO_Interrupt
-    & (highPrioTrapNO == 63'h4 | highPrioTrapNO == 63'h5 | highPrioTrapNO == 63'h6
-       | highPrioTrapNO == 63'h7 | highPrioTrapNO == 63'hD | highPrioTrapNO == 63'hF)
-    | isBpExcp & ~in_isFetchBkpt;
-  wire        tvalFillGVA =
-    (isFetchExcp | isFetchBkpt) & in_iMode_V | tvalFillMemVaddr & in_dMode_V;
-  wire [63:0] _tval_calc7 =
-    (isFetchExcp & ~in_isCrossPageIPF | isFetchBkpt ? trapPC : 64'h0)
-    | (isFetchExcp & in_isCrossPageIPF ? 64'(trapPC + 64'h2) : 64'h0)
-    | (tvalFillMemVaddr ? in_memExceptionVAddr : 64'h0);
-  wire        _instrAddrTransType_x5_calc = in_vsatp_MODE == 4'h0;
-  assign out_privState_valid = valid;
-  assign out_privState_bits_PRVM = 2'h1;
-  assign out_privState_bits_V = 1'h1;
-  assign out_vsstatus_valid = valid;
-  assign out_vsstatus_bits_SIE = 1'h0;
-  assign out_vsstatus_bits_SPIE = in_vsstatus_SIE;
-  assign out_vsstatus_bits_UBE = 1'h0;
-  assign out_vsstatus_bits_SPP = in_privState_PRVM[0];
-  assign out_vsstatus_bits_VS = 2'h0;
-  assign out_vsstatus_bits_FS = 2'h0;
-  assign out_vsstatus_bits_XS = 2'h0;
-  assign out_vsstatus_bits_SUM = 1'h0;
-  assign out_vsstatus_bits_MXR = 1'h0;
-  assign out_vsstatus_bits_SDT = in_henvcfg_DTE;
-  assign out_vsstatus_bits_UXL = 2'h0;
-  assign out_vsstatus_bits_SD = 1'h0;
-  assign out_vsepc_valid = valid;
-  assign out_vsepc_bits_epc =
-    in_satpFlushFirstFetchFault | ~in_isFetchMalAddr
-      ? trapPC[63:1]
-      : in_fetchMalTval[63:1];
-  assign out_vscause_valid = valid;
-  assign out_vscause_bits_Interrupt = in_causeNO_Interrupt;
-  assign out_vscause_bits_ExceptionCode =
-    in_virtualInterruptIsHvictlInject & in_causeNO_Interrupt
-      ? {51'h0, in_hvictlIID}
-      : highPrioTrapNO;
-  assign out_vstval_valid = valid;
-  assign out_vstval_bits_ALL =
-    in_satpFlushFirstFetchFault | ~(~in_causeNO_Interrupt & in_isFetchMalAddr)
-      ? {_tval_calc7[63:32],
-         _tval_calc7[31:0]
-           | (~in_causeNO_Interrupt & (highPrioTrapNO == 63'h2 | highPrioTrapNO == 63'h16)
-              & in_trapInst_valid
-                ? in_trapInst_bits
-                : 32'h0)}
-      : in_fetchMalTval;
-  assign out_targetPc_valid = valid;
-  assign out_targetPc_bits_pc = in_pcFromXtvec;
-  assign out_targetPc_bits_raiseIPF =
-    in_vsatp_MODE == 4'h8 & in_pcFromXtvec[63:39] != {25{in_pcFromXtvec[38]}}
-    | in_vsatp_MODE == 4'h9 & in_pcFromXtvec[63:48] != {16{in_pcFromXtvec[47]}};
-  assign out_targetPc_bits_raiseIAF =
-    _instrAddrTransType_x5_calc & _instrAddrTransType_x1_calc1 & (|(in_pcFromXtvec[63:48]));
-  assign out_targetPc_bits_raiseIGPF =
-    _instrAddrTransType_x5_calc & _instrAddrTransType_x4_calc1 & (|(in_pcFromXtvec[63:41]))
-    | _instrAddrTransType_x5_calc & _instrAddrTransType_x5_calc1 & (|(in_pcFromXtvec[63:50]));
+    end
+  `endif
+
+  wire mode_m_bare = &in_iMode_PRVM;
+  wire mode_u_or_s = (in_iMode_PRVM == 2'h0) | (in_iMode_PRVM == 2'h1);
+  wire guest_satp_bare = in_oldVsatp_MODE == 4'h0;
+  wire guest_hgatp_bare = in_hgatp_MODE == 4'h0;
+  wire guest_hgatp_sv39 = in_hgatp_MODE == 4'h8;
+  wire guest_hgatp_sv48 = in_hgatp_MODE == 4'h9;
+  wire host_satp_sv39 = in_oldSatp_MODE == 4'h8;
+  wire guest_satp_sv39 = in_oldVsatp_MODE == 4'h8;
+  wire host_satp_sv48 = in_oldSatp_MODE == 4'h9;
+  wire guest_satp_sv48 = in_oldVsatp_MODE == 4'h9;
+  wire target_satp_bare = in_vsatp_MODE == 4'h0;
+  wire target_hgatp_bare = in_hgatp_MODE == 4'h0;
+  wire target_hgatp_sv39 = in_hgatp_MODE == 4'h8;
+  wire target_hgatp_sv48 = in_hgatp_MODE == 4'h9;
+
+  logic [62:0] prioritized_cause;
+  always_comb begin
+    prioritized_cause = in_causeNO_ExceptionCode;
+    if (in_causeNO_Interrupt &&
+        ((in_causeNO_ExceptionCode == 63'h2) |
+         (in_causeNO_ExceptionCode == 63'h6) |
+         (in_causeNO_ExceptionCode == 63'hA)))
+      prioritized_cause = in_causeNO_ExceptionCode - 63'd1;
+  end
+
+  logic [63:0] trap_pc;
+  always_comb begin
+    trap_pc = 64'b0;
+    trap_pc = trap_pc | ({16'b0, in_trapPc[47:0]} &
+      {64{mode_m_bare | (mode_u_or_s & ~in_iMode_V & (in_oldSatp_MODE == 4'h0)) |
+          (in_iMode_V & guest_satp_bare & guest_hgatp_bare)}});
+    trap_pc = trap_pc | ({{25{in_trapPc[38]}}, in_trapPc[38:0]} &
+      {64{(mode_u_or_s & ~in_iMode_V & host_satp_sv39) |
+          (in_iMode_V & guest_satp_sv39)}});
+    trap_pc = trap_pc | ({23'b0, in_trapPc[40:0]} &
+      {64{in_iMode_V & guest_satp_bare & guest_hgatp_sv39}});
+    trap_pc = trap_pc | ({{16{in_trapPc[47]}}, in_trapPc[47:0]} &
+      {64{(mode_u_or_s & ~in_iMode_V & host_satp_sv48) |
+          (in_iMode_V & guest_satp_sv48)}});
+    trap_pc = trap_pc | ({14'b0, in_trapPc} &
+      {64{in_iMode_V & guest_satp_bare & guest_hgatp_sv48}});
+  end
+
+  wire fetch_exception = ~in_causeNO_Interrupt &
+    ((prioritized_cause == 63'h1) | (prioritized_cause == 63'hC));
+  wire breakpoint_exception = ~in_causeNO_Interrupt & (prioritized_cause == 63'h3);
+  wire fetch_breakpoint = breakpoint_exception & in_isFetchBkpt;
+  wire fill_memory_address =
+    (~in_causeNO_Interrupt &
+      ((prioritized_cause == 63'h4) | (prioritized_cause == 63'h5) |
+       (prioritized_cause == 63'h6) | (prioritized_cause == 63'h7) |
+       (prioritized_cause == 63'hD) | (prioritized_cause == 63'hF))) |
+    (breakpoint_exception & ~in_isFetchBkpt);
+  wire fill_guest_address = ((fetch_exception | fetch_breakpoint) & in_iMode_V) |
+    (fill_memory_address & in_dMode_V);
+
+  logic [63:0] tval_value;
+  always_comb begin
+    tval_value = 64'b0;
+    tval_value = tval_value |
+      (trap_pc & {64{(fetch_exception & ~in_isCrossPageIPF) | fetch_breakpoint}});
+    tval_value = tval_value |
+      ((trap_pc + 64'd2) & {64{fetch_exception & in_isCrossPageIPF}});
+    tval_value = tval_value |
+      (in_memExceptionVAddr & {64{fill_memory_address}});
+  end
+
+  always_comb begin
+    out_privState_valid_i = valid;
+    out_privState_bits_PRVM_i = 2'd1;
+    out_privState_bits_V_i = 1'b1;
+    out_vsstatus_valid_i = valid;
+    out_vsstatus_bits_SIE_i = 1'b0;
+    out_vsstatus_bits_SPIE_i = in_vsstatus_SIE;
+    out_vsstatus_bits_UBE_i = 1'b0;
+    out_vsstatus_bits_SPP_i = in_privState_PRVM[0];
+    out_vsstatus_bits_VS_i = 2'b0;
+    out_vsstatus_bits_FS_i = 2'b0;
+    out_vsstatus_bits_XS_i = 2'b0;
+    out_vsstatus_bits_SUM_i = 1'b0;
+    out_vsstatus_bits_MXR_i = 1'b0;
+    out_vsstatus_bits_SDT_i = in_henvcfg_DTE;
+    out_vsstatus_bits_UXL_i = 2'b0;
+    out_vsstatus_bits_SD_i = 1'b0;
+    out_vsepc_valid_i = valid;
+    out_vsepc_bits_epc_i = (in_satpFlushFirstFetchFault | ~in_isFetchMalAddr) ?
+      trap_pc[63:1] : in_fetchMalTval[63:1];
+    out_vscause_valid_i = valid;
+    out_vscause_bits_Interrupt_i = in_causeNO_Interrupt;
+    out_vscause_bits_ExceptionCode_i =
+      (in_virtualInterruptIsHvictlInject & in_causeNO_Interrupt) ?
+      {51'b0, in_hvictlIID} : prioritized_cause;
+    out_vstval_valid_i = valid;
+    out_vstval_bits_ALL_i = (in_satpFlushFirstFetchFault |
+      ~(~in_causeNO_Interrupt & in_isFetchMalAddr)) ?
+      {tval_value[63:32], tval_value[31:0] |
+        ((~in_causeNO_Interrupt &
+          ((prioritized_cause == 63'h2) | (prioritized_cause == 63'h16)) &
+          in_trapInst_valid) ? in_trapInst_bits : 32'b0)} : in_fetchMalTval;
+    out_targetPc_valid_i = valid;
+    out_targetPc_bits_pc_i = in_pcFromXtvec;
+    out_targetPc_bits_raiseIPF_i =
+      ((in_vsatp_MODE == 4'h8) &
+       (in_pcFromXtvec[63:39] != {25{in_pcFromXtvec[38]}})) |
+      ((in_vsatp_MODE == 4'h9) &
+       (in_pcFromXtvec[63:48] != {16{in_pcFromXtvec[47]}}));
+    out_targetPc_bits_raiseIAF_i = target_satp_bare & target_hgatp_bare &
+      (|in_pcFromXtvec[63:48]);
+    out_targetPc_bits_raiseIGPF_i = target_satp_bare & target_hgatp_sv39 &
+      (|in_pcFromXtvec[63:41]) |
+      target_satp_bare & target_hgatp_sv48 & (|in_pcFromXtvec[63:50]);
+  end
+
+  assign out_privState_valid = out_privState_valid_i;
+  assign out_privState_bits_PRVM = out_privState_bits_PRVM_i;
+  assign out_privState_bits_V = out_privState_bits_V_i;
+  assign out_vsstatus_valid = out_vsstatus_valid_i;
+  assign out_vsstatus_bits_SIE = out_vsstatus_bits_SIE_i;
+  assign out_vsstatus_bits_SPIE = out_vsstatus_bits_SPIE_i;
+  assign out_vsstatus_bits_UBE = out_vsstatus_bits_UBE_i;
+  assign out_vsstatus_bits_SPP = out_vsstatus_bits_SPP_i;
+  assign out_vsstatus_bits_VS = out_vsstatus_bits_VS_i;
+  assign out_vsstatus_bits_FS = out_vsstatus_bits_FS_i;
+  assign out_vsstatus_bits_XS = out_vsstatus_bits_XS_i;
+  assign out_vsstatus_bits_SUM = out_vsstatus_bits_SUM_i;
+  assign out_vsstatus_bits_MXR = out_vsstatus_bits_MXR_i;
+  assign out_vsstatus_bits_SDT = out_vsstatus_bits_SDT_i;
+  assign out_vsstatus_bits_UXL = out_vsstatus_bits_UXL_i;
+  assign out_vsstatus_bits_SD = out_vsstatus_bits_SD_i;
+  assign out_vsepc_valid = out_vsepc_valid_i;
+  assign out_vsepc_bits_epc = out_vsepc_bits_epc_i;
+  assign out_vscause_valid = out_vscause_valid_i;
+  assign out_vscause_bits_Interrupt = out_vscause_bits_Interrupt_i;
+  assign out_vscause_bits_ExceptionCode = out_vscause_bits_ExceptionCode_i;
+  assign out_vstval_valid = out_vstval_valid_i;
+  assign out_vstval_bits_ALL = out_vstval_bits_ALL_i;
+  assign out_targetPc_valid = out_targetPc_valid_i;
+  assign out_targetPc_bits_pc = out_targetPc_bits_pc_i;
+  assign out_targetPc_bits_raiseIPF = out_targetPc_bits_raiseIPF_i;
+  assign out_targetPc_bits_raiseIAF = out_targetPc_bits_raiseIAF_i;
+  assign out_targetPc_bits_raiseIGPF = out_targetPc_bits_raiseIGPF_i;
 endmodule
