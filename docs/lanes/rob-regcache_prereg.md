@@ -109,3 +109,19 @@ UT 过程中发现并修掉的重写件自身 bug（UT 抓到，均在提交前�
 - 批 A 变异自检（scratch 沙箱，seed 1 / initreg 0 / 20k 拍，不进库）：23 个里 22 个 CAUGHT；M22（VTypeBuffer 的
   deqPtrOH 去掉循环回绕）MISSED——deqPtrOH 在 G1 配置下无读者（只喂 XSError），外部不可观测，由 FM 的 vmucp 比较
   deqPtrOH 寄存器覆盖（见 VTypeBuffer 补登）。
+
+### B.4 补登：VTypeBuffer 与 RegCache 诊断跑（official 之前提交；§4 / B.2 数字不改）
+
+**VTypeBuffer**（vmucp=false、未钉点）：native SUCCEEDED、passing 1297、failing 0、constant_reg **9**（与 §4 下限一致：
+commitSize/walkSize/spclWalkSize[6:4]）、unread 214 = matched_nc 64（deqPtrOH，§4 已预测）+ unmatched unread 150/150。
+§4 预测 unread ≈113 **偏少 101**：deqPtrVec_1..7 的 49 位预测到了但它们是 unmatched（数组 vs 平铺命名），另漏算了
+enqPtrVec_1..5 的 flag（5，写地址只用 value）与子模块 SyncDataModuleTemplate__64entry_4 读地址寄存器的半边（96：
+bank 内副本只用 [3:0]、读口 bank 选择只用 [5:4]；该子模块单签时这些位是 matched，嵌进父级后因层次多一层 u_core 配不上）。
+处置：`verif/ut/VTypeBuffer/fm_pins.tcl` 逐位钉 150 对（字面计数，fail-closed）+ vmucp 白名单
+`verif/fm_target_config/VTypeBuffer.tcl`。诊断复跑：`VTB_PINS: 150 / 150 bad=0`、passing **1511**、unread 0、failing 0、
+constant_reg 9。差额 1520 − 1511 = 9 = constant_reg，全部指认。
+**official 复核判据**：SUCCEEDED、passing 1511、unread/failing/unmatched 全 0、constant_reg 9、fm_predict 差额 = 9 = constant_reg。
+
+**RegCache**（父级重证，impl 改读 6 个重写件，merge_dup 默认，模型不适用）：native SUCCEEDED、passing **3830**、failing 0、
+unmatched 0、unread 6 且全部是 ref 侧（= verif/dead_ref/RegCache.json 声明的 6 个 delayToWakeupQueueRCIdx_*[4]），
+与旧 receipt evidence/25cdce831a66 逐项相同 ⇒ 预测 official 判 PASS_DEAD_REF。

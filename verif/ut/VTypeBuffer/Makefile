@@ -33,3 +33,7 @@ SIM_ARGS += +vcs+initreg+$(INITREG)
 .PHONY: gencheck
 gencheck:
 	python3 gen.py --check
+
+# 214 个对称无读者位（deqPtrOH 64 按名配上 + 150 个由 fm_pins.tcl 钉成双射）交 FM 实比，
+# 依据与白名单见 verif/fm_target_config/VTypeBuffer.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
