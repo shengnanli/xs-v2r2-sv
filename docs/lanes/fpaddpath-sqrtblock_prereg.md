@@ -57,3 +57,25 @@ vmucp 依据与六条判据见 `verif/fm_target_config/{FarPath,ClosePath}F32Wid
 1. 常量寄存器：golden 与 impl 寄存器宽度逐位相同，常量位两侧都有；若 FM 把某侧常量位报成 unmatched，先查配对。
 2. 同源双份寄存器在 merge_dup=false 下应各自成比较点；若 passing 少了恰好双份的位数，是配对问题不是 RTL 问题。
 3. 本节登记前没做过任何 FM 试跑。
+
+## 对账 §1（far / close 路径）
+
+| 目标 | 证明 commit | 结果 | passing 预测/实测 | constant_reg | unread | unmatched | 黑盒 / dont_verify | receipt sha256 |
+|---|---|---|---|---|---|---|---|---|
+| FarPathF32WidenF16MixedAdderPipeline | `3e88b302e` | SUCCEEDED | 51 / **51** | 6 | 0 | 0 | 0 / 无 | `a55b013d6a9c0703465bbaee4e10453918f652895c640cf5d64e8bec1d7e7018` |
+| FarPathF32WidenF16MixedPipeline | `1a44b00c0` | SUCCEEDED | 130 / **130** | 12 | 0（vmucp 实比 1 点） | 0 | 0 / 无 | `153e69c2cd68c152303e31eb004f98b5d7ee1002bc16e41df0e5900643886293` |
+| ClosePathF32WidenF16MixedPipeline | `1a44b00c0` | SUCCEEDED | 158 / **158** | 4 | 0（vmucp 实比 2 点 + 1 常量点） | 0 | 0 / 无 | `a1e0d9fdc4146865d21f20794f05fb3112c3ad8c8fa37fff127f59b9fa9a01b9` |
+
+`python3 scripts/fm_predict.py check` 三目标 rc=0，差额全部被 constant_reg 指认。
+
+★首跑（`3e88b302e`）偏离登记的地方，照实记★：Far/Close 两个本体首跑 PARTIAL（`strict_unread!=0`）——
+预登记以为对称死位是 matched unread、开 vmucp 就会比；实测是 **unmatched** unread（firtool 名与重写核字段名不同、
+死位又没有扇出签名），vmucp 单开空转（Far passing 129、unread 1；Close passing 156、unread 3、constant_reg 3）。
+Close 的第 3 个 unread 是 `U_CS4_io_adder_op1_r_reg[23]`（恒 0 的减数 MSB），预登记把它算在 constant_reg 里。
+修法：`verif/ut/FpAddPathF32W16/fm_pins.tcl` 按 $top 字面钉 1 / 3 对（fail-closed，fm.log 回显
+`FPADD_PIN_END n=1 expect=1` / `n=3 expect=3`），钉点基线 `docs/pin_call_seq.tsv` 登记两行。钉上之后
+Close 的 op1[23] 被 FM 归回 constant_reg（4），passing 与预测逐位相等。vmucp 六条：精确绑定（Far 1 点 / Close 2 个
+真死位 + 1 个常量位）/ 双射（钉点 1↔1、3↔3）/ 真比较（Far 129→130 = +1；Close 156→158 = +2，另 1 点转 constant）/
+全零 / 无 dont_verify、无 elab147、无黑盒 / tcl 进 sidecar script_closure。首跑 receipt 留档 `evidence/3e88b302e777/`。
+
+复跑：`PROOF_COMMIT=<commit> bash scripts/run_proof.sh FpAddPathF32W16 <T> < /dev/null`
