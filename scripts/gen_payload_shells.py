@@ -91,7 +91,7 @@ def pins_tcl(mod, tag, expect, lines):
     W('}')
     W('puts "%s_PIN_BEGIN %s expect=$::%s_PIN_EXPECT"' % (tag, mod, tag))
     for r, m in lines:
-        W('%s_pin "%s" "%s"' % (tag.lower(), r, m))
+        W('%s_pin {%s} {%s}' % (tag.lower(), r, m))      # 花括号：路径里的 [N] 不许被 Tcl 当命令替换
     W('puts "%s_PIN_END %s ok=$::%s_PIN_OK bad=$::%s_PIN_BAD"' % (tag, mod, tag, tag))
     W('if {$::%s_PIN_BAD != 0} { error "%s_PIN_MISS=$::%s_PIN_BAD" }' % (tag, tag, tag))
     W('if {$::%s_PIN_OK != %d} { error "%s_PIN_COUNT=$::%s_PIN_OK expect=%d" }' % (tag, expect, tag, tag, expect))
