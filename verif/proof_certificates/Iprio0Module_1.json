@@ -3,14 +3,14 @@
  "evidence_retention": "attestation_only",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-03T11:28:19Z",
+ "generated_at": "2026-10-03T11:32:14Z",
  "generator": {
-  "run_context_worktree_digest": "4affa3b28e006c173067df1480c5467dc95ad4d4e47d64780b711a2a9c0626f6",
+  "run_context_worktree_digest": "3d5c110b48f186f53d8b5705ee4f1c2947cd05ac3be15657e63747b11ea91730",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/eaa601c2b3e1/Iprio0Module_1",
+  "source_evidence_dir": "/tmp/newrtl200c-proof-csr-head-1791026413869872284/Iprio0Module_1",
   "version": 1
  },
- "impl_commit": "eaa601c2b3e10c144a7980ec36ba7a8de8dbb87c",
+ "impl_commit": "2632fccdde82b5ca3a561187d0f7e275bafcf97a",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -91,7 +91,7 @@
   "impl_sha256": "1940b0cafbfa8672a6c065dfd7d1825e117e6045146381cd4fde8c77cec6213a",
   "repo_impl_files": 13
  },
- "native_facts_sha256": "6301effd867db3537cdd1e5f3b4d24c479b1046d1a38b5f098ade263234d4b57",
+ "native_facts_sha256": "a41f06cf4e9a55bb25544ef9717ba30b4c70924b47f0583a4c906e21f205b98a",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -110,7 +110,7 @@
    "unread_ref": 16
   }
  },
- "proof_commit": "eaa601c2b3e10c144a7980ec36ba7a8de8dbb87c",
+ "proof_commit": "2632fccdde82b5ca3a561187d0f7e275bafcf97a",
  "proof_config": {
   "declarations": {
    "dead_ref": {
@@ -136,18 +136,18 @@
  },
  "proof_config_sha256": "276201d70079994190f08762b258897d8fcfd4e3d682b3c804957e7bb292a2fd",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "4affa3b28e006c173067df1480c5467dc95ad4d4e47d64780b711a2a9c0626f6",
+ "proof_worktree_digest": "3d5c110b48f186f53d8b5705ee4f1c2947cd05ac3be15657e63747b11ea91730",
  "provisional": false,
- "receipt_sha256": "ca59e61da08f9b86e3d3c5df19f33e771226d633d3769cbb470a90d5fb44a89a",
+ "receipt_sha256": "fdef5cc9d8009599f4a68019ad39e9e8740359356b7f77c7968b5e1a1b82fa99",
  "reproduce": {
-  "command": "PROOF_COMMIT=eaa601c2b3e10c144a7980ec36ba7a8de8dbb87c scripts/run_proof.sh CSRControl200c Iprio0Module_1",
+  "command": "PROOF_COMMIT=2632fccdde82b5ca3a561187d0f7e275bafcf97a scripts/run_proof.sh CSRControl200c Iprio0Module_1",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "e965f533b20a2616fffdc11ad8e34e747f2917c14b5e990c9dad98ca82c70dc3",
- "run_id": "CSRControl200c-20261003T112138Z-eaa601c2b",
+ "run_id": "CSRControl200c-20261003T112135Z-2632fccdd",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
