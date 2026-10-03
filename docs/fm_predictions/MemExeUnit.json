@@ -1,0 +1,9 @@
+{
+  "target": "MemExeUnit",
+  "ut": "MemExeUnit",
+  "regs": 0,
+  "outs": 126,
+  "expected": 126,
+  "merge_dup": "false",
+  "model_applicable": true
+}

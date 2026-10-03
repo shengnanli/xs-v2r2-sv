@@ -1,0 +1,9 @@
+{
+  "target": "PrefetchReceiver",
+  "ut": "PrefetchReceiver",
+  "regs": 0,
+  "outs": 48,
+  "expected": 48,
+  "merge_dup": "false",
+  "model_applicable": true
+}

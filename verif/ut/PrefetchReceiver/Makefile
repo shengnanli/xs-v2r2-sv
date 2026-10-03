@@ -8,6 +8,8 @@ G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL ?= $(G1_CANONICAL)/golden-rtl
 GOLDEN_SRCS = $(GOLDEN_RTL)/PrefetchReceiver.sv
 FM_VARIANTS = PrefetchReceiver
+# FM 预测模型（golden 闭包寄存器位 + 顶层 output 位）只在不合并重复寄存器时严格成立。
+FM_MERGE_DUP = false
 
 include ../../../scripts/ut_common.mk
 
