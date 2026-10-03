@@ -184,7 +184,7 @@ def thin_file(mod, hist_len, pipe):
     head = ("// =============================================================================\n"
             "// %s —— SC 计数器表，历史长度 %d 那一档（%s）\n"
             "//\n"
-            "// 核体与机制说明见 SCTable.sv（package sctable_pkg + xs_SCTable_core）。\n"
+            "// 核体与机制说明见 SCTable.sv（xs_SCTable_core），共用包见 sctable_pkg.sv。\n"
             "// 本文件只有 golden 同名 wrapper：端口展平 + 本档 MBIST 流水 %s。\n"
             "// =============================================================================\n"
             % (mod, hist_len, fh_note, pipe))

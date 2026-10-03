@@ -31,53 +31,14 @@
 // RegEnable(io.req.valid)，无复位。★s1_pc 存满 50 位但只有 [1] 被读★（golden 就是这样），
 // 其余 49 位两侧都是无读者的死寄存器，照搬不删（FM 侧走 vmucp 对称死位证明）。
 //
-// 本文件：package sctable_pkg + 参数化核 xs_SCTable_core + 历史长度 0 那一档的
+// 本文件：参数化核 xs_SCTable_core + 历史长度 0 那一档的（package sctable_pkg 在 sctable_pkg.sv）
 // golden 同名 wrapper SCTable。另外三档的薄 wrapper 在 SCTable_1/_2/_3.sv。
 // wrapper 只做端口展平与 MBIST 流水（MbistPipeSc_N，各档只差 MBIST 阵列编号）例化，
 // 由 scripts/gen_sctable.py 从 G1 golden 端口表生成（GENERATED 区）。
 // =============================================================================
-package sctable_pkg;
+// package sctable_pkg（计数器位宽/行号/MBIST 口结构体/饱和函数）独立成文件 rtl/frontend/sctable_pkg.sv：
+// SCTable_1/_2/_3 的薄 wrapper 也要用它（CONVENTIONS「独立包文件」例外，先例 alu_pkg.sv）。
 
-  localparam int unsigned CTR_W   = 6;     // SC 计数器位宽（有符号）
-  localparam int unsigned IDX_W   = 8;     // 行号位宽：256 行
-  localparam int unsigned SET_W   = 7;     // bank 内 set 号：128 set
-  localparam int unsigned NUM_BR  = 2;     // 每个取指块的分支槽数
-  localparam int unsigned NUM_BANK = 2;
-
-  // MBIST 流水送到一个 SRAM 的测试口（MbistPipeSc_N.toSRAM_k_* 方向）
-  typedef struct packed {
-    logic [7:0]  addr;
-    logic [7:0]  addr_rd;
-    logic [23:0] wdata;
-    logic [3:0]  wmask;
-    logic        re;
-    logic        we;
-    logic        ack;
-    logic        selectedOH;
-    logic [6:0]  array;
-  } sc_mbist_req_t;
-
-  // SRAM 宏的广播控制位（sigFromSrams_bore_*）
-  typedef struct packed {
-    logic ram_hold;
-    logic ram_bypass;
-    logic ram_bp_clken;
-    logic ram_aux_clk;
-    logic ram_aux_ckbp;
-    logic ram_mcp_hold;
-    logic cgen;
-  } sc_sram_bcast_t;
-
-  // 6 位有符号饱和计数器 ±1（BPU.scala signedSatUpdate）：
-  // 已在 +31 且跳 -> 停在 +31；已在 -32 且不跳 -> 停在 -32；否则跳 +1 / 不跳 -1。
-  function automatic logic [CTR_W-1:0] sat_update(input logic [CTR_W-1:0] old, input logic taken);
-    if (old == 6'h1F && taken)       return 6'h1F;
-    else if (old == 6'h20 && !taken) return 6'h20;
-    else if (taken)                  return old + 6'd1;
-    else                             return old - 6'd1;
-  endfunction
-
-endpackage
 
 module xs_SCTable_core
   import sctable_pkg::*;

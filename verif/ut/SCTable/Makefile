@@ -1,7 +1,7 @@
 MODULE = SCTable
 
 # SCTable 家族（SC 统计校正器的 4 张计数器表，历史长度 0/4/10/16）。
-# 核：rtl/frontend/SCTable.sv（package sctable_pkg + xs_SCTable_core + SCTable wrapper）；
+# 核：rtl/frontend/SCTable.sv（xs_SCTable_core + SCTable wrapper），包 rtl/frontend/sctable_pkg.sv；
 # 薄 wrapper：SCTable_1/_2/_3.sv（scripts/gen_sctable.py 生成）。
 #
 # 子模块处置（docs/coverage_three_axis.tsv 第 3 列）：SRAMTemplate_68 / WrBypass_33 / MbistPipeSc{,_1,_2,_3}
@@ -9,7 +9,8 @@ MODULE = SCTable
 # SRAM 宏链 sram_array_1p128x24m6s1h0l1b_bp_sc -> array_5 以及 MbistClockGateCell / ClockGate 两侧共读 golden 同一份
 # （RTL_GOLDEN_DEPS）；array_5_ext.v 是厂商行为级叶子（verif/vendor_boundary.tsv），只给 VCS，FM 两侧黑盒。
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/frontend/SCTable.sv \
+RTL_SRCS = $(RTL_DIR)/frontend/sctable_pkg.sv \
+           $(RTL_DIR)/frontend/SCTable.sv \
            $(RTL_DIR)/frontend/SCTable_1.sv \
            $(RTL_DIR)/frontend/SCTable_2.sv \
            $(RTL_DIR)/frontend/SCTable_3.sv \

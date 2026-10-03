@@ -26,6 +26,7 @@ RTL_SRCS = $(RTL_DIR)/common/xs_BpuStagePc.sv \
            $(RTL_DIR)/dft/MbistPipeSc_1.sv \
            $(RTL_DIR)/dft/MbistPipeSc_2.sv \
            $(RTL_DIR)/dft/MbistPipeSc_3.sv \
+           $(RTL_DIR)/frontend/sctable_pkg.sv \
            $(RTL_DIR)/frontend/SCTable.sv \
            $(RTL_DIR)/frontend/SCTable_1.sv \
            $(RTL_DIR)/frontend/SCTable_2.sv \

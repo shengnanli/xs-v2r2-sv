@@ -41,6 +41,7 @@ RTL_SRCS = $(RTL_DIR)/frontend/Composer.sv \
            $(RTL_DIR)/frontend/ITTageTable_3.sv \
            $(RTL_DIR)/frontend/ITTageTable_4.sv \
            $(RTL_DIR)/frontend/ITTage.sv \
+           $(RTL_DIR)/frontend/sctable_pkg.sv \
            $(RTL_DIR)/frontend/SCTable.sv \
            $(RTL_DIR)/frontend/SCTable_1.sv \
            $(RTL_DIR)/frontend/SCTable_2.sv \

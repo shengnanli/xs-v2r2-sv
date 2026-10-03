@@ -1,7 +1,7 @@
 // =============================================================================
 // SCTable_1 —— SC 计数器表，历史长度 4 那一档（折叠历史 min(8,4)=4 位）
 //
-// 核体与机制说明见 SCTable.sv（package sctable_pkg + xs_SCTable_core）。
+// 核体与机制说明见 SCTable.sv（xs_SCTable_core），共用包见 sctable_pkg.sv。
 // 本文件只有 golden 同名 wrapper：端口展平 + 本档 MBIST 流水 MbistPipeSc_1。
 // =============================================================================
 // BEGIN GENERATED(sctable-family) —— scripts/gen_sctable.py 生成，勿手改
