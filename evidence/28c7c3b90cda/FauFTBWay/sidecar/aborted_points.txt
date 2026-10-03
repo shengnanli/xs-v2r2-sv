@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FauFTBWay
+Implementation : i:/WORK/FauFTBWay
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:41:21 2026
+**************************************************
+
+No aborted compare points.
+
+1

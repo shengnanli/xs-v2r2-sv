@@ -9,6 +9,7 @@
   rtl/backend/SRT16Divint_6.sv   整个文件（薄 wrapper，BIT_WIDTH=64）
   verif/ut/SRT16Divint/fm_pins_pre.tcl  FM「匹配前」钉点（三个目标各一支）
   verif/ut/VectorIdiv/fm_pins_pre.tcl   FM「匹配前」钉点（8 个 SRT 子实例 + 8 个 I8DivNr4 死位）
+  verif/ut/VIDiv/fm_pins_pre.tcl        同上一套，挂在 VIDiv 的 vidiv 子实例下
 
 为什么要钉点：核把商位 0 那档恒 0 的常数删掉，只存 4 个非零档 iter_cons_nz_reg[0..3] /
   spec_r2ud_nz_reg[0..3]（下标 0..3 ↔ golden 的 _0/_1/_3/_4）。FM 的名字匹配会把 golden
@@ -255,15 +256,39 @@ VI_SRT_INST = [("_16bit_divide_%d" % i, 16) for i in range(4)] + \
               [("_64bit_divide_%d" % i, 64) for i in range(2)]
 
 
-def gen_pins_vi():
+def vi_pairs(ref_pfx, impl_pfx):
+    """VectorIdiv 子树（ref 前缀 / impl 前缀下）的全部钉点对。"""
     pairs = []
     for inst, bw in VI_SRT_INST:
-        pairs += srt_pins(inst + "/", "u_core/%s/u_core/" % inst, bw)
+        pairs += srt_pins("%s%s/" % (ref_pfx, inst), "%su_core/%s/u_core/" % (impl_pfx, inst), bw)
     for i in range(8):
         inst = "_8bit_divide_%d" % i
-        pairs += i8_pins(inst + "/", "u_core/%s/u_core/" % inst)
+        pairs += i8_pins("%s%s/" % (ref_pfx, inst), "%su_core/%s/u_core/" % (impl_pfx, inst))
+    return pairs
+
+
+def gen_pins_vi():
     return PIN_HEADER.format(ut="VectorIdiv", extra=I8_DEAD_NOTE) + "\n" + \
-        pin_branch("VectorIdiv", pairs, "VECTORIDIV")
+        pin_branch("VectorIdiv", vi_pairs("", ""), "VECTORIDIV")
+
+
+VIDIV_NOTE = """# VIDiv：子实例 vidiv（VectorIdiv）下与 VectorIdiv 单签同一套 1600 对，路径多一层
+#   ref vidiv/ <-> impl u_core/vidiv/。
+"""
+
+
+VIDIV_VUOP_NOTE = """# VIDiv 外壳自己的 4 个死位：outCtrl_r_vpu_vuopIdx[6:3]（Mgu 只读 vuopIdx[2:0]，两侧都无读者）。
+#   核里 outCtrl_r 是打包结构体，FM 的名字是 outCtrl_r_reg\\[vuopIdx][b]（首个方括号属于名字），
+#   与 golden 平铺名 outCtrl_r_vpu_vuopIdx_reg[b] 词干不同，死位无锥只能靠名字，故钉成一对。
+"""
+
+
+def gen_pins_vidiv():
+    pairs = vi_pairs("vidiv/", "u_core/vidiv/")
+    pairs += [("outCtrl_r_vpu_vuopIdx_reg\\[%d\\]" % b,
+               "u_core/outCtrl_r_reg\\\\\\[vuopIdx\\]\\[%d\\]" % b) for b in range(3, 7)]
+    return PIN_HEADER.format(ut="VIDiv", extra=I8_DEAD_NOTE + VIDIV_NOTE + VIDIV_VUOP_NOTE) + "\n" + \
+        pin_branch("VIDiv", pairs, "VIDIV")
 
 
 def targets():
@@ -283,6 +308,7 @@ def targets():
         out[os.path.join(RTL, mod + ".sv")] = hdr + gen_wrapper(mod, bw)
     out[os.path.join(REPO, "verif", "ut", "SRT16Divint", "fm_pins_pre.tcl")] = gen_pins_srt()
     out[os.path.join(REPO, "verif", "ut", "VectorIdiv", "fm_pins_pre.tcl")] = gen_pins_vi()
+    out[os.path.join(REPO, "verif", "ut", "VIDiv", "fm_pins_pre.tcl")] = gen_pins_vidiv()
     return out
 
 

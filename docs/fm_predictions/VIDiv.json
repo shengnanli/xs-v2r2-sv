@@ -1,0 +1,10 @@
+{
+  "target": "VIDiv",
+  "ut": "VIDiv",
+  "regs": 13094,
+  "outs": 790,
+  "expected": 13884,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "regs 13094 + outs 790。预期差额 = constant_reg + unread：constant 8（VectorIdiv 内 8 个 I8DivNr4 各 1，同 VectorIdiv 单签）；unread 100 = VectorIdiv 子树 96（同 VectorIdiv 单签）+ outCtrl_r_vpu_vuopIdx[6:3] 4 位（Mgu 只读 vuopIdx[2:0]）。计划：钉点 + vmucp 后 passing = 13884 − 8 = 13876"
+}
