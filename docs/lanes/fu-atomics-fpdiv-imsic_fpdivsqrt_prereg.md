@@ -20,3 +20,26 @@
 - **预测**：passing = **256**（模型 = 顶层 output 位 256，寄存器 0，`FM_MERGE_DUP=false`）；failing / unverified / unread / unmatched 全 0；
   无黑盒；无 dont_verify；SUCCEEDED。登记 `docs/fm_predictions/fpdiv_r64_block_vector.json`。
   可能出错处：(a) FM 对 (s+c)+d 与 s+(c+d) 的 7/8 位模加——核已照 golden 的结合顺序逐通道写，预期无差；(b) 本节无任何 FM 试跑。
+
+## 2. fpsqrt_vector_r16（向量浮点开方器顶层，golden 1014 行 / 12 端口 / 57 个 reg 共 441 位，时序件）
+
+- 核 `rtl/backend/fpsqrt_vector_r16.sv`（474 行）：§0 寄存器集合逐字对齐 golden（57 个，只有 fsm_q 异步复位）→ §1 操作数预解码
+  （四通道分类 / 指数 / 前导零 / 结果指数预算）→ §2 迭代初始化（第一位根三选一、初始冗余余数、r4_qds_cg 首拍常数；PRE_0 直通
+  f64 规格数，其余经 PRE_1 用暂存在 rt_q/rt_m1_q/mask_q 里的左移尾数）→ §3 child fpsqrt_r16_block → §4 状态机 + 寄存器更新
+  → §5 后处理（四通道并排加判余数符号、xor/or 判 sticky、按 rm 舍入、根减一的"加一"复用根的加法器、组装结果与 fflags）。
+  golden 里 vector_mode_i≡1、fp_aIsFpCanonicalNAN≡0 已被折叠（res_is_sqrt_2 / early_finish / 标量结果通路消失）。
+- child：lzc / lzc_3 / lzc_4 ×2 / r4_qds_cg ×4 PROVEN_DIRECT → 两侧白盒；**fpsqrt_r16_block（3575 行）无重写件**（coverage PROVEN_IN_CONE），
+  照 `verif/ut/ArithVecLeaves5` 先例走 `RTL_GOLDEN_DEPS` 两侧同读 golden（连同其内部的 r4_qds / r4_qds_spec；其内部的 r4_qds_cg 在 impl 侧
+  绑到本仓重写件、ref 侧绑 golden，两者 PROVEN_DIRECT）。无黑盒。★本目标的 proven 口径因此是"顶层 + 已签 child 真逻辑 + 迭代块 golden 复用"，
+  迭代块本身不计入本 lane 的重写量。★
+- UT `verif/ut/fpsqrt_vector_r16`：sequential 双例化；结果/fflags 只在 finish_valid_o=1 时比（其余寄存器不复位，tb 契约见文件头）；
+  覆盖 = 3 格式 × 5 rm ≥ 100 次 finish、通道 0 的 8 类操作数 × 3 格式 ≥ 50、余数为负 ≥ 100、舍入进位 ≥ 30、flush 打断迭代 ≥ 20、
+  全部 84 个输出位 0/1 都见过。seed 7 × 20k（initreg 0 与 random）先行 errors=0；9 档读数在对账节追加。
+- 变异自证（seed 7 × 20k）：M1 need_2_cycles 漏 f64 非规格数 errors=1061；M2 根减一 RUP 不进位 errors=133；M4 负 qNaN 判 invalid errors=16；
+  **UT 看不见的三处**：M3 f64 sticky 范围少 1 位 errors=0（需要余数只在该位非零）、M5 PRE_0 need_2 路径 mask_q[12:4] 不保留而清零 errors=0、
+  M6 同路径 iter_num_q[3:2] 清零 errors=0（M5/M6 在 PRE_1 被整体覆盖，仿真按构造不可见）—— 三者都是寄存器 D 端函数或输出锥的差异，归 FM 兜底。
+- **预测**：passing = **527**（模型 = golden 闭包寄存器位 441 + 顶层 output 位 86，`FM_MERGE_DUP=false`）；failing / unverified / unread /
+  unmatched 全 0；无黑盒；无 dont_verify；SUCCEEDED。登记 `docs/fm_predictions/fpsqrt_vector_r16.json`。
+  可能出错处：(a) 核把 golden 的扁平标量寄存器（out_sign_0_q … m_pos_2_for_nxt_cycle_s0_qds_3_q）收成向量/数组（out_sign_q[k]、m_pos_2_q[k]），
+  名字不同，靠 FM 签名匹配配对；57 个寄存器规模小，预期能配上，配不上再补 fm_pins_pre.tcl；(b) 若 FM 把某些 D 端恒常量的位判 constant_reg，
+  差额应由 receipt 的 constant_reg 指认；(c) 本节无任何 FM 试跑。
