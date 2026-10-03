@@ -8,7 +8,9 @@ diff 过 5 份 golden，结构同构，共三种子形态：
   * PIPE=1（enq_ready = deq_ready | ~full，"边出边进"）：Queue1_PrefetchReq /
     Queue1_PrefetchResp / Queue1_PrefetchTrain（SMS 预取流水 Pipeline_1/2/3 的级寄存器）；
   * PIPE=0（enq_ready = ~full）：Queue1_BundleMap（AXI4UserYanker_2 里给 id==0 的 AR
-    存 tl_state、R 通道 last 时弹出）；
+    存 tl_state、R 通道 last 时弹出）；Queue1_L1PrefetchReq（MemBlock 的 Pipeline 级寄存器，
+    L1 预取请求进 DCache 前打一拍；2026-10-03 agent/fe-mem-misc 并入，家族由 5 个变为 6 个，
+    文件名保留原名以免牵动已有引用）；
   * 无 ready 端口：Queue1_UInt32（Pipeline_10/11 的级寄存器，父模块里 deq 恒被接走，
     enq_ready 恒 1，两个 ready 端口被 firtool 常数折叠删掉）——等价于 PIPE=1 且
     deq_ready 恒 1：do_enq 退化为 io_enq_valid，full 更新退化为
@@ -46,6 +48,8 @@ QUEUES = {
                              'SMS 预取训练数据在 Pipeline_2 的级寄存器（深度 1，pipe）'),
     'Queue1_UInt32':        ('frontend', 'Pipeline_10 / Pipeline_11',
                              '32 位无反压流水的级寄存器（深度 1；无 ready 端口）'),
+    'Queue1_L1PrefetchReq': ('memblock', 'Pipeline（MemBlock 里 L1 预取请求送 DCache 前的级寄存器）',
+                             'L1 预取请求（L1Prefetcher → DCache）的级寄存器（深度 1，非 pipe）'),
     'Queue1_BundleMap':     ('uncore',   'AXI4UserYanker_2',
                              'AXI4UserYanker_2 给 id==0 的 AR 暂存 tl_state（size+source），'
                              'R 通道 last 时弹出（深度 1，非 pipe）'),
