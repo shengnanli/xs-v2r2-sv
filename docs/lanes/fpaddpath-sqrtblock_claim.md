@@ -6,3 +6,6 @@
 - `FarPathF32WidenF16MixedPipeline`
 - `FarPathF32WidenF16MixedAdderPipeline`
 - `fpsqrt_r16_block`
+- `fpsqrt_r16`
+- `r4_qds`
+- `r4_qds_spec`
