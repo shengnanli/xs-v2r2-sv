@@ -10,6 +10,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/PrefetchQueue.sv
 FM_VARIANTS = PrefetchQueue
 FM_MERGE_DUP = false
 
+# ★vmucp + 钉点：依据见 verif/fm_target_config/PrefetchQueue.tcl★（31 位只喂自己次态的 valid）
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

@@ -135,3 +135,15 @@ verif/fm_target_config/SMSTrainFilter.tcl + Makefile 开 FM_VERIFY_MATCHED_UNREA
   让 FM 比较全部 220 个寄存器的次态函数。预测：passing **220**（= 模型 220），unread 0，其余全零，SUCCEEDED。
   可能出错：钉点路径格式（`u_core/ent_pc_reg[i][b]`、`u_core/u_plru/state_reg_reg[b]`）若与 FM 实际名不同会
   `error` 早退（FM 早退而非数字偏离）。
+
+## 8. SMSTrainFilter 第三轮 / PrefetchQueue 第二轮（钉点 + vmucp）
+
+- SMSTrainFilter 第二轮（8dd734c6）：vmucp 已开但 unread 仍 8 —— 这 8 位是 **Unmatched unread**（FM 配不上），
+  vmucp 只比较已配对的 unread 点，空转。§6 里"FM 按签名自动配上"的说法错误，已在 config 里更正。
+  修法：scripts/gen_stridepf_pins.py 泛化为 scripts/gen_l1pf_pins.py（三目标，带 --check），生成
+  verif/ut/SMSTrainFilter/fm_pins_pre.tcl（8 位）。预测不变：passing **2751**，unread 0，SUCCEEDED。
+- PrefetchQueue 首跑（8dd734c6）：native SUCCEEDED passing 3279 / unread 31（valids_0..30 ↔ queue_valid[0..30]，
+  Unmatched unread；empty/full 只读 valids_31）。加钉点（31 位）+ verif/fm_target_config/PrefetchQueue.tcl。
+  预测：passing **3310**（= 3279 + 31 = 模型 3310），unread 0，SUCCEEDED。
+- StridePF：生成器改名后 fm_pins_pre.tcl 只改了注释头与 tcl 过程名（钉点表 210 位逐行不变）；
+  0a9f5511 上在跑的那轮作诊断用，签核以本节 commit 上的重跑为准，预测仍为 220。

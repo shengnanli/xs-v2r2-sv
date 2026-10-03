@@ -15,11 +15,13 @@
 #
 # ---- 六条证据(以 evidence/ 下 receipt 为准) ----
 #   (1) 精确绑定：unread 点集合恰为上面 8 位（ref 8 / impl 8）。
-#   (2) 双射：enqPtrExt_k_flag <-> enq_flag_reg[k]，enqPtrExt_k_value[b] <-> enq_value_reg[k][b]，k∈{3,4}，
-#       FM 按签名自动配上（unmatched 0），无人工 pin。
+#   (2) 双射：enqPtrExt_k_flag <-> enq_flag_reg[k]，enqPtrExt_k_value[b] <-> enq_value_reg[k][b]，k∈{3,4}。
+#       ★更正★：第二轮（evidence/8dd734c6ac40）实测这 8 位是 "Unmatched unread"，FM 自己配不上，
+#       单开 vmucp 空转（unread 仍 8）。现由 verif/ut/SMSTrainFilter/fm_pins_pre.tcl
+#       （scripts/gen_l1pf_pins.py 生成，8 位，fail-closed）逐位钉配。
 #   (3) 真比较：开 vmucp 后 passing 应为 2743 + 8 = 2751 = 模型 2751（constant_reg 0）。
 #   (4) 全零：failing / unverified / aborted / unmatched 全 0。
 #   (5) 无放宽：dont_verify_objects [] / elab147 [] / relaxed_appvars []；无子模块、无黑盒。
-#   (6) 摘要：本文件进 sidecar/script_closure.list，receipt 记其 sha256。
+#   (6) 摘要：本文件与 fm_pins_pre.tcl 进 sidecar/script_closure.list，receipt 记其 sha256。
 
 fm_target_vmucp_allow
