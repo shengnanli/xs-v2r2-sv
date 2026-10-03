@@ -747,24 +747,6 @@ def parent_dead_pins():
     return out
 
 
-def retarget_bda_resp(ps):
-    """BankedDataArray 签核时 merge_dup=true：共享核 xs_SRAMTemplate_core 的 respReg 与 rdata_last_REG
-    （holdRead 关时同方程）被合成一个点、只剩 rdata_last_REG，它的钉点因此是 golden respReg <-> impl rdata_last_REG。
-    本目标 merge_dup=false（MainPipe / MissQueue / ProbeQueue … 都是 false 下签的），两个寄存器都在：
-    MBIST 回读寄存器 rdataReg 的使能读的是 respReg，所以 golden respReg 必须配 impl respReg —— 否则 rdataReg
-    的使能在 impl 侧成了自由变量（2026-10-03 diagnostic 实测：2304 = 32 × 72 位 failing）。
-    这里只改这 32 条的 impl 名，其余原样；rdata_last_REG 留作 impl 独有死位（见 prereg）。"""
-    out, n = [], 0
-    for a, b in ps:
-        if a.endswith("/respReg_reg") and b.endswith("/u_core/g_nomcp.rdata_last_REG_reg"):
-            b = b[:-len("rdata_last_REG_reg")] + "respReg_reg"
-            n += 1
-        out.append((a, b))
-    if n != 32:
-        die("retarget_bda_resp 改了 %d 条，期望 32" % n)
-    return out
-
-
 def all_pairs():
     insts = {inst: mod for mod, inst, _ in instances(TOP)}
     if set(CHILD_PINS) | set(CHILD_NO_PINS) != set(insts) or set(CHILD_PINS) & set(CHILD_NO_PINS):
@@ -789,8 +771,12 @@ def all_pairs():
     out += pd
     for inst, (ctop, f) in CHILD_PINS.items():
         ps = [(inst + "/" + a, inst + "/" + b) for a, b in harvest(ctop, f)]
-        if inst == "bankedDataArray":
-            ps = retarget_bda_resp(ps)
+        # bankedDataArray 的 32 条 MBIST 采样使能钉点 golden respReg <-> impl u_core/g_nomcp.respReg：
+        # 以前 BDA 自己 merge_dup=true 签、共享核里同方程的 rdata_last_REG 是 merge 幸存名，这里要改名回
+        # respReg（否则 2304 位 rdataReg failing）。codex 0206 D1 删掉了那个死寄存器，BDA 的钉点本身就是
+        # respReg，原样收即可。
+        if inst == "bankedDataArray" and any("rdata_last_REG" in b for _, b in ps):
+            die("BankedDataArray 钉点里还有 rdata_last_REG：共享核 D1 后不该存在")
         counts.append((inst, len(ps)))
         out += ps
     return out, counts

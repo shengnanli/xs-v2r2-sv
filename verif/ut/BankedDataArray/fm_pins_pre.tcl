@@ -23,7 +23,7 @@ for {set _b 0} {$_b < 8} {incr _b} {
     for {set _w 0} {$_w < 4} {incr _w} {
         set _p "data_banks_0_$_b/data_bank_$_w"
         set _r "r:/WORK/BankedDataArray/$_p/respReg_reg"
-        set _i "i:/WORK/BankedDataArray/$_p/u_core/g_nomcp.rdata_last_REG_reg"
+        set _i "i:/WORK/BankedDataArray/$_p/u_core/g_nomcp.respReg_reg"
         if {![set_user_match $_r $_i]} { puts "BDA_PREPIN_FAIL: $_r <-> $_i"; error "BDA_PREPIN_MISS=$_r" }
         incr _bda_n
         for {set _bit 0} {$_bit < 72} {incr _bit} {

@@ -96,8 +96,8 @@ FM_MODE = assembly
 
 # 逐个比较，不合并重复寄存器（MainPipe / MissQueue / ProbeQueue / LoadPipe 等子模块都在 merge_dup=false 下签核；
 # 2026-10-03 diagnostic 实测 merge_dup=true 时 FM 在 golden 侧合并 r_miss/r_replay、mainPipe s1_req 等重复寄存器，
-# impl 侧合不上 → unmatched 50 / failing 49）。代价：共享核 xs_SRAMTemplate_core 的 rdata_last_REG（holdRead 关时
-# 与 respReg 同方程、golden 无此寄存器）在 40 个 SRAM 里各成一个 impl 独有死位 —— 见 docs/lanes/dcachebody_prereg.md。
+# impl 侧合不上 → unmatched 50 / failing 49）。曾经的代价（共享核 xs_SRAMTemplate_core 的 rdata_last_REG 在 40 个 SRAM
+# 里各成一个 impl 独有死位）已由 codex 0206 D1 在共享核里消除（holdRead 关时不生成），见 docs/lanes/sramcore-d1d2d3_prereg.md。
 FM_MERGE_DUP = false
 
 # ★vmucp：依据见 verif/fm_target_config/DCache.tcl★ —— 子模块内的对称死寄存器位（各子模块签核时

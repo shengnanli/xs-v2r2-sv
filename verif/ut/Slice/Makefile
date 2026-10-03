@@ -129,10 +129,9 @@ FM_VARIANTS = Slice Slice_1 Slice_2 Slice_3
 # （GrantBuffer / RequestBuffer 的 REG_k 与 enable_REG_k、CustomL1Hint 队列等），merge 在两侧合掉的代表不同，
 # 实测 Slice_1 诊断跑（diag5，merge=true）failing 1242 / unmatched unread 20+20；merge=false 的 diag4 只剩
 # Directory 那 7 个点（见下）。
-# ★已知代价★：Directory 的 7 块 SRAM（xs_SRAMTemplate_core 非 MCP 形态）各有一个 golden 没有、与 respReg
-# 同方程的 rdata_last_REG（verif/ut/Directory/Makefile 用 merge=true 正是为了合掉它）。merge=false 下它们是
-# 重写侧独有的未读寄存器 —— 每变体 7 个 impl-only unread，signoff 判 PARTIAL（不是 failing）。
-# 消掉它要改共享核 xs_SRAMTemplate_core（41 个已签变体共用），不在本 lane 范围，照实报告。
+# 曾经的代价：Directory 的 7 块 SRAM（xs_SRAMTemplate_core 非 MCP 形态）各有一个 golden 没有、与 respReg 同方程的
+# rdata_last_REG，merge=false 下成每变体 7 个 impl-only unread。codex 0206 D1 已在共享核里消除（holdRead 关时不生成），
+# 见 docs/lanes/sramcore-d1d2d3_prereg.md。
 FM_MERGE_DUP = false
 
 # assembly：黑盒只许 = 厂商 SRAM 叶子 array_14..18_ext + codex 0202 审定的 ram_10x89（两侧对称）
