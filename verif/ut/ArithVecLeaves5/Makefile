@@ -50,8 +50,12 @@ include ../../../scripts/ut_common.mk
 # golden 的 `ifndef SYNTHESIS 块（FDivSqrt 的断言调用未定义的 xs_assert_v2 + 随机初值）；
 # 两侧同口径带 SYNTHESIS。
 # initreg：编译期开机制、运行期选取值（ut_common 的 INITREG_TAG 会给日志留档）。
-# 默认 INITREG=0（常量初值）：DivUnit/FDivSqrt 的输出 payload 寄存器无复位，
-# 常量档保证两侧同初态；tb 另有 armed 闸，随机初值档也不会误判。
+# 默认 INITREG=0（常量初值）。验收是 seed 1/7/42 × INITREG=0 / random / <seed>017 九档。
+# DivUnit/FDivSqrt 的输出 payload 与 res_data 的来源寄存器（包装层 isW/fmt + golden 孩子
+# rFinal/qFinal 等）全无复位，两个独立例化在随机档各摇一份上电值：payload 由 tb 的
+# armed 闸（首次接受后）把守，res_data 由 res_armed 闸（首次 out_valid 后）把守。
+# ★原先这里写"随机初值档也不会误判"是错的★：res_data 当时没上闸，random/<seed>017
+# 六档里有五档红在开机十几拍（2026-10-03 divunit-initreg lane，UCLI 定位见 tb.sv 文件头）。
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 INITREG  ?= 0
 SIM_ARGS += +vcs+initreg+$(INITREG)
