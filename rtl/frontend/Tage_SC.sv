@@ -40,7 +40,7 @@
 // wrapper 的端口表、子模块（tables_0..3 / bt / mbistPl / allocLFSR_prng{,_1} / scTables_0..3，
 // 实例名同 golden）、MBIST 子链连线与透传赋值由 scripts/gen_bpu_wrappers.py 从 G1 golden 生成。
 // =============================================================================
-// 本文件导航（共 2517 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 2518 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L21    在 BPU 里的位置】Composer 菊花链 2/5
 //   L26    TAGE 部分】4 张带标签的 TageTable
 //   L34    SC 部分】4 张 SCTable
@@ -55,7 +55,7 @@
 //   L517   §6 TAGE 更新：每槽算 provider 更新、useAltOnNa、分配、tick
 //   L637   §7 SC 更新：阈值自适应、决定是否更新 SC 表
 //   L692   §8 各表的 update 口：再打一拍送出
-//   L752   §9 perf：provider 命中数 / SC 因预测错更新数 / SC 因不自信更新数
+//   L753   §9 perf：provider 命中数 / SC 因预测错更新数 / SC 因不自信更新数
 //
 package tage_sc_pkg;
 
@@ -233,7 +233,7 @@ module xs_Tage_SC_core
   input  logic [5:0]            sc_resp       [NUM_SC][NUM_BR][2],   // [表][槽][TAGE 方向]
   output sc_upd_t               sc_upd        [NUM_SC],
   output logic [PC_W-1:0]       sc_upd_pc     [NUM_SC],
-  output logic [255:0]          sc_upd_ghist  [NUM_SC],     // [0] 不用（第 0 张 SC 表无 ghist 口）
+  output logic [255:0]          sc_upd_ghist  [1:NUM_SC-1], // 第 0 张 SC 表历史长度 0，没有 ghist 口
   // ---- 分配随机源（两份 LFSR 的低 3 位，每槽一份）----
   input  logic [2:0]            lfsr_bits     [NUM_BR],
   // ---- 更新 ----
@@ -742,10 +742,11 @@ module xs_Tage_SC_core
           sc_upd[k].old_ctrs[b]   <= um_sc_ctrs[b][k];
         end
         sc_upd_pc[k] <= update_pc;
-        // 第 0 张 SC 表历史长度 0，没有 ghist 口（golden 里也就没有这个寄存器）
-        if (k != 0) sc_upd_ghist[k] <= update_ghist_r;
       end
     end
+    // 第 0 张 SC 表历史长度 0，没有 ghist 口（golden 里也就没有这个寄存器）
+    for (int k = 1; k < NUM_SC; k++)
+      if (|sc_upd_mask) sc_upd_ghist[k] <= update_ghist_r;
   end
 
   // ===========================================================================
@@ -1137,7 +1138,7 @@ module Tage_SC
   logic [5:0]           sc_resp       [NUM_SC][NUM_BR][2];
   sc_upd_t              sc_upd        [NUM_SC];
   logic [PC_W-1:0]      sc_upd_pc     [NUM_SC];
-  logic [255:0]         sc_upd_ghist  [NUM_SC];
+  logic [255:0]         sc_upd_ghist  [1:NUM_SC-1];
   logic [2:0]           lfsr_bits     [NUM_BR];
   logic [NUM_BR-1:0]    s2_taken      [NUM_DUP];
   logic [NUM_BR-1:0]    s3_taken      [NUM_DUP];

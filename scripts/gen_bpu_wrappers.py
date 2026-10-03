@@ -296,7 +296,7 @@ TAGE_DECL = """
   logic [5:0]           sc_resp       [NUM_SC][NUM_BR][2];
   sc_upd_t              sc_upd        [NUM_SC];
   logic [PC_W-1:0]      sc_upd_pc     [NUM_SC];
-  logic [255:0]         sc_upd_ghist  [NUM_SC];
+  logic [255:0]         sc_upd_ghist  [1:NUM_SC-1];
   logic [2:0]           lfsr_bits     [NUM_BR];
   logic [NUM_BR-1:0]    s2_taken      [NUM_DUP];
   logic [NUM_BR-1:0]    s3_taken      [NUM_DUP];
