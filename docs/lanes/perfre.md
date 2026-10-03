@@ -116,4 +116,22 @@ f19 换 seed 后 missQueue `utilization/full/exHalf/empty/util_*/num_valids_*/L1
     python3 scripts/test_perf_tier_gate.py  # 注入 1..12 全部按预期红；第 0 条「未注入时闸是绿的」红 = 上面那 4 条真实 BLOCKING
     python3 scripts/test_perf_rebind_gate.py / test_hier_map_gate.py   # 全过
 
-tage 二分（TageTable*/TageBTable 回落 golden）：见报告（结果写在本节末尾）。
+## 7. tage 二分（构建 pin 同 310762f0，只把列出的重写件回落 golden；`PREP` 删掉对应 hier_rebind_decl 行）
+
+| 构建 | 回落 golden | bank_0 provided（g=4036） | bank_1 provided（g=1244） | bank_1 table_3 provided（g=1037） | alt_differs（g=617） | assert.log sha256 |
+|---|---|---|---|---|---|---|
+| f19 | 无 | 3007 | 215 | 8 | 618 | 0bb94dee…（见 §1） |
+| f19_notage2 | TageTable{,_1,_2,_3}+TageBTable | 3007 | **1244** | 8 | **617** | ecec7f6d39ac43a7a88cfccd1d2a1991dfb4af31701abc773f33b42eeb0837ef |
+| f19_nopred | 上面 + Predictor + Composer | 4036 | 215 | 8 | 618 | 8daa35424a36e70efd86131b76627f445a831e676783ded903a7615f0f6f8ad9 |
+
+结论：**不能定位到 TageTable/TageBTable/Predictor/Composer 中任何一个**——把它们全回落 golden 差异还在，而且各计数器在三版之间
+"跳来跳去"（同一个 1029 在 table_0 / table_3 / bim 之间换位置，bank_1 provided 在 notage2 恢复、在 nopred 又坏），
+总预测数与 commit 流（rob commitUop 12863=12863）不变。这是"命中哪张表取决于表里原有内容"的特征：TAGE 表项在开机后
+未写入前的初值（SRAM/array 内容、WrBypass 表项）参与 tag 比较。剩余嫌疑是这些表下面共用的重写层
+（xs_SRAMTemplate_core / FoldedSRAMTemplate / WrBypass 家族）与 golden `*_ext` 的 RANDOMIZE_MEM_INIT 初值口径不同；
+该差异对 initreg seed 不敏感（seed 实验不动），说明来源是存储阵列初始化而非寄存器 initreg。
+下一步（归 tage/SRAM owner lane）：在 golden 与 impl 两侧各打一次 +vcs+initmem+0（或 define 关 RANDOMIZE_MEM_INIT）再比；
+若两侧都 0 初始化后相等，即是初值口径问题而非逻辑问题。
+
+复跑：`PIN=310762f0… TAG=<tag> EXCLUDE="rtl/frontend/…" PREP="sed -i '/^TageTable/d;…' docs/hier_rebind_decl.tsv" JOBS=16 \
+ <scratchpad>/perfre/perfre_build.sh`（脚本在 scratchpad/perfre/perfre_build.sh，即 perfbind2_diag.sh + PIN/PREP）。
