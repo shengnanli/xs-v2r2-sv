@@ -61,3 +61,36 @@ constant_reg 的已知下限：每个 SRT16Divint 变体 iter_cons_reg_0/1/3/4 �
 查表在 8 行里恒定的位（例如四张表的值都是 4 的倍数 ⇒ `m[1:0]` 恒 0）经 sel_cons_reg / spec_cons_reg 以及 PRE1 装入的
 sel_reg/spec_reg 初值传成常量寄存器位——**没有逐位推算**，以 receipt 的 constant_reg 指认（fm_predict 的对账判据是
 差额 = constant_reg + unread）。
+
+## 5. 补登（official 签核跑之前提交；§4 数字不改）
+
+诊断跑（工作树 `make fm-<T> FM_MODE=diagnostic-full FM_FAILING_LIMIT=0`，不进 evidence）依次发现：
+
+1. **不钉点时 SRT16Divint 513 个 failing**（`_6` 也是 ≥20，截断）。按寄存器聚类：iter_cons_reg_3/4、spec_r2ud_reg_3/4
+   失败，iter_cons_reg_0/1 通过——FM 名字匹配把 golden `iter_cons_reg_3` 配给了核的 `iter_cons_nz_reg[3]`（实为 _4），
+   其余 sel_reg/spec_reg/iterB_reg/Bypass_final_rem_plus_d 的失败都是这一错配的连带。**不是 RTL 错**（UT 三车道 0 错），
+   是配对错。修法：`scripts/gen_srt16divint.py` 生成 `verif/ut/SRT16Divint/fm_pins_pre.tcl`，逐位把 iter_cons / spec_r2ud
+   四档钉成正确的一对（16/32/64 位分别 132/196/324 点，返回值计数 + 字面守卫）；VectorIdiv 同法生成 1600 点（8 个 SRT
+   子实例 + 8 个 I8DivNr4 的 const_d_reg_k[9] 32 点）。
+2. 钉点后（vmucp=false）：
+
+| 目标 | passing | failing | unmatched | constant | unread（全部 matched） |
+|---|---:|---:|---:|---:|---:|
+| SRT16Divint | 1157 | 0 | 0 | 0 | 8 |
+| SRT16Divint_4 | 1415 | 0 | 0 | 0 | 8 |
+| SRT16Divint_6 | 1929 | 0 | 0 | 0 | 8 |
+| VectorIdiv | 12284 | 0 | 0 | 8 | 96 |
+
+   - 对 §4 的偏差：**unread 预测 0（SRT）/ 32（VectorIdiv）均错**。SRT 的 8 个是 iter_cons_reg 四档的最高 2 位——
+     读者只有 IterBlock 整宽 CSA（该两位输出被截掉）和 POST 的 (iter_cons<<2) 截回 W 位，两侧都无读者；VectorIdiv
+     的 96 = 8 个 SRT 子实例 × 8 + 8 个 I8DivNr4 × 4。**constant_reg 预测 ≥14（SRT）也错**：实测 0——那些恒 0 位
+     FM 照样作为 passing 比较点计入（与第一阶段「恒 0 输出位计入 passing」同理）；VectorIdiv 的 8 = 8 个 I8DivNr4
+     各 1（与 I8DivNr4 单签同数）。各差额 = constant + unread，逐项指认：1165−1157=8、1423−1415=8、1937−1929=8、
+     12388−12284=104=8+96。
+3. vmucp 白名单 `verif/fm_target_config/{SRT16Divint,SRT16Divint_4,SRT16Divint_6,VectorIdiv}.tcl` + 两个 UT Makefile
+   `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true`，诊断复跑：passing 1165 / 1423 / 1937 / 12380，unread 0，failing 0。
+
+**official 复核判据**（`run_proof.sh SRT16Divint SRT16Divint SRT16Divint_4 SRT16Divint_6`、`run_proof.sh VectorIdiv VectorIdiv`）：
+SUCCEEDED；passing 1165 / 1423 / 1937 / 12380；failing 0；unread 0；unmatched 全 0；constant_reg 0 / 0 / 0 / 8；
+黑盒 0；dont_verify false；fm.log 含 `SRT16DIVINT_PINS: 132 / 132`、`SRT16DIVINT_4_PINS: 196 / 196`、
+`SRT16DIVINT_6_PINS: 324 / 324`、`VECTORIDIV_PINS: 1600 / 1600`。fm_predict 对账：差额 = 0 / 0 / 0 / 8（= constant_reg）。

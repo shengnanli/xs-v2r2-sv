@@ -39,3 +39,7 @@ include ../../../scripts/ut_common.mk
 INITREG  ?= 0
 VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)
+
+# 迭代常数寄存器的最高 2 位（以及 VectorIdiv 里 I8DivNr4 的 const_d_reg_k[9]）两侧都无读者（死位），
+# 钉点见 fm_pins_pre.tcl；按 vmucp standing rule 让 FM 真去比（白名单 verif/fm_target_config/<目标>.tcl）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
