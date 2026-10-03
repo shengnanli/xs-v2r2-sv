@@ -157,3 +157,21 @@ golden 闭包未变，所以预测 = 上一版 receipt（evidence/f19ef593a8df�
 | VIntAdder64b | 160 | **160** | 全 0 |
 
 可能出错处：fpdiv_r64_block 纯组合，FloatDividerR64 的寄存器集合不变，预期逐位同上一版；若 FDivSqrt 偏离，先查 merge/配对。
+
+## 对账 §2 §3（证明 commit `f0492477b`）
+
+| 目标 | 结果 | 模型 / 预测 / 实测 passing | constant_reg | failing / unverified / unread / unmatched | 黑盒 / dont_verify / vmucp | receipt sha256 |
+|---|---|---|---|---|---|---|
+| VectorFloatDividerR64 | SUCCEEDED | 649 / 649 / **649**（逐位相等） | 0 | 0 / 0 / 0 / 0 | 0 / 无 / 关 | `44d306054389a47c47db7b6b50db513b31779e0efd59765087a2977eedb28afc` |
+| FDivSqrt | SUCCEEDED | 2082 / 2052 / **2052** | 30（与上一版同） | 0 / 0 / 0 / 0 | 0 / 无 / 开（白名单不变） | `8c7d9829315bc2fb87aa07a92c8e7c8f20ed3b04c7270bcb767605205a84137f` |
+| Adder_chain_rnd | SUCCEEDED | 85 / 85 / **85** | 0 | 全 0 | 0 / 无 / 关 | `a9eacbb132eca4d86ad672bc8cd83949cd6ffd8e59fb509f1d77af9425419c00` |
+| DivUnit | SUCCEEDED | 3132 / 3132 / **3132** | 0 | 全 0 | 0 / 无 / 开 | `43a93a161fc6fbfa1860e14f47c0b9c2a2df1adf8bfb8d6bbf3e77744b118dbe` |
+| VIAluDecoder | SUCCEEDED | 12 / 12 / **12** | 0 | 全 0 | 0 / 无 / 关 | `e689eb1916502c3c86a84d81481e0f69c5db14d051cd1bbfafe7dd9d88d68264` |
+| VIntAdder64b | SUCCEEDED | 160 / 160 / **160** | 0 | 全 0 | 0 / 无 / 关 | `767804fe01db2471eeb778bda81d200d10224693fb7e793fd59449cbffa559ec` |
+
+`python3 scripts/fm_predict.py check VectorFloatDividerR64 FDivSqrt Adder_chain_rnd DivUnit VIAluDecoder VIntAdder64b fpdiv_r64_block` rc=0
+（FDivSqrt 差 30 = constant_reg 30 逐位指认；ArithVecLeaves5 五个目标因 Makefile 的 merge 是 `$(if …)` 表达式，fm_predict 判"模型不适用"，
+只给 BOUNDED 判决，预测数字以本节表为准，五个全部与登记相等）。
+receipt：`evidence/f0492477b75c/<目标>/receipt.json`。
+复跑：`PROOF_COMMIT=f0492477b bash scripts/run_proof.sh VectorFloatDividerR64 VectorFloatDividerR64 < /dev/null`；
+`PROOF_COMMIT=f0492477b bash scripts/run_proof.sh ArithVecLeaves5 FDivSqrt Adder_chain_rnd DivUnit VIAluDecoder VIntAdder64b < /dev/null`
