@@ -9,6 +9,10 @@
 #   bit0 结构上无读者；两侧是同一份 Scala 结构（golden 的 FarPathF32WidenF16MixedAdderPipeline
 #   与本仓重写件逐位对应的寄存器），死位对称。父级 FloatAdderF32WidenF16MixedPipeline 与 FAlu
 #   的白名单记录的是同一个点（当时两侧同读 golden）。
+# ---- 首跑实测（evidence/3e88b302e777/FarPathF32WidenF16MixedPipeline，vmucp 已开）----
+# native SUCCEEDED，passing 129 / failing 0 / constant_reg 12，unread 1 = 上述那一点，但它是
+#   **unmatched** unread（名字不同、无扇出签名），vmucp 单开空转 → 由
+#   verif/ut/FpAddPathF32W16/fm_pins.tcl 字面钉这 1 对（fail-closed），再交 vmucp 实比。
 # 六条复核判据（跑后在 prereg 对账里逐条落数）：精确绑定（恰这 1 点）/ 双射（ref 1 ↔ impl 1
 #   matched_nc）/ 真比较（vmucp 开后 passing 正好 +1）/ 全零（failing / unverified / unmatched 0）/
 #   无 dont_verify、无 elab147、无放宽 appvar、无黑盒 / 本文件进 sidecar script_closure，receipt 记 sha256。
