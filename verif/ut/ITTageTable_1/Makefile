@@ -57,10 +57,12 @@ include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS +vcs+initreg+random
 # ★initreg 三档（2026-10-03 agent/bpu-tables 补）★：INITREG=0 / random / <seed>017；后两档用 initreg 配置文件，
-# 其余状态随机、厂商 SRAM 行为模型（array_6_ext）存储钉 0（表项 SRAM 无复位，两实例读"从没写过"的条目随机值不同 ——
+# 其余状态随机、厂商 SRAM 行为模型（array_6_ext）存储与 golden SRAM 包装链（FoldedSRAMTemplate_22 / SRAMTemplate_76 / SplittedSRAMTemplate_25，两侧同一份 golden 模块）
+# 的读出保持寄存器钉 0（表项 SRAM 与读出保持寄存器都无复位，两实例读"从没写过"的条目 / 未读过的 bank 时随机值不同 ——
+# seed 42 random 档实测 ITTageTable_2 开比当拍 4 位分叉；
 # tb 先写后读契约，同 verif/ut/ITTage）。厂商叶子 .v 只给 VCS，FM 两侧黑盒（verif/vendor_boundary.tsv）。
 INITREG ?= 0
-SRAM_LEAVES = array_6_ext
+SRAM_LEAVES = array_6_ext FoldedSRAMTemplate_22 SRAMTemplate_76 SplittedSRAMTemplate_25
 ifeq ($(INITREG),0)
 SIM_ARGS += +vcs+initreg+0
 else
