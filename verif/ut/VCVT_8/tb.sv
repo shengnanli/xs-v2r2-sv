@@ -16,6 +16,13 @@
 `timescale 1ns/1ps
 module tb import cvt_tb_pkg::*; ;
   int unsigned NCYCLES = 200000;
+  // ★暖机★：golden 有不复位、只在流水推进时才写的寄存器（fflags0_reg1 / s2 选择位 /
+  //   outputWidth1H / outEew / perfVec …）。+vcs+initreg+random 给两个实例各摇各的初值，
+  //   这些寄存器在第一次被写之前的读数两侧必然不同 —— 那是 tb 读了「从没写过且不复位」的
+  //   寄存器，不是 RTL 差异（CONVENTIONS「读一个从没写过、而且不复位的寄存器」一节）。
+  //   所以复位后连发 WARM-5 拍有效请求把整条流水写满，从第 WARM 拍起才比较；
+  //   复位域本身归 FM 管（UT 结构上看不见）。
+  localparam int WARM = 12;
   longint errors = 0, checks = 0;
   int cyc;
   bit clock = 0;
@@ -218,7 +225,7 @@ module tb import cvt_tb_pkg::*; ;
     foreach (hist[k]) begin hist[k].valid = 0; hist[k].vm = 0; hist[k].vuopIdx = 0; hist[k].vl = 0; hist[k].v0 = 0; end
     for (cyc = 0; cyc < NCYCLES; cyc++) begin
       @(posedge clock); #1;
-      compare_all();
+      if (cyc >= WARM) compare_all();
       for (int b = 0; b < 5; b++) if (g_io_out_bits_res_fflags[b]) cov_fl[b]++;
       if (|g_io_out_bits_res_data) cov_data_nz++;
       // ---- 新激励 ----
@@ -226,6 +233,7 @@ module tb import cvt_tb_pkg::*; ;
       pick_op(op, sew);
       io_in_valid                  = ($urandom_range(0, 9) < 7);
       io_out_ready                 = ($urandom_range(0, 9) != 0);
+      if (cyc >= 5 && cyc < WARM) begin io_in_valid = 1; io_out_ready = 1; end
       io_in_bits_ctrl_fuOpType     = ($urandom_range(0, 99) < 92) ? {1'b0, op} : 9'($urandom);
       io_in_bits_ctrl_vpu_vsew     = sew;
       io_in_bits_ctrl_vpu_vlmul    = 3'($urandom);

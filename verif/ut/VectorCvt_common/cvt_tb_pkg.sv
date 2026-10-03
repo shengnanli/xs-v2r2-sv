@@ -188,6 +188,12 @@ package cvt_tb_pkg;
         e = (w == 32) ? (127 - 26 + $urandom_range(0, 46)) : (bias + $urandom_range(0, 40) - 20);
         return mk_fp(w, s, e, f);
       end
+      14: begin                                                       // 2^(k+1) 的正下方（尾数全 1）：饱和/上溢/舍入进位边界
+        longint unsigned e;
+        e = bias + $urandom_range(0, 33);
+        if (e >= emax) e = emax - 1;
+        return mk_fp(w, s, e, ((64'h1 << fw) - 1) >> $urandom_range(0, 2));
+      end
       default: return rnd64() & ((w == 64) ? 64'hFFFF_FFFF_FFFF_FFFF : ((64'h1 << w) - 1));
     endcase
   endfunction

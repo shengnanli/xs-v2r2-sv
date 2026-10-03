@@ -700,11 +700,13 @@ module xs_CVT32_core (
                  | is_int2fp_reg0 & (out_is_fp32_reg0 | int16tofp16_reg0 | int8tofp16_reg0) & rnd_inexact
                  | int32tofp16_reg0 & (exp_of_reg0 | rnd_inexact);
 
-  // i32 -> f16 上溢的结果：按舍入方向给最大有限数或 Inf
+  // i32 -> f16 上溢的结果：按舍入方向给最大有限数或 Inf。
+  // Scala 写成单路 Mux1H(Seq(is_int2fp_reg0), ...)，而单路 Mux1H 直接返回那一路的值 ——
+  // is_int2fp_reg0 并不门控（FM 首跑因为这里多加了门控而在 result0_reg1[15:0] 上 16 点 failing）。
   logic        rmin_reg0;
   logic [15:0] result_fp;
   assign rmin_reg0 = rm_reg0 == 3'h1 | rm_reg0 == 3'h2 & ~sign_reg0 | rm_reg0 == 3'h3 & sign_reg0;
-  assign result_fp = is_int2fp_reg0 ? {sign_reg0, rmin_reg0 ? 15'h7BFF : 15'h7C00} : 16'h0;
+  assign result_fp = {sign_reg0, rmin_reg0 ? 15'h7BFF : 15'h7C00};
 
   // f2i 整数结果：左路或右路的绝对值，有符号负数取负
   logic [31:0] int_abs_reg0, int_reg0;
