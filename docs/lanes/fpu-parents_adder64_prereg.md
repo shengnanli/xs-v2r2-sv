@@ -100,3 +100,16 @@ fp_c 每位、fflags 每位（DZ/UF 为 golden 字面 0）都翻转过。
 14/14 CAUGHT：close lzd 偏一（18082）、下限掩码偏一（1408）、head_is_one 用 >=（1566）、NX 漏 sel_cs4（239）、恰好抵消符号改 RUP（575）、
 CS4 减数没右移（239）、far 加法改按位或（17093）、fadd 漏"0 对 1 走 far"项（1）、f16 −0 只复制 1 份（6）、fmin 用 b_greater（896）、
 flt 只在 sNaN 置 NV（230）、fclass 次正规/零对调（40）、b 为零时清 f16 高位（97）、is_far_path 用 [7:2]（112）。
+
+## 对账 §1 §2（证明 commit `5990b596a`，`PROOF_COMMIT=5990b596a bash scripts/run_proof.sh <ut> <T> < /dev/null`）
+
+| 目标 | 结果 | 模型 / 预测 / 实测 passing | constant_reg | unread / unmatched / 黑盒 / dont_verify | 钉点回显 | receipt sha256 |
+|---|---|---|---:|---|---|---|
+| FarPathAdderF64WidenPipeline | SUCCEEDED | 162 / 162 / **162** | 0 | 0 / 0 / 0 / 无 | n=0 expect=0 | `3006cb3136bc2765b5eb6742712ff27644235333be2d97a33ed94c26a74818bb` |
+| ClosePathFloatAdderF64WidenPipeline | SUCCEEDED | 434 / 433 / **433** | 1 | 0 / 0 / 0 / 无 | n=3 expect=3 | `1e86ef535471e32f7c09f0460bc19af5b5c206c5fbd8ba11827f98784a7c6e7e` |
+| FloatAdderF32F16MixedPipeline | SUCCEEDED | 396 / 360 / **360** | 36 | 0 / 0 / 0 / 无 | n=4 expect=4 | `0199ff7a12da8dbe11489e2d04eede489c1139dc6b59da365a86f5caea6a7656` |
+
+failing / unverified / aborted 全 0。三目标预测与实测逐项相等；`python3 scripts/fm_predict.py check` 三目标 rc=0（差额全部被 constant_reg 指认）。
+vmucp 六条：精确绑定（Close 3 点 / FloatAdder 4 点，见各 fm_target_config）/ 双射（钉点 3↔3、4↔4，fm.log 回显）/
+真比较（Close 诊断跑 431 → 433 = +2、恒 0 的 op1[52] 归 constant_reg 1；FloatAdder 357 → 360 = +3、constant_reg 35 → 36）/
+全零 / 无 dont_verify、无 elab147、无黑盒 / tcl 进 sidecar script_closure。receipt 目录 `evidence/5990b596a86b/<T>/`。
