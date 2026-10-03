@@ -5,7 +5,9 @@
 两侧各自带自己的 child：golden 侧是 golden Queue1_*，重写侧是派生的 Queue1_*_xs（rtl/frontend 已签核件）。
 深度 1 队列的存储寄存器不复位（golden `always @(posedge clock) if (do_enq)`）：+random 档两侧初值不同，
 所以等第一次入队之后再比 —— arm = 一次 enq（Pipeline_2/_3 要求 in.valid & in.ready；_10/_11 无 ready
-端口，in.valid 即入队），Pipeline_10 两级串联、第二级晚一拍写入，再加 arm_delay=1。
+端口，in.valid 即入队），且必须在复位撤销之后：复位期间 valid 位被异步复位压住，第一级虽写了
+存储、却不会把数据推进第二级（seed 42 × random 档实测：只认"复位中入队"时 Pipeline_10 第二级
+存储仍是两侧各自的随机初值，假失配 2 拍）。Pipeline_10 两级串联、第二级晚一拍写入，再加 arm_delay=1。
 激励：in.valid 按 mode 分稀疏/稠密/全随机；out.ready（_2/_3）3/4 为 1，让"满且下游不收"的反压也出现。
 
 用法：python3 gen.py [--check]
@@ -39,13 +41,13 @@ PIPE_COV = [
 
 PAIRS = [
     Pair("Pipeline_2", "p2_", clocked=True, stim=READY_STIM, cov=DECOUPLED_COV,
-         arm=["@io_in_valid && @io_in_ready"]),
+         arm=["@io_in_valid && @io_in_ready && !@reset"]),
     Pair("Pipeline_3", "p3_", clocked=True, stim=READY_STIM, cov=DECOUPLED_COV,
-         arm=["@io_in_valid && @io_in_ready"]),
+         arm=["@io_in_valid && @io_in_ready && !@reset"]),
     Pair("Pipeline_10", "p10_", clocked=True, stim=VALID_STIM, cov=PIPE_COV,
-         arm=["@io_in_valid"], arm_delay=1),
+         arm=["@io_in_valid && !@reset"], arm_delay=1),
     Pair("Pipeline_11", "p11_", clocked=True, stim=VALID_STIM, cov=PIPE_COV,
-         arm=["@io_in_valid"]),
+         arm=["@io_in_valid && !@reset"]),
 ]
 
 HEADER = """

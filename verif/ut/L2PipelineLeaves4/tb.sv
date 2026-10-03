@@ -326,7 +326,7 @@ module tb;
         if (p2_g_io_out_valid && !p2_io_out_ready) p2_cov_backpressure++;
         if (p2_io_in_valid && p2_g_io_in_ready && p2_g_io_out_valid && p2_io_out_ready) p2_cov_enq_deq_same++;
       end
-      if (p2_io_in_valid && p2_g_io_in_ready) p2_armed[0] = 1'b1;
+      if (p2_io_in_valid && p2_g_io_in_ready && !p2_reset) p2_armed[0] = 1'b1;
       if (p2_armed_at < 0 && (&p2_armed)) p2_armed_at = cyc + 1;
       if (cyc >= RESET_CYC + 0 && (&p3_armed)) begin
         checks++;
@@ -355,7 +355,7 @@ module tb;
         if (p3_g_io_out_valid && !p3_io_out_ready) p3_cov_backpressure++;
         if (p3_io_in_valid && p3_g_io_in_ready && p3_g_io_out_valid && p3_io_out_ready) p3_cov_enq_deq_same++;
       end
-      if (p3_io_in_valid && p3_g_io_in_ready) p3_armed[0] = 1'b1;
+      if (p3_io_in_valid && p3_g_io_in_ready && !p3_reset) p3_armed[0] = 1'b1;
       if (p3_armed_at < 0 && (&p3_armed)) p3_armed_at = cyc + 1;
       if (cyc >= RESET_CYC + 0 && p10_armed_at >= 0 && cyc >= p10_armed_at) begin
         checks++;
@@ -375,7 +375,7 @@ module tb;
         if (p10_io_in_valid) p10_cov_enq++;
         if (p10_g_io_out_valid) p10_cov_out++;
       end
-      if (p10_io_in_valid) p10_armed[0] = 1'b1;
+      if (p10_io_in_valid && !p10_reset) p10_armed[0] = 1'b1;
       if (p10_armed_at < 0 && (&p10_armed)) p10_armed_at = cyc + 1 + 1;
       if (cyc >= RESET_CYC + 0 && (&p11_armed)) begin
         checks++;
@@ -395,7 +395,7 @@ module tb;
         if (p11_io_in_valid) p11_cov_enq++;
         if (p11_g_io_out_valid) p11_cov_out++;
       end
-      if (p11_io_in_valid) p11_armed[0] = 1'b1;
+      if (p11_io_in_valid && !p11_reset) p11_armed[0] = 1'b1;
       if (p11_armed_at < 0 && (&p11_armed)) p11_armed_at = cyc + 1;
     end
 
