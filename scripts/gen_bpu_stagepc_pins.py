@@ -16,6 +16,9 @@ fail-closed（生成期）：golden 寄存器名与位宽从 G1 golden 现读；
   恰好被一条规则认领（多认领 / 漏认领都拒绝生成）；映射必须单射；位宽来自 golden 声明。
 fail-closed（运行期）：生成的 tcl 逐条数 set_user_match 返回值（catch 只用来计数失败），成功数必须等于字面总数，否则 error。
 
+父级：PARENTS 里的父目标（Composer）的 fm_pins_pre.tcl 里维护一个 GENERATED(bpu-child-pins) 区，
+  把各预测器子实例的钉点加实例前缀并入；父级自己的钉点在区外、不碰。
+
 用法：
     python3 scripts/gen_bpu_stagepc_pins.py            # 生成全部目标（幂等）
     python3 scripts/gen_bpu_stagepc_pins.py --check    # 产物与生成器不一致则 rc=1
@@ -118,7 +121,8 @@ TARGETS = {
 }
 
 
-def pairs_for(top):
+def pairs_for(top, prefix=""):
+    """top = 预测器模块名；prefix = 它在父级里的实例层次（父级钉点用，如 Composer 的 "tage/"）。"""
     rules_fn, full = TARGETS[top]
     rules = [(re.compile(rx), fn) for rx, fn in rules_fn()]
     out = []
@@ -139,7 +143,7 @@ def pairs_for(top):
                 impl = base[:m.start()] + "[%d]" % (int(m.group(1)) + b)
             else:
                 impl = base + ("[%d]" % b if w > 1 else "")
-            out.append((ref, impl))
+            out.append((prefix + ref, prefix + impl))
     refs = [r for r, _ in out]
     impls = [i for _, i in out]
     if len(set(refs)) != len(refs) or len(set(impls)) != len(impls):
@@ -147,6 +151,48 @@ def pairs_for(top):
     if not out:
         die("%s: 一条钉点都没有" % top)
     return out
+
+
+# 父级：在父级的 fm_pins_pre.tcl 里维护一个 GENERATED 区，把各预测器子实例的钉点按实例层次前缀并入
+# （父级自己的钉点在 GENERATED 区外，由父级自己的工具维护，本生成器不碰）。
+PARENTS = {
+    "Composer": [("FauFTB", "uftb/"), ("Tage_SC", "tage/"), ("ITTage", "ittage/")],
+}
+PBEGIN = "# BEGIN GENERATED(bpu-child-pins) —— scripts/gen_bpu_stagepc_pins.py 生成，勿手改\n"
+PEND = "# END GENERATED(bpu-child-pins)\n"
+
+
+def render_parent(parent):
+    prs = []
+    for child, pfx in PARENTS[parent]:
+        prs += pairs_for(child, pfx)
+    if len(set(r for r, _ in prs)) != len(prs) or len(set(i for _, i in prs)) != len(prs):
+        die("%s: 子实例钉点合并后不是单射" % parent)
+    n = len(prs)
+    L = []
+    L.append("# 子实例（%s）的 FM 匹配前钉点，共 %d 位：规则同各预测器自己的钉点（见生成器），只是路径加实例前缀。"
+             % (" / ".join("%s=%s" % (pfx.rstrip("/"), c) for c, pfx in PARENTS[parent]), n))
+    L.append("if {$top eq \"%s\"} {" % parent)
+    L.append("  set _cn 0")
+    L.append("  set _cmiss 0")
+    L.append("  set _cpairs {")
+    for r, i in prs:
+        L.append("    {%s %s}" % (esc(r), esc(i)))
+    L.append("  }")
+    L.append("  foreach _p $_cpairs {")
+    L.append("    set _r \"r:/WORK/$top/[lindex $_p 0]\"")
+    L.append("    set _i \"i:/WORK/$top/[lindex $_p 1]\"")
+    L.append("    if {[catch {set_user_match $_r $_i} _msg]} {")
+    L.append("      incr _cmiss")
+    L.append("      if {$_cmiss <= 10} { puts \"BPU_CHILD_PIN_FAIL: $_r <-> $_i ($_msg)\" }")
+    L.append("    } else {")
+    L.append("      incr _cn")
+    L.append("    }")
+    L.append("  }")
+    L.append("  puts \"BPU_CHILD_PINS: $_cn / %d pinned, $_cmiss missed\"" % n)
+    L.append("  if {$_cmiss != 0 || $_cn != %d} { error \"BPU_CHILD_PIN_MISS=$_cmiss n=$_cn\" }" % n)
+    L.append("}")
+    return "\n".join(L) + "\n"
 
 
 def esc(x):
@@ -185,9 +231,21 @@ def render(top):
 def main():
     check = "--check" in sys.argv[1:]
     rc = 0
-    for top in sorted(TARGETS):
+    jobs = [(top, render(top)) for top in sorted(TARGETS)]
+    for parent in sorted(PARENTS):
+        p = os.path.join(REPO, "verif", "ut", parent, "fm_pins_pre.tcl")
+        cur = open(p).read()
+        if cur.count(PBEGIN) == 0 and cur.count(PEND) == 0:
+            base = cur.rstrip("\n") + "\n\n" + PBEGIN + PEND
+        elif cur.count(PBEGIN) == 1 and cur.count(PEND) == 1:
+            base = cur
+        else:
+            die("%s 里 GENERATED 标记不是恰好一对" % p)
+        a = base.index(PBEGIN) + len(PBEGIN)
+        b = base.index(PEND)
+        jobs.append((parent, base[:a] + render_parent(parent) + base[b:]))
+    for top, txt in jobs:
         p = os.path.join(REPO, "verif", "ut", top, "fm_pins_pre.tcl")
-        txt = render(top)
         old = open(p).read() if os.path.exists(p) else None
         rel = os.path.relpath(p, REPO)
         if check:
