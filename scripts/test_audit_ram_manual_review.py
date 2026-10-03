@@ -15,7 +15,9 @@
   S1 别的父级（L2Top）                       S2 别的 ram（ram_16x25）
   S3 同一父级里别的路径                       S4 两侧不对称（impl 缺）
   S5 一侧两个实例                             S6 class 不是 APPROVED_MEMORY_MACRO_MODEL
-  C0 fm_verdict 在 HEAD 上验 GrantBuffer 证书：Slice 通过
+  C0 fm_verdict 在「最近一次更新 GrantBuffer 证书的 commit」上验证书：Slice 通过
+     （锚在那个 commit 而不是 HEAD：HEAD 上证书是否新鲜是集成状态，不是本判据对错；
+      证书过期时 Slice 的正式判定会自己变红，那由 fm_verdict 管，不该让负测跟着漂）
   C1 GrantBuffer 证书失效（在没有证书的 commit 上验）→ 红
   C2 GrantBuffer impl 闭包字节变了 → 红    C3 golden 闭包字节变了 → 红    C4 G1 不同源 → 红
 用法: python3 scripts/test_audit_ram_manual_review.py
@@ -106,7 +108,10 @@ def scope_cases():
     canon = (pathlib.Path(os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical')
              / 'CANONICAL_ID.txt').read_text().strip()
     decl = {('r' if e['side'] == 'r' else 'i', e['design'], e['path']): e for e in sl}
-    chk('C0 HEAD 上 GrantBuffer 证书有效', F._ram_parent_scope_check(decl, 'Slice', 'HEAD', canon), True)
+    anchor = subprocess.check_output(
+        ['git', '-C', str(REPO), 'log', '--format=%H', '-1', '--',
+         'verif/proof_certificates/GrantBuffer.json']).decode().strip()
+    chk('C0 证书 commit 上 GrantBuffer 证书有效', F._ram_parent_scope_check(decl, 'Slice', anchor, canon), True)
     # 没有 GrantBuffer 证书的 commit（main 分叉点之前）：证书不在 → 红
     nocert = subprocess.check_output(
         ['git', '-C', str(REPO), 'log', '--format=%H', '-1', '--diff-filter=A', '--',
@@ -115,7 +120,7 @@ def scope_cases():
     chk('C1 证书不在该 commit', F._ram_parent_scope_check(decl, 'Slice', parent, canon), False)
     # 证书失效：GrantBuffer 闭包里任一文件字节变了（在证书副本里把一条 impl sha 翻一位来模拟）
     import types
-    ctx, _e = F._cert_ctx('HEAD')
+    ctx, _e = F._cert_ctx(anchor)
     real = ctx['PC']
 
     def tamper(field):
