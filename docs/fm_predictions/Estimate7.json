@@ -1,0 +1,10 @@
+{
+  "target": "Estimate7",
+  "ut": "Estimate7",
+  "regs": 190,
+  "outs": 69,
+  "expected": 259,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额候选：fracSrcLeft[11:0] 恒 0（带复位）；fflags[1](UF) 恒 0；expAdderIn0[12] 恒 0 且不读；expAdderIn1[12] 不读（golden 只用 12 位和）——两侧对称，若 unread>0 走 vmucp"
+}
