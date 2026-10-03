@@ -18,6 +18,13 @@
   7. 解除条件留空：gap 台账的 lift_condition 空着 = 只登记不给出路，必须红。
   8. dump 时刻不同：两侧 dump 时刻不一致时整份比对不可信（D_INVARIANT 档的前提
      就是"同 dump 时刻"），必须红。
+ 13-15. 初值设定（codex 0207 P1，Z0）：台账头缺 init_contract、某侧 [PERFCFG] 不是 Z0、
+     两侧运行条件不一致，各自必须红在判据 D。
+
+★夹具不依赖真实台账里"恰好有哪些差异行"★：Z0 口径下真实 mismatch 台账可以是 0 行，
+那样 1/2/4 就无从注入。所以 fresh() 总是往夹具里补一条与当前分档台账一致的
+WAIVED 行（Tage_SC 的 bank_1_tage_table_3_provided_at_pred，C_DIAG/owner 未重写），
+1/2/4 都对它下手。
 
 另外还钉住两条**纯函数**判据（不经文件，直接调 `perf_compare.verdict_of`）：
   9. 豁免只在 C_DIAG + owner_rewritten==no 时成立，其余组合一律 BLOCKING。
@@ -53,10 +60,31 @@ def run(d):
     return p.returncode, p.stdout.decode(errors='replace')
 
 
+FIX_SCOPE_SUFFIX = 'frontend.inner.bpu.predictors.tage'
+FIX_NAME = 'bank_1_tage_table_3_provided_at_pred'
+
+
+def fixture_row():
+    for ln in (REPO / 'docs' / 'perf_tier_ledger.tsv').read_text().splitlines():
+        f = ln.split('\t')
+        if len(f) > 9 and f[2] == FIX_NAME and f[1].endswith(FIX_SCOPE_SUFFIX):
+            assert f[3] == 'C_DIAG' and f[9] == 'no', '夹具计数器的档位变了：%s/%s' % (f[3], f[9])
+            return '\t'.join([f[3], f[1], f[2], '1037', '8', '-1029', f[8], f[9], 'WAIVED',
+                              'C_DIAG 且持有模块本轮未重写（codex 0162 D3）'])
+    raise SystemExit('分档台账里找不到夹具计数器 %s' % FIX_NAME)
+
+
+FIX_ROW = fixture_row()
+
+
 def fresh():
     d = pathlib.Path(tempfile.mkdtemp())
     for f in FILES:
         shutil.copy(str(REPO / 'docs' / f), str(d / f))
+    m = d / 'perf_mismatch_ledger.tsv'
+    t = m.read_text()
+    if ('\t' + FIX_NAME + '\t') not in t:
+        m.write_text(t.rstrip('\n') + '\n' + FIX_ROW + '\n')
     return d
 
 
@@ -106,12 +134,12 @@ expect_red('1 Tage_SC 一旦重写，6 条 provider 豁免必须失效',
 
 # ---------------------------------------------------------------- 2 档位被改松
 def loosen(t):
-    """把 storeQueue:vaddr_match_failed 在 tier 台账里改成 B_CONTROL，
+    """把夹具计数器在 tier 台账里改成 B_CONTROL，
     而 mismatch 台账里还记着 C_DIAG/WAIVED —— 闸必须发现这两处对不上。"""
     out = []
     for ln in t.splitlines():
         f = ln.split('\t')
-        if len(f) > 3 and f[2] == 'vaddr_match_failed' and f[3] == 'C_DIAG':
+        if len(f) > 3 and f[2] == FIX_NAME and f[3] == 'C_DIAG':
             f[3] = 'B_CONTROL'
             ln = '\t'.join(f)
         out.append(ln)
@@ -143,7 +171,7 @@ def drop_row(t):
     lines = t.splitlines()
     for i, ln in enumerate(lines):
         f = ln.split('\t')
-        if len(f) > 2 and f[2] == 'vaddr_match_failed':
+        if len(f) > 2 and f[2] == FIX_NAME:
             del lines[i]
             break
     return '\n'.join(lines) + '\n'
@@ -197,6 +225,32 @@ expect_red('8 两侧 dump 时刻不同 → 红',
            'perf_mismatch_ledger.tsv',
            lambda t: t.replace('# dump_times_equal  True', '# dump_times_equal  False'),
            'D dump_times_equal')
+
+# ---------------------------------------------------------------- 13-15 初值设定 Z0
+def hdr_edit(key, fn):
+    def f(t):
+        out = []
+        for ln in t.splitlines():
+            if ln.startswith('# %s ' % key):
+                ln = fn(ln)
+                if ln is None:
+                    continue
+            out.append(ln)
+        return '\n'.join(out) + '\n'
+    return f
+
+
+expect_red('13 台账头没有 init_contract → 红',
+           'perf_mismatch_ledger.tsv', hdr_edit('init_contract', lambda ln: None),
+           'D init_contract')
+expect_red('14 impl 侧 [PERFCFG] 是 +vcs+initreg+random → 红',
+           'perf_mismatch_ledger.tsv',
+           hdr_edit('impl_cfg', lambda ln: ln.replace('initreg_plusarg=0', 'initreg_plusarg=random')),
+           'D 两侧初值设定')
+expect_red('15 两侧 seed 不一致 → 红',
+           'perf_mismatch_ledger.tsv',
+           hdr_edit('golden_cfg', lambda ln: ln.replace('seed=default', 'seed=987654321')),
+           'D 两侧初值设定')
 
 # ---------------------------------------------------------------- 9/10 纯函数判据
 cases = [
@@ -328,4 +382,4 @@ if fails:
     for f in fails:
         print('   ' + f)
     sys.exit(1)
-print('test_perf_tier_gate: 全部通过（%d 条注入都让闸红了，撤掉都绿）' % 8)
+print('test_perf_tier_gate: 全部通过（%d 条注入都让闸红了，撤掉都绿）' % 11)

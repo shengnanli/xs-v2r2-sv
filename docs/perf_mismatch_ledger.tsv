@@ -10,34 +10,28 @@
 #   要有那两份 assert.log）。currency 由 scripts/check_perf_tier.py 判据 E
 #   保证：它每次跑闸都拿**当前**台账重算 tier/owner_rewritten/verdict，
 #   与这里记的对不上就红。
+# 初值口径 Z0（codex 0207 P1）：两侧无 RANDOMIZE_*、编译期 +vcs+initreg+random、运行期
+#   +vcs+initreg+0，凭两份 assert.log 的 [PERFCFG] 行（下面 golden_cfg/impl_cfg 原样抄录）。
+#   原模式（RANDOMIZE_*）下的 tage provider 等差异来自 simulation-only 的无种子 $random
+#   初值流随模块替换平移，不据此改 RTL（docs/lanes/tage-initmem.md）。
 #
-# commit            310762f06710edac526842b48e897136a0e69407
-# golden_log        /home/eda/xs-env/sim-work/perfbind-runs/golden_cm20k/assert.log
-# golden_log_sha256 6ceb4c0d99a048ad622035f392194dd1212dedff8457a42074e9371ea930ae39
-# impl_log          /home/eda/xs-env/sim-work-perfre/f19/run/cm20k/assert.log
-# impl_log_sha256   0bb94deec40dae726a6748918e0203d626eebb59b056662ef7a11f6feac31c32
-# tier_ledger_sha256 a9b8d86bd70313ec95f1cc034ad3b0b2f72a64271a7634bca42ccaf122585dc7
-# gap_ledger_sha256  29b04d8cf152af473f721c0b41c7cfc5b60328b474c752594848537729306841
+# commit            c7e115154593ccd2b24eb670931bf659dd7bbbd7
+# golden_log        /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/tage-initmem/z0main/golden/run/coremark-2-iteration-20000/assert.log
+# golden_log_sha256 1489d6299121b59869c6be09266a18c742d3b540f5cd067c7aa967fbba8c4785
+# impl_log          /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/tage-initmem/z0main/impl/run/coremark-2-iteration-20000/assert.log
+# impl_log_sha256   19ab356ee767ccfedf19da35d14c4ccaf2f8a467d32aa6e745ccb12c11ea1744
+# tier_ledger_sha256 88d9815982223784d2574b901d666df5abff90a83458559bcb1daf1c70f176c5
+# gap_ledger_sha256  7978af83f01a6b01d441435da1f3011c2f56f0c9da09dc353b84cd9739371720
 # dump_times_equal  True
+# init_contract     Z0
+# golden_cfg        randomize_defines=none initreg_plusarg=0 initreg_probe_reg=0000000000000000 initreg_probe_mem=00000000 workload=/home/eda/xs-env/XiangShan/ready-to-run/coremark-2-iteration.bin seed=default max_cycles=20000
+# impl_cfg          randomize_defines=none initreg_plusarg=0 initreg_probe_reg=0000000000000000 initreg_probe_mem=00000000 workload=/home/eda/xs-env/XiangShan/ready-to-run/coremark-2-iteration.bin seed=default max_cycles=20000
 # compared          25427
-# MATCH 9950 / MISMATCH 13 / EXCLUDED 15464 / MISSING 0
-# WAIVED 9 / BLOCKING 4
+# MATCH 9771 / MISMATCH 0 / EXCLUDED 15656 / MISSING 0
+# WAIVED 0 / BLOCKING 0
 # 复跑:
 #   python3 scripts/perf_compare.py \
-#     /home/eda/xs-env/sim-work/perfbind-runs/golden_cm20k/assert.log \
-#     /home/eda/xs-env/sim-work-perfre/f19/run/cm20k/assert.log --all --emit-mismatch docs/perf_mismatch_ledger.tsv
+#     /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/tage-initmem/z0main/golden/run/coremark-2-iteration-20000/assert.log \
+#     /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/tage-initmem/z0main/impl/run/coremark-2-iteration-20000/assert.log --all --emit-mismatch docs/perf_mismatch_ledger.tsv
 #
 tier	scope	name	golden	impl	delta	owner_modules	owner_rewritten	verdict	criterion
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_0_tage_provided_at_pred	4036	3007	-1029	Tage_SC	no	BLOCKING	B_CONTROL 档必须相等
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_0_tage_table_0_provided_at_pred	2304	1275	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_0_tage_use_bim_at_pred	15964	16993	+1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_1_tage_provided_at_pred	1244	215	-1029	Tage_SC	no	BLOCKING	B_CONTROL 档必须相等
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_1_tage_table_3_provided_at_pred	1037	8	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_1_tage_use_bim_at_pred	18756	19785	+1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_agree_at_pred	3950	2921	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_conf_at_pred	5032	2974	-2058	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_disagree_at_pred	1082	53	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_used_at_pred	5280	3222	-2058	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-B_CONTROL	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	tage_bank_0_alt_differs	617	618	+1	Tage_SC	no	BLOCKING	B_CONTROL 档必须相等
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.uftb	uftb_replace_way_0	1435	47	-1388	FauFTB	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
-C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.storeQueue	vaddr_match_failed	24	17	-7	StoreQueue	yes	BLOCKING	C_DIAG，但持有模块已重写(yes) —— 豁免不再成立
