@@ -4,7 +4,8 @@
 四对：golden <V> vs <V>_xs，全部输出逐拍逐位比较。内层 SRAMTemplate 带 shouldReset（复位后用
 256 拍把 256 组清零，期间读写不 ready）与 holdRead（读出数据保持到下次读）——所以：
   * reset 只偶尔打（约每 20000 拍一次），给清表留时间；上电后先等 300 拍（warmup）；
-  * 读出保持寄存器不复位：第一次读请求之后再等 2 拍才开始比（arm）。
+  * 读出保持寄存器不复位：上电清表（300 拍）之后的第一次读请求再等 2 拍才开始比（arm）——
+    清表期间 SRAM 不接读请求，那之前的读请求不会写保持寄存器。
 激励：set 下标 3/4 时间挤在 16 组里（写过的组很快被读到）、其余全随机；读写各约一半（单口，
 写优先压读也会发生）；MBIST / SRAM 控制 DFT 口 15/16 时间钉 0、其余随机。
 
@@ -44,7 +45,7 @@ COV = [
 
 PAIRS = [Pair(top, x, clocked=True, stim=stim(top, x), cov=COV,
               reset_period=20000, mode_period=2000, warmup=300, cov_min=5,
-              arm=["@io_r_req_valid"], arm_delay=2)
+              arm=["cyc > 300 && !@reset && @io_r_req_valid"], arm_delay=2)
          for top, x in VARIANTS]
 
 HEADER = """自动生成：verif/ut/SRAMTemplateWithFixedWidth/gen.py（scripts/dual_tb_lib.py，读 G1 golden 端口表）—— 勿手改

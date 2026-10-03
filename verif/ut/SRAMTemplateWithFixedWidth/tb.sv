@@ -566,7 +566,7 @@ module tb;
         if (f0_io_r_req_valid && f0_io_w_req_valid) f0_cov_rw_same++;
         if (f0_reset && cyc > 1000) f0_cov_reset_mid++;
       end
-      if (f0_io_r_req_valid) f0_armed[0] = 1'b1;
+      if (cyc > 300 && !f0_reset && f0_io_r_req_valid) f0_armed[0] = 1'b1;
       if (f0_armed_at < 0 && (&f0_armed)) f0_armed_at = cyc + 1 + 2;
       if (cyc >= RESET_CYC + 300 && f4_armed_at >= 0 && cyc >= f4_armed_at) begin
         checks++;
@@ -588,7 +588,7 @@ module tb;
         if (f4_io_r_req_valid && f4_io_w_req_valid) f4_cov_rw_same++;
         if (f4_reset && cyc > 1000) f4_cov_reset_mid++;
       end
-      if (f4_io_r_req_valid) f4_armed[0] = 1'b1;
+      if (cyc > 300 && !f4_reset && f4_io_r_req_valid) f4_armed[0] = 1'b1;
       if (f4_armed_at < 0 && (&f4_armed)) f4_armed_at = cyc + 1 + 2;
       if (cyc >= RESET_CYC + 300 && f12_armed_at >= 0 && cyc >= f12_armed_at) begin
         checks++;
@@ -610,7 +610,7 @@ module tb;
         if (f12_io_r_req_valid && f12_io_w_req_valid) f12_cov_rw_same++;
         if (f12_reset && cyc > 1000) f12_cov_reset_mid++;
       end
-      if (f12_io_r_req_valid) f12_armed[0] = 1'b1;
+      if (cyc > 300 && !f12_reset && f12_io_r_req_valid) f12_armed[0] = 1'b1;
       if (f12_armed_at < 0 && (&f12_armed)) f12_armed_at = cyc + 1 + 2;
       if (cyc >= RESET_CYC + 300 && f28_armed_at >= 0 && cyc >= f28_armed_at) begin
         checks++;
@@ -632,7 +632,7 @@ module tb;
         if (f28_io_r_req_valid && f28_io_w_req_valid) f28_cov_rw_same++;
         if (f28_reset && cyc > 1000) f28_cov_reset_mid++;
       end
-      if (f28_io_r_req_valid) f28_armed[0] = 1'b1;
+      if (cyc > 300 && !f28_reset && f28_io_r_req_valid) f28_armed[0] = 1'b1;
       if (f28_armed_at < 0 && (&f28_armed)) f28_armed_at = cyc + 1 + 2;
     end
 

@@ -9,6 +9,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Serializer.sv
 
 FM_VARIANTS = Serializer
 FM_MERGE_DUP = false
+# 全部 5 个比较点零扇出（无输出端口），只能靠 vmucp 真比较，见 verif/fm_target_config/Serializer.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

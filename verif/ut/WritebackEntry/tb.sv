@@ -331,7 +331,7 @@ module tb;
         if (w0_u_gold.state == 2'd2 && w0_io_mem_grant_valid) w0_cov_grant_done++;
         if (w0_reset && cyc > 100) w0_cov_reset_mid++;
       end
-      if (w0_io_req_valid && w0_io_primary_valid && w0_g_io_primary_ready) w0_armed[0] = 1'b1;
+      if (!w0_reset && w0_io_req_valid && w0_io_primary_valid && w0_g_io_primary_ready) w0_armed[0] = 1'b1;
       if (w0_armed_at < 0 && (&w0_armed)) w0_armed_at = cyc + 1 + 2;
       if (cyc >= RESET_CYC + 0 && w15_armed_at >= 0 && cyc >= w15_armed_at) begin
         checks++;
@@ -414,7 +414,7 @@ module tb;
         if (w15_u_gold.state == 2'd2 && w15_io_mem_grant_valid) w15_cov_grant_done++;
         if (w15_reset && cyc > 100) w15_cov_reset_mid++;
       end
-      if (w15_io_req_valid && w15_io_primary_valid && w15_g_io_primary_ready) w15_armed[0] = 1'b1;
+      if (!w15_reset && w15_io_req_valid && w15_io_primary_valid && w15_g_io_primary_ready) w15_armed[0] = 1'b1;
       if (w15_armed_at < 0 && (&w15_armed)) w15_armed_at = cyc + 1 + 2;
     end
 

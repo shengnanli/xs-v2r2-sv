@@ -9,6 +9,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/WritebackEntry.sv $(GOLDEN_RTL)/WritebackEntry_15.sv
 
 FM_VARIANTS = WritebackEntry WritebackEntry_15
 FM_MERGE_DUP = false
+# 对称死位 2 个（req_dirty / remain_dup_0[1]），按 vmucp standing rule 加强，见 verif/fm_target_config/WritebackEntry*.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

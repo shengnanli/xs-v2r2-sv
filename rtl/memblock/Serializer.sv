@@ -32,13 +32,15 @@ module xs_Serializer_core #(
 
   localparam logic [PTR_W-1:0] COUNT_VSREQ = '0;   // 入队路数：ENABLE_SPB=false ⇒ 恒 0
 
-  // 入队指针 enqPtrExt(0)（异步复位到 0；deqPtr 恒 (0,0) 不存）
-  logic             enq_flag;
-  logic [PTR_W-1:0] enq_value;
+  // 入队指针 enqPtrExt(0)（异步复位到 0；deqPtr 恒 (0,0) 不存）。
+  // 名字照 Chisel 的 enqPtrExt(0).flag/.value 展平写：它们没有任何读者，FM 无法靠签名分析配对，
+  // 只能按名字配（见 verif/fm_target_config/Serializer.tcl）。
+  logic             enqPtrExt_0_flag;
+  logic [PTR_W-1:0] enqPtrExt_0_value;
 
   // distanceBetween(enqPtr, deqPtr=(0,0))
   logic [PTR_W-1:0] distance;
-  assign distance = enq_flag ? PTR_W'(QUEUE_SIZE + enq_value) : enq_value;
+  assign distance = enqPtrExt_0_flag ? PTR_W'(QUEUE_SIZE + enqPtrExt_0_value) : enqPtrExt_0_value;
 
   logic can_enqueue;
   assign can_enqueue = ({1'b0, distance} + {1'b0, COUNT_VSREQ}) <= (PTR_W+1)'(QUEUE_SIZE);
@@ -47,17 +49,17 @@ module xs_Serializer_core #(
   logic [PTR_W:0]   sum;
   logic signed [PTR_W+1:0] diff;
   logic             wrap;
-  assign sum  = {1'b0, enq_value} + {1'b0, COUNT_VSREQ};
+  assign sum  = {1'b0, enqPtrExt_0_value} + {1'b0, COUNT_VSREQ};
   assign diff = $signed({1'b0, sum}) - $signed((PTR_W+2)'(QUEUE_SIZE));
   assign wrap = (diff >= 0);
 
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      enq_flag  <= 1'b0;
-      enq_value <= '0;
+      enqPtrExt_0_flag  <= 1'b0;
+      enqPtrExt_0_value <= '0;
     end else if (can_enqueue) begin
-      enq_flag  <= enq_flag ^ wrap;
-      enq_value <= wrap ? diff[PTR_W-1:0] : sum[PTR_W-1:0];
+      enqPtrExt_0_flag  <= enqPtrExt_0_flag ^ wrap;
+      enqPtrExt_0_value <= wrap ? diff[PTR_W-1:0] : sum[PTR_W-1:0];
     end
   end
 

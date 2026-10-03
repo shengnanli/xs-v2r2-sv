@@ -6,7 +6,8 @@
   * req_valid / primary_valid 各约 3/4，hasData / voluntary 各一半 ⇒ ProbeAck/ProbeAckData/
     Release/ReleaseData 四种报文都走到；
   * mem_release_ready 一半 ⇒ 发送阶段常被背压；mem_grant_valid 1/4 ⇒ S_RELEASE_RESP 要等若干拍。
-不复位的数据/地址寄存器：第一次 alloc 之后再等 2 拍（行数据晚一拍写入）才开始比（arm）。
+不复位的数据/地址寄存器：第一次（复位撤销后的）alloc 之后再等 2 拍才开始比（arm）。
+复位期间 alloc 照样写地址寄存器，但 s_data_override 被复位钉在 1，行数据不写 —— 所以 arm 必须排除复位拍。
 
 用法：python3 gen.py [--check]
 """
@@ -43,7 +44,7 @@ PAIRS = [
          reset_period=2000, cov_min=50,
          # opcode 最高位恒 1（{1, voluntary, hasData}）；5 位 id 变体的 source 最高位恒 0（零扩展）
          exempt=["io_mem_release_bits_opcode[2]"] + (["io_mem_release_bits_source[5]"] if top == "WritebackEntry" else []),
-         arm=["@io_req_valid && @io_primary_valid && @io_primary_ready"], arm_delay=2)
+         arm=["!@reset && @io_req_valid && @io_primary_valid && @io_primary_ready"], arm_delay=2)
     for top, pfx in (("WritebackEntry", "w0_"), ("WritebackEntry_15", "w15_"))
 ]
 

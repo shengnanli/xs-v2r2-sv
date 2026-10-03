@@ -23,7 +23,7 @@ module tb;
 
   logic [4:0] g_ptr, i_ptr, inj;
   assign g_ptr = {u_gold.enqPtrExt_0_flag, u_gold.enqPtrExt_0_value};
-  assign i_ptr = {u_impl.u_core.enq_flag, u_impl.u_core.enq_value};
+  assign i_ptr = {u_impl.u_core.enqPtrExt_0_flag, u_impl.u_core.enqPtrExt_0_value};
 
   initial begin
     if ($value$plusargs("ncycles=%d", NCYCLES)) ;
@@ -44,13 +44,13 @@ module tb;
       seen[inj]++;
       force u_gold.enqPtrExt_0_flag  = inj[4];
       force u_gold.enqPtrExt_0_value = inj[3:0];
-      force u_impl.u_core.enq_flag   = inj[4];
-      force u_impl.u_core.enq_value  = inj[3:0];
+      force u_impl.u_core.enqPtrExt_0_flag   = inj[4];
+      force u_impl.u_core.enqPtrExt_0_value  = inj[3:0];
       #1;
       release u_gold.enqPtrExt_0_flag;
       release u_gold.enqPtrExt_0_value;
-      release u_impl.u_core.enq_flag;
-      release u_impl.u_core.enq_value;
+      release u_impl.u_core.enqPtrExt_0_flag;
+      release u_impl.u_core.enqPtrExt_0_value;
     end
     for (int k = 0; k < 32; k++)
       if (seen[k] < 200) begin cov_fail++; $display("[COV] 注入值 %0d 只出现 %0d 次", k, seen[k]); end
