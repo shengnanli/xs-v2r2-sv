@@ -1,0 +1,6 @@
+{{r:/WORK/AtomicsUnit/dcache_resp_id_reg[1]} {i:/WORK/AtomicsUnit/u_core/dcache_resp_id_reg[1]}}
+{{r:/WORK/AtomicsUnit/dcache_resp_id_reg[2]} {i:/WORK/AtomicsUnit/u_core/dcache_resp_id_reg[2]}}
+{{r:/WORK/AtomicsUnit/dcache_resp_id_reg[3]} {i:/WORK/AtomicsUnit/u_core/dcache_resp_id_reg[3]}}
+{{r:/WORK/AtomicsUnit/dcache_resp_id_reg[4]} {i:/WORK/AtomicsUnit/u_core/dcache_resp_id_reg[4]}}
+{{r:/WORK/AtomicsUnit/dcache_resp_id_reg[5]} {i:/WORK/AtomicsUnit/u_core/dcache_resp_id_reg[5]}}
+{{r:/WORK/AtomicsUnit/difftest_fuop_r_reg[8]} {i:/WORK/AtomicsUnit/u_core/difftest_fuop_r_reg[8]}}

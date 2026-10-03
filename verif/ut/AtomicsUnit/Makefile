@@ -11,6 +11,9 @@ FM_VARIANTS = AtomicsUnit
 # 关 merge_dup：fm_predict 的模型（闭包寄存器位 + 顶层 output 位）只在它关掉时严格适用（加强不是放宽）
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：62 个 unread 点全是两侧对称死位，依据与六条证据见 verif/fm_target_config/AtomicsUnit.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

@@ -9,7 +9,10 @@
 //   操作数按格式逐通道造：规格数 / 非规格数 / 零 / 无穷 / qNaN / sNaN / 负数 八类轮换，另 1/4 全随机；
 //   finish_ready 3/4 置 1（握手等待时结果须保持）；flush 1/64 拍，可打断任意状态。
 // 覆盖（写进 PASS 判据）：3 合法格式 × 5 合法 rm 各 >= 100 次 finish；通道 0 的 8 类操作数 × 3 格式各 >= 50；
-//   余数为负（选根减一）>= 100、舍入进位 >= 30（规格数一半取全 1 尾数专门打它，只在 RUP/RMM 下触发）；flush 打断迭代 >= 20；每个输出位 0/1 都见过。
+//   余数为负（选根减一）>= 100、舍入进位 >= 30（规格数一半取全 1 尾数专门打它，只在 RUP/RMM 下触发）；flush 打断迭代 >= 20；
+//   结果 64 位与 fflags 20 位每位都见过 0 和 1，除 fflags 的 DZ/OF/UF 三列（golden 字面 0，只要求见过 0）。
+//   ★更正★：上一版只跟踪 fflags 低 16 位、且把 DZ/OF/UF 也要求见过 1——它在 initreg=0 档必然红，在全 1 档
+//   却因 finish 窗口里混入未写寄存器的值而"绿"，判据读的是上电值不是功能；已改。零操作数随机带符号以打结果符号位。
 // =============================================================================
 `timescale 1ns/1ps
 module tb;
@@ -45,7 +48,7 @@ module tb;
     case (k)
       K_NORM:   begin e = 64'($urandom_range(1, exp_max - 1)); if ($urandom_range(0, 1) == 0) f = (64'd1 << frac_w) - 1; end   // 一半取全 1 尾数：指数为奇时根 = 2-ε，RUP/RMM 下舍入进位
       K_DENORM: begin e = 0; if (f == 0) f = 1; end
-      K_ZERO:   begin e = 0; f = 0; end
+      K_ZERO:   begin e = 0; f = 0; s = $urandom; end                                  // ±0：sqrt(-0) = -0，结果符号位只靠它置 1
       K_INF:    begin e = exp_max; f = 0; end
       K_QNAN:   begin e = exp_max; f = f | (64'd1 << (frac_w - 1)); end
       K_SNAN:   begin e = exp_max; f = (f & ~(64'd1 << (frac_w - 1))); if (f == 0) f = 1; end
@@ -58,7 +61,7 @@ module tb;
   int cov_fmt_rm [3][5];
   int cov_kind [3][8];
   int cov_negrem, cov_carry, cov_flush_iter, cov_finish;
-  logic seen0 [84], seen1 [84];
+  logic seen0 [88], seen1 [88];   // 0..3 握手/汇总，4..67 结果 64 位，68..87 fflags 20 位
   kind_t kind0;
 
   task automatic drive();
@@ -112,7 +115,7 @@ module tb;
         `CMP(2, g_res, i_res, "fpsqrt_res_o")
         `CMP(3, g_fflags, i_fflags, "fflags_o")
         for (int b = 0; b < 64; b++) begin if (g_res[b]) seen1[4 + b] = 1; else seen0[4 + b] = 1; end
-        for (int b = 0; b < 16; b++) begin if (g_fflags[b]) seen1[68 + b] = 1; else seen0[68 + b] = 1; end
+        for (int b = 0; b < 20; b++) begin if (g_fflags[b]) seen1[68 + b] = 1; else seen0[68 + b] = 1; end
         if (finish_ready_i) begin
           cov_finish++;
           if (cur_fmt != 2'd3 && cur_rm < 5) cov_fmt_rm[cur_fmt][cur_rm]++;
@@ -135,7 +138,13 @@ module tb;
     end
     $display("cov finish=%0d negrem=%0d carry=%0d flush_in_iter=%0d", cov_finish, cov_negrem, cov_carry, cov_flush_iter);
     if (cov_negrem < 100 || cov_carry < 30 || cov_flush_iter < 20) bad++;
-    for (int o = 0; o < 84; o++) if (!seen0[o] || !seen1[o]) begin bad++; $display("output bit %0d stuck", o); end
+    // fflags 每 5 位一组 {NV, DZ, OF, UF, NX}：开方没有除零/上溢/下溢，golden 的 fflags_o 在这三位上
+    // 是字面 3'h0（golden fpsqrt_vector_r16.sv 的 assign fflags_o），所以这 12 位只要求见过 0。
+    for (int o = 0; o < 88; o++) begin
+      bit const0;
+      const0 = (o >= 68) && ((o - 68) % 5 inside {1, 2, 3});
+      if (!seen0[o] || (!const0 && !seen1[o])) begin bad++; $display("output bit %0d stuck", o); end
+    end
     $display("checks=%0d errors=%0d bad_cov=%0d", checks, errors, bad);
     if (errors == 0 && checks > 1000 && bad == 0) $display("TEST PASSED");
     else $display("TEST FAILED");
