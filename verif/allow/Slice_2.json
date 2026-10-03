@@ -90,34 +90,6 @@
   {
    "side": "r",
    "design": "array_14_ext",
-   "path": "r:/WORK/Directory_2/tagArray/array_0_0_0/array/array/array_14_ext",
-   "attrs": "u",
-   "class": "vendor_macro"
-  },
-  {
-   "side": "r",
-   "design": "array_14_ext",
-   "path": "r:/WORK/Directory_2/tagArray/array_0_0_1/array/array/array_14_ext",
-   "attrs": "u",
-   "class": "vendor_macro"
-  },
-  {
-   "side": "r",
-   "design": "array_14_ext",
-   "path": "r:/WORK/Directory_2/tagArray/array_0_1_0/array/array/array_14_ext",
-   "attrs": "u",
-   "class": "vendor_macro"
-  },
-  {
-   "side": "r",
-   "design": "array_14_ext",
-   "path": "r:/WORK/Directory_2/tagArray/array_0_1_1/array/array/array_14_ext",
-   "attrs": "u",
-   "class": "vendor_macro"
-  },
-  {
-   "side": "r",
-   "design": "array_14_ext",
    "path": "r:/WORK/Slice_2/directory/tagArray/array_0_0_0/array/array/array_14_ext",
    "attrs": "u",
    "class": "vendor_macro"
@@ -146,13 +118,6 @@
   {
    "side": "r",
    "design": "array_15_ext",
-   "path": "r:/WORK/Directory_2/metaArray/array/array/array_15_ext",
-   "attrs": "u",
-   "class": "vendor_macro"
-  },
-  {
-   "side": "r",
-   "design": "array_15_ext",
    "path": "r:/WORK/Slice_2/directory/metaArray/array/array/array_15_ext",
    "attrs": "u",
    "class": "vendor_macro"
@@ -160,21 +125,7 @@
   {
    "side": "r",
    "design": "array_16_ext",
-   "path": "r:/WORK/Directory_2/replacer_sram_opt/array/array/array_16_ext",
-   "attrs": "u",
-   "class": "vendor_macro"
-  },
-  {
-   "side": "r",
-   "design": "array_16_ext",
    "path": "r:/WORK/Slice_2/directory/replacer_sram_opt/array/array/array_16_ext",
-   "attrs": "u",
-   "class": "vendor_macro"
-  },
-  {
-   "side": "r",
-   "design": "array_17_ext",
-   "path": "r:/WORK/Directory_2/origin_bit_opt/array/array/array_17_ext",
    "attrs": "u",
    "class": "vendor_macro"
   },
@@ -212,13 +163,6 @@
    "path": "r:/WORK/Slice_2/dataStorage/array/array_0_0_3/array/array/array_18_ext",
    "attrs": "u",
    "class": "vendor_macro"
-  },
-  {
-   "side": "r",
-   "design": "ram_10x89",
-   "path": "r:/WORK/GrantBuffer/pftRespQueue/ram_ext",
-   "attrs": "u",
-   "class": "APPROVED_MEMORY_MACRO_MODEL"
   },
   {
    "side": "r",

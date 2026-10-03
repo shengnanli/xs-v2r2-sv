@@ -146,9 +146,6 @@ PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
 
-# Slice_1..3 的 ref 侧黑盒报告里另有 Directory_N / GrantBuffer 设计层引用（diag5 实测，Slice 没有），声明 32 条
-fm-Slice_1 fm-Slice_2 fm-Slice_3: FM_ALLOWLIST = 32
-
 # initreg：编译期开机制、运行期选取值（两处都要给，见 CONVENTIONS）。
 INITREG  ?= random
 # RANDOMIZE_MEM_INIT：只影响厂商 SRAM 叶子 array_*_ext 的存储体初值（firtool 模块的随机初始化
