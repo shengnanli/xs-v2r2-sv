@@ -113,3 +113,37 @@ errors 恒 0。是覆盖闸把它拦下来的（「errors=0 但覆盖红」）�
 `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true`（由生成器 VMUCP 表产出）。
 **重跑预测**：OthersEntryVecMem 3925 → **3940**、OthersEntryVecMem_14 3919 → **3934**（恰好 +15，
 等于已登记的模型值），unread 0 / failing 0 / unmatched 0 / 无 dont_verify / 无新黑盒。
+
+## 5. 对账（跑后追加）
+
+### 5.1 UT（最终版，在 commit `ddb13c86` 字节上重跑；9 档 × 200k 拍）
+
+16 个 UT 目录（15 单条目 + EnqPolicy 四对同测）× 9 档 = 144 次，**144/144 TEST PASSED**（errors=0、覆盖闸全部达标，
+含新标定的 4 个访存向量桶）。复跑：`verif/ut/<T>` 下 `make simv && ./simv +ntb_random_seed=<1|7|42> +ncycles=200000 +vcs+initreg+<0|random|<seed>017>`。
+
+### 5.2 FM（signoff-strict，全部 native SUCCEEDED，failing/unmatched/黑盒 0，无 dont_verify）
+
+| 目标 | 预测 | 实测 passing | 差 | 指认 |
+|---|---|---|---|---|
+| EnqEntry_20 | 3453 | 3452 | −1 | constant_reg 1 = entryReg_status_deqPortIdx（numDeq=1，入队清 0、次态恒 0，两侧同为常数；golden EnqEntry_20.sv:1910） |
+| EnqEntry_24 | 3534 | 3533 | −1 | 同上 |
+| EnqEntry_30 | 3396 | 3395 | −1 | 同上 |
+| EnqEntryVecMem | 3940 | 3909 | −31 | constant_reg 31 = deqPortIdx 1 + srcLoadDependency 影子 5 源×3 流水×2 位 = 30（本族 enq 口无该输入，装载 2'h0、次态左移仍 0；golden EnqEntryVecMem_2.sv:2089-2091 / :2359） |
+| EnqEntryVecMem_2 | 3934 | 3903 | −31 | 同上 |
+| OthersEntry_172 / _174 / _200 / _202 / _242 / _244 | 3454/1292/3535/1378/3397/1226 | 同 | 0 | — |
+| OthersEntryVecMem_2 / _16 | 1835/1831 | 同 | 0 | — |
+| OthersEntryVecMem / _14 | 3940/3934 | 首跑 3925/3919 + unread 15（PARTIAL）→ vmucp 后 **3940/3934** | 0 | 恰好 +15，见 §4 |
+| EnqPolicy / _8 / _14 / _18 | 46/34/30/18 | 同 | 0 | — |
+
+`fm_predict.py check` 19/19「全部对上」（差额全部被 constant_reg 指认）；`check_lane_receipts.py` rc=0。
+★本节如实记一处跑前判断错误★：§1.4 写「预测差额 0」，而 EnqEntry 访存族 5 个实际有常数寄存器 —— 模型本来就
+把常数寄存器算在 regs 里，差额由工具的 constant_reg 指认，没有指认不了的部分。
+
+### 5.3 父级影响（只列，不做）
+
+14 个 Entries* 父级的**直接子模块现已全部 PROVEN**（本 lane 签的 + 早已签的），孙级 UIntCompressor_27_* 也都是 PROVEN_DIRECT：
+- 本 lane 补齐最后缺口的 5 个访存父级：EntriesLdu、EntriesStaMou、EntriesStdMoud、EntriesVlduVstu、EntriesVlduVstuVseglduVsegstu
+  （四个直接子模块全是本 lane 新签）；
+- 只缺 EnqPolicy* 的 9 个：EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v / AluCsrFenceDiv / AluMulBkuBrhJmp（EnqPolicy）、
+  EntriesFaluFcvtF2vFmacFdiv / FaluFmacFdiv / FaluFmac（EnqPolicy_8）、EntriesVfdivVidiv（EnqPolicy_18）、
+  EntriesVfmaVialuFixVfalu / VfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf（EnqPolicy_14）。
