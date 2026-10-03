@@ -1,0 +1,9 @@
+{
+  "target": "DelayQueue_1",
+  "ut": "DelayQueue",
+  "regs": 888,
+  "outs": 51,
+  "expected": 939,
+  "merge_dup": "false",
+  "model_applicable": true
+}
