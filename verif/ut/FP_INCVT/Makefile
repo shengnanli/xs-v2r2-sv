@@ -24,6 +24,10 @@ FM_REF_DEPS_FP_INCVT = CLZ_6.sv ShiftRightJam.sv RoundingUnit_3.sv RoundingUnit_
 # 关 merge_dup：让 fm_predict 的模型（寄存器位 + 输出位）严格适用（加强，不是放宽）
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：首跑（evidence/75c1c255e106/FP_INCVT）unread 5 = fcvtmodTrueExpReg[4:0]，两侧同名
+# matched_nc、按构造对称的死位；依据与六条判据见 verif/fm_target_config/FP_INCVT.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

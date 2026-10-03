@@ -74,3 +74,18 @@ fcvtmod NV 6166 / NX 5589；未 NaN-box 5084；64 位结果逐位见过 0 和 1�
 1. `shamt[10:7]`：shamt ≤ 65，高 4 位恒 0，但要经过比较器才知道，不是字面常量；FM 若也判它常量，constant_reg 31、passing 463。
 2. golden 与 impl 寄存器同名，预期名字配对；若出现 unmatched，先查配对再谈 RTL。
 3. 本节登记前没做过任何 FM 试跑。
+
+### 1.5 首跑偏离与改登记（★在第二次证明之前提交★）
+
+首跑 `75c1c255e`（vmucp 未开）：native **SUCCEEDED**，passing **462** / failing 0 / unmatched 0 / constant_reg **27**（与 §1.3 预测逐项相同）/
+**unread 5** → validator PARTIAL（`strict_unread!=0`）。receipt 留档 `evidence/75c1c255e106/FP_INCVT`
+（receipt.json sha256 `475b89ecbe284b0745b95e7c1919ca13c96a76b3112279d3ba6d3b83902ae3b7`）。
+★预测漏项，照实记★：§1.3 写了 unread 0，漏了 `fcvtmodTrueExpReg[4:0]`——golden 只读 [10:5]，低 5 位两侧都无读者
+（父级 FCVT 的 vmucp 白名单早就记着同一组 5 点）。462 + 27 + 5 = 494 = 模型，余额 0。
+5 点全部 matched_nc、同名逐位配对（`unread_points.txt`）。
+
+处置：`verif/fm_target_config/FP_INCVT.tcl` 加 vmucp 白名单条目（依据见文件），`verif/ut/FP_INCVT/Makefile` 开
+`FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true`。RTL 不改。
+
+第二次证明的预测：passing **467**（462 + 5，vmucp 实比 5 点）/ constant_reg 27 / unread 0 / failing 0 / unverified 0 /
+unmatched 0 / 黑盒 0 / dont_verify 无 / SUCCEEDED。`docs/fm_predictions/FP_INCVT.json` 不动（模型 494 − 467 = 27 = constant_reg）。
