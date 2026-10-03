@@ -347,3 +347,42 @@ merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageB
   按 CONVENTIONS「独立包文件」例外移到 `rtl/frontend/sctable_pkg.sv`（包内容逐字不变，只是换文件）；SCTable_1/_2/_3 的生成头注释同步改。
 - 这让 SCTable×4 与 Tage_SC（以及 Composer）的 impl 闭包字节变化，§对账里它们的 receipt（`1b420e20` / `312a5d35`）随之 STALE。
   在 `fa804162` 上重跑 UT 3×3 与官方证明；预测不变（SCTable×4：1123；Tage_SC：16112 / PASS_DEAD_REF，差 196 = constant_reg 4 + dead_ref 192）。
+
+## 9. Composer 重证（父级；impl 侧三个预测器子树换成重写件）
+
+### 9.1 处置
+- `rtl/frontend/Composer.sv` 未改一字节。改的是证明配置（verif/ut/Composer）：
+  · FauFTB / Tage_SC / ITTage 及其整棵已签子树（37 个 golden 文件）由"两侧同源 golden"改为两侧白盒（ref golden、impl 重写件 RTL_SRCS）；
+    FTB / RAS / DelayN 与 TageTable·ITTageTable·TageBTable 的下一层照旧两侧同源 golden；
+  · 厂商叶子 array_1..6_ext 改回审定的两侧黑盒（之前读成白盒；换重写子树后叶子存储阵列在父级规模下配不上，诊断跑 8192 位 unmatched）；
+  · 关 merge_dup（passing 模型严格适用）；
+  · 钉点：父级原有 601 位（Composer 本层影子 PC）不动；新增 GENERATED(bpu-child-pins) 区 23083 位 = 三个子预测器的规则钉点 +
+    子模块自证时 FM 自己给出的寄存器配对（`verif/ut/Composer/child_pairs/*.tsv`，scripts/extract_fm_matched_pairs.py 从与 receipt 同字节的
+    子模块 FM 跑的 matched.rpt 抽出）。不加这批时首次诊断跑 18136 个 unmatched compare point（WrBypass CAM、FauFTB 32 路等对称结构签名配不全）；
+  · dead_ref：`verif/dead_ref/Composer.json`，192 条 = tage 子树 4 张 TageTable 的 s1_unhashed_idx[48:1]（与 TageTable / Tage_SC 同一死因）；
+  · vmucp 依据沿用 verif/fm_target_config/Composer.tcl（未改）。
+- UT（verif/ut/Composer）：加 initreg 三档（0 / random / <seed>017；后两档 SRAM 叶子与 golden SRAM 包装链读出保持寄存器钉 0，+warmup=4000）。
+  原因：换成重写子树后，未初始化存储读出的 X 在两侧以不同的乐观/悲观方式传播（seed 1 第 5217 拍 s3 br_taken_mask golden=0 / 重写=X），X 不是硬件取值。
+  tb 生成器 tools/predictor_composer/gen_ut.py 产物与仓内 tb.sv 已不一致（仓内 tb 早于本 lane 已手改），本 lane 只在仓内 tb.sv 加 +warmup 两处。
+
+### 9.2 UT（在 `05394ca2` 字节上跑，Composer 相关 RTL 之后未改；3 seed × 3 档 × 200k）
+| seed | initreg 0 | random | <seed>017 |
+|---|---|---|---|
+| 1  | checks=58600000 errors=0 hier_errors=0 | checks=57428000 errors=0 | checks=57428000 errors=0 |
+| 7  | checks=58600000 errors=0 | checks=57428000 errors=0 | checks=57428000 errors=0 |
+| 42 | checks=58600000 errors=0 | checks=57428000 errors=0 | checks=57428000 errors=0 |
+（随机档少的 1172000 次 = 前 4000 拍 warmup 不比。）
+
+### 9.3 lane 内非正式试跑（diagnostic-full）
+1. 只有规则钉点（commit 174dea29）：native SUCCEEDED 但 18136(18136) unmatched compare point（停掉）。
+2. 并入 FM 配对钉点 + 叶子黑盒（commit c3c9307d，merge_dup 默认 true）：SUCCEEDED，passing 41149，failing 0，unmatched 0，unread 192（全 ref），19 分钟。
+3. 再关 merge_dup：SUCCEEDED，passing **42060**，unread 192（全 ref），constant_reg 664。
+
+### 9.4 跑前预测（★跑完不许改本节★）
+| 项 | 预测 |
+|---|---|
+| passing | 模型 42916；预计 **42060**，差 856 = constant_reg 664 + dead_ref unread 192 |
+| failing / unverified / aborted | 0 / 0 / 0 |
+| unread | 192（全 ref，= verif/dead_ref/Composer.json） |
+| unmatched compare / 黑盒 | 0 / 仅厂商叶子 array_1..6_ext |
+| mode / verdict / vmucp / merge_dup | signoff-strict / PASS_DEAD_REF / true / false |
