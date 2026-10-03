@@ -19,6 +19,10 @@ FM_VARIANTS = CountModule ClmulModule MiscModule HashModule
 # 关 merge_dup：逐个比寄存器，fm_predict 的模型（寄存器位 + 输出位）严格适用。
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：仅 CountModule —— funcReg[8:3] 6 个两侧对称死位，fm_pins_pre.tcl 钉名后实比；
+# 依据见 verif/fm_target_config/CountModule.tcl。其余三个目标没有 unread，不开。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = $(if $(filter CountModule,$*),true,)
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
