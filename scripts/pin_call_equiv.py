@@ -80,22 +80,77 @@ NO_FIXTURE = {
 # 这张表是闸的**覆盖面棘轮**：已经被夹具覆盖过的动态文件，不许悄悄退回 NO_FIXTURE。
 # （与 NO_FIXTURE 一起构成双向约束：缺口只能缩，覆盖只能涨。）
 COVERED_DYNAMIC = {
+    'verif/ut/ArithVecLeaves5/fm_pins.tcl',
+    'verif/ut/Bitmap/fm_pins.tcl',
+    'verif/ut/DataPathArb/fm_pins.tcl',
+    'verif/ut/DecodeStage/fm_pins.tcl',
+    'verif/ut/FusionDecoder/fm_pins.tcl',
     'verif/ut/IBuffer/fm_pins.tcl',
     'verif/ut/InstrUncache/fm_pins_pre.tcl',
+    'verif/ut/InterruptFilter/fm_pins.tcl',
+    'verif/ut/MEFreeList/fm_pins.tcl',
+    'verif/ut/MemCtrl/fm_pins.tcl',
     'verif/ut/NCBTransactionQueue/fm_pins.tcl',
+    'verif/ut/Rename/fm_pins.tcl',
     'verif/ut/RenameBuffer/fm_pins.tcl',
     'verif/ut/SSIT/fm_pins.tcl',
     'verif/ut/TLBFA/fm_pins.tcl',
     'verif/ut/TLBNonBlock/fm_pins.tcl',
     'verif/ut/TlbStorageWrapper/fm_pins.tcl',
+    'verif/ut/VMergeBuffer/fm_pins.tcl',
+    'verif/ut/WBArbiterVariants/fm_pins.tcl',
 }
 
+# ★set_user_match 桩按 fm_shell 真实语法解析★（FM V-2023.12-SP3 man set_user_match）：
+#     status set_user_match [-type ID_type_list] [-inverted | -noninverted]
+#                           objectIDs_1 objectIDs_2 ...
+#   * `-type` 取 pin/port/net/cell 之一（作用于全部对象），或每个对象一个类型的列表
+#     （如 {pin net}）。同名对象在同一设计里可能同时是 pin/net/cell —— `-type` 决定
+#     **绑定到哪一个对象**，所以它是调用序列的一部分，★必须原样记进 CALL 行，不许被桩吞掉★
+#     （"set_user_match -type cell r i" 与 "set_user_match r i" 钉的可能不是同一对东西）。
+#   * 极性选项同理记进 CALL 行（-inverted 与 -noninverted 互斥）。
+#   * 认不出的选项、非法类型、类型列表长度对不上、对象不足 2 个：桩直接 error ——
+#     真 fm_shell 也会拒绝，桩若放过就等于登记了一条 FM 根本发不出去的调用。
+# CALL 行格式：`CALL [-type <t1,t2..>] [-inverted|-noninverted] <obj1> <obj2> ...`；
+# 不带选项时退化为 `CALL <a> <b>`，与扩桩前逐字节相同 —— 既有基线行的 sha 不受影响。
 HARNESS = '''
 set ::calls 0
 set ::INJECT {inject}
-proc set_user_match {{a b}} {{
+proc set_user_match {{args}} {{
+    set type {{}} ; set pol {{}} ; set objs {{}}
+    set n [llength $args]
+    for {{set k 0}} {{$k < $n}} {{incr k}} {{
+        set a [lindex $args $k]
+        if {{$a eq "-type"}} {{
+            incr k
+            if {{$k >= $n}} {{ error "STUB_SUM: -type needs a value" }}
+            if {{[llength $type]}} {{ error "STUB_SUM: -type given twice" }}
+            set type [lindex $args $k]
+            if {{![llength $type]}} {{ error "STUB_SUM: empty -type" }}
+            foreach t $type {{
+                if {{[lsearch -exact {{pin port net cell}} $t] < 0}} {{
+                    error "STUB_SUM: bad -type '$t' (pin|port|net|cell)"
+                }}
+            }}
+        }} elseif {{$a eq "-inverted" || $a eq "-noninverted"}} {{
+            if {{$pol ne "" && $pol ne $a}} {{ error "STUB_SUM: -inverted and -noninverted are exclusive" }}
+            set pol $a
+        }} elseif {{[string index $a 0] eq "-"}} {{
+            error "STUB_SUM: unknown option '$a'"
+        }} else {{
+            lappend objs $a
+        }}
+    }}
+    if {{[llength $objs] < 2}} {{ error "STUB_SUM: need at least 2 objects, got [llength $objs]" }}
+    if {{[llength $type] > 1 && [llength $type] != [llength $objs]}} {{
+        error "STUB_SUM: -type list has [llength $type] types for [llength $objs] objects"
+    }}
+    set line "CALL"
+    if {{[llength $type]}} {{ append line " -type [join $type ,]" }}
+    if {{$pol ne ""}} {{ append line " $pol" }}
+    append line " [join $objs]"
     incr ::calls
-    puts "CALL $a $b"
+    puts $line
     if {{$::calls == $::INJECT}} {{ return 0 }}
     return 1
 }}
@@ -127,7 +182,11 @@ def discover():
         rel = str(f.relative_to(REPO))
         code = strip_comments(f.read_text(errors='replace'))
         dyn = bool(DYNAMIC_VERBS.search(code))
-        tops = sorted(set(re.findall(r'\$top\s+eq\s+"([A-Za-z0-9_]+)"', code)))
+        # `eq` 与 `ne` 都算声明（`if {$top ne "X"} { error ... }` 之后跟着的正是 X 的钉点，
+        # 只认 eq 会把 X 整个漏掉 —— HPerfMonitor_3 就是这样：160 次 -type cell 调用
+        # 全在 `ne` 守卫之后，旧正则只看到 HPerfCounter_21（0 次调用）那个变体）；
+        # `$::top` 与 `$top` 同义（safe interp 里钉点文件常写全局限定名）。
+        tops = sorted(set(re.findall(r'\$(?:::)?top\s+(?:eq|ne)\s+"([A-Za-z0-9_]+)"', code)))
         if not tops:
             # 不按 $top 分支的文件（无条件执行）：用 UT 目录名当 $top，
             # 与 fm_eq.tcl 传进来的那个值同源。
@@ -500,6 +559,55 @@ def cmd_selftest():
     calls, rc, out = run_one(broken, None, 'Demo')
     ck('跑不起来时 rc != 0 且调用序列为空', rc != 0 and calls == [],
        'rc=%d calls=%d' % (rc, len(calls)))
+
+    print()
+    print('=== 负测 D：set_user_match 的选项（-type / 极性）必须进调用序列，非法写法必须跑不起来 ===')
+    typed = SYN_STATIC.replace('set_user_match "r:', 'set_user_match -type cell "r:')
+    assert typed != SYN_STATIC
+    sample = tmp / 'typed_ok.tcl'
+    sample.write_text(typed)
+    calls, rc, out = run_one(sample, None, 'Demo')
+    ck('-type cell 样本跑得通、4 次调用、CALL 行带 -type cell',
+       rc == 0 and len(calls) == 4 and all(c.startswith('CALL -type cell r:/') for c in calls),
+       'rc=%d calls=%s' % (rc, calls[:1]))
+    plain = tmp / 'plain_ok.tcl'
+    plain.write_text(SYN_STATIC)
+    pc, prc, _ = run_one(plain, None, 'Demo')
+    ck('不带选项的调用仍记成 `CALL <a> <b>`（与扩桩前逐字节相同，既有基线不受影响）',
+       prc == 0 and pc[:1] == ['CALL r:/WORK/Demo/a_0_reg i:/WORK/Demo/u_core/a_reg[0]'],
+       '%s' % pc[:1])
+    for label, mut in (
+            ('去掉 -type cell（绑定对象可能换成同名 pin/net）',
+             lambda t: t.replace('-type cell ', '')),
+            ('-type cell -> -type net', lambda t: t.replace('-type cell', '-type net')),
+            ('-type cell -> -type {cell net}（逐对象类型）',
+             lambda t: t.replace('-type cell', '-type {cell net}')),
+            ('加 -inverted', lambda t: t.replace('-type cell', '-type cell -inverted'))):
+        a, rca, b, rcb, ob = _selftest_pair(tmp, 'typed', typed, None, mut)
+        ck('DIFF / ' + label, (a != b) and rca == 0,
+           '' if a != b else '★没抓到：-type/极性被桩吞掉了★')
+    for label, mut in GUARD_ONLY_MUTATIONS[:2]:
+        a, rca, b, rcb, ob = _selftest_pair(tmp, 'typed', typed, None, mut)
+        ck('SAME / 带 -type 的样本 / ' + label, a == b and rca == 0 and rcb == 0,
+           '' if a == b else '★被误判成 DIFF★')
+    for label, mut in (
+            ('未知选项 -typo', lambda t: t.replace('-type cell', '-typo cell')),
+            ('非法类型 -type cel', lambda t: t.replace('-type cell', '-type cel')),
+            ('-type 列表长度对不上（3 个类型 2 个对象）',
+             lambda t: t.replace('-type cell', '-type {pin net cell}')),
+            ('-inverted 与 -noninverted 同时给', lambda t: t.replace('-type cell', '-inverted -noninverted')),
+            ('-type 缺值（放在末尾）',
+             lambda t: t.replace('-type cell "r:/WORK/$top/$_r" "i:/WORK/$top/u_core/$_i"',
+                                 '"r:/WORK/$top/$_r" "i:/WORK/$top/u_core/$_i" -type')),
+            ('只给 1 个对象',
+             lambda t: t.replace('-type cell "r:/WORK/$top/$_r" "i:/WORK/$top/u_core/$_i"',
+                                 '-type cell "r:/WORK/$top/$_r"'))):
+        bad = tmp / 'typed_bad.tcl'
+        bad.write_text(mut(typed))
+        assert bad.read_text() != typed, label
+        calls, rc, out = run_one(bad, None, 'Demo')
+        ck('拒绝 / ' + label, rc != 0 and calls == [],
+           'rc=%d calls=%d' % (rc, len(calls)))
 
     print()
     print('自测' + ('全过' if ok else '★有失败★'))
