@@ -2400,7 +2400,6 @@ L2TLB	prefetch	L2TlbPrefetch	ONE_SITE	u_core.u_prefetch	L2TlbPrefetch		auto_one_
 L2TLB	ptw	PTW	ONE_SITE	u_core.u_ptw	PTW		auto_one_site	
 L2TLB	sfence_tmp_delay	DelayN_220	ONE_SITE	u_core.u_sfence_delay	DelayN_220		auto_one_site	
 L2TLB	wfiReq_delay	DelayN_13	UNRESOLVED				none	
-L2TLBWrapper	ptw	L2TLB	SAME_PATH	ptw	L2TLB		auto_same	
 L2TlbMissQueue	io_out_q	Queue40_L2TlbMQBundle	INLINE	u_core	-	enq_ptr,deq_ptr,maybe_full	declared	rtl/memblock/L2TlbMissQueue.sv:48,69-114「实例化与 golden 完全相同的 ram_40x47」——队列控制内联，存储叶子仍是 ram_40x47（见 collateral 行）。
 L2TlbMissQueue	io_out_q/ram_ext	ram_40x47	ONE_SITE	u_core.mem_ext	ram_40x47		auto_one_site	父层次已内联，但本层在宿主核里仍是独立实例
 LCredit2Decoupled	queue	Queue4_CHISNP	DEEPER	u_core.queue	Queue4_CHISNP		auto_deeper	
@@ -2827,27 +2826,6 @@ NewDispatch	rcTagTable	RegCacheTagTable	SAME_PATH	rcTagTable	RegCacheTagTable		a
 NewDispatch	v0BusyTable	BusyTable_3	SAME_PATH	v0BusyTable	BusyTable_3		auto_same	
 NewDispatch	vecBusyTable	BusyTable_2	SAME_PATH	vecBusyTable	BusyTable_2		auto_same	
 NewDispatch	vlBusyTable	VlBusyTable	SAME_PATH	vlBusyTable	VlBusyTable		auto_same	
-NewIFU	expanders_0	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_1	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_10	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_11	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_12	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_13	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_14	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_15	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_2	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_3	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_4	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_5	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_6	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_7	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_8	RVCExpander	UNRESOLVED				none	
-NewIFU	expanders_9	RVCExpander	UNRESOLVED				none	
-NewIFU	f3Predecoder	F3Predecoder	UNRESOLVED				none	
-NewIFU	frontendTrigger	FrontendTrigger	UNRESOLVED				none	
-NewIFU	mmioRVCExpander	RVCExpander	UNRESOLVED				none	
-NewIFU	preDecoder	PreDecode	UNRESOLVED				none	
-NewIFU	predChecker	PredChecker	UNRESOLVED				none	
 OpenLLC	mmioDiverger	MMIODiverger	DEEPER	u_core.mmioDiverger	MMIODiverger		auto_deeper	
 OpenLLC	mmioMerger	MMIOMerger	DEEPER	u_core.mmioMerger	MMIOMerger		auto_deeper	
 OpenLLC	rnLinkMonitor	RNLinkMonitor	DEEPER	u_core.rnLinkMonitor	RNLinkMonitor		auto_deeper	
@@ -2859,8 +2837,6 @@ OpenLLC	slices_3	Slice_4	DEEPER	u_core.slices_3	Slice_4		auto_deeper
 OpenLLC	snLinkMonitor	SNLinkMonitor	DEEPER	u_core.snLinkMonitor	SNLinkMonitor		auto_deeper	
 OpenLLC	snXbar	SNXbar	DEEPER	u_core.snXbar	SNXbar		auto_deeper	
 OpenLLC	topDown	TopDownMonitor_1	DEEPER	u_core.topDown	TopDownMonitor_1		auto_deeper	
-PTWFilter	flush_delay	DelayN_1	DEEPER	u_core.flush_delay	DelayN_1		auto_deeper	
-PTWRepeaterNB	delay	DelayN_1	DEEPER	u_core.delay	DelayN_1		auto_deeper	
 Permutation	vslidednOffset	slidednVs2VdTable	DEEPER	u_core.vslidednOffset	slidednVs2VdTable		auto_deeper	
 Permutation	vslideupOffset	slideupVs2VdTable	DEEPER	u_core.vslideupOffset	slideupVs2VdTable		auto_deeper	
 Pipeline	stages_0	Queue1_L1PrefetchReq	ONE_SITE	u_core.prefetch_stage	Queue1_L1PrefetchReq		auto_one_site	
@@ -3263,17 +3239,17 @@ SQDataModule	data16_7	SQData8Module	SAME_PATH	data16_7	SQData8Module		auto_same
 SQDataModule	data16_8	SQData8Module	SAME_PATH	data16_8	SQData8Module		auto_same	
 SQDataModule	data16_9	SQData8Module	SAME_PATH	data16_9	SQData8Module		auto_same	
 SRAMTemplate	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
-SRAMTemplate	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_100	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
-SRAMTemplate_100	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_100	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_116	array	sram_array_1p256x86m43s1h0l1b_dcsh_tag	SAME_PATH	array	sram_array_1p256x86m43s1h0l1b_dcsh_tag		auto_same	
-SRAMTemplate_116	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_116	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_124	array	sram_array_1p32x90m45s1h0l1b_bitmap	SAME_PATH	array	sram_array_1p32x90m45s1h0l1b_bitmap		auto_same	
 SRAMTemplate_128	array	sram_array_1p4x786m131s1h0l1b_ptw_l1	SAME_PATH	array	sram_array_1p4x786m131s1h0l1b_ptw_l1		auto_same	
 SRAMTemplate_129	array	sram_array_1p64x114m57s1h0l1b_ptw_l0	SAME_PATH	array	sram_array_1p64x114m57s1h0l1b_ptw_l0		auto_same	
 SRAMTemplate_143	array	sram_array_1p64x114m57s1h0l1b_ptw_l0	SAME_PATH	array	sram_array_1p64x114m57s1h0l1b_ptw_l0		auto_same	
 SRAMTemplate_145	array	sram_array_1p32x148m74s1h0l1b_pftch_pht	SAME_PATH	array	sram_array_1p32x148m74s1h0l1b_pftch_pht		auto_same	
-SRAMTemplate_145	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_145	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_146	array	sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt	SAME_PATH	array	sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt		auto_same	
 SRAMTemplate_148	array	sram_array_1p512x76m19s1h0l1b_l2_tag	SAME_PATH	array	sram_array_1p512x76m19s1h0l1b_l2_tag		auto_same	
 SRAMTemplate_150	array	sram_array_1p512x76m19s1h0l1b_l2_tag	SAME_PATH	array	sram_array_1p512x76m19s1h0l1b_l2_tag		auto_same	
@@ -3294,32 +3270,32 @@ SRAMTemplate_185	array	sram_array_1p512x104m13s1h0l1b_l2_meta	SAME_PATH	array	sr
 SRAMTemplate_186	array	sram_array_1p512x16m16s1h0l1b_l2_repl	SAME_PATH	array	sram_array_1p512x16m16s1h0l1b_l2_repl		auto_same	
 SRAMTemplate_187	array	sram_array_1p512x8m1s1h0l1b_l2_orgb	SAME_PATH	array	sram_array_1p512x8m1s1h0l1b_l2_orgb		auto_same	
 SRAMTemplate_2	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
-SRAMTemplate_2	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_2	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_32	array	sram_array_1p256x66m66s1h0l1b_icsh_dat	SAME_PATH	array	sram_array_1p256x66m66s1h0l1b_icsh_dat		auto_same	
 SRAMTemplate_36	array	sram_array_1p512x40m10s1h0l1b_bp_ftb	SAME_PATH	array	sram_array_1p512x40m10s1h0l1b_bp_ftb		auto_same	
-SRAMTemplate_36	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_36	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_4	array	sram_array_1p256x66m66s1h0l1b_icsh_dat	SAME_PATH	array	sram_array_1p256x66m66s1h0l1b_icsh_dat		auto_same	
 SRAMTemplate_44	array	sram_array_1p256x16m1s1h0l1b_bp_tage_us	SAME_PATH	array	sram_array_1p256x16m1s1h0l1b_bp_tage_us		auto_same	
-SRAMTemplate_44	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_44	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_45	array	sram_array_1p512x24m12s1h0l1b_bp_tage	SAME_PATH	array	sram_array_1p512x24m12s1h0l1b_bp_tage		auto_same	
-SRAMTemplate_45	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_45	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_64	array	sram_array_1p256x8m2s1h0l1b_bp_tage_bt	SAME_PATH	array	sram_array_1p256x8m2s1h0l1b_bp_tage_bt		auto_same	
-SRAMTemplate_64	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_64	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_68	array	sram_array_1p128x24m6s1h0l1b_bp_sc	SAME_PATH	array	sram_array_1p128x24m6s1h0l1b_bp_sc		auto_same	
-SRAMTemplate_68	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_68	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_76	array	sram_array_1p128x76m1s1h0l1b_bp_ittage	SAME_PATH	array	sram_array_1p128x76m1s1h0l1b_bp_ittage		auto_same	
-SRAMTemplate_76	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_76	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_78	array	sram_array_1p128x76m1s1h0l1b_bp_ittage	SAME_PATH	array	sram_array_1p128x76m1s1h0l1b_bp_ittage		auto_same	
-SRAMTemplate_78	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_78	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_8	array	sram_array_1p256x66m66s1h0l1b_icsh_dat	SAME_PATH	array	sram_array_1p256x66m66s1h0l1b_icsh_dat		auto_same	
 SRAMTemplate_84	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
-SRAMTemplate_84	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_84	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_86	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
-SRAMTemplate_86	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_86	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_88	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
-SRAMTemplate_88	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_88	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_92	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
-SRAMTemplate_92	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_92	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SSIT	data_array	SyncDataModuleTemplate__1024entry_1	DEEPER	u_core.data_array	SyncDataModuleTemplate__1024entry_1		auto_deeper	
 SSIT	valid_array	SyncDataModuleTemplate__1024entry	DEEPER	u_core.valid_array	SyncDataModuleTemplate__1024entry		auto_deeper	
 Sbuffer	dataModule	SbufferData	SAME_PATH	dataModule	SbufferData		auto_same	
@@ -3683,7 +3659,7 @@ VLSplitImp	VSSplitSkidBuffer	skidBufferConnect	SAME_PATH	VSSplitSkidBuffer	skidB
 VLSplitImp	splitBuffer	VLSplitBufferImp	SAME_PATH	splitBuffer	VLSplitBufferImp		auto_same	
 VLSplitImp	splitPipeline	VLSplitPipelineImp	SAME_PATH	splitPipeline	VLSplitPipelineImp		auto_same	
 VSMergeBufferImp	VMergebufferPipelineConnect0	NewPipelineConnectPipe_29	GEN_SITE_UNINDEXED	u_core.g_deq_pipe[d].VMergebufferPipelineConnect	NewPipelineConnectPipe_29		auto_gen_site	
-VSMergeBufferImp	freeCount_freeList	FreeList_1	ONE_SITE	u_core.g_freelist_vl.freeCount_freeList	FreeList_1		auto_one_site	
+VSMergeBufferImp	freeCount_freeList	FreeList_1	ONE_SITE	u_core.g_freelist_vs.freeCount_freeList	FreeList_1		auto_one_site	
 VSSplitImp	VSSplitSkidBuffer	skidBufferConnect	SAME_PATH	VSSplitSkidBuffer	skidBufferConnect		auto_same	
 VSSplitImp	splitBuffer	VSSplitBufferImp	SAME_PATH	splitBuffer	VSSplitBufferImp		auto_same	
 VSSplitImp	splitPipeline	VSSplitPipelineImp	SAME_PATH	splitPipeline	VSSplitPipelineImp		auto_same	
