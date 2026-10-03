@@ -435,6 +435,7 @@ module tb;
   //  fire 类事件会被系统性漏数（实测 order_match 从 6 变成 5000+）。★
   always @(posedge clock) if (!reset) count_cov();
 
+  bit arm_wakeup = 1'b0, arm_pmp = 1'b0;
   initial begin
     if (!$value$plusargs("ncycles=%d", ncycles)) ncycles = 200000;
     for (int i = 0; i < 6; i++) ppn_pool[i] = {$urandom(), $urandom()};
@@ -453,9 +454,13 @@ module tb;
     io_cache_resp_bits_order = 0;
     repeat (4) @(posedge clock);
     #1 reset = 0;
+    // wakeup.bits.* 与 pmp.req.bits.addr 是不复位的寄存器，各自第一次写入之前两侧初值不同：
+    // golden 出现过 wakeup.valid、且 req 握手过一次之后再开始比（armed）。
     for (cyc = 1; cyc <= ncycles; cyc++) begin
       @(negedge clock);
-      compare_outputs(cyc);
+      if (arm_wakeup && arm_pmp) compare_outputs(cyc);
+      if (g_io_wakeup_valid) arm_wakeup = 1'b1;
+      if (io_req_valid && g_io_req_ready) arm_pmp = 1'b1;   // pmp.req.bits.addr 在 req 握手时写入
       drive_random();
     end
     $display("cov: req=%0d resp=%0d cache_hit=%0d mem_req=%0d mem_resp_match=%0d enq_wait=%0d enq_memout=%0d cm_wait=%0d pmp_af=%0d wakeup=%0d refill=%0d full=%0d",

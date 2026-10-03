@@ -9,8 +9,10 @@
 // =============================================================================
 `timescale 1ns/1ps
 module tb;
-  localparam int NCYCLES = 30000;
-  localparam int WARMUP  = 2000;   // 须大于 SRAM 复位清零拍数 + 预热写入
+  int unsigned NCYCLES = 200000;   // +ncycles=<n> 覆盖（ut_common 默认下发 200000）
+  localparam int WARMUP  = 2000;   // 须大于 SRAM 复位清零拍数 + 预热写入 + MBIST 上电初始化
+  localparam int INIT_CYC = 1100;  // 上电前 600 拍 MBIST 广播写满全部地址，再 500 拍广播读
+  bit dft_on = 1'b0;
 
   bit clk = 0, rst;
   int errors = 0, checks = 0;
@@ -141,6 +143,17 @@ module tb;
       bd_all<=$urandom; bd_req<=$urandom; bd_we<=$urandom; bd_re<=$urandom; bd_be<=$urandom;
       bd_addr<=9'($urandom); bd_addr_rd<=9'($urandom); bd_indata<=66'($urandom);
       for (int k=0;k<32;k++) sig[k] <= 7'($urandom);
+      // DFT 口：上电先 MBIST 广播写满再读一遍（SRAM 不复位，+vcs+initreg+random 下两侧宏初始内容
+      // 不同——先写成相同值），之后 7/8 时间安静、1/8 时间随机（DFT 乱动时 SRAM 停在测试态，功能路径走不到）。
+      if (cycle % 4000 == 0) dft_on = ($urandom_range(0,7)==0);
+      if (cycle < INIT_CYC) begin
+        bd_all<=1; bd_req<=1; bd_be<='1; bd_we<=(cycle<600); bd_re<=(cycle>=600);
+        bd_addr<=9'(cycle); bd_addr_rd<=9'(cycle);
+        for (int k=0;k<32;k++) sig[k] <= '0;
+      end else if (!dft_on) begin
+        bd_all<=0; bd_req<=0; bd_we<=0; bd_re<=0;
+        for (int k=0;k<32;k++) sig[k] <= '0;
+      end
     end
   end
   function automatic logic r0_v_next; return ($urandom_range(0,1)==0); endfunction
@@ -162,6 +175,7 @@ module tb;
   task automatic rpt(string s); if(errors<=30) $display("[%0t] %s mismatch",$time,s); endtask
 
   initial begin
+    if ($value$plusargs("ncycles=%d", NCYCLES)) begin end
     rst=1; repeat(20) @(posedge clk); rst=0;
     repeat(NCYCLES) @(posedge clk);
     $display("checks=%0d errors=%0d", checks, errors);
