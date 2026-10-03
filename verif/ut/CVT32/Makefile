@@ -35,6 +35,9 @@ FM_REF_DEPS_VCVT_1 = CVT32.sv $(CVT32_GOLDEN_LEAVES) $(CVT32_TABLES)
 # 关 merge_dup 让 fm_predict 的模型（寄存器位 + 输出位）严格适用（加强，不是放宽）
 FM_MERGE_DUP = false
 
+# vmucp：本 UT 的每个 FM 目标在 verif/fm_target_config/<T>.tcl 都有白名单条目与依据（双射、全零判据）
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
