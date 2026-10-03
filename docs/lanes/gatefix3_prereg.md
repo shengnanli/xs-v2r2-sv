@@ -49,3 +49,23 @@ UT：`verif/ut/HPerfMonitor_3`，seed 1/7/42 × `+vcs+initreg+0` / `random` / `<
 - `scripts/gen_bus_hperf_200c.py`：emit_hperf_core 文本补上 rtl 已有的第 3 行注释（97762aa34 可读性改动未回灌）。
 - `scripts/gen_pmacfg_leaves8.py`：CORE_TEXT 换成 rtl 现行 `xs_Pmacfg_core.sv`（按 PMA_INDEX 的逐项架构复位值；
   旧文本是统一复位 0 的早期版本，与 33 个 Pma*cfgModule receipt 所签字节不符）。
+
+## 4. 对账（跑后追加）
+
+UT `verif/ut/HPerfMonitor_3`（两目标同 tb，9 个 DUT 对比较），串行 9 档全 `checks=1799928 errors=0 bad_cov=0 TEST PASSED`：
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | errors=0 | errors=0 | errors=0（1017） |
+| 7  | errors=0 | errors=0 | errors=0（7017） |
+| 42 | errors=0 | errors=0 | errors=0（42017） |
+
+FM（`bash scripts/run_proof.sh HPerfMonitor_3 HPerfCounter_21 HPerfMonitor_3 < /dev/null`，impl commit `b13bd7dd76f6`，signoff-strict，vmucp=true）：
+
+| 目标 | 预测 | 实测 passing | failing / unmatched / 黑盒 / dont_verify | 判定 | receipt.json sha256 |
+|---|---|---|---|---|---|
+| HPerfCounter_21 | 74 | **74** | 0 / 0 / 0 / 否 | SUCCEEDED | `43034eda5646b1aba145479a436e28793a024be9fe15a54b8e5592b387a56288` |
+| HPerfMonitor_3  | 688 | **688** | 0 / 0 / 0 / 否 | SUCCEEDED | `3830dae5b8924b3afcf90d0ec2a8d60b8a128edc131a2949930968ce414058ee` |
+
+钉点 `HPERF_PIN_PRE_END HPerfMonitor_3 ok=160 bad=0 expect=160`，FM "160 Compare points matched by user"。
+`fm_predict.py check HPerfCounter_21 HPerfMonitor_3` 逐位相等 rc=0。与原签核（74 / 688）完全一致：改名不影响证明。
