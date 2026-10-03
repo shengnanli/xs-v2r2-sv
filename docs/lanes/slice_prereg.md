@@ -87,3 +87,17 @@ origin_bit_opt / replacer_sram_opt / tagArray×4 的 `u_core/g_nomcp.rdata_last_
 非 MCP 形态比 golden 多一个与 respReg 同方程的寄存器，Directory 自己签核时靠 merge=true 合掉；本目标闭包里 merge=true 会在
 GrantBuffer / RequestBuffer / CustomL1Hint 处制造两侧不对称（diag5 实测），故不能开。消掉它要改 41 个已签变体共用的核，不在本 lane。
 黑盒每变体 = array_14_ext×4 + array_15/16/17_ext + array_18_ext×4 + ram_10x89（两侧对称，verif/allow/Slice*.json）。
+
+## 4. 对账（跑完追加）
+
+| 目标 | receipt | passing 实测 / 登记 | constant_reg | failing / unverified / unmatched | unread | 黑盒 | 判定 |
+|---|---|---|---|---|---|---|---|
+| Slice   | evidence/f57c547b8ab6/Slice   | 68305 / 68305 | 1540 | 0 / 0 / 0(0) | 7 impl-only | 24 对象（12+12） | native SUCCEEDED，PARTIAL |
+| Slice_1 | evidence/f57c547b8ab6/Slice_1 | 68308 / 69848−1540=68308 | 1540 | 0 / 0 / 0(0) | 7 impl-only | 24（当时声明 32，多 8 条设计层引用未出现，a846c46f 已改 24） | native SUCCEEDED，PARTIAL |
+| Slice_2 | evidence/a846c46f6a90/Slice_2 | 68310 / 68310 | 1540 | 0 / 0 / 0(0) | 7 impl-only | 24 | native SUCCEEDED，PARTIAL |
+| Slice_3 | evidence/a846c46f6a90/Slice_3 | 68311 / 68311 | 1540 | 0 / 0 / 0(0) | 7 impl-only | 24 | native SUCCEEDED，PARTIAL |
+
+- 7 个 unread 逐个 = Directory 下 7 块 SRAM 的 `u_core/g_nomcp.rdata_last_REG_reg`（unread_points.txt 全是 impl 侧），与 §3 登记一致。
+- passing 四个变体都恰好 = 模型 expected − constant_reg。`fm_predict.py check` 报"余额 −7"：它把 unread 也计入可指认差额，
+  而这 7 个是 impl-only（golden 模型里本来就没有），不占 passing —— 是对账公式不覆盖 impl-only unread，不是数字对不上。
+- dont_verify / elab147 / relaxed appvar：无。
