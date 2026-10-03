@@ -1,0 +1,227 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "fpsqrt_vector_r16",
+ "run_id": "fpsqrt_vector_r16-20261003T071026Z-5a3282d3",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/fpsqrt_vector_r16.sv",
+   "kind": "golden",
+   "sha256": "a7283348170cfe0964e91fd13080cbc732514ab25d9cbdd88bd0587b776f5969"
+  },
+  {
+   "path": "golden-rtl/lzc.sv",
+   "kind": "golden",
+   "sha256": "b075c984d7805b66d7375be4a8e4d2c6e90ff5e3c7ee9914302b375981bd25ef"
+  },
+  {
+   "path": "golden-rtl/lzc_3.sv",
+   "kind": "golden",
+   "sha256": "fe899c8a4288845db87087965ef06dafc2280447511f0e6be5606c8ac08e0fec"
+  },
+  {
+   "path": "golden-rtl/lzc_4.sv",
+   "kind": "golden",
+   "sha256": "1a7a5057b4406b19b85ea6c35c13c202185b673b647bf4bf7e6b4c90b109268f"
+  },
+  {
+   "path": "golden-rtl/r4_qds_cg.sv",
+   "kind": "golden",
+   "sha256": "96f89eaaf1f01160337683e8f938a453499f6e87cbb8cc5b7dfa00a1a26e5b4c"
+  },
+  {
+   "path": "golden-rtl/fpsqrt_r16_block.sv",
+   "kind": "golden",
+   "sha256": "0e6076d27db4d89acb7114f79b065b39620b0d6062e5a8d7edc04b97cf019670"
+  },
+  {
+   "path": "golden-rtl/r4_qds.sv",
+   "kind": "golden",
+   "sha256": "226750777be543f26fcd87583068357a2c6dd64ca11554553016c465ea09dc6d"
+  },
+  {
+   "path": "golden-rtl/r4_qds_spec.sv",
+   "kind": "golden",
+   "sha256": "cd77d2af713e4f99c2b4ee3dbc2bd361ead9284d996de22ae1f8e58235df2a68"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/lzc.sv",
+   "kind": "repo",
+   "sha256": "43089629b1a6144a24f86ddfad8a2e323b21c61fe24026b70bedede2173b22b2"
+  },
+  {
+   "path": "rtl/backend/lzc_3.sv",
+   "kind": "repo",
+   "sha256": "b1d33af822cfa81949b29262adf0f0a546151d86c40ce9fcdc2c53c03252d462"
+  },
+  {
+   "path": "rtl/backend/lzc_4.sv",
+   "kind": "repo",
+   "sha256": "205e67c5289b008200c9d8b390ffe6e3c866dfef8b124a86688f9b184cab7c55"
+  },
+  {
+   "path": "rtl/backend/r4_qds_cg.sv",
+   "kind": "repo",
+   "sha256": "87939f80e924b5403da9f3379b04e7138fb38ce30c37a2b6d492f438527a13d4"
+  },
+  {
+   "path": "rtl/backend/fpsqrt_vector_r16.sv",
+   "kind": "repo",
+   "sha256": "3d8e0d3665901bf946b13c7c4571aac05d2ced59e808d36d42b6e8d1d971f1b8"
+  },
+  {
+   "path": "golden-rtl/fpsqrt_r16_block.sv",
+   "kind": "golden",
+   "sha256": "0e6076d27db4d89acb7114f79b065b39620b0d6062e5a8d7edc04b97cf019670"
+  },
+  {
+   "path": "golden-rtl/r4_qds.sv",
+   "kind": "golden",
+   "sha256": "226750777be543f26fcd87583068357a2c6dd64ca11554553016c465ea09dc6d"
+  },
+  {
+   "path": "golden-rtl/r4_qds_spec.sv",
+   "kind": "golden",
+   "sha256": "cd77d2af713e4f99c2b4ee3dbc2bd361ead9284d996de22ae1f8e58235df2a68"
+  }
+ ],
+ "impl_commit": "5a3282d30ab17207f8fe44c4f1ee11dafb4b74d5",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "fpsqrt_vector_r16-20261003T071026Z-5a3282d3",
+  "top": "fpsqrt_vector_r16",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 526,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 526,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 1,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "fpsqrt_vector_r16",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
