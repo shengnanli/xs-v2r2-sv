@@ -2,12 +2,7 @@ MODULE = L2TLB
 
 RTL_DIR = ../../../rtl
 # 单文件规范：package + 可读核 + golden 同名 wrapper 全在 L2TLB.sv 一个文件里。
-RTL_SRCS = $(RTL_DIR)/memblock/L2TLB.sv \
-           $(RTL_DIR)/memblock/PMP.sv
-# ★PMP 改用本仓重写件（2026-10-02，agent/mmuleaf）★：PMP 原先放在下面的 RTL_GOLDEN_DEPS 里，
-# impl 侧直接例化 golden 模块（GOLDEN_REUSE）。PMP 现已独立签核（rtl/memblock/PMP.sv，
-# verif/ut/PMP），impl 侧改读重写件；ref 侧仍读 golden PMP.sv（见 FM_REF_DEPS_L2TLB、GOLDEN_SRCS）。
-# 两侧 PMP 内部寄存器名字从此不同，由本目录 fm_pins_pre.tcl（scripts/gen_mmuleaf.py 生成）逐位钉配。
+RTL_SRCS = $(RTL_DIR)/memblock/L2TLB.sv
 
 TB_SRCS = tb.sv
 
@@ -39,6 +34,7 @@ RTL_GOLDEN_DEPS = \
   $(GOLDEN_RTL)/MbistBitmapCache.sv \
   $(GOLDEN_RTL)/MbistPipePtwL0.sv \
   $(GOLDEN_RTL)/MbistPipePtwL1.sv \
+  $(GOLDEN_RTL)/PMP.sv \
   $(GOLDEN_RTL)/PMPChecker.sv \
   $(GOLDEN_RTL)/PTW.sv \
   $(GOLDEN_RTL)/PtwCache.sv \
@@ -64,13 +60,13 @@ RTL_GOLDEN_DEPS = \
   $(GOLDEN_RTL)/array_11_ext.v \
   $(GOLDEN_RTL)/array_9_ext.v
 
-GOLDEN_SRCS = $(GOLDEN_RTL)/L2TLB.sv $(GOLDEN_RTL)/PMP.sv $(RTL_GOLDEN_DEPS)
+GOLDEN_SRCS = $(GOLDEN_RTL)/L2TLB.sv $(RTL_GOLDEN_DEPS)
 
 # FM：golden 顶层 L2TLB 为 ref，重写的同名 wrapper 为 impl；两侧读入同一批 golden
 # 子模块，于是队列/遍历器/SRAM 在两侧实化成同一份定义，FM 真正验证的是**本层 glue**
 # （CSR/sfence 复制扇出、仲裁装配、访存数据通路、PTE→sector 合并、bitmap 接线、perf）。
 FM_VARIANTS = L2TLB
-FM_REF_DEPS_L2TLB = $(notdir $(RTL_GOLDEN_DEPS)) PMP.sv
+FM_REF_DEPS_L2TLB = $(notdir $(RTL_GOLDEN_DEPS))
 
 # ★assembly 模式★：把带内部状态的大子模块在**两侧对称**黑盒（只留端口方向）。
 # 理由：L2TLB 是装配层，重写对象是顶层 glue；这些子模块各自是独立 FM target，内部

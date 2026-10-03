@@ -326,3 +326,18 @@ impl_worktree_dirty false。复跑：`PROOF_COMMIT=6571efce8ce6d3e8c9085a3063f3a
 变异补跑（崩溃后在新沙箱重跑）：M6 cfg CSR 步长 / M7 cfg 写不重算 mask CAUGHT；M9 wdata 无使能、M10 mask 优先级翻转 UT 存活 ——
 前者只在 wen_reg=1 时被读（观测等价），后者是 5.1 所述可达状态下不出现的组合；两者都由 FM 覆盖（M10 正是第一版 FM FAILED 的那一类）。
 复跑：`PROOF_COMMIT=4b8bfeb38497dbce9f3883bea7c237246d2d96c0 bash scripts/run_proof.sh PMP PMP < /dev/null`
+
+# 对账 F. L2TLB 改用 PMP 重写件 —— 未收敛，已撤回（照实记录）
+
+- 4b8bfeb3 把 L2TLB 的 impl 侧从 golden PMP（RTL_GOLDEN_DEPS 复用）切到 rtl/memblock/PMP.sv，并按 PMP 规则生成整表 6664 位钉点
+  （`L2TLBPMP_PIN_END ok=6664 bad=0`）。UT（L2TLB 自己的 0/1 两档 × seed 1/7/42，共 6 跑）全部 errors=0。
+- 官方 `run_proof.sh L2TLB`（commit 4b8bfeb3，assembly，FM_MERGE_DUP=true）：native **FAILED** —— passing 28727 / failing 10 /
+  unmatched_ref 352 / unread 128。352 = 32 项 × pmpMapping/pmaMapping mask[11:1]（恒 1 位）在 ref 侧配不上（merge_duplicated_registers
+  两侧合并结果不对称：golden 两侧同源时合并对称，换成重写件后不再对称）；10 个 failing 全是 bitmap/hptw/llptw/ptw 黑盒的
+  io_pmp*_resp_{ld,mmio} 输入引脚（PMPChecker 读 mask 的下游）。另 receipt 被 green_child 证书闸拒（Bitmap 证书不在 commit 内，与本变更无关的既有状态）。
+- 诊断：同一 commit 只把 FM_MERGE_DUP 改 false：native SUCCEEDED，passing 30443 / failing 0 / unmatched compare 0，但
+  129(ref)/2855(impl) **unmatched unread**（关 merge 后 L2TLB 本层 CSR/sfence 多份复制寄存器不再归一），strict/assembly 判据下不是绿。
+- 处置：本分支撤回 L2TLB 的切换（Makefile 恢复为复用 golden PMP、删除 L2TLB 钉点文件、生成器停止生成），L2TLB 回到切换前的已知状态。
+  ★注意★：协调者说明分支在 4b8bfeb3 之后的内容已合入 main（a9e50870）——main 上 L2TLB 目前是"切换后"的 FAILED 配置，需要合入本撤回 commit。
+- 剩余工作（未做）：要让 L2TLB 改用 PMP 重写件，需在 merge=true 下补钉 mask 恒 1 位（或让两侧合并对称）并把 10 个 pmp_resp 失败点归零，
+  再按 STALE 规则重证；或在 merge=false 下为 2855/129 个 unread 做对称配对。
