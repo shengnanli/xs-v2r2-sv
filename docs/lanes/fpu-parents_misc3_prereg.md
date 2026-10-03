@@ -68,3 +68,28 @@
 2. VPPU 的 128 个死位跨了一层 u_core（ref `VPPU/vperms/...`，impl `VPPU/u_core/u_vperms/u_core/...`），若 FM 没按名配上
    （变成 unmatched unread，fpaddpath 先例），vmucp 会空转——那时停下补钉点，不改判据。
 3. 本节登记前没做过任何 FM 试跑。
+
+## 对账（证明 commit `d65d2da41`，登记 commit 同一个——登记在证明之前提交、证明钉在它上）
+
+| 目标 | 结果 | 模型 / 预测 / 实测 passing | constant_reg | failing / unverified / unread / unmatched | 黑盒 / dont_verify | receipt.json sha256 |
+|---|---|---|---:|---|---|---|
+| CSA4to2 | SUCCEEDED | 214 / 214 / **214**（逐位相等） | 0 | 0 / 0 / 0 / 0 | 0 / 无 | `5c644f8f7cd4eed4f341ef50e159e4aeec83865692b77915a4e75a42d9b711cf` |
+| FloatAdderWidenFormat | SUCCEEDED | 256 / 256 / **256**（逐位相等） | 0 | 0 / 0 / 0 / 0 | 0 / 无 | `1446da66fee6863f1894b26100ba7f07b2d5879348b3ec82baa8758201dcdd1b` |
+| VPPU | SUCCEEDED | 5419 / 5405 / **5405** | 14 | 0 / 0 / 0（vmucp 开）/ 0 | 0 / 无 | `41d7df2ccc7885d035d2fb9866de094613012422c02b574021ad579fd3d3118f` |
+
+- receipt 路径：`evidence/d65d2da418a4/{CSA4to2,FloatAdderWidenFormat,VPPU}/receipt.json`（`git add -f`，commit `df97b6602`）。
+- `python3 scripts/fm_predict.py check CSA4to2 FloatAdderWidenFormat VPPU` rc=0（VPPU 差 14 = constant_reg 14，与登记一致）。
+- VPPU vmucp 六条：(1)(2) 128 个死位全部按名配上（5402 by name + 3 by signature，unmatched 0、unread_ref/impl 0，未用钉点）；
+  (3) 本轮没跑 vmucp 关的对照，改用等价判据：passing = 模型 5419 − constant_reg 14 = 5405 ⇒ 全部非常量寄存器位（含 128 个死位）都成了 passing 比较点、unread 0；
+  (4) 全零；(5) dont_verify / elab147 / 黑盒全空；(6) `sidecar/sourced_002_VPPU.tcl` 进 script_closure。
+  constant_reg 只核了个数（14 = 登记），逐名未取（未跑 diagnostic）。
+
+复跑：`PROOF_COMMIT=d65d2da41 bash scripts/run_proof.sh <CSA4to2|FloatAdderWidenFormat|VPPU> <同名> < /dev/null`
+
+## 父级（只列不做）
+
+| 目标 | 父级 | 处置与原因 |
+|---|---|---|
+| FloatAdderWidenFormat | VectorFloatAdder（coverage MISSING/UNPROVEN） | 父未签，无可重证；将来签 VectorFloatAdder 时 impl 直接读本重写件 |
+| VPPU | ExeUnit_13（MISSING/UNPROVEN） | 父未签，无可重证 |
+| CSA4to2 | CSA_Nto2With3to2MainPipeline、FMA、VectorFloatFMA | 三者的 UT Makefile 正被未合入 main 的 agent/misc-core 改动（它重写了 CSA_Nto2…，并把 CSA4to2 写成"两侧同源 golden"）；本 lane 改同一批 Makefile 必冲突、且对方证据会过期 ⇒ 待 misc-core 合入 main 后，把 `CSA4to2.sv` 从这三处的 RTL_GOLDEN_DEPS 移到 RTL_SRCS（impl 读重写件）再重证 |
