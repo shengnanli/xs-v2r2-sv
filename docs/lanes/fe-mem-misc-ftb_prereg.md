@@ -105,3 +105,22 @@ lane 内非正式诊断跑（`make fm-FTB FM_MODE=diagnostic-full`，RTL 同 com
 1. 钉点里 `REG`/`REG_1` 交叉配对依赖 FM merge 选哪一份当代表（诊断跑实测），若正式跑选法变了会出 "Ignoring user match"、
    留一对 unmatched unread（判 PARTIAL，不会假绿）。
 2. strict 模式下有对称厂商黑盒：若 verdict 因黑盒判 PARTIAL，按 FTBBank 的先例改 assembly + allow 声明，另行登记，不改本节数字。
+
+## 对账（跑后追加；上面各节数字未改）
+
+正式证明：`PROOF_COMMIT=d37248da1 bash scripts/run_proof.sh FTB FTB < /dev/null`
+→ `evidence/d37248da1db4/FTB/`（receipt.json sha256 `4ce1723e948f75cfb9a68632b4f61c80c3ab415cda246dfebff4f2870e91a1cc`）。
+
+| 项 | 预测 | 实测 | 差 |
+|---|---|---|---|
+| verdict | PASS_DEAD_REF | PASS_DEAD_REF（native SUCCEEDED，signoff-strict） | — |
+| passing | 8605 | 8605 | 0 |
+| failing / unverified / aborted | 0/0/0 | 0/null/null | 0 |
+| unmatched compare points | 0(0) | 0(0) | 0 |
+| unread | ref 50 / impl 0 | 50(0)，dead_ref_points=50 精确相等 | 0 |
+| 钉点 | 3194 ok / 0 bad | `FTB_PIN_END FTB ok=3194 bad=0`，"Ignoring user match" 0 条 | 0 |
+| 黑盒 | array_1_ext ×8 对称 | blackbox_out=0（未配对黑盒输出 0） | — |
+| dont_verify / elab147 | 无 | false / false | — |
+
+`python3 scripts/fm_predict.py check FTB` rc=0（BOUNDED：差 220 ≤ unread 50 + regs 6178；
+220 的逐项指认见 §3，诊断跑与正式跑 passing 相同）。`scripts/check_lane_receipts.py` rc=0。
