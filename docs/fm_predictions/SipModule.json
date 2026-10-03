@@ -1,0 +1,9 @@
+{
+  "target": "SipModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 0,
+  "outs": 226,
+  "expected": 226,
+  "merge_dup": "false",
+  "model_applicable": true
+}

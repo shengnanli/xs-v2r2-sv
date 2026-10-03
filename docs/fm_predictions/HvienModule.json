@@ -1,0 +1,9 @@
+{
+  "target": "HvienModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 50,
+  "outs": 114,
+  "expected": 164,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "MvipModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 53,
+  "outs": 122,
+  "expected": 175,
+  "merge_dup": "false",
+  "model_applicable": true
+}
