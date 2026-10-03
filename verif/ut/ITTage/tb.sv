@@ -5189,7 +5189,6 @@ module tb;
     if (!(t_s0_io_out_last_stage_meta[13] && t_s1_io_out_last_stage_meta[13])) begin cov_fail++; $display("[COV] ITTage.io_out_last_stage_meta[13] 未见过 0 和 1"); end
     if (!(t_s0_io_out_last_stage_meta[14] && t_s1_io_out_last_stage_meta[14])) begin cov_fail++; $display("[COV] ITTage.io_out_last_stage_meta[14] 未见过 0 和 1"); end
     if (!(t_s0_io_out_last_stage_meta[15] && t_s1_io_out_last_stage_meta[15])) begin cov_fail++; $display("[COV] ITTage.io_out_last_stage_meta[15] 未见过 0 和 1"); end
-    if (!(t_s0_io_out_last_stage_meta[16] && t_s1_io_out_last_stage_meta[16])) begin cov_fail++; $display("[COV] ITTage.io_out_last_stage_meta[16] 未见过 0 和 1"); end
     if (!(t_s0_io_out_last_stage_meta[64] && t_s1_io_out_last_stage_meta[64])) begin cov_fail++; $display("[COV] ITTage.io_out_last_stage_meta[64] 未见过 0 和 1"); end
     if (!(t_s0_io_out_last_stage_meta[65] && t_s1_io_out_last_stage_meta[65])) begin cov_fail++; $display("[COV] ITTage.io_out_last_stage_meta[65] 未见过 0 和 1"); end
     if (!(t_s0_io_out_last_stage_meta[66] && t_s1_io_out_last_stage_meta[66])) begin cov_fail++; $display("[COV] ITTage.io_out_last_stage_meta[66] 未见过 0 和 1"); end

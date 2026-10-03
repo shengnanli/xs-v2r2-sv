@@ -93,7 +93,7 @@ pair = Pair("ITTage", "t_", clocked=True, reset_period=40000, stim=STIM, decls=D
                  ("update_alt", "%s._GEN_3 && %s._GEN_2" % (g, g))],
             cov_min=10,
             # 结构常量 / 200k 拍内不可能翻的位（不是跑出来再填）：last_stage_meta 只有低 182 位是 ITTageMeta，
-            # 高 334 位恒 0；meta[176] = altProvider 表号最高位，alt 是次长命中表、表号至多 3，恒 0；pred_cycle（meta 低 64 位）是自由计数器，复位时清零，UT 平均每 4 万拍复位一次，2^17 拍以上的位（bit17 起）不保证翻。
-            exempt=["io_out_last_stage_meta[%d]" % b for b in [176] + list(range(17, 64)) + list(range(182, 516))])
+            # 高 334 位恒 0；meta[176] = altProvider 表号最高位，alt 是次长命中表、表号至多 3，恒 0；pred_cycle（meta 低 64 位）是自由计数器，复位时清零，UT 平均每 4 万拍复位一次，2^16 拍以上的位（bit16 起）不保证翻。
+            exempt=["io_out_last_stage_meta[%d]" % b for b in [176] + list(range(16, 64)) + list(range(182, 516))])
 txt = render([pair], header=__doc__.split("用法")[0].strip())
 sys.exit(write_or_check(os.path.join(HERE, "tb.sv"), txt, check="--check" in sys.argv))

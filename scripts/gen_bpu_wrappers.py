@@ -223,14 +223,14 @@ def tage_child_rule(mod, inst, port):
         if pm:
             return "tbl_resp[%d][%s].%s" % (k, pm.group(1), pm.group(2).replace("bits_", ""))
         if port in ("io_update_pc", "io_update_ghist"):
-            return "tbl_upd[%d].%s" % (k, port[len("io_update_"):])
+            return "tbl_upd_%s[%d]" % (port[len("io_update_"):], k)
         pm = re.fullmatch(r"io_update_(\w+)_(\d)", port)
         if pm and pm.group(1) in TAGE_UPD:
             return "tbl_upd[%d].%s[%s]" % (k, TAGE_UPD[pm.group(1)], pm.group(2))
         return None
     if inst == "bt":
         simple = {"io_req_ready": "bt_req_ready", "io_s1_resp_valid": "bt_s1_resp_valid",
-                  "io_update_pc": "bt_upd.pc"}
+                  "io_update_pc": "bt_upd_pc"}
         if port in simple:
             return simple[port]
         pm = re.fullmatch(r"io_s1_cnt_(\d)", port)
@@ -257,7 +257,7 @@ def tage_child_rule(mod, inst, port):
         if pm:
             return "sc_resp[%d][%s][%s]" % (k, pm.group(1), pm.group(2))
         if port in ("io_update_pc", "io_update_ghist"):
-            return "sc_upd[%d].%s" % (k, port[len("io_update_"):])
+            return "sc_upd_%s[%d]" % (port[len("io_update_"):], k)
         pm = re.fullmatch(r"io_update_(\w+)_(\d)", port)
         if pm and pm.group(1) in SC_UPD:
             return "sc_upd[%d].%s[%s]" % (k, SC_UPD[pm.group(1)], pm.group(2))
@@ -286,12 +286,17 @@ TAGE_DECL = """
   logic                 tbl_req_ready [NUM_TABLES];
   tage_resp_t           tbl_resp      [NUM_TABLES][NUM_BR];
   tage_upd_t            tbl_upd       [NUM_TABLES];
+  logic [PC_W-1:0]      tbl_upd_pc    [NUM_TABLES];
+  logic [255:0]         tbl_upd_ghist [NUM_TABLES];
   logic                 bt_req_ready;
   logic [1:0]           bt_s1_cnt     [NUM_BR];
   logic                 bt_s1_resp_valid;
   bt_upd_t              bt_upd;
+  logic [PC_W-1:0]      bt_upd_pc;
   logic [5:0]           sc_resp       [NUM_SC][NUM_BR][2];
   sc_upd_t              sc_upd        [NUM_SC];
+  logic [PC_W-1:0]      sc_upd_pc     [NUM_SC];
+  logic [255:0]         sc_upd_ghist  [NUM_SC];
   logic [2:0]           lfsr_bits     [NUM_BR];
   logic [NUM_BR-1:0]    s2_taken      [NUM_DUP];
   logic [NUM_BR-1:0]    s3_taken      [NUM_DUP];
@@ -306,8 +311,10 @@ TAGE_CORE = [
     ("s1_uftb_taken", "{io_in_bits_resp_in_0_s1_full_pred_0_br_taken_mask_1, "
                       "io_in_bits_resp_in_0_s1_full_pred_0_br_taken_mask_0}"),
     ("tbl_req_ready", "tbl_req_ready"), ("tbl_resp", "tbl_resp"), ("tbl_upd", "tbl_upd"),
+    ("tbl_upd_pc", "tbl_upd_pc"), ("tbl_upd_ghist", "tbl_upd_ghist"),
     ("bt_req_ready", "bt_req_ready"), ("bt_s1_cnt", "bt_s1_cnt"), ("bt_s1_resp_valid", "bt_s1_resp_valid"),
-    ("bt_upd", "bt_upd"), ("sc_resp", "sc_resp"), ("sc_upd", "sc_upd"), ("lfsr_bits", "lfsr_bits"),
+    ("bt_upd", "bt_upd"), ("bt_upd_pc", "bt_upd_pc"), ("sc_resp", "sc_resp"), ("sc_upd", "sc_upd"),
+    ("sc_upd_pc", "sc_upd_pc"), ("sc_upd_ghist", "sc_upd_ghist"), ("lfsr_bits", "lfsr_bits"),
     ("update_valid", "io_update_valid"), ("update_pc", "io_update_bits_pc"),
     ("update_br0_valid", "io_update_bits_ftb_entry_brSlots_0_valid"),
     ("update_tail_sharing", "io_update_bits_ftb_entry_tailSlot_sharing"),

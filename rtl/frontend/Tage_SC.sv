@@ -40,7 +40,7 @@
 // wrapper 的端口表、子模块（tables_0..3 / bt / mbistPl / allocLFSR_prng{,_1} / scTables_0..3，
 // 实例名同 golden）、MBIST 子链连线与透传赋值由 scripts/gen_bpu_wrappers.py 从 G1 golden 生成。
 // =============================================================================
-// 本文件导航（共 2499 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 2517 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L21    在 BPU 里的位置】Composer 菊花链 2/5
 //   L26    TAGE 部分】4 张带标签的 TageTable
 //   L34    SC 部分】4 张 SCTable
@@ -54,8 +54,8 @@
 //   L464   §5 更新：锁存一拍
 //   L517   §6 TAGE 更新：每槽算 provider 更新、useAltOnNa、分配、tick
 //   L637   §7 SC 更新：阈值自适应、决定是否更新 SC 表
-//   L686   §8 各表的 update 口：再打一拍送出
-//   L744   §9 perf：provider 命中数 / SC 因预测错更新数 / SC 因不自信更新数
+//   L692   §8 各表的 update 口：再打一拍送出
+//   L752   §9 perf：provider 命中数 / SC 因预测错更新数 / SC 因不自信更新数
 //
 package tage_sc_pkg;
 
@@ -77,10 +77,8 @@ package tage_sc_pkg;
     logic       unconf;
   } tage_resp_t;
 
-  // 一张 TageTable 的 update 口
+  // 一张 TageTable 的 update 口（pc / ghist 单列成核的独立输出，见 §8）
   typedef struct packed {
-    logic [PC_W-1:0]             pc;
-    logic [255:0]                ghist;
     logic [NUM_BR-1:0]           mask;
     logic [NUM_BR-1:0]           takens;
     logic [NUM_BR-1:0]           alloc;
@@ -90,18 +88,15 @@ package tage_sc_pkg;
     logic [NUM_BR-1:0]           reset_u;
   } tage_upd_t;
 
-  // TageBTable 的 update 口
+  // TageBTable 的 update 口（pc 单列）
   typedef struct packed {
     logic [NUM_BR-1:0]           mask;
-    logic [PC_W-1:0]             pc;
     logic [NUM_BR-1:0][1:0]      cnt;
     logic [NUM_BR-1:0]           takens;
   } bt_upd_t;
 
-  // 一张 SCTable 的 update 口
+  // 一张 SCTable 的 update 口（pc / ghist 单列）
   typedef struct packed {
-    logic [PC_W-1:0]             pc;
-    logic [255:0]                ghist;
     logic [NUM_BR-1:0]           mask;
     logic [NUM_BR-1:0]           tage_preds;
     logic [NUM_BR-1:0]           takens;
@@ -227,13 +222,18 @@ module xs_Tage_SC_core
   input  logic                  tbl_req_ready [NUM_TABLES],
   input  tage_resp_t            tbl_resp      [NUM_TABLES][NUM_BR],
   output tage_upd_t             tbl_upd       [NUM_TABLES],
+  output logic [PC_W-1:0]       tbl_upd_pc    [NUM_TABLES],
+  output logic [255:0]          tbl_upd_ghist [NUM_TABLES],
   input  logic                  bt_req_ready,
   input  logic [1:0]            bt_s1_cnt     [NUM_BR],
   input  logic                  bt_s1_resp_valid,
   output bt_upd_t               bt_upd,
+  output logic [PC_W-1:0]       bt_upd_pc,
   // ---- 4 张 SCTable ----
   input  logic [5:0]            sc_resp       [NUM_SC][NUM_BR][2],   // [表][槽][TAGE 方向]
   output sc_upd_t               sc_upd        [NUM_SC],
+  output logic [PC_W-1:0]       sc_upd_pc     [NUM_SC],
+  output logic [255:0]          sc_upd_ghist  [NUM_SC],     // [0] 不用（第 0 张 SC 表无 ghist 口）
   // ---- 分配随机源（两份 LFSR 的低 3 位，每槽一份）----
   input  logic [2:0]            lfsr_bits     [NUM_BR],
   // ---- 更新 ----
@@ -662,6 +662,12 @@ module xs_Tage_SC_core
   end
 
   // SCThreshold.update(cause = scPred != taken)：ctr 5 位饱和 ±1，饱和时归中 16 并把阈值 ±2
+  logic [4:0] thres_new_ctr [NUM_BR];
+  always_comb begin
+    for (int b = 0; b < NUM_BR; b++)
+      thres_new_ctr[b] = sat5_update(scThresholds_ctr[b], um_sc_pred[b] != u_br_taken[b]);
+  end
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int b = 0; b < NUM_BR; b++) begin
@@ -671,11 +677,11 @@ module xs_Tage_SC_core
     end else begin
       for (int b = 0; b < NUM_BR; b++) begin
         if (thres_upd[b]) begin
-          automatic logic [4:0] new_ctr = sat5_update(scThresholds_ctr[b], um_sc_pred[b] != u_br_taken[b]);
-          scThresholds_ctr[b] <= (new_ctr == 5'h1F || new_ctr == 5'h00) ? 5'd16 : new_ctr;
-          if (new_ctr == 5'h1F && scThresholds_thres[b] <= 8'd31)
+          scThresholds_ctr[b] <= (thres_new_ctr[b] == 5'h1F || thres_new_ctr[b] == 5'h00) ? 5'd16
+                                                                                        : thres_new_ctr[b];
+          if (thres_new_ctr[b] == 5'h1F && scThresholds_thres[b] <= 8'd31)
             scThresholds_thres[b] <= scThresholds_thres[b] + 8'd2;
-          else if (new_ctr == 5'h00 && scThresholds_thres[b] >= 8'd6)
+          else if (thres_new_ctr[b] == 5'h00 && scThresholds_thres[b] >= 8'd6)
             scThresholds_thres[b] <= scThresholds_thres[b] - 8'd2;
         end
       end
@@ -686,6 +692,8 @@ module xs_Tage_SC_core
   // §8 各表的 update 口：再打一拍送出
   //   DontCare 字段按 golden 实际取值：takens = updateTaken、oldCtrs = providerCtr（分配项亦然）；
   //   SC 的 tagePreds / takens / oldCtrs 无条件取本槽的值。
+  //   各表的 pc / ghist 寄存器单列成独立数组（tbl_upd_pc 等）：它们的高位在子模块里没有读者，
+  //   FM 侧要逐位钉到 golden 的 tables_k_io_update_pc_r_1 等（见 verif/ut/Tage_SC/fm_pins_pre.tcl）。
   // ===========================================================================
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
@@ -711,8 +719,8 @@ module xs_Tage_SC_core
           tbl_upd[t].u_mask[b]   <= alloc_tbl[b][t] || (pvdr_tbl[b][t] && alt_differs[b]);
           tbl_upd[t].us[b]       <= !alloc_tbl[b][t] && provider_correct[b];
         end
-        tbl_upd[t].pc    <= update_pc;           // io.update.bits.pc（未锁存那份）
-        tbl_upd[t].ghist <= update_ghist_r;
+        tbl_upd_pc[t]    <= update_pc;           // io.update.bits.pc（未锁存那份）
+        tbl_upd_ghist[t] <= update_ghist_r;
       end
     end
     // 基础表：用了 alt 预测的那次更新基础表
@@ -722,7 +730,7 @@ module xs_Tage_SC_core
         bt_upd.cnt[b]    <= um_basecnt[b];
         bt_upd.takens[b] <= update_taken[b];
       end
-      bt_upd.pc <= update_pc;
+      bt_upd_pc <= update_pc;
     end
     // SC 表：4 张表同一份掩码
     for (int k = 0; k < NUM_SC; k++) begin
@@ -733,9 +741,9 @@ module xs_Tage_SC_core
           sc_upd[k].takens[b]     <= u_br_taken[b];
           sc_upd[k].old_ctrs[b]   <= um_sc_ctrs[b][k];
         end
-        sc_upd[k].pc <= update_pc;
+        sc_upd_pc[k] <= update_pc;
         // 第 0 张 SC 表历史长度 0，没有 ghist 口（golden 里也就没有这个寄存器）
-        if (k != 0) sc_upd[k].ghist <= update_ghist_r;
+        if (k != 0) sc_upd_ghist[k] <= update_ghist_r;
       end
     end
   end
@@ -1119,12 +1127,17 @@ module Tage_SC
   logic                 tbl_req_ready [NUM_TABLES];
   tage_resp_t           tbl_resp      [NUM_TABLES][NUM_BR];
   tage_upd_t            tbl_upd       [NUM_TABLES];
+  logic [PC_W-1:0]      tbl_upd_pc    [NUM_TABLES];
+  logic [255:0]         tbl_upd_ghist [NUM_TABLES];
   logic                 bt_req_ready;
   logic [1:0]           bt_s1_cnt     [NUM_BR];
   logic                 bt_s1_resp_valid;
   bt_upd_t              bt_upd;
+  logic [PC_W-1:0]      bt_upd_pc;
   logic [5:0]           sc_resp       [NUM_SC][NUM_BR][2];
   sc_upd_t              sc_upd        [NUM_SC];
+  logic [PC_W-1:0]      sc_upd_pc     [NUM_SC];
+  logic [255:0]         sc_upd_ghist  [NUM_SC];
   logic [2:0]           lfsr_bits     [NUM_BR];
   logic [NUM_BR-1:0]    s2_taken      [NUM_DUP];
   logic [NUM_BR-1:0]    s3_taken      [NUM_DUP];
@@ -1164,12 +1177,17 @@ module Tage_SC
     .tbl_req_ready         (tbl_req_ready),
     .tbl_resp              (tbl_resp),
     .tbl_upd               (tbl_upd),
+    .tbl_upd_pc            (tbl_upd_pc),
+    .tbl_upd_ghist         (tbl_upd_ghist),
     .bt_req_ready          (bt_req_ready),
     .bt_s1_cnt             (bt_s1_cnt),
     .bt_s1_resp_valid      (bt_s1_resp_valid),
     .bt_upd                (bt_upd),
+    .bt_upd_pc             (bt_upd_pc),
     .sc_resp               (sc_resp),
     .sc_upd                (sc_upd),
+    .sc_upd_pc             (sc_upd_pc),
+    .sc_upd_ghist          (sc_upd_ghist),
     .lfsr_bits             (lfsr_bits),
     .update_valid          (io_update_valid),
     .update_pc             (io_update_bits_pc),
@@ -1449,8 +1467,8 @@ module Tage_SC
     .io_resps_1_bits_ctr                      (tbl_resp[0][1].ctr),
     .io_resps_1_bits_u                        (tbl_resp[0][1].u),
     .io_resps_1_bits_unconf                   (tbl_resp[0][1].unconf),
-    .io_update_pc                             (tbl_upd[0].pc),
-    .io_update_ghist                          (tbl_upd[0].ghist),
+    .io_update_pc                             (tbl_upd_pc[0]),
+    .io_update_ghist                          (tbl_upd_ghist[0]),
     .io_update_mask_0                         (tbl_upd[0].mask[0]),
     .io_update_mask_1                         (tbl_upd[0].mask[1]),
     .io_update_takens_0                       (tbl_upd[0].takens[0]),
@@ -1569,8 +1587,8 @@ module Tage_SC
     .io_resps_1_bits_ctr                      (tbl_resp[1][1].ctr),
     .io_resps_1_bits_u                        (tbl_resp[1][1].u),
     .io_resps_1_bits_unconf                   (tbl_resp[1][1].unconf),
-    .io_update_pc                             (tbl_upd[1].pc),
-    .io_update_ghist                          (tbl_upd[1].ghist),
+    .io_update_pc                             (tbl_upd_pc[1]),
+    .io_update_ghist                          (tbl_upd_ghist[1]),
     .io_update_mask_0                         (tbl_upd[1].mask[0]),
     .io_update_mask_1                         (tbl_upd[1].mask[1]),
     .io_update_takens_0                       (tbl_upd[1].takens[0]),
@@ -1689,8 +1707,8 @@ module Tage_SC
     .io_resps_1_bits_ctr                      (tbl_resp[2][1].ctr),
     .io_resps_1_bits_u                        (tbl_resp[2][1].u),
     .io_resps_1_bits_unconf                   (tbl_resp[2][1].unconf),
-    .io_update_pc                             (tbl_upd[2].pc),
-    .io_update_ghist                          (tbl_upd[2].ghist),
+    .io_update_pc                             (tbl_upd_pc[2]),
+    .io_update_ghist                          (tbl_upd_ghist[2]),
     .io_update_mask_0                         (tbl_upd[2].mask[0]),
     .io_update_mask_1                         (tbl_upd[2].mask[1]),
     .io_update_takens_0                       (tbl_upd[2].takens[0]),
@@ -1809,8 +1827,8 @@ module Tage_SC
     .io_resps_1_bits_ctr                      (tbl_resp[3][1].ctr),
     .io_resps_1_bits_u                        (tbl_resp[3][1].u),
     .io_resps_1_bits_unconf                   (tbl_resp[3][1].unconf),
-    .io_update_pc                             (tbl_upd[3].pc),
-    .io_update_ghist                          (tbl_upd[3].ghist),
+    .io_update_pc                             (tbl_upd_pc[3]),
+    .io_update_ghist                          (tbl_upd_ghist[3]),
     .io_update_mask_0                         (tbl_upd[3].mask[0]),
     .io_update_mask_1                         (tbl_upd[3].mask[1]),
     .io_update_takens_0                       (tbl_upd[3].takens[0]),
@@ -1922,7 +1940,7 @@ module Tage_SC
     .io_s1_resp_valid                         (bt_s1_resp_valid),
     .io_update_mask_0                         (bt_upd.mask[0]),
     .io_update_mask_1                         (bt_upd.mask[1]),
-    .io_update_pc                             (bt_upd.pc),
+    .io_update_pc                             (bt_upd_pc),
     .io_update_cnt_0                          (bt_upd.cnt[0]),
     .io_update_cnt_1                          (bt_upd.cnt[1]),
     .io_update_takens_0                       (bt_upd.takens[0]),
@@ -2298,7 +2316,7 @@ module Tage_SC
     .io_resp_ctrs_0_1                         (sc_resp[0][0][1]),
     .io_resp_ctrs_1_0                         (sc_resp[0][1][0]),
     .io_resp_ctrs_1_1                         (sc_resp[0][1][1]),
-    .io_update_pc                             (sc_upd[0].pc),
+    .io_update_pc                             (sc_upd_pc[0]),
     .io_update_mask_0                         (sc_upd[0].mask[0]),
     .io_update_mask_1                         (sc_upd[0].mask[1]),
     .io_update_oldCtrs_0                      (sc_upd[0].old_ctrs[0]),
@@ -2343,8 +2361,8 @@ module Tage_SC
     .io_resp_ctrs_0_1                         (sc_resp[1][0][1]),
     .io_resp_ctrs_1_0                         (sc_resp[1][1][0]),
     .io_resp_ctrs_1_1                         (sc_resp[1][1][1]),
-    .io_update_pc                             (sc_upd[1].pc),
-    .io_update_ghist                          (sc_upd[1].ghist),
+    .io_update_pc                             (sc_upd_pc[1]),
+    .io_update_ghist                          (sc_upd_ghist[1]),
     .io_update_mask_0                         (sc_upd[1].mask[0]),
     .io_update_mask_1                         (sc_upd[1].mask[1]),
     .io_update_oldCtrs_0                      (sc_upd[1].old_ctrs[0]),
@@ -2389,8 +2407,8 @@ module Tage_SC
     .io_resp_ctrs_0_1                         (sc_resp[2][0][1]),
     .io_resp_ctrs_1_0                         (sc_resp[2][1][0]),
     .io_resp_ctrs_1_1                         (sc_resp[2][1][1]),
-    .io_update_pc                             (sc_upd[2].pc),
-    .io_update_ghist                          (sc_upd[2].ghist),
+    .io_update_pc                             (sc_upd_pc[2]),
+    .io_update_ghist                          (sc_upd_ghist[2]),
     .io_update_mask_0                         (sc_upd[2].mask[0]),
     .io_update_mask_1                         (sc_upd[2].mask[1]),
     .io_update_oldCtrs_0                      (sc_upd[2].old_ctrs[0]),
@@ -2435,8 +2453,8 @@ module Tage_SC
     .io_resp_ctrs_0_1                         (sc_resp[3][0][1]),
     .io_resp_ctrs_1_0                         (sc_resp[3][1][0]),
     .io_resp_ctrs_1_1                         (sc_resp[3][1][1]),
-    .io_update_pc                             (sc_upd[3].pc),
-    .io_update_ghist                          (sc_upd[3].ghist),
+    .io_update_pc                             (sc_upd_pc[3]),
+    .io_update_ghist                          (sc_upd_ghist[3]),
     .io_update_mask_0                         (sc_upd[3].mask[0]),
     .io_update_mask_1                         (sc_upd[3].mask[1]),
     .io_update_oldCtrs_0                      (sc_upd[3].old_ctrs[0]),

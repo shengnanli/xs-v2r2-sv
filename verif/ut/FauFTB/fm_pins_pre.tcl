@@ -1,5 +1,5 @@
-# FauFTB FM 匹配前钉点 —— BPU 公共外壳 s2/s3 段 PC 的 400 位（scripts/gen_bpu_stagepc_pins.py 生成，勿手改）
-# 映射规则与依据见生成器文件头。双射是机械的：seg_0/1/2 <-> hi/mid/lo，dup 后缀 无/_1/_2/_3 <-> [0]/[1]/[2]/[3]，位号同号。
+# FauFTB FM 匹配前钉点 —— 400 位（scripts/gen_bpu_stagepc_pins.py 生成，勿手改）
+# 映射规则与依据见生成器文件头与 RULES；golden 名与位宽从 G1 golden 现读，单射由生成器断言。
 if {$top eq "FauFTB"} {
   set _n 0
   set _miss 0
@@ -410,11 +410,11 @@ if {$top eq "FauFTB"} {
     set _i "i:/WORK/$top/[lindex $_p 1]"
     if {[catch {set_user_match $_r $_i} _msg]} {
       incr _miss
-      if {$_miss <= 10} { puts "BPU_STAGEPC_PIN_FAIL: $_r <-> $_i ($_msg)" }
+      if {$_miss <= 10} { puts "BPU_PIN_FAIL: $_r <-> $_i ($_msg)" }
     } else {
       incr _n
     }
   }
-  puts "BPU_STAGEPC_PINS: $_n / 400 pinned, $_miss missed"
-  if {$_miss != 0 || $_n != 400} { error "BPU_STAGEPC_PIN_MISS=$_miss n=$_n" }
+  puts "BPU_PINS: $_n / 400 pinned, $_miss missed"
+  if {$_miss != 0 || $_n != 400} { error "BPU_PIN_MISS=$_miss n=$_n" }
 }

@@ -1,74 +1,183 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""gen_bpu_stagepc_pins.py —— BPU 预测器（FauFTB / ITTage / Tage_SC）FM「匹配前」钉点生成器。
+"""gen_bpu_stagepc_pins.py —— BPU 预测器（FauFTB / ITTage / Tage_SC）的 FM「匹配前」钉点生成器。
 
-钉的是什么：BasePredictor 公共外壳里 utility.SegmentedAddrNext 的 s2/s3 段寄存器（4 dup × 2 级 × 50 位 = 400 位）。
-  golden（firtool 展平）: s{2,3}_pc_dup_s{2,3}_pc_seg_{0,1,2}_value[_<dup>]_reg[bit]（dup 0 无后缀）
-  重写（共享辅助件 rtl/common/xs_BpuStagePc.sv，数组）: <核层次>/u_stage_pc/s{2,3}_{hi,mid,lo}_reg[dup][bit]
-  seg_0 <-> hi(26 位，pc[49:24])、seg_1 <-> mid(12 位，pc[23:12])、seg_2 <-> lo(12 位，pc[11:0])，位号逐位同号。
-为什么要钉：这些寄存器在各预测器里大部分或全部无消费者（cone-dead），没有功能签名可配，
-  名字又两侧不同 —— 不钉时 FM 把它们报成两侧 unmatched unread（FauFTB 诊断跑实测 400(400)），
-  vmucp 对 unmatched 点是空转。钉点只消名差：不 dont_verify、不约束 ref、不加黑盒。
+钉点只消名差：golden（firtool 展平名）与重写核（数组 / 结构体 / 共享辅助件层次）的寄存器名字不同，
+不钉时 FM 要么把无读者的寄存器报成两侧 unmatched unread（vmucp 对 unmatched 点是空转），要么在签名
+分析里耗很久（ITTage 不钉实测 Matching 30 分钟未结束）。不 dont_verify、不约束 ref、不加黑盒。
 
-fail-closed：生成的 tcl 逐条数 set_user_match 返回值（catch 只用来计数失败，不吞错误），
-  成功数必须等于字面 400，否则 error 退出。
+规则表按"golden 顶层寄存器名 -> 重写侧寄存器路径"写（见 RULES），一个 golden 寄存器的每一位对一位：
+  · 公共外壳 xs_BpuStagePc（三个预测器共用）：
+      s1_pc_dup_<d>                         <-> u_core/u_stage_pc/s1_pc_reg[d][bit]
+      s{2,3}_pc_dup_s{2,3}_pc_seg_{0,1,2}_value[_<d>]（dup 0 无后缀）<-> u_core/u_stage_pc/s{2,3}_{hi,mid,lo}_reg[d][bit]
+      modified_reset                        <-> u_core/u_stage_pc/modified_reset_reg
+  · 各目标自己的寄存器见 RULES[目标]。
+fail-closed（生成期）：golden 寄存器名与位宽从 G1 golden 现读；目标声明 FULL=True 时，golden 顶层每一个寄存器都必须
+  恰好被一条规则认领（多认领 / 漏认领都拒绝生成）；映射必须单射；位宽来自 golden 声明。
+fail-closed（运行期）：生成的 tcl 逐条数 set_user_match 返回值（catch 只用来计数失败），成功数必须等于字面总数，否则 error。
 
 用法：
     python3 scripts/gen_bpu_stagepc_pins.py            # 生成全部目标（幂等）
     python3 scripts/gen_bpu_stagepc_pins.py --check    # 产物与生成器不一致则 rc=1
 """
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, ".."))
+GOLDEN_DIR = os.environ.get("GOLDEN_RTL", "/home/eda/xs-env/G1-canonical/golden-rtl")
 
-# 目标 -> 重写侧 xs_BpuStagePc 实例的层次（相对顶层）
-TARGETS = {
-    "FauFTB": "u_core/u_stage_pc",
-}
-SEGS = [(0, "hi", 26), (1, "mid", 12), (2, "lo", 12)]
-NUM_DUP = 4
-TOTAL = 2 * NUM_DUP * sum(w for _, _, w in SEGS)
+SEG = {"0": "hi", "1": "mid", "2": "lo"}
+SP = "u_core/u_stage_pc/"
 
 
-def pairs(inst):
+def die(msg):
+    raise SystemExit("gen_bpu_stagepc_pins: " + msg)
+
+
+def golden_regs(top):
+    """golden 顶层模块体里的 reg 声明：[(名字, 位宽)]，按声明顺序。"""
+    t = open(os.path.join(GOLDEN_DIR, top + ".sv")).read()
+    m = re.search(r"^module\s+%s\s*\(.*?^\);(.*?)^endmodule" % re.escape(top), t, re.S | re.M)
+    if not m:
+        die("golden 里找不到 module %s" % top)
     out = []
-    for stage in (2, 3):
-        for d in range(NUM_DUP):
-            sfx = "" if d == 0 else "_%d" % d
-            for si, sname, w in SEGS:
-                for b in range(w):
-                    out.append(("s%d_pc_dup_s%d_pc_seg_%d_value%s_reg[%d]" % (stage, stage, si, sfx, b),
-                                "%s/s%d_%s_reg[%d][%d]" % (inst, stage, sname, d, b)))
-    assert len(out) == TOTAL == 400
-    assert len(set(r for r, _ in out)) == TOTAL and len(set(i for _, i in out)) == TOTAL  # 单射
+    for rm in re.finditer(r"^\s*reg\s+(?:\[(\d+):0\]\s+)?(\w+);", m.group(1), re.M):
+        out.append((rm.group(2), int(rm.group(1)) + 1 if rm.group(1) else 1))
     return out
 
 
-def render(top, inst):
+# ---- 规则：(golden 名正则, 函数(match) -> 重写侧"位前缀"字符串；位下标按 [bit] 追加) ----
+# 返回值里的 "{b}" 若出现，表示位下标插在那里（结构体内偏移等）；否则在末尾追加 [bit]（多位）或不加（1 位）。
+def stagepc_rules():
+    return [
+        (r"modified_reset", lambda m: SP + "modified_reset_reg"),
+        (r"s1_pc_dup_(\d)", lambda m: SP + "s1_pc_reg[%s]" % m.group(1)),
+        (r"s([23])_pc_dup_s\1_pc_seg_([012])_value(?:_(\d))?",
+         lambda m: SP + "s%s_%s_reg[%s]" % (m.group(1), SEG[m.group(2)], m.group(3) or "0")),
+    ]
+
+
+def only_s23():
+    return [stagepc_rules()[2]]
+
+
+ITTAGE_SIMPLE = {
+    "tickCtr": "tick_ctr", "s3_providerTarget": "s3_provider_target", "s3_altProviderTarget": "s3_alt_provider_target",
+    "s3_provided": "s3_provided", "s3_provider": "s3_provider", "s3_altProvided": "s3_alt_provided",
+    "s3_altProvider": "s3_alt_provider", "s3_providerU": "s3_provider_u", "s3_providerCtr": "s3_provider_ctr",
+    "s3_altProviderCtr": "s3_alt_provider_ctr", "resp_meta_allocate_valid_r": "s3_alloc_valid",
+    "resp_meta_allocate_bits_r": "s3_alloc_entry", "resp_meta_pred_cycle_c": "pred_cycle", "u_valid": "u_valid",
+    "update_r_pc": "u_pc", "update_r_ftb_entry_isRet": "u_is_ret_raw", "update_r_ftb_entry_isJalr": "u_is_jalr_raw",
+    "update_r_ftb_entry_tailSlot_offset": "u_tail_offset", "update_r_ftb_entry_tailSlot_sharing": "u_tail_sharing",
+    "update_r_ftb_entry_tailSlot_valid": "u_tail_valid", "update_r_ftb_entry_strong_bias_1": "u_strong_bias_1",
+    "update_r_cfi_idx_valid": "u_cfi_valid", "update_r_jmp_taken": "u_jmp_taken",
+    "update_r_mispred_mask_2": "u_jmp_mispred", "updateMeta_r_provider_valid": "um_provider_valid",
+    "updateMeta_r_altProvider_valid": "um_alt_provider_valid", "updateMeta_r_altDiffers": "um_alt_differs",
+    "updateMeta_r_providerU": "um_provider_u", "updateMeta_r_providerCtr": "um_provider_ctr",
+    "updateMeta_r_altProviderCtr": "um_alt_provider_ctr", "updateMeta_r_allocate_valid": "um_allocate_valid",
+    "updateMeta_provider_bits_r": "um_provider", "updateMeta_providerTarget_r": "um_provider_target",
+    "updateMeta_allocate_bits_r": "um_allocate", "updateMeta_altProvider_bits_r": "um_alt_provider",
+    "updateMeta_altProviderTarget_r": "um_alt_provider_target", "update_full_target_r": "u_full_target",
+    "update_cfi_idx_bits_r": "u_cfi_idx", "update_ghist_r": "u_ghist",
+}
+ITTAGE_TBL = {"valid_REG": "upd_valid_q", "reset_u_REG": "upd_reset_u_q", "uValid_r": "upd_u_valid_q",
+              "correct_r": "upd_correct_q", "alloc_r": "upd_alloc_q", "oldCtr_r": "upd_old_ctr_q",
+              "u_r": "upd_u_q", "pc_r": "upd_pc_q", "ghist_r": "upd_ghist_q"}
+# ittage_offset_t = {offset[19:0], pointer[3:0], usePCRegion}：打平后的位偏移
+OFF_FIELD = {"offset": 5, "pointer": 1, "usePCRegion": 0}
+
+
+def ittage_rules():
+    r = stagepc_rules()
+    r.append((r"(%s)" % "|".join(sorted(ITTAGE_SIMPLE, key=len, reverse=True)),
+              lambda m: "u_core/%s_reg" % ITTAGE_SIMPLE[m.group(1)]))
+    r.append((r"s3_tageTarget_dup_(\d)", lambda m: "u_core/s3_target_reg[%s]" % m.group(1)))
+    r.append((r"tables_(\d)_io_update_(%s)" % "|".join(ITTAGE_TBL),
+              lambda m: "u_core/%s_reg[%s]" % (ITTAGE_TBL[m.group(2)], m.group(1))))
+    r.append((r"tables_(\d)_io_update_(old_target_offset|target_offset)_r_(offset|pointer|usePCRegion)",
+              lambda m: "u_core/%s_reg[%s]{off%d}" % ("upd_old_off_q" if m.group(2).startswith("old") else
+                                                    "upd_tgt_off_q", m.group(1), OFF_FIELD[m.group(3)])))
+    return r
+
+
+def tage_rules():
+    r = stagepc_rules()
+    r.append((r"tables_(\d)_io_update_(pc|ghist)_r_1", lambda m: "u_core/tbl_upd_%s_reg[%s]" % (m.group(2), m.group(1))))
+    r.append((r"scTables_(\d)_io_update_(pc|ghist)_r_1", lambda m: "u_core/sc_upd_%s_reg[%s]" % (m.group(2), m.group(1))))
+    r.append((r"bt_io_update_pc_r", lambda m: "u_core/bt_upd_pc_reg"))
+    return r
+
+
+# 目标 -> (规则, FULL：golden 顶层寄存器是否必须全部被认领, 只钉这些名字的正则（FULL=False 时）)
+TARGETS = {
+    "FauFTB":  (only_s23, False),
+    "ITTage":  (ittage_rules, True),
+    "Tage_SC": (tage_rules, False),
+}
+
+
+def pairs_for(top):
+    rules_fn, full = TARGETS[top]
+    rules = [(re.compile(rx), fn) for rx, fn in rules_fn()]
+    out = []
+    for name, w in golden_regs(top):
+        hits = [(rx, fn) for rx, fn in rules if rx.fullmatch(name)]
+        if len(hits) > 1:
+            die("%s: golden 寄存器 %s 被 %d 条规则认领" % (top, name, len(hits)))
+        if not hits:
+            if full:
+                die("%s: golden 寄存器 %s 没有规则认领（FULL）" % (top, name))
+            continue
+        rx, fn = hits[0]
+        base = fn(rx.fullmatch(name))
+        for b in range(w):
+            ref = "%s_reg[%d]" % (name, b) if w > 1 else "%s_reg" % name
+            m = re.search(r"\{off(\d+)\}$", base)
+            if m:
+                impl = base[:m.start()] + "[%d]" % (int(m.group(1)) + b)
+            else:
+                impl = base + ("[%d]" % b if w > 1 else "")
+            out.append((ref, impl))
+    refs = [r for r, _ in out]
+    impls = [i for _, i in out]
+    if len(set(refs)) != len(refs) or len(set(impls)) != len(impls):
+        die("%s: 映射不是单射" % top)
+    if not out:
+        die("%s: 一条钉点都没有" % top)
+    return out
+
+
+def esc(x):
+    return x.replace("[", "\\[").replace("]", "\\]")
+
+
+def render(top):
+    prs = pairs_for(top)
+    n = len(prs)
     L = []
-    L.append("# %s FM 匹配前钉点 —— BPU 公共外壳 s2/s3 段 PC 的 %d 位（scripts/gen_bpu_stagepc_pins.py 生成，勿手改）" % (top, TOTAL))
-    L.append("# 映射规则与依据见生成器文件头。双射是机械的：seg_0/1/2 <-> hi/mid/lo，dup 后缀 无/_1/_2/_3 <-> [0]/[1]/[2]/[3]，位号同号。")
+    L.append("# %s FM 匹配前钉点 —— %d 位（scripts/gen_bpu_stagepc_pins.py 生成，勿手改）" % (top, n))
+    L.append("# 映射规则与依据见生成器文件头与 RULES；golden 名与位宽从 G1 golden 现读，单射由生成器断言。")
     L.append("if {$top eq \"%s\"} {" % top)
     L.append("  set _n 0")
     L.append("  set _miss 0")
     L.append("  set _pairs {")
-    for r, i in pairs(inst):
-        L.append("    {%s %s}" % (r.replace("[", "\\[").replace("]", "\\]"), i.replace("[", "\\[").replace("]", "\\]")))
+    for r, i in prs:
+        L.append("    {%s %s}" % (esc(r), esc(i)))
     L.append("  }")
     L.append("  foreach _p $_pairs {")
     L.append("    set _r \"r:/WORK/$top/[lindex $_p 0]\"")
     L.append("    set _i \"i:/WORK/$top/[lindex $_p 1]\"")
     L.append("    if {[catch {set_user_match $_r $_i} _msg]} {")
     L.append("      incr _miss")
-    L.append("      if {$_miss <= 10} { puts \"BPU_STAGEPC_PIN_FAIL: $_r <-> $_i ($_msg)\" }")
+    L.append("      if {$_miss <= 10} { puts \"BPU_PIN_FAIL: $_r <-> $_i ($_msg)\" }")
     L.append("    } else {")
     L.append("      incr _n")
     L.append("    }")
     L.append("  }")
-    L.append("  puts \"BPU_STAGEPC_PINS: $_n / %d pinned, $_miss missed\"" % TOTAL)
-    L.append("  if {$_miss != 0 || $_n != %d} { error \"BPU_STAGEPC_PIN_MISS=$_miss n=$_n\" }" % TOTAL)
+    L.append("  puts \"BPU_PINS: $_n / %d pinned, $_miss missed\"" % n)
+    L.append("  if {$_miss != 0 || $_n != %d} { error \"BPU_PIN_MISS=$_miss n=$_n\" }" % n)
     L.append("}")
     return "\n".join(L) + "\n"
 
@@ -76,9 +185,9 @@ def render(top, inst):
 def main():
     check = "--check" in sys.argv[1:]
     rc = 0
-    for top, inst in sorted(TARGETS.items()):
+    for top in sorted(TARGETS):
         p = os.path.join(REPO, "verif", "ut", top, "fm_pins_pre.tcl")
-        txt = render(top, inst)
+        txt = render(top)
         old = open(p).read() if os.path.exists(p) else None
         rel = os.path.relpath(p, REPO)
         if check:

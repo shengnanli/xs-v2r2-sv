@@ -61,6 +61,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Tage_SC.sv $(addprefix $(GOLDEN_RTL)/,$(TAGE_CHILDRE
 FM_VARIANTS = Tage_SC
 FM_REF_DEPS_Tage_SC = $(TAGE_CHILDREN) $(TAGE_GRAND)
 FM_MERGE_DUP = false
+
+# ★匹配前钉点 fm_pins_pre.tcl（scripts/gen_bpu_stagepc_pins.py 生成）★ + ★vmucp：依据见 verif/fm_target_config/Tage_SC.tcl★
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

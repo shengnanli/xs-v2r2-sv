@@ -39,7 +39,7 @@
 // wrapper 的端口表、子模块（tables_0..4 / rTable / s2_allocLFSR_prng，实例名同 golden）与
 // 透传赋值是机械派生区，由 scripts/gen_bpu_wrappers.py 从 G1 golden 生成（GENERATED 区）。
 // =============================================================================
-// 本文件导航（共 1594 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1623 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L19    在 BPU 里的位置】Composer 菊花链中 FTB 之后、RAS 之前
 //   L25    表与区域压缩】5 张 ITTageTable
 //   L30    S2 选择】5 张表里**历史最长的命中**做 provider，次长的命中做 altProvider
@@ -479,23 +479,36 @@ module xs_ITTage_core
   logic [63:0] pred_cycle_next;
   assign pred_cycle_next = pred_cycle + 64'd1;
 
+  // 每张表 update 口的寄存器：逐字段一个数组（FM 钉点按字段逐位对到 golden 的 tables_<i>_io_update_*）
+  logic                 upd_valid_q   [NUM_TABLES];   // RegNext(updateMask(i))，异步复位
+  logic                 upd_reset_u_q [NUM_TABLES];   // RegNext(updateResetU)，异步复位
+  logic                 upd_u_valid_q [NUM_TABLES];   // RegEnable(updateUMask(i), false, updateMask(i))
+  logic                 upd_correct_q [NUM_TABLES];
+  logic                 upd_alloc_q   [NUM_TABLES];
+  logic [1:0]           upd_old_ctr_q [NUM_TABLES];
+  ittage_offset_t       upd_tgt_off_q [NUM_TABLES];
+  ittage_offset_t       upd_old_off_q [NUM_TABLES];
+  logic                 upd_u_q       [NUM_TABLES];
+  logic [PC_W-1:0]      upd_pc_q      [NUM_TABLES];
+  logic [255:0]         upd_ghist_q   [NUM_TABLES];
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       u_valid    <= 1'b0;
       pred_cycle <= '0;
       for (int i = 0; i < NUM_TABLES; i++) begin
-        tbl_upd[i].valid   <= 1'b0;
-        tbl_upd[i].reset_u <= 1'b0;
-        tbl_upd[i].u_valid <= 1'b0;
+        upd_valid_q[i]   <= 1'b0;
+        upd_reset_u_q[i] <= 1'b0;
+        upd_u_valid_q[i] <= 1'b0;
       end
     end else begin
       u_valid    <= update_valid;
       pred_cycle <= pred_cycle_next;
       for (int i = 0; i < NUM_TABLES; i++) begin
-        tbl_upd[i].valid   <= update_mask[i];
-        tbl_upd[i].reset_u <= reset_u_all;
+        upd_valid_q[i]   <= update_mask[i];
+        upd_reset_u_q[i] <= reset_u_all;
         // uValid：分配项与 provider 置 1；只因"用了 alt"而更新的 alt 项为 0
-        if (update_mask[i]) tbl_upd[i].u_valid <= tbl_alloc[i] || (provider_update && tbl_is_provider[i]);
+        if (update_mask[i]) upd_u_valid_q[i] <= tbl_alloc[i] || (provider_update && tbl_is_provider[i]);
       end
     end
   end
@@ -508,15 +521,31 @@ module xs_ITTage_core
   always_ff @(posedge clock) begin
     for (int i = 0; i < NUM_TABLES; i++) begin
       if (update_mask[i]) begin
-        tbl_upd[i].correct           <= tbl_is_provider[i] && provider_correct;
-        tbl_upd[i].alloc             <= tbl_alloc[i];
-        tbl_upd[i].old_ctr           <= tbl_is_provider[i] ? um_provider_ctr : um_alt_provider_ctr;
-        tbl_upd[i].target_offset     <= real_target_off;
-        tbl_upd[i].old_target_offset <= tbl_is_provider[i] ? provider_old_off : alt_old_off;
-        tbl_upd[i].u                 <= !tbl_alloc[i] && update_u_value;
-        tbl_upd[i].pc                <= update_pc;     // ★直接取 io.update.bits.pc（未锁存那份），照 golden★
-        tbl_upd[i].ghist             <= u_ghist;
+        upd_correct_q[i] <= tbl_is_provider[i] && provider_correct;
+        upd_alloc_q[i]   <= tbl_alloc[i];
+        upd_old_ctr_q[i] <= tbl_is_provider[i] ? um_provider_ctr : um_alt_provider_ctr;
+        upd_tgt_off_q[i] <= real_target_off;
+        upd_old_off_q[i] <= tbl_is_provider[i] ? provider_old_off : alt_old_off;
+        upd_u_q[i]       <= !tbl_alloc[i] && update_u_value;
+        upd_pc_q[i]      <= update_pc;     // ★直接取 io.update.bits.pc（未锁存那份），照 golden★
+        upd_ghist_q[i]   <= u_ghist;
       end
+    end
+  end
+
+  always_comb begin
+    for (int i = 0; i < NUM_TABLES; i++) begin
+      tbl_upd[i].pc                = upd_pc_q[i];
+      tbl_upd[i].ghist             = upd_ghist_q[i];
+      tbl_upd[i].valid             = upd_valid_q[i];
+      tbl_upd[i].correct           = upd_correct_q[i];
+      tbl_upd[i].alloc             = upd_alloc_q[i];
+      tbl_upd[i].old_ctr           = upd_old_ctr_q[i];
+      tbl_upd[i].u_valid           = upd_u_valid_q[i];
+      tbl_upd[i].u                 = upd_u_q[i];
+      tbl_upd[i].reset_u           = upd_reset_u_q[i];
+      tbl_upd[i].target_offset     = upd_tgt_off_q[i];
+      tbl_upd[i].old_target_offset = upd_old_off_q[i];
     end
   end
 
