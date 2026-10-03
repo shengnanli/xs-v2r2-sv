@@ -139,3 +139,24 @@ Not Compared = Unread 1 对（`s2_do_dcache_evict_last_REG` <-> `u_core/s2_do_ev
 
 1. PLRU 状态在 impl 里多一层 `u_plru`，golden 没有这层；若正式跑出现 15 个 unmatched，就是它。
 2. `FMR_VLOG-063`（signed -> unsigned 赋值告警）两处来自 `WAY_W'(i)` / `OFFSET_W'(...)` 的 int 截位，试跑不影响结论。
+
+## 对账 A（2026-10-02，正式 run_proof @76a7067b，evidence/76a7067be695/）
+
+| 目标 | native | passing | failing | unmatched | unread | constant_reg | verdict | 与 §预测 |
+|---|---|---|---|---|---|---|---|---|
+| PMPChecker    | SUCCEEDED | 3   | 0 | 0(0) | 0 | — | SUCCEEDED | 逐位相等 |
+| PMPChecker_2  | SUCCEEDED | 4   | 0 | 0(0) | 0 | — | SUCCEEDED | 逐位相等 |
+| PMPChecker_12 | SUCCEEDED | 331 | 0 | 0(0) | 0 | — | SUCCEEDED | 逐位相等（钉点 ok=326 bad=0） |
+| VIMac64b      | SUCCEEDED | 911 | 0 | 0(0) | 10 | 80 | **PARTIAL**(strict_unread!=0) | passing 没按 §2.4 涨到 921 |
+| ActiveGenerationTable | SUCCEEDED | 1729 | 0 | 0(0) | 1 | 0 | **PARTIAL**(strict_unread!=0) | passing 没按 §3.3 涨到 1730 |
+
+VIMac64b / ActiveGenerationTable 的 vmucp 没起作用，原因（从 receipt 与 fm.log 读出）：
+appvar `verification_verify_matched_unread_compare_points` 已为 true（receipt.proof_config.entry_appvars_readback），
+但那 10 + 1 个死位在 FM 里是 **unmatched-unread**（`report_unmatched_points -status unread` 列出两侧各 10 / 1 个；
+"Not Compared" 表里没有 Unread 行，passing 的 DFF 列是 839 = 929 − 80 − 10）—— FM 默认不给 unread 点配对，
+vmucp 只比 matched 的 unread 点。§2.4 / §3.3 把"FM 自己配上"写成了事实，错了：试跑的 unread_points.txt
+本来就是 unmatched 列表，我没分辨 matched_nc 与 unmatched-unread。
+修法（与 LoadQueueRAW 同一条路）：加 `fm_pins_pre.tcl` 把这几个寄存器 set_user_match 成 matched 点
+（VIMac64b 钉 uopIdxS1/S2 整 6 位 × 2 = 12，fail-closed；AGT 钉 1 位），其余预测数字不变。
+钉后非正式试跑：VIMac64b SUCCEEDED passing **921** / unread 0 / constant_reg 80；
+ActiveGenerationTable SUCCEEDED passing **1730** / unread 0。正式复跑见对账 B。
