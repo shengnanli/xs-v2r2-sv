@@ -53,3 +53,14 @@
    不生成）报 constant_reg，差额按 receipt 的 constant_reg 指认。
 3. MStatusModule 的 SDT/SIE 规则（DTE=0 时 sstatus 写 SDT 保持且用当前 SDT 判清 SIE）
    是最容易写错的一处；UT 已有 sdt_alias_dte0/dte1 覆盖项。
+
+## 4. 对账（跑后追加；上文未改）
+
+- FM @110015a5，evidence/110015a55363/*：12/12 signoff-strict SUCCEEDED，failing 0 / unmatched 0 / 黑盒 0 /
+  无 dont_verify / 无 pins。passing 与预测 **12/12 逐位相等**（`fm_predict.py check`）。
+  第 3 节风险 1（generate flop 名配不上）未发生：签名分析全配上，不需要 fm_pins。
+- UT CsrIrqHandle12：seed 1/7/42 × initreg {0, random, <seed>017} 共 9 档，每档 200k 拍，
+  checks=175392984 errors=0 cov_fail=0。
+- 变异自检（scratchpad 副本，10k 拍）：6 个里 5 个被抓（Mvip 写优先级、Trap 异常优先级、PM TOR 锁、
+  MStatus SDT 保持、VSie 移位）。M6（去掉 Sie 的 FROM_VSIE_RW 门控）没抓到，属于**等价变异**：
+  受影响的只有 own-flop 位 1/9，而 wrapper 里这两位的 vsie_wr_valid 恒为 0（golden 没有这两个端口）。
