@@ -75,4 +75,9 @@ FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = $(if $(filter FDivSqrt DivUnit,$*),tru
 # 关掉它是加强不是放宽（不黑盒/不跳点/不约束 ref，比较点只增不减），先例见
 # scripts/fm_eq.tcl 的 merge 经验注记（RenameBuffer/MulUnit）。只作用在 DivUnit，
 # 命令行显式传 FM_MERGE_DUP=... 仍可覆盖（诊断用）。
-FM_MERGE_DUP = $(if $(filter DivUnit,$*),false,)
+# FDivSqrt（2026-10-03，fpaddpath-sqrtblock lane）：开方通路 impl 改读重写件后，merge=on 首跑
+# evidence/194f78e14165/FDivSqrt 出现同一类不对称合并——ref 侧 fpsqrt_r16 的 f_r_s_q[7:0]/f_r_c_q[9:4,1] 等
+# 被合并/判常量，impl 侧对应位不合并（15 个 unmatched），迭代环上 f_r_s_q/f_r_c_q 随之 failing（至少 20，截断）、
+# unverified 291。fpsqrt_r16 单独签核（merge=off，evidence/44292961f2c0）两侧逐位 1:1 证等价。
+# 与 DivUnit 同理关 merge（加强：比较点只增不减，不黑盒不跳点）。
+FM_MERGE_DUP = $(if $(filter DivUnit FDivSqrt,$*),false,)

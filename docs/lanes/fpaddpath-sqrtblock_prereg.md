@@ -184,3 +184,13 @@ FloatAdder / FAlu 两处新增字面钉点（各 4 对：far FS1 bit0、close CS
 | FDivSqrt | 模型不适用（merge_dup=true） | 2040（evidence/786d0b438756） | **2040** | vmucp（VectorFloatDividerR64 那 1 点两侧 golden）；merge 开，数字仅作对照 |
 
 可能出错处：重写件寄存器名与 golden 不同，父级上下文里靠签名配对；FDivSqrt 在 merge=on 下两侧合并可能不对称（DivUnit 先例），若 passing 偏离先查合并。
+
+### 4.3 FDivSqrt 首跑失败与改登记（★先登记再重跑★）
+
+首跑 `194f78e14`（merge_dup=true，沿用该目标原口径）：native **FAILED**，passing 1715 / failing 20（截断，至少 20）/
+unverified 291 / unmatched 15（ref 14：fpsqrt_r16 的 `f_r_s_q[7:0]`、`f_r_c_q[1,4..7,9]`、`m_pos_1…_q[2]`；impl 3：`m_pos_1_q[0,2]`、`m_pos_2_q[3]`），
+failing 全在 fpsqrt_r16 的 `f_r_s_q` / `f_r_c_q`。形态与 DivUnit 先例相同：merge=on 时两侧合并不对称（ref 把一批低位合并/判常量、
+impl 不合并），配不上的位让余数迭代环判不等。fpsqrt_r16 本体在 merge=off 下已逐位证等价（§3）。
+处置：`verif/ut/ArithVecLeaves5/Makefile` 的 `FM_MERGE_DUP` 对 FDivSqrt 也关（与 DivUnit 同一条，加强非放宽）。
+新预测：SUCCEEDED、failing / unverified / unmatched 0、vmucp 1 点照旧；passing 不小于 2040（merge 关只会增点），**确切数不预测**
+（fm_predict 对该目标的模型因 Makefile 非字面变量不可用）。首跑 receipt 留档 `evidence/194f78e14165/FDivSqrt`。
