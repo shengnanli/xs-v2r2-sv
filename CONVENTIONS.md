@@ -43,6 +43,10 @@ endmodule
   （空包是噪音）。
 - 跨模块共享类型放子系统级公共包：`rtl/<subsys>/<subsys>_common_pkg.sv`，
   数量克制（每个子系统至多一个）。
+  **例外：独立包文件 `rtl/<subsys>/<pkg>.sv`**（2026-10-03 用户批准）——当某个包只被
+  一个家族使用、且并进 `<subsys>_common_pkg.sv` 会让无关的已签目标因闭包字节变化而
+  STALE 需重证时，允许单独成文件（先例 `alu_pkg.sv`、`stdfreelist_pkg.sv`、
+  `vmergebuffer_pkg.sv`）。仍须满足 package 作用域闸：一个包只在一个文件里定义。
 - **共享辅助件**：不对应任何 golden 模块、被多个核复用的经典结构
   （如树形 PLRU——Chisel 把它内联进各使用者），抽成 `rtl/common/xs_<Name>.sv`
   独立文件（无 wrapper，命名无 `_core` 后缀），一处实现 + 讲透，胜过处处内联。
