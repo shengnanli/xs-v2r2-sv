@@ -112,3 +112,89 @@ TageBTable（`doing_reset` 写 2'h2）上电后都会整表清扫，`*_ext` 里�
 3. 可选的加强：再加一档 `+vcs+initreg+1`（Z1，本 lane **没跑**）。Z0 与 Z1 结果不同的计数器标为"初值敏感"，
    比如每拍累加的无复位寄存器（robHeadPC、vaddr_match_failed、tage `*_at_pred`、missQueue utilization），归入 C_DIAG/D 类，不作为 BLOCKING。
 4. perfre §7 的 tage 二分结论应改为：嫌疑不在 TageTable/TageBTable/Predictor/Composer/存储层，而在启动窗口里 golden 寄存器的 `$random` 初值。
+
+## 5. 落地（codex 0207 P1：perf 主比较两侧 Z0，GO）
+
+codex 0207 P1 原话的四条要求：两侧 Z0 标记、编译设定、运行期 initreg、workload/seed 必须一致，任一缺失就判比较失败；
+主结果仍要求全部已绑定探针逐拍精确相等，不设容差；`+vcs+initreg+1` 只作可选诊断；记录"原模式差异来自 simulation-only random-init 流，不改 RTL"。
+
+### 5a. 设定凭据：`[PERFCFG]` 行由仿真器现场测得，不靠手填
+
+* `verif/sim/perf_cfg_stamp.sv` 作为第二个 top（`-top perf_cfg_stamp`）编进整芯片，不连任何信号。它在 t=1 往 stderr 打一行
+  `[PERFCFG] randomize_defines=… initreg_plusarg=… initreg_probe_reg=… initreg_probe_mem=… workload=… seed=… max_cycles=…`，
+  落在 assert.log 里，与 `[PERF ]` 行同一个文件，因此被同一个 sha256 钉住。
+  * `randomize_defines`：用 `` `ifdef `` 现场查 REG_INIT / MEM_INIT / GARBAGE_ASSIGN / INVALID_ASSIGN 以及 firtool 派生的 `RANDOMIZE`。
+    stamp 文件编在文件表最后，所以 RTL 文本里泄漏出来的宏也看得到。
+  * `initreg_probe_*`：一个无初值的 64 位 reg 加一个无初值阵列表项，取 t=1 的实测值。
+    0…0 说明编译期开了 initreg 且运行期 +vcs+initreg+0；x…x 说明编译期没开 initreg；f…f 是 +1；其它值是 random。
+  * **踩过的坑**：首轮整芯片 stamp 报 `randomize_defines=DELAY,`。原因是 golden 的 1998 个 firtool 文件头都自己写了
+    `` `define RANDOMIZE_DELAY 0.002 ``，这是 RTL 文本，不是编译设定（它只在 `` `ifdef RANDOMIZE `` 块里用，Z0 下这些块不生成）。
+    所以 stamp 不再查 DELAY（commit fdc503f6c），第二轮重建两侧之后数据才算正式。
+  * 用独立的 VCS 小例子验证过五种设定（Z0 / 不加 initreg 值 / +1 / 带 RANDOMIZE_REG_INIT 等 define / 编译期不开 initreg），
+    stamp 都报对了；另外造了一个在源文件里定义 RANDOMIZE_DELAY 的例子，stamp 报 none。
+* `verif/sim/run_perf_z0.sh`：工作区直接复用 `run_perfbind.sh setup`。vcs 命令由 difftest 的 `make -n vcs-build` **机械生成**，
+  然后去掉 `+define+RANDOMIZE_*`；脚本断言命令里有 `+vcs+initreg+random`，再追加 stamp。
+  运行时固定加 `+vcs+initreg+0 +b=0 +e=…`；带额外 plusarg（例如 seed）的运行另起一个目录。
+
+### 5b. 闸
+
+* `scripts/perf_compare.py` 在比数之前先过 `init_contract()`。两侧都必须恰好有一条 `[PERFCFG]`，并且：
+  * 每侧单独满足 Z0：无 RANDOMIZE_*、plusarg=0、两个探针全 0、有 workload 和 max_cycles；
+  * 两侧 `randomize_defines/initreg_plusarg/workload/seed/max_cycles` 逐字相同。
+  任一项不满足，就**不做比较，rc=3**，而且没有绕过开关。主比较本身照旧是精确相等，不设容差。
+  `--emit-mismatch` 现在 0 条差异也会出表，表头另记 `init_contract Z0` 和两侧 `golden_cfg/impl_cfg` 原文。
+* `scripts/check_perf_tier.py` 的判据 D 新增两项：`init_contract=Z0`；用同一个 `init_contract()` 对表头的两侧 cfg **现场复判**，
+  不认表头的自述。
+* 负测：
+  * `scripts/test_perf_init_contract.py`（已进 gate_all）：P0 正例 rc 0；N1–N14 每次只坏一项，各自 rc 3，而且要红在预期的那条消息上
+    （缺行 ×2、RANDOMIZE ×2、initreg random / +1、编译期没开 initreg、plusarg 写 0 但探针非 0、workload / seed / max_cycles 不一致、
+    重复行、缺字段、没给 workload）；N15 设定全对但一个 B_CONTROL 计数差 1，rc 1（证明无容差）。
+    破坏性自检：把 `cfg_problems` 改成早退，7 条用例当场变红。
+  * `scripts/test_perf_tier_gate.py` 新增 13–15（表头缺 init_contract / impl 侧 initreg=random / 两侧 seed 不一致，都要红在判据 D）。
+    夹具改成自带一条与分档台账一致的 WAIVED 行（Tage_SC `bank_1_tage_table_3_provided_at_pred`），
+    这样 Z0 台账为 0 行时 1/2/4 号注入仍然有对象可打。
+* 实测：
+  * 旧口径日志（golden_cm20k 对 i_std）喂给 perf_compare，rc=3（缺 `[PERFCFG]`）；
+  * Z0 golden 默认 seed 对 Z0 impl seed=987654321，rc=3（两侧 seed 不一致）。
+
+### 5c. 当前 main HEAD 两侧 Z0 整芯片重出台账
+
+* 分支在 merge main `3cd470621b7d0b5bd6cb1afe07ba5031930c82b6` 之后，生成表按 hier_map → perf_rebind → perf_tier 重算
+  （main 自带的 hier_rebind_map 少 43 行，已补）。`git diff 3cd470621 <本分支> -- rtl` 为空。
+* 构建 pin：setup（重绑 SimTop）在 `a71275fd215187b0a5bbd67b478f05179bafcb8c` 上做，build/run 在 `fdc503f6c32d0a2d7aaacde3f87f9c8383f6fc31` 上做。
+  两者之间只改了 stamp、run 脚本和比较/闸脚本，生成表与 rtl/ 没动。
+
+      T=/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/tage-initmem
+      git worktree add --detach $T/wt-z0pin fdc503f6c
+      SIMW=$T/z0main JOBS=16 $T/wt-z0pin/verif/sim/run_perf_z0.sh setup
+      SIMW=$T/z0main JOBS=16 $T/wt-z0pin/verif/sim/run_perf_z0.sh build golden   # impl 同
+      SIMW=$T/z0main $T/wt-z0pin/verif/sim/run_perf_z0.sh run golden                # impl 同；另加 "" "" +ntb_random_seed=987654321 做 seed 复跑
+      python3 scripts/perf_compare.py $T/z0main/golden/run/coremark-2-iteration-20000/assert.log \
+          $T/z0main/impl/run/coremark-2-iteration-20000/assert.log --all --emit-mismatch docs/perf_mismatch_ledger.tsv
+      # rc=0  初值设定闸 ok；MATCH 9771 / MISMATCH 0 / EXCLUDED 15656 / MISSING 0；WAIVED 0 / BLOCKING 0
+
+| 产物 | sha256 |
+|---|---|
+| golden Z0 assert.log `$T/z0main/golden/run/coremark-2-iteration-20000/assert.log` | `1489d6299121b59869c6be09266a18c742d3b540f5cd067c7aa967fbba8c4785` |
+| impl Z0 assert.log `$T/z0main/impl/run/coremark-2-iteration-20000/assert.log` | `19ab356ee767ccfedf19da35d14c4ccaf2f8a467d32aa6e745ccb12c11ea1744` |
+| golden Z0 seed=987654321 assert.log | `4b0285226980941ea2c82063ab6833ffbc46960a4cb33bb6da5c76b517e26916` |
+| impl Z0 seed=987654321 assert.log | `fd577929393360483af18c359a82640c752df4fc3a2cfef1c6a335d7773e59f3` |
+| golden simv / impl simv | `2eb43a4c3cc1b1cdcf6c949935bec85c635050df622b92e732c2362400ebd023` / `9514b3eb50a83ea9133c8001eb5ce3a74e766e2e7e6ad4664fbca020b0d122ca` |
+| impl 重绑 SimTop.sv（复核：5943 条 XMR 全走得通、锥体与 golden 逐行相同） | `f257f9e77cd086ee01cd678b17a786d2a835c89f9763fae7721c6114fbcf90ef` |
+| vcs_cmd_z0.sh golden / impl | `631063d037661c86c351168e9c8c47e7367a13f0460227d7c4aecb6660db18b1` / `0c6ef2c14feffe6e17471c6db7d2911da8b64147021fee60d163bbf77c32cc80` |
+| `docs/perf_mismatch_ledger.tsv`（0 行，commit 头 c7e115154） | `31f58cd9b9dcdc4056990b817a1ea303b8742cc9c1692c7e0abf769a1a775a10` |
+| `docs/perf_tier_ledger.tsv` / `docs/perf_gap_ledger.tsv` | `88d9815982223784d2574b901d666df5abff90a83458559bcb1daf1c70f176c5` / `7978af83f01a6b01d441435da1f3011c2f56f0c9da09dc353b84cd9739371720` |
+
+* 两侧四次运行都是 EXCEEDED MAX CYCLE，difftest 没有 abort，assert.log 都是 27921 行 PERF。
+  `[PERFCFG]` 两侧都报 `randomize_defines=none initreg_plusarg=0 probe=0`。
+* seed 复跑：两侧去掉 `[PERFCFG]` 那一行（其中 seed 字段本来就该变）之后，其余内容逐字节相同；seed2 这一对 perf_compare 同样 rc=0、9771/0。
+* 原 3 条 tage BLOCKING 现在全部相等：bank_0 provided 3007、bank_1 provided 215、alt_differs 618。
+  storeQueue vaddr_match_failed 是 0/0/0，missQueue utilization 是 2658，与 golden 相同，且对 seed 不敏感。
+* EXCLUDED 15656 条是"没测"（绑定率 3791/9897 = 38.3%），例如 impl 的 `rob commitInstr` 未绑，打印的是 0。
+  按 codex 0207 E3 只对 release KPI 定向补绑，**本结果不得表述为 perf 全等价**。
+* 闸 rc：`check_perf_tier.py` rc=0（A–F 全 PASS，含 A 台账幂等重算、D init_contract=Z0、两侧初值设定 Z0 且一致）；
+  `test_perf_tier_gate.py` rc=0；`test_perf_init_contract.py` rc=0。
+
+**原模式差异的定性（记录在案）**：原 RANDOMIZE_* 口径下的 tage provider / sc / alt_differs、vaddr_match_failed、missQueue utilization
+等差异，都来自 simulation-only 的随机初值流：firtool 的无种子 `$random` 随模块替换平移，重写件用的是 initreg random。
+**不据此修改 RTL。**
