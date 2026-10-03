@@ -173,3 +173,49 @@ L1PF_sbva_pin last_REG_15 array\[15\].last_REG_reg 1
 puts "L1PF_SBVA_PIN_END StreamBitVectorArray ok=$::L1PF_SBVA_PIN_OK bad=$::L1PF_SBVA_PIN_BAD"
 if {$::L1PF_SBVA_PIN_BAD != 0} { error "L1PF_SBVA_PIN_MISS=$::L1PF_SBVA_PIN_BAD" }
 if {$::L1PF_SBVA_PIN_OK != 1692} { error "L1PF_SBVA_PIN_COUNT=$::L1PF_SBVA_PIN_OK expect=1692" }
+
+# ---- 父级追加：训练滤波器死位钉点（规则见 scripts/gen_l1prefetcher_pins.py 文件头）----
+set ::L1PF_TF_EXPECT 1400
+set ::L1PF_TF_OK 0
+set ::L1PF_TF_BAD 0
+proc l1pf_tf_pin {r i} {
+  for {set b 0} {$b < 50} {incr b} {
+    if {[set_user_match "${r}\[$b\]" "${i}\[$b\]"]} { incr ::L1PF_TF_OK } else {
+      incr ::L1PF_TF_BAD
+      if {$::L1PF_TF_BAD <= 10} { puts "L1PF_TF_PIN_FAIL: $r <-> $i bit $b" }
+    }
+  }
+}
+puts "L1PF_TF_PIN_BEGIN expect=$::L1PF_TF_EXPECT"
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_res_0_1_0_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/a_payload_reg[0]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_res_0_1_1_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/a_payload_reg[1]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_res_0_1_2_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/a_payload_reg[2]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_res_1_2_0_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/b_payload_reg[0]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_res_1_2_1_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/b_payload_reg[1]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_res_1_2_2_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/b_payload_reg[2]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_0_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/c_payload_reg[0]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_1_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/c_payload_reg[1]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/ld_in_reordered_2_bits_uop_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/c_payload_reg[2]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/entries_0_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/ent_payload_reg[0]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/entries_1_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/ent_payload_reg[1]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/entries_2_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/ent_payload_reg[2]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/entries_3_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/ent_payload_reg[3]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/entries_4_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/ent_payload_reg[4]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stride_train_filter/entries_5_pc_reg} {i:/WORK/L1Prefetcher/stride_train_filter/u_core/ent_payload_reg[5]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_res_0_1_0_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/a_vaddr_reg[0]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_res_0_1_1_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/a_vaddr_reg[1]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_res_0_1_2_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/a_vaddr_reg[2]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_res_1_2_0_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/b_vaddr_reg[0]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_res_1_2_1_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/b_vaddr_reg[1]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_res_1_2_2_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/b_vaddr_reg[2]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_0_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/c_vaddr_reg[0]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_1_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/c_vaddr_reg[1]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/ld_in_reordered_2_bits_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/c_vaddr_reg[2]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/entries_0_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/ent_vaddr_reg[0]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/entries_1_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/ent_vaddr_reg[1]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/entries_2_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/ent_vaddr_reg[2]}
+l1pf_tf_pin {r:/WORK/L1Prefetcher/stream_train_filter/entries_3_vaddr_reg} {i:/WORK/L1Prefetcher/stream_train_filter/u_core/ent_vaddr_reg[3]}
+puts "L1PF_TF_PIN_END ok=$::L1PF_TF_OK bad=$::L1PF_TF_BAD expect=$::L1PF_TF_EXPECT"
+if {$::L1PF_TF_BAD != 0 || $::L1PF_TF_OK != $::L1PF_TF_EXPECT} {
+  error "L1PF_TF_PIN_COUNT ok=$::L1PF_TF_OK bad=$::L1PF_TF_BAD"
+}

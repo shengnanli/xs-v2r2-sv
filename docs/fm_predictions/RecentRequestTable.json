@@ -1,0 +1,17 @@
+{
+  "target": "RecentRequestTable",
+  "ut": "RecentRequestTable",
+  "regs": 51,
+  "outs": 22,
+  "expected": 97,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 24,
+  "bbox": {
+    "array_13_ext": {
+      "insts": 1,
+      "in_bits": 24,
+      "points": 24
+    }
+  }
+}

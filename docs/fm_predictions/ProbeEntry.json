@@ -1,0 +1,9 @@
+{
+  "target": "ProbeEntry",
+  "ut": "ProbeEntry",
+  "regs": 104,
+  "outs": 158,
+  "expected": 262,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -41,6 +41,9 @@ FM_MODE = assembly
 FM_ALLOWLIST ?= 0
 FM_VARIANTS = SRAMTemplateWithFixedWidth SRAMTemplateWithFixedWidth_4 SRAMTemplateWithFixedWidth_12 SRAMTemplateWithFixedWidth_28
 FM_MERGE_DUP = false
+# 对称死位 1 个：内层 SRAM 读保持寄存器的补位 rdata_hold[65]（写入补 0、读出截掉），两侧照抄，
+# 按 vmucp standing rule 加强，见 verif/fm_target_config/SRAMTemplateWithFixedWidth*.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

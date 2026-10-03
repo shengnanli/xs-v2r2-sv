@@ -30,6 +30,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/L1Prefetcher.sv $(addprefix $(GOLDEN_RTL)/,$(L1PF_CH
 FM_VARIANTS = L1Prefetcher
 FM_REF_DEPS_L1Prefetcher = $(L1PF_CHILDREN)
 FM_MERGE_DUP = false
+# 子模块死位 + 父级新增死位共 1011 位，按 vmucp standing rule 加强，见 verif/fm_target_config/L1Prefetcher.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

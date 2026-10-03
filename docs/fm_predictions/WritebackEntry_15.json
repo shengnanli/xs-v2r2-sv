@@ -1,0 +1,9 @@
+{
+  "target": "WritebackEntry_15",
+  "ut": "WritebackEntry",
+  "regs": 674,
+  "outs": 368,
+  "expected": 1042,
+  "merge_dup": "false",
+  "model_applicable": true
+}

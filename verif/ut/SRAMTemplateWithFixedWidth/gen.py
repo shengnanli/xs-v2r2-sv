@@ -4,10 +4,11 @@
 四对：golden <V> vs <V>_xs，全部输出逐拍逐位比较。内层 SRAMTemplate 带 shouldReset（复位后用
 256 拍把 256 组清零，期间读写不 ready）与 holdRead（读出数据保持到下次读）——所以：
   * reset 只偶尔打（约每 20000 拍一次），给清表留时间；上电后先等 300 拍（warmup）；
-  * 读出保持寄存器不复位：上电清表（300 拍）之后的第一次读请求再等 2 拍才开始比（arm）——
+  * 读出保持寄存器不复位：距最近一次复位 300 拍（清表完成）之后的第一次读请求再等 2 拍才开始比（arm）——
     清表期间 SRAM 不接读请求，那之前的读请求不会写保持寄存器。
 激励：set 下标 3/4 时间挤在 16 组里（写过的组很快被读到）、其余全随机；读写各约一半（单口，
-写优先压读也会发生）；MBIST / SRAM 控制 DFT 口 15/16 时间钉 0、其余随机。
+写优先压读也会发生）；MBIST / SRAM 控制 DFT 口 15/16 时间钉 0、其余随机
+（上电后前 2000 拍一律钉 0：DFT 口乱动会打断复位清表，两侧宏里留下各自不同的上电随机内容）。
 
 用法：python3 gen.py [--check]
 """
@@ -30,7 +31,7 @@ def stim(top, x):
          "  @io_r_req_bits_setIdx = 8'($urandom_range(0, 15));",
          "  @io_w_req_bits_setIdx = 8'($urandom_range(0, 15));",
          "end",
-         "if (%smode != 0) begin" % x]
+         "if (cyc < 2000 || %smode != 0) begin   // 上电清表期间 DFT 口必须安静" % x]
     s += ["  @%s = '0;" % d for d in dft]
     s.append("end")
     return "\n".join(s)
@@ -43,9 +44,14 @@ COV = [
     ("reset_mid", "@reset && cyc > 1000"),
 ]
 
-PAIRS = [Pair(top, x, clocked=True, stim=stim(top, x), cov=COV,
+def decls(x):
+    # 最近一次复位的拍号：复位后内层 SRAM 要用 256 拍清表，期间不接读请求
+    return "int unsigned %slast_rst = 0;\nalways @(posedge clk) if (%su_gold.reset) %slast_rst <= cyc;" % (x, x, x)
+
+
+PAIRS = [Pair(top, x, clocked=True, stim=stim(top, x), cov=COV, decls=decls(x),
               reset_period=20000, mode_period=2000, warmup=300, cov_min=5,
-              arm=["cyc > 300 && !@reset && @io_r_req_valid"], arm_delay=2)
+              arm=["cyc > %slast_rst + 300 && !@reset && @io_r_req_valid" % x], arm_delay=2)
          for top, x in VARIANTS]
 
 HEADER = """自动生成：verif/ut/SRAMTemplateWithFixedWidth/gen.py（scripts/dual_tb_lib.py，读 G1 golden 端口表）—— 勿手改

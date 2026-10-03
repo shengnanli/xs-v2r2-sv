@@ -28,7 +28,11 @@ FM_REF_DEPS_RecentRequestTable_1 = SRAMTemplate_146.sv sram_array_1p256x13m13s1h
 FM_MODE = assembly
 FM_ALLOWLIST ?= 0
 FM_VARIANTS = RecentRequestTable RecentRequestTable_1
-FM_MERGE_DUP = false
+# merge_dup 用工具默认（true）：内层 SRAMTemplate_146 用的是共享核 xs_SRAMTemplate_core，其非 holdRead
+# 分支的 rdata_last_REG 在主线上与 respReg 同方程、靠 merge 合并（SRAMTemplate_146 自己签核时同口径）；
+# 关掉 merge 它就成了 golden 没有的 impl 独占 unread（codex 0206 D1 正在另一条 lane 把它从核里删掉）。
+# 断言寄存器 REG / rw_same_cycle_q 两侧零扇出，由 fm_pins.tcl 钉成一对后按 vmucp 加强。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

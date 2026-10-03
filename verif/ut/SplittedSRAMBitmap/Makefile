@@ -25,7 +25,10 @@ FM_REF_DEPS_SplittedSRAM = SRAMTemplate_124.sv sram_array_1p32x90m45s1h0l1b_bitm
 FM_MODE = assembly
 FM_ALLOWLIST ?= 0
 FM_VARIANTS = SplittedSRAM
-FM_MERGE_DUP = false
+# merge_dup 用工具默认（true）：4 块内层 SRAMTemplate_124 用共享核 xs_SRAMTemplate_core，其非 holdRead
+# 分支的 rdata_last_REG 在主线上与 respReg 同方程、靠 merge 合并（SRAMTemplate_124 自己签核时同口径）；
+# 关掉 merge 它们就成了 golden 没有的 4 个 impl 独占 unread（lane 内诊断跑实测；codex 0206 D1 正在另一条
+# lane 把它从核里删掉，合入后本目标随共享核一起重证）。
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

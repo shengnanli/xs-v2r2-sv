@@ -11,6 +11,8 @@ module tb;
 
   // ================= SRAMTemplateWithFixedWidth =================
   int unsigned f0_mode = 0;
+  int unsigned f0_last_rst = 0;
+  always @(posedge clk) if (f0_u_gold.reset) f0_last_rst <= cyc;
   logic f0_reset;
   logic f0_io_r_req_valid;
   logic [7:0] f0_io_r_req_bits_setIdx;
@@ -100,6 +102,8 @@ module tb;
 
   // ================= SRAMTemplateWithFixedWidth_4 =================
   int unsigned f4_mode = 0;
+  int unsigned f4_last_rst = 0;
+  always @(posedge clk) if (f4_u_gold.reset) f4_last_rst <= cyc;
   logic f4_reset;
   logic f4_io_r_req_valid;
   logic [7:0] f4_io_r_req_bits_setIdx;
@@ -189,6 +193,8 @@ module tb;
 
   // ================= SRAMTemplateWithFixedWidth_12 =================
   int unsigned f12_mode = 0;
+  int unsigned f12_last_rst = 0;
+  always @(posedge clk) if (f12_u_gold.reset) f12_last_rst <= cyc;
   logic f12_reset;
   logic f12_io_r_req_valid;
   logic [7:0] f12_io_r_req_bits_setIdx;
@@ -278,6 +284,8 @@ module tb;
 
   // ================= SRAMTemplateWithFixedWidth_28 =================
   int unsigned f28_mode = 0;
+  int unsigned f28_last_rst = 0;
+  always @(posedge clk) if (f28_u_gold.reset) f28_last_rst <= cyc;
   logic f28_reset;
   logic f28_io_r_req_valid;
   logic [7:0] f28_io_r_req_bits_setIdx;
@@ -397,7 +405,7 @@ module tb;
           f0_io_r_req_bits_setIdx = 8'($urandom_range(0, 15));
           f0_io_w_req_bits_setIdx = 8'($urandom_range(0, 15));
         end
-        if (f0_mode != 0) begin
+        if (cyc < 2000 || f0_mode != 0) begin   // 上电清表期间 DFT 口必须安静
           f0_boreChildrenBd_bore_wmask = '0;
           f0_boreChildrenBd_bore_re = '0;
           f0_boreChildrenBd_bore_we = '0;
@@ -441,7 +449,7 @@ module tb;
           f4_io_r_req_bits_setIdx = 8'($urandom_range(0, 15));
           f4_io_w_req_bits_setIdx = 8'($urandom_range(0, 15));
         end
-        if (f4_mode != 0) begin
+        if (cyc < 2000 || f4_mode != 0) begin   // 上电清表期间 DFT 口必须安静
           f4_boreChildrenBd_bore_wmask = '0;
           f4_boreChildrenBd_bore_re = '0;
           f4_boreChildrenBd_bore_we = '0;
@@ -485,7 +493,7 @@ module tb;
           f12_io_r_req_bits_setIdx = 8'($urandom_range(0, 15));
           f12_io_w_req_bits_setIdx = 8'($urandom_range(0, 15));
         end
-        if (f12_mode != 0) begin
+        if (cyc < 2000 || f12_mode != 0) begin   // 上电清表期间 DFT 口必须安静
           f12_boreChildrenBd_bore_wmask = '0;
           f12_boreChildrenBd_bore_re = '0;
           f12_boreChildrenBd_bore_we = '0;
@@ -529,7 +537,7 @@ module tb;
           f28_io_r_req_bits_setIdx = 8'($urandom_range(0, 15));
           f28_io_w_req_bits_setIdx = 8'($urandom_range(0, 15));
         end
-        if (f28_mode != 0) begin
+        if (cyc < 2000 || f28_mode != 0) begin   // 上电清表期间 DFT 口必须安静
           f28_boreChildrenBd_bore_wmask = '0;
           f28_boreChildrenBd_bore_re = '0;
           f28_boreChildrenBd_bore_we = '0;
@@ -566,7 +574,7 @@ module tb;
         if (f0_io_r_req_valid && f0_io_w_req_valid) f0_cov_rw_same++;
         if (f0_reset && cyc > 1000) f0_cov_reset_mid++;
       end
-      if (cyc > 300 && !f0_reset && f0_io_r_req_valid) f0_armed[0] = 1'b1;
+      if (cyc > f0_last_rst + 300 && !f0_reset && f0_io_r_req_valid) f0_armed[0] = 1'b1;
       if (f0_armed_at < 0 && (&f0_armed)) f0_armed_at = cyc + 1 + 2;
       if (cyc >= RESET_CYC + 300 && f4_armed_at >= 0 && cyc >= f4_armed_at) begin
         checks++;
@@ -588,7 +596,7 @@ module tb;
         if (f4_io_r_req_valid && f4_io_w_req_valid) f4_cov_rw_same++;
         if (f4_reset && cyc > 1000) f4_cov_reset_mid++;
       end
-      if (cyc > 300 && !f4_reset && f4_io_r_req_valid) f4_armed[0] = 1'b1;
+      if (cyc > f4_last_rst + 300 && !f4_reset && f4_io_r_req_valid) f4_armed[0] = 1'b1;
       if (f4_armed_at < 0 && (&f4_armed)) f4_armed_at = cyc + 1 + 2;
       if (cyc >= RESET_CYC + 300 && f12_armed_at >= 0 && cyc >= f12_armed_at) begin
         checks++;
@@ -610,7 +618,7 @@ module tb;
         if (f12_io_r_req_valid && f12_io_w_req_valid) f12_cov_rw_same++;
         if (f12_reset && cyc > 1000) f12_cov_reset_mid++;
       end
-      if (cyc > 300 && !f12_reset && f12_io_r_req_valid) f12_armed[0] = 1'b1;
+      if (cyc > f12_last_rst + 300 && !f12_reset && f12_io_r_req_valid) f12_armed[0] = 1'b1;
       if (f12_armed_at < 0 && (&f12_armed)) f12_armed_at = cyc + 1 + 2;
       if (cyc >= RESET_CYC + 300 && f28_armed_at >= 0 && cyc >= f28_armed_at) begin
         checks++;
@@ -632,7 +640,7 @@ module tb;
         if (f28_io_r_req_valid && f28_io_w_req_valid) f28_cov_rw_same++;
         if (f28_reset && cyc > 1000) f28_cov_reset_mid++;
       end
-      if (cyc > 300 && !f28_reset && f28_io_r_req_valid) f28_armed[0] = 1'b1;
+      if (cyc > f28_last_rst + 300 && !f28_reset && f28_io_r_req_valid) f28_armed[0] = 1'b1;
       if (f28_armed_at < 0 && (&f28_armed)) f28_armed_at = cyc + 1 + 2;
     end
 
