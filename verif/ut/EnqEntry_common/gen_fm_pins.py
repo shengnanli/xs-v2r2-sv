@@ -32,6 +32,8 @@ REPO = HERE.parents[2]
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 sys.path.insert(0, str(HERE))
 from enqentry_gen import EnqVariant                              # noqa: E402
+sys.path.insert(0, str(REPO / 'verif' / 'ut' / 'Entries_common'))
+import entry_vecmem                                           # noqa: E402
 
 REG_RE = re.compile(r'^\s*reg\s+(?:\[\s*(\d+)\s*:\s*0\s*\]\s+)?([A-Za-z_]\w*)\s*;', re.M)
 
@@ -111,6 +113,9 @@ def build_pins(ov):
         pins.append(('enqDelayValidReg_last_REG_reg', 'enqd_valid_reg_reg'))
     else:
         skipped.append('enqDelayValidReg_last_REG')
+    # --- 访存向量状态组（核 §2.6c）：golden 逐字段，核是 r_vm 一根向量 + 三个寄存器 ---
+    if v.has_vec_mem:
+        pins.extend(entry_vecmem.pins(ov, regs, ref_bits))
     return pins, skipped
 
 
