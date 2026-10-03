@@ -89,3 +89,36 @@ UT 看不见的变异：无（本批全组合或单级寄存器，状态空间�
    若 FM 把恒值输出口记为 constant 而不计 passing，F64EXP 会少 2（预测 34 → 32），差额由 receipt 的常量项指认。
 2. MemExeUnit 的 impl 实例名 `u_std` 与 golden `Std` 不同；子模块无状态，只影响层次名，不影响比较点数。
 3. 本节没有做过任何 FM 试跑（非正式也没有），数字纯按模型登记。
+
+## 对账（跑完追加；以上各节未改动）
+
+证明：`bash scripts/run_proof.sh <UT> <T> < /dev/null`，signoff-strict，被证明 commit `1bf831352`
+（= 登记 commit；RTL 字节同 `84ab6f364`），证据 `evidence/1bf831352049/<T>/`，收录 commit `4e5144a7b`。
+
+| 目标 | 预测 | 实测 passing | 差 | failing | unverified | aborted | unread_nc | unmatched(ref/impl) | dont_verify/elab147/relaxed | receipt.json sha256 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ShiftLeftPriorityWithLZDResult_6 | 29 | 29 | 0 | 0 | 0 | 0 | 0 | 0/0 | 空/空/空 | `bc1220cb11ef4ee9d096ef74aa8f61768236e26453c2c7fa8f9cb1979c86746b` |
+| ShiftLeftPriorityWithLZDResult_8 | 15 | 15 | 0 | 0 | 0 | 0 | 0 | 0/0 | 空/空/空 | `890efa2f7bf84c8b4c3983745a4aa57ba938f31cc08d8dad6af4d831a58e4f16` |
+| ShiftLeftPriorityWithF64EXPResult | 34 | 34 | 0 | 0 | 0 | 0 | 0 | 0/0 | 空/空/空 | `7d0bfecda2afa53270f2a22a671d553aa5c2fc801e8f3bb33d26aab02d94b3de` |
+| FarPathAdderF16Pipeline | 36 | 36 | 0 | 0 | 0 | 0 | 0 | 0/0 | 空/空/空 | `93c640e882be3bc13f5499ab3bb0dcda64392f71563817f2c7957f81a3c00fe4` |
+| Std | 75 | 75 | 0 | 0 | 0 | 0 | 0 | 0/0 | 空/空/空 | `d18afe9ca00cee1c3ec44d0ff5140678357cf2f57a23b91ab89b1f18ff1fcb12` |
+| MemExeUnit | 126 | 126 | 0 | 0 | 0 | 0 | 0 | 0/0 | 空/空/空 | `81c777e0cce6e8f461fc31555296a4a5f4686523b7c15abfd0d2900cabe1b5af` |
+| IntBuffer | 2 | 2 | 0 | 0 | 0 | 0 | 0 | 0/0 | 空/空/空 | `8ceb025435ff2d907ede7d706c8cdcdeac33e7130b19bb9466d046f3d0cfc0e5` |
+| PrefetchReceiver | 48 | 48 | 0 | 0 | 0 | 0 | 0 | 0/0 | 空/空/空 | `d0b617d15bcf7a6e34e41fd79115465629b5f741e9695c6662b23125d453f010` |
+
+- 全部 native SUCCEEDED、verdict SUCCEEDED；8/8 预测与实测逐位相等。§3 第 1 条担心的 F64EXP 恒值输出位（bit10/bit9）
+  照常计入 passing，未出现差额。
+- 黑盒：blackbox_out=0。Std 与三个 shift 叶的 black_boxes.rpt 列出的是同一 impl 源集合里**未被例化的兄弟模块**
+  （如 Std 证明时的 MemExeUnit / xs_MemExeUnit_core，Instances : 0，标 e*），不在被验设计内。
+- `python3 scripts/fm_predict.py check <8 个目标>` rc=0（全部"逐位相等"）；
+  `python3 scripts/check_lane_receipts.py /home/eda/xs-env/wt-k3-returned` rc=0；
+  `python3 scripts/gen_shiftpriority_leaves3.py --check` OK；`python3 scripts/readability_audit.py --quiet` rc=0。
+
+### 因本 lane child 全绿的父级（本 lane 不做）
+
+按 golden 例化扫描 + `docs/coverage_three_axis.tsv` 第 3 列：
+- **VectorFloatDividerR64**：fpdiv_r64_block_vector、ShiftLeftPriorityWithLZDResult（PROVEN_DIRECT）+ LZD_6 ×2、LZD_8 ×4（本 lane）→ child 全绿。
+- **FloatAdderWidenFormat**：ShiftLeftPriorityWithF32EXPResult ×8（PROVEN_DIRECT）+ F64EXP ×4（本 lane）→ child 全绿。
+- **FarPathF16Pipeline**：Adder_18、FarShiftRightWithMuxInvFirst_18（PROVEN_DIRECT）+ FarPathAdderF16Pipeline ×2（本 lane）→ child 全绿。
+- 仍未全绿：MemBlock（DCacheWrapper 等 8 个 UNPROVEN）、L2Top（BusErrorUnit/TL2CHICoupledL2/TLBuffer_13/_15/TLLogger_1/_2）、
+  XSTile（IntBuffer_1/_2/L2Top/XSCore）、XSTop（多个）、Prefetcher（Arbiter4_PrefetchReq/PBestOffsetPrefetch/Pipeline_1/VBestOffsetPrefetch）。
