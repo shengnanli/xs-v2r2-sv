@@ -1,0 +1,9 @@
+{
+  "target": "timeModule",
+  "ut": "CsrDebugTime4",
+  "regs": 66,
+  "outs": 193,
+  "expected": 259,
+  "merge_dup": "false",
+  "model_applicable": true
+}

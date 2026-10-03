@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/IMSIC_WRAP
+Implementation : i:/WORK/IMSIC_WRAP
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 11:39:26 2026
+**************************************************
+
+No aborted compare points.
+
+1
