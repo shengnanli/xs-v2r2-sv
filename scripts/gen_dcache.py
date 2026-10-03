@@ -693,6 +693,60 @@ def glue_pairs():
     return out
 
 
+# 子模块内部在**本层**才变死的寄存器（子模块签核时是输出/活寄存器，DCache 把那些输出接成 /* unused */
+# 或根本不读）：两侧对称、名字不同、FM 不给无扇出的点做签名配对 → 这里按规则逐位钉成 matched，
+# 再由 vmucp 真比较。每条 (golden 相对路径模板, 位宽, impl 相对路径模板)；来源与计数见
+# docs/lanes/dcachebody_prereg.md §3（2026-10-02 diagnostic 试跑：ref 1048 / impl 1038 个未配对 unread）。
+def parent_dead_pins():
+    P = []
+    # MainPipe：24 份 status_dup（s1/s2/s3 的 set / replace 标志 / way_en），golden 输出 io_status_dup_* 在 DCache 里 /* unused */
+    for k in range(24):
+        P += [("mainPipe/io_status_dup_%d_s1_bits_set_r" % k, 8, "mainPipe/u_core/dup_s1_set_q[%d]" % k),
+              ("mainPipe/io_status_dup_%d_s2_valid_r" % k, 1, "mainPipe/u_core/dup_s2_replace_q[%d]" % k),
+              ("mainPipe/io_status_dup_%d_s2_bits_set_r" % k, 8, "mainPipe/u_core/dup_s2_set_q[%d]" % k),
+              ("mainPipe/io_status_dup_%d_s3_valid_r" % k, 1, "mainPipe/u_core/dup_s3_replace_q[%d]" % k),
+              ("mainPipe/io_status_dup_%d_s3_bits_set_r" % k, 8, "mainPipe/u_core/dup_s3_set_q[%d]" % k),
+              ("mainPipe/io_status_dup_%d_s3_bits_way_en_r" % k, 4, "mainPipe/u_core/dup_s3_way_en_q[%d]" % k)]
+    # MissQueue：vaddr 低 5 位（行内偏移，谁都不读）—— 流水寄存器 / 16 个 MSHR；CMOUnit 地址高 16 位
+    P.append(("missQueue/miss_req_pipe_reg_req_vaddr", (0, 5), "missQueue/u_core/pipe_q[vaddr]"))
+    for n in range(16):
+        P.append(("missQueue/entries_%d/req_vaddr" % n, (0, 5), "missQueue/entries_%d/u_core/req_q[vaddr]" % n))
+    P.append(("missQueue/cmo_unit/req_address", (48, 64), "missQueue/cmo_unit/u_core/req_address_q"))
+    # ProbeQueue：同样是 vaddr 低 5 位
+    for n in range(8):
+        P.append(("probeQueue/entries_%d/req_vaddr" % n, (0, 5), "probeQueue/u_core/g_entry[%d].u_entry/req_vaddr" % n))
+    P.append(("probeQueue/selected_req_bits_vaddr", (0, 5), "probeQueue/u_core/selected_vaddr"))
+    # L1FlagMetaArray（accessArray）读口 0..3 的 idx 打拍：DCache 不读这 4 个口的 resp（extra_meta_resp.access 被 firtool 消掉）
+    for p_ in range(4):
+        for w in range(4):
+            P.append(("accessArray/io_resp_%d_%d_r" % (p_, w), 8, "accessArray/u_core/g_rport[%d].g_way[%d].idx_r" % (p_, w)))
+    # L1PrefetchSourceArray（prefetchArray）读口 3（MainPipe 的 extra_meta_resp.prefetch 被消掉）：旁路选择 / 旁路数据 / idx
+    for w in range(4):
+        P += [("prefetchArray/io_resp_3_%d_r" % w, 1, "prefetchArray/u_core/g_rport[3].g_way[%d].g_bypass.sel_r" % w),
+              ("prefetchArray/io_resp_3_%d_r_1" % w, 3, "prefetchArray/u_core/g_rport[3].g_way[%d].g_bypass.bypass_r" % w),
+              ("prefetchArray/io_resp_3_%d_r_2" % w, 8, "prefetchArray/u_core/g_rport[3].g_way[%d].idx_r" % w)]
+    # BloomFilter 的 3 个查询回应打拍：LoadPipe 不读 bloom_filter_query.resp
+    for n in range(3):
+        P += [("bloomFilter/io_resp_%d_valid_last_REG" % n, 1, "bloomFilter/u_core/resp_valid_q[%d]" % n),
+              ("bloomFilter/io_resp_%d_bits_res_r" % n, 1, "bloomFilter/u_core/resp_res_q[%d]" % n)]
+    out = []
+    for g, w, i in P:
+        lo, hi = (0, w) if isinstance(w, int) else w
+        scalar = isinstance(w, int) and w == 1
+        for b in range(lo, hi):
+            gb = "%s_reg" % g + ("" if scalar else "[%d]" % b)
+            m = re.fullmatch(r"(.*?/)?([A-Za-z_][\w.\[\]]*?)(\[\w+\])?$", i)
+            # impl：<路径>/<名>_reg<结构体字段>[下标]... ；`[vaddr]` 这种字段下标在 FM 里写成 \[vaddr]
+            head, name, idx = m.group(1) or "", m.group(2), m.group(3) or ""
+            if idx and not idx[1:-1].isdigit():
+                idx = "\\" + idx[:-1] + "]"
+            ib = "%s%s_reg%s" % (head, name, idx) + ("" if scalar else "[%d]" % b)
+            out.append((gb, ib))
+    if len(out) != 1048:
+        die("parent_dead_pins 条数 %d != 1048（diagnostic 实测的未配对 unread 数）" % len(out))
+    return out
+
+
 def all_pairs():
     insts = {inst: mod for mod, inst, _ in instances(TOP)}
     if set(CHILD_PINS) | set(CHILD_NO_PINS) != set(insts) or set(CHILD_PINS) & set(CHILD_NO_PINS):
@@ -712,6 +766,9 @@ def all_pairs():
                 die("%s 有 %s，却被列为无钉点" % (ut, f))
     out = glue_pairs()
     counts = [("glue", len(out))]
+    pd = parent_dead_pins()
+    counts.append(("parent_dead", len(pd)))
+    out += pd
     for inst, (ctop, f) in CHILD_PINS.items():
         ps = [(inst + "/" + a, inst + "/" + b) for a, b in harvest(ctop, f)]
         counts.append((inst, len(ps)))
@@ -738,6 +795,8 @@ def gen_pins():
          "#   (2) 子模块内部：直接收割该子模块签核时用的那份 fm_pins_pre.tcl（tclsh 里用桩执行、逐对记下），",
          "#       把 <子模块>/ 前缀换成 <实例名>/ —— 与子模块单独签核时是同一批点对。",
          "# 签核时没有钉点文件的子模块（FM 按名配对）这里也不钉（gen_dcache.py 的 CHILD_NO_PINS 逐个核对）。",
+         "#   (3) 子模块内部在本层才变死的寄存器（status_dup / vaddr 低位 / 读口 idx 打拍 / bloom 回应）：",
+         "#       两侧对称、名字不同、FM 不给无扇出的点做签名配对，按 gen_dcache.py 的 parent_dead_pins 规则逐位钉。",
          "#",
          "# 组成（条数）：" + "，".join("%s %d" % c for c in counts) + "，合计 %d。" % n,
          "# set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒、不 dont_verify。",

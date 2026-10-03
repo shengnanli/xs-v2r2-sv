@@ -94,8 +94,11 @@ FM_REF_DEPS_DCache = \
   WritebackEntry.sv WritebackQueue.sv
 FM_MODE = assembly
 
-# 逐个比较，不合并重复寄存器（fm_predict 模型严格适用；三份 forward_D 拍计数器、两级 perf 都逐个比）
-FM_MERGE_DUP = false
+# merge_duplicated_registers 用工具默认（true，与 BankedDataArray / DuplicatedTagArray 子模块签核时一致）。
+# 为什么不关：共享核 xs_SRAMTemplate_core 在 holdRead 关闭时 rdata_last_REG 与 respReg 同方程，
+# 子模块签核时靠 merge 把它们合成一个点；关掉 merge 后每个 SRAM 多出一个 impl 独有的死寄存器
+# （2026-10-02 diagnostic 实测：bankedDataArray 32 + tagArray 8 个 impl-only unread），strict/assembly 口径不收。
+# 代价：fm_predict 的 passing 模型从精确等式退成「带上界的弱结论」（见 docs/fm_predictions/DCache.json）。
 
 # ★vmucp：依据见 verif/fm_target_config/DCache.tcl★ —— 子模块内的对称死寄存器位（各子模块签核时
 # 已经由 vmucp 真比较过的那批）在本层继续真比较；名字不同的由 fm_pins_pre.tcl 逐项配对。
