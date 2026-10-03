@@ -122,3 +122,48 @@ native SUCCEEDED，passing 680，failing 0，unmatched 0，unread 0（结构体�
 | failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
 | unmatched 六项 / 黑盒 | 全 0 / 无 |
 | mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / false / false |
+
+## 3a. §1–§3 补记（跑前，未改上面任何数字）
+- 首次官方 run_proof（钉 `09e35f69`）被可读性闸拒绝：SCTable 生成区标记名含 `_wrapper` 字样（C 类）、RegionWays 模块顺序 wrapper 在前（D 类）。
+  修正提交 `1b420e20`（只动注释标记与模块先后，逻辑字节不变），官方证明钉在 `1b420e20`。
+- 在 `1b420e20` 的字节上重跑 RegionWays / SCTable 的 UT 3×3，读数与 §2.2 / §3.2 逐格相同（errors=0）。
+
+## 4. FauFTB（golden 6,885 行 / 32 个 FauFTBWay 子实例）
+
+### 4.1 结构与子模块处置
+- `rtl/frontend/FauFTB.sv`（741 行，`_GEN_`/`_T_` = 0）：package fauftb_pkg（完整预测结构体、fromFtbEntry 展开函数、32 路 PLRU 选/touch、2 位饱和）
+  + `xs_FauFTB_core`（§0 公共外壳 PC / §1 S1 全相联命中 + Mux1H 按位或合成 / §2 meta / §3 u_s0 / §4 u_s1 写路选择与计数器 / §5 PLRU 两次 touch 叠加 / §6 perf）
+  + golden 同名 wrapper。用 `frontend_common_pkg.sv` 里的 xs_ftb_pkg（FTB 条目类型、get_target），与共享辅助件 `rtl/common/xs_BpuStagePc.sv`。
+- ★照搬的怪癖★：多路同时命中按位或合成（不是优先选择）；PLRU 同拍两次 touch 先叠"上拍预测命中"再叠"本拍写入"；u_bits_meta 存满 516 位只读 [0]；
+  uftb_write_pc / s0_fire_next_cycle 只喂断言 / perf 探针（死寄存器照抄）。
+- child：FauFTBWay ×32（PROVEN_DIRECT）⇒ 两侧白盒（impl 用 `rtl/frontend/FauFTBWay.sv`）。无黑盒。
+
+### 4.2 UT（verif/ut/FauFTB；逐拍比全部 1669 位输出，在 `73faf56b` 的 RTL 字节上跑，FauFTB 相关 RTL 之后未改）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=19799208 errors=0 PASS | checks=19799208 errors=0 PASS | (1017) checks=19799208 errors=0 PASS |
+| 7  | checks=19799208 errors=0 PASS | checks=19799208 errors=0 PASS | (7017) checks=19799208 errors=0 PASS |
+| 42 | checks=19799208 errors=0 PASS | checks=19799208 errors=0 PASS | (42017) checks=19799208 errors=0 PASS |
+
+覆盖（seed 1）：预测命中 66527 / 更新命中写回 100683 / 表满走 PLRU 替换 49435 / 计数器饱和停住 4666 / fall-through 非法 62170 / 同拍两次 touch 49866；
+结构常量位（目标 bit0、meta[515:6]、perf[5:1]）按结构豁免，其余输出位都见过 0/1。
+变异（沙箱；seed 1 / initreg 0 / 30k 拍；基线 checks=2969208 errors=0）：M2 方向取计数器低位 CAUGHT(38588) / M3 fall-through 上界差一 CAUGHT(3948) /
+M4 槽 1 更新不看槽 0 CAUGHT(11344) / M5 两次 touch 丢预测那次 CAUGHT(373954) / M6 共享 tailSlot 目标按 20 位 CAUGHT(79136) / M8 计数器复位值 2→1 CAUGHT(192) /
+M7 hit 不受 ubtb_enable 门控：30k 拍 errors=0（关使能的阶段没抽到），200k 拍 CAUGHT(39660) /
+**M1 多命中按位或改后者覆盖：UT 结构上看不见**（写旁路保证运行时不会多命中），归 FM（状态空间里多命中可达，FM 逐点比）。
+
+### 4.3 lane 内非正式试跑（diagnostic-full，不出证）
+1. 关 vmucp、不钉（commit `73faf56b`）：native SUCCEEDED，passing 4694，failing 0，unmatched compare 0；unread = 566 matched_nc
+   （u_bits_meta[515:1] 515 + uftb_write_pc 50 + s0_fire_next_cycle 1）+ 400(400) 两侧 unmatched unread（公共外壳 s2/s3 段 PC）。
+2. 钉 400（`verif/ut/FauFTB/fm_pins_pre.tcl`，scripts/gen_bpu_stagepc_pins.py 生成，字面计数 400）+ 开 vmucp（verif/fm_target_config/FauFTB.tcl）：
+   native SUCCEEDED，passing **5660**，unread 空，`BPU_STAGEPC_PINS: 400 / 400 pinned, 0 missed`。
+
+### 4.4 跑前预测（★跑完不许改本节★，docs/fm_predictions/FauFTB.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | 模型 **5660**（regs 3991 + outs 1669）；预计 5660，差 0 |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched 六项 / 黑盒 | 全 0 / 无 |
+| mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / true / false |

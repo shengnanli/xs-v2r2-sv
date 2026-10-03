@@ -16,6 +16,11 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/FauFTB.sv $(GOLDEN_RTL)/FauFTBWay.sv
 FM_VARIANTS = FauFTB
 FM_REF_DEPS_FauFTB = FauFTBWay.sv
 FM_MERGE_DUP = false
+
+# ★匹配前钉点 fm_pins_pre.tcl（scripts/gen_bpu_stagepc_pins.py 生成）★：BPU 公共外壳 s2/s3 段 PC 400 位，
+# 两侧名字不同且 cone-dead（无签名可配），不钉时诊断跑实测 400(400) unmatched unread。只消名差。
+# ★vmucp：依据见 verif/fm_target_config/FauFTB.tcl★ —— 566 位 matched_nc + 上述 400 位钉上后的对称死位。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
@@ -26,4 +31,5 @@ SIM_ARGS += +vcs+initreg+$(INITREG)
 
 .PHONY: gencheck
 gencheck:
+	python3 ../../../scripts/gen_bpu_stagepc_pins.py --check
 	python3 gen.py --check
