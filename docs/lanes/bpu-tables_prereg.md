@@ -317,3 +317,27 @@ merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageB
 | ITTageTable_3 | 1014 | 同上 |
 | ITTageTable_4 | 1014 | 同上 |
 | TageBTable | 396 | 同上（黑盒仅 array_4_ext） |
+
+# 对账（跑完追加；上面各节未改一字）
+
+| 目标 | proof commit | 证据目录 | 预测 | 实测 passing | 差 | failing/unverified/aborted/unread | unmatched | 黑盒 | verdict | receipt sha256 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| MaxPeriodFibonacciLFSR | `1b420e20` | evidence/1b420e2033a9/MaxPeriodFibonacciLFSR | 30 | 30 | 0 | 0/0/0/0 | 全 0 | 无 | SUCCEEDED | `5f7909bf254ee8a3dd7e3259ab5647a926e6e783c9d2feb7672df1f6bbd8fb99` |
+| RegionWays | `1b420e20` | evidence/1b420e2033a9/RegionWays | 680 | 680 | 0 | 0/0/0/0 | 全 0 | 无 | SUCCEEDED | `efe8e7dcb56d128b8a17c63fb917ae9d98e2e1b8e329106bf93e8f1291426aec` |
+| SCTable | `1b420e20` | evidence/1b420e2033a9/SCTable | 1123 | 1123 | 0 | 0/0/0/0 | 全 0 | array_5_ext ×2 | SUCCEEDED | `9f87b5db8c88f47d3205aa11f2c2dfcc7feb300d03a7c2bbb8ff9cec270ff417` |
+| SCTable_1 | `1b420e20` | evidence/1b420e2033a9/SCTable_1 | 1123 | 1123 | 0 | 0/0/0/0 | 全 0 | array_5_ext ×2 | SUCCEEDED | `6b22c0738b4d99a4155059e59ca6020569fbc27656bdb0dbca8a68f9944426b6` |
+| SCTable_2 | `1b420e20` | evidence/1b420e2033a9/SCTable_2 | 1123 | 1123 | 0 | 0/0/0/0 | 全 0 | array_5_ext ×2 | SUCCEEDED | `a46666b6890e54784b7ce92b8999658108f2c8425011a5cbde8e999652c5e3e1` |
+| SCTable_3 | `1b420e20` | evidence/1b420e2033a9/SCTable_3 | 1123 | 1123 | 0 | 0/0/0/0 | 全 0 | array_5_ext ×2 | SUCCEEDED | `f19a86bf5d638b899da9399c0d1057ab6cbd79251214e96c4649a92e44282b8a` |
+| FauFTB | `cee28122` | evidence/cee2812229bf/FauFTB | 5660 | 5660 | 0 | 0/0/0/0 | 全 0（钉点 400/400） | 无 | SUCCEEDED | `6ebcd9009708ed7dfef957a6ff840b24f1bdec1dbc8045246dbefa67dff83ed6` |
+| ITTage | `68bffe7f` | evidence/68bffe7f2938/ITTage | 10426 | 10426 | 0 | 0/0/0/0 | 全 0（钉点 3301/3301） | array_6_ext | SUCCEEDED | `7124f2523d40ae7390f837eda0f1a2005619daca974fe14e5db37667395d9562` |
+| Tage_SC | `312a5d35` | evidence/312a5d3510fb/Tage_SC | 16112（模型 16308） | 16112 | 196 = constant_reg 4 + unread 192 | 0/0/0/192（全 ref，= dead_ref 声明） | 全 0（钉点 2843/2843） | array_2/3/4/5_ext | PASS_DEAD_REF | `a09636ef9b92acc7e6727c186aca3e773dad174f57df7b4894f99a57c38e60ee` |
+| ITTageTable | `c6573076` | evidence/c6573076c5ba/ITTageTable | 682 | 682 | 0 | 0/0/0/0 | 全 0 | array_6_ext | SUCCEEDED | `c9d11edd613e120d1b26a134af4808b11973e47e7e19297c8e8f6bdf3281bf4d` |
+| ITTageTable_1 | `c6573076` | evidence/c6573076c5ba/ITTageTable_1 | 682 | 682 | 0 | 0/0/0/0 | 全 0 | array_6_ext | SUCCEEDED | `b5076cf84d2117a05d1e4cca0311676f794a7c66c1d9d5683769d461acd7deb9` |
+| ITTageTable_2 | `c6573076` | evidence/c6573076c5ba/ITTageTable_2 | 1014 | 1014 | 0 | 0/0/0/0 | 全 0 | array_6_ext | SUCCEEDED | `ba7ff2d3b63602874ec5d152793ffe9fb524b4ba5bb318c11d36cfe8c0c78f47` |
+| ITTageTable_3 | `c6573076` | evidence/c6573076c5ba/ITTageTable_3 | 1014 | 1014 | 0 | 0/0/0/0 | 全 0 | array_6_ext | SUCCEEDED | `13955db1f8024bf33c1ce8df9784544eff3a7b3f643c430b45ebc75f401bb8cc` |
+| ITTageTable_4 | `c6573076` | evidence/c6573076c5ba/ITTageTable_4 | 1014 | 1014 | 0 | 0/0/0/0 | 全 0 | array_6_ext | SUCCEEDED | `b62fd58065c0d54f26f11aa70b090f953f8fb4283b1b3263d0b24ec890b0f2c6` |
+| TageBTable | `c6573076` | evidence/c6573076c5ba/TageBTable | 396 | 396 | 0 | 0/0/0/0 | 全 0 | array_4_ext | SUCCEEDED | `e30d79abc5840e9e8c884d0079cf8a388b09b31b29b920be79f9965036c90411` |
+
+全部 mode = signoff-strict、allowlist 0、dont_verify 无、elab147 无；merge_dup=false；vmucp：SCTable×4 / FauFTB / ITTage / Tage_SC / ITTageTable×5 / TageBTable 为 true（依据见 verif/fm_target_config/<T>.tcl），LFSR / RegionWays 为 false。
+`python3 scripts/fm_predict.py check <T>` 全部「对上」（Tage_SC 为「差额被指认：constant_reg 4 + unread 192」）；`python3 scripts/check_lane_receipts.py /home/eda/xs-env/wt-bpu-tables` rc=0。
+复跑：`PROOF_COMMIT=<proof commit> bash scripts/run_proof.sh <UT 目录> <T> < /dev/null`（UT 目录：LFSR→MaxPeriodFibonacciLFSR，SCTable_* → SCTable，ITTageTable_k → ITTageTable_k，其余同名）。
