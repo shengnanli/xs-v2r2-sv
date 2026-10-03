@@ -30,6 +30,9 @@ FM_REF_DEPS_FloatAdderF32WidenF16MixedPipeline = $(FPADD_GOLDEN_SUBTREE)
 # 关 merge_dup：golden 顶层有两份同源打拍（io_fp_c_r / io_fflags_r）等，关掉后 fm_predict 模型严格适用
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：3 个 unread 点全在两侧同读的 golden 子树里，依据见 verif/fm_target_config/FloatAdderF32WidenF16MixedPipeline.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
