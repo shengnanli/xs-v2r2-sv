@@ -6,5 +6,5 @@
   "expected": 2082,
   "merge_dup": "$(if",
   "model_applicable": false,
-  "note": "重登记（2026-10-03）：Makefile 改字面名后模型可算 2082（1351+731）；FDivSqrt 实际 FM_MERGE_DUP=false（Makefile 里是 $(if ...) 表达式，fm_predict 解析不了才标不适用）。预测 passing = 2082 - constant_reg。上一次登记的 1543 是 deps 没展开的错误模型。"
+  "note": "fpu-parents 重证（impl 改读重写件 fpdiv_r64_block）：预测同上一版 receipt evidence/f19ef593a8df（FDivSqrt 2052 = 2082 − constant_reg 30）"
 }

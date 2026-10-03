@@ -22,18 +22,23 @@ FALU_LEAVES = FloatAdder.sv \
 
 # impl 侧（2026-10-03，fpaddpath-sqrtblock lane）：f32/f16 加宽混合加法器的 far/close 两条路径及其孙子
 # 已有本仓重写件并各自签核（verif/ut/FpAddPathF32W16 与各叶子），impl 改读重写件（两侧白盒）；
-# 其余 golden 叶子（FloatAdder 本体、F64 两条路径、F64 的加法器/移位器）仍两侧同读 golden。
+# 2026-10-03 fpu-parents lane（group adder64）：F32 加法器本体 FloatAdderF32F16MixedPipeline、F64 的
+# close path ClosePathFloatAdderF64WidenPipeline（连同其 child ClosePathAdder / _2 / CloseShiftLeftWithMux，PROVEN_DIRECT）
+# 与 F64 far path 的打拍加法器 FarPathAdderF64WidenPipeline 已重写签核（verif/ut/FloatAdderF32F16MixedPipeline、
+# verif/ut/FpAddPathF64W），impl 同样改读重写件。
+# 其余 golden 叶子（FloatAdder 本体、FloatAdderF64Pipeline、F64 far path 本体及其 Adder / FarShiftRightWithMuxInvFirst）
+# 仍两侧同读 golden。
 FALU_REWRITTEN = Adder_2 FarShiftRightWithMuxInvFirst_2 FarPathF32WidenF16MixedAdderPipeline \
                  FarPathF32WidenF16MixedPipeline ClosePathF32WidenF16MixedPipelineAdder \
                  ClosePathF32WidenF16MixedPipelineAdder_2 CloseShiftLeftWithMux_1 \
-                 ClosePathF32WidenF16MixedPipeline
+                 ClosePathF32WidenF16MixedPipeline \
+                 FloatAdderF32F16MixedPipeline FarPathAdderF64WidenPipeline \
+                 ClosePathAdder ClosePathAdder_2 CloseShiftLeftWithMux ClosePathFloatAdderF64WidenPipeline
 RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(FALU_REWRITTEN))) $(RTL_DIR)/backend/FAlu.sv
 FALU_GOLDEN_IMPL = FloatAdder.sv \
-                   FloatAdderF64Pipeline.sv FloatAdderF32F16MixedPipeline.sv \
-                   FarPathFloatAdderF64WidenPipeline.sv FarPathAdderF64WidenPipeline.sv \
+                   FloatAdderF64Pipeline.sv \
+                   FarPathFloatAdderF64WidenPipeline.sv \
                    FarShiftRightWithMuxInvFirst.sv \
-                   ClosePathFloatAdderF64WidenPipeline.sv ClosePathAdder.sv ClosePathAdder_2.sv \
-                   CloseShiftLeftWithMux.sv \
                    Adder.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/FAlu.sv $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(FALU_REWRITTEN)))
@@ -85,3 +90,10 @@ include ../../../scripts/ut_common.mk
 # golden 里 `ifndef SYNTHESIS 的断言块调用未定义函数 xs_assert_v2，
 # 且随机初始化 initial 块也只在非 SYNTHESIS 下出现——定义 SYNTHESIS 与 FM 侧口径一致。
 VCS += +define+SYNTHESIS
+
+# initreg 三档（2026-10-03 fpu-parents lane 补接上；此前本 Makefile 编译期没开 +vcs+initreg+random，
+# 运行期给的 +vcs+initreg+* 会被 VCS 静默忽略——CONVENTIONS「声明了不等于接上了」）：
+# INITREG=0 / random / <seed>017（seed 1 的 random 档退化为全 1）。
+VCS      += +vcs+initreg+random
+INITREG  ?= 0
+SIM_ARGS += +vcs+initreg+$(INITREG)

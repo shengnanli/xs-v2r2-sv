@@ -1,0 +1,9 @@
+{
+  "target": "ClmulModule",
+  "ut": "BkuLeaves",
+  "regs": 1033,
+  "outs": 64,
+  "expected": 1097,
+  "merge_dup": "false",
+  "model_applicable": true
+}

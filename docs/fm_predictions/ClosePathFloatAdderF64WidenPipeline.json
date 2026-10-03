@@ -1,0 +1,10 @@
+{
+  "target": "ClosePathFloatAdderF64WidenPipeline",
+  "ut": "FpAddPathF64W",
+  "regs": 311,
+  "outs": 123,
+  "expected": 434,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "adder64 prereg §1：FarPath 预测 passing=162/constant 0；ClosePath 预测 passing=433 + constant_reg 1（CS4 减数 MSB 恒 0），钉 3 对 + vmucp"
+}

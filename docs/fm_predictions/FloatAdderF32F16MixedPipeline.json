@@ -1,0 +1,10 @@
+{
+  "target": "FloatAdderF32F16MixedPipeline",
+  "ut": "FloatAdderF32F16MixedPipeline",
+  "regs": 359,
+  "outs": 37,
+  "expected": 396,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "adder64 prereg §2：预测 passing=360 + constant_reg 36（诊断跑 35 + 钉上后归回的 close CS4 减数 MSB），钉 4 对 + vmucp"
+}
