@@ -1,0 +1,178 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T11:28:46Z",
+ "generator": {
+  "run_context_worktree_digest": "4affa3b28e006c173067df1480c5467dc95ad4d4e47d64780b711a2a9c0626f6",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/eaa601c2b3e1/Iprio2Module_1",
+  "version": 1
+ },
+ "impl_commit": "eaa601c2b3e10c144a7980ec36ba7a8de8dbb87c",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Iprio2Module_1.sv",
+    "sha256": "ec53c06c8b7ed377ea184b3d5495640bf8778feb113d24d0392e1d8ff790a99b"
+   }
+  ],
+  "golden_sha256": "ec9f28c78c6fb5e05a59049c4104dcb7bab7d7c57ef5fb0964289d5c29d69dd7",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio0Module.sv",
+    "sha256": "496ed8dc113f00479deb7b7880bdc568254e46e255d1687b019a05ee9508ba99"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio0Module_1.sv",
+    "sha256": "fcf89e69a8e76b1bb3c4c6dc7346c9f9d0a31bb02af8a1932db5e3d81e8f97d5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio2Module.sv",
+    "sha256": "79a3ce0fe7b6e7c388b989127094a19d87f2aec72d145c1f00ec4e31e2d14e48"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio2Module_1.sv",
+    "sha256": "5fadf0a1068f130f2bc711668433a5d29818ce20a63dab2e159c915336cd660c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio4Module_1.sv",
+    "sha256": "07d03923dff97f491e4d4879477ab84f216d51c4f43bb46fa1dc2effb1b1b337"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio6Module_1.sv",
+    "sha256": "a1176d7e78285d083a14e09204cfe75f130e99396cdf2e418428cba7e19c6009"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio8Module_1.sv",
+    "sha256": "f23642429695022335536bbb5861b98723df24e58b33eb9b110522444a420e26"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio10Module_1.sv",
+    "sha256": "b0b65bb8932385d607b783824d052b95d436f1bd769a098d1a6ff9df0a0106e2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio12Module_1.sv",
+    "sha256": "953ae9a077afe4f693f58bfeb14e86e665017a86a642f0994abacfa5504b7814"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Iprio14Module_1.sv",
+    "sha256": "2e44f3c46119ef0be1b3a63cfa8725247063409509f614cb0c4af5e2c53d1905"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MhpmeventModule.sv",
+    "sha256": "a4f489b3ae6edcdfcb580f55752cd117ec7ad028b02d8670d87752bef9150079"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MNretEventModule.sv",
+    "sha256": "a1cb28a81f9b86c7ec50354125889125293e3bb9085d1ea09f699a4ce1142a27"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SstcInterruptGen.sv",
+    "sha256": "6faecda22e3e8767da6f9e18b5b8c270041537b9be9d16631b23ff5a2f965939"
+   }
+  ],
+  "impl_sha256": "1940b0cafbfa8672a6c065dfd7d1825e117e6045146381cd4fde8c77cec6213a",
+  "repo_impl_files": 13
+ },
+ "native_facts_sha256": "8c588dfd007f4577e30d7d0ac8da65e06c0e8ecbdaf3eea9b26e689e0a28ea02",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 104,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 8
+  }
+ },
+ "proof_commit": "eaa601c2b3e10c144a7980ec36ba7a8de8dbb87c",
+ "proof_config": {
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/Iprio2Module_1.json",
+    "sha256": "9ff9223fba7294097a59f5a6b6d87e312ed38b873affa41aa26c2841f8528a25"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "a06b9ad1805ee2c6d8a646c42aec15c11bde7c63108fdb632dbc506ed73aa353",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4affa3b28e006c173067df1480c5467dc95ad4d4e47d64780b711a2a9c0626f6",
+ "provisional": false,
+ "receipt_sha256": "85fbc61536c110c11e439629b10733e947b7231e3bbd6bca4848751a3bc8e0db",
+ "reproduce": {
+  "command": "PROOF_COMMIT=eaa601c2b3e10c144a7980ec36ba7a8de8dbb87c scripts/run_proof.sh CSRControl200c Iprio2Module_1",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "817d86474e13fd94862181b7eede48b1b3c750ff5beff526b5ea5e694eee2e17",
+ "run_id": "CSRControl200c-20261003T112159Z-eaa601c2b",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "Iprio2Module_1",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "CSRControl200c",
+ "variant": "Iprio2Module_1",
+ "verdict": "PASS_DEAD_REF"
+}
