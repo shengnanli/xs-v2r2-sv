@@ -5,5 +5,6 @@
   "outs": 317,
   "expected": 1788,
   "merge_dup": "false",
-  "model_applicable": true
+  "model_applicable": true,
+  "note": "预测 passing 1777 = 模型 1788 - constant_reg 11（试跑读数，与上一份 receipt 46fb5c53 同）"
 }

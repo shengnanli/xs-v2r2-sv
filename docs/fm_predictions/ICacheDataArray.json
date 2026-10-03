@@ -1,0 +1,17 @@
+{
+  "target": "ICacheDataArray",
+  "ut": "ICacheDataArray",
+  "regs": 4984,
+  "outs": 789,
+  "expected": 8237,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 2464,
+  "bbox": {
+    "array_0_ext": {
+      "insts": 32,
+      "in_bits": 77,
+      "points": 2464
+    }
+  }
+}

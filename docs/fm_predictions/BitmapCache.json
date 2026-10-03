@@ -4,8 +4,8 @@
   "regs": 1415,
   "outs": 110,
   "expected": 1925,
-  "merge_dup": "false",
-  "model_applicable": true,
+  "merge_dup": "true",
+  "model_applicable": false,
   "bbin": 400,
   "bbox": {
     "array_9_ext": {
@@ -13,5 +13,6 @@
       "in_bits": 100,
       "points": 400
     }
-  }
+  },
+  "note": "merge_dup 改为默认（true）；厂商宏 array_9_ext.v 两侧读入（行为模型存储位进比较点），试跑 passing 13069，与上一份 receipt dfc23ffb 同"
 }

@@ -76,3 +76,18 @@ dont_verify [] / elab147 [] / relaxed_appvars []（Serializer 的 assume_reg_ini
 ## 对账
 
 （跑完追加）
+
+## 5. 第二批跑前登记：父级改读重写子模块后的重证（★跑完不许改本节★）
+
+| 父级 | 改动（子模块两侧同读 golden → impl 读本 lane 重写件） | 预测 passing | 试跑依据 / 与上一份 receipt |
+|---|---|---|---|
+| ProbeQueue | ProbeEntry ×8、Arbiter8_MainPipeReq | 1092（模型 1094 − constant_reg 2） | 试跑 1092；上一份 f40deba9 同为 1092 |
+| WritebackQueue | WritebackEntry ×15、WritebackEntry_15 ×3（vmucp 照旧） | 13053 | 试跑 13053；上一份同 |
+| Pipeline | Queue1_L1PrefetchReq | 113 | 试跑 113；上一份 40ec7fc3 同 |
+| Bitmap | Arbiter8_bitmapCacheReqBundle | 1777（模型 1788 − constant_reg 11） | 试跑 1777；上一份 46fb5c53 同 |
+| BitmapCache | SplittedSRAM（+4×SRAMTemplate_124）、MbistBitmapCache；merge_dup 改默认（见 Makefile 注释） | 13069 | 试跑 13069；上一份 dfc23ffb 同 |
+| ICacheDataArray | SRAMTemplateWithFixedWidth ×4（+SRAMTemplate_{4,8,16,32}）、MbistPipeIcacheDataWay0..3（assembly，黑盒 = array_0_ext ×32 两侧，allow 不变） | 8237 | 试跑 8237；上一份 76d345fc 同 |
+
+其余项一律预测 failing / unverified / aborted / unmatched / unread 全 0、无 dont_verify。
+UT：上述 6 个目录补齐 9 档（Makefile 加 INITREG；BitmapCache / ICacheDataArray tb 加 MBIST 上电初始化，
+Bitmap / BitmapCache 不复位输出寄存器按首次写入事件 arm，ICacheDataArray tb 原先写死 30000 拍、改读 +ncycles），读数见对账。

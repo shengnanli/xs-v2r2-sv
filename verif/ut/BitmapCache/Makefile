@@ -35,7 +35,9 @@ FM_REF_DEPS_BitmapCache = ClockGate.sv SplittedSRAM.sv SRAMTemplate_124.sv \
                           sram_array_1p32x90m45s1h0l1b_bitmap.sv array_9.sv array_9_ext.v \
                           MbistBitmapCache.sv
 # 关掉重复寄存器合并：让 passing 与 fm_predict.py 的模型可逐位对账。
-FM_MERGE_DUP = false
+# merge_dup 改用工具默认（true）：impl 改读重写的 SRAMTemplate_124 后，共享核 xs_SRAMTemplate_core 非 holdRead
+# 分支的 rdata_last_REG（主线上与 respReg 同方程、靠 merge 合并；SRAMTemplate_124 / SplittedSRAM 单独签核同口径）
+# 在 merge 关时成为 4 个 impl 独占 unread（lane 内诊断跑实测）。codex 0206 D1 另有 lane 从核里删它，合入后可回到 false。
 # vmucp = true（2026-09-22 打开）：第一次跑（未开）留下 42 个 matched-unread 点，全部是
 # golden 自身存了但本锥内无读者的位（data_1_tag 高低位 / data_tag[2:0] / mbist 地址高位 /
 # SRAM 模型的 ren 寄存器），42<->42 按后缀逐字双射、无人工强配。打开 = 让 FM 把这 42 点
