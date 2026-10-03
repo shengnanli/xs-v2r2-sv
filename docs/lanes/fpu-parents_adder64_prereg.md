@@ -150,3 +150,13 @@ vmucp 六条：精确绑定（Close 3 点 / FloatAdder 4 点，见各 fm_target_
 
 ★登记前两次诊断跑（如实记，均 diagnostic-full，不产 receipt）★：第一次只有旧 4 对钉点 → 16(16) unmatched compare + 7(7) unmatched unread
 （明细见 FAlu.tcl）；钉 23 对后 → passing 2575 / constant_reg 167 / unmatched 0 / unread 0。预测即取后者，也等于上一版 receipt。
+
+## 对账 §4（FAlu，证明 commit `7398e0afd`）
+
+| 目标 | 结果 | 模型 / 预测 / 实测 passing | constant_reg | unread / unmatched / 黑盒 / dont_verify | 钉点回显 | receipt sha256 |
+|---|---|---|---:|---|---|---|
+| FAlu | SUCCEEDED | 2742 / 2575 / **2575** | 167 | 0 / 0 / 0 / 无 | n=23 expect=23 | `3a030f284bf61bda929517a6793eafa8565b4ac2f6e1a927855f300bb37a93b4` |
+
+failing / unverified / aborted 0；与上一版 receipt（evidence/194f78e14165/FAlu）逐数相同。`fm_predict.py check FAlu` rc=0
+（登记 note 里写的「prereg §3」指本文件 §4，笔误照留）。
+复跑：`PROOF_COMMIT=7398e0afd bash scripts/run_proof.sh FAlu FAlu < /dev/null`
