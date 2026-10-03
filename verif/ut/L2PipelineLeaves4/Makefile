@@ -28,6 +28,10 @@ FM_REF_DEPS_Pipeline_2 = Queue1_PrefetchTrain.sv
 FM_REF_DEPS_Pipeline_3 = Queue1_PrefetchResp.sv
 FM_REF_DEPS_Pipeline_10 = Queue1_UInt32.sv
 FM_REF_DEPS_Pipeline_11 = Queue1_UInt32.sv
+# vmucp 只开 Pipeline_2 / Pipeline_3：child 队列 ram 里 deq 侧无读者的对称死存储位（5 / 86 位），
+# 与 child 独立签核时同一组点；依据与双射核对见 verif/fm_target_config/<T>.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = \
+  $(if $(filter Pipeline_2 Pipeline_3,$*),true,)
 FM_MERGE_DUP = false
 PORTLINT_ORDER = fail
 
