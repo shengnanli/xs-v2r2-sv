@@ -1,0 +1,17 @@
+{
+  "target": "TageBTable",
+  "ut": "TageBTable",
+  "regs": 266,
+  "outs": 38,
+  "expected": 396,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 92,
+  "bbox": {
+    "array_4_ext": {
+      "insts": 4,
+      "in_bits": 23,
+      "points": 92
+    }
+  }
+}

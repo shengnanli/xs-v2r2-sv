@@ -46,6 +46,8 @@ FM_REF_DEPS_TageBTable = FoldedSRAMTemplate_20.sv SplittedSRAMTemplate_23.sv SRA
                          WrBypass_32.sv IndexableCAMTemplate_32.sv data_mem_8x4.sv
 # 2026-10-03 agent/bpu-tables：改 signoff-strict（子模块两侧同源白盒、唯一黑盒为厂商叶子，strict 判据适用）。
 FM_VARIANTS = TageBTable
+# 关 merge_duplicated_registers：逐个比，fm_predict 的 passing 模型严格适用（2026-10-03 agent/bpu-tables）。
+FM_MERGE_DUP = false
 
 # matched-unread 加强（vmucp）：本目标残余的 10 个 unread 点全是 matched_nc 且严格双射
 # （ref 10 ↔ impl 10，末段名同为 s1_idx_reg[1..10]）。这不是 waiver —— true 是要求 FM

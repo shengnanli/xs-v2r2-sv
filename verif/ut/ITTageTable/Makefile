@@ -47,6 +47,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/ITTageTable.sv \
 # 为死位。逐行依据见本目录 fm_pins.tcl。白名单见 verif/fm_target_config/<top>.tcl。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = ITTageTable
+# 关 merge_duplicated_registers：逐个比，fm_predict 的 passing 模型严格适用（2026-10-03 agent/bpu-tables）。
+FM_MERGE_DUP = false
 FM_REF_DEPS_ITTageTable = ClockGate.sv FoldedSRAMTemplate_22.sv IndexableCAMTemplate_41.sv MbistClockGateCell.sv MbistPipeIttage.sv SRAMTemplate_76.sv SplittedSRAMTemplate_25.sv WrBypass_41.sv array_6.sv data_mem_0_4x2.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
 
 include ../../../scripts/ut_common.mk
