@@ -21,15 +21,15 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	1140	1152	99.0
-unique_design_written	657	1191	55.2
-unique_design_proven	643	1191	54.0
-golden_lines_written	3041544	3902283	77.9
-golden_lines_proven	2697642	3902283	69.1
+fm_targets_configured	1154	1162	99.3
+unique_design_written	665	1191	55.8
+unique_design_proven	655	1191	55.0
+golden_lines_written	3046237	3902283	78.1
+golden_lines_proven	2706625	3902283	69.4
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2871564	3349905	85.7
-incore_golden_lines_proven	2531914	3349905	75.6
+incore_golden_lines_written	2876257	3349905	85.9
+incore_golden_lines_proven	2540897	3349905	75.8
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	169980	552378	30.8
@@ -38,15 +38,13 @@ outcore_golden_lines_proven	165728	552378	30.0
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	16	1133	1.4
-#   合计 6555 golden 行
+legacy_proven_unanchored	14	1147	1.2
+#   合计 6208 golden 行
 #   ITTageTable                                   336 行
 #   ITTageTable_1                                 333 行
 #   ITTageTable_2                                 380 行
 #   ITTageTable_3                                 379 行
 #   ITTageTable_4                                 383 行
-#   L2TlbMissQueue                                133 行
-#   L2TlbPrefetch                                 214 行
 #   LCredit2Decoupled_1                           192 行
 #   LinkMonitor                                   535 行
 #   MuxBundle                                     230 行
@@ -58,11 +56,8 @@ legacy_proven_unanchored	16	1133	1.4
 #   TageBTable                                    396 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
-#   AtomicsUnit                                      1181 行
 #   CommitIDModule                                     97 行
 #   FDPrefetcherMonitor                               111 行
-#   HPerfCounter                                      575 行
-#   HPerfMonitor                                     1520 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
 #   L2TLBWrapper                                     1018 行
@@ -71,7 +66,6 @@ legacy_proven_unanchored	16	1133	1.4
 #   PtwCache                                        45308 行
 #   Rob                                            266227 行
 #   StorePipe                                          93 行
-#   fpsqrt_vector_r16                                1014 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 # ★只列核内★：核外的另列在本表末尾，不要从那里接活
