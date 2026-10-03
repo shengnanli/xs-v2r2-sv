@@ -29,4 +29,9 @@
 # 三者打开后必须复验「passing 恰好 +4 / +5 / +7 且 failing 仍为 0」——
 # passing 不增即说明 FM 没真去比，那是空转，不算过(见本轮证据 evidence/)。
 
+# ---- 2026-10-03 fpaddpath-sqrtblock lane：far/close 子树 impl 改读重写件后 ----
+# 上述同一组死位两侧名字不再相同（golden firtool 名 vs 重写核字段名），且无扇出签名 → FM 配不上（unmatched unread），
+# vmucp 单开空转。由本目标 UT 目录的 fm_pins.tcl 字面钉 4 对（含恒 0 的 U_CS4_io_adder_op1_r_reg[23]，钉上后归回
+# constant_reg），再交 vmucp 实比；判据仍是上面六条（passing 与上一版 receipt 相同、failing/unmatched 全 0）。
+
 fm_target_vmucp_allow

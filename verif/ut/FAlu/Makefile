@@ -1,7 +1,6 @@
 MODULE = FAlu
 
 RTL_DIR = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/FAlu.sv
 TB_SRCS = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
@@ -21,8 +20,24 @@ FALU_LEAVES = FloatAdder.sv \
               CloseShiftLeftWithMux.sv CloseShiftLeftWithMux_1.sv \
               Adder.sv Adder_2.sv
 
-GOLDEN_SRCS = $(GOLDEN_RTL)/FAlu.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(FALU_LEAVES))
+# impl 侧（2026-10-03，fpaddpath-sqrtblock lane）：f32/f16 加宽混合加法器的 far/close 两条路径及其孙子
+# 已有本仓重写件并各自签核（verif/ut/FpAddPathF32W16 与各叶子），impl 改读重写件（两侧白盒）；
+# 其余 golden 叶子（FloatAdder 本体、F64 两条路径、F64 的加法器/移位器）仍两侧同读 golden。
+FALU_REWRITTEN = Adder_2 FarShiftRightWithMuxInvFirst_2 FarPathF32WidenF16MixedAdderPipeline \
+                 FarPathF32WidenF16MixedPipeline ClosePathF32WidenF16MixedPipelineAdder \
+                 ClosePathF32WidenF16MixedPipelineAdder_2 CloseShiftLeftWithMux_1 \
+                 ClosePathF32WidenF16MixedPipeline
+RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(FALU_REWRITTEN))) $(RTL_DIR)/backend/FAlu.sv
+FALU_GOLDEN_IMPL = FloatAdder.sv \
+                   FloatAdderF64Pipeline.sv FloatAdderF32F16MixedPipeline.sv \
+                   FarPathFloatAdderF64WidenPipeline.sv FarPathAdderF64WidenPipeline.sv \
+                   FarShiftRightWithMuxInvFirst.sv \
+                   ClosePathFloatAdderF64WidenPipeline.sv ClosePathAdder.sv ClosePathAdder_2.sv \
+                   CloseShiftLeftWithMux.sv \
+                   Adder.sv
+
+GOLDEN_SRCS = $(GOLDEN_RTL)/FAlu.sv $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(FALU_REWRITTEN)))
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(FALU_GOLDEN_IMPL))
 
 FM_VARIANTS = FAlu
 FM_REF_DEPS_FAlu = $(FALU_LEAVES)

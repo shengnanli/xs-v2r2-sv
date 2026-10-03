@@ -1,6 +1,6 @@
 // =============================================================================
 // tb —— fpsqrt_vector_r16 UT：golden fpsqrt_vector_r16（含 golden 子树）与重写件 fpsqrt_vector_r16_xs
-// （lzc/r4_qds_cg 用重写件，fpsqrt_r16_block 两侧同读 golden）双例化，同激励逐拍比。
+// （lzc/r4_qds_cg/fpsqrt_r16_block 及其 r4_qds* 全用重写件）双例化，同激励逐拍比。
 //
 // 比对：start_ready_o / finish_valid_o 每拍比（fsm_q 有复位）；fpsqrt_res_o / fflags_o 只在
 //   finish_valid_o=1 时比——其余寄存器都不复位，+random 档两侧上电值不同，结果通路在第一次运算

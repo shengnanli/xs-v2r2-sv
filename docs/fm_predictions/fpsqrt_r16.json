@@ -1,0 +1,9 @@
+{
+  "target": "fpsqrt_r16",
+  "ut": "fpsqrt_r16",
+  "regs": 314,
+  "outs": 71,
+  "expected": 385,
+  "merge_dup": "false",
+  "model_applicable": true
+}
