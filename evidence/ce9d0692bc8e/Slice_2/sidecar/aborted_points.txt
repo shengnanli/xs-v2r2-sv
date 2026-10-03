@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Slice_2
+Implementation : i:/WORK/Slice_2
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:40:10 2026
+**************************************************
+
+No aborted compare points.
+
+1
