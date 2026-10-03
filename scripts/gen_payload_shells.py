@@ -9,8 +9,8 @@
 核手写、载荷不分字段；薄文件从 golden 端口表把字段按 golden 端口顺序 MSB 优先拼成打包向量，再把出口拆回去。
 
 
-golden 把每个字段存成一个独立寄存器（req_vpn、resp_s1_entry_tag、dataBuffer_uop_pc …），核里是一根向量
-（u_core/req、u_core/resp、u_core/dataBuffer）；名字对不上会让 Formality 的配对卡死，所以同时生成
+golden 把每个字段存成一个独立寄存器（req_vpn、resp_s1_entry_tag …），核里是一根向量
+（u_core/req、u_core/resp）；名字对不上会让 Formality 的配对卡死，所以同时生成
 verif/ut/<Module>/fm_pins_pre.tcl：golden 每个寄存器位 set_user_match 到向量的对应位，一一对应、字面计数、
 fail-closed（拒一条或总数不对就 error；safe interp 里不用 exit）。只消名差，不约束 ref、不改 appvar、不加黑盒。
 
