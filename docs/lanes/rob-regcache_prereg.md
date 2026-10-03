@@ -94,3 +94,18 @@ UT 过程中发现并修掉的重写件自身 bug（UT 抓到，均在提交前�
 | SRT16DividerDataModule | 1803（1737 + 66） | **unread 6**：aLZCReg[6]、dLZCReg[6]、udNegReg_{0,1,3,4}[67]（与 DivUnit vmucp 白名单同一批死位，两侧对称）→ 拟 vmucp；**constant_reg ≥ 7**：rCarryReg[0]、udNegReg_0[1:0]、udNegReg_1[0]、udNegReg_3[0]、udNegReg_4[1:0]，另有 rud/r2udPmNegReg 里由查表常数位决定的恒定位（未逐位推算，以 receipt 指认）；vmucp 后 passing = 1803 − constant_reg |
 | RegCache | 3851（merge_dup=true，模型不适用） | 预测与旧 receipt（evidence/25cdce831a66）同：native SUCCEEDED、passing 3830、failing 0、unread_notcompared 0、ref 侧 unmatched-unread 6 = verif/dead_ref/RegCache.json 声明 ⇒ PASS_DEAD_REF；子模块内部若因数组命名出现 unmatched，诊断跑后补登 |
 | DivUnit | 沿用 docs/fm_predictions/DivUnit.json | 预测 passing 3132（vmucp）、unread 0，与现 receipt 同 |
+
+### B.3 补登：SRT16DividerDataModule 诊断跑 → vmucp（official 之前提交；B.2 数字不改）
+
+- 诊断跑（工作树 `make fm-SRT16DividerDataModule FM_MODE=diagnostic-full FM_FAILING_LIMIT=0`，不进 evidence）：
+  native SUCCEEDED、passing **1797**、failing 0、unmatched 全 0、unread **6**，全部 matched_nc，恰为 B.2 预测的
+  aLZCReg[6] / dLZCReg[6] / udNegReg_{0,1,3,4}[67]（层次 `u_core/` 下同名，FM 自己配上，不需钉点）。
+- **对 B.2 的偏差：constant_reg 预测"≥ 7"错，实测 0**——那些恒 0 位（rCarryReg[0]、udNegReg 低位等）FM 照样
+  作为 passing 比较点计入（与 srt-divblocks 第一、二阶段同一现象）。差额 1803 − 1797 = 6 = unread，全部指认。
+- vmucp 白名单 `verif/fm_target_config/SRT16DividerDataModule.tcl` + UT Makefile `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true`，
+  诊断复跑：passing **1803**，unread 0，failing 0。
+- **official 复核判据**：SUCCEEDED；passing 1803；failing / unverified / unread / unmatched 全 0；黑盒 0；dont_verify false；
+  fm_predict 对账差额 0。
+- 批 A 变异自检（scratch 沙箱，seed 1 / initreg 0 / 20k 拍，不进库）：23 个里 22 个 CAUGHT；M22（VTypeBuffer 的
+  deqPtrOH 去掉循环回绕）MISSED——deqPtrOH 在 G1 配置下无读者（只喂 XSError），外部不可观测，由 FM 的 vmucp 比较
+  deqPtrOH 寄存器覆盖（见 VTypeBuffer 补登）。

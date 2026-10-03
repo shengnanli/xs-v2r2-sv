@@ -30,3 +30,7 @@ SIM_ARGS += +vcs+initreg+$(INITREG)
 .PHONY: gencheck
 gencheck:
 	python3 gen.py --check
+
+# vmucp：6 个对称死位（aLZCReg/dLZCReg[6]、udNegReg_{0,1,3,4}[67]）交 FM 实比，
+# 依据与白名单见 verif/fm_target_config/SRT16DividerDataModule.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
