@@ -44,8 +44,7 @@ FM_REF_DEPS_TageBTable = FoldedSRAMTemplate_20.sv SplittedSRAMTemplate_23.sv SRA
                          sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv array_4.sv \
                          MbistClockGateCell.sv ClockGate.sv \
                          WrBypass_32.sv IndexableCAMTemplate_32.sv data_mem_8x4.sv
-FM_MODE = assembly
-FM_ALLOWLIST ?= 0
+# 2026-10-03 agent/bpu-tables：改 signoff-strict（子模块两侧同源白盒、唯一黑盒为厂商叶子，strict 判据适用）。
 FM_VARIANTS = TageBTable
 
 # matched-unread 加强（vmucp）：本目标残余的 10 个 unread 点全是 matched_nc 且严格双射
@@ -57,4 +56,18 @@ FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS +vcs+initreg+random
+# ★initreg 三档（2026-10-03 agent/bpu-tables 补）★：INITREG=0 / random / <seed>017；后两档用 initreg 配置文件，
+# 其余状态随机、厂商 SRAM 行为模型（array_4_ext）存储钉 0（表项 SRAM 无复位，两实例读"从没写过"的条目随机值不同 ——
+# tb 先写后读契约，同 verif/ut/ITTage）。厂商叶子 .v 只给 VCS，FM 两侧黑盒（verif/vendor_boundary.tsv）。
+INITREG ?= 0
+SRAM_LEAVES = array_4_ext
+ifeq ($(INITREG),0)
 SIM_ARGS += +vcs+initreg+0
+else
+SIM_ARGS += +vcs+initreg+config+$(UT_GEN_DIR)/initreg_$(INITREG).cfg
+endif
+$(UT_GEN_DIR)/initreg_%.cfg: Makefile
+	@mkdir -p $(UT_GEN_DIR)
+	@{ if [ "$*" = random ]; then echo "defaultvalue random"; else echo "defaultvalue random $*"; fi; \
+	   for m in $(SRAM_LEAVES); do echo "module $$m 0"; done; } > $@
+run: $(if $(filter-out 0,$(INITREG)),$(UT_GEN_DIR)/initreg_$(INITREG).cfg)
