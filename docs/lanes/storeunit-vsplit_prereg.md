@@ -110,6 +110,120 @@ unread_notcompared 84（全部 matched_nc，两侧对称）→ strict 会判 PAR
 
 ## 对账（跑后追加，不改上面任何数字）
 
+
+## 3. VSplit 家族（7 个目标：skidBufferConnect / V{L,S}SplitPipelineImp / V{L,S}SplitBufferImp / V{L,S}SplitImp）
+
+### 3.1 认领补充
+
+`skidBufferConnect`（golden 1,265 行 / 278 端口 / 183 寄存器）是 VLSplitImp 与 VSSplitImp 共同的 child，
+`docs/coverage_three_axis.tsv` 为 MISSING/UNPROVEN、无人认领（查过 `git worktree list` 各分支的 rtl 与 claim 文件），
+按规范"UNPROVEN 的 child 本 lane 先重写签核"纳入本 lane（已追加到认领文件）。
+
+### 3.2 核与 wrapper
+
+| 文件 | 内容 | golden 行数 → impl 行数 |
+|---|---|---|
+| `rtl/memblock/vlsu_pkg.sv` | 向量访存公共包：常量、译码 / 掩码 / 步长 / 下标小函数、生成的接口 struct（uop_t / vls_t / …） | — / 421 |
+| `rtl/memblock/VLSplitPipelineImp.sv` | `xs_VSplitPipeline_core`（手写，s0 译码 / s1 偏移与握手，`IS_VSTORE` 参数）+ load wrapper（生成） | 1,102 → 1,178 |
+| `rtl/memblock/VSSplitPipelineImp.sv` | store 变体薄文件（wrapper 生成） | 1,090 → 808 |
+| `rtl/memblock/VLSplitBufferImp.sv` | `xs_VSplitBuffer_core`（手写，§1–§5；store 的 vstd / 非对齐门控与 load 的 stop-and-wait 在 generate 分支）+ load wrapper | 1,470 → 1,665 |
+| `rtl/memblock/VSSplitBufferImp.sv` | store 变体薄文件 | 1,539 → 1,336 |
+| `rtl/memblock/skidBufferConnect.sv` | `xs_SkidBuffer_core`（手写：状态机与握手）+ wrapper（生成：逐字段暂存 + 二选一） | 1,265 → 907 |
+| `rtl/memblock/VLSplitImp.sv` | `xs_VSplitImp_core`（手写胶水：skid 冲刷条件）+ load 装配壳（生成：三个子模块例化连线） | 2,316 → 1,595 |
+| `rtl/memblock/VSSplitImp.sv` | store 装配壳 | 2,333 → 1,560 |
+
+`_GEN_` / `_T_<n>` 全部 0 / 0。生成器 `scripts/gen_vsplit.py`（`--check` 幂等；公共件 `scripts/xs_structgen.py`）。
+寄存器放置：核里是控制寄存器；整包 payload 寄存器（s1_in_r_* / uopq_* / dataBuffer_*）在各变体 wrapper 的生成段里
+（两个变体 golden 的字段集合不同，字段集合照 golden 现数），核给出使能与装载值、读回 struct。寄存器全部保持
+golden 展平名，FM 按名配对，无钉点。生成时核对：端口归组与位宽、golden 寄存器 = 生成 ∪ 核手写（逐名）、
+skid 的 dataBuffer/out/in 字段一一对应、装配壳每个 pin 的连接只能是本层端口 / 子模块输出线 / 胶水核输出。
+
+与 golden 对齐时查实的怪癖（都写在核注释里）：
+1. 拆分流水 s1 的 unit-stride "usMaskLowActive" 取的是 usMask 高半（命名与 Chisel 一致，照抄）；
+2. 拆分缓冲把 `uopq.usLowBitsAddr` 这个寄存器叫 `regOffset`（firtool 采用了 Chisel val 名），生成器用别名表处理；
+3. load 拆分缓冲的 io.out.valid 不含 addrAligned（misalignedCanGo 恒真），store 的含非对齐缓冲门控；
+4. 装配壳 skid 的 flush 看 "新 uop 正在进 skid" 还是 "skid 里的那条"；
+5. skid 的 182 个暂存字段里 93 个上游恒 0（端口被消掉），但寄存器与输出端口还在：存 0、直通 0。
+
+### 3.3 UT（`verif/ut/<目标>` 7 个目录，tb 由生成器生成）
+
+跑前已跑：7 个目标各 seed 1 × `+vcs+initreg+0` × 20k 拍 `errors=0 uncovered=0`（首次即过，故按规矩做变异体自证）。
+3 seed × 3 initreg × 200k 的矩阵与变异体矩阵在跑，结果记在对账节（跑在 proof commit 的同一份 RTL 字节上）。
+覆盖桶：拆分流水 19 个（三种 mop、整寄存器 / mask 型 / segment / 特殊 indexed、nack、kill、
+unit-stride 一次 / 两次访问、部分重放、等合并缓冲、被下游堵）；拆分缓冲 16+4 个（入队 / 占用时入队 / 入队被冲、
+活跃发射 / 跳过、拆完、cancel、unit-stride 不拆 / 第二次、indexed / strided / 累加步长、部分重放、首活跃元素、
+堵、指针绕回；load 加 stop-and-wait 四态，store 加 vstd / 已发数据 / 非对齐堵 / 非对齐放行）；skid 7 个；
+装配壳 12+1 个。
+
+### 3.4 非正式试跑（活动工作树未提交字节，`FM_MODE=diagnostic-full FM_FAILING_LIMIT=0`，关 vmucp，不出 receipt）
+
+| 目标 | passing | failing | unmatched | constant_reg | unread（全部 matched_nc） |
+|---|---|---|---|---|---|
+| skidBufferConnect | 3267 | 0 | 0 | 284（93 个恒 0 暂存字段） | 0 |
+| VLSplitPipelineImp | 3895 | 0 | 0 | 1（s1_in_r_sew[2]） | 0 |
+| VSSplitPipelineImp | 3887 | 0 | 0 | 1 | 0 |
+| VLSplitBufferImp | 3076 | 0 | 0 | 0 | 78 |
+| VSSplitBufferImp | 3422 | 0 | 0 | 0 | 80 |
+| VLSplitImp | 7039 | 0 | 0 | 1 | 293 |
+| VSSplitImp | 7572 | 0 | 0 | 1 | 100 |
+
+unread 的逐类解释见 `verif/fm_target_config/{VLSplitBufferImp,VSSplitBufferImp,VLSplitImp,VSSplitImp}.tcl`。
+
+### 3.5 跑前预测（★跑完不许改★，登记见 docs/fm_predictions/*.json）
+
+| 目标 | 模型 expected | 预测 passing | 差额指认 | vmucp | 其余 |
+|---|---|---|---|---|---|
+| skidBufferConnect | 3551 | **3267** | constant_reg 284 | 否 | failing/unverified/aborted/unread 0，unmatched 六项 0，无黑盒，SUCCEEDED |
+| VLSplitPipelineImp | 3896 | **3895** | constant_reg 1 | 否 | 同上 |
+| VSSplitPipelineImp | 3888 | **3887** | constant_reg 1 | 否 | 同上 |
+| VLSplitBufferImp | 3154 | **3154** | 0 | 是（+78） | 同上 |
+| VSSplitBufferImp | 3502 | **3502** | 0 | 是（+80） | 同上 |
+| VLSplitImp | 7333 | **7332** | constant_reg 1 | 是（+293） | 同上（三个子模块两侧白盒） |
+| VSSplitImp | 7673 | **7672** | constant_reg 1 | 是（+100） | 同上 |
+
+可能出错：vmucp 打开后对称死位若两侧次态不同会变 failing（那是真差异，修 RTL）；装配壳里子模块的
+generate 分支寄存器（g_vload / g_vstore）若 FM 不能按名配上会落到签名匹配——试跑里 unmatched 已是 0。
+
+## 4. VSegmentUnit（golden 3,556 行 / 240 端口 / 436 寄存器）+ VSegmentTrigger（219 行 / 41 端口 / 纯组合）
+
+### 4.1 核
+
+- `rtl/memblock/VSegmentTrigger.sv`：MemTrigger 共享核的第三个薄 wrapper（memType 现选 load/store 使能位，
+  isCbo / isPrf / mask 钉 0，只留 triggerAction 输出）。UT `verif/ut/VSegmentTrigger`。
+- `rtl/memblock/vsegment_pkg.sv`：segment 单元的接口 struct（生成）。
+- `rtl/memblock/VSegmentUnit.sv`：`xs_VSegmentUnit_core`（手写 §1–§9：14 态状态机、逐元素地址与非对齐拆分、
+  异常规则、load 数据拼接、store 送 sbuffer、指针推进、fof、写回）+ wrapper（生成：端口拆装 + payload 寄存器：
+  uopq×8 / data×8 / stride×8 / instMicroOp.uop / fofBuffer（异步复位）/ 写回与反馈打拍，字段集合照 golden 现数）。
+  golden 3,556 → impl 2,835 行；`_GEN_` / `_T_<n>` 0 / 0。生成器 `scripts/gen_vsegmentunit.py`（`--check`）。
+  子模块两侧白盒：VSegmentTrigger（本 lane）、NewPipelineConnectPipe_33（已签核）。
+
+与 golden 对齐时查实的怪癖（都写在核注释里）：instMicroOp.mask 用的是上一条指令留在 instMicroOp 里的
+vm / vl / vstart（Chisel 读寄存器）；splitPtrOffset 与写回的 vdIdxInField 用的是入口 uop 的 fuOpType/lmul/emul；
+触发器断点位改 trigger 时读的是寄存器旧值；instMicroOp.vstart 恒 0；第一条 uop 到达那一拍 stateNext 仍是 idle
+时 instMicroOpValid 不置位，紧跟的下一条 uop 会再锁存一次（tb 的串内指令级字段因此必须一致）。
+
+### 4.2 UT
+
+VSegmentTrigger：seed 1/7/42 × 3 档 = 9/9 `checks=200000 errors=0 uncovered=0`（已跑完）。
+VSegmentUnit（`verif/ut/VSegmentUnit`，37 个覆盖桶：14 个状态、TLB/DCache 重试、非对齐三种、跨 16B 两半、
+三类异常、cache 错误、fof 压掉的异常、触发器两种动作、三种 mop、多 field、写回 / fof 写回 / 反馈 / 异常上报、
+指针绕回）：跑前已跑 seed 1 × `+vcs+initreg+0` × 50k 与 seed 7 × `+vcs+initreg+random` × 30k 均
+`errors=0 uncovered=0`；3×3×200k 矩阵与变异体在跑，记在对账节。
+
+### 4.3 非正式试跑（关 vmucp，不出 receipt）
+
+VSegmentTrigger：passing 4 / failing 0 / unmatched 0。
+VSegmentUnit：native SUCCEEDED passing 12677 / failing 0 / unmatched 0 / constant_reg 1（instMicroOp_alignedType[2]）/
+unread 22（全部 matched_nc，解释见 `verif/fm_target_config/VSegmentUnit.tcl`）；12434 按名 + 243 按签名配对；
+耗时 2 分钟。
+
+### 4.4 跑前预测（★跑完不许改★）
+
+| 目标 | 模型 expected | 预测 passing | 差额指认 | vmucp | 其余 |
+|---|---|---|---|---|---|
+| VSegmentTrigger | 4 | **4** | 0 | 否 | 全零，SUCCEEDED |
+| VSegmentUnit | 12700 | **12699** | constant_reg 1 | 是（+22） | failing/unverified/aborted/unread 0，unmatched 六项 0，无黑盒，SUCCEEDED |
+
 ### 对账 A：MemTrigger_3 / MemTrigger / LoadUnit（proof commit `2ef95566`，`evidence/2ef9556668e5/`）
 
 | 目标 | 预测 passing | 实测 | failing/unverified/aborted | unmatched | constant_reg | 黑盒 / dont_verify | verdict | receipt.json sha256 |

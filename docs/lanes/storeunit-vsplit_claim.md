@@ -12,3 +12,4 @@
 - `VLSplitPipelineImp`
 - `VSegmentUnit`
 - `VSegmentTrigger`
+- `skidBufferConnect`（2026-10-02 补：VLSplitImp / VSSplitImp 共同的 child，MISSING/UNPROVEN、无人认领，按规范随本 lane 签核）
