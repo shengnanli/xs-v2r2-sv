@@ -1,0 +1,10 @@
+{
+  "target": "VTypeBuffer",
+  "ut": "VTypeBuffer",
+  "regs": 1496,
+  "outs": 24,
+  "expected": 1520,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测差额 = constant_reg(>=9: commitSize/walkSize/spclWalkSize[6:4]) + unread(约113: deqPtrVec_1..7 49 位 + deqPtrOH 64 位，两侧对称死位，拟 vmucp 后归零)；子模块内另有的死位以 receipt 指认"
+}

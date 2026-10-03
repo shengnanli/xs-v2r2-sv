@@ -1,0 +1,10 @@
+{
+  "target": "strdiedLSNumOfUopTable",
+  "ut": "BeDataLeaves",
+  "regs": 0,
+  "outs": 4,
+  "expected": 4,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合：expected = 输出位数；恒 0 输出位仍计入 passing，预测差额 0"
+}

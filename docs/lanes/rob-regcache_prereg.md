@@ -1,0 +1,58 @@
+# rob-regcache lane —— 跑前登记
+
+本文件在 **FM 起跑之前**提交 §0–§4；跑完在文末追加，★不修改已提交分节的任何数字★。
+分两批登记：批 A（Rob 三个子块 + VTypeBuffer + 后端五个数据叶子，本节）；批 B（RegCache 家族六个 +
+SRT16DividerDataModule，§B 另行追加，同样早于证明）。
+
+## 0. 输入
+
+| 项 | 值 |
+|---|---|
+| 基线 | main `3f23a91c`（分支 `agent/rob-regcache`，认领 `63f7326b`） |
+| 实现 commit | 批 A RTL：`c8eca863`（8 个）+ `ac8e9b7e`（VTypeBuffer） |
+| 口径 | 全部 `signoff-strict`，`FM_MERGE_DUP=false`，allowlist 空，无 dont_verify，无黑盒 |
+| 冲突核查 | codex outbox 最近 5 条无本 lane 目标；全部 `codex/*` 与其余分支 `diff main...` 的 rtl/verif/ut 无本 lane 目标文件；全部 worktree 的 claim 只有本 lane；prereg 里出现的同名只是别的 lane 把它们当"两侧同源 golden 子模块"引用（cb_decunit、ctrlblock、newrtl_next20、k3next20），不是认领 |
+| `divunit-initreg` | 分支相对 main 只改了 `verif/ut/ArithVecLeaves5/{Makefile,tb.sv}`（未提交），未改 rtl；但它与 DivUnit 重证要改的是同一个 Makefile ⇒ DivUnit 重证等它合入 main 再做 |
+| ClockGate | **不重写**：仓内先例（`rtl/common/xs_SRAMTemplate_core.sv` 头注释、`MbistClockGateCell_93.sv`、dcache/l2slice prereg）一律把它当"DFT/库单元，golden 同源单元模型两侧共用"；它是锁存器型 ICG 门控基元（`always_latch`），本应走 vendor/库单元边界，但 `verif/vendor_boundary.tsv` 里**没有**它的声明。按任务书停下报告，不硬写 |
+
+## 1. 结构（批 A）
+
+| 目标 | golden 行 | impl 行 | `_GEN_`/`_T_` | 子模块（两侧白盒） | UT |
+|---|---:|---:|---:|---|---|
+| CommitStuckCounter | 125 | 65 | 0 | — | RobPtrLeaves |
+| RobEnqPtrWrapper | 368 | 159 | 0 | — | RobPtrLeaves |
+| NewRobDeqPtrWrapper | 886 | 316 | 0 | — | RobPtrLeaves |
+| VTypeBuffer | 1288 | 733 | 0 | SyncDataModuleTemplate__64entry_4（golden 侧再例化 DataModule__16entry_16 ×4）、SnapshotGenerator_1、SnapshotGenerator_2（均 PROVEN_DIRECT 重写件） | VTypeBuffer |
+| VsetModule | 125 | 99 | 0 | —（复用 `backend_common_pkg.sv` 的 vset_pkg 函数，未改该文件） | BeDataLeaves |
+| strdiedLSNumOfUopTable | 109 | 40 | 0 | — | BeDataLeaves |
+| indexedLSNumOfUopTable | 176 | 55 | 0 | — | BeDataLeaves |
+| IntToFPDataModule | 200 | 175 | 0 | IntToFP / _1 / _2（及 prenorm、postnorm×3、RoundingUnit×3、LZA、CLZ，全 PROVEN_DIRECT 重写件） | BeDataLeaves |
+| AluDataModule | 331 | 30 | 0 | 无例化：wrapper 直接用 `Alu.sv` 的 `xs_Alu_core`（golden 的 11 个小模块在核里是 function；Alu.sv 字节未改） | BeDataLeaves |
+
+## 2. UT（RTL 字节 = `c8eca863` / `ac8e9b7e`；读数在 §6 追加）
+
+双例化 golden vs `<名>_xs`（`scripts/dual_tb_lib.py`），每拍全部输出逐位 `!==`，带输出位 0/1 覆盖闸与定向覆盖计数；
+seed 1/7/42 × `+vcs+initreg+0` / `random` / `<seed>017`，各 200k 拍，串行。不复位状态用 arm 条件推迟比较窗口
+（VTypeBuffer：64 项存储体全写过 + 快照 4 槽全写过；IntToFPDataModule：两级使能各至少一次）。
+CommitStuckCounter 自然计满要 2^21 拍，tb 每 4000 拍把两侧 count 同时 force 到 2^21-32 再放开，让溢出真发生。
+
+## 3. 证明计划
+
+先诊断跑（`make fm-<T> FM_MODE=diagnostic-full FM_FAILING_LIMIT=0`，不进 evidence）看配对与 unread，
+需要钉点 / vmucp 时补登 §5 后再跑 official（`scripts/run_proof.sh <UT> <T>...`）。
+
+## 4. 跑前预测（★跑完不许改本节★，登记 `docs/fm_predictions/<T>.json`）
+
+| 目标 | expected（regs + outs） | 预测 |
+|---|---:|---|
+| CommitStuckCounter | 22（21 + 1） | passing 22，unread 0，constant 0 |
+| RobEnqPtrWrapper | 108（54 + 54） | passing 108，unread 0 |
+| NewRobDeqPtrWrapper | 225（72 + 153） | passing 225，unread 0 |
+| VsetModule | 24（0 + 24） | passing 24（io_out_vlmax[0] 恒 0 仍计入 passing） |
+| strdiedLSNumOfUopTable | 4 | passing 4 |
+| indexedLSNumOfUopTable | 7 | passing 7（高 3 位恒 0 仍计入） |
+| IntToFPDataModule | 212（143 + 69） | passing 212，unread 0 |
+| AluDataModule | 64 | passing 64 |
+| VTypeBuffer | 1520（1496 + 24） | **constant_reg ≥ 9**（commitSize / walkSize / spclWalkSize 的 [6:4] 恒 0）；**unread ≈ 113**（deqPtrVec_1..7 共 49 位 + deqPtrOH 64 位，两侧对称无读者）——需 vmucp；子模块内部若另有死位以 receipt 指认。vmucp 后预测 passing = 1520 − constant_reg |
+
+失配 = 修 RTL 对齐 golden + UT 回归，不找解释去圆。
