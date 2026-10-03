@@ -106,3 +106,33 @@ M10 表看到未打拍的 resp.valid CAUGHT(90880) / E1 store 表取 load 那份
 | unmatched 六项 / 黑盒 | 全 0 / 无 |
 | mode / verdict / vmucp / merge_dup | signoff-strict / SUCCEEDED / true / false |
 | 依赖 | PTWFilterEntry_1 须先本 lane 出证（green_child 闸） |
+
+# 对账 A. PTWFilterEntry_1（跑完追加；§1 未改一字）
+
+| 项 | 值 |
+|---|---|
+| 跑前登记 / proof commit | `15e74d2e87e8`（= 登记 commit） |
+| 证据目录 | `evidence/15e74d2e87e8/PTWFilterEntry_1/` |
+| receipt sha256 | `695bd90b3d1d6a824f5bdc0ae94359920f548b5596a12e7dd09789d23e8936b1` |
+
+| 预测 | 实测 passing | 差 | failing/unverified/aborted/unread_nc | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|
+| 391 | 391 | 0 | 0/0/0/0 | 全 0 | 无 | SUCCEEDED |
+
+`fm_predict.py check PTWFilterEntry_1` → 「全部对上」。mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify 无。
+复跑：`PROOF_COMMIT=15e74d2e87e8 bash scripts/run_proof.sh PTWFilterEntry_1 PTWFilterEntry_1 < /dev/null`
+
+# 对账 B. PTWNewFilter（跑完追加；§2 未改一字）
+
+| 项 | 值 |
+|---|---|
+| proof commit | `743ded8d2e24`（登记 `15e74d2e` 之后只多了 PTWFilterEntry_1 的 receipt，rtl/verif/scripts 字节未变） |
+| 证据目录 | `evidence/743ded8d2e24/PTWNewFilter/` |
+| receipt sha256 | `bf390efae0cabb9889b00027b42278d1ed9c0bc8dd671d189457f912dfbd1e93` |
+
+| 预测 | 实测 passing | 差 | failing/unverified/aborted/unread_nc | unmatched 六项 | 黑盒 | verdict |
+|---|---|---|---|---|---|---|
+| 2024 | 2024 | 0 | 0/0/0/0 | 全 0（`PNF_PIN_END ok=10 bad=0`） | 无（matched_blackbox_pairs 空） | SUCCEEDED |
+
+`fm_predict.py check PTWNewFilter` → 「全部对上」。mode signoff-strict / vmucp true / merge_dup false / allowlist 0 / dont_verify 无。
+复跑：`PROOF_COMMIT=743ded8d2e24 bash scripts/run_proof.sh PTWNewFilter PTWNewFilter < /dev/null`
