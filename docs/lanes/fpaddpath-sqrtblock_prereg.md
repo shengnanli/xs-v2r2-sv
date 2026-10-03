@@ -157,3 +157,30 @@ fpsqrt_r16 差额指认（★预测错了，照实记★）：预登记猜的常
 与 block 输出在这几位恒 0）。逐名来源：scratchpad 诊断跑 `report_not_compared_points`（不产 receipt）。
 `python3 scripts/fm_predict.py check fpsqrt_r16_block fpsqrt_r16` rc=0（模型 385 − 实测 382 = constant_reg 3）。
 复跑：`PROOF_COMMIT=44292961f bash scripts/run_proof.sh fpsqrt_r16_block fpsqrt_r16_block < /dev/null`（fpsqrt_r16 同理）。
+
+## 4. 已签父级重证（impl 改读本 lane 重写件，commit `a5629cb56`）
+
+改动：四个 UT Makefile 的 `RTL_GOLDEN_DEPS` 里本 lane 目标（及其已签 child）移到 `RTL_SRCS`（重写件），`FM_REF_DEPS` 不变（ref 仍全 golden）。
+`scripts/check_shared_impl_impact.py --file` 指出受影响的已签目标只有 FloatAdderF32WidenF16MixedPipeline / fpsqrt_vector_r16
+（两者 rtl 文件头注释更新）与本 lane 自己的三个目标；四个父级全部在本节重证。
+FloatAdder / FAlu 两处新增字面钉点（各 4 对：far FS1 bit0、close CS4 op0/op1 MSB、左移源 MSB；理由同 §1 对账），`docs/pin_call_seq.tsv` 登记。
+
+### 4.1 UT（`a5629cb56` 字节，200k 拍，9 档）
+
+| 父级 | 9 档结果 | 说明 |
+|---|---|---|
+| FloatAdderF32WidenF16MixedPipeline | 9/9 errors=0（checks 399994–399996） | impl 的 far/close 子树是重写件（derive 改名 `_xs`） |
+| fpsqrt_vector_r16 | 9/9 errors=0（checks 449328–449768） | impl 的 fpsqrt_r16_block 及 r4_qds* 是重写件 |
+| FAlu | 9/9 errors=0（checks 199999） | ★UT 限度★：impl 的 FloatAdder 链仍是 golden 文件，单一 elaboration 里绑 golden 名的 far/close——UT 回归不到重写件，只有 FM 覆盖 |
+| ArithVecLeaves5（含 FDivSqrt） | `+0` 三档 PASSED；`random` / `<seed>017` 6 档 FAILED | ★基线既有★：失配全在 DivUnit（du.res_data，23 条）外加 seed42 random 档 1 条 fd.res_data `g=ffffffff00000000 i=0`；在 main `3cd470621` 原样字节（scratch git archive）上复跑 seed7/random、seed42/random、seed7/7017 得到逐值相同的失配——与本 lane 改动无关（该 Makefile 默认 INITREG=0，注释写明两档常量）。同 FAlu，UT 回归不到 FloatDivider 下的重写件 |
+
+### 4.2 跑前预测（模型 = golden 闭包寄存器位 + 输出位；golden 闭包没变，所以预测 = 上一版 receipt）
+
+| 父级 | 模型 | 上一版 receipt passing | 预测 passing | 其余 |
+|---|---:|---:|---:|---|
+| FloatAdderF32WidenF16MixedPipeline | 347 | 327（evidence/2c59d6196113） | **327**（constant_reg 20） | 钉点 4/4，vmucp，unread / unmatched / failing 0 |
+| FAlu | 2742 | 2575（evidence/80e9b96e8eb6） | **2575**（constant_reg 167） | 钉点 4/4，vmucp（F64 那 1 点仍按名配上） |
+| fpsqrt_vector_r16 | 527 | 526（evidence/5a3282d30ab1） | **526**（constant_reg 1） | 无 vmucp，全 0 |
+| FDivSqrt | 模型不适用（merge_dup=true） | 2040（evidence/786d0b438756） | **2040** | vmucp（VectorFloatDividerR64 那 1 点两侧 golden）；merge 开，数字仅作对照 |
+
+可能出错处：重写件寄存器名与 golden 不同，父级上下文里靠签名配对；FDivSqrt 在 merge=on 下两侧合并可能不对称（DivUnit 先例），若 passing 偏离先查合并。
