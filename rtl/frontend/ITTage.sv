@@ -39,6 +39,21 @@
 // wrapper 的端口表、子模块（tables_0..4 / rTable / s2_allocLFSR_prng，实例名同 golden）与
 // 透传赋值是机械派生区，由 scripts/gen_bpu_wrappers.py 从 G1 golden 生成（GENERATED 区）。
 // =============================================================================
+// 本文件导航（共 1574 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L19    在 BPU 里的位置】Composer 菊花链中 FTB 之后、RAS 之前
+//   L25    表与区域压缩】5 张 ITTageTable
+//   L30    S2 选择】5 张表里**历史最长的命中**做 provider，次长的命中做 altProvider
+//   L35    分配候选
+//   L38    更新
+//   L47    meta
+//   L193   §0 BPU 公共外壳：各级 PC
+//   L216   §1 S1：只在"可能是间接跳转"时查表
+//   L229   §2 S2：选 provider / altProvider，拼目标，算分配候选
+//   L286   §3 S3：打拍出目标与 meta
+//   L336   §4 更新：锁存一拍
+//   L394   §5 更新：决定每张表更新什么
+//   L444   §6 每张表的 update 口：再打一拍送出
+//
 package ittage_pkg;
 
   localparam int unsigned NUM_TABLES  = 5;     // ITTageNTables
