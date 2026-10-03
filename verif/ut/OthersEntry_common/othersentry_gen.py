@@ -1078,8 +1078,16 @@ def check_port_refs(ov, rtl):
 # VEC 族 3 个 simp（_164/_150/_136）与 FP 族 3 个 simp 同因同型，只是源数 3 -> 5，
 # 死位 9 -> 15（5 源 x 3 pipe）。预登记：打开后 passing 各自恰好 +15
 #   _164 3777->3792 / _150 3782->3797 / _136 3844->3859（全等于模型上界）。
+# 访存向量族的 2 个 simp（OthersEntryVecMem / _14，agent/iq-entry-leaves 2026-10-03 实测）
+# 同因同型：golden 无 ldCancel 端口、影子 bit[1] 无读出点；首跑 strict native SUCCEEDED、
+# failing 0、unmatched 0，unread 15 全部 matched_nc、ref 15 <-> impl 15 严格双射且全是
+# 钉点文件自己钉的 r_ld_dep_reg[s][q][1]。预登记：打开后 passing 恰好 +15
+#   OthersEntryVecMem 3925->3940 / _14 3919->3934（= predict.py 模型上界，登记早于证明）。
 VMUCP = {'OthersEntry_88', 'OthersEntry_104', 'OthersEntry_120',
-         'OthersEntry_164', 'OthersEntry_150', 'OthersEntry_136'}
+         'OthersEntry_164', 'OthersEntry_150', 'OthersEntry_136',
+         'OthersEntryVecMem', 'OthersEntryVecMem_14'}
+VMUCP_LEGACY = {'OthersEntry_88', 'OthersEntry_104', 'OthersEntry_120',
+                'OthersEntry_164', 'OthersEntry_150', 'OthersEntry_136'}
 
 
 # =============================================================================
@@ -1092,9 +1100,12 @@ def gen_mk(ov):
     extra_golden = ''.join(f' \\\n              $(GOLDEN_RTL)/{m}.sv' for m in sub)
     extra_deps = ' '.join(f'{m}.sv' for m in sub)
     vmucp = 'true' if ov.mod in VMUCP else 'false'
+    # 死位数 = 源数 × 3 条 load 流水。★已签的 6 个变体 Makefile 里写的是 9（VEC 族 3 个实为 15，
+    #   旧注释沿用了 FP 族的数）；为不让已签产物漂移，旧 6 个保持原字面，新加的按实算。
+    _nd = 9 if ov.mod in VMUCP_LEGACY else 3 * ov.v.n_regsrc
     vmucp_note = (
-        '# ★vmucp=true（加强，不是放宽）★：本变体首跑仅剩 9 个 matched_nc unread\n'
-        '#   （srcLoadDependency 的 bit[1]，两侧同为死位、ref 9 <-> impl 9 严格双射、\n'
+        f'# ★vmucp=true（加强，不是放宽）★：本变体首跑仅剩 {_nd} 个 matched_nc unread\n'
+        f'#   （srcLoadDependency 的 bit[1]，两侧同为死位、ref {_nd} <-> impl {_nd} 严格双射、\n'
         '#    由本目录 fm_pins_pre.tcl 钉上）。依据与预登记数字见\n'
         '#   verif/ut/OthersEntry_common/othersentry_gen.py 的 VMUCP 表。'
         if vmucp == 'true' else

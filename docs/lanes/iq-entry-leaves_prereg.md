@@ -101,3 +101,15 @@ errors 恒 0。是覆盖闸把它拦下来的（「errors=0 但覆盖红」）�
 ## 3. 签后父级影响（只列，不做）
 
 见对账节。
+
+## 4. 追加登记（首跑后、重跑前；★以上各节数字未改★）
+
+首跑（PROOF_COMMIT `cc6120772`）17/19 SUCCEEDED；OthersEntryVecMem / _14 两个访存向量 simp 为
+**PARTIAL（strict_unread=15）**：native SUCCEEDED、passing 3925 / 3919、failing 0、unmatched 0、黑盒 0，
+15 个 unread 全部 matched_nc、ref 15 ↔ impl 15 严格双射，正是钉点钉上的 `r_ld_dep_reg[s][q][1]`
+（影子 bit[1]，本族无 ldCancel ⇒ 两侧同为纯写入死位，与已在白名单的 OthersEntry_164/_150/_136 同因同型）。
+
+处置 = vmucp standing rule（六条）：`verif/fm_target_config/OthersEntryVecMem{,_14}.tcl` + Makefile
+`FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true`（由生成器 VMUCP 表产出）。
+**重跑预测**：OthersEntryVecMem 3925 → **3940**、OthersEntryVecMem_14 3919 → **3934**（恰好 +15，
+等于已登记的模型值），unread 0 / failing 0 / unmatched 0 / 无 dont_verify / 无新黑盒。
