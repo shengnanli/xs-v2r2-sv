@@ -1,0 +1,7 @@
+# run	2026-09-22T07:52:48Z	ut_dir=PtwCache	(手工复现 run_proof.sh，跳过 readability 闸：Rob.sv 导航腐烂非本目标)
+commit	6a102f7a5101ef0ccd0ff8abf477d8fa7c66e0ac
+head_before	6a102f7a5101ef0ccd0ff8abf477d8fa7c66e0ac
+head_after	6a102f7a5101ef0ccd0ff8abf477d8fa7c66e0ac
+worktree_digest_before	512429e98b933a740f38e8bd46362f7eca794673f7763341fd4af489c0ba0364
+worktree_digest_after	512429e98b933a740f38e8bd46362f7eca794673f7763341fd4af489c0ba0364
+targets	PtwCache
