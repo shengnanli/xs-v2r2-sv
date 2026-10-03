@@ -105,3 +105,53 @@ native SUCCEEDED / passing **106** / failing 0 / unmatched compare 0 / constant 
 **签核跑复核判据**（`bash scripts/run_proof.sh I8DivNr4 I8DivNr4`）：verdict SUCCEEDED，passing **110**（= 106 + 4），failing 0，
 unread 0，unmatched 全 0，constant_reg 1，blackbox 0，dont_verify false，fm.log 含 `I8DIVNR4_PINS: dead const_d_reg_k[9] 4 / 4 points pinned`。
 fm_predict 对账：expected 111 − actual 110 = 1 = constant_reg 1 + unread 0。
+
+## 6. 对账（跑完追加）
+
+### 6.1 UT（RTL 字节 = `1c8c99ad`；九档串行，每档 200k 拍，全部 TEST PASSED）
+
+| UT | seed | initreg 0 / random / <seed>017 | 每档读数 |
+|---|---|---|---|
+| SRT16IterBlocks | 1 | PASS / PASS / PASS（1017） | 块级 41,200,000 次比对 0 错；车道 oracle 28,756 次 0 错 |
+| SRT16IterBlocks | 7 | PASS / PASS / PASS（7017） | 41,200,000 / 28,369，0 错 |
+| SRT16IterBlocks | 42 | PASS / PASS / PASS（42017） | 41,200,000 / 29,033，0 错 |
+| I8DivNr4 | 1 | PASS / PASS / PASS | 对拍 199,996 拍 / oracle 10,105 次，0 错 |
+| I8DivNr4 | 7 | PASS / PASS / PASS | 199,996 / 9,937，0 错 |
+| I8DivNr4 | 42 | PASS / PASS / PASS | 199,996 / 10,062，0 错 |
+
+同一 seed 下三档读数逐字相同：车道只在 valid 时比商/余数，而所有在 valid 之前被读的寄存器都先被 PRE 态写定，
+上电初值不可观测——三档全绿在这里**证明不了复位域**，复位域由 FM（stateReg 异步复位、其余无复位，逐寄存器配对比较）把关。
+覆盖（seed 1 / initreg 0）：块级 golden q1 出 +2/+1/0/-1/-2 = 34563/21725/43830/22110/33998（另多热 43774），q2 含全 0 13612；
+车道 SRT16Divint sew0/1 = 4849/4812，_4 sew0/1/2 = 3179/3074/3142，_6 sew0..3 = 2395/2375/2500/2430；
+每车道除零 ~700–780、x=0 ~710–760、最小值÷-1 221–238、负被除数 ~2000、负除数 ~2000、余数非零 ~7000、|x|<|d| ~4400；
+I8DivNr4 除零 737 / 最小值÷-1 192 / 有符号 5095。复跑：`cd verif/ut/<SRT16IterBlocks|I8DivNr4> && make run SEED=<s> INITREG=<0|random|<s>017>`。
+
+### 6.2 变异自检（scratch 沙箱，seed 1 / 20k 拍，不进库）
+
+16 个变异体 14 个 CAUGHT。SRT 块 10/10：M1（Sel Mux1H 改优先级）与 M5（Spec 末级 Mux1H 改覆盖）**只被块级多热激励抓到**，
+系统车道 0 错（真实运行里商位总是独热）——这正是块级随机激励存在的理由。I8DivNr4 6 个里 2 个 MISSED：
+- M11 去掉 `rem_adjust` 的 `~early_finish_q`：可达状态里提前结束时 `iter_w_reg[8]` 恒为 0（PRE 写 `{1'b0, …}` 后直达 POST），
+  UT 结构上看不见；FM 对寄存器做自由状态比较，`early_finish_q=1 ∧ iter_w_reg[8]=1` 下次态不同 ⇒ 由 FM 覆盖。
+- M16 `early_finish` 去掉 `x_zero`：x=0 时必有 x_small（|d|>0）或 d_zero，该项在 golden 里逻辑冗余，变异体与原设计**组合等价**，不是漏检。
+
+### 6.3 FM 对账（official，signoff-strict，无黑盒、无 dont_verify、allowlist 空）
+
+| 目标 | 预测 | 实测 passing | failing | unread | unmatched | constant | 差额指认 | receipt |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| SelBlock_v4 | 69 | 69 | 0 | 0 | 0 | 0 | 逐位相等 | `evidence/fa5bddf408ca/SelBlock_v4` |
+| SpecBlock_v4 | 365 | 365 | 0 | 0 | 0 | 0 | 逐位相等 | `evidence/fa5bddf408ca/SpecBlock_v4` |
+| IterBlock_v4 | 500 | 500 | 0 | 0 | 0 | 0 | 逐位相等 | `evidence/fa5bddf408ca/IterBlock_v4` |
+| IterBlock_v4_4 | 564 | 564 | 0 | 0 | 0 | 0 | 逐位相等 | `evidence/fa5bddf408ca/IterBlock_v4_4` |
+| IterBlock_v4_6 | 692 | 692 | 0 | 0 | 0 | 0 | 逐位相等 | `evidence/fa5bddf408ca/IterBlock_v4_6` |
+| I8DivNr4 | 104–106（§4）/ 110（§5） | 110 | 0 | 0 | 0 | 1 | 111−110 = constant 1 | `evidence/d88649508e8c/I8DivNr4` |
+
+§4.1 风险 1（恒 0 输出位计入 passing）：实测计入，差额 0。风险 2（specB 自环）：未报 loop。风险 3（数组名配对）：活位自动配上，
+4 个死位需钉点（§5）。§4 对 I8DivNr4 unread 的预测（2–3）错了——实际 4，原因见 §5。
+`python3 scripts/fm_predict.py check <6 个目标>`：全部对上；`python3 scripts/check_lane_receipts.py /home/eda/xs-env/wt-srt-divblocks` rc=0。
+
+### 6.4 父级 child 状态（本 lane 不做父级）
+
+- SRT16Divint：IterBlock_v4（本 lane 签）+ SRT4qdsCons（PROVEN_DIRECT）⇒ child 全绿。
+- SRT16Divint_4：IterBlock_v4_4 + SRT4qdsCons ⇒ 全绿。SRT16Divint_6：IterBlock_v4_6 + SRT4qdsCons ⇒ 全绿。
+- IterBlock 闭包内的孙级 SelBlock_v4 / SpecBlock_v4（本 lane 签）、CSA3_2_*、SignDec、Conversion*（PROVEN_DIRECT）全绿。
+- 本 UT 的系统车道已经把三个 golden 父级各换上重写的 IterBlock 子树跑了 ~9.5k 次/seed 真实除法，可作父级 UT 的起点。
