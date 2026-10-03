@@ -201,7 +201,7 @@ module tb;
     if ($urandom_range(0, 19) == 0) begin op_fu = $urandom; op_oracle = 0; end
     if ($urandom_range(0, 39) == 0) begin op_fu = ($urandom_range(0, 1)) ? 9'h084 : 9'h086; op_oracle = 0; end
     op_narrow = 0; op_dstmask = 0;
-    if ($urandom_range(0, 19) == 0) begin op_narrow = $urandom; op_dstmask = $urandom; op_oracle = !(op_narrow | op_dstmask); end
+    if ($urandom_range(0, 19) == 0) begin op_narrow = $urandom; op_dstmask = $urandom; if (op_narrow | op_dstmask) op_oracle = 0; end
     op_vm = $urandom; op_vma = $urandom; op_vta = $urandom; op_vuop = $urandom;
     case ($urandom_range(0, 5))
       0: op_vl = 0;
