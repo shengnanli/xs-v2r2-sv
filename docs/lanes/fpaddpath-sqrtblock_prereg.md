@@ -194,3 +194,11 @@ impl 不合并），配不上的位让余数迭代环判不等。fpsqrt_r16 本�
 处置：`verif/ut/ArithVecLeaves5/Makefile` 的 `FM_MERGE_DUP` 对 FDivSqrt 也关（与 DivUnit 同一条，加强非放宽）。
 新预测：SUCCEEDED、failing / unverified / unmatched 0、vmucp 1 点照旧；passing 不小于 2040（merge 关只会增点），**确切数不预测**
 （fm_predict 对该目标的模型因 Makefile 非字面变量不可用）。首跑 receipt 留档 `evidence/194f78e14165/FDivSqrt`。
+
+### 4.4 FDivSqrt 预测重登记（★在第三次证明之前提交★）
+
+第二次证明 `aef3c7e46`（merge 关）native SUCCEEDED passing 2052 / constant_reg 30 / 其余全 0，但 `fm_predict check` 判红：
+§4.2 登记 FDivSqrt 时 ArithVecLeaves5 的 `FM_VARIANTS = $(LEAVES)` 非字面，fm_predict 找不到 UT，算出的是 deps 未展开的错误模型 1543。
+修：Makefile 的 FM_VARIANTS / FM_REF_DEPS_FDivSqrt 改字面名（不改任何证明语义），重算模型 **2082**（golden 闭包寄存器 1351 + 输出 731），
+重登记，预测 passing = 2082 − constant_reg，failing / unverified / unmatched / unread 0。在新 commit 上重跑一次正式证明。
+（第二次的 receipt 留档 `evidence/aef3c7e46bc3/FDivSqrt`。）

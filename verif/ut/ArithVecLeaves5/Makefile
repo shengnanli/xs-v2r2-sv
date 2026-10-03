@@ -37,9 +37,13 @@ FDIVSQRT_GOLDEN_IMPL = FloatDivider.sv FloatDividerR64.sv fpdiv_r64_block.sv \
                        r4_qds_v2.sv r4_qds_v2_spec.sv
 RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(DIVUNIT_DEPS) $(FDIVSQRT_GOLDEN_IMPL))
 
-FM_VARIANTS = $(LEAVES)
+# FM_VARIANTS / FM_REF_DEPS 写字面名（scripts/fm_predict.py 按字面解析，不展开 make 变量）
+FM_VARIANTS = Adder_chain_rnd DivUnit FDivSqrt VIAluDecoder VIntAdder64b
 FM_REF_DEPS_DivUnit  = $(DIVUNIT_DEPS)
-FM_REF_DEPS_FDivSqrt = $(FDIVSQRT_DEPS)
+FM_REF_DEPS_FDivSqrt = FloatDivider.sv FloatDividerR64.sv fpsqrt_r16.sv fpdiv_r64_block.sv \
+                fpsqrt_r16_block.sv CSA3to2_20.sv CSA3to2_24.sv \
+                ShiftLeftPriorityWithLZDResult.sv lzc.sv r4_qds.sv r4_qds_cg.sv \
+                r4_qds_spec.sv r4_qds_v2.sv r4_qds_v2_spec.sv
 
 include ../../../scripts/ut_common.mk
 
