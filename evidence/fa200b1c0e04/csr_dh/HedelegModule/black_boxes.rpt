@@ -1,0 +1,168 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/HedelegModule
+Implementation : i:/WORK/HedelegModule
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:36:15 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    DpcModule
+
+       Instances : 0
+
+e *    DretEventModule
+
+       Instances : 0
+
+e *    HcounterenModule
+
+       Instances : 0
+
+e *    HenvcfgModule
+
+       Instances : 0
+
+e *    HgatpModule
+
+       Instances : 0
+
+e *    HidelegModule
+
+       Instances : 0
+
+e *    Hstateen0Module
+
+       Instances : 0
+
+e *    Hstateen1Module
+
+       Instances : 0
+
+e *    Hstateen2Module
+
+       Instances : 0
+
+e *    Hstateen3Module
+
+       Instances : 0
+
+e *    HstatusModule
+
+       Instances : 0
+
+e *    HtimedeltaModule
+
+       Instances : 0
+
+e *    HtinstModule
+
+       Instances : 0
+
+e *    HtvalModule
+
+       Instances : 0
+
+e *    HvictlModule
+
+       Instances : 0
+
+e *    Hviprio1Module
+
+       Instances : 0
+
+e *    Hviprio2Module
+
+       Instances : 0
+
+e *    xs_CsrEpcTvec_core
+
+       Instances : 0
+
+e *    xs_CsrTrapValue_core
+
+       Instances : 0
+
+e *    xs_DretEventModule_core
+
+       Instances : 0
+
+e *    xs_HcounterenModule_core
+
+       Instances : 0
+
+e *    xs_HenvcfgModule_core
+
+       Instances : 0
+
+e *    xs_HgatpModule_core
+
+       Instances : 0
+
+e *    xs_HidelegModule_core
+
+       Instances : 0
+
+e *    xs_Hstateen0Module_core
+
+       Instances : 0
+
+e *    xs_Hstateen1Module_core
+
+       Instances : 0
+
+e *    xs_Hstateen2Module_core
+
+       Instances : 0
+
+e *    xs_Hstateen3Module_core
+
+       Instances : 0
+
+e *    xs_HstatusModule_core
+
+       Instances : 0
+
+e *    xs_HtimedeltaModule_core
+
+       Instances : 0
+
+e *    xs_HvictlModule_core
+
+       Instances : 0
+
+e *    xs_Hviprio1Module_core
+
+       Instances : 0
+
+e *    xs_Hviprio2Module_core
+
+       Instances : 0
+
+
+1
+

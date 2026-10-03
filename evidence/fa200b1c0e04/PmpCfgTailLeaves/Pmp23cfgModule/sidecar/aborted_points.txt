@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Pmp23cfgModule
+Implementation : i:/WORK/Pmp23cfgModule
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:36:34 2026
+**************************************************
+
+No aborted compare points.
+
+1

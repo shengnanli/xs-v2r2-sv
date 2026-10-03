@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ScounterenModule
+Implementation : i:/WORK/ScounterenModule
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:37:58 2026
+**************************************************
+
+No aborted compare points.
+
+1
