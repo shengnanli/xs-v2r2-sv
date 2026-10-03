@@ -1,0 +1,10 @@
+{
+  "target": "VSegmentUnit",
+  "ut": "VSegmentUnit",
+  "regs": 10805,
+  "outs": 1895,
+  "expected": 12700,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 12700 = 寄存器 10805 + 输出 1895；预期差额 = constant_reg 1（instMicroOp_alignedType[2] 恒 0）；vmucp 打开后 22 个对称死位转 passing；预测 passing=12699"
+}

@@ -1,0 +1,10 @@
+{
+  "target": "VLSplitPipelineImp",
+  "ut": "VLSplitPipelineImp",
+  "regs": 1441,
+  "outs": 2455,
+  "expected": 3896,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 3896 = 寄存器 1441 + 输出 2455；预期差额 = constant_reg 1（s1_in_r_sew[2]：2 位 vsew 零扩展成 3 位存，最高位恒 0）；预测 passing=3895"
+}

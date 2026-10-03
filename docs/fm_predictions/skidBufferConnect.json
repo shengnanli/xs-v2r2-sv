@@ -1,0 +1,10 @@
+{
+  "target": "skidBufferConnect",
+  "ut": "skidBufferConnect",
+  "regs": 1775,
+  "outs": 1776,
+  "expected": 3551,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 3551 = 寄存器 1775 + 输出 1776；预期差额 = constant_reg 284（golden 93 个上游恒 0 的暂存字段 dataBuffer_*，装 0 读 0，两侧都是常量寄存器）；预测 passing=3267"
+}

@@ -1,9 +1,11 @@
-// MemTrigger.sv —— 访存 load 的调试触发器（Sdtrig mcontrol6）地址匹配：LoadUnit s1 的 child。
+// MemTrigger.sv —— 访存的调试触发器（Sdtrig mcontrol6）地址匹配：LoadUnit / StoreUnit s1 的 child。
 //
 // 位置：LoadUnit s1 拿到 TLB 返回的 fullva 后送进来，本模块纯组合地判定 4 个触发器
 //   （TriggerNum=4）里哪些命中、该触发什么动作，结果回到 s1_out.uop.trigger /
 //   exceptionVec(breakPoint) / vecVaddrOffset / vecTriggerMask。
-// 核心机制（Scala: xiangshan.backend.fu.NewCSR.Debug.scala 的 BaseTrigger/MemTrigger(LOAD)）：
+//   本文件 = 共享核 xs_MemTrigger_core + LOAD 变体 wrapper（MemTrigger）；
+//   STORE 变体 wrapper 在 MemTrigger_3.sv（StoreUnit 用，多一个 isCbo、没有 isPrf / triggerMask）。
+// 核心机制（Scala: xiangshan.backend.fu.NewCSR.Debug.scala 的 BaseTrigger/MemTrigger(LOAD|STORE)）：
 //   1. 每个触发器单独判"地址命中"：标量按 matchType 比 EQ/GE/LT；向量 unit-stride 128bit
 //      访问改成"16B 块号相等 且 tdata2 低 4 位指向的字节在 mask 里"。软件 prefetch(isPrf)
 //      对标量比较不命中。select=1(数据匹配)/debugMode 下一律不命中。
@@ -12,7 +14,9 @@
 //   3. 动作：能触发者里只要有一个 action=DebugMode(1) 就进 debug mode；否则有
 //      action=BreakpointExp(0) 且 CSR 允许时报断点异常；都没有则 None(0xF)。
 //      回报的 vaddr/mask 取"本动作类别里编号最小的那个"触发器的 tdata2。
-// 本 LOAD 变体没有 isCbo 口（Scala Option 只给 STORE），所以缓存行匹配分支恒不选。
+//   4. 缓存块操作（isCbo，只有 STORE 变体有：cbo.zero/clean/flush/inval 作用于整条 64B 缓存行）：
+//      地址命中改成"触发地址与这条缓存行的关系"——EQ 比行号、GE 用行末地址比、LT 用行首地址比。
+//      isCbo 优先于向量 unit-stride 判定。LOAD 变体把 isCbo 钉 0；STORE 变体把 isPrf 钉 0。
 
 module xs_MemTrigger_core #(
   parameter int NUM_TRIGGERS = 4,     // TriggerNum
@@ -25,23 +29,25 @@ module xs_MemTrigger_core #(
   input  logic [NUM_TRIGGERS-1:0]       timing,        // 链上相邻触发器须同 timing
   input  logic [NUM_TRIGGERS-1:0][3:0]  action,        // 0=断点异常 1=进 debug mode
   input  logic [NUM_TRIGGERS-1:0]       chain,         // 与下一个触发器串成链
-  input  logic [NUM_TRIGGERS-1:0]       load,          // 对 load 生效
+  input  logic [NUM_TRIGGERS-1:0]       rwEnable,      // 对本类访问生效（LOAD 变体接 tdata1.load，STORE 接 .store）
   input  logic [NUM_TRIGGERS-1:0][63:0] tdata2,        // 比较地址
   input  logic [NUM_TRIGGERS-1:0]       tEnable,       // 当前特权级下是否使能
   input  logic                          debugMode,     // 已在 debug mode：任何触发器都不命中
   input  logic                          triggerCanRaiseBpExp,
-  // ---- 来自 load 流水 ----
+  // ---- 来自 load / store 流水 ----
   input  logic [VADDR_W-1:0]            vaddr,         // 本次访问的虚地址（fullva 低位）
   input  logic                          isVectorUnitStride,  // 向量 128bit unit-stride 访问
   input  logic [MASK_W-1:0]             mask,          // 该访问覆盖的字节
-  input  logic                          isPrf,         // 软件 prefetch：标量比较一律不命中
-  // ---- 回 load 流水 ----
+  input  logic                          isPrf,         // 软件 prefetch：标量比较一律不命中（STORE 变体钉 0）
+  input  logic                          isCbo,         // 缓存块操作：按整条缓存行比较（LOAD 变体钉 0）
+  // ---- 回 load / store 流水 ----
   output logic [3:0]                    triggerAction, // 1=DebugMode 0=BreakpointExp 0xF=None
   output logic [VADDR_W-1:0]            triggerVaddr,
   output logic [MASK_W-1:0]             triggerMask
 );
 
-  localparam int LOW_W = $clog2(MASK_W);     // 16B 块内偏移位宽 = 4
+  localparam int LOW_W  = $clog2(MASK_W);    // 16B 块内偏移位宽 = 4
+  localparam int LINE_W = 6;                 // 缓存行内偏移位宽（CacheLineSize=512bit=64B）
 
   localparam logic [1:0] MATCH_EQ = 2'd0;
   localparam logic [1:0] MATCH_GE = 2'd2;
@@ -56,13 +62,18 @@ module xs_MemTrigger_core #(
   // -------------------------------------------------------------------
   logic [NUM_TRIGGERS-1:0] scalarHit;     // 标量：按 matchType 比较整段 vaddr
   logic [NUM_TRIGGERS-1:0] vectorHit;     // 向量 unit-stride：16B 块号相等 且 字节在 mask 内
-  logic [NUM_TRIGGERS-1:0] addrHit;       // 按访问类型二选一
+  logic [NUM_TRIGGERS-1:0] cboHit;        // 缓存块操作：触发地址与整条缓存行比较
+  logic [NUM_TRIGGERS-1:0] addrHit;       // 按访问类型三选一（cbo > 向量 > 标量）
   logic [NUM_TRIGGERS-1:0][MASK_W-1:0] tdata2ByteOH;  // tdata2 低 4 位译成 one-hot 字节
+
+  logic [VADDR_W-1:0] cacheLineBase, cacheLineLast;   // 本次访问所在缓存行的首/末字节地址
+  assign cacheLineBase = {vaddr[VADDR_W-1:LINE_W], {LINE_W{1'b0}}};
+  assign cacheLineLast = {vaddr[VADDR_W-1:LINE_W], {LINE_W{1'b1}}};
 
   always_comb begin
     for (int i = 0; i < NUM_TRIGGERS; i++) begin
       logic [VADDR_W-1:0] taddr;
-      logic               cmp;
+      logic               cmp, lineCmp;
       taddr = tdata2[i][VADDR_W-1:0];
       case (matchType[i])
         MATCH_EQ: cmp = (vaddr == taddr);
@@ -70,15 +81,27 @@ module xs_MemTrigger_core #(
         MATCH_LT: cmp = (vaddr <  taddr);
         default:  cmp = 1'b0;
       endcase
-      scalarHit[i] = ~select[i] & ~debugMode & ~isPrf & cmp & tEnable[i] & load[i];
+      scalarHit[i] = ~select[i] & ~debugMode & ~isPrf & cmp & tEnable[i] & rwEnable[i];
+
+      // 缓存块操作覆盖整条缓存行：EQ=触发地址落在本行；GE=行末 >= 触发地址（行里有字节 >= 它）；
+      // LT=行首 < 触发地址（行里有字节 < 它）
+      case (matchType[i])
+        MATCH_EQ: lineCmp = (vaddr[VADDR_W-1:LINE_W] == taddr[VADDR_W-1:LINE_W]);
+        MATCH_GE: lineCmp = (cacheLineLast >= taddr);
+        MATCH_LT: lineCmp = (cacheLineBase <  taddr);
+        default:  lineCmp = 1'b0;
+      endcase
+      cboHit[i] = ~select[i] & ~debugMode & tEnable[i] & rwEnable[i] & lineCmp;
 
       tdata2ByteOH[i] = MASK_W'(1) << tdata2[i][LOW_W-1:0];
       // 块号比较：vaddr 右移后零扩展到 tdata2 的 60 位，tdata2 高于 VAddrBits 的位必须为 0
-      vectorHit[i] = ~select[i] & ~debugMode & tEnable[i] & load[i]
+      vectorHit[i] = ~select[i] & ~debugMode & tEnable[i] & rwEnable[i]
                    & (64'(vaddr >> LOW_W) == 64'(tdata2[i] >> LOW_W))
                    & (|(tdata2ByteOH[i] & mask));
 
-      addrHit[i] = isVectorUnitStride ? vectorHit[i] : scalarHit[i];
+      addrHit[i] = isCbo              ? cboHit[i]
+                 : isVectorUnitStride ? vectorHit[i]
+                 :                      scalarHit[i];
     end
   end
 
@@ -137,7 +160,8 @@ module xs_MemTrigger_core #(
 
 endmodule
 
-// golden 同名 wrapper：端口逐位同 golden MemTrigger，打包成数组交给核
+// golden 同名 wrapper（LOAD 变体）：端口逐位同 golden MemTrigger，打包成数组交给核。
+// 没有 isCbo 口（Scala 的 Option 只给 STORE），缓存行匹配分支恒不选。
 module MemTrigger (
   input  [1:0]  tdataVec_io_fromCsrTrigger_tdataVec_0_matchType,
   input         tdataVec_io_fromCsrTrigger_tdataVec_0_select,
@@ -203,7 +227,7 @@ module MemTrigger (
                             tdataVec_io_fromCsrTrigger_tdataVec_2_chain,
                             tdataVec_io_fromCsrTrigger_tdataVec_1_chain,
                             tdataVec_io_fromCsrTrigger_tdataVec_0_chain}),
-    .load                 ({tdataVec_io_fromCsrTrigger_tdataVec_3_load,
+    .rwEnable             ({tdataVec_io_fromCsrTrigger_tdataVec_3_load,
                             tdataVec_io_fromCsrTrigger_tdataVec_2_load,
                             tdataVec_io_fromCsrTrigger_tdataVec_1_load,
                             tdataVec_io_fromCsrTrigger_tdataVec_0_load}),
@@ -221,6 +245,7 @@ module MemTrigger (
     .isVectorUnitStride   (tdataVec_io_fromLoadStore_isVectorUnitStride),
     .mask                 (tdataVec_io_fromLoadStore_mask),
     .isPrf                (tdataVec_io_isPrf),
+    .isCbo                (1'b0),
     .triggerAction        (tdataVec_io_toLoadStore_triggerAction),
     .triggerVaddr         (tdataVec_io_toLoadStore_triggerVaddr),
     .triggerMask          (tdataVec_io_toLoadStore_triggerMask)
