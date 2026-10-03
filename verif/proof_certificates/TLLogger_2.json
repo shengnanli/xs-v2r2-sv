@@ -1,0 +1,143 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-03T11:16:34Z",
+ "generator": {
+  "run_context_worktree_digest": "2f8c75fedbfe5f00e448c76f7020911d14ec41a00aa22421a6341b69b0055e94",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "/tmp/newrtl200c-proof-queue-1791024217888947551/TLLogger_2",
+  "version": 1
+ },
+ "impl_commit": "fa200b1c0e04ee8c1ba9b962a312b7994c0f4621",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TLLogger_2.sv",
+    "sha256": "e4ffe591ec85f83f0feb98b05345c1794b68e625c68cc208bdc57ce5320527b2"
+   }
+  ],
+  "golden_sha256": "cdbed1259a2239040accc7d9d9c4666203474078726a93a031461324b63b06d2",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_ChiselQueue1_core.sv",
+    "sha256": "8c12ab1b2180d56e2c80d07cd66a488272a41b455496e87d7f097e15e87e3fa1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/xs_SpillRegister_core.sv",
+    "sha256": "f1798aea78123292370c046b859ef856f064ee540228437e7a6d4667e428be79"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue1_CHIDAT.sv",
+    "sha256": "7927928f36cf034c5bf8e3a7a92f1b24722d87ea29100672ed14213704438bc1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue1_CHIRSP.sv",
+    "sha256": "ed91589509c8e7b0d9592464d7658442d4db13683a2bce97bdbc1748786950c7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/SpillRegister_7.sv",
+    "sha256": "605c10b9e4e33c5b26916c45ba301dd7f25d8545fa25686dbdaddf8bf9d6afee"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/TLLogger_1.sv",
+    "sha256": "87bb1bc52f6d780c510362fb8fbccf90dfaa7ccaaf780b2b29514fef9f9657f1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/TLLogger_2.sv",
+    "sha256": "b663743f79c386d890a29e7dac6c63d9efc65c26757a077ef036e359fd95967b"
+   }
+  ],
+  "impl_sha256": "8232ecd627b202d71d45df4828259832b0a8b2a939a2c409cb9e7e2d7703db72",
+  "repo_impl_files": 7
+ },
+ "native_facts_sha256": "8a6eed8730b7abdb5588203bf3577300a58a43205aaaaf70a7bda564b0d0e62c",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 641,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "fa200b1c0e04ee8c1ba9b962a312b7994c0f4621",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2f8c75fedbfe5f00e448c76f7020911d14ec41a00aa22421a6341b69b0055e94",
+ "provisional": false,
+ "receipt_sha256": "1d6b1111305ee8f98310f32c19173e54e46261fad128e39631eea4341d690c8a",
+ "reproduce": {
+  "command": "PROOF_COMMIT=fa200b1c0e04ee8c1ba9b962a312b7994c0f4621 scripts/run_proof.sh QueueChiSpillLogger200c TLLogger_2",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "177486423b51b2519e6b3fc6fe795a4ca5812d80107467d60868b58ebb9ed7db",
+ "run_id": "QueueChiSpillLogger200c-20261003T104627Z-fa200b1c",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "TLLogger_2",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "QueueChiSpillLogger200c",
+ "variant": "TLLogger_2",
+ "verdict": "SUCCEEDED"
+}
