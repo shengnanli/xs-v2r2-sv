@@ -1,0 +1,9 @@
+{
+  "target": "PTWNewFilter",
+  "ut": "PTWNewFilter",
+  "regs": 1684,
+  "outs": 340,
+  "expected": 2024,
+  "merge_dup": "false",
+  "model_applicable": true
+}

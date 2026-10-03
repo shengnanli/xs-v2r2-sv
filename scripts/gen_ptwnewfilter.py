@@ -250,8 +250,64 @@ def gen_pnf_rtl():
 RTL_GENERATORS = [gen_ptwfe1_rtl, gen_pnf_rtl]
 
 
+# -----------------------------------------------------------------------------
+#  PTWNewFilter FM「匹配前」钉点
+# -----------------------------------------------------------------------------
+#  实测（diagnostic-full，不钉）：golden 顶层寄存器与三张表内部寄存器 FM 全部自己配上（名字或功能），
+#  passing 2014 / unmatched 0；唯一配不上的是三张表里的 inflight_counter（只喂性能计数器与断言，
+#  两侧都没人读 → 没有功能签名可配，落成 ref/impl 两侧 unmatched unread）。vmucp 只证 matched 的
+#  unread 点，所以这 10 位必须先钉起来。这里只钉这一类，其余交给 FM 自己配（passing 对上模型即证明配全）。
+#  golden 实例名：<表>_<表>_entry；重写实例名：<表>（核 u_core 下），表内寄存器在其 u_core 下同名。
+GOLDEN_FILTER_INST = {"load_filter": "load_filter_load_entry",
+                      "store_filter": "store_filter_store_entry",
+                      "prefetch_filter": "prefetch_filter_prefetch_entry"}
+
+
+def gen_pnf_pins():
+    path = os.path.join(REPO, "verif", "ut", "PTWNewFilter", "fm_pins_pre.tcl")
+    pairs = []
+    for mod, inst, _, _ in FILTERS:
+        regs = dict(golden_top_regs(mod))
+        if "inflight_counter" not in regs:
+            die("golden %s 里没有 inflight_counter" % mod)
+        for b in range(regs["inflight_counter"]):
+            pairs.append(("r:/WORK/PTWNewFilter/%s/inflight_counter_reg\\[%d\\]" % (GOLDEN_FILTER_INST[inst], b),
+                          "i:/WORK/PTWNewFilter/u_core/%s/u_core/inflight_counter_reg\\[%d\\]" % (inst, b)))
+    if len(set(m for _, m in pairs)) != len(pairs) or len(set(r for r, _ in pairs)) != len(pairs):
+        die("PTWNewFilter 钉点不是双射")
+    o = [
+        "# PTWNewFilter FM「匹配前」钉点 —— 自动生成：%s（勿手改）" % ME,
+        "#",
+        "# 只钉三张过滤表里的 inflight_counter（在途计数，只喂性能计数器与断言，两侧都没人读）：",
+        "# 它们没有功能签名，FM 配不上，落成两侧 unmatched unread；钉上之后由 vmucp 照比。",
+        "# 其余寄存器 FM 自己按名/按功能配上（不钉时实测 unmatched 0），passing 对上模型即配全。",
+        "# set_user_match 只是声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。",
+        "# fail-closed：set_user_match 从不抛异常（返回 0 = 没配上），逐条数返回值；",
+        "# 拒一条或总数不等于字面整数就 error（safe interp 里不用 exit）。进 fm.log 的输出一律 ASCII。",
+        "set ::PNF_PIN_EXPECT %d" % len(pairs),
+        "set ::PNF_PIN_OK 0",
+        "set ::PNF_PIN_BAD 0",
+        "proc pnf_pin {r m} {",
+        "  if {[set_user_match $r $m]} { incr ::PNF_PIN_OK } else {",
+        "    incr ::PNF_PIN_BAD",
+        "    if {$::PNF_PIN_BAD <= 10} { puts \"PNF_PIN_FAIL: $r <-> $m\" }",
+        "  }",
+        "}",
+        "puts \"PNF_PIN_BEGIN PTWNewFilter expect=$::PNF_PIN_EXPECT\"",
+    ]
+    o += ["pnf_pin %s %s" % (r, m) for r, m in pairs]
+    o += [
+        "puts \"PNF_PIN_END PTWNewFilter ok=$::PNF_PIN_OK bad=$::PNF_PIN_BAD\"",
+        "if {$::PNF_PIN_BAD != 0} { error \"PNF_PIN_MISS=$::PNF_PIN_BAD\" }",
+        "if {$::PNF_PIN_OK != %d} { error \"PNF_PIN_COUNT=$::PNF_PIN_OK expect=%d\" }" % (len(pairs), len(pairs)),
+    ]
+    return path, "\n".join(o) + "\n"
+
+
 def targets():
     out = {}
+    path, text = gen_pnf_pins()
+    out[path] = text
     for g in RTL_GENERATORS:
         path, text = g()
         out[path] = text

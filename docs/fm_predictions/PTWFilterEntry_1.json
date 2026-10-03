@@ -1,0 +1,9 @@
+{
+  "target": "PTWFilterEntry_1",
+  "ut": "PTWFilterEntry_1",
+  "regs": 347,
+  "outs": 44,
+  "expected": 391,
+  "merge_dup": "false",
+  "model_applicable": true
+}
