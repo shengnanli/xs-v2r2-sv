@@ -6,7 +6,7 @@
   {
    "side": "i",
    "design": "ram_40x47",
-   "path": "i:/WORK/L2TlbMissQueue/u_core/mem_ext",
+   "path": "i:/WORK/L2TlbMissQueue/u_core/ram_ext",
    "attrs": "u",
    "class": "APPROVED_MEMORY_MACRO_MODEL"
   },

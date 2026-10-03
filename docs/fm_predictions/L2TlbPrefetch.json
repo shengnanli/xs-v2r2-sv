@@ -1,0 +1,10 @@
+{
+  "target": "L2TlbPrefetch",
+  "ut": "L2TlbPrefetch",
+  "regs": 197,
+  "outs": 41,
+  "expected": 238,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing=223 = 238 - 12（golden-only 死位 old_reqs_0..3_reg[2:0]，verif/dead_ref/L2TlbPrefetch.json，记作 unread）- 3（两侧 next_req[2:0] 只装 0 → FM Constant reg）"
+}
