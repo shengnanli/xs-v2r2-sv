@@ -113,3 +113,40 @@ failing / unverified / aborted 全 0。三目标预测与实测逐项相等；`p
 vmucp 六条：精确绑定（Close 3 点 / FloatAdder 4 点，见各 fm_target_config）/ 双射（钉点 3↔3、4↔4，fm.log 回显）/
 真比较（Close 诊断跑 431 → 433 = +2、恒 0 的 op1[52] 归 constant_reg 1；FloatAdder 357 → 360 = +3、constant_reg 35 → 36）/
 全零 / 无 dont_verify、无 elab147、无黑盒 / tcl 进 sidecar script_closure。receipt 目录 `evidence/5990b596a86b/<T>/`。
+
+## 4. 父级重证：FAlu（UT 目录 `verif/ut/FAlu`）
+
+### 4.1 改动
+
+- `verif/ut/FAlu/Makefile`：FloatAdderF32F16MixedPipeline / FarPathAdderF64WidenPipeline / ClosePathFloatAdderF64WidenPipeline
+  连同后者的 child ClosePathAdder / ClosePathAdder_2 / CloseShiftLeftWithMux（PROVEN_DIRECT）从 `RTL_GOLDEN_DEPS`（两侧同读 golden）
+  移到 `RTL_SRCS`（impl 读重写件）；`FM_REF_DEPS_FAlu` 不变（ref 仍全 golden）。仍两侧同读 golden 的：FloatAdder、FloatAdderF64Pipeline、
+  FarPathFloatAdderF64WidenPipeline 及其 Adder / FarShiftRightWithMuxInvFirst。
+- `scripts/check_shared_impl_impact.py --file` 三个新 rtl 文件：受影响目标 0（新文件不在任何已跟踪 receipt 的 impl_closure 里）；
+  本 group 没有改任何已签 rtl 文件。
+- `verif/ut/FAlu/fm_pins.tcl`：4 对 → 字面 23 对（见 `verif/fm_target_config/FAlu.tcl` 新增段）；`docs/pin_call_seq.tsv` 该行同步。
+- ★`verif/ut/FAlu/Makefile` 补接 initreg★：此前编译期没给 `+vcs+initreg+random`，运行期的 `+vcs+initreg+*` 被 VCS 静默忽略
+  （`Warning-[VICIU]`）——上一版对账里 FAlu 的「9/9 errors=0」其实只有一个常量档在跑。接上后 random / `<seed>017` 档首跑
+  `errors=13`（全部在第一次 io_in 握手之前：payload 寄存器 RegEnable 不复位、两实例上电值不同）；按 CONVENTIONS「读一个从没写过、
+  而且不复位的寄存器是 tb 违反契约」，`tb.sv` 改为 io_in_ready / io_out_valid 始终比、payload 从第一次握手起比。
+- ★UT 限度（照实）★：FloatAdder 本体在 impl 侧仍是 golden 文件，单一 elaboration 里它例化的 golden 名 child 解析到 golden 件——
+  FAlu 的 UT 回归不到本 group 的重写件，只有 FM 覆盖（重写件本身的 UT 在 verif/ut/FpAddPathF64W、verif/ut/FloatAdderF32F16MixedPipeline）。
+
+### 4.2 UT（工作树字节 = 下面登记 commit 的字节，200k 拍，9 档）
+
+| seed | `+0` | `+random` | `+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199999 errors=0 PASSED | PASSED | PASSED |
+| 7  | checks=199999 errors=0 PASSED | PASSED | PASSED |
+| 42 | checks=199999 errors=0 PASSED | PASSED | PASSED |
+
+复跑：`cd verif/ut/FAlu && make run SEED=<s> INITREG=<0|random|<s>017>`
+
+### 4.3 跑前预测
+
+| 目标 | 模型 | 上一版 receipt | 预测 passing | 其余 |
+|---|---:|---|---:|---|
+| FAlu | 2742（2010+732） | 2575 / constant_reg 167（evidence/194f78e14165/FAlu） | **2575**（constant_reg 167） | 钉 23/23，vmucp；unread / unmatched / failing 0；无黑盒 |
+
+★登记前两次诊断跑（如实记，均 diagnostic-full，不产 receipt）★：第一次只有旧 4 对钉点 → 16(16) unmatched compare + 7(7) unmatched unread
+（明细见 FAlu.tcl）；钉 23 对后 → passing 2575 / constant_reg 167 / unmatched 0 / unread 0。预测即取后者，也等于上一版 receipt。
