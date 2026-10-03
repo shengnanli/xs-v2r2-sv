@@ -1,0 +1,9 @@
+{
+  "target": "SieModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 52,
+  "outs": 126,
+  "expected": 178,
+  "merge_dup": "false",
+  "model_applicable": true
+}

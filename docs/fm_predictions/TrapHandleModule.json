@@ -1,0 +1,9 @@
+{
+  "target": "TrapHandleModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 0,
+  "outs": 133,
+  "expected": 133,
+  "merge_dup": "false",
+  "model_applicable": true
+}
