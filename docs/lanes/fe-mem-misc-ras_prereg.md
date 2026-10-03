@@ -48,3 +48,36 @@ lane 内非正式试跑（`make fm-RAS`，工作树 dirty 故拒出 receipt；RT
 2. RAS 输出里 `last_stage_meta` 516 位只有低 10 位有内容（RASMeta = {ssp, TOSW}），高 506 位恒 0 —— 仍是比较点，
    计在 passing 里（模型已含）。
 3. UT 读数在跑完后写进 §对账，本节不写数字。
+
+## 对账（跑后追加，2026-10-03）
+
+### A. UT（verif/ut/RASTop，RTL = commit 57dd59cc9 同字节；200k 拍/档，seed 串行）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=37395512 errors=0 PASSED | errors=0 PASSED（seed 1 的 random 档实为全 1） | 1017：errors=0 PASSED |
+| 7  | checks=37397756 errors=0 PASSED | errors=0 PASSED | 7017：errors=0 PASSED |
+| 42 | checks=37398504 errors=0 PASSED | errors=0 PASSED | 42017：errors=0 PASSED |
+
+覆盖（seed 1，initreg 0）：spec_push 30029 / spec_pop 29857 / s3_cancel 62285 / near_overflow 62335 /
+redirect_call 1338 / redirect_ret 1289 / commit_push 10123 / commit_pop 10087 / s2 ret 改目标 93578 /
+分段寄存器"段不变不写" 42661 / 中途复位 111；全部输出位 0/1 翻转闸通过（last_stage_meta 高 506 位恒 0 豁免）。
+
+变异自证（scratchpad 副本，30k 拍）：11 个变异 10 个抓到（errors 3611..172078）。
+未抓到的 M9（低段也改成"段不变就不写"）是**等价变异**（写入值等于原值），UT 与 FM 都不应区分它。
+
+### B. 正式 FM（`PROOF_COMMIT=7f8365cc7 bash scripts/run_proof.sh RASTop RAS < /dev/null`）
+
+| 项 | 预测 | 实测 | 差 |
+|---|---|---|---|
+| passing | 6592 | 6592 | 0 |
+| failing / unverified / aborted | 0 / 0 / 0 | 0 / 0 / 0 | 0 |
+| unread / unmatched | 0 / 0(0) | 0 / 0(0) | 0 |
+| constant_reg | 0 | 0 | 0 |
+| 黑盒 | 无 | 无（FM-249） | — |
+| verdict | SUCCEEDED | native SUCCEEDED，signoff-strict SUCCEEDED | — |
+
+钉点 833/833 接受；耗时 60 s，内存报 867 MB（地板值）。dont_verify / elab147 皆 false。
+receipt：`evidence/7f8365cc79ab/RAS/receipt.json`（commit 59e16acbc），
+sha256 `67255a6471d4e96ae4d7d557cbd18e852eb8bbe2d31f23495782ec05f6aca05b`。
+`python3 scripts/fm_predict.py check RAS` rc=0（全部对上）；`scripts/check_lane_receipts.py` rc=0。
