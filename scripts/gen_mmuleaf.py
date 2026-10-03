@@ -540,12 +540,9 @@ def targets():
         out[os.path.join(REPO, "verif", "ut", ut, "fm_pins_pre.tcl")] = gen_pins(top, rule, tag)
     path, text = gen_tlb_post_pins()
     out[path] = text
-    # L2TLB 里的 pmp 实例：impl 侧改用 PMP 重写件后，两侧内部寄存器名字不同，整表逐位钉
-    out[os.path.join(REPO, "verif", "ut", "L2TLB", "fm_pins_pre.tcl")] = gen_pins(
-        "PMP", pmp_rule, "L2TLBPMP", design="L2TLB",
-        ref_pre="r:/WORK/L2TLB/pmp/", impl_pre="i:/WORK/L2TLB/u_core/u_pmp/u_core/",
-        note=["L2TLB 的 pmp 子模块：ref = golden PMP（实例名 pmp），impl = PMP 重写件（u_core/u_pmp/u_core 下）。",
-              "规则与 verif/ut/PMP/fm_pins_pre.tcl 完全相同（同一个 pmp_rule），只换路径前缀。"])
+    # （L2TLB 的 pmp 钉点生成已撤回：见 docs/lanes/mmuleaf_prereg.md「对账 F」——L2TLB 改用 PMP 重写件后
+    #   在 FM_MERGE_DUP=true 下 FAILED，关 merge 则残留大量 unmatched unread，尚未收敛。gen_pins 的
+    #   design/ref_pre/impl_pre 参数保留，供后续重做时用。）
     for g in RTL_GENERATORS:
         path, text = g()
         out[path] = text
