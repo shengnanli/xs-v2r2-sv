@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/VTypeBuffer
+Implementation : i:/WORK/VTypeBuffer
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 19:52:59 2026
+**************************************************
+
+No unverified compare points.
+
+1
