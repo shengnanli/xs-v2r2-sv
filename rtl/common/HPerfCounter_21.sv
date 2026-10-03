@@ -17,8 +17,12 @@
 //   S3 selected = combine(step0, step1, op2)      —— generatePerfEvent 的第一拍
 //   S4 再打一拍输出                                —— generatePerfEvent 的第二拍
 // golden 对照：G1-canonical/golden-rtl/HPerfCounter_21.sv（regs 12 个 = 4+3+1+2+2）
+// 核名 xs_HPerfCounter_idx8_core：与 rtl/backend/xs_HPerfCounter_core.sv（HPerfCounter /
+//   _8 / _13 / BusErrorUnit 共用、显式事件表 + 3 位算子寄存器）是两份不同的核，原先同名，
+//   整芯片只能进一份 → 本核改名（2026-10-03 gatefix3）。本核特点：8 位下标、越界读 0、
+//   算子寄存器保留 golden 的 5 位（[4:3] 死位由 vmucp 两侧比较）。
 // =============================================================================
-module xs_HPerfCounter_core #(
+module xs_HPerfCounter_idx8_core #(
   parameter int NUM_SETS = 144,      // 本层级事件数（含恒 0 的第 0 号）
   parameter int W        = 6         // 事件增量位宽
 ) (
@@ -374,7 +378,7 @@ module HPerfCounter_21 (
   assign event_set[142] = io_events_sets_142_value;
   assign event_set[143] = io_events_sets_143_value;
 
-  xs_HPerfCounter_core #(.NUM_SETS(144), .W(6)) u_core (
+  xs_HPerfCounter_idx8_core #(.NUM_SETS(144), .W(6)) u_core (
     .clock      (clock),
     .hpm_event  (io_hpm_event),
     .event_set  (event_set),
