@@ -67,7 +67,7 @@
 
 ### 2.1 结构与子模块处置
 
-- golden 5582 行 / 13 端口（io_fire / fp_a / fp_b / fp_c / widen_a / widen_b / uop_idx / round_mode / fp_format / op_code /
+- golden 5582 行 / 13 端口（不含 clock / reset；io_fire / fp_a / fp_b / fp_c / widen_a / widen_b / uop_idx / round_mode / fp_format / op_code /
   res_widening / fp_result / fflags），顶层 301 个寄存器 1326 位；直接 child 三个：
   `BoothEncoderF64F32F16_3`、`CSA3to2`、`CSA_Nto2With3to2MainPipeline`（内含 4×107 位寄存器与 CSA4to2 / CSA3to2）。
 - 可读核 `rtl/backend/VectorFloatFMA.sv`（1224 行，`_GEN_`/`_T_<数字>` 0 命中）：
