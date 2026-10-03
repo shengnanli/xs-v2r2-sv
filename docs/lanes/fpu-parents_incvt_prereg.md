@@ -89,3 +89,48 @@ fcvtmod NV 6166 / NX 5589；未 NaN-box 5084；64 位结果逐位见过 0 和 1�
 
 第二次证明的预测：passing **467**（462 + 5，vmucp 实比 5 点）/ constant_reg 27 / unread 0 / failing 0 / unverified 0 /
 unmatched 0 / 黑盒 0 / dont_verify 无 / SUCCEEDED。`docs/fm_predictions/FP_INCVT.json` 不动（模型 494 − 467 = 27 = constant_reg）。
+
+## 对账 §1（FP_INCVT）
+
+| 证明 commit | 结果 | 模型 / 预测 / 实测 passing | constant_reg | unread / unmatched / failing / unverified | 黑盒 / dont_verify | receipt sha256 |
+|---|---|---|---|---|---|---|
+| `75c1c255e`（首跑，vmucp 关） | PARTIAL（native SUCCEEDED） | 494 / 467 / 462 | 27 | 5 / 0 / 0 / 0 | 0 / 无 | `475b89ecbe284b0745b95e7c1919ca13c96a76b3112279d3ba6d3b83902ae3b7` |
+| `96363f56a`（§1.5 改登记后，vmucp 开） | **SUCCEEDED** | 494 / 467 / **467**（逐位相等） | 27 | 0 / 0 / 0 / 0 | 0 / 无 | `af497b65954022ac19132c971647df33c8c0d9ffd337ef625fc92750fa4cc2c4` |
+
+vmucp 六条：精确绑定（恰 fcvtmodTrueExpReg[4:0] 5 点）/ 双射（ref 5 ↔ impl 5，同名逐位 matched_nc）/ 真比较（462 → 467，+5）/
+全零 / 无 dont_verify、无 elab147、无黑盒 / `verif/fm_target_config/FP_INCVT.tcl` 进 sidecar script_closure。
+constant_reg 27 与 §1.3 预登记一致；`shamt[10:7]` 未被判常量（照常 passing）。
+`python3 scripts/fm_predict.py check FP_INCVT` rc=0（494 − 467 = constant_reg 27）。
+复跑：`PROOF_COMMIT=96363f56a bash scripts/run_proof.sh FP_INCVT FP_INCVT < /dev/null`
+
+## 2. 父级 FCVT 重证（UT 目录 `verif/ut/FCVT`，改动 commit `7cc22498a`）
+
+### 2.1 改动
+
+`verif/ut/FCVT/Makefile`：FP_INCVT 与其 4 个已签 child（CLZ_6 + xs_CLZ_core / ShiftRightJam / RoundingUnit_3 / RoundingUnit_4）
+从 `RTL_GOLDEN_DEPS` 移到 `RTL_SRCS`（impl 读重写件），FPCVT / CVT64 仍两侧同源 golden；`FM_REF_DEPS_FCVT` 不变（ref 全 golden）。
+另补接 initreg 三档（此前本 UT 没有 initreg 机制）。`scripts/check_shared_impl_impact.py --file rtl/backend/FP_INCVT.sv`：
+受影响已签目标只有 FP_INCVT 本身（FCVT 此前不读重写件，本节即是它的重证）。
+
+### 2.2 UT（`7cc22498a` 字节，200k 拍，9 档）
+
+| seed | `+0` | `+random` | `+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199999 errors=0 PASSED | PASSED（全 1 档） | PASSED |
+| 7  | checks=199999 errors=0 PASSED | PASSED | PASSED |
+| 42 | checks=199999 errors=0 PASSED | PASSED | PASSED |
+
+★UT 限度★：CVT64 是两侧共用的 golden 定义，它例化的 FP_INCVT 两侧都解析到 golden（重写件改名 FP_INCVT_xs 没人例化），
+所以本 UT 回归不到重写件——只证明 Makefile 改动没把别的东西弄坏；重写件的替换由 FM 兜底（重写件本身的 UT 见 §1.2）。
+
+### 2.3 跑前预测（golden 闭包没变 ⇒ 预测 = 上一版 receipt）
+
+| 项 | 值 |
+|---|---|
+| 模型 | 2652（1920 + 732，`docs/fm_predictions/FCVT.json` 不动） |
+| 上一版 receipt | `evidence/80e9b96e8eb6/FCVT`：passing 2625 / constant_reg 27 / unread 0（vmucp 实比 fcvtmodTrueExpReg[4:0] 5 点）|
+| 预测 passing | **2625**（constant_reg 27） |
+| 其余 | failing 0 / unverified 0 / unread 0 / unmatched 0 / 黑盒 0 / dont_verify 无 / 钉点 128/0 / SUCCEEDED |
+
+可能出错处：FP_INCVT 的寄存器在 impl 侧多一层 `u_core`（`fpcvt/u_core/<reg>` vs `fpcvt/<reg>`），靠名字/签名配对；
+若出现 unmatched，先查配对。本节登记前没做 FCVT 的 FM 试跑。
