@@ -2400,6 +2400,7 @@ L2TLB	prefetch	L2TlbPrefetch	ONE_SITE	u_core.u_prefetch	L2TlbPrefetch		auto_one_
 L2TLB	ptw	PTW	ONE_SITE	u_core.u_ptw	PTW		auto_one_site	
 L2TLB	sfence_tmp_delay	DelayN_220	ONE_SITE	u_core.u_sfence_delay	DelayN_220		auto_one_site	
 L2TLB	wfiReq_delay	DelayN_13	UNRESOLVED				none	
+L2TLBWrapper	ptw	L2TLB	SAME_PATH	ptw	L2TLB		auto_same	
 L2TlbMissQueue	io_out_q	Queue40_L2TlbMQBundle	INLINE	u_core	-	enq_ptr,deq_ptr,maybe_full	declared	rtl/memblock/L2TlbMissQueue.sv:48,69-114「实例化与 golden 完全相同的 ram_40x47」——队列控制内联，存储叶子仍是 ram_40x47（见 collateral 行）。
 L2TlbMissQueue	io_out_q/ram_ext	ram_40x47	ONE_SITE	u_core.mem_ext	ram_40x47		auto_one_site	父层次已内联，但本层在宿主核里仍是独立实例
 LCredit2Decoupled	queue	Queue4_CHISNP	DEEPER	u_core.queue	Queue4_CHISNP		auto_deeper	
@@ -2826,6 +2827,27 @@ NewDispatch	rcTagTable	RegCacheTagTable	SAME_PATH	rcTagTable	RegCacheTagTable		a
 NewDispatch	v0BusyTable	BusyTable_3	SAME_PATH	v0BusyTable	BusyTable_3		auto_same	
 NewDispatch	vecBusyTable	BusyTable_2	SAME_PATH	vecBusyTable	BusyTable_2		auto_same	
 NewDispatch	vlBusyTable	VlBusyTable	SAME_PATH	vlBusyTable	VlBusyTable		auto_same	
+NewIFU	expanders_0	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_1	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_10	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_11	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_12	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_13	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_14	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_15	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_2	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_3	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_4	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_5	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_6	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_7	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_8	RVCExpander	UNRESOLVED				none	
+NewIFU	expanders_9	RVCExpander	UNRESOLVED				none	
+NewIFU	f3Predecoder	F3Predecoder	UNRESOLVED				none	
+NewIFU	frontendTrigger	FrontendTrigger	UNRESOLVED				none	
+NewIFU	mmioRVCExpander	RVCExpander	UNRESOLVED				none	
+NewIFU	preDecoder	PreDecode	UNRESOLVED				none	
+NewIFU	predChecker	PredChecker	UNRESOLVED				none	
 OpenLLC	mmioDiverger	MMIODiverger	DEEPER	u_core.mmioDiverger	MMIODiverger		auto_deeper	
 OpenLLC	mmioMerger	MMIOMerger	DEEPER	u_core.mmioMerger	MMIOMerger		auto_deeper	
 OpenLLC	rnLinkMonitor	RNLinkMonitor	DEEPER	u_core.rnLinkMonitor	RNLinkMonitor		auto_deeper	
@@ -2837,6 +2859,8 @@ OpenLLC	slices_3	Slice_4	DEEPER	u_core.slices_3	Slice_4		auto_deeper
 OpenLLC	snLinkMonitor	SNLinkMonitor	DEEPER	u_core.snLinkMonitor	SNLinkMonitor		auto_deeper	
 OpenLLC	snXbar	SNXbar	DEEPER	u_core.snXbar	SNXbar		auto_deeper	
 OpenLLC	topDown	TopDownMonitor_1	DEEPER	u_core.topDown	TopDownMonitor_1		auto_deeper	
+PTWFilter	flush_delay	DelayN_1	DEEPER	u_core.flush_delay	DelayN_1		auto_deeper	
+PTWRepeaterNB	delay	DelayN_1	DEEPER	u_core.delay	DelayN_1		auto_deeper	
 Permutation	vslidednOffset	slidednVs2VdTable	DEEPER	u_core.vslidednOffset	slidednVs2VdTable		auto_deeper	
 Permutation	vslideupOffset	slideupVs2VdTable	DEEPER	u_core.vslideupOffset	slideupVs2VdTable		auto_deeper	
 Pipeline	stages_0	Queue1_L1PrefetchReq	ONE_SITE	u_core.prefetch_stage	Queue1_L1PrefetchReq		auto_one_site	

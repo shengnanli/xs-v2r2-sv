@@ -45,6 +45,8 @@ EnqPolicy	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v,En
 EnqPolicy_14	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesLdu,EntriesStaMou,EntriesStdMoud,EntriesVfmaVialuFixVfalu,EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf,EntriesVlduVstu,EntriesVlduVstuVseglduVsegstu	14	EntriesLdu,EntriesStaMou,EntriesStdMoud,EntriesVfmaVialuFixVfalu,EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf,EntriesVlduVstu,EntriesVlduVstuVseglduVsegstu	$(GOLDEN_RTL)/EnqPolicy_14.sv
 EnqPolicy_18	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/EnqPolicy_18.sv
 EnqPolicy_8	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesFaluFcvtF2vFmacFdiv,EntriesFaluFmac,EntriesFaluFmacFdiv	6	EntriesFaluFcvtF2vFmacFdiv,EntriesFaluFmac,EntriesFaluFmacFdiv	$(GOLDEN_RTL)/EnqPolicy_8.sv
+F3Predecoder	SIGNED_OFF_TARGET	ABSORBED_DIRECT	NewIFU	1	NewIFU	rtl/frontend/F3Predecoder.sv
+FrontendTrigger	SIGNED_OFF_TARGET	ABSORBED_DIRECT	NewIFU	1	NewIFU	rtl/frontend/FrontendTrigger.sv
 IndexableCAMTemplate	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass	1	WrBypass	rtl/common/IndexableCAMTemplate.sv
 IndexableCAMTemplate_32	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_32	1	WrBypass_32	rtl/common/IndexableCAMTemplate_32.sv
 IndexableCAMTemplate_33	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_33	1	WrBypass_33	rtl/common/IndexableCAMTemplate_33.sv
@@ -88,6 +90,8 @@ OthersEntry_72	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	16	Entrie
 OthersEntry_88	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesFaluFcvtF2vFmacFdiv	2	EntriesFaluFcvtF2vFmacFdiv	rtl/backend/OthersEntry_88.sv
 OthersEntry_90	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesFaluFcvtF2vFmacFdiv	14	EntriesFaluFcvtF2vFmacFdiv	rtl/backend/OthersEntry_90.sv
 PLICFanIn	SIGNED_OFF_TARGET	ABSORBED_DIRECT	TLPLIC	2	TLPLIC	rtl/uncore/PLICFanIn.sv
+PreDecode	SIGNED_OFF_TARGET	ABSORBED_DIRECT	NewIFU	1	NewIFU	rtl/frontend/PreDecode.sv
+PredChecker	SIGNED_OFF_TARGET	ABSORBED_DIRECT	NewIFU	1	NewIFU	rtl/frontend/PredChecker.sv
 PriorityMuxModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	4	Predictor	rtl/frontend/PriorityMuxModule.sv
 PriorityMuxModule_12	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	2	Predictor	rtl/frontend/PriorityMuxModule_12.sv
 PriorityMuxModule_16	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	2	Predictor	rtl/frontend/PriorityMuxModule_16.sv
@@ -97,6 +101,7 @@ PriorityMuxModule_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	4	Predictor	rtl/
 Queue1_RegMapperInput	GOLDEN_ONLY	ABSORBED_DIRECT	TLPLIC	1	TLPLIC	$(GOLDEN_RTL)/Queue1_RegMapperInput.sv
 Queue1_RegMapperInput_5	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ICacheCtrlUnit	1	ICacheCtrlUnit	rtl/frontend/Queue1_RegMapperInput_5.sv
 Queue40_L2TlbMQBundle	GOLDEN_ONLY	ABSORBED_DIRECT	L2TlbMissQueue	1	L2TlbMissQueue	$(GOLDEN_RTL)/Queue40_L2TlbMQBundle.sv
+RVCExpander	SIGNED_OFF_TARGET	ABSORBED_DIRECT	NewIFU	17	NewIFU	rtl/frontend/RVCExpander.sv
 RealWBArbiter	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RealWBCollideChecker	1	RealWBCollideChecker	rtl/backend/RealWBArbiter.sv
 RealWBArbiter_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RealWBCollideChecker	1	RealWBCollideChecker	rtl/backend/RealWBArbiter_1.sv
 RealWBArbiter_14	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RealWBCollideChecker_2	3	RealWBCollideChecker_2	rtl/backend/RealWBArbiter_14.sv
