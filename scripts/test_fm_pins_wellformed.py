@@ -64,8 +64,9 @@ FAIL_OPEN_LEDGER = {
     # 路径（相对仓根）: 形态记录 —— 期望数量只写在 puts 字符串里，无人校验
     'verif/ut/Bku/fm_pins_pre.tcl':
         'funcReg<->func_s1 9 位；"expect 9 / 0" 只在 puts 里',
-    'verif/ut/SyncDataModule/fm_pins_pre.tcl':
-        '8 个变体逐位钉；连期望数量都没声明，只 puts pinned/miss',
+    # ★2026-10-03 缩表 1 条（agent/gatefix2，codex_0207 E1）★：SyncDataModule/fm_pins_pre.tcl
+    #   由 scripts/gen_dm_wrappers.py --pins-only 重出：返回值判成败 + 字面期望数 fail-closed；
+    #   旧版 1 位字段/整宽载荷点名错、catch 回退走不到，8 变体共 5248 点实际没钉上（已重证）。
     # 「匹配后」钉点（FM_PIN_TCL）同一病灶、同一处置
     'verif/ut/ICacheMissUnit/fm_pins.tcl':
         '单点 beats1 计数器；失败分支只 puts 一行',
@@ -129,7 +130,7 @@ CATCH_COUNT_LEDGER = {
     'verif/ut/ITTageTable_3/fm_pins.tcl',
     'verif/ut/ITTageTable_4/fm_pins.tcl',
     'verif/ut/Predictor/fm_pins_pre.tcl',
-    'verif/ut/SyncDataModule/fm_pins_pre.tcl',
+    # SyncDataModule/fm_pins_pre.tcl：2026-10-03 改用返回值（agent/gatefix2），出表。
     # ★2026-09-20 再缩 3 条（agent/pindebt）★：RenameBuffer / TLBFA / TLBNonBlock
     #   三个「匹配后」钉点文件已改成用**返回值**计数，并把原来那几处 `exit 3`
     #   统一改成 `error`（safe interp 隐藏 exit，见 docs/pin_guard_failclosed.md §二）。

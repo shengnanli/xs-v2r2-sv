@@ -245,35 +245,55 @@ def gen_pins(outers):
     """为 banked 外层变体生成 fm_pins_pre.tcl: 逐位 set_user_match
     ref dataBanks_<b>/data_<e>_<field>_reg[k] ↔ impl u_core/g_bank[b].dataBank/data_reg[e][off+k]。
     多字段等宽载荷(如 516b meta)签名歧义时 FM 原生匹配放弃, 此双射按结构显式钉死
-    (加强匹配非 waiver; 对原生可配的变体钉同一配对无副作用)。"""
-    L = ["# 自动生成：scripts/gen_dm_wrappers.py —— banked 存储双射钉点（勿手改）"]
+    (加强匹配非 waiver; 对原生可配的变体钉同一配对无副作用)。
+
+    ★golden 点名由生成器直接算准，不靠"先试 A 再试 B"★（gatefix2 / codex_0207 E1）：
+      * 1 位字段 golden 是 `reg data_<e>_<f>;` -> FM 名 `data_<e>_<f>_reg`（**无** [0]）；
+      * 无后缀的整宽载荷（canon 里 suf==""）golden 是 `reg [..] data_<e>;`
+        -> `data_<e>_reg[k]`（1 位时 `data_<e>_reg`），不是 `data_<e>__flat_reg`。
+    旧版对 1 位字段先试 `_reg[0]`、`catch` 失败再试 `_reg`——但 set_user_match 对不存在
+    的名字**不抛异常**（返回 0 + fm.log 一行 `Error: Unknown name`），catch 恒为 0，
+    回退永远走不到，`_n` 照样自增：实测 8 个变体的 1 位字段/整宽载荷**一个都没钉上**
+    （如 __64entry_5 的 64 个 isForVSnonLeafPTE、__1024entry 的全部 1024 位），
+    而自报 `pinned=N miss=0`。现在用**返回值**判成败，末尾按字面期望数 fail-closed。"""
+    L = ["# 自动生成：scripts/gen_dm_wrappers.py —— banked 存储双射钉点（勿手改）",
+         "# 判据：set_user_match 的**返回值**（它对不存在的名字不抛异常，catch 是空守卫）；",
+         "# 末尾 miss 必须为 0、pinned 必须等于字面期望数（banks × 条目 × 位宽和），否则 error。"]
     for name, canon, banks, bents in outers:
-        fields_tcl = " ".join("{%s %d %d}" % (suf if suf else "_flat", off, w)
+        fields_tcl = " ".join("{%s %d %d}" % (suf if suf else "-", off, w)
                               for suf, off, w in canon)
+        expect = banks * bents * sum(w for _suf, _off, w in canon)
         L.append(f'''
 if {{$top eq "{name}"}} {{
   set _flds {{ {fields_tcl} }}
+  set _expect {expect}
   set _n 0; set _miss 0
   for {{set b 0}} {{$b < {banks}}} {{incr b}} {{
     for {{set e 0}} {{$e < {bents}}} {{incr e}} {{
       foreach _f $_flds {{
         lassign $_f suf off w
+        set stem [expr {{$suf eq "-" ? "data_${{e}}" : "data_${{e}}_${{suf}}"}}]
         for {{set k 0}} {{$k < $w}} {{incr k}} {{
-          set rlist [list "r:/WORK/$top/dataBanks_${{b}}/data_${{e}}_${{suf}}_reg\\[$k\\]"]
           if {{$w == 1}} {{
-            lappend rlist "r:/WORK/$top/dataBanks_${{b}}/data_${{e}}_${{suf}}_reg"
+            set rp "r:/WORK/$top/dataBanks_${{b}}/${{stem}}_reg"
+          }} else {{
+            set rp "r:/WORK/$top/dataBanks_${{b}}/${{stem}}_reg\\[$k\\]"
           }}
           set ipath "i:/WORK/$top/u_core/g_bank\\[$b\\].dataBank/data_reg\\[$e\\]\\[[expr {{$off+$k}}]\\]"
-          set ok 0
-          foreach rp $rlist {{
-            if {{![catch {{set_user_match $rp $ipath}}]}} {{ incr _n; set ok 1; break }}
+          if {{[set_user_match $rp $ipath]}} {{
+            incr _n
+          }} else {{
+            incr _miss
+            if {{$_miss <= 10}} {{ puts "SDM_PIN_FAIL($top): $rp <-> $ipath" }}
           }}
-          if {{!$ok}} {{ incr _miss }}
         }}
       }}
     }}
   }}
-  puts "SDM_PIN($top): pinned=$_n miss=$_miss"
+  puts "SDM_PIN($top): pinned=$_n miss=$_miss expect=$_expect"
+  if {{$_miss != 0 || $_n != $_expect}} {{
+    error "SDM_PIN_COUNT($top): pinned=$_n miss=$_miss expect=$_expect"
+  }}
 }}''')
     return "\n".join(L) + "\n"
 
@@ -308,6 +328,23 @@ def variant_header(name, ports, inner):
             f"// 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改\n")
 
 
+def write_pins(ut):
+    """banked 双射钉点（非 special 外层变体; bents=内层条目数, banks=外层实例数）。
+    单独成函数：`--pins-only` 只重出 fm_pins_pre.tcl，不碰 rtl/ 薄文件与 tb
+    （全量 main() 依赖一份已不在盘上的 SPECIAL_WRAPPER_TXT 临时文件，且 rtl 薄文件
+    已在仓内手修演进过，全量重跑会覆盖它们 —— gatefix2 实测）。"""
+    pin_outers = []
+    for name in OUTER:
+        if name == SPECIAL:
+            continue
+        ports = parse_ports(GOLDEN / f"{name}.sv", name)
+        inner = inner_of(GOLDEN / (name + ".sv"))
+        bents = int(re.search(r"_(\d+)entry", inner).group(1))
+        entries = int(re.search(r"_(\d+)entry", name).group(1))
+        pin_outers.append((name, canon_layout(ports), entries // bents, bents))
+    (ut / "fm_pins_pre.tcl").write_text(gen_pins(pin_outers))
+
+
 def main():
     all_variants = []
     hdr = "// 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改\n"
@@ -329,17 +366,7 @@ def main():
     ut.mkdir(parents=True, exist_ok=True)
     (ut / "tb.sv").write_text(gen_tb(all_variants))
 
-    # banked 双射钉点（非 special 外层变体; bents=内层条目数, banks=外层实例数）
-    pin_outers = []
-    for name in OUTER:
-        if name == SPECIAL:
-            continue
-        ports = parse_ports(GOLDEN / f"{name}.sv", name)
-        inner = inner_of(GOLDEN / (name + ".sv"))
-        bents = int(re.search(r"_(\d+)entry", inner).group(1))
-        entries = int(re.search(r"_(\d+)entry", name).group(1))
-        pin_outers.append((name, canon_layout(ports), entries // bents, bents))
-    (ut / "fm_pins_pre.tcl").write_text(gen_pins(pin_outers))
+    write_pins(ut)
 
     # Makefile: FM_REF_DEPS 由 G1 outer 例化的 inner 名自动派生
     rtl_srcs = ["$(RTL_DIR)/common/xs_DataModule.sv", "$(RTL_DIR)/common/xs_SyncDataModule.sv"]
@@ -358,4 +385,9 @@ def main():
 
 
 if __name__ == "__main__":
+    import sys
+    if sys.argv[1:] == ["--pins-only"]:
+        write_pins(XSSV / "verif/ut/SyncDataModule")
+        print("generated verif/ut/SyncDataModule/fm_pins_pre.tcl only")
+        sys.exit(0)
     main()

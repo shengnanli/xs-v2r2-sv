@@ -391,20 +391,37 @@ proc match_packed_payload { top } {
     set _fmraw [read $fh]
     close $fh
     if {$::SIDECAR_ON} { sidecar_snapshot_buffer $_fmpath $_fmraw }
-    set n 0
+    # ★2026-10-03 改（agent/gatefix2，codex_0207 E1 同类）★：旧版对 1 位字段先试
+    # `data_<suf>_reg[0]`、catch 失败再试 `data_<suf>_reg`。但 set_user_match 对不存在的
+    # 名字**不抛异常**（返回 0，并在 log 里记一行 FM-036），catch 恒为 0，回退永远走不到、
+    # 计数照增：当时用 field map 的 4 个目标（清单与重证见 docs/packed_payload_rerun_prereg.md）的
+    # 1 位字段实际一个都没钉上，而 PACKED_MATCH 自报全数。golden 的 1 位寄存器是 `reg data_<suf>;`，
+    # FM 名就是 `data_<suf>_reg`（无下标），多位是 `data_<suf>_reg[b]` —— 直接算真名，
+    # 用**返回值**判成败，期望数 = field map 各行位宽之和，miss != 0 或 n != 期望 即中止。
+    set n 0; set miss 0; set expect 0
     foreach ln [split [encoding convertfrom utf-8 $_fmraw] "\n"] {
         if {![regexp {^(\S+)\s+(\d+)\s+(\d+)$} $ln -> suf lo w]} continue
+        incr expect $w
         for {set b 0} {$b < $w} {incr b} {
             set ipath "i:/WORK/$top/u_core/data_reg\[[expr {$lo + $b}]\]"
-            # 多位字段 golden 名为 data_<suf>_reg[b]；1 位字段可能无下标
-            set cands [list "r:/WORK/$top/data_${suf}_reg\[$b\]"]
-            if {$w == 1} { lappend cands "r:/WORK/$top/data_${suf}_reg" }
-            foreach rpath $cands {
-                if {![catch {set_user_match $rpath $ipath}]} { incr n; break }
+            if {$w == 1} {
+                set rpath "r:/WORK/$top/data_${suf}_reg"
+            } else {
+                set rpath "r:/WORK/$top/data_${suf}_reg\[$b\]"
+            }
+            if {[set_user_match $rpath $ipath]} {
+                incr n
+            } else {
+                incr miss
+                if {$miss <= 10} { puts "PACKED_MATCH_FAIL: $rpath <-> $ipath" }
             }
         }
     }
-    if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
+    puts "PACKED_MATCH: $n points pinned (miss=$miss expect=$expect)"
+    if {$miss != 0 || $n != $expect} {
+        puts "FM_PIN_ERROR: PACKED_MATCH pinned $n miss $miss expect $expect -- field map names drifted, refuse to continue"
+        exit 3
+    }
 }
 # 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
 # 四审: sidecar 下 pin 代码进受限 safe child interp(sidecar_pin_source: 一次读取→快照
