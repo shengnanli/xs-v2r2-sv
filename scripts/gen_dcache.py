@@ -948,6 +948,12 @@ def gen_allow():
             got = sum(1 for o in objs if o["side"] == side and o["design"] == design)
             if got != k:
                 die("allow 收割：%s 侧 %s 实例 %d 个，字面期望 %d" % (side, design, got, k))
+    # codex 0206 D2：StorePipe 两个空壳（golden 被裁成 1 输入 0 输出 0 寄存器）被 FM 自动当 empty 黑盒，
+    # 声明为 disabled_empty_module；判据（sha/实例/属性 e/无输出无状态/父级干净）在 fm_verdict 里。
+    for side in ("r", "i"):
+        for inst in ("stu_0", "stu_1"):
+            objs.append({"side": side, "design": "StorePipe", "path": "%s:/WORK/%s/%s" % (side, TOP, inst),
+                         "attrs": "e", "class": "disabled_empty_module"})
     if len({o["path"] for o in objs}) != len(objs):
         die("allow 收割出重复路径")
     out = {"schema": "xs-v2-sv-allow-v1", "target": TOP, "baseline": base, "objects": objs}
