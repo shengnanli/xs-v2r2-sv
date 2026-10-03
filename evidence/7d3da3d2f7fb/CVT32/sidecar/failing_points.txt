@@ -1,0 +1,84 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/CVT32
+Implementation : i:/WORK/CVT32
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 05:49:52 2026
+**************************************************
+
+16 Failing compare points (16 matched, 0 unmatched):
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[0]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[0]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[10]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[10]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[11]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[11]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[12]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[12]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[13]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[13]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[14]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[14]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[15]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[15]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[1]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[1]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[2]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[2]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[3]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[3]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[4]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[4]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[5]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[5]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[6]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[6]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[7]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[7]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[8]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[8]
+
+  Ref  DFF        r:/WORK/CVT32/result0_reg1_reg[9]
+  Impl DFF        i:/WORK/CVT32/u_core/result0_reg1_reg[9]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

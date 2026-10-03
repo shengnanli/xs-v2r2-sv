@@ -1,0 +1,10 @@
+{
+  "target": "VCVT_1",
+  "ut": "CVT32",
+  "regs": 423,
+  "outs": 37,
+  "expected": 460,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额候选：clz_fp32_reg0[7:5] 恒 0；nor_of_exp_reg0[4:1] 恒 1；in_abs_reg0[32] 不读；fflags0_reg1 中部分恒 0 位——两侧对称"
+}

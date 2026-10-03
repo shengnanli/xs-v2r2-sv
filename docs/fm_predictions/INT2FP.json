@@ -1,0 +1,10 @@
+{
+  "target": "INT2FP",
+  "ut": "INT2FP",
+  "regs": 176,
+  "outs": 69,
+  "expected": 245,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额候选（全部应落在 constant_reg/unread）：fflags[4,3,1] 复位后恒 0；expAdderIn0[0,11,12] 恒 0（不复位，取决于 FM 是否判常量）"
+}

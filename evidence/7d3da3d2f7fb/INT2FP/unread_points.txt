@@ -1,0 +1,2 @@
+matched_nc	{r:/WORK/INT2FP/absIntSrc_reg[63]} {i:/WORK/INT2FP/u_core/absIntSrc_reg[63]}
+matched_nc	{r:/WORK/INT2FP/output1HReg_reg[0]} {i:/WORK/INT2FP/u_core/output1HReg_reg[0]}

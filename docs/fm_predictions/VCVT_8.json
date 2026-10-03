@@ -1,0 +1,10 @@
+{
+  "target": "VCVT_8",
+  "ut": "VCVT_8",
+  "regs": 4474,
+  "outs": 796,
+  "expected": 5270,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额 = 子树各件差额之和 + 本层常量位；VCVT_8 另含 Mgu 子树"
+}

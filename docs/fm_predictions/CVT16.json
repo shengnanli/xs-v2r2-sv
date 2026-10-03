@@ -1,0 +1,10 @@
+{
+  "target": "CVT16",
+  "ut": "CVT16",
+  "regs": 172,
+  "outs": 21,
+  "expected": 193,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "差额候选：fflags0_reg1[14:5] 恒 0、[15] 不读（Scala 16 位 fflags 怪癖）；out_sign_reg0 恒 0——两侧对称"
+}
