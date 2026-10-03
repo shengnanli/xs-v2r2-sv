@@ -35,3 +35,11 @@ include ../../../scripts/ut_common.mk
 # golden 里 `ifndef SYNTHESIS 的断言块调用未定义函数 xs_assert_v2，
 # 且随机初始化 initial 块也只在非 SYNTHESIS 下出现——定义 SYNTHESIS 与 FM 侧口径一致。
 VCS += +define+SYNTHESIS
+# initreg（2026-10-03，agent/misc-core）：FloatFMA 子树换成重写件后两侧不再是同一份 golden，
+# 不复位寄存器在第一次 fire 之前是 X，而 X 在 golden 的 ?: 链与重写件的 if/else 里传播形状不同
+# （实测：只在开头复位那几拍、out_valid=0 时 res_data/fflags 的 X 图样不同，14 处，3 个 seed 一样）。
+# 这不是功能差异（FM 把初态当自由变量证过），按全仓口径改用 initreg 给确定初值：
+# 编译期开机制，运行期取值；双例化只能用常量档 0 / 1（random 两侧各摇各的）。
+VCS      += +vcs+initreg+random
+INITREG  ?= 0
+SIM_ARGS += +vcs+initreg+$(INITREG)
