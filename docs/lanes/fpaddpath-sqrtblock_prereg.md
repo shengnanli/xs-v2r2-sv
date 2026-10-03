@@ -202,3 +202,28 @@ impl 不合并），配不上的位让余数迭代环判不等。fpsqrt_r16 本�
 修：Makefile 的 FM_VARIANTS / FM_REF_DEPS_FDivSqrt 改字面名（不改任何证明语义），重算模型 **2082**（golden 闭包寄存器 1351 + 输出 731），
 重登记，预测 passing = 2082 − constant_reg，failing / unverified / unmatched / unread 0。在新 commit 上重跑一次正式证明。
 （第二次的 receipt 留档 `evidence/aef3c7e46bc3/FDivSqrt`。）
+
+## 对账 §4（父级重证）
+
+| 父级 | 证明 commit | 结果 | 预测 / 实测 passing | constant_reg | 钉点 / vmucp | receipt sha256 |
+|---|---|---|---|---|---|---|
+| FloatAdderF32WidenF16MixedPipeline | `194f78e14` | SUCCEEDED | 327 / **327** | 20 | 4/4 / 开 | `ef7c128f3d3b13208d0b5c9621e10c7933fea2b94e45deb64be8630e6f6a3007` |
+| FAlu | `194f78e14` | SUCCEEDED | 2575 / **2575** | 167 | 4/4 / 开 | `8523ab348cab3415d07e4ecb1be20585f94d2a53a16e6bcede88635e9b418a73` |
+| fpsqrt_vector_r16 | `194f78e14` | SUCCEEDED | 526 / **526** | 1 | — / 关 | `a38f03a1fb0d13cbbd82586f8a95446cdf6cdb165b3b414c1db46f92cedee8f6` |
+| FDivSqrt | `f19ef593a` | SUCCEEDED | 2082−c / **2052** | 30 | — / 开 | `136a5a15e7e928e2dfd95435d3837a6e1ca500829c98bb71556eff04107d001d` |
+
+全部 failing / unverified / unread / unmatched 0，无黑盒，无 dont_verify。`fm_predict check` 四目标 rc=0。
+FDivSqrt 经过三跑：`194f78e14`（merge on，FAILED，见 §4.3）→ `aef3c7e46`（merge off，SUCCEEDED 2052，但当时登记的模型是错的 1543）→
+`f19ef593a`（重登记 2082 之后的正式证明，2052 + constant_reg 30 = 2082 逐位指认）。三份 receipt 都留档。
+ArithVecLeaves5 的另四个变体 impl 闭包成员随 Makefile 变了（rtl 字节未变），在 `f19ef593a` 上一并重跑：
+Adder_chain_rnd 85 / VIAluDecoder 12 / VIntAdder64b 160 / DivUnit 3132，与上一版（evidence/786d0b438756）逐个相等，均 SUCCEEDED
+（sha256 依次 `32e0674c2487eb219ded56b0447a52e1141651d71dcaf5d6aa6f519fd453e288` / `cf918b32e1e67ed613679990095c2b7fcf854cb18187c9a6e2be804535959f74` /
+`02cc1a295f8b03b7d86ba1f22ef55f0fa14a832eeb9cecedf1b4850329464c89` / `3c62bf26eda6a1d79a3c49c400284fe5d54fc4637316e242d29b245cf157c043`）。
+
+## 变异自检（scratch 沙箱，worktree 字节未动；`make run SEED=1 INITREG=0`，20k / 40k / 200k 拍）
+
+| 目标 | CATCH | 未抓 | 说明 |
+|---|---|---|---|
+| far/close/切段加法器 | 13/13（A1 A2 A3b A4 A5 A6 C1–C6） | A3（f32 移位溢出阈值 27→26）、C7 | A3 是**等价变异**：差 27 时右移结果的 B/G/R/S 与"移出"分支逐位相同（EOP 两种情形都推过）；C7 改的是死位 cs4_op0_q[23]，端口结构上看不见——正是钉点 + vmucp 实比的那一点 |
+| fpsqrt_r16_block | 9/9（B1–B9：cin、根段切口、窄坐标派生指针、估计窗口、QM 候选、段切口位置、投机前一数位、f32 打包、段间进位） | — | 闭环 oracle 与差分同时生效 |
+| fpsqrt_r16 | 6/9（R1 R2 R3 R5 R6 R7） | R4、R8、R9（200k 拍复跑仍 errors=0） | R4/R8 只改寄存器值（PRE_1 覆盖的 rt_q 旧高位 / canonical-NaN 下的 res_is_exact_zero_q），端口上被 NaN/覆盖遮住——FM 逐寄存器比，必抓；R9（f64 余数低段非零判断）只在余数 ≡ -Q² mod 2^54 落在低 28 位时可见，合法输入下基本不可达，组合上不等价 → FM 必抓 |
