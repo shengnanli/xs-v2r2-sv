@@ -26,7 +26,9 @@
 //   1. 指针是带翻转位的环形指针（CircularQueuePtr，深 6 不是 2 的幂）：value 加 n 超过 5
 //      就减 6 并翻 flag；"分配指针 >= deqPtr" = flagA ^ flagD ^ (valueA >= valueD)。
 //   2. 分配指针下标是 2 位（0..2 可达，3 不可达），Chisel Vec 越界读第 0 项；
-//      deqPtr.value 是 3 位（6、7 不可达），越界同样读第 0 项的 valid/内容。
+//      deqPtr.value 是 3 位（深 6 时 6、7 不可达），越界时 train_req.bits 读第 0 项，
+//      但 train_req.valid 为 0（逐项 `when(deqPtr === i)` 没有一项命中）。
+//      ★FM 实测抓到：第一版写成"valid 也读第 0 项"，signoff 报 5 个 failing（valid 端口 + deqPtr 4 位）★
 //   3. io.flush 在本配置下被上层接 0，golden 仍保留 RegNext(flush) 寄存器（恒 0，不复位）
 //      及它驱动的清空逻辑：清全部 valid、指针归位。核里原样保留（flush_q）。
 //   4. 同一槽同拍被多路写时，路 2 > 路 1 > 路 0（Chisel 后连接者赢）；可达状态下不会发生。
@@ -238,11 +240,12 @@ module xs_TrainFilter_core #(
   logic                deq_fire;
 
   always_comb begin
-    // deqPtr.value 越界（6、7）读第 0 项（怪癖 2）
-    deq_valid_sel   = ent_valid[0];
+    // deqPtr.value 越界（深 6 时的 6、7）：bits 读第 0 项（Vec 越界语义），但 valid 为 0 ——
+    // Chisel 的 `when(deqPtr === i.U)` 对每个 i 都是真比较，没有一项等于越界值（怪癖 2）
+    deq_valid_sel   = 1'b0;
     deq_vaddr_sel   = ent_vaddr[0];
     deq_payload_sel = ent_payload[0];
-    for (int e = 1; e < ENTRIES; e++)
+    for (int e = 0; e < ENTRIES; e++)
       if (deq_value == PTR_W'(e)) begin
         deq_valid_sel   = ent_valid[e];
         deq_vaddr_sel   = ent_vaddr[e];
