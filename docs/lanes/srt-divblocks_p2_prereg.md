@@ -94,3 +94,38 @@ sel_reg/spec_reg 初值传成常量寄存器位——**没有逐位推算**，�
 SUCCEEDED；passing 1165 / 1423 / 1937 / 12380；failing 0；unread 0；unmatched 全 0；constant_reg 0 / 0 / 0 / 8；
 黑盒 0；dont_verify false；fm.log 含 `SRT16DIVINT_PINS: 132 / 132`、`SRT16DIVINT_4_PINS: 196 / 196`、
 `SRT16DIVINT_6_PINS: 324 / 324`、`VECTORIDIV_PINS: 1600 / 1600`。fm_predict 对账：差额 = 0 / 0 / 0 / 8（= constant_reg）。
+
+## 6. 对账（跑完追加）
+
+### 6.1 UT（RTL 字节 = `cb613b07`；四个 UT 各九档，每档 200k 拍，36/36 TEST PASSED，errors 全 0）
+
+| UT | seed 1 / 7 / 42 读数（三档 initreg 逐字相同） |
+|---|---|
+| SRT16Divint | 对拍 199,996 拍 ×3 车道；oracle 28,761 / 28,745 / 28,840 次 |
+| VectorIdiv | 对拍 200,000 拍；oracle 元素 124,246 / 124,484 / 125,960 个 |
+| SRT16IterBlocks（第一阶段，新驱动重跑） | 块级 41,200,000 次 ×3；车道 oracle 84,546 / 84,520 / 84,682 次 |
+| I8DivNr4（第一阶段，新驱动重跑） | 对拍 199,996 拍；oracle 29,451 / 29,471 / 29,360 次 |
+
+修驱动后吞吐约 ×3（例：SRT16IterBlocks seed 1 车道 oracle 28,756 → 84,546）。覆盖（seed 1 / initreg 0）：
+VectorIdiv 完成向量 sew0/1/2/3 = 4081/4270/4119/4157，除零元素 9571、有符号元素 62698、最小值÷-1 元素 1714；
+SRT16Divint 车道 sew0/1 = 14437/14324，_4 sew0/1/2 = 9118/9396/9326，_6 sew0..3 = 7120/7058/6990/6776，
+每车道除零 ~2100–2200、最小值÷-1 600–700。
+
+### 6.2 变异自检（scratch 沙箱，seed 1 / 20k 拍，不进库）：16 个里 15 个 CAUGHT
+
+SRT16Divint 10/10（lzc 缺省、|x|<|d| 判据位、除零余数、迭代拍数取整、余数为 0 的修正、还原右移量、修正常数、
+iter_finish 看寄存器、Sel 初值阈值次序、sew=01 符号扩展）。VectorIdiv 5/6：Q6 MISSED——把子除法器的 out_ready
+从「OUTPUT 态」改成「OUTPUT 态且出口握手」只改变子除法器在反压期间停在 OUTPUT 还是先回 IDLE，向量结果已锁在
+结果寄存器里，外部不可观测；FM 把子除法器的 stateReg 作为比较点逐个比，由 FM 覆盖。
+
+### 6.3 FM 对账（official，signoff-strict，commit `379b4591`，无黑盒、无 dont_verify、allowlist 空）
+
+| 目标 | expected | passing | failing | unread | unmatched | constant | 钉点 | 差额指认 | receipt |
+|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| SRT16Divint | 1165 | 1165 | 0 | 0 | 0 | 0 | 132/132 | 逐位相等 | `evidence/379b459189c3/SRT16Divint` |
+| SRT16Divint_4 | 1423 | 1423 | 0 | 0 | 0 | 0 | 196/196 | 逐位相等 | `evidence/379b459189c3/SRT16Divint_4` |
+| SRT16Divint_6 | 1937 | 1937 | 0 | 0 | 0 | 0 | 324/324 | 逐位相等 | `evidence/379b459189c3/SRT16Divint_6` |
+| VectorIdiv | 12388 | 12380 | 0 | 0 | 0 | 8 | 1600/1600 | 8 = constant_reg | `evidence/379b459189c3/VectorIdiv` |
+
+全部与 §5 的复核判据逐项对上。`fm_predict.py check`：全部对上；`check_lane_receipts.py` rc=0。
+§4 的两处预测错误（unread 与 constant_reg）已在 §5 当时指认，未改 §4。
