@@ -1,0 +1,10 @@
+{
+  "target": "VSSplitBufferImp",
+  "ut": "VSSplitBufferImp",
+  "regs": 1907,
+  "outs": 1595,
+  "expected": 3502,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 3502 = 寄存器 1907 + 输出 1595；差额 0（vmucp 打开后 80 个对称死位转 passing）；预测 passing=3502"
+}

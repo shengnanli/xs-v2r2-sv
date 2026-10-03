@@ -21,15 +21,15 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	1014	1020	99.4
-unique_design_written	537	1191	45.1
-unique_design_proven	529	1191	44.4
-golden_lines_written	2919873	3902283	74.8
-golden_lines_proven	2581930	3902283	66.2
+fm_targets_configured	1114	1137	98.0
+unique_design_written	648	1191	54.4
+unique_design_proven	623	1191	52.3
+golden_lines_written	3023583	3902283	77.5
+golden_lines_proven	2661319	3902283	68.2
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	2749893	3349905	82.1
-incore_golden_lines_proven	2416202	3349905	72.1
+incore_golden_lines_written	2853603	3349905	85.2
+incore_golden_lines_proven	2495591	3349905	74.5
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	169980	552378	30.8
@@ -38,7 +38,7 @@ outcore_golden_lines_proven	165728	552378	30.0
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	16	1012	1.6
+legacy_proven_unanchored	16	1112	1.4
 #   合计 6555 golden 行
 #   ITTageTable                                   336 行
 #   ITTageTable_1                                 333 行
@@ -58,14 +58,31 @@ legacy_proven_unanchored	16	1012	1.6
 #   TageBTable                                    396 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
+#   AtomicsUnit                                      1181 行
 #   CommitIDModule                                     97 行
 #   FDPrefetcherMonitor                               111 行
+#   HPerfCounter                                      575 行
+#   HPerfMonitor                                     1520 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
+#   Mgu                                               651 行
 #   OpenLLC                                          4252 行
+#   PrefetchQueue                                    1651 行
+#   PrefetchReqBuffer                                1713 行
 #   PtwCache                                        45308 行
 #   Rob                                            266227 行
+#   SMSTrainFilter                                   1126 行
 #   StorePipe                                          93 行
+#   VLSplitBufferImp                                 1470 行
+#   VLSplitImp                                       2316 行
+#   VLSplitPipelineImp                               1102 行
+#   VSSplitBufferImp                                 1539 行
+#   VSSplitImp                                       2333 行
+#   VSSplitPipelineImp                               1090 行
+#   VSegmentTrigger                                   219 行
+#   VSegmentUnit                                     3556 行
+#   fpsqrt_vector_r16                                1014 行
+#   skidBufferConnect                                1265 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 # ★只列核内★：核外的另列在本表末尾，不要从那里接活
@@ -85,21 +102,21 @@ TL2CHICoupledL2	7663	1	REWRITE_L
 FauFTB	6885	1	REWRITE_L
 EnqEntryVecMem	6486	2	-
 NewIFU	5714	1	REWRITE_L
-VectorFloatFMA	5582	1	-
 ExuBlock	5454	3	REWRITE_L
-PMPChecker	5070	3	REWRITE_L
-PTWFilterEntry	4736	2	-
-TopDownMonitor	4560	2	-
-PMP	4408	1	REWRITE_L
 BlockCipherModule	3995	1	-
-HPerfMonitor	3941	4	-
 L2Top	3779	1	REWRITE_L
 PatternHistoryTable	3739	1	-
 fpsqrt_r16_block	3575	1	-
-VSegmentUnit	3556	1	-
 Dispatcher	3419	13	-
 FTB	3378	1	REWRITE_L
-Permutation	3264	1	-
+SRT16Divint	3072	3	-
+FloatFMA	3027	1	-
+MMIOBridge	2673	1	-
+ExceptionGen	2636	1	-
+PTWFilter	2565	1	-
+ITTage	2429	1	REWRITE_L
+RegCacheAgeTimer	2346	2	-
+FrontendTrigger	2195	1	-
 #
 # ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
 #   让人看得见它们的存在，别当成"还没人接的活"★  合计 352600 行

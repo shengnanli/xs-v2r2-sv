@@ -1,0 +1,9 @@
+{
+  "target": "PrefetchReqBuffer",
+  "ut": "PrefetchReqBuffer",
+  "regs": 2786,
+  "outs": 152,
+  "expected": 2938,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -9,7 +9,7 @@
 - `Arbiter16_CHIDAT`
 - `TLXbar_5`
 - `TLXbar_6`
-- `skidBufferConnect`
+- ~~`skidBufferConnect`~~ —— 撤下：由 storeunit-vsplit lane 签核（main c352cf75，SUCCEEDED passing 3267）；本 lane 版本已丢弃
 - `BusPerfMonitor`
 - `PTWRepeaterNB`
 - `Arbiter3_L2TLBImp_Anon`

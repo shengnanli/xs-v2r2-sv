@@ -1,0 +1,9 @@
+{
+  "target": "PredChecker",
+  "ut": "PredChecker",
+  "regs": 1799,
+  "outs": 1696,
+  "expected": 3495,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/PrefetchQueue
+Implementation : i:/WORK/PrefetchQueue
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 21:18:50 2026
+**************************************************
+
+No aborted compare points.
+
+1

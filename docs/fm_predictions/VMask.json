@@ -1,0 +1,10 @@
+{
+  "target": "VMask",
+  "ut": "VMask",
+  "regs": 1020,
+  "outs": 128,
+  "expected": 1148,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "模型 1148 = regs 1020 + outs 128；预测 passing=1147（vmucp 开，vs1_reg_s1[127:8] 120 位对称死位纳入比较），差 1 = constant_reg ele_cnt_reg_s1[0]（16>>vsew 最低位恒 0，两侧对称）"
+}

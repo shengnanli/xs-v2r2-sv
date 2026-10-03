@@ -1,0 +1,9 @@
+{
+  "target": "MvienModule",
+  "ut": "CsrIrqHandle12",
+  "regs": 52,
+  "outs": 116,
+  "expected": 168,
+  "merge_dup": "false",
+  "model_applicable": true
+}

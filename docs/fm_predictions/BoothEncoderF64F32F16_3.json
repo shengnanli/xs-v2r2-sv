@@ -1,0 +1,9 @@
+{
+  "target": "BoothEncoderF64F32F16_3",
+  "ut": "BoothEncoderF64F32F16_3",
+  "regs": 0,
+  "outs": 2889,
+  "expected": 2889,
+  "merge_dup": "false",
+  "model_applicable": true
+}

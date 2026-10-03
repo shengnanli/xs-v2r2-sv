@@ -1,26 +1,31 @@
+# skidBufferConnect —— 拆分流水与拆分缓冲之间的 skid 缓冲（VLSplitImp / VSSplitImp 共用的一个 golden 模块）
+# 无子模块。
 MODULE = skidBufferConnect
 
-# VLSplit / VSSplit 出口的单项 skid buffer。核 xs_SkidBuffer_core（打包载荷），薄文件由
-# scripts/gen_payload_shells.py 生成（同时生成本目录 fm_pins_pre.tcl：golden 逐字段寄存器 <-> 核里打包向量）。
-# 无子模块、无黑盒。
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/memblock/xs_SkidBuffer_core.sv $(RTL_DIR)/memblock/skidBufferConnect.sv
+RTL_SRCS = $(RTL_DIR)/memblock/skidBufferConnect.sv
 TB_SRCS  = tb.sv
 
+G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
+GOLDEN_RTL ?= $(G1_CANONICAL)/golden-rtl
 GOLDEN_SRCS = $(GOLDEN_RTL)/skidBufferConnect.sv
+
 FM_VARIANTS = skidBufferConnect
+
+# 关掉 merge_duplicated_registers：逐个比而不是合并后比；也让 fm_predict 的 passing 模型严格适用。
 FM_MERGE_DUP = false
 
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
 
-INITREG  ?= random
-VCS      += +define+SYNTHESIS +vcs+initreg+random
-SIM_ARGS += +vcs+initreg+$(INITREG)
+# golden 的 `ifndef SYNTHESIS 段（随机初值 / 断言）两侧统一关掉。
+# 整包寄存器不复位：非常量 initreg 档两个实例各摇各的初值，先跑 WARMUP 拍再比；常量档从第 0 拍比。
+VCS += +define+SYNTHESIS +vcs+initreg+random
+INITREG ?= +vcs+initreg+random
+WARMUP  ?= $(if $(filter +vcs+initreg+0 +vcs+initreg+1,$(INITREG)),0,3000)
+SIM_ARGS += $(INITREG) +warmup=$(WARMUP)
 
-.PHONY: gentb gencheck
-gentb:
-	python3 gen.py
+.PHONY: gencheck
 gencheck:
-	python3 gen.py --check
+	python3 ../../../scripts/gen_vsplit.py --check

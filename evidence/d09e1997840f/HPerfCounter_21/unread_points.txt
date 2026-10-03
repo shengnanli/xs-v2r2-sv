@@ -1,0 +1,14 @@
+ref	r:/WORK/HPerfCounter_21/event_op_0_reg[3]
+ref	r:/WORK/HPerfCounter_21/event_op_0_reg[4]
+ref	r:/WORK/HPerfCounter_21/event_op_1_reg[3]
+ref	r:/WORK/HPerfCounter_21/event_op_1_reg[4]
+ref	r:/WORK/HPerfCounter_21/event_op_2_reg[3]
+ref	r:/WORK/HPerfCounter_21/event_op_2_reg[4]
+impl	i:/WORK/HPerfCounter_21/u_core/event_op_reg[0][3]
+impl	i:/WORK/HPerfCounter_21/u_core/event_op_reg[0][4]
+impl	i:/WORK/HPerfCounter_21/u_core/event_op_reg[1][3]
+impl	i:/WORK/HPerfCounter_21/u_core/event_op_reg[1][4]
+impl	i:/WORK/HPerfCounter_21/u_core/event_op_reg[2][3]
+impl	i:/WORK/HPerfCounter_21/u_core/event_op_reg[2][4]
+matched_nc	{r:/WORK/HPerfCounter_21/event_op_2_reg_reg[3]} {i:/WORK/HPerfCounter_21/u_core/event_op_2_reg_reg[3]}
+matched_nc	{r:/WORK/HPerfCounter_21/event_op_2_reg_reg[4]} {i:/WORK/HPerfCounter_21/u_core/event_op_2_reg_reg[4]}

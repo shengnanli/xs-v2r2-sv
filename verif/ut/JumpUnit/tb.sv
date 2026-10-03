@@ -1,0 +1,740 @@
+// =============================================================================
+// tb —— JumpUnit UT：golden JumpUnit（含 golden JumpDataModule）与重写件 JumpUnit_xs
+// （含重写 JumpDataModule_xs）双例化，同激励逐拍比全部输出。纯组合，每拍一组新输入。
+//
+// 激励：
+//   fuOpType  八成取 3 个合法编码（jal=0 / jalr=1 / auipc=2），两成任意 9 位；
+//   预测目标  一半取"本拍 golden 算出的真实目标"（先驱动、读回、再改写预测目标），使
+//             "预测正确"这条路有量；另一半随机（必 mispredict）；predictInfo.taken 3/4 为 1；
+//   翻译模式  八成 one-hot（五种轮换），一成全 0，一成任意 5 位（含多热的非法组合）；
+//   pc / src  一半"规范地址"（高位是某一位的符号/零扩展），1/4 贴近地址空间两端，其余全随机；
+//   其余端口全随机。
+// 覆盖（写进 PASS 判据）：3 个合法编码 × mispredict × redirect_valid 中可达的格子每格 >= 200
+//   （auipc 永不重定向，那两格必须恰为 0）；五种翻译模式各自"有异常 / 无异常"每格 >= 200；
+//   每个非恒定输出都见过 0 和 1，恒 0 输出恰 78 个、恒 1 输出恰 2 个（数自 golden 的常量 assign）。
+// =============================================================================
+`timescale 1ns/1ps
+module tb;
+  int unsigned NCYCLES = 200000;
+  longint errors = 0, checks = 0;
+  int cyc;
+
+  // ---- 以下声明/例化/比较由 golden 端口表机械展开（38 输入 / 117 输出）----
+  logic io_in_valid;
+  logic [8:0] io_in_bits_ctrl_fuOpType;
+  logic io_in_bits_ctrl_robIdx_flag;
+  logic [7:0] io_in_bits_ctrl_robIdx_value;
+  logic [7:0] io_in_bits_ctrl_pdest;
+  logic io_in_bits_ctrl_rfWen;
+  logic io_in_bits_ctrl_preDecode_valid;
+  logic io_in_bits_ctrl_preDecode_isRVC;
+  logic [1:0] io_in_bits_ctrl_preDecode_brType;
+  logic io_in_bits_ctrl_preDecode_isCall;
+  logic io_in_bits_ctrl_preDecode_isRet;
+  logic io_in_bits_ctrl_ftqIdx_flag;
+  logic [5:0] io_in_bits_ctrl_ftqIdx_value;
+  logic [3:0] io_in_bits_ctrl_ftqOffset;
+  logic [49:0] io_in_bits_ctrl_predictInfo_target;
+  logic io_in_bits_ctrl_predictInfo_taken;
+  logic [63:0] io_in_bits_data_src_0;
+  logic [63:0] io_in_bits_data_imm;
+  logic [49:0] io_in_bits_data_pc;
+  logic [4:0] io_in_bits_data_nextPcOffset;
+  logic io_in_bits_perfDebugInfo_eliminatedMove;
+  logic [63:0] io_in_bits_perfDebugInfo_renameTime;
+  logic [63:0] io_in_bits_perfDebugInfo_dispatchTime;
+  logic [63:0] io_in_bits_perfDebugInfo_enqRsTime;
+  logic [63:0] io_in_bits_perfDebugInfo_selectTime;
+  logic [63:0] io_in_bits_perfDebugInfo_issueTime;
+  logic [63:0] io_in_bits_perfDebugInfo_writebackTime;
+  logic [63:0] io_in_bits_perfDebugInfo_runahead_checkpoint_id;
+  logic [63:0] io_in_bits_perfDebugInfo_tlbFirstReqTime;
+  logic [63:0] io_in_bits_perfDebugInfo_tlbRespTime;
+  logic [55:0] io_in_bits_debug_seqNum_seqNum;
+  logic [7:0] io_in_bits_debug_seqNum_uopIdx;
+  logic io_out_ready;
+  logic io_instrAddrTransType_bare;
+  logic io_instrAddrTransType_sv39;
+  logic io_instrAddrTransType_sv39x4;
+  logic io_instrAddrTransType_sv48;
+  logic io_instrAddrTransType_sv48x4;
+  logic g_io_in_ready, i_io_in_ready;
+  logic g_io_out_valid, i_io_out_valid;
+  logic g_io_out_bits_ctrl_robIdx_flag, i_io_out_bits_ctrl_robIdx_flag;
+  logic [7:0] g_io_out_bits_ctrl_robIdx_value, i_io_out_bits_ctrl_robIdx_value;
+  logic [7:0] g_io_out_bits_ctrl_pdest, i_io_out_bits_ctrl_pdest;
+  logic g_io_out_bits_ctrl_rfWen, i_io_out_bits_ctrl_rfWen;
+  logic g_io_out_bits_ctrl_preDecode_valid, i_io_out_bits_ctrl_preDecode_valid;
+  logic g_io_out_bits_ctrl_preDecode_isRVC, i_io_out_bits_ctrl_preDecode_isRVC;
+  logic [1:0] g_io_out_bits_ctrl_preDecode_brType, i_io_out_bits_ctrl_preDecode_brType;
+  logic g_io_out_bits_ctrl_preDecode_isCall, i_io_out_bits_ctrl_preDecode_isCall;
+  logic g_io_out_bits_ctrl_preDecode_isRet, i_io_out_bits_ctrl_preDecode_isRet;
+  logic [63:0] g_io_out_bits_res_data, i_io_out_bits_res_data;
+  logic g_io_out_bits_res_redirect_valid, i_io_out_bits_res_redirect_valid;
+  logic g_io_out_bits_res_redirect_bits_isRVC, i_io_out_bits_res_redirect_bits_isRVC;
+  logic g_io_out_bits_res_redirect_bits_robIdx_flag, i_io_out_bits_res_redirect_bits_robIdx_flag;
+  logic [7:0] g_io_out_bits_res_redirect_bits_robIdx_value, i_io_out_bits_res_redirect_bits_robIdx_value;
+  logic g_io_out_bits_res_redirect_bits_ftqIdx_flag, i_io_out_bits_res_redirect_bits_ftqIdx_flag;
+  logic [5:0] g_io_out_bits_res_redirect_bits_ftqIdx_value, i_io_out_bits_res_redirect_bits_ftqIdx_value;
+  logic [3:0] g_io_out_bits_res_redirect_bits_ftqOffset, i_io_out_bits_res_redirect_bits_ftqOffset;
+  logic g_io_out_bits_res_redirect_bits_level, i_io_out_bits_res_redirect_bits_level;
+  logic g_io_out_bits_res_redirect_bits_interrupt, i_io_out_bits_res_redirect_bits_interrupt;
+  logic [49:0] g_io_out_bits_res_redirect_bits_cfiUpdate_pc, i_io_out_bits_res_redirect_bits_cfiUpdate_pc;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_pd_valid, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_valid;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC;
+  logic [1:0] g_io_out_bits_res_redirect_bits_cfiUpdate_pd_brType, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_brType;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet;
+  logic [3:0] g_io_out_bits_res_redirect_bits_cfiUpdate_ssp, i_io_out_bits_res_redirect_bits_cfiUpdate_ssp;
+  logic [2:0] g_io_out_bits_res_redirect_bits_cfiUpdate_sctr, i_io_out_bits_res_redirect_bits_cfiUpdate_sctr;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag, i_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag;
+  logic [4:0] g_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value, i_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag, i_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag;
+  logic [4:0] g_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value, i_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag, i_io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag;
+  logic [4:0] g_io_out_bits_res_redirect_bits_cfiUpdate_NOS_value, i_io_out_bits_res_redirect_bits_cfiUpdate_NOS_value;
+  logic [49:0] g_io_out_bits_res_redirect_bits_cfiUpdate_topAddr, i_io_out_bits_res_redirect_bits_cfiUpdate_topAddr;
+  logic [10:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist;
+  logic [10:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist;
+  logic [6:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist;
+  logic [7:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist;
+  logic [8:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist;
+  logic [3:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist;
+  logic [7:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist;
+  logic [8:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist;
+  logic [6:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist;
+  logic [7:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist;
+  logic [6:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist;
+  logic [8:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist;
+  logic [6:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist;
+  logic [7:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist;
+  logic [7:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist;
+  logic [7:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist;
+  logic [10:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist;
+  logic [7:0] g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3;
+  logic [2:0] g_io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH, i_io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH;
+  logic [3:0] g_io_out_bits_res_redirect_bits_cfiUpdate_ghr, i_io_out_bits_res_redirect_bits_cfiUpdate_ghr;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag, i_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag;
+  logic [7:0] g_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value, i_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value;
+  logic [9:0] g_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0, i_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0;
+  logic [9:0] g_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1, i_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_br_hit, i_io_out_bits_res_redirect_bits_cfiUpdate_br_hit;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_jr_hit, i_io_out_bits_res_redirect_bits_cfiUpdate_jr_hit;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_sc_hit, i_io_out_bits_res_redirect_bits_cfiUpdate_sc_hit;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_predTaken, i_io_out_bits_res_redirect_bits_cfiUpdate_predTaken;
+  logic [49:0] g_io_out_bits_res_redirect_bits_cfiUpdate_target, i_io_out_bits_res_redirect_bits_cfiUpdate_target;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_taken, i_io_out_bits_res_redirect_bits_cfiUpdate_taken;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_isMisPred, i_io_out_bits_res_redirect_bits_cfiUpdate_isMisPred;
+  logic [1:0] g_io_out_bits_res_redirect_bits_cfiUpdate_shift, i_io_out_bits_res_redirect_bits_cfiUpdate_shift;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist, i_io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF, i_io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_backendIPF, i_io_out_bits_res_redirect_bits_cfiUpdate_backendIPF;
+  logic g_io_out_bits_res_redirect_bits_cfiUpdate_backendIAF, i_io_out_bits_res_redirect_bits_cfiUpdate_backendIAF;
+  logic [63:0] g_io_out_bits_res_redirect_bits_fullTarget, i_io_out_bits_res_redirect_bits_fullTarget;
+  logic g_io_out_bits_res_redirect_bits_satpFlush, i_io_out_bits_res_redirect_bits_satpFlush;
+  logic g_io_out_bits_res_redirect_bits_isVlsException, i_io_out_bits_res_redirect_bits_isVlsException;
+  logic g_io_out_bits_res_redirect_bits_stFtqIdx_flag, i_io_out_bits_res_redirect_bits_stFtqIdx_flag;
+  logic [5:0] g_io_out_bits_res_redirect_bits_stFtqIdx_value, i_io_out_bits_res_redirect_bits_stFtqIdx_value;
+  logic [3:0] g_io_out_bits_res_redirect_bits_stFtqOffset, i_io_out_bits_res_redirect_bits_stFtqOffset;
+  logic [63:0] g_io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id, i_io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id;
+  logic g_io_out_bits_res_redirect_bits_debugIsCtrl, i_io_out_bits_res_redirect_bits_debugIsCtrl;
+  logic g_io_out_bits_res_redirect_bits_debugIsMemVio, i_io_out_bits_res_redirect_bits_debugIsMemVio;
+  logic g_io_out_bits_perfDebugInfo_eliminatedMove, i_io_out_bits_perfDebugInfo_eliminatedMove;
+  logic [63:0] g_io_out_bits_perfDebugInfo_renameTime, i_io_out_bits_perfDebugInfo_renameTime;
+  logic [63:0] g_io_out_bits_perfDebugInfo_dispatchTime, i_io_out_bits_perfDebugInfo_dispatchTime;
+  logic [63:0] g_io_out_bits_perfDebugInfo_enqRsTime, i_io_out_bits_perfDebugInfo_enqRsTime;
+  logic [63:0] g_io_out_bits_perfDebugInfo_selectTime, i_io_out_bits_perfDebugInfo_selectTime;
+  logic [63:0] g_io_out_bits_perfDebugInfo_issueTime, i_io_out_bits_perfDebugInfo_issueTime;
+  logic [63:0] g_io_out_bits_perfDebugInfo_writebackTime, i_io_out_bits_perfDebugInfo_writebackTime;
+  logic [63:0] g_io_out_bits_perfDebugInfo_runahead_checkpoint_id, i_io_out_bits_perfDebugInfo_runahead_checkpoint_id;
+  logic [63:0] g_io_out_bits_perfDebugInfo_tlbFirstReqTime, i_io_out_bits_perfDebugInfo_tlbFirstReqTime;
+  logic [63:0] g_io_out_bits_perfDebugInfo_tlbRespTime, i_io_out_bits_perfDebugInfo_tlbRespTime;
+  logic [55:0] g_io_out_bits_debug_seqNum_seqNum, i_io_out_bits_debug_seqNum_seqNum;
+  logic [7:0] g_io_out_bits_debug_seqNum_uopIdx, i_io_out_bits_debug_seqNum_uopIdx;
+  JumpUnit u_g (
+    .io_in_valid(io_in_valid),
+    .io_in_bits_ctrl_fuOpType(io_in_bits_ctrl_fuOpType),
+    .io_in_bits_ctrl_robIdx_flag(io_in_bits_ctrl_robIdx_flag),
+    .io_in_bits_ctrl_robIdx_value(io_in_bits_ctrl_robIdx_value),
+    .io_in_bits_ctrl_pdest(io_in_bits_ctrl_pdest),
+    .io_in_bits_ctrl_rfWen(io_in_bits_ctrl_rfWen),
+    .io_in_bits_ctrl_preDecode_valid(io_in_bits_ctrl_preDecode_valid),
+    .io_in_bits_ctrl_preDecode_isRVC(io_in_bits_ctrl_preDecode_isRVC),
+    .io_in_bits_ctrl_preDecode_brType(io_in_bits_ctrl_preDecode_brType),
+    .io_in_bits_ctrl_preDecode_isCall(io_in_bits_ctrl_preDecode_isCall),
+    .io_in_bits_ctrl_preDecode_isRet(io_in_bits_ctrl_preDecode_isRet),
+    .io_in_bits_ctrl_ftqIdx_flag(io_in_bits_ctrl_ftqIdx_flag),
+    .io_in_bits_ctrl_ftqIdx_value(io_in_bits_ctrl_ftqIdx_value),
+    .io_in_bits_ctrl_ftqOffset(io_in_bits_ctrl_ftqOffset),
+    .io_in_bits_ctrl_predictInfo_target(io_in_bits_ctrl_predictInfo_target),
+    .io_in_bits_ctrl_predictInfo_taken(io_in_bits_ctrl_predictInfo_taken),
+    .io_in_bits_data_src_0(io_in_bits_data_src_0),
+    .io_in_bits_data_imm(io_in_bits_data_imm),
+    .io_in_bits_data_pc(io_in_bits_data_pc),
+    .io_in_bits_data_nextPcOffset(io_in_bits_data_nextPcOffset),
+    .io_in_bits_perfDebugInfo_eliminatedMove(io_in_bits_perfDebugInfo_eliminatedMove),
+    .io_in_bits_perfDebugInfo_renameTime(io_in_bits_perfDebugInfo_renameTime),
+    .io_in_bits_perfDebugInfo_dispatchTime(io_in_bits_perfDebugInfo_dispatchTime),
+    .io_in_bits_perfDebugInfo_enqRsTime(io_in_bits_perfDebugInfo_enqRsTime),
+    .io_in_bits_perfDebugInfo_selectTime(io_in_bits_perfDebugInfo_selectTime),
+    .io_in_bits_perfDebugInfo_issueTime(io_in_bits_perfDebugInfo_issueTime),
+    .io_in_bits_perfDebugInfo_writebackTime(io_in_bits_perfDebugInfo_writebackTime),
+    .io_in_bits_perfDebugInfo_runahead_checkpoint_id(io_in_bits_perfDebugInfo_runahead_checkpoint_id),
+    .io_in_bits_perfDebugInfo_tlbFirstReqTime(io_in_bits_perfDebugInfo_tlbFirstReqTime),
+    .io_in_bits_perfDebugInfo_tlbRespTime(io_in_bits_perfDebugInfo_tlbRespTime),
+    .io_in_bits_debug_seqNum_seqNum(io_in_bits_debug_seqNum_seqNum),
+    .io_in_bits_debug_seqNum_uopIdx(io_in_bits_debug_seqNum_uopIdx),
+    .io_out_ready(io_out_ready),
+    .io_instrAddrTransType_bare(io_instrAddrTransType_bare),
+    .io_instrAddrTransType_sv39(io_instrAddrTransType_sv39),
+    .io_instrAddrTransType_sv39x4(io_instrAddrTransType_sv39x4),
+    .io_instrAddrTransType_sv48(io_instrAddrTransType_sv48),
+    .io_instrAddrTransType_sv48x4(io_instrAddrTransType_sv48x4),
+    .io_in_ready(g_io_in_ready),
+    .io_out_valid(g_io_out_valid),
+    .io_out_bits_ctrl_robIdx_flag(g_io_out_bits_ctrl_robIdx_flag),
+    .io_out_bits_ctrl_robIdx_value(g_io_out_bits_ctrl_robIdx_value),
+    .io_out_bits_ctrl_pdest(g_io_out_bits_ctrl_pdest),
+    .io_out_bits_ctrl_rfWen(g_io_out_bits_ctrl_rfWen),
+    .io_out_bits_ctrl_preDecode_valid(g_io_out_bits_ctrl_preDecode_valid),
+    .io_out_bits_ctrl_preDecode_isRVC(g_io_out_bits_ctrl_preDecode_isRVC),
+    .io_out_bits_ctrl_preDecode_brType(g_io_out_bits_ctrl_preDecode_brType),
+    .io_out_bits_ctrl_preDecode_isCall(g_io_out_bits_ctrl_preDecode_isCall),
+    .io_out_bits_ctrl_preDecode_isRet(g_io_out_bits_ctrl_preDecode_isRet),
+    .io_out_bits_res_data(g_io_out_bits_res_data),
+    .io_out_bits_res_redirect_valid(g_io_out_bits_res_redirect_valid),
+    .io_out_bits_res_redirect_bits_isRVC(g_io_out_bits_res_redirect_bits_isRVC),
+    .io_out_bits_res_redirect_bits_robIdx_flag(g_io_out_bits_res_redirect_bits_robIdx_flag),
+    .io_out_bits_res_redirect_bits_robIdx_value(g_io_out_bits_res_redirect_bits_robIdx_value),
+    .io_out_bits_res_redirect_bits_ftqIdx_flag(g_io_out_bits_res_redirect_bits_ftqIdx_flag),
+    .io_out_bits_res_redirect_bits_ftqIdx_value(g_io_out_bits_res_redirect_bits_ftqIdx_value),
+    .io_out_bits_res_redirect_bits_ftqOffset(g_io_out_bits_res_redirect_bits_ftqOffset),
+    .io_out_bits_res_redirect_bits_level(g_io_out_bits_res_redirect_bits_level),
+    .io_out_bits_res_redirect_bits_interrupt(g_io_out_bits_res_redirect_bits_interrupt),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pc(g_io_out_bits_res_redirect_bits_cfiUpdate_pc),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_valid(g_io_out_bits_res_redirect_bits_cfiUpdate_pd_valid),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC(g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_brType(g_io_out_bits_res_redirect_bits_cfiUpdate_pd_brType),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall(g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet(g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet),
+    .io_out_bits_res_redirect_bits_cfiUpdate_ssp(g_io_out_bits_res_redirect_bits_cfiUpdate_ssp),
+    .io_out_bits_res_redirect_bits_cfiUpdate_sctr(g_io_out_bits_res_redirect_bits_cfiUpdate_sctr),
+    .io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag(g_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag),
+    .io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value(g_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value),
+    .io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag(g_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag),
+    .io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value(g_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value),
+    .io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag(g_io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag),
+    .io_out_bits_res_redirect_bits_cfiUpdate_NOS_value(g_io_out_bits_res_redirect_bits_cfiUpdate_NOS_value),
+    .io_out_bits_res_redirect_bits_cfiUpdate_topAddr(g_io_out_bits_res_redirect_bits_cfiUpdate_topAddr),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist(g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3(g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH(g_io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH),
+    .io_out_bits_res_redirect_bits_cfiUpdate_ghr(g_io_out_bits_res_redirect_bits_cfiUpdate_ghr),
+    .io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag(g_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag),
+    .io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value(g_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value),
+    .io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0(g_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1(g_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_br_hit(g_io_out_bits_res_redirect_bits_cfiUpdate_br_hit),
+    .io_out_bits_res_redirect_bits_cfiUpdate_jr_hit(g_io_out_bits_res_redirect_bits_cfiUpdate_jr_hit),
+    .io_out_bits_res_redirect_bits_cfiUpdate_sc_hit(g_io_out_bits_res_redirect_bits_cfiUpdate_sc_hit),
+    .io_out_bits_res_redirect_bits_cfiUpdate_predTaken(g_io_out_bits_res_redirect_bits_cfiUpdate_predTaken),
+    .io_out_bits_res_redirect_bits_cfiUpdate_target(g_io_out_bits_res_redirect_bits_cfiUpdate_target),
+    .io_out_bits_res_redirect_bits_cfiUpdate_taken(g_io_out_bits_res_redirect_bits_cfiUpdate_taken),
+    .io_out_bits_res_redirect_bits_cfiUpdate_isMisPred(g_io_out_bits_res_redirect_bits_cfiUpdate_isMisPred),
+    .io_out_bits_res_redirect_bits_cfiUpdate_shift(g_io_out_bits_res_redirect_bits_cfiUpdate_shift),
+    .io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist(g_io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF(g_io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF),
+    .io_out_bits_res_redirect_bits_cfiUpdate_backendIPF(g_io_out_bits_res_redirect_bits_cfiUpdate_backendIPF),
+    .io_out_bits_res_redirect_bits_cfiUpdate_backendIAF(g_io_out_bits_res_redirect_bits_cfiUpdate_backendIAF),
+    .io_out_bits_res_redirect_bits_fullTarget(g_io_out_bits_res_redirect_bits_fullTarget),
+    .io_out_bits_res_redirect_bits_satpFlush(g_io_out_bits_res_redirect_bits_satpFlush),
+    .io_out_bits_res_redirect_bits_isVlsException(g_io_out_bits_res_redirect_bits_isVlsException),
+    .io_out_bits_res_redirect_bits_stFtqIdx_flag(g_io_out_bits_res_redirect_bits_stFtqIdx_flag),
+    .io_out_bits_res_redirect_bits_stFtqIdx_value(g_io_out_bits_res_redirect_bits_stFtqIdx_value),
+    .io_out_bits_res_redirect_bits_stFtqOffset(g_io_out_bits_res_redirect_bits_stFtqOffset),
+    .io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id(g_io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id),
+    .io_out_bits_res_redirect_bits_debugIsCtrl(g_io_out_bits_res_redirect_bits_debugIsCtrl),
+    .io_out_bits_res_redirect_bits_debugIsMemVio(g_io_out_bits_res_redirect_bits_debugIsMemVio),
+    .io_out_bits_perfDebugInfo_eliminatedMove(g_io_out_bits_perfDebugInfo_eliminatedMove),
+    .io_out_bits_perfDebugInfo_renameTime(g_io_out_bits_perfDebugInfo_renameTime),
+    .io_out_bits_perfDebugInfo_dispatchTime(g_io_out_bits_perfDebugInfo_dispatchTime),
+    .io_out_bits_perfDebugInfo_enqRsTime(g_io_out_bits_perfDebugInfo_enqRsTime),
+    .io_out_bits_perfDebugInfo_selectTime(g_io_out_bits_perfDebugInfo_selectTime),
+    .io_out_bits_perfDebugInfo_issueTime(g_io_out_bits_perfDebugInfo_issueTime),
+    .io_out_bits_perfDebugInfo_writebackTime(g_io_out_bits_perfDebugInfo_writebackTime),
+    .io_out_bits_perfDebugInfo_runahead_checkpoint_id(g_io_out_bits_perfDebugInfo_runahead_checkpoint_id),
+    .io_out_bits_perfDebugInfo_tlbFirstReqTime(g_io_out_bits_perfDebugInfo_tlbFirstReqTime),
+    .io_out_bits_perfDebugInfo_tlbRespTime(g_io_out_bits_perfDebugInfo_tlbRespTime),
+    .io_out_bits_debug_seqNum_seqNum(g_io_out_bits_debug_seqNum_seqNum),
+    .io_out_bits_debug_seqNum_uopIdx(g_io_out_bits_debug_seqNum_uopIdx)
+  );
+  JumpUnit_xs u_i (
+    .io_in_valid(io_in_valid),
+    .io_in_bits_ctrl_fuOpType(io_in_bits_ctrl_fuOpType),
+    .io_in_bits_ctrl_robIdx_flag(io_in_bits_ctrl_robIdx_flag),
+    .io_in_bits_ctrl_robIdx_value(io_in_bits_ctrl_robIdx_value),
+    .io_in_bits_ctrl_pdest(io_in_bits_ctrl_pdest),
+    .io_in_bits_ctrl_rfWen(io_in_bits_ctrl_rfWen),
+    .io_in_bits_ctrl_preDecode_valid(io_in_bits_ctrl_preDecode_valid),
+    .io_in_bits_ctrl_preDecode_isRVC(io_in_bits_ctrl_preDecode_isRVC),
+    .io_in_bits_ctrl_preDecode_brType(io_in_bits_ctrl_preDecode_brType),
+    .io_in_bits_ctrl_preDecode_isCall(io_in_bits_ctrl_preDecode_isCall),
+    .io_in_bits_ctrl_preDecode_isRet(io_in_bits_ctrl_preDecode_isRet),
+    .io_in_bits_ctrl_ftqIdx_flag(io_in_bits_ctrl_ftqIdx_flag),
+    .io_in_bits_ctrl_ftqIdx_value(io_in_bits_ctrl_ftqIdx_value),
+    .io_in_bits_ctrl_ftqOffset(io_in_bits_ctrl_ftqOffset),
+    .io_in_bits_ctrl_predictInfo_target(io_in_bits_ctrl_predictInfo_target),
+    .io_in_bits_ctrl_predictInfo_taken(io_in_bits_ctrl_predictInfo_taken),
+    .io_in_bits_data_src_0(io_in_bits_data_src_0),
+    .io_in_bits_data_imm(io_in_bits_data_imm),
+    .io_in_bits_data_pc(io_in_bits_data_pc),
+    .io_in_bits_data_nextPcOffset(io_in_bits_data_nextPcOffset),
+    .io_in_bits_perfDebugInfo_eliminatedMove(io_in_bits_perfDebugInfo_eliminatedMove),
+    .io_in_bits_perfDebugInfo_renameTime(io_in_bits_perfDebugInfo_renameTime),
+    .io_in_bits_perfDebugInfo_dispatchTime(io_in_bits_perfDebugInfo_dispatchTime),
+    .io_in_bits_perfDebugInfo_enqRsTime(io_in_bits_perfDebugInfo_enqRsTime),
+    .io_in_bits_perfDebugInfo_selectTime(io_in_bits_perfDebugInfo_selectTime),
+    .io_in_bits_perfDebugInfo_issueTime(io_in_bits_perfDebugInfo_issueTime),
+    .io_in_bits_perfDebugInfo_writebackTime(io_in_bits_perfDebugInfo_writebackTime),
+    .io_in_bits_perfDebugInfo_runahead_checkpoint_id(io_in_bits_perfDebugInfo_runahead_checkpoint_id),
+    .io_in_bits_perfDebugInfo_tlbFirstReqTime(io_in_bits_perfDebugInfo_tlbFirstReqTime),
+    .io_in_bits_perfDebugInfo_tlbRespTime(io_in_bits_perfDebugInfo_tlbRespTime),
+    .io_in_bits_debug_seqNum_seqNum(io_in_bits_debug_seqNum_seqNum),
+    .io_in_bits_debug_seqNum_uopIdx(io_in_bits_debug_seqNum_uopIdx),
+    .io_out_ready(io_out_ready),
+    .io_instrAddrTransType_bare(io_instrAddrTransType_bare),
+    .io_instrAddrTransType_sv39(io_instrAddrTransType_sv39),
+    .io_instrAddrTransType_sv39x4(io_instrAddrTransType_sv39x4),
+    .io_instrAddrTransType_sv48(io_instrAddrTransType_sv48),
+    .io_instrAddrTransType_sv48x4(io_instrAddrTransType_sv48x4),
+    .io_in_ready(i_io_in_ready),
+    .io_out_valid(i_io_out_valid),
+    .io_out_bits_ctrl_robIdx_flag(i_io_out_bits_ctrl_robIdx_flag),
+    .io_out_bits_ctrl_robIdx_value(i_io_out_bits_ctrl_robIdx_value),
+    .io_out_bits_ctrl_pdest(i_io_out_bits_ctrl_pdest),
+    .io_out_bits_ctrl_rfWen(i_io_out_bits_ctrl_rfWen),
+    .io_out_bits_ctrl_preDecode_valid(i_io_out_bits_ctrl_preDecode_valid),
+    .io_out_bits_ctrl_preDecode_isRVC(i_io_out_bits_ctrl_preDecode_isRVC),
+    .io_out_bits_ctrl_preDecode_brType(i_io_out_bits_ctrl_preDecode_brType),
+    .io_out_bits_ctrl_preDecode_isCall(i_io_out_bits_ctrl_preDecode_isCall),
+    .io_out_bits_ctrl_preDecode_isRet(i_io_out_bits_ctrl_preDecode_isRet),
+    .io_out_bits_res_data(i_io_out_bits_res_data),
+    .io_out_bits_res_redirect_valid(i_io_out_bits_res_redirect_valid),
+    .io_out_bits_res_redirect_bits_isRVC(i_io_out_bits_res_redirect_bits_isRVC),
+    .io_out_bits_res_redirect_bits_robIdx_flag(i_io_out_bits_res_redirect_bits_robIdx_flag),
+    .io_out_bits_res_redirect_bits_robIdx_value(i_io_out_bits_res_redirect_bits_robIdx_value),
+    .io_out_bits_res_redirect_bits_ftqIdx_flag(i_io_out_bits_res_redirect_bits_ftqIdx_flag),
+    .io_out_bits_res_redirect_bits_ftqIdx_value(i_io_out_bits_res_redirect_bits_ftqIdx_value),
+    .io_out_bits_res_redirect_bits_ftqOffset(i_io_out_bits_res_redirect_bits_ftqOffset),
+    .io_out_bits_res_redirect_bits_level(i_io_out_bits_res_redirect_bits_level),
+    .io_out_bits_res_redirect_bits_interrupt(i_io_out_bits_res_redirect_bits_interrupt),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pc(i_io_out_bits_res_redirect_bits_cfiUpdate_pc),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_valid(i_io_out_bits_res_redirect_bits_cfiUpdate_pd_valid),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC(i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_brType(i_io_out_bits_res_redirect_bits_cfiUpdate_pd_brType),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall(i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall),
+    .io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet(i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet),
+    .io_out_bits_res_redirect_bits_cfiUpdate_ssp(i_io_out_bits_res_redirect_bits_cfiUpdate_ssp),
+    .io_out_bits_res_redirect_bits_cfiUpdate_sctr(i_io_out_bits_res_redirect_bits_cfiUpdate_sctr),
+    .io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag(i_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag),
+    .io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value(i_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value),
+    .io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag(i_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag),
+    .io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value(i_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value),
+    .io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag(i_io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag),
+    .io_out_bits_res_redirect_bits_cfiUpdate_NOS_value(i_io_out_bits_res_redirect_bits_cfiUpdate_NOS_value),
+    .io_out_bits_res_redirect_bits_cfiUpdate_topAddr(i_io_out_bits_res_redirect_bits_cfiUpdate_topAddr),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist(i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2),
+    .io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3(i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3),
+    .io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH(i_io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH),
+    .io_out_bits_res_redirect_bits_cfiUpdate_ghr(i_io_out_bits_res_redirect_bits_cfiUpdate_ghr),
+    .io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag(i_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag),
+    .io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value(i_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value),
+    .io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0(i_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0),
+    .io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1(i_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1),
+    .io_out_bits_res_redirect_bits_cfiUpdate_br_hit(i_io_out_bits_res_redirect_bits_cfiUpdate_br_hit),
+    .io_out_bits_res_redirect_bits_cfiUpdate_jr_hit(i_io_out_bits_res_redirect_bits_cfiUpdate_jr_hit),
+    .io_out_bits_res_redirect_bits_cfiUpdate_sc_hit(i_io_out_bits_res_redirect_bits_cfiUpdate_sc_hit),
+    .io_out_bits_res_redirect_bits_cfiUpdate_predTaken(i_io_out_bits_res_redirect_bits_cfiUpdate_predTaken),
+    .io_out_bits_res_redirect_bits_cfiUpdate_target(i_io_out_bits_res_redirect_bits_cfiUpdate_target),
+    .io_out_bits_res_redirect_bits_cfiUpdate_taken(i_io_out_bits_res_redirect_bits_cfiUpdate_taken),
+    .io_out_bits_res_redirect_bits_cfiUpdate_isMisPred(i_io_out_bits_res_redirect_bits_cfiUpdate_isMisPred),
+    .io_out_bits_res_redirect_bits_cfiUpdate_shift(i_io_out_bits_res_redirect_bits_cfiUpdate_shift),
+    .io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist(i_io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist),
+    .io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF(i_io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF),
+    .io_out_bits_res_redirect_bits_cfiUpdate_backendIPF(i_io_out_bits_res_redirect_bits_cfiUpdate_backendIPF),
+    .io_out_bits_res_redirect_bits_cfiUpdate_backendIAF(i_io_out_bits_res_redirect_bits_cfiUpdate_backendIAF),
+    .io_out_bits_res_redirect_bits_fullTarget(i_io_out_bits_res_redirect_bits_fullTarget),
+    .io_out_bits_res_redirect_bits_satpFlush(i_io_out_bits_res_redirect_bits_satpFlush),
+    .io_out_bits_res_redirect_bits_isVlsException(i_io_out_bits_res_redirect_bits_isVlsException),
+    .io_out_bits_res_redirect_bits_stFtqIdx_flag(i_io_out_bits_res_redirect_bits_stFtqIdx_flag),
+    .io_out_bits_res_redirect_bits_stFtqIdx_value(i_io_out_bits_res_redirect_bits_stFtqIdx_value),
+    .io_out_bits_res_redirect_bits_stFtqOffset(i_io_out_bits_res_redirect_bits_stFtqOffset),
+    .io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id(i_io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id),
+    .io_out_bits_res_redirect_bits_debugIsCtrl(i_io_out_bits_res_redirect_bits_debugIsCtrl),
+    .io_out_bits_res_redirect_bits_debugIsMemVio(i_io_out_bits_res_redirect_bits_debugIsMemVio),
+    .io_out_bits_perfDebugInfo_eliminatedMove(i_io_out_bits_perfDebugInfo_eliminatedMove),
+    .io_out_bits_perfDebugInfo_renameTime(i_io_out_bits_perfDebugInfo_renameTime),
+    .io_out_bits_perfDebugInfo_dispatchTime(i_io_out_bits_perfDebugInfo_dispatchTime),
+    .io_out_bits_perfDebugInfo_enqRsTime(i_io_out_bits_perfDebugInfo_enqRsTime),
+    .io_out_bits_perfDebugInfo_selectTime(i_io_out_bits_perfDebugInfo_selectTime),
+    .io_out_bits_perfDebugInfo_issueTime(i_io_out_bits_perfDebugInfo_issueTime),
+    .io_out_bits_perfDebugInfo_writebackTime(i_io_out_bits_perfDebugInfo_writebackTime),
+    .io_out_bits_perfDebugInfo_runahead_checkpoint_id(i_io_out_bits_perfDebugInfo_runahead_checkpoint_id),
+    .io_out_bits_perfDebugInfo_tlbFirstReqTime(i_io_out_bits_perfDebugInfo_tlbFirstReqTime),
+    .io_out_bits_perfDebugInfo_tlbRespTime(i_io_out_bits_perfDebugInfo_tlbRespTime),
+    .io_out_bits_debug_seqNum_seqNum(i_io_out_bits_debug_seqNum_seqNum),
+    .io_out_bits_debug_seqNum_uopIdx(i_io_out_bits_debug_seqNum_uopIdx)
+  );
+  localparam int N_OUT = 117;
+  bit seen0 [N_OUT];  // 该输出出现过"某位为 0"
+  bit seen1 [N_OUT];  // 该输出出现过"某位为 1"
+  `define CMP(k, g, i, nm) \
+    begin checks++; if ((g) !== (i)) begin errors++; \
+      if (errors <= 30) $display("[%0d] MISMATCH %s golden=%h impl=%h", cyc, nm, (g), (i)); end \
+      if (|(g)) seen1[k] = 1; if (!(&(g))) seen0[k] = 1; end
+  task automatic compare_all();
+    `CMP(0, g_io_in_ready, i_io_in_ready, "io_in_ready")
+    `CMP(1, g_io_out_valid, i_io_out_valid, "io_out_valid")
+    `CMP(2, g_io_out_bits_ctrl_robIdx_flag, i_io_out_bits_ctrl_robIdx_flag, "io_out_bits_ctrl_robIdx_flag")
+    `CMP(3, g_io_out_bits_ctrl_robIdx_value, i_io_out_bits_ctrl_robIdx_value, "io_out_bits_ctrl_robIdx_value")
+    `CMP(4, g_io_out_bits_ctrl_pdest, i_io_out_bits_ctrl_pdest, "io_out_bits_ctrl_pdest")
+    `CMP(5, g_io_out_bits_ctrl_rfWen, i_io_out_bits_ctrl_rfWen, "io_out_bits_ctrl_rfWen")
+    `CMP(6, g_io_out_bits_ctrl_preDecode_valid, i_io_out_bits_ctrl_preDecode_valid, "io_out_bits_ctrl_preDecode_valid")
+    `CMP(7, g_io_out_bits_ctrl_preDecode_isRVC, i_io_out_bits_ctrl_preDecode_isRVC, "io_out_bits_ctrl_preDecode_isRVC")
+    `CMP(8, g_io_out_bits_ctrl_preDecode_brType, i_io_out_bits_ctrl_preDecode_brType, "io_out_bits_ctrl_preDecode_brType")
+    `CMP(9, g_io_out_bits_ctrl_preDecode_isCall, i_io_out_bits_ctrl_preDecode_isCall, "io_out_bits_ctrl_preDecode_isCall")
+    `CMP(10, g_io_out_bits_ctrl_preDecode_isRet, i_io_out_bits_ctrl_preDecode_isRet, "io_out_bits_ctrl_preDecode_isRet")
+    `CMP(11, g_io_out_bits_res_data, i_io_out_bits_res_data, "io_out_bits_res_data")
+    `CMP(12, g_io_out_bits_res_redirect_valid, i_io_out_bits_res_redirect_valid, "io_out_bits_res_redirect_valid")
+    `CMP(13, g_io_out_bits_res_redirect_bits_isRVC, i_io_out_bits_res_redirect_bits_isRVC, "io_out_bits_res_redirect_bits_isRVC")
+    `CMP(14, g_io_out_bits_res_redirect_bits_robIdx_flag, i_io_out_bits_res_redirect_bits_robIdx_flag, "io_out_bits_res_redirect_bits_robIdx_flag")
+    `CMP(15, g_io_out_bits_res_redirect_bits_robIdx_value, i_io_out_bits_res_redirect_bits_robIdx_value, "io_out_bits_res_redirect_bits_robIdx_value")
+    `CMP(16, g_io_out_bits_res_redirect_bits_ftqIdx_flag, i_io_out_bits_res_redirect_bits_ftqIdx_flag, "io_out_bits_res_redirect_bits_ftqIdx_flag")
+    `CMP(17, g_io_out_bits_res_redirect_bits_ftqIdx_value, i_io_out_bits_res_redirect_bits_ftqIdx_value, "io_out_bits_res_redirect_bits_ftqIdx_value")
+    `CMP(18, g_io_out_bits_res_redirect_bits_ftqOffset, i_io_out_bits_res_redirect_bits_ftqOffset, "io_out_bits_res_redirect_bits_ftqOffset")
+    `CMP(19, g_io_out_bits_res_redirect_bits_level, i_io_out_bits_res_redirect_bits_level, "io_out_bits_res_redirect_bits_level")
+    `CMP(20, g_io_out_bits_res_redirect_bits_interrupt, i_io_out_bits_res_redirect_bits_interrupt, "io_out_bits_res_redirect_bits_interrupt")
+    `CMP(21, g_io_out_bits_res_redirect_bits_cfiUpdate_pc, i_io_out_bits_res_redirect_bits_cfiUpdate_pc, "io_out_bits_res_redirect_bits_cfiUpdate_pc")
+    `CMP(22, g_io_out_bits_res_redirect_bits_cfiUpdate_pd_valid, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_valid, "io_out_bits_res_redirect_bits_cfiUpdate_pd_valid")
+    `CMP(23, g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC, "io_out_bits_res_redirect_bits_cfiUpdate_pd_isRVC")
+    `CMP(24, g_io_out_bits_res_redirect_bits_cfiUpdate_pd_brType, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_brType, "io_out_bits_res_redirect_bits_cfiUpdate_pd_brType")
+    `CMP(25, g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall, "io_out_bits_res_redirect_bits_cfiUpdate_pd_isCall")
+    `CMP(26, g_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet, i_io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet, "io_out_bits_res_redirect_bits_cfiUpdate_pd_isRet")
+    `CMP(27, g_io_out_bits_res_redirect_bits_cfiUpdate_ssp, i_io_out_bits_res_redirect_bits_cfiUpdate_ssp, "io_out_bits_res_redirect_bits_cfiUpdate_ssp")
+    `CMP(28, g_io_out_bits_res_redirect_bits_cfiUpdate_sctr, i_io_out_bits_res_redirect_bits_cfiUpdate_sctr, "io_out_bits_res_redirect_bits_cfiUpdate_sctr")
+    `CMP(29, g_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag, i_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag, "io_out_bits_res_redirect_bits_cfiUpdate_TOSW_flag")
+    `CMP(30, g_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value, i_io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value, "io_out_bits_res_redirect_bits_cfiUpdate_TOSW_value")
+    `CMP(31, g_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag, i_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag, "io_out_bits_res_redirect_bits_cfiUpdate_TOSR_flag")
+    `CMP(32, g_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value, i_io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value, "io_out_bits_res_redirect_bits_cfiUpdate_TOSR_value")
+    `CMP(33, g_io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag, i_io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag, "io_out_bits_res_redirect_bits_cfiUpdate_NOS_flag")
+    `CMP(34, g_io_out_bits_res_redirect_bits_cfiUpdate_NOS_value, i_io_out_bits_res_redirect_bits_cfiUpdate_NOS_value, "io_out_bits_res_redirect_bits_cfiUpdate_NOS_value")
+    `CMP(35, g_io_out_bits_res_redirect_bits_cfiUpdate_topAddr, i_io_out_bits_res_redirect_bits_cfiUpdate_topAddr, "io_out_bits_res_redirect_bits_cfiUpdate_topAddr")
+    `CMP(36, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_17_folded_hist")
+    `CMP(37, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_16_folded_hist")
+    `CMP(38, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_15_folded_hist")
+    `CMP(39, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_14_folded_hist")
+    `CMP(40, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_13_folded_hist")
+    `CMP(41, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_12_folded_hist")
+    `CMP(42, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_11_folded_hist")
+    `CMP(43, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_10_folded_hist")
+    `CMP(44, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_9_folded_hist")
+    `CMP(45, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_8_folded_hist")
+    `CMP(46, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_7_folded_hist")
+    `CMP(47, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_6_folded_hist")
+    `CMP(48, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_5_folded_hist")
+    `CMP(49, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_4_folded_hist")
+    `CMP(50, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_3_folded_hist")
+    `CMP(51, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_2_folded_hist")
+    `CMP(52, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_1_folded_hist")
+    `CMP(53, g_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist, i_io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist, "io_out_bits_res_redirect_bits_cfiUpdate_folded_hist_hist_0_folded_hist")
+    `CMP(54, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_0")
+    `CMP(55, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_1")
+    `CMP(56, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_2")
+    `CMP(57, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_5_bits_3")
+    `CMP(58, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_0")
+    `CMP(59, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_1")
+    `CMP(60, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_2")
+    `CMP(61, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_4_bits_3")
+    `CMP(62, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_0")
+    `CMP(63, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_1")
+    `CMP(64, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_2")
+    `CMP(65, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_3_bits_3")
+    `CMP(66, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_0")
+    `CMP(67, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_1")
+    `CMP(68, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_2")
+    `CMP(69, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_2_bits_3")
+    `CMP(70, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_0")
+    `CMP(71, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_1")
+    `CMP(72, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_2")
+    `CMP(73, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_1_bits_3")
+    `CMP(74, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_0")
+    `CMP(75, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_1")
+    `CMP(76, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_2")
+    `CMP(77, g_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3, i_io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3, "io_out_bits_res_redirect_bits_cfiUpdate_afhob_afhob_0_bits_3")
+    `CMP(78, g_io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH, i_io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH, "io_out_bits_res_redirect_bits_cfiUpdate_lastBrNumOH")
+    `CMP(79, g_io_out_bits_res_redirect_bits_cfiUpdate_ghr, i_io_out_bits_res_redirect_bits_cfiUpdate_ghr, "io_out_bits_res_redirect_bits_cfiUpdate_ghr")
+    `CMP(80, g_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag, i_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag, "io_out_bits_res_redirect_bits_cfiUpdate_histPtr_flag")
+    `CMP(81, g_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value, i_io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value, "io_out_bits_res_redirect_bits_cfiUpdate_histPtr_value")
+    `CMP(82, g_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0, i_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0, "io_out_bits_res_redirect_bits_cfiUpdate_specCnt_0")
+    `CMP(83, g_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1, i_io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1, "io_out_bits_res_redirect_bits_cfiUpdate_specCnt_1")
+    `CMP(84, g_io_out_bits_res_redirect_bits_cfiUpdate_br_hit, i_io_out_bits_res_redirect_bits_cfiUpdate_br_hit, "io_out_bits_res_redirect_bits_cfiUpdate_br_hit")
+    `CMP(85, g_io_out_bits_res_redirect_bits_cfiUpdate_jr_hit, i_io_out_bits_res_redirect_bits_cfiUpdate_jr_hit, "io_out_bits_res_redirect_bits_cfiUpdate_jr_hit")
+    `CMP(86, g_io_out_bits_res_redirect_bits_cfiUpdate_sc_hit, i_io_out_bits_res_redirect_bits_cfiUpdate_sc_hit, "io_out_bits_res_redirect_bits_cfiUpdate_sc_hit")
+    `CMP(87, g_io_out_bits_res_redirect_bits_cfiUpdate_predTaken, i_io_out_bits_res_redirect_bits_cfiUpdate_predTaken, "io_out_bits_res_redirect_bits_cfiUpdate_predTaken")
+    `CMP(88, g_io_out_bits_res_redirect_bits_cfiUpdate_target, i_io_out_bits_res_redirect_bits_cfiUpdate_target, "io_out_bits_res_redirect_bits_cfiUpdate_target")
+    `CMP(89, g_io_out_bits_res_redirect_bits_cfiUpdate_taken, i_io_out_bits_res_redirect_bits_cfiUpdate_taken, "io_out_bits_res_redirect_bits_cfiUpdate_taken")
+    `CMP(90, g_io_out_bits_res_redirect_bits_cfiUpdate_isMisPred, i_io_out_bits_res_redirect_bits_cfiUpdate_isMisPred, "io_out_bits_res_redirect_bits_cfiUpdate_isMisPred")
+    `CMP(91, g_io_out_bits_res_redirect_bits_cfiUpdate_shift, i_io_out_bits_res_redirect_bits_cfiUpdate_shift, "io_out_bits_res_redirect_bits_cfiUpdate_shift")
+    `CMP(92, g_io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist, i_io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist, "io_out_bits_res_redirect_bits_cfiUpdate_addIntoHist")
+    `CMP(93, g_io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF, i_io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF, "io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF")
+    `CMP(94, g_io_out_bits_res_redirect_bits_cfiUpdate_backendIPF, i_io_out_bits_res_redirect_bits_cfiUpdate_backendIPF, "io_out_bits_res_redirect_bits_cfiUpdate_backendIPF")
+    `CMP(95, g_io_out_bits_res_redirect_bits_cfiUpdate_backendIAF, i_io_out_bits_res_redirect_bits_cfiUpdate_backendIAF, "io_out_bits_res_redirect_bits_cfiUpdate_backendIAF")
+    `CMP(96, g_io_out_bits_res_redirect_bits_fullTarget, i_io_out_bits_res_redirect_bits_fullTarget, "io_out_bits_res_redirect_bits_fullTarget")
+    `CMP(97, g_io_out_bits_res_redirect_bits_satpFlush, i_io_out_bits_res_redirect_bits_satpFlush, "io_out_bits_res_redirect_bits_satpFlush")
+    `CMP(98, g_io_out_bits_res_redirect_bits_isVlsException, i_io_out_bits_res_redirect_bits_isVlsException, "io_out_bits_res_redirect_bits_isVlsException")
+    `CMP(99, g_io_out_bits_res_redirect_bits_stFtqIdx_flag, i_io_out_bits_res_redirect_bits_stFtqIdx_flag, "io_out_bits_res_redirect_bits_stFtqIdx_flag")
+    `CMP(100, g_io_out_bits_res_redirect_bits_stFtqIdx_value, i_io_out_bits_res_redirect_bits_stFtqIdx_value, "io_out_bits_res_redirect_bits_stFtqIdx_value")
+    `CMP(101, g_io_out_bits_res_redirect_bits_stFtqOffset, i_io_out_bits_res_redirect_bits_stFtqOffset, "io_out_bits_res_redirect_bits_stFtqOffset")
+    `CMP(102, g_io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id, i_io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id, "io_out_bits_res_redirect_bits_debug_runahead_checkpoint_id")
+    `CMP(103, g_io_out_bits_res_redirect_bits_debugIsCtrl, i_io_out_bits_res_redirect_bits_debugIsCtrl, "io_out_bits_res_redirect_bits_debugIsCtrl")
+    `CMP(104, g_io_out_bits_res_redirect_bits_debugIsMemVio, i_io_out_bits_res_redirect_bits_debugIsMemVio, "io_out_bits_res_redirect_bits_debugIsMemVio")
+    `CMP(105, g_io_out_bits_perfDebugInfo_eliminatedMove, i_io_out_bits_perfDebugInfo_eliminatedMove, "io_out_bits_perfDebugInfo_eliminatedMove")
+    `CMP(106, g_io_out_bits_perfDebugInfo_renameTime, i_io_out_bits_perfDebugInfo_renameTime, "io_out_bits_perfDebugInfo_renameTime")
+    `CMP(107, g_io_out_bits_perfDebugInfo_dispatchTime, i_io_out_bits_perfDebugInfo_dispatchTime, "io_out_bits_perfDebugInfo_dispatchTime")
+    `CMP(108, g_io_out_bits_perfDebugInfo_enqRsTime, i_io_out_bits_perfDebugInfo_enqRsTime, "io_out_bits_perfDebugInfo_enqRsTime")
+    `CMP(109, g_io_out_bits_perfDebugInfo_selectTime, i_io_out_bits_perfDebugInfo_selectTime, "io_out_bits_perfDebugInfo_selectTime")
+    `CMP(110, g_io_out_bits_perfDebugInfo_issueTime, i_io_out_bits_perfDebugInfo_issueTime, "io_out_bits_perfDebugInfo_issueTime")
+    `CMP(111, g_io_out_bits_perfDebugInfo_writebackTime, i_io_out_bits_perfDebugInfo_writebackTime, "io_out_bits_perfDebugInfo_writebackTime")
+    `CMP(112, g_io_out_bits_perfDebugInfo_runahead_checkpoint_id, i_io_out_bits_perfDebugInfo_runahead_checkpoint_id, "io_out_bits_perfDebugInfo_runahead_checkpoint_id")
+    `CMP(113, g_io_out_bits_perfDebugInfo_tlbFirstReqTime, i_io_out_bits_perfDebugInfo_tlbFirstReqTime, "io_out_bits_perfDebugInfo_tlbFirstReqTime")
+    `CMP(114, g_io_out_bits_perfDebugInfo_tlbRespTime, i_io_out_bits_perfDebugInfo_tlbRespTime, "io_out_bits_perfDebugInfo_tlbRespTime")
+    `CMP(115, g_io_out_bits_debug_seqNum_seqNum, i_io_out_bits_debug_seqNum_seqNum, "io_out_bits_debug_seqNum_seqNum")
+    `CMP(116, g_io_out_bits_debug_seqNum_uopIdx, i_io_out_bits_debug_seqNum_uopIdx, "io_out_bits_debug_seqNum_uopIdx")
+  endtask
+  task automatic rand_inputs();
+    io_in_valid = 1'($urandom);
+    io_in_bits_ctrl_fuOpType = 9'($urandom);
+    io_in_bits_ctrl_robIdx_flag = 1'($urandom);
+    io_in_bits_ctrl_robIdx_value = 8'($urandom);
+    io_in_bits_ctrl_pdest = 8'($urandom);
+    io_in_bits_ctrl_rfWen = 1'($urandom);
+    io_in_bits_ctrl_preDecode_valid = 1'($urandom);
+    io_in_bits_ctrl_preDecode_isRVC = 1'($urandom);
+    io_in_bits_ctrl_preDecode_brType = 2'($urandom);
+    io_in_bits_ctrl_preDecode_isCall = 1'($urandom);
+    io_in_bits_ctrl_preDecode_isRet = 1'($urandom);
+    io_in_bits_ctrl_ftqIdx_flag = 1'($urandom);
+    io_in_bits_ctrl_ftqIdx_value = 6'($urandom);
+    io_in_bits_ctrl_ftqOffset = 4'($urandom);
+    io_in_bits_ctrl_predictInfo_target = 50'({$urandom, $urandom});
+    io_in_bits_ctrl_predictInfo_taken = 1'($urandom);
+    io_in_bits_data_src_0 = 64'({$urandom, $urandom});
+    io_in_bits_data_imm = 64'({$urandom, $urandom});
+    io_in_bits_data_pc = 50'({$urandom, $urandom});
+    io_in_bits_data_nextPcOffset = 5'($urandom);
+    io_in_bits_perfDebugInfo_eliminatedMove = 1'($urandom);
+    io_in_bits_perfDebugInfo_renameTime = 64'({$urandom, $urandom});
+    io_in_bits_perfDebugInfo_dispatchTime = 64'({$urandom, $urandom});
+    io_in_bits_perfDebugInfo_enqRsTime = 64'({$urandom, $urandom});
+    io_in_bits_perfDebugInfo_selectTime = 64'({$urandom, $urandom});
+    io_in_bits_perfDebugInfo_issueTime = 64'({$urandom, $urandom});
+    io_in_bits_perfDebugInfo_writebackTime = 64'({$urandom, $urandom});
+    io_in_bits_perfDebugInfo_runahead_checkpoint_id = 64'({$urandom, $urandom});
+    io_in_bits_perfDebugInfo_tlbFirstReqTime = 64'({$urandom, $urandom});
+    io_in_bits_perfDebugInfo_tlbRespTime = 64'({$urandom, $urandom});
+    io_in_bits_debug_seqNum_seqNum = 56'({$urandom, $urandom});
+    io_in_bits_debug_seqNum_uopIdx = 8'($urandom);
+    io_out_ready = 1'($urandom);
+    io_instrAddrTransType_bare = 1'($urandom);
+    io_instrAddrTransType_sv39 = 1'($urandom);
+    io_instrAddrTransType_sv39x4 = 1'($urandom);
+    io_instrAddrTransType_sv48 = 1'($urandom);
+    io_instrAddrTransType_sv48x4 = 1'($urandom);
+  endtask
+
+  // ---- 覆盖桶 ----
+  int cov_op [3][2][2];           // [jal/jalr/auipc][mispredict][redirect_valid]
+  int cov_fault [5][2];           // [bare/sv39/sv39x4/sv48/sv48x4][无异常/有异常]，只在 one-hot 时计
+
+  function automatic logic [63:0] addr_shape();
+    logic [63:0] a;
+    int unsigned top;
+    a = {$urandom, $urandom};
+    case ($urandom_range(0, 7))
+      0: a = 64'($urandom_range(0, 4095));
+      1: a = ~64'($urandom_range(0, 4095));
+      2, 3, 4, 5: begin
+        top = $urandom_range(30, 49);
+        if ($urandom_range(0, 1)) for (int b = top + 1; b < 64; b++) a[b] = a[top];
+        else                      for (int b = top + 1; b < 64; b++) a[b] = 1'b0;
+      end
+      default: ;
+    endcase
+    return a;
+  endfunction
+
+  initial begin
+    int bad, n_c0, n_c1;
+    logic [4:0] trans;
+    if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;
+    for (cyc = 0; cyc < NCYCLES; cyc++) begin
+      rand_inputs();
+      if ($urandom_range(0, 4) != 0) io_in_bits_ctrl_fuOpType = 9'($urandom_range(0, 2));
+      io_in_valid = ($urandom_range(0, 7) != 0);
+      io_in_bits_ctrl_predictInfo_taken = ($urandom_range(0, 3) != 0);
+      case ($urandom_range(0, 9))
+        8: trans = 5'b0;
+        9: trans = 5'($urandom);
+        default: trans = 5'b1 << $urandom_range(0, 4);
+      endcase
+      {io_instrAddrTransType_sv48x4, io_instrAddrTransType_sv48, io_instrAddrTransType_sv39x4,
+       io_instrAddrTransType_sv39, io_instrAddrTransType_bare} = trans;
+      io_in_bits_data_pc    = 50'(addr_shape());
+      io_in_bits_data_src_0 = addr_shape();
+      if ($urandom_range(0, 1)) io_in_bits_data_imm = 64'($signed(12'($urandom)));
+      #1;
+      // 预测目标一半对齐真实目标（golden 的 target 不依赖预测目标，读回再写不成环）
+      if ($urandom_range(0, 1))
+        io_in_bits_ctrl_predictInfo_target = g_io_out_bits_res_redirect_bits_cfiUpdate_target;
+      #1;
+      compare_all();
+      if (io_in_bits_ctrl_fuOpType < 3)
+        cov_op[io_in_bits_ctrl_fuOpType[1:0]]
+              [g_io_out_bits_res_redirect_bits_cfiUpdate_isMisPred]
+              [g_io_out_bits_res_redirect_valid]++;
+      if ($onehot(trans)) begin
+        if (trans[0]) cov_fault[0][g_io_out_bits_res_redirect_bits_cfiUpdate_backendIAF]++;
+        if (trans[1]) cov_fault[1][g_io_out_bits_res_redirect_bits_cfiUpdate_backendIPF]++;
+        if (trans[2]) cov_fault[2][g_io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF]++;
+        if (trans[3]) cov_fault[3][g_io_out_bits_res_redirect_bits_cfiUpdate_backendIPF]++;
+        if (trans[4]) cov_fault[4][g_io_out_bits_res_redirect_bits_cfiUpdate_backendIGPF]++;
+      end
+      #1;
+    end
+    bad = 0; n_c0 = 0; n_c1 = 0;
+    foreach (cov_op[a, b, c]) begin
+      $display("cov op=%0d mispred=%0d redirect=%0d : %0d", a, b, c, cov_op[a][b][c]);
+      if (a == 2 && c == 1) begin
+        if (cov_op[a][b][c] != 0) bad++;        // auipc 永不重定向
+      end else if (cov_op[a][b][c] < NCYCLES / 1000) bad++;
+    end
+    foreach (cov_fault[a, b]) begin
+      $display("cov trans=%0d fault=%0d : %0d", a, b, cov_fault[a][b]);
+      if (cov_fault[a][b] < NCYCLES / 1000) bad++;
+    end
+    for (int o = 0; o < N_OUT; o++) begin
+      if (!seen1[o]) n_c0++;
+      else if (!seen0[o]) n_c1++;
+    end
+    if (n_c0 != 78) begin bad++; $display("const-zero outputs = %0d, expect 78", n_c0); end
+    if (n_c1 != 2)  begin bad++; $display("const-one outputs = %0d, expect 2", n_c1); end
+    $display("checks=%0d errors=%0d bad_cov=%0d const0_outs=%0d const1_outs=%0d", checks, errors, bad, n_c0, n_c1);
+    if (errors == 0 && checks > 1000 && bad == 0) $display("TEST PASSED");
+    else $display("TEST FAILED");
+    $finish;
+  end
+endmodule

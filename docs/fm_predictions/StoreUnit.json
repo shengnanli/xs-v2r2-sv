@@ -1,0 +1,9 @@
+{
+  "target": "StoreUnit",
+  "ut": "StoreUnit",
+  "regs": 4021,
+  "outs": 3462,
+  "expected": 7483,
+  "merge_dup": "false",
+  "model_applicable": true
+}

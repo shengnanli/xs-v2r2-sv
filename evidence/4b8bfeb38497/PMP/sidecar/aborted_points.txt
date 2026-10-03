@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/PMP
+Implementation : i:/WORK/PMP
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 20:47:26 2026
+**************************************************
+
+No aborted compare points.
+
+1

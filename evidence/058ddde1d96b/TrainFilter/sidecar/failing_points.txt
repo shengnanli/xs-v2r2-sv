@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/TrainFilter
+Implementation : i:/WORK/TrainFilter
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 21:06:41 2026
+**************************************************
+
+No failing compare points.
+
+1

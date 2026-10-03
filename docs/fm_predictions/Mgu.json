@@ -1,0 +1,10 @@
+{
+  "target": "Mgu",
+  "ut": "Mgu",
+  "regs": 0,
+  "outs": 144,
+  "expected": 144,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合；模型=顶层 output 位"
+}

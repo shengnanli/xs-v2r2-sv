@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""gen_payload_shells.py —— 两个"打包载荷"核的薄文件 + FM 匹配前钉点（lane mmiobridge-xbar-l2tlbwrap）。
+"""gen_payload_shells.py —— "打包载荷"核的薄文件 + FM 匹配前钉点（lane mmiobridge-xbar-l2tlbwrap）。
 
   PTWRepeaterNB      rtl/mmu/       核 xs_PTWRepeaterNB_core：req / resp 两根打包向量
-  skidBufferConnect  rtl/memblock/  核 xs_SkidBuffer_core：dataBuffer 一根打包向量
+
+（本 lane 起初还生成 skidBufferConnect；该目标由 storeunit-vsplit lane 签核并先合入 main
+ （scripts/gen_vsplit.py），本 lane 版本已撤下，这里不再生成它。）
 
 核手写、载荷不分字段；薄文件从 golden 端口表把字段按 golden 端口顺序 MSB 优先拼成打包向量，再把出口拆回去。
-skidBufferConnect 的入口字段是出口字段的子集（父级 VLSplit/VSSplit 把若干 uop 字段钉成常量 0，firtool 把入口端口删了，
-但 dataBuffer 里对应的寄存器还在、出口也还在）：拼载荷时在原位置填 0，于是出口在 skid 态给寄存器（恒 0）、直通态给 0，
-与 golden 的 `state ? dataBuffer_x : 32'h0` / `state & dataBuffer_x` 逐位相同。
+
 
 golden 把每个字段存成一个独立寄存器（req_vpn、resp_s1_entry_tag、dataBuffer_uop_pc …），核里是一根向量
 （u_core/req、u_core/resp、u_core/dataBuffer）；名字对不上会让 Formality 的配对卡死，所以同时生成
@@ -206,85 +206,12 @@ def emit_ptwrepeater():
             os.path.join(REPO, 'verif', 'ut', mod, 'fm_pins_pre.tcl'): pins_tcl(mod, 'PTWRNB', total, pin_lines)}
 
 
-# ---------------------------------------------------------------------------
-# skidBufferConnect
-# ---------------------------------------------------------------------------
-def emit_skid():
-    mod = 'skidBufferConnect'
-    P, glines, gregs = ports(mod)
-    names = [n for _, _, n in P]
-    outf = fields(P, 'io_out_bits_')
-    inf = fields(P, 'io_in_bits_')
-    it = iter(outf)
-    assert all(f in it for f in inf), '入口字段不是出口字段的保序子集'
-    present = {f for f, _ in inf}
-    missing = [f for f, _ in outf if f not in present]
-    ctrl = ['clock', 'reset', 'io_in_ready', 'io_in_valid', 'io_flush', 'io_out_ready', 'io_out_valid']
-    known = set(ctrl) | set('io_in_bits_' + f for f in present) | set('io_out_bits_' + f for f, _ in outf)
-    assert known == set(names), sorted(set(names) ^ known)[:5]
-    width = sum(w for _, w in outf)
-    off = {'dataBuffer': offsets(outf)}
-    outnames = {f for f, _ in outf}
-
-    def vec_of(name):
-        if name == 'state':
-            return None
-        if name.startswith('dataBuffer_') and name[11:] in outnames:
-            return ('dataBuffer', name[11:])
-        raise SystemExit('%s: golden 寄存器 %s 落不进已知形状' % (mod, name))
-    pin_lines, total = reg_pin_lines(mod, gregs, vec_of, off)
-    assert total == 1 + width, (total, width)
-
-    L = []
-    W = L.append
-    W('// %s.sv —— 向量访存拆分单元出口的单项 skid buffer（薄文件）' % mod)
-    W('//')
-    W('// 核在 rtl/memblock/xs_SkidBuffer_core.sv（empty/skid 两态，机制与怪癖讲在那里）。VLSplit / VSSplit 各例化一个，')
-    W('// 载荷是 VecPipelineFeedbackIO 风格的一整个拆分包（含整条 DynInst uop）。本文件把 golden 出口的')
-    W('// %d 个字段按端口顺序 MSB 优先拼成 %d 位交给核。' % (len(outf), width))
-    W('// ★入口缺 %d 个字段★：父级把这些 uop 字段钉成常量 0，firtool 删了入口端口，但 dataBuffer 里对应寄存器' % len(missing))
-    W('//   与出口都还在（直通态输出 0、skid 态输出寄存器里的 0）。拼载荷时在原位置填 0，逐位同 golden。')
-    W('//   缺的字段：%s' % ' '.join(missing))
-    W('// golden %d 行 / %d 端口；本文件由 scripts/gen_payload_shells.py 从 golden 端口表生成（勿手改）。' % (glines, len(P)))
-    W('')
-    W('module %s (' % mod)
-    W(port_decl(P))
-    W(');')
-    W('')
-    W('  localparam int unsigned WIDTH = %d;' % width)
-    W('')
-    W('  logic [WIDTH-1:0] in_bits, out_bits;')
-    W('')
-    W('  assign in_bits = %s;' % cat('io_in_bits_', outf, present, 20))
-    W('')
-    W('  xs_SkidBuffer_core #(')
-    W('    .WIDTH(WIDTH)')
-    W('  ) u_core (')
-    W('    .clock    (clock),')
-    W('    .reset    (reset),')
-    W('    .flush    (io_flush),')
-    W('    .in_ready (io_in_ready),')
-    W('    .in_valid (io_in_valid),')
-    W('    .in_bits  (in_bits),')
-    W('    .out_ready(io_out_ready),')
-    W('    .out_valid(io_out_valid),')
-    W('    .out_bits (out_bits)')
-    W('  );')
-    W('')
-    W('  assign %s = out_bits;' % cat('io_out_bits_', outf, outnames, 10))
-    W('')
-    W('endmodule')
-    return {os.path.join(REPO, 'rtl', 'memblock', mod + '.sv'): '\n'.join(L) + '\n',
-            os.path.join(REPO, 'verif', 'ut', mod, 'fm_pins_pre.tcl'): pins_tcl(mod, 'SKID', total, pin_lines)}
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true')
     a = ap.parse_args()
     outs = {}
     outs.update(emit_ptwrepeater())
-    outs.update(emit_skid())
     bad = 0
     for p, txt in outs.items():
         cur = open(p).read() if os.path.exists(p) else None

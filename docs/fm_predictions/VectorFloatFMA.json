@@ -1,0 +1,9 @@
+{
+  "target": "VectorFloatFMA",
+  "ut": "VectorFloatFMA",
+  "regs": 1754,
+  "outs": 84,
+  "expected": 1838,
+  "merge_dup": "false",
+  "model_applicable": true
+}

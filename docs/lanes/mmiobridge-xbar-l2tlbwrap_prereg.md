@@ -60,3 +60,11 @@ seed 1/7/42 × `+vcs+initreg+0` / `+random` / `+<seed>017`（L2TLBWrapper 为 0 
 seed 串行。复跑：`cd verif/ut/<UT> && make run SEED=<s> INITREG=<档>`。读数记在对账节。
 
 ## 对账（跑后追加）
+
+### 追记（FM 起跑后、对账之前；不改上面任何数字）
+- **skidBufferConnect 撤出本 lane**：storeunit-vsplit lane 已签核同名目标并合入 main（c352cf75，SUCCEEDED passing 3267）。
+  按集成者裁定合 main 时两文件以 main 为准，本 lane 的 `xs_SkidBuffer_core.sv` / UT gen.py / fm_pins_pre.tcl 删除，
+  `gen_payload_shells.py` 只剩 PTWRepeaterNB。§2 里 skidBufferConnect 的预测作废（不对账）；docs/fm_predictions/skidBufferConnect.json 取 main 版本。
+  PTWRepeaterNB 不依赖 xs_SkidBuffer_core，不受影响。
+- 首批证明（97d5fc20）中 PTWRepeaterNB / skidBufferConnect 在钉点阶段退出（Tcl 把双引号里的 `[N]` 当命令替换），
+  修在 17364e53（钉点路径改花括号），PTWRepeaterNB 在修复后的 commit 上重证。

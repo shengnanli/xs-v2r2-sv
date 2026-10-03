@@ -1,0 +1,9 @@
+{
+  "target": "SMSTrainFilter",
+  "ut": "SMSTrainFilter",
+  "regs": 2602,
+  "outs": 149,
+  "expected": 2751,
+  "merge_dup": "false",
+  "model_applicable": true
+}
