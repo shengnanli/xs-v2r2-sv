@@ -1,0 +1,10 @@
+{
+  "target": "Arbiter3_bitmapReqBundle",
+  "ut": "L2TlbArbLeaves",
+  "regs": 0,
+  "outs": 91,
+  "expected": 91,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合仲裁器：passing 预测 = 顶层 output 位，无寄存器、无黑盒、无常量点"
+}

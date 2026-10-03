@@ -1,0 +1,18 @@
+{
+  "target": "L2TlbMissQueue",
+  "ut": "L2TlbMissQueue",
+  "regs": 13,
+  "outs": 49,
+  "expected": 125,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 63,
+  "bbox": {
+    "ram_40x47": {
+      "insts": 1,
+      "in_bits": 63,
+      "points": 63
+    }
+  },
+  "note": "assembly：ram_40x47 两侧对称黑盒（1/1），expected 含其输入引脚；预测 passing=125、差额 0"
+}
