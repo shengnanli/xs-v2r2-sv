@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/TrainFilter_1
+Implementation : i:/WORK/TrainFilter_1
+Version        : V-2023.12-SP3
+Date           : Fri Oct  2 21:07:33 2026
+**************************************************
+
+No aborted compare points.
+
+1
