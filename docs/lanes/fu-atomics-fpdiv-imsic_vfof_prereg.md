@@ -46,3 +46,17 @@ M5 写回更新与入队初始化优先级互换 errors=0 —— **等价变异*
    （`entries_uop_<field>_reg[b]`），名字对不上，只能靠 FM 签名匹配。本节没做任何 FM 试跑。
    若出现 unmatched，补 `verif/ut/VfofBuffer/fm_pins_pre.tcl`（按 struct 字段偏移机械生成、fail-closed）重跑，并在对账里写明。
 2. golden 的 `entries_hasException` 次态是两层 if/else 折叠成的 `~_GEN_7 & entries_hasException`，重写按 Scala 的两个 when 写；UT 逐拍比过（M2/M5 见上）。
+
+## 对账（跑后追加）
+
+- FM（run `VfofBuffer-20261003T010534Z-27afa08c`，证明 commit `27afa08c` = 登记 commit）：native SUCCEEDED，
+  passing **1605**（预测 1605，差 0）、failing 0、unmatched 0(0)、unread_points 空、黑盒 0、dont_verify 无、vmucp 关。
+  证据 `evidence/27afa08caf5a/VfofBuffer/`（receipt.json sha256 `7ca7310edd40a1c7cce9c27343976b3c457ea0aed62d7952acf9350c0b22eef6`）。
+  `python3 scripts/fm_predict.py check VfofBuffer` → 逐位相等，rc=0。§4 担心的 struct 寄存器名失配没有出现，未加 fm_pins。
+- UT 9 档全部 checks=11200000 errors=0 bad_cov=0（三种 initreg 读数同 seed 逐位相同，符合"全异步复位"）：
+
+| seed | fire | both_hit | wb_update | wb_exc | redirect_kill | refresh | enq_cancel |
+|---|---|---|---|---|---|---|---|
+| 1 | 18075 | 2344 | 18320 | 7749 | 3185 | 16021 | 1924 |
+| 7 | 18015 | 2267 | 17913 | 7496 | 3182 | 16034 | 1863 |
+| 42 | 18115 | 2312 | 18036 | 7537 | 3180 | 16066 | 1867 |
