@@ -1,0 +1,400 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "FTB",
+ "run_id": "FTB-20261003T152001Z-d37248da1",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/FTB.sv",
+   "kind": "golden",
+   "sha256": "b98d780d7475c604936a088e820deef9f589933acae57313b5c3521b9ec24936"
+  },
+  {
+   "path": "golden-rtl/FTBBank.sv",
+   "kind": "golden",
+   "sha256": "655f766f37e55d0fce6d346efaf074e24ac3a81e7b210fca794a9b1b729c218c"
+  },
+  {
+   "path": "golden-rtl/DelayN_1.sv",
+   "kind": "golden",
+   "sha256": "912369ea3484f75ece44658af080f43b3bb6705d24e33c39ea552c9d39efe092"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid.sv",
+   "kind": "golden",
+   "sha256": "d8ca69ff2c4094078fbd5fece9ccbbdd4169fcf5ea464c39b83c98d999e1f86c"
+  },
+  {
+   "path": "golden-rtl/DelayNWithValid_1.sv",
+   "kind": "golden",
+   "sha256": "96539daa279de6e5ee858ea44605595a314af5c49e9a0f6423019c26339fe7d3"
+  },
+  {
+   "path": "golden-rtl/MbistPipeFtb.sv",
+   "kind": "golden",
+   "sha256": "c32768a36f85e41a09f2076e5381beab0ceed9116de43c9850fdb19885f96e03"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_2.sv",
+   "kind": "golden",
+   "sha256": "74cd5e498d09085c8ab9f6d1639f47e63ed7f11c54f41f9fcdeeb9db13edbfa7"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_36.sv",
+   "kind": "golden",
+   "sha256": "d7edcb550f3ae281e567ea2ab5d8a8edb9f7f15ee068e575433d38c5970ea7da"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv",
+   "kind": "golden",
+   "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
+  },
+  {
+   "path": "golden-rtl/array_1.sv",
+   "kind": "golden",
+   "sha256": "ab20f90c8946593903339761fe59c69ca6c123816911ec92060eee386979db78"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/frontend_common_pkg.sv",
+   "kind": "repo",
+   "sha256": "7233bfa35e6e3bd9c3fe74644f40d6c24efc174ea84b6952b7ddcf3c9ba6f5fd"
+  },
+  {
+   "path": "rtl/frontend/FTBBank.sv",
+   "kind": "repo",
+   "sha256": "2448b7e26b09d4167e4086557ee0fe16bb55bfaacf1d9a16ee7d86a87731d724"
+  },
+  {
+   "path": "rtl/common/xs_DelayN_core.sv",
+   "kind": "repo",
+   "sha256": "59f58808b76e143acdd35544d695b434758002779d502eccc0a757eb5ac27d15"
+  },
+  {
+   "path": "rtl/common/DelayN_1.sv",
+   "kind": "repo",
+   "sha256": "8ab4381acb0113375dc09c1a52606bf4b5cc02d1fd1f21e4f921fadaed05118f"
+  },
+  {
+   "path": "rtl/common/xs_DelayNWithValid_core.sv",
+   "kind": "repo",
+   "sha256": "f072929ebfd5e9f177ffce4fb971ababefc4fa8f61b8eeb83843d5a74386cd88"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid.sv",
+   "kind": "repo",
+   "sha256": "0e730e38388105602280ef53cd12b928f131457fd9a1b9c0e48ec6bf9e3a7e57"
+  },
+  {
+   "path": "rtl/common/DelayNWithValid_1.sv",
+   "kind": "repo",
+   "sha256": "01776dfb8ecdf2b1707b9f99206e740c0ef69881c961c385468251122dce7cee"
+  },
+  {
+   "path": "rtl/frontend/FTB.sv",
+   "kind": "repo",
+   "sha256": "3c9cbe9350c80be752b65fce31d247e14815ee31bcd8d02c8acf66d6810daad4"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/MbistPipeFtb.sv",
+   "kind": "golden",
+   "sha256": "c32768a36f85e41a09f2076e5381beab0ceed9116de43c9850fdb19885f96e03"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_36.sv",
+   "kind": "golden",
+   "sha256": "d7edcb550f3ae281e567ea2ab5d8a8edb9f7f15ee068e575433d38c5970ea7da"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_2.sv",
+   "kind": "golden",
+   "sha256": "74cd5e498d09085c8ab9f6d1639f47e63ed7f11c54f41f9fcdeeb9db13edbfa7"
+  },
+  {
+   "path": "golden-rtl/array_1.sv",
+   "kind": "golden",
+   "sha256": "ab20f90c8946593903339761fe59c69ca6c123816911ec92060eee386979db78"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv",
+   "kind": "golden",
+   "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
+  }
+ ],
+ "impl_commit": "d37248da1db41bf511933c35a0c68e381db5f6b7",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "871b88dd3622bb3ead6355bc0757066317b0847658bfc11cac42e0d31ba997c1"
+  },
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/FTB.json",
+    "sha256": "520445ea0a62477f2fbaa0b0d937ee56ca7433448bdfbf83a2cb2f9e4ff5a369"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "FTB-20261003T152001Z-d37248da1",
+  "top": "FTB",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 8605,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 50,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/FTB/ftbBank/ftb/array_0_0_0/array/array/array_1_ext",
+     "impl_path": "i:/WORK/FTB/ftbBank/ftb/array_0_0_0/array/array/array_1_ext"
+    },
+    {
+     "ref_path": "r:/WORK/FTB/ftbBank/ftb/array_0_0_1/array/array/array_1_ext",
+     "impl_path": "i:/WORK/FTB/ftbBank/ftb/array_0_0_1/array/array/array_1_ext"
+    },
+    {
+     "ref_path": "r:/WORK/FTB/ftbBank/ftb/array_0_0_2/array/array/array_1_ext",
+     "impl_path": "i:/WORK/FTB/ftbBank/ftb/array_0_0_2/array/array/array_1_ext"
+    },
+    {
+     "ref_path": "r:/WORK/FTB/ftbBank/ftb/array_0_0_3/array/array/array_1_ext",
+     "impl_path": "i:/WORK/FTB/ftbBank/ftb/array_0_0_3/array/array/array_1_ext"
+    },
+    {
+     "ref_path": "r:/WORK/FTB/ftbBank/ftb/array_0_0_4/array/array/array_1_ext",
+     "impl_path": "i:/WORK/FTB/ftbBank/ftb/array_0_0_4/array/array/array_1_ext"
+    },
+    {
+     "ref_path": "r:/WORK/FTB/ftbBank/ftb/array_0_0_5/array/array/array_1_ext",
+     "impl_path": "i:/WORK/FTB/ftbBank/ftb/array_0_0_5/array/array/array_1_ext"
+    },
+    {
+     "ref_path": "r:/WORK/FTB/ftbBank/ftb/array_0_0_6/array/array/array_1_ext",
+     "impl_path": "i:/WORK/FTB/ftbBank/ftb/array_0_0_6/array/array/array_1_ext"
+    },
+    {
+     "ref_path": "r:/WORK/FTB/ftbBank/ftb/array_0_0_7/array/array/array_1_ext",
+     "impl_path": "i:/WORK/FTB/ftbBank/ftb/array_0_0_7/array/array/array_1_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/FTB/ftbBank/ftb/array_0_0_0/array/array/array_1_ext",
+    "r:/WORK/FTB/ftbBank/ftb/array_0_0_1/array/array/array_1_ext",
+    "r:/WORK/FTB/ftbBank/ftb/array_0_0_2/array/array/array_1_ext",
+    "r:/WORK/FTB/ftbBank/ftb/array_0_0_3/array/array/array_1_ext",
+    "r:/WORK/FTB/ftbBank/ftb/array_0_0_4/array/array/array_1_ext",
+    "r:/WORK/FTB/ftbBank/ftb/array_0_0_5/array/array/array_1_ext",
+    "r:/WORK/FTB/ftbBank/ftb/array_0_0_6/array/array/array_1_ext",
+    "r:/WORK/FTB/ftbBank/ftb/array_0_0_7/array/array/array_1_ext",
+    "r:/WORK/FTBBank/ftb/array_0_0_0/array/array/array_1_ext",
+    "r:/WORK/FTBBank/ftb/array_0_0_1/array/array/array_1_ext",
+    "r:/WORK/FTBBank/ftb/array_0_0_2/array/array/array_1_ext",
+    "r:/WORK/FTBBank/ftb/array_0_0_3/array/array/array_1_ext",
+    "r:/WORK/FTBBank/ftb/array_0_0_4/array/array/array_1_ext",
+    "r:/WORK/FTBBank/ftb/array_0_0_5/array/array/array_1_ext",
+    "r:/WORK/FTBBank/ftb/array_0_0_6/array/array/array_1_ext",
+    "r:/WORK/FTBBank/ftb/array_0_0_7/array/array/array_1_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/FTB/ftbBank/ftb/array_0_0_0/array/array/array_1_ext",
+    "i:/WORK/FTB/ftbBank/ftb/array_0_0_1/array/array/array_1_ext",
+    "i:/WORK/FTB/ftbBank/ftb/array_0_0_2/array/array/array_1_ext",
+    "i:/WORK/FTB/ftbBank/ftb/array_0_0_3/array/array/array_1_ext",
+    "i:/WORK/FTB/ftbBank/ftb/array_0_0_4/array/array/array_1_ext",
+    "i:/WORK/FTB/ftbBank/ftb/array_0_0_5/array/array/array_1_ext",
+    "i:/WORK/FTB/ftbBank/ftb/array_0_0_6/array/array/array_1_ext",
+    "i:/WORK/FTB/ftbBank/ftb/array_0_0_7/array/array/array_1_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[0]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[10]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[11]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[12]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[13]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[14]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[15]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[16]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[17]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[18]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[19]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[1]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[20]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[21]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[22]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[23]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[24]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[25]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[26]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[27]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[28]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[29]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[2]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[30]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[31]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[32]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[33]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[34]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[35]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[36]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[37]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[38]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[39]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[3]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[40]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[41]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[42]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[43]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[44]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[45]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[46]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[47]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[48]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[49]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[4]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[5]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[6]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[7]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[8]",
+    "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[9]"
+   ],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "PASS_DEAD_REF",
+ "verdict_detail": {
+  "passing": 8605,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": 50,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "FTB",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "dead_ref_points": 50
+ }
+}
