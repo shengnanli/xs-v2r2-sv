@@ -1,0 +1,18 @@
+{
+  "target": "FDivSqrt",
+  "ut": null,
+  "regs": 671,
+  "outs": 731,
+  "expected": 1543,
+  "merge_dup": null,
+  "model_applicable": false,
+  "bbin": 141,
+  "bbox": {
+    "FloatDivider": {
+      "insts": 1,
+      "in_bits": 141,
+      "points": 141
+    }
+  },
+  "note": "ArithVecLeaves5 的 FM_VARIANTS 非字面（$(LEAVES)），fm_predict 找不到 UT；FDivSqrt 实际 merge_dup=true，模型不适用；对照上一版 receipt passing 2040"
+}
