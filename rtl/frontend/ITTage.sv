@@ -39,7 +39,7 @@
 // wrapper 的端口表、子模块（tables_0..4 / rTable / s2_allocLFSR_prng，实例名同 golden）与
 // 透传赋值是机械派生区，由 scripts/gen_bpu_wrappers.py 从 G1 golden 生成（GENERATED 区）。
 // =============================================================================
-// 本文件导航（共 1574 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1594 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L19    在 BPU 里的位置】Composer 菊花链中 FTB 之后、RAS 之前
 //   L25    表与区域压缩】5 张 ITTageTable
 //   L30    S2 选择】5 张表里**历史最长的命中**做 provider，次长的命中做 altProvider
@@ -49,10 +49,10 @@
 //   L193   §0 BPU 公共外壳：各级 PC
 //   L216   §1 S1：只在"可能是间接跳转"时查表
 //   L229   §2 S2：选 provider / altProvider，拼目标，算分配候选
-//   L286   §3 S3：打拍出目标与 meta
-//   L336   §4 更新：锁存一拍
-//   L394   §5 更新：决定每张表更新什么
-//   L444   §6 每张表的 update 口：再打一拍送出
+//   L306   §3 S3：打拍出目标与 meta
+//   L356   §4 更新：锁存一拍
+//   L414   §5 更新：决定每张表更新什么
+//   L464   §6 每张表的 update 口：再打一拍送出
 //
 package ittage_pkg;
 
@@ -258,9 +258,29 @@ module xs_ITTage_core
                                tbl_resp_off[i].offset};
   end
 
-  assign s2_provider_target     = region_target[s2_provider];
-  assign s2_alt_provider_target = region_target[s2_alt_provider];
-  assign provider_null          = (tbl_resp_ctr[s2_provider] == 2'd0);
+  // 按表号取 provider / alt 的那一份（逐表比较选通：表号 3 位、表只有 5 张，
+  // 不用变量下标直接索引 5 项数组，免得出现越界读）
+  logic       s2_provider_u;
+  logic [1:0] s2_provider_ctr, s2_alt_provider_ctr;
+  always_comb begin
+    s2_provider_target     = '0;
+    s2_alt_provider_target = '0;
+    s2_provider_u          = 1'b0;
+    s2_provider_ctr        = '0;
+    s2_alt_provider_ctr    = '0;
+    for (int i = 0; i < NUM_TABLES; i++) begin
+      if (s2_provider == TBL_IDX_W'(i)) begin
+        s2_provider_target = region_target[i];
+        s2_provider_u      = tbl_resp_u[i];
+        s2_provider_ctr    = tbl_resp_ctr[i];
+      end
+      if (s2_alt_provider == TBL_IDX_W'(i)) begin
+        s2_alt_provider_target = region_target[i];
+        s2_alt_provider_ctr    = tbl_resp_ctr[i];
+      end
+    end
+  end
+  assign provider_null = (s2_provider_ctr == 2'd0);
   assign s2_target = !s2_provided                      ? base_target
                    : (provider_null && s2_alt_provided) ? s2_alt_provider_target
                    :                                      s2_provider_target;
@@ -306,9 +326,9 @@ module xs_ITTage_core
       s3_provider            <= s2_provider;
       s3_alt_provided        <= s2_alt_provided;
       s3_alt_provider        <= s2_alt_provider;
-      s3_provider_u          <= tbl_resp_u[s2_provider];
-      s3_provider_ctr        <= tbl_resp_ctr[s2_provider];
-      s3_alt_provider_ctr    <= tbl_resp_ctr[s2_alt_provider];
+      s3_provider_u          <= s2_provider_u;
+      s3_provider_ctr        <= s2_provider_ctr;
+      s3_alt_provider_ctr    <= s2_alt_provider_ctr;
       s3_alloc_valid         <= |s2_allocatable;
       s3_alloc_entry         <= s2_alloc_entry;
     end
