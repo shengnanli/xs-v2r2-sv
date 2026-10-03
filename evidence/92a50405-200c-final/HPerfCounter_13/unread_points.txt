@@ -1,0 +1,8 @@
+ref	r:/WORK/HPerfCounter_13/event_op_0_reg[3]
+ref	r:/WORK/HPerfCounter_13/event_op_0_reg[4]
+ref	r:/WORK/HPerfCounter_13/event_op_1_reg[3]
+ref	r:/WORK/HPerfCounter_13/event_op_1_reg[4]
+ref	r:/WORK/HPerfCounter_13/event_op_2_reg[3]
+ref	r:/WORK/HPerfCounter_13/event_op_2_reg[4]
+ref	r:/WORK/HPerfCounter_13/event_op_2_reg_reg[3]
+ref	r:/WORK/HPerfCounter_13/event_op_2_reg_reg[4]
