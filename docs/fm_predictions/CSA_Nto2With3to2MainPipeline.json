@@ -1,0 +1,10 @@
+{
+  "target": "CSA_Nto2With3to2MainPipeline",
+  "ut": "CSA_Nto2With3to2MainPipeline",
+  "regs": 428,
+  "outs": 214,
+  "expected": 642,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "misc-core 登记：预测 passing 638 = 模型 642 - constant_reg 4（树最低位 4 个恒 0 寄存器位，两侧对称）。非正式试跑（钉点后）638 + 4。"
+}

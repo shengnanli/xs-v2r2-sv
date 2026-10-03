@@ -1,0 +1,10 @@
+{
+  "target": "FMA",
+  "ut": "FMA",
+  "regs": 3562,
+  "outs": 731,
+  "expected": 4293,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "misc-core 重证（FloatFMA 子树改两侧白盒 + merge_dup 改 false）：预测 passing 4188 = 模型 4293 - constant_reg 105（全在 FloatFMA 子树，同 FloatFMA 独立证明）。非正式试跑同。"
+}

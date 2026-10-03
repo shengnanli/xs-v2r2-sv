@@ -25,6 +25,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/FMA.sv $(GOLDEN_RTL)/FloatFMA.sv $(GOLDEN_RTL)/Booth
 RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/CSA4to2.sv
 
 FM_VARIANTS = FMA
+# FM_MERGE_DUP = false（2026-10-03，agent/misc-core）：★加强不是放宽★——FM 逐个比寄存器、不先合并
+# 功能相同的寄存器，比较点只会更多；同时让 fm_predict 的 passing 模型适用（merge 打开时模型不成立）。
+FM_MERGE_DUP = false
 FM_REF_DEPS_FMA = $(FMA_LEAVES)
 
 include ../../../scripts/ut_common.mk

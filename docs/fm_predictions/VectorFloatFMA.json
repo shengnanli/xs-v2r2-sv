@@ -5,5 +5,6 @@
   "outs": 84,
   "expected": 1838,
   "merge_dup": "false",
-  "model_applicable": true
+  "model_applicable": true,
+  "note": "misc-core 重证（CSA_Nto2With3to2MainPipeline 换重写件 + 钉点 4 条）：预测 passing 1735 = 模型 1838 - constant_reg 103（同上一轮 receipt 898a14f29e19；未做非正式试跑）。"
 }

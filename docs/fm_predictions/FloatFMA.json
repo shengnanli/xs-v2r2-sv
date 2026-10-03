@@ -1,0 +1,10 @@
+{
+  "target": "FloatFMA",
+  "ut": "FloatFMA",
+  "regs": 1636,
+  "outs": 69,
+  "expected": 1705,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "misc-core 登记：预测 passing 1600 = 模型 1705 - constant_reg 105（压缩树与各格式通路里恒 0 的位）。非正式试跑（钉点 + 怪癖 6/7 修正后）1600 + 105。"
+}

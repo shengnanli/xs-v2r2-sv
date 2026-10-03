@@ -25,13 +25,13 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Bku.sv $(GOLDEN_RTL)/BlockCipherModule.sv
 RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(BKU_SHARED))
 
 FM_VARIANTS = Bku
+# FM_MERGE_DUP = false（2026-10-03，agent/misc-core）：★加强不是放宽★——FM 逐个比寄存器、不先合并
+# 功能相同的寄存器，比较点只会更多；同时让 fm_predict 的 passing 模型适用（merge 打开时模型不成立）。
+FM_MERGE_DUP = false
 FM_REF_DEPS_Bku = $(BKU_LEAVES)
 
-# 注（G0 那一轮的经验，本轮未复验）：上一轮 Bku 的 FM 需要 FM_MERGE_DUP=false，
-# 因为 funcReg 在顶层与四个子块里各有一份同值副本，合并 pass 会在 u_core 层次
-# 边界两侧做不对称折叠。本轮两侧都白盒同源例化 golden 子块，情况已不同，故先用
-# 默认值 true；若 FM 出现 funcReg 相关 unmatched，把下一行打开再跑：
-# FM_MERGE_DUP = false
+# 注：G0 那一轮 Bku 的 FM 需要 FM_MERGE_DUP=false（funcReg 在顶层与四个子块各有同值副本，合并 pass
+# 会在 u_core 层次边界两侧做不对称折叠）。本轮起上面已固定为 false。
 
 include ../../../scripts/ut_common.mk
 
