@@ -1,0 +1,10 @@
+{
+  "target": "IterBlock_v4_6",
+  "ut": "SRT16IterBlocks",
+  "regs": 0,
+  "outs": 692,
+  "expected": 692,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合，零寄存器：passing 预期 = 顶层 output 位（含恒 0 的移位补位）；子模块两侧白盒、无黑盒"
+}

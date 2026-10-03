@@ -20,13 +20,15 @@ G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL   ?= $(G1_CANONICAL)/golden-rtl
 GOLDEN_SRCS  = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(TARGETS) $(CHILDREN) $(PARENTS) SRT4qdsCons))
 
-FM_VARIANTS = $(TARGETS)
+# 下列清单一律写字面名（fm_predict.py / 台账脚本按行读 Makefile，不展开变量）。
+FM_VARIANTS = SelBlock_v4 SpecBlock_v4 IterBlock_v4 IterBlock_v4_4 IterBlock_v4_6
 FM_REF_DEPS_SelBlock_v4    = CSA3_2_3988.sv SignDec.sv
 FM_REF_DEPS_SpecBlock_v4   = CSA3_2_3992.sv SignDec.sv
-ITER_COMMON_DEPS           = SelBlock_v4.sv SpecBlock_v4.sv CSA3_2_3988.sv CSA3_2_3992.sv SignDec.sv CSA3_2_4017.sv
-FM_REF_DEPS_IterBlock_v4   = $(ITER_COMMON_DEPS) CSA3_2_3987.sv Conversion.sv
-FM_REF_DEPS_IterBlock_v4_4 = $(ITER_COMMON_DEPS) CSA3_2_4111.sv Conversion_8.sv
-FM_REF_DEPS_IterBlock_v4_6 = $(ITER_COMMON_DEPS) CSA3_2_4173.sv Conversion_12.sv
+FM_REF_DEPS_IterBlock_v4   = SelBlock_v4.sv SpecBlock_v4.sv CSA3_2_3988.sv CSA3_2_3992.sv SignDec.sv CSA3_2_4017.sv CSA3_2_3987.sv Conversion.sv
+FM_REF_DEPS_IterBlock_v4_4 = SelBlock_v4.sv SpecBlock_v4.sv CSA3_2_3988.sv CSA3_2_3992.sv SignDec.sv CSA3_2_4017.sv CSA3_2_4111.sv Conversion_8.sv
+FM_REF_DEPS_IterBlock_v4_6 = SelBlock_v4.sv SpecBlock_v4.sv CSA3_2_3988.sv CSA3_2_3992.sv SignDec.sv CSA3_2_4017.sv CSA3_2_4173.sv Conversion_12.sv
+# 比较点模型（fm_predict）只在不合并重复寄存器时成立；本族纯组合，照设以统一口径。
+FM_MERGE_DUP = false
 
 PORTLINT_ORDER = fail
 

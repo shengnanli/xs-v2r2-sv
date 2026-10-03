@@ -13,6 +13,8 @@ GOLDEN_SRCS  = $(GOLDEN_RTL)/I8DivNr4.sv $(GOLDEN_RTL)/IterBlockI8Nr4.sv
 
 FM_VARIANTS = I8DivNr4
 FM_REF_DEPS_I8DivNr4 = IterBlockI8Nr4.sv
+# 比较点模型（fm_predict）只在不合并重复寄存器时成立（const_d_reg 四档里有逐位相同的位）。
+FM_MERGE_DUP = false
 
 PORTLINT_ORDER = fail
 
