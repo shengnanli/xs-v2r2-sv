@@ -251,7 +251,7 @@ module xs_VSplitBuffer_core
     assign sqSum    = 7'(uopq.uop.sqIdx_value) + 7'(splitIdx);
     assign sqDiff   = 8'(sqSum) - 8'(SQ_SIZE);
     assign ptrWrap  = ($signed(sqDiff) >= 0);
-    assign ptrValue = 7'(sqSum[5:0]);
+    assign ptrValue = ptrWrap ? 7'(sqDiff[5:0]) : 7'(sqSum[5:0]);
 
     // 元素数据只送一次：送出后置 dataIssued，直到这个元素处理完（或被冲刷）
     logic dataIssued;
