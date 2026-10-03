@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/VectorCvt
+Implementation : i:/WORK/VectorCvt
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 06:18:07 2026
+**************************************************
+
+No failing compare points.
+
+1

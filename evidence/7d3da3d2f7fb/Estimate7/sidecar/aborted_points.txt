@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Estimate7
+Implementation : i:/WORK/Estimate7
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 05:51:13 2026
+**************************************************
+
+No aborted compare points.
+
+1
