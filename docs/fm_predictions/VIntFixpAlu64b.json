@@ -1,0 +1,10 @@
+{
+  "target": "VIntFixpAlu64b",
+  "ut": "VIntFixpAlu64b",
+  "regs": 353,
+  "outs": 112,
+  "expected": 465,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "两拍流水：golden 353 位不复位 RegEnable + 112 位 output；merge_dup=false"
+}

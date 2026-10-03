@@ -40,3 +40,37 @@
   M4 eew=32 的掩码切 8 位 errors=1602；M5 eew=16 段取错半 errors=1098。
 - **预测**：passing = **144**（output 位 128+16，寄存器 0）；其余全 0；无黑盒；SUCCEEDED。登记 `docs/fm_predictions/Mgu.json`。
   UT 9 档读数在对账节追加。
+
+## 4. VFixPoint64b（向量定点第二级，golden 651 行 / 44 端口，纯组合）
+
+- 核 `rtl/backend/VFixPoint64b.sv`（295 行，`_GEN_`/`_T_` 0）：§1 饱和加减 / §2 平均加减右移+舍入 / §3 缩放移位舍入位 /
+  §4 Adder_chain_rnd 舍入加 1 链 / §5 窄化裁剪 32/16×2/8×4 / §6 输出。child Adder_chain_rnd PROVEN_DIRECT → 两侧白盒。
+- UT `verif/ut/VFixPoint64b`：9 档（seed 1/7/42 × initreg 0/random/<seed>017）全部 checks=600000 errors=0 bad_cov=0；
+  覆盖 6 定点编码 × 4 vxrm 每格 ≥500、4 种 sew × isNClip 每格 ≥500、vxsat≠0 ≥1000、全部输出位 0/1 都见过。
+- 变异（seed 7 × 20k）：M1 有符号饱和条件取反 errors=3279；M2 rne 平均舍入漏 v[1] 313；M3 16 位裁剪 cout 取错字节 15（余量薄）；
+  M4 sew16 最高字节判定反 475；M5 rod 缩放移位漏 ~tail 517。
+- **预测**：passing = **104**（output 位，寄存器 0）；其余全 0；无黑盒。
+
+## 5. VIntFixpAlu64b（向量整数/定点 ALU 64 位半片，golden 442 行 / 25 端口 / 47 reg 353 位，两拍流水）
+
+- 核 `rtl/backend/VIntFixpAlu64b.sv`（251 行）：§1 VIntAdder64b + VIntMisc64b / §2 fire 使能流水寄存器（不复位，golden 同份数）/
+  §3 VFixPoint64b / §4 输出选择。child 全部两侧白盒（VIntAdder64b、VIntMisc64b+CLZ_6/7/9/11 PROVEN_DIRECT；VFixPoint64b 本 lane §4）。
+- UT `verif/ut/VIntFixpAlu64b`：第一次 fire 之后才比（不复位寄存器）；seed 7 × 20k 先行 errors=0；9 档读数在对账节追加。
+- 变异（seed 7 × 20k）：M1 isNClip 漏"结果比源窄" errors=171；M2 isSigned 只看 bit2 3364；M3 vd 选择 misc/adder 对调 8816；
+  M4 去掉 fire 使能 13269。
+- **预测**：passing = **465**（寄存器 353 + output 112，merge_dup=false）；constant_reg 若出现在对账逐位指认；无黑盒。
+
+## 6. FloatAdderF32WidenF16MixedPipeline（f32/f16/加宽 混合浮点加法 lane，golden 408 行 / 17 端口 / 17 reg，两拍流水）
+
+- 核 `rtl/backend/FloatAdderF32WidenF16MixedPipeline.sv`（331 行）：§1 输入整形 / §2 特殊值 / §3 远近路径 /
+  §5 min/max/比较/sgnj/fclass/merge/move/归约 / §4 打拍与第 1 拍选择。golden 的两份同源选择位（io_fp_c_r / io_fflags_r）照抄两份。
+- ★child 处置★：FarPath/ClosePathF32WidenF16MixedPipeline 在 coverage 表是 MISSING + PROVEN_IN_CONE（本仓无重写件），
+  照 `verif/ut/FAlu` 先例两侧**同读 golden**（含 6 个孙子件），不设黑盒。本证明覆盖顶层 glue 与全部控制/比较逻辑；
+  far/close 数据路径内部是 golden 对 golden，**不算重写**。
+- UT：两次 fire 之后才比；seed 7 × 20k 先行 errors=0；9 档读数在对账节追加。覆盖 22 个 op_code 每个 ≥500 等（tb 文件头）。
+- 变异（seed 7 × 20k，clean rebuild 后）：M1 far 路径条件漏"指数差 1 且一零一非零" errors=11；M2 f16 零指数 0x66→0x67 63；
+  M3 min 的 ±0 规则 16；M5 sgnjx 异或→或 54；M6 加宽 a 为零直通恒 0 199；
+  **M4 fflags 用 fp_c 那份选择位 errors=0** —— 两份寄存器同源、仿真按构造不可分，归 FM（寄存器是自由变量）兜底。
+  M1/M3 余量薄（11/16），点名。
+- **预测**：passing = **347**（闭包寄存器 310 + output 37）；预期差额由 constant_reg 指认，至少 4 位
+  （io_fflags_r_1 的低 4 位恒 0）；failing / unread / unmatched 0；无黑盒。

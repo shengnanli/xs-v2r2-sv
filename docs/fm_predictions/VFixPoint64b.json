@@ -1,0 +1,10 @@
+{
+  "target": "VFixPoint64b",
+  "ut": "VFixPoint64b",
+  "regs": 0,
+  "outs": 104,
+  "expected": 104,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合；模型=顶层 output 位"
+}
