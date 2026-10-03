@@ -178,7 +178,11 @@ module div_lane #(
       // ---- 上一个下降沿驱动的控制在刚过去的上升沿已生效；先把一拍脉冲撤掉 ----
       flush    = 0;
       in_valid = 0;
-      // ---- 输出握手：本拍 valid && ready => 下一个上升沿完成，现在查 oracle ----
+      // ---- 输出握手：先定下本拍要驱动的 out_ready，再判 valid && ready ⇒ 下一个上升沿完成 ----
+      // （★先抽 ready 再判★：下一个上升沿采到的是**现在**驱动的值。早先版本用上一拍的
+      //   ready 判握手，与 DUT 实际握手错一拍——会漏判/错判握手、让车道与 DUT 失步，
+      //   2026-10-03 VectorIdiv UT 暴露后修正。）
+      out_ready = ($urandom_range(0, 9) < 6);
       if (g_valid && out_ready && busy) begin
         if (!op_badsew) account_and_check();
         busy = 0;
@@ -186,7 +190,6 @@ module div_lane #(
       end else if (g_valid && !out_ready) begin
         c_backpressure++;
       end
-      out_ready = ($urandom_range(0, 9) < 6);
       // ---- 发起 / 冲刷 / 忙时乱拉 in_valid ----
       if (busy && !(g_valid && out_ready) && $urandom_range(0, 299) == 0) begin
         flush = 1; busy = 0; pend_idle = 1; ops_flushed++;

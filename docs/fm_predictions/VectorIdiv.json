@@ -1,0 +1,10 @@
+{
+  "target": "VectorIdiv",
+  "ut": "VectorIdiv",
+  "regs": 12130,
+  "outs": 258,
+  "expected": 12388,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "regs + outs 模型。预期差额 = constant_reg + unread：unread 32 = 8 个 I8DivNr4 实例各 4 个死位 const_d_reg_k[9]（两侧对称、需钉点 + vmucp，同 I8DivNr4 单签做法）；constant_reg = 8×1（I8DivNr4）+ 4×c16 + 2×c32 + 2×c64（各 SRT16Divint 变体单签实测的常量寄存器数）"
+}

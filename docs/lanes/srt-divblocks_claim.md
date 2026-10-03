@@ -8,3 +8,8 @@
 - `IterBlock_v4_4`
 - `IterBlock_v4_6`
 - `I8DivNr4`
+- `SRT16Divint`（第二阶段，2026-10-03 追加）
+- `SRT16Divint_4`（第二阶段，2026-10-03 追加）
+- `SRT16Divint_6`（第二阶段，2026-10-03 追加）
+- `VectorIdiv`（第二阶段，2026-10-03 追加）
+- `VIDiv`（第三阶段，2026-10-03 追加）

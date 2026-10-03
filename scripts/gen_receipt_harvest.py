@@ -576,7 +576,10 @@ def chk_facts(r):
                     bad.append('dead_ref 声明自相矛盾: observed_points=%s 但 entries=%d'
                                % (op, len(want)))
             except Exception as e:
-                bad.append('dead_ref 声明读不出: %s' % e)
+                # ★消息里不许带绝对路径★：OSError 的 str() 含 REPO 绝对路径，而 REPO 随
+                # worktree 变 —— 同一行在 wt-a 生成、在 wt-b / main 上 --check 必然 DRIFT
+                # （实测 main 上这 7 行写的是 /home/eda/xs-env/wt-gatefix2/...）。判据不变，只去位置。
+                bad.append('dead_ref 声明读不出: %s' % str(e).replace(REPO.rstrip('/') + '/', ''))
             if want is None:
                 pass
             elif want != obs:

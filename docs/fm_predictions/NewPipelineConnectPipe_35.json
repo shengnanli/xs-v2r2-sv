@@ -1,0 +1,10 @@
+{
+  "target": "NewPipelineConnectPipe_35",
+  "ut": "NewPipelineConnectPipe_29_34_35",
+  "regs": 1447,
+  "outs": 1448,
+  "expected": 2895,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "gatefix2/codex_0207 E1 同类：match_packed_payload 改正后重证前登记"
+}

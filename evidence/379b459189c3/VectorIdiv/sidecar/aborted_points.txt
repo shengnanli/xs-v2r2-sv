@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VectorIdiv
+Implementation : i:/WORK/VectorIdiv
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:59:38 2026
+**************************************************
+
+No aborted compare points.
+
+1
