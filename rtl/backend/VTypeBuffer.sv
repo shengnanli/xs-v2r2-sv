@@ -117,7 +117,10 @@ module xs_VTypeBuffer_core #(
       int unsigned n_before;          // 口 i 之前已分配的条数 = PopCount(needAlloc.take(i))
       n_before = 0;
       for (int j = 0; j < i; j++) n_before += need_alloc[j];
-      alloc_addr[i] = enqPtrVec_value[n_before];
+      // 取 enqPtrVec[n_before]；n_before ≤ i，按 k ≤ i 逐项比较选（不用变量下标，免越界歧义）
+      alloc_addr[i] = enqPtrVec_value[0];
+      for (int k = 1; k <= i; k++)
+        if (n_before == k) alloc_addr[i] = enqPtrVec_value[k];
     end
   end
 
