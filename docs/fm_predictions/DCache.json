@@ -19,5 +19,5 @@
       "points": 792
     }
   },
-  "note": "diagnostic(merge_dup=false, 2026-10-03) 实测 passing+failing=82086, constant_reg 411, BBPin 3450(模型 3448, +2 未指认)；预测正式跑 passing 82086 = 模型 82495 - constant_reg 411 + 2；impl 独有 unread 40（xs_SRAMTemplate_core rdata_last_REG）→ verdict 预期 PARTIAL"
+  "note": "sramcore-d1d2d3 跑前登记（codex 0206 D1+D2）：merge_dup=false 模型适用。预测 passing 82086 = 模型 82495 - constant_reg 411 + 2（+2 = 上一跑 BBPin 实测 3450 比模型 3448 多的 2 点，推测是 StorePipe 空壳 stu_0/stu_1 各 1 位输入 io_lsu_req_valid 的 BBPin，跑后从 matched 报告核实）；D1 删掉的 40 个 rdata_last_REG 是 impl 独有 unread（无 golden 对家、不计 passing），故 passing 不变、unread 40→0；StorePipe×4 黑盒由 disabled_empty_module 声明 → verdict 预期 SUCCEEDED；failing/unverified/aborted/unmatched 0、constant_reg 411 不变。"
 }
