@@ -49,6 +49,20 @@ provider identity 在模块重写之后**仍可**不同。这里没有照搬，�
 （但都会打印出来，且 EXCLUDED 的条数由 gap 台账钉住）。`--strict` 则任何 MISMATCH
 都非 0（Predictor 这类模块重写完之后用它复查）。
 
+## 第三层：初值设定闸（codex 0207 P1，Z0 口径）—— 比数之前先比"怎么跑的"
+
+firtool 的 RANDOMIZE_*_INIT 用无种子 `$random`：全设计共用一条随机流，换掉任何一个
+带 $random initial 的 golden 模块，后面所有 golden 寄存器的初值都会平移（与
++ntb_random_seed 无关）。原口径下的 tage provider 等差异就是这么来的
+（docs/lanes/tage-initmem.md），是 simulation-only 伪差，不改 RTL。
+
+所以主比较要求两侧都是 **Z0**：编译期无 RANDOMIZE_*、编译期 +vcs+initreg+random、
+运行期 +vcs+initreg+0。凭据是 assert.log 里的 `[PERFCFG]` 行 —— 由
+verif/sim/perf_cfg_stamp.sv 在仿真里**现场测得**（`ifdef 现查宏、无初值探针 reg/阵列
+的实际值、plusarg 回显），与 [PERF ] 行同在一个被 sha256 钉住的文件里，不靠人填。
+init_contract() 逐项判，任一缺失 / 不合 Z0 / 两侧 workload·seed·max_cycles 不一致
+→ 不做比较，退出码 3。没有绕过开关。构建/运行用 verif/sim/run_perf_z0.sh。
+
 用法:
   scripts/perf_compare.py golden/assert.log impl/assert.log          # 代表性组
   scripts/perf_compare.py golden/assert.log impl/assert.log --all    # 全量
@@ -87,6 +101,72 @@ def load_dump(path):
         times[int(m.group(1))] += 1
         out[(m.group(2).strip(), m.group(3).strip())] = int(m.group(4))
     return out, times
+
+
+CFG_LINE = re.compile(r'^\[PERFCFG\]\s+(.*)$')
+CFG_KEYS = ('randomize_defines', 'initreg_plusarg', 'initreg_probe_reg', 'initreg_probe_mem',
+            'workload', 'seed', 'max_cycles')
+# 两侧必须逐字相同的运行条件（Z0 四项另外逐侧判）
+CFG_SAME = ('randomize_defines', 'initreg_plusarg', 'workload', 'seed', 'max_cycles')
+
+
+def load_cfg(path):
+    """assert.log 里的 [PERFCFG] 行 → (dict 或 None, 原始行, 问题列表)。"""
+    found = [CFG_LINE.match(ln.rstrip()) for ln in
+             pathlib.Path(path).read_text(errors='replace').splitlines()
+             if ln.startswith('[PERFCFG]')]
+    if not found:
+        return None, '', ['缺 [PERFCFG] 行（不是 verif/sim/run_perf_z0.sh 的构建？）']
+    if len(found) != 1 or not found[0]:
+        return None, '', ['[PERFCFG] 行有 %d 条（应恰好 1 条）' % len(found)]
+    raw = found[0].group(1).strip()
+    d = parse_cfg(raw)
+    return d, raw, cfg_problems(d)
+
+
+def parse_cfg(raw):
+    d = {}
+    for tok in raw.split():
+        k, eq, v = tok.partition('=')
+        if eq:
+            d[k] = v
+    return d
+
+
+def cfg_problems(d):
+    """单侧 Z0 判据。纯函数，check_perf_tier.py 判据 D 也用它复核台账头。"""
+    p = []
+    for k in CFG_KEYS:
+        if k not in d or d[k] == '':
+            p.append('缺字段 %s' % k)
+    if p:
+        return p
+    if d['randomize_defines'] != 'none':
+        p.append('编译期定义了 RANDOMIZE_*: %s' % d['randomize_defines'])
+    if d['initreg_plusarg'] != '0':
+        p.append('运行期 +vcs+initreg+%s（应为 +vcs+initreg+0）' % d['initreg_plusarg'])
+    for k in ('initreg_probe_reg', 'initreg_probe_mem'):
+        v = d[k].lower()
+        if 'x' in v or 'z' in v:
+            p.append('%s=%s：编译期没开 +vcs+initreg+random' % (k, d[k]))
+        elif set(v) != {'0'}:
+            p.append('%s=%s：上电初值不是 0' % (k, d[k]))
+    if d['workload'] == 'absent':
+        p.append('没有 +workload')
+    if d['max_cycles'] in ('-1', ''):
+        p.append('没有 +max-cycles')
+    return p
+
+
+def init_contract(gd, idd):
+    """两侧设定闸 → 问题列表（空 = 通过）。gd/idd 是 load_cfg 的 dict（可为 None）。"""
+    if gd is None or idd is None:
+        return ['至少一侧没有可用的 [PERFCFG]']
+    p = ['golden: ' + x for x in cfg_problems(gd)] + ['impl: ' + x for x in cfg_problems(idd)]
+    for k in CFG_SAME:
+        if gd.get(k) != idd.get(k):
+            p.append('两侧 %s 不一致: golden=%s impl=%s' % (k, gd.get(k), idd.get(k)))
+    return p
 
 
 def load_tier():
@@ -178,6 +258,19 @@ def main():
                     help='把逐条 MISMATCH 裁定写成台账（要 --all）')
     a = ap.parse_args()
 
+    gcfg, graw, gprob = load_cfg(a.golden)
+    icfg, iraw, iprob = load_cfg(a.impl)
+    probs = (['golden: ' + x for x in gprob] + ['impl: ' + x for x in iprob]
+             if (gprob or iprob) else init_contract(gcfg, icfg))
+    print('golden cfg : %s' % (graw or '（无）'))
+    print('impl   cfg : %s' % (iraw or '（无）'))
+    if probs:
+        print('★初值设定闸（codex 0207 P1，Z0）未过 —— 不做比较：')
+        for x in probs:
+            print('  - ' + x)
+        return 3
+    print('初值设定闸: 两侧 Z0 且运行条件一致 ok')
+
     g, gt = load_dump(a.golden)
     i, it = load_dump(a.impl)
     gap = load_gap()
@@ -250,52 +343,54 @@ def main():
                      r[3], r[4], r[6][:28], r[7]))
         if nblk:
             rc = 1
-        if a.emit_mismatch:
-            if not a.all:
-                print('★ --emit-mismatch 需要 --all（台账必须是全量口径）')
-                return 2
-            head = subprocess.check_output(['git', 'rev-parse', 'HEAD'],
-                                           cwd=str(REPO)).decode().strip()
-            hdr = [
-                '# perf_mismatch_ledger.tsv —— 全量 perf 比对里**每一条**不等的逐条裁定。',
-                '#（scripts/perf_compare.py --emit-mismatch 生成；禁止手改）',
-                '# 这是一份**测量记录**，不是可以从 golden 现场重算的东西 —— 所以',
-                '#   复跑命令、输入路径、输入 sha256、台账 sha256、commit 全部钉在下面（D62）。',
-                '# 裁定判据（scripts/perf_compare.py verdict_of）：',
-                '#   WAIVED   ⟺ tier == C_DIAG 且 owner_rewritten == no  (codex 0162 D3)',
-                '#   BLOCKING 其余全部。★一旦持有模块被重写，豁免自动失效，闸会红★',
-                '# 下面两个台账 sha256 是**出表当时**的版本号，不是闸的判据 ——',
-                '#   台账会随 golden/rtl 变，靠比 hash 会在干净 checkout 里死锁（重发这张表',
-                '#   要有那两份 assert.log）。currency 由 scripts/check_perf_tier.py 判据 E',
-                '#   保证：它每次跑闸都拿**当前**台账重算 tier/owner_rewritten/verdict，',
-                '#   与这里记的对不上就红。',
-                '#',
-                '# commit            %s' % head,
-                '# golden_log        %s' % a.golden,
-                '# golden_log_sha256 %s' % sha256(a.golden),
-                '# impl_log          %s' % a.impl,
-                '# impl_log_sha256   %s' % sha256(a.impl),
-                '# tier_ledger_sha256 %s' % sha256(str(TIER)),
-                '# gap_ledger_sha256  %s' % sha256(str(GAP)),
-                '# dump_times_equal  %s' % same_time,
-                '# compared          %d' % len(keys),
-                '# MATCH %d / MISMATCH %d / EXCLUDED %d / MISSING %d'
-                % (st.get('MATCH', 0), st.get('MISMATCH', 0), st.get('EXCLUDED', 0),
-                   st.get('MISSING', 0)),
-                '# WAIVED %d / BLOCKING %d' % (len(rows) - nblk, nblk),
-                '# 复跑:',
-                '#   python3 scripts/perf_compare.py \\',
-                '#     %s \\' % a.golden,
-                '#     %s --all --emit-mismatch docs/perf_mismatch_ledger.tsv' % a.impl,
-                '#',
-                '\t'.join(MISMATCH_COLS),
-            ]
-            out = '\n'.join(hdr + ['\t'.join(r) for r in
-                                   sorted(rows, key=lambda r: (r[1], r[2]))]) + '\n'
-            pathlib.Path(a.emit_mismatch).write_text(out)
-            print('  已写 %s（%d 条）sha256 %s'
-                  % (a.emit_mismatch, len(rows),
-                     hashlib.sha256(out.encode()).hexdigest()))
+    if not mism:
+        rows, nblk = [], 0
+    if a.emit_mismatch:
+        if not a.all:
+            print('★ --emit-mismatch 需要 --all（台账必须是全量口径）')
+            return 2
+        head = subprocess.check_output(['git', 'rev-parse', 'HEAD'],
+                                       cwd=str(REPO)).decode().strip()
+        hdr = [
+            '# perf_mismatch_ledger.tsv —— 全量 perf 比对里**每一条**不等的逐条裁定。',
+            '#（scripts/perf_compare.py --emit-mismatch 生成；禁止手改）',
+            '# 这是一份**测量记录**，不是可以从 golden 现场重算的东西 —— 所以',
+            '#   复跑命令、输入路径、输入 sha256、台账 sha256、commit 全部钉在下面（D62）。',
+            '# 裁定判据（scripts/perf_compare.py verdict_of）：',
+            '#   WAIVED   ⟺ tier == C_DIAG 且 owner_rewritten == no  (codex 0162 D3)',
+            '#   BLOCKING 其余全部。★一旦持有模块被重写，豁免自动失效，闸会红★',
+            '# 下面两个台账 sha256 是**出表当时**的版本号，不是闸的判据 ——',
+            '#   台账会随 golden/rtl 变，靠比 hash 会在干净 checkout 里死锁（重发这张表',
+            '#   要有那两份 assert.log）。currency 由 scripts/check_perf_tier.py 判据 E',
+            '#   保证：它每次跑闸都拿**当前**台账重算 tier/owner_rewritten/verdict，',
+            '#   与这里记的对不上就红。',
+            '#',
+            '# commit            %s' % head,
+            '# golden_log        %s' % a.golden,
+            '# golden_log_sha256 %s' % sha256(a.golden),
+            '# impl_log          %s' % a.impl,
+            '# impl_log_sha256   %s' % sha256(a.impl),
+            '# tier_ledger_sha256 %s' % sha256(str(TIER)),
+            '# gap_ledger_sha256  %s' % sha256(str(GAP)),
+            '# dump_times_equal  %s' % same_time,
+            '# compared          %d' % len(keys),
+            '# MATCH %d / MISMATCH %d / EXCLUDED %d / MISSING %d'
+            % (st.get('MATCH', 0), st.get('MISMATCH', 0), st.get('EXCLUDED', 0),
+               st.get('MISSING', 0)),
+            '# WAIVED %d / BLOCKING %d' % (len(rows) - nblk, nblk),
+            '# 复跑:',
+            '#   python3 scripts/perf_compare.py \\',
+            '#     %s \\' % a.golden,
+            '#     %s --all --emit-mismatch docs/perf_mismatch_ledger.tsv' % a.impl,
+            '#',
+            '\t'.join(MISMATCH_COLS),
+        ]
+        out = '\n'.join(hdr + ['\t'.join(r) for r in
+                               sorted(rows, key=lambda r: (r[1], r[2]))]) + '\n'
+        pathlib.Path(a.emit_mismatch).write_text(out)
+        print('  已写 %s（%d 条）sha256 %s'
+              % (a.emit_mismatch, len(rows),
+                 hashlib.sha256(out.encode()).hexdigest()))
     if miss:
         rc = 1
         print('\n--- MISSING（前 %d 条）---' % min(a.show, len(miss)))
