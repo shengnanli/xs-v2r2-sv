@@ -48,10 +48,38 @@ CtrlUnit 伪 ECC 注入。胶水事件覆盖闸见 tb 末尾。
 
 ## 3. FM 钉点（verif/ut/DCache/fm_pins_pre.tcl，gen_dcache.py 生成）
 
-组成：本层胶水 1716（golden 寄存器表逐位、单射、位宽核对）+ 子模块签核时自己的钉点原样收割
-（cacheCtrlOpt 1040 / bankedDataArray 4683 / mainPipe 16 / missQueue 4174），合计 11629；fail-closed 计数。
+组成：本层胶水 1716（golden 寄存器表逐位、单射、位宽核对）+ parent_dead 1048（子模块内部在本层才变死的对称寄存器：
+mainPipe status_dup 720 / missQueue vaddr 低位 85 + CMOUnit 地址高位 16 / probeQueue vaddr 低位 45 / accessArray 读口 idx 128 /
+prefetchArray 读口 3 48 / bloomFilter 回应 6）+ 子模块签核时自己的钉点原样收割（cacheCtrlOpt 1040 / bankedDataArray 4683 /
+mainPipe 16 / missQueue 4174），合计 12677；fail-closed 计数。bankedDataArray 的 32 条 respReg 钉点改配 impl respReg
+（子模块签核时 merge_dup=true 把 respReg 并进了 rdata_last_REG；本目标 merge_dup=false，见 gen_dcache.py retarget_bda_resp）。
 签核时无钉点文件的子模块逐个列在 `CHILD_NO_PINS`，生成器核对它们的 UT 目录里确实没有钉点文件。
 
 ## 4. 跑前预测（★跑完不许改本节★）
 
-（本节在 diagnostic 试跑之后、正式 run_proof 之前填写并提交。）
+### 4.1 diagnostic 试跑记录（不出 receipt）
+| 跑 | 设置 | matching | 结果 |
+|---|---|---|---|
+| D1 | merge_dup=false，vmucp 关，钉点 11629 | unmatched compare 0(60)，unmatched unread 1048(1038) | 未到 verify（定位用） |
+| D2 | merge_dup=true，vmucp 开，钉点 12677 | unmatched 2(50) | FAILED：failing 49（golden 侧合并 r_miss/r_replay、mainPipe s1_req 等，impl 合不上） |
+| D3 | merge_dup=false，vmucp 开，钉点 12677（BDA respReg 未改配） | unmatched 0(0)，unread 0(40) | FAILED：failing 2304 = 32×72 BDA rdataReg（使能 respReg 未配对）；passing 79782，constant_reg 411 |
+D1 的 60 个 impl 未配对点：50 个 = 子模块在本层变死的寄存器（已由 parent_dead 钉点归零），10 个 = fdpMonitor 黑盒脚
+（重写件原为空模块，FM 当黑盒；已照 golden 补三条无读者 PopCount，D2/D3 不再出现）。matching 用时约 50 分钟（无需降速诊断）。
+
+### 4.2 正式 run_proof 预测（★跑完不许改本节★，登记 docs/fm_predictions/DCache.json）
+| 项 | 预测 |
+|---|---|
+| passing | **82086**（= 模型 82495 − constant_reg 411 + 2；+2 是 FM 报 BBPin 3450 而模型 3448，未指认，照实登记） |
+| failing / unverified / aborted | 0 / 0 / 0 |
+| unmatched compare | 0(0) |
+| unread | ref 0 / impl **40**（matched_nc 全部由 vmucp 真比较） |
+| constant_reg | 411 |
+| 黑盒 | array_7_ext ×32 + array_8_ext ×8（两侧），verif/allow/DCache.json |
+| dont_verify / elab147 / relaxed appvar | 无 |
+| verdict | native SUCCEEDED；**判定 PARTIAL**（impl 独有 unread 40，见 4.3） |
+
+### 4.3 明写剩余阻塞（不在本 lane 权限内）
+impl 独有 unread 40 = 共享核 `rtl/common/xs_SRAMTemplate_core.sv` 的 `g_nomcp.rdata_last_REG`：holdRead 关闭时它与 respReg
+同方程、无读者、golden 无对应寄存器；BankedDataArray 内 32 个、DuplicatedTagArray 内 8 个。子模块签核时靠 merge_dup=true 合掉，
+本目标必须 merge_dup=false（D2）。消除它要改共享核（holdRead 关时不生成该寄存器），会动 43 个 SRAM wrapper 的 impl 闭包、
+牵动已签目标重签，需集成者裁定。本 lane 不改。
