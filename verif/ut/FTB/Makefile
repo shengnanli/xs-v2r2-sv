@@ -40,7 +40,13 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/FTB.sv \
               $(GOLDEN_RTL)/array_1_ext.v \
               $(RTL_GOLDEN_DEPS)
 
-FM_MERGE_DUP = false
+# merge_dup 保持 FM 默认（true），与子模块 FTBBank 自己签核时同一口径：已签核的 FTBBank 重写件
+# 把 golden 的 4 份恒等寄存器 u_total_hits_REG{,_1,_2,_3} 合成了一个 u_access_d1，
+# merge_dup=false 时其余 3 份在 ref 侧成为未配对自由变量 ⇒ write_way/alloc 假失配
+# （2026-10-03 诊断跑实测：failing 3 = ftbBank_io_update_write_{way,alloc}_REG）。
+# 后果：fm_predict 模型按 merge 带判（BOUNDED），不是逐位等式。
+# vmucp：对称死位（update_meta_r 未读位、perf 探针打拍等）实比，依据见 verif/fm_target_config/FTB.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = FTB
 
 PORTLINT_ORDER = fail

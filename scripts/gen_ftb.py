@@ -417,13 +417,20 @@ def reg_rule(name, width, structs):
         return lambda b: '%s_reg%s[%d]' % (var, pre, b)
 
     def sfield(var, idx, typ, path):
-        lsb, w = field_slice(structs, typ, path if not isinstance(path[-1], int) else path[:-1])
+        # FM 对 packed struct 寄存器保留字段名：<var>_reg[下标]\[字段]\[子字段][位]（实测，
+        # 见 scratchpad fmq/q2.log）。字段宽度仍从 SV typedef 现解析，用来核对 golden 位宽。
+        fpath = path if not isinstance(path[-1], int) else path[:-1]
+        _, w = field_slice(structs, typ, fpath)
         if isinstance(path[-1], int):
-            lsb, w = lsb + path[-1], 1
+            w = 1
         if w != width:
             fail('%s: golden 位宽 %d != %s.%s 位宽 %d' % (name, width, typ, path, w))
-        pre = ''.join('[%d]' % i for i in idx)
-        return lambda b: '%s_reg%s[%d]' % (var, pre, lsb + b)
+        pre = ''.join('[%d]' % i for i in idx) + ''.join('\\[%s]' % f for f in fpath)
+        if isinstance(path[-1], int):
+            return lambda b: '%s_reg%s[%d]' % (var, pre, path[-1])
+        if width == 1:
+            return lambda b: '%s_reg%s' % (var, pre)
+        return lambda b: '%s_reg%s[%d]' % (var, pre, b)
 
     simple = {
         'modified_reset': ('modified_reset', None), 's0_close_ftb_req': ('s0_close', None),
@@ -437,7 +444,11 @@ def reg_rule(name, width, structs):
         'io_s1_ready_REG': ('s1_ready_block_r', None),
         'ftbBank_io_update_write_way_REG': ('write_way_r', None),
         'ftbBank_io_update_write_alloc_REG': ('write_alloc_r', None),
-        'REG': ('s0_fire_hit_perf_r', None), 'REG_1': ('s0_fire_miss_perf_r', None),
+        # REG / REG_1 是两份恒等寄存器（都 = RegNext(s0_fire[0])），merge_dup 会在两侧各留一份：
+        # 实测 ref 留 REG_1、impl 留 s0_fire_hit_perf_r。钉点按"留下的那一份互配"交叉写，
+        # 否则两条钉点各有一端被合并掉而被 FM 忽略（2026-10-03 诊断跑 fm.log "Ignoring user match"）。
+        # 两份逻辑完全相同，交叉配对不改变任何比较语义。
+        'REG': ('s0_fire_miss_perf_r', None), 'REG_1': ('s0_fire_hit_perf_r', None),
     }
     if name in simple:
         return vec(simple[name][0])
@@ -502,7 +513,17 @@ def gen_pins():
                 fail('impl 位 %s 被映射两次（非单射）' % i)
             used.add(i)
             pairs.append((r, i))
-    n = len(pairs)
+    nbits_top = len(pairs)
+    # 子模块 delay2_pc_pipMod（DelayNWithValid）的两级 50 位 PC 打拍：写 FTB 只用 pc[29:1]，
+    # 其余 21 位在两侧都是零扇出（unread）。FM 只给"被读"的位按签名配上，unread 的那 21 位
+    # 两侧名字不同（golden data / res_bits，重写 u_core/g_chain.data_q[0] / [1]）而配不上，
+    # 会成为两侧各自的 unmatched unread。这里按级逐位钉全 50 位（含已能自动配上的位，一一对应）。
+    child = []
+    for gname, stage in (('data', 0), ('res_bits', 1)):
+        for b in range(50):
+            child.append(('delay2_pc_pipMod/%s_reg[%d]' % (gname, b),
+                          'delay2_pc_pipMod/u_core/g_chain.data_q_reg[%d][%d]' % (stage, b)))
+    n = len(pairs) + len(child)
     L = []
     A = L.append
     A('# FTB FM「匹配前」钉点 —— 自动生成：scripts/gen_ftb.py（勿手改）')
@@ -511,25 +532,30 @@ def gen_pins():
     A('# set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。')
     A('# fail-closed：set_user_match 从不抛异常（返回 0 = 没配上），所以逐条数返回值；')
     A('# 拒一条或总数不等于字面整数（= golden FTB 顶层寄存器位数）就 error（safe interp 里不用 exit）。')
-    A('# 子模块（ftbBank / 三个延迟件）内部不钉，交给 FM 自动配对（两侧同实例名）。')
+    A('# 子模块内部只钉 delay2_pc_pipMod 的两级 PC 寄存器（理由见生成器）；其余交给 FM 自动配对（两侧同实例名）。')
     A('# 进 fm.log 的输出一律 ASCII。')
     A('set ::FTB_PIN_EXPECT %d' % n)
     A('set ::FTB_PIN_OK 0')
     A('set ::FTB_PIN_BAD 0')
     A('proc ftb_pin {r i} {')
-    A('  if {[set_user_match "r:/WORK/FTB/$r" "i:/WORK/FTB/u_core/$i"]} { incr ::FTB_PIN_OK } else {')
+    A('  ftb_pin_abs $r "u_core/$i"')
+    A('}')
+    A('proc ftb_pin_abs {r i} {')
+    A('  if {[set_user_match "r:/WORK/FTB/$r" "i:/WORK/FTB/$i"]} { incr ::FTB_PIN_OK } else {')
     A('    incr ::FTB_PIN_BAD')
     A('    if {$::FTB_PIN_BAD <= 10} { puts "FTB_PIN_FAIL: $r <-> $i" }')
     A('  }')
     A('}')
     A('puts "FTB_PIN_BEGIN FTB expect=$::FTB_PIN_EXPECT"')
-    esc = lambda s: s.replace('[', '\\[').replace(']', '\\]')
     for r, i in pairs:
-        A('ftb_pin %s %s' % (esc(r), esc(i)))
+        A('ftb_pin {%s} {%s}' % (r, i))   # 花括号：不做替换，FM 名里的反斜杠原样传入
+    A('# ---- 子模块 delay2_pc_pipMod 的 PC 打拍寄存器（理由见生成器）----')
+    for r, i in child:
+        A('ftb_pin_abs {%s} {%s}' % (r, i))
     A('puts "FTB_PIN_END FTB ok=$::FTB_PIN_OK bad=$::FTB_PIN_BAD"')
     A('if {$::FTB_PIN_BAD != 0} { error "FTB_PIN_MISS=$::FTB_PIN_BAD" }')
     A('if {$::FTB_PIN_OK != %d} { error "FTB_PIN_COUNT=$::FTB_PIN_OK expect=%d" }' % (n, n))
-    return '\n'.join(L) + '\n', n, sum(w for _, w in regs)
+    return '\n'.join(L) + '\n', nbits_top, sum(w for _, w in regs)
 
 
 def splice(txt, gen):
