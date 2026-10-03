@@ -2141,6 +2141,7 @@ HPerfMonitor_3	perfEvents_hpc_4	HPerfCounter_21	GEN_SITE	u_core.g_cnt[4].perfEve
 HPerfMonitor_3	perfEvents_hpc_5	HPerfCounter_21	GEN_SITE	u_core.g_cnt[5].perfEvents_hpc	HPerfCounter_21		auto_gen_site_suffix	
 HPerfMonitor_3	perfEvents_hpc_6	HPerfCounter_21	GEN_SITE	u_core.g_cnt[6].perfEvents_hpc	HPerfCounter_21		auto_gen_site_suffix	
 HPerfMonitor_3	perfEvents_hpc_7	HPerfCounter_21	GEN_SITE	u_core.g_cnt[7].perfEvents_hpc	HPerfCounter_21		auto_gen_site_suffix	
+I8DivNr4	iter_b	IterBlockI8Nr4	ONE_SITE	u_core.u_iter	IterBlockI8Nr4		auto_one_site	
 ICache	ctrlUnitOpt	ICacheCtrlUnit	DEEPER	u_core.ctrlUnitOpt	ICacheCtrlUnit		auto_deeper	
 ICache	dataArray	ICacheDataArray	DEEPER	u_core.dataArray	ICacheDataArray		auto_deeper	
 ICache	mainPipe	ICacheMainPipe	DEEPER	u_core.mainPipe	ICacheMainPipe		auto_deeper	
@@ -2404,6 +2405,27 @@ IssueQueueVlduVstuVseglduVsegstu	age	NewAgeDetector_6	SAME_PATH	age	NewAgeDetect
 IssueQueueVlduVstuVseglduVsegstu	age_1	AgeDetector_12	SAME_PATH	age_1	AgeDetector_12		auto_same	
 IssueQueueVlduVstuVseglduVsegstu	age_2	AgeDetector_21	SAME_PATH	age_2	AgeDetector_21		auto_same	
 IssueQueueVlduVstuVseglduVsegstu	entries	EntriesVlduVstuVseglduVsegstu	SAME_PATH	entries	EntriesVlduVstuVseglduVsegstu		auto_same	
+IterBlock_v4	csa_3	CSA3_2_4017	ONE_SITE	u_core.u_csa_est	CSA3_2_4017		auto_one_site	
+IterBlock_v4	csa_iter_1	CSA3_2_3987	UNRESOLVED				none	
+IterBlock_v4	csa_iter_2	CSA3_2_3987	UNRESOLVED				none	
+IterBlock_v4	iter_conv	Conversion	UNRESOLVED				none	
+IterBlock_v4	iter_conv_2	Conversion	UNRESOLVED				none	
+IterBlock_v4	selB	SelBlock_v4	ONE_SITE	u_core.u_sel	SelBlock_v4		auto_one_site	
+IterBlock_v4	specB	SpecBlock_v4	ONE_SITE	u_core.u_spec	SpecBlock_v4		auto_one_site	
+IterBlock_v4_4	csa_3	CSA3_2_4017	ONE_SITE	u_core.u_csa_est	CSA3_2_4017		auto_one_site	
+IterBlock_v4_4	csa_iter_1	CSA3_2_4111	UNRESOLVED				none	
+IterBlock_v4_4	csa_iter_2	CSA3_2_4111	UNRESOLVED				none	
+IterBlock_v4_4	iter_conv	Conversion_8	UNRESOLVED				none	
+IterBlock_v4_4	iter_conv_2	Conversion_8	UNRESOLVED				none	
+IterBlock_v4_4	selB	SelBlock_v4	ONE_SITE	u_core.u_sel	SelBlock_v4		auto_one_site	
+IterBlock_v4_4	specB	SpecBlock_v4	ONE_SITE	u_core.u_spec	SpecBlock_v4		auto_one_site	
+IterBlock_v4_6	csa_3	CSA3_2_4017	ONE_SITE	u_core.u_csa_est	CSA3_2_4017		auto_one_site	
+IterBlock_v4_6	csa_iter_1	CSA3_2_4173	UNRESOLVED				none	
+IterBlock_v4_6	csa_iter_2	CSA3_2_4173	UNRESOLVED				none	
+IterBlock_v4_6	iter_conv	Conversion_12	UNRESOLVED				none	
+IterBlock_v4_6	iter_conv_2	Conversion_12	UNRESOLVED				none	
+IterBlock_v4_6	selB	SelBlock_v4	ONE_SITE	u_core.u_sel	SelBlock_v4		auto_one_site	
+IterBlock_v4_6	specB	SpecBlock_v4	ONE_SITE	u_core.u_spec	SpecBlock_v4		auto_one_site	
 JumpUnit	jumpDataModule	JumpDataModule	DEEPER	u_core.jumpDataModule	JumpDataModule		auto_deeper	
 L2TLB	Arbiter1_L2TLBImp_Anon	Arbiter1_L2TLBImp_Anon	UNRESOLVED				none	
 L2TLB	Arbiter1_L2TLBImp_Anon_1	Arbiter1_L2TLBImp_Anon	UNRESOLVED				none	
@@ -2821,6 +2843,7 @@ MbistClockGateCell_93	CG	ClockGate	SAME_PATH	CG	ClockGate		auto_same
 MbistClockGateCell_93	clockMux	ClockMux	SAME_PATH	clockMux	ClockMux		auto_same	
 MemCtrl	ssit	SSIT	DEEPER	u_core.ssit	SSIT		auto_deeper	
 MemCtrl	waittable	WaitTable	DEEPER	u_core.waittable	WaitTable		auto_deeper	
+MemExeUnit	Std	Std	ONE_SITE	u_core.u_std	Std		auto_one_site	
 Mgu	maskTailGen	ByteMaskTailGen	DEEPER	u_core.maskTailGen	ByteMaskTailGen		auto_deeper	
 MissQueue	cmo_unit	CMOUnit	SAME_PATH	cmo_unit	CMOUnit		auto_same	
 MissQueue	entries_0	MissEntry	SAME_PATH	entries_0	MissEntry		auto_same	
@@ -3382,8 +3405,42 @@ Scheduler_3	IssueQueueStdMoud	IssueQueueStdMoud	SAME_PATH	IssueQueueStdMoud	Issu
 Scheduler_3	IssueQueueStdMoud_1	IssueQueueStdMoud	SAME_PATH	IssueQueueStdMoud_1	IssueQueueStdMoud		auto_same	
 Scheduler_3	IssueQueueVlduVstu	IssueQueueVlduVstu	SAME_PATH	IssueQueueVlduVstu	IssueQueueVlduVstu		auto_same	
 Scheduler_3	IssueQueueVlduVstuVseglduVsegstu	IssueQueueVlduVstuVseglduVsegstu	SAME_PATH	IssueQueueVlduVstuVseglduVsegstu	IssueQueueVlduVstuVseglduVsegstu		auto_same	
+SelBlock_v4	SD_sel	SignDec	ONE_SITE	u_core.u_sign_dec	SignDec		auto_one_site	
+SelBlock_v4	csa_sel_0	CSA3_2_3988	GEN_SITE	u_core.g_thresh[0].u_csa	CSA3_2_3988		auto_gen_site_suffix	
+SelBlock_v4	csa_sel_1	CSA3_2_3988	GEN_SITE	u_core.g_thresh[1].u_csa	CSA3_2_3988		auto_gen_site_suffix	
+SelBlock_v4	csa_sel_2	CSA3_2_3988	GEN_SITE	u_core.g_thresh[2].u_csa	CSA3_2_3988		auto_gen_site_suffix	
+SelBlock_v4	csa_sel_3	CSA3_2_3988	GEN_SITE	u_core.g_thresh[3].u_csa	CSA3_2_3988		auto_gen_site_suffix	
 SinkC	taskArb	RRArbiterInit_16	SAME_PATH	taskArb	RRArbiterInit_16		auto_same	
 SourceB	issueArb	FastArbiter_5	SAME_PATH	issueArb	FastArbiter_5		auto_same	
+SpecBlock_v4	SD_sel	SignDec	GEN_SITE	u_core.g_dec[0].u_sign_dec	SignDec		auto_gen_site_suffix	
+SpecBlock_v4	SD_sel_1	SignDec	GEN_SITE	u_core.g_dec[1].u_sign_dec	SignDec		auto_gen_site_suffix	
+SpecBlock_v4	SD_sel_2	SignDec	GEN_SITE	u_core.g_dec[2].u_sign_dec	SignDec		auto_gen_site_suffix	
+SpecBlock_v4	SD_sel_3	SignDec	GEN_SITE	u_core.g_dec[3].u_sign_dec	SignDec		auto_gen_site_suffix	
+SpecBlock_v4	SD_sel_4	SignDec	GEN_SITE	u_core.g_dec[4].u_sign_dec	SignDec		auto_gen_site_suffix	
+SpecBlock_v4	csa_sel_spec_0	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_0_1	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_0_2	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_0_3	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_0_4	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_1	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_1_1	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_1_2	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_1_3	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_1_4	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_2	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_2_1	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_2_2	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_2_3	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_2_4	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_3	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_3_1	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_3_2	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_3_3	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_sel_spec_3_4	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_spec_1_0	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_spec_1_1	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_spec_1_2	CSA3_2_3992	UNRESOLVED				none	
+SpecBlock_v4	csa_spec_1_3	CSA3_2_3992	UNRESOLVED				none	
 SplittedSRAMTemplate	array_0_0_0	SRAMTemplate	SAME_PATH	array_0_0_0	SRAMTemplate		auto_same	
 SplittedSRAMTemplate	array_0_1_0	SRAMTemplate	SAME_PATH	array_0_1_0	SRAMTemplate		auto_same	
 SplittedSRAMTemplate_1	array_0_0_0	SRAMTemplate_2	SAME_PATH	array_0_0_0	SRAMTemplate_2		auto_same	

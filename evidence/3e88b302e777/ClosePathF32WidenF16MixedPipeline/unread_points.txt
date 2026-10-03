@@ -1,0 +1,6 @@
+ref	r:/WORK/ClosePathF32WidenF16MixedPipeline/U_CS4_io_adder_op0_r_reg[23]
+ref	r:/WORK/ClosePathF32WidenF16MixedPipeline/U_CS4_io_adder_op1_r_reg[23]
+ref	r:/WORK/ClosePathF32WidenF16MixedPipeline/U_Lshift_io_src_r_reg[24]
+impl	i:/WORK/ClosePathF32WidenF16MixedPipeline/u_core/cs4_op0_q_reg[23]
+impl	i:/WORK/ClosePathF32WidenF16MixedPipeline/u_core/cs4_op1_q_reg[23]
+impl	i:/WORK/ClosePathF32WidenF16MixedPipeline/u_core/cs_selected_q_reg[24]

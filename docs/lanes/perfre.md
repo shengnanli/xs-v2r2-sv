@@ -88,6 +88,12 @@ EXCLUDED 已到 15464 条：**本结果不得表述为 perf 全等价**，只说
 
 ### 4b. tage provider 差异（仍在，真差异，B_CONTROL）
 
+> **更正（lane tage-initmem，codex 0207 P1 已裁定）**：这不是"真差异"，是 simulation-only 的初值伪差。
+> 计数器 `*_provided_at_pred` 每拍无条件累加 golden Tage_SC 的 `s2_provideds_*`/`s2_providers_*`，
+> 它们只在 `io_s1_fire_1` 时更新，上电值来自 firtool `RANDOMIZE_REG_INIT` 的无种子 `$random`（全设计一条流，
+> 随"哪些 golden 模块被替换"平移，与 +ntb_random_seed 无关）。两侧 Z0 后全等。详见 `docs/lanes/tage-initmem.md`；
+> 下文"真差异""SRAM/WrBypass 初值"等推断保留作历史，以本更正为准。
+
 * 计数器在 Tage_SC（golden，未重写）内部观测，T0 绑定，数没问题。差异恒为 1029（bank_1 table_3 provided 1037→8，use_bim +1029，
   sc_* 同步 −1029），从 diag2、icperf、d5564588、f19ff397 四版构建完全不变；且与 initreg seed 无关（seed 实验不动）。
 * Tage_SC 的输入来自重写的 `TageTable{,_1,_2,_3}` / `TageBTable`（rtl/frontend/）。二分构建（这些回落 golden，其余全重写）结果见 §6。
@@ -124,7 +130,15 @@ f19 换 seed 后 missQueue `utilization/full/exHalf/empty/util_*/num_valids_*/L1
 | f19_notage2 | TageTable{,_1,_2,_3}+TageBTable | 3007 | **1244** | 8 | **617** | ecec7f6d39ac43a7a88cfccd1d2a1991dfb4af31701abc773f33b42eeb0837ef |
 | f19_nopred | 上面 + Predictor + Composer | 4036 | 215 | 8 | 618 | 8daa35424a36e70efd86131b76627f445a831e676783ded903a7615f0f6f8ad9 |
 
-结论：**不能定位到 TageTable/TageBTable/Predictor/Composer 中任何一个**——把它们全回落 golden 差异还在，而且各计数器在三版之间
+> **更正（lane tage-initmem）**：下面"嫌疑在共用存储层 / RANDOMIZE_MEM_INIT / 存储阵列初始化"的推断**不成立**。
+> Tage 表 SRAM（resetState）与 TageBTable（doing_reset）上电整表清扫，阵列初值到不了输出。真正的来源是
+> golden Tage_SC（两侧都未重写）的 `s2_provideds_*`/`s2_providers_*` 寄存器的 `$random` 初值：ucli 实测 golden=1/1/0/3、
+> impl(f19)=0/0/3/3，在第一次 s1_fire 前的 ~1029 拍里被每拍累加。二分各版"跳来跳去"是因为每回落/替换一个
+> 带 `$random` initial 的模块，这条全局 `$random` 流的位置就平移——**二分本身不定位任何模块**。
+> 两侧 Z0（无 RANDOMIZE_*、编译期 +vcs+initreg+random、运行期 +vcs+initreg+0）后全量比对 MISMATCH 0；
+> 不改 RTL。Z0 已成为 perf 主比较的强制口径（`verif/sim/run_perf_z0.sh` + `scripts/perf_compare.py` 设定闸）。
+
+结论（原文，已被上面更正取代）：**不能定位到 TageTable/TageBTable/Predictor/Composer 中任何一个**——把它们全回落 golden 差异还在，而且各计数器在三版之间
 "跳来跳去"（同一个 1029 在 table_0 / table_3 / bim 之间换位置，bank_1 provided 在 notage2 恢复、在 nopred 又坏），
 总预测数与 commit 流（rob commitUop 12863=12863）不变。这是"命中哪张表取决于表里原有内容"的特征：TAGE 表项在开机后
 未写入前的初值（SRAM/array 内容、WrBypass 表项）参与 tag 比较。剩余嫌疑是这些表下面共用的重写层

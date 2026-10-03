@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/FDivSqrt
+Implementation : i:/WORK/FDivSqrt
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:17:50 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_c_q_reg[10]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_c_q_reg[10]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_c_q_reg[11]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_c_q_reg[11]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_c_q_reg[13]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_c_q_reg[13]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_c_q_reg[8]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_c_q_reg[8]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_s_q_reg[10]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_s_q_reg[10]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_s_q_reg[11]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_s_q_reg[11]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_s_q_reg[13]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_s_q_reg[13]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_s_q_reg[8]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_s_q_reg[8]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/f_r_s_q_reg[9]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/f_r_s_q_reg[9]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/m_neg_0_for_nxt_cycle_s0_qds_0_q_reg[1]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/m_neg_0_q_reg[1]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/m_neg_0_for_nxt_cycle_s0_qds_0_q_reg[2]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/m_neg_0_q_reg[2]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/m_neg_0_for_nxt_cycle_s0_qds_0_q_reg[3]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/m_neg_0_q_reg[3]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/m_neg_1_for_nxt_cycle_s0_qds_0_q_reg[0]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/m_neg_1_q_reg[0]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/m_neg_1_for_nxt_cycle_s0_qds_0_q_reg[2]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/m_neg_1_q_reg[2]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/m_pos_1_for_nxt_cycle_s0_qds_0_q_reg[1]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/m_pos_1_q_reg[1]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/nr_f_r_7b_for_nxt_cycle_s0_qds_0_q_reg[0]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/nr_f_r_7b_q_reg[0]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/nr_f_r_7b_for_nxt_cycle_s0_qds_0_q_reg[1]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/nr_f_r_7b_q_reg[1]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/nr_f_r_9b_for_nxt_cycle_s1_qds_0_q_reg[0]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/nr_f_r_9b_q_reg[0]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/nr_f_r_9b_for_nxt_cycle_s1_qds_0_q_reg[1]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/nr_f_r_9b_q_reg[1]
+
+  Ref  DFF        r:/WORK/FDivSqrt/fdiv/u_vector_float_sqrt_r16/nr_f_r_9b_for_nxt_cycle_s1_qds_0_q_reg[2]
+  Impl DFF        i:/WORK/FDivSqrt/u_core/u_fdiv/u_vector_float_sqrt_r16/u_core/nr_f_r_9b_q_reg[2]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

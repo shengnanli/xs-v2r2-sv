@@ -15,4 +15,9 @@
 #   全零（failing / unverified / unmatched 0）/ 无 dont_verify、无 elab147、无放宽 appvar、无黑盒 /
 #   本文件进 sidecar script_closure，receipt 记 sha256。
 
+# ---- 2026-10-03 fpaddpath-sqrtblock lane：far/close 子树 impl 改读重写件后 ----
+# 上述同一组死位两侧名字不再相同（golden firtool 名 vs 重写核字段名），且无扇出签名 → FM 配不上（unmatched unread），
+# vmucp 单开空转。由本目标 UT 目录的 fm_pins.tcl 字面钉 4 对（含恒 0 的 U_CS4_io_adder_op1_r_reg[23]，钉上后归回
+# constant_reg），再交 vmucp 实比；判据仍是上面六条（passing 与上一版 receipt 相同、failing/unmatched 全 0）。
+
 fm_target_vmucp_allow

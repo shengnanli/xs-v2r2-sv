@@ -1,0 +1,274 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "VIAluDecoder",
+ "run_id": "ArithVecLeaves5-20261003T132659Z-f19ef593a",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/VIAluDecoder.sv",
+   "kind": "golden",
+   "sha256": "657f728b8e4fe087b224ca4aba748c4b11ad4ce0b03bca6d6e3f915227f3571b"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Adder_chain_rnd.sv",
+   "kind": "repo",
+   "sha256": "498a7d75a2419a816b0a948cbf354ad1b4c42e9001cc1002ed266f6327fe35cc"
+  },
+  {
+   "path": "rtl/backend/DivUnit.sv",
+   "kind": "repo",
+   "sha256": "9120914584f903542aa1500cd56a0cbb9384d992574b1126c3af9002928e4f27"
+  },
+  {
+   "path": "rtl/backend/FDivSqrt.sv",
+   "kind": "repo",
+   "sha256": "8508bfdf02177a8058a229f7d5f96b0f852c8f356e7133c152e8c0918945cdae"
+  },
+  {
+   "path": "rtl/backend/VIAluDecoder.sv",
+   "kind": "repo",
+   "sha256": "7b5caf4817e3720cb200dc9d13960f4a8ef61507b17835d8da1804b9d0aaa789"
+  },
+  {
+   "path": "rtl/backend/VIntAdder64b.sv",
+   "kind": "repo",
+   "sha256": "25af896ce550cfa530e21f630f26dcca048641e8a7b215dc78fe3aa83caac38c"
+  },
+  {
+   "path": "rtl/backend/lzc.sv",
+   "kind": "repo",
+   "sha256": "43089629b1a6144a24f86ddfad8a2e323b21c61fe24026b70bedede2173b22b2"
+  },
+  {
+   "path": "rtl/backend/r4_qds_cg.sv",
+   "kind": "repo",
+   "sha256": "87939f80e924b5403da9f3379b04e7138fb38ce30c37a2b6d492f438527a13d4"
+  },
+  {
+   "path": "rtl/backend/r4_qds.sv",
+   "kind": "repo",
+   "sha256": "74da1acc110331d6f45498df1386762c9938422b97978ce780caff2f8e7cdc90"
+  },
+  {
+   "path": "rtl/backend/r4_qds_spec.sv",
+   "kind": "repo",
+   "sha256": "5e91a8267248aa7af05f77c6c0ea3d3ed0aeaef063097b7cc935195b36879ea4"
+  },
+  {
+   "path": "rtl/backend/fpsqrt_r16_block.sv",
+   "kind": "repo",
+   "sha256": "16abd38fd472794060dbce0a966fcfb2847a517083bdfc939d40b340f3852337"
+  },
+  {
+   "path": "rtl/backend/fpsqrt_r16.sv",
+   "kind": "repo",
+   "sha256": "f35f8a28d1ca7a06280e1f52eb8ab240069085a50cf179ce77ca9cdc37f69077"
+  },
+  {
+   "path": "golden-rtl/SRT16DividerDataModule.sv",
+   "kind": "golden",
+   "sha256": "9b7f0b3e7057edbe63beeac14b26c305753e37f3ab3ca75f48002cc1ec9ac199"
+  },
+  {
+   "path": "golden-rtl/CSA3_2_3956.sv",
+   "kind": "golden",
+   "sha256": "8835aae40f8ae0d8a1e02dd8db83cc0cc893bb2343003429744f820e1e39ffe7"
+  },
+  {
+   "path": "golden-rtl/CSA3_2_3960.sv",
+   "kind": "golden",
+   "sha256": "931ed0ab74f87209f1e615e47f7399d6b63531a847022d4a9beca2b7a374aed2"
+  },
+  {
+   "path": "golden-rtl/CSA3_2_3962.sv",
+   "kind": "golden",
+   "sha256": "c0368dc77c0217348edccbd611bc4145b3022f7a304478bb1780c4d16a270b3d"
+  },
+  {
+   "path": "golden-rtl/RightShifter.sv",
+   "kind": "golden",
+   "sha256": "f3b0f9f3bea03caa65d9f6aec0b801107191b7500eb73b0ca45a4ed01cb796ce"
+  },
+  {
+   "path": "golden-rtl/FloatDivider.sv",
+   "kind": "golden",
+   "sha256": "bd47212cc36b1217c8d6d2ad9e455f15b2c14e6fd0c2caa32f6f6de46f7cb2df"
+  },
+  {
+   "path": "golden-rtl/FloatDividerR64.sv",
+   "kind": "golden",
+   "sha256": "d1d4105c9b28fcf68b1422747b35cdd9769592983ae6bca1cfbb20a10c4577f4"
+  },
+  {
+   "path": "golden-rtl/fpdiv_r64_block.sv",
+   "kind": "golden",
+   "sha256": "f23b708f351918243e18edddf719f737a32464d5edad3455587d82bf1b7da214"
+  },
+  {
+   "path": "golden-rtl/CSA3to2_20.sv",
+   "kind": "golden",
+   "sha256": "396018e57cdedb321e1c5d2d30af0e45dc9a53f297d5129656bf2ef77a3b02fd"
+  },
+  {
+   "path": "golden-rtl/CSA3to2_24.sv",
+   "kind": "golden",
+   "sha256": "253e6b8ace941b9cbd9096eaaba40caa3a5f23c4c281d3179cd9ec7dba19b36b"
+  },
+  {
+   "path": "golden-rtl/ShiftLeftPriorityWithLZDResult.sv",
+   "kind": "golden",
+   "sha256": "b609c1dc50ea6569c3c5af492e73df20d1674050f9a988c9de4b367e056402ef"
+  },
+  {
+   "path": "golden-rtl/r4_qds_v2.sv",
+   "kind": "golden",
+   "sha256": "ee1cae79b8ab5d33f01141630519964a81293a238ac1566f8dd787534151d94b"
+  },
+  {
+   "path": "golden-rtl/r4_qds_v2_spec.sv",
+   "kind": "golden",
+   "sha256": "4f60b3335cd47a9e04df68155ba93b48244ed051ffa381396adf7e5cd415f5b8"
+  }
+ ],
+ "impl_commit": "f19ef593a8df20cb7f661f0b83afa80cd132ee9c",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {
+   "fm_pins.tcl": "73508b896094f3a863846b3afc53b1854c639327258118d5b9a432808fd2d6bb"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ArithVecLeaves5-20261003T132659Z-f19ef593a",
+  "top": "VIAluDecoder",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 12,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 12,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "VIAluDecoder",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
