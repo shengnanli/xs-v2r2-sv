@@ -134,3 +134,18 @@ constant_reg 27 与 §1.3 预登记一致；`shamt[10:7]` 未被判常量（照�
 
 可能出错处：FP_INCVT 的寄存器在 impl 侧多一层 `u_core`（`fpcvt/u_core/<reg>` vs `fpcvt/<reg>`），靠名字/签名配对；
 若出现 unmatched，先查配对。本节登记前没做 FCVT 的 FM 试跑。
+
+## 对账 §2（FCVT 重证，证明 commit `b8c893dad`）
+
+| 结果 | 模型 / 预测 / 实测 passing | constant_reg | unread / unmatched / failing / unverified | 黑盒 / dont_verify | 钉点 | receipt sha256 |
+|---|---|---|---|---|---|---|
+| **SUCCEEDED** | 2652 / 2625 / **2625**（与上一版 receipt 逐位相等） | 27 | 0 / 0 / 0 / 0 | 0 / 无 | 128 / miss 0 | `7c9895c132d0d5944b039314a3f1f5f6e65386fb69a2fa2002fedd41cd518d31` |
+
+impl 闭包含 `rtl/backend/FP_INCVT.sv` 及 4 个 child 重写件（receipt impl_srcs 可查）。vmucp 照旧实比 fcvtmodTrueExpReg[4:0] 5 点。
+复跑：`PROOF_COMMIT=b8c893dad bash scripts/run_proof.sh FCVT FCVT < /dev/null`
+
+## 3. 只列不做的父级（★未入 main 的分支正在改它们的 Makefile★）
+
+FP_INCVT 的其余已签父级 CVT64_1 / VCVT（`verif/ut/CVT64_1`）、VectorCvt、VCVT_8、VectorCvtTop 当前都把 FP_INCVT 放在两侧同源
+golden（`*_GOLDEN_SHARED`）。这四个 UT 的 Makefile 正被 `agent/next200c-takeover`（未合入 main，改 Rec7Table/Rsqrt7Table
+为重写件）改动；本 lane 不碰，待其合入 main 后再把 FP_INCVT 移到 impl 侧并重证（golden 闭包不变，预测 = 届时最新 receipt）。
