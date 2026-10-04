@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/VBestOffsetPrefetch
+Implementation : i:/WORK/VBestOffsetPrefetch
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 07:05:20 2026
+**************************************************
+
+No failing compare points.
+
+1
