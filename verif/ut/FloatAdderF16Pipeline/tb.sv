@@ -258,6 +258,11 @@ module tb;
     mask_red   = $urandom;
     op_code    = ($urandom_range(0, 1) == 0) ? 5'($urandom_range(0, 1)) : 5'($urandom);
     if ($urandom_range(0, 7) == 0) begin fp_a = $urandom; fp_b = $urandom; return; end
+    if ($urandom_range(0, 31) == 0) begin         // ±0 对 ±0（min/max 的 -0 < +0 规则、比较的 ±0 相等）
+      fp_a = {1'($urandom), 15'h0}; fp_b = {1'($urandom), 15'h0};
+      if ($urandom_range(0, 1)) op_code = 5'($urandom_range(2, 3));
+      return;
+    end
     if ($urandom_range(0, 5) == 0) begin
       fp_a = $urandom_range(0, 1) ? pick_special() : 16'($urandom);
       fp_b = $urandom_range(0, 1) ? pick_special() : 16'($urandom);

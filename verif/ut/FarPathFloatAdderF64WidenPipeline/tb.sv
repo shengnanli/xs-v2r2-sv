@@ -12,6 +12,7 @@
 //   所以从"出现过一次 fire"起每拍比 fp_c / fflags；absEaSubEb / isEfp_bGreater 是纯组合，从第 0 拍起就比。
 // 激励（fire 3/4）：指数关系 相等 / 差 1 / 差 2..60（跨 56 移位溢出门限）/ 0 对 1 / 全 1 附近（上溢）；
 //   尾数 随机 / 全 1 / 全 0 / 单 1；1/8 完全随机。
+//   另 1/16 拍专打移位溢出门限：小数是尾数只剩低 0..3 位单 1 的非规格数、有效指数差 54..60。
 // 覆盖（写进 PASS 判据，按重写件内部信号统计）：正常不进位 / 正常进位 / 溢出不进位 / 溢出进位 各 >= 1000；
 //   上溢 >= 200；移位溢出 >= 1000；oracle 比对 >= 50000（其中 NX >= 1000、有效相减 >= 10000、非规格数结果 >= 100）；
 //   rm 0..4 都出现；fire=0 拍 >= 20000；每个输出位都见过 0 和 1（fflags 只有 OF/NX 两位可为 1）。
@@ -125,6 +126,12 @@ module tb;
     round_mode = ($urandom_range(0, 7) == 0) ? 3'($urandom_range(5, 7)) : 3'($urandom_range(0, 4));
     is_sub     = $urandom;
     if ($urandom_range(0, 7) == 0) begin fp_a = {$urandom, $urandom}; fp_b = {$urandom, $urandom}; return; end
+    if ($urandom_range(0, 15) == 0) begin         // 移位溢出门限：小数是只剩最低几位的非规格数，有效指数差 54..60
+      fp_a = {1'($urandom), 11'($urandom_range(55, 61)), pick_mant()};
+      fp_b = {1'($urandom), 11'h0, 52'(1) << $urandom_range(0, 3)};
+      if ($urandom_range(0, 1)) begin logic [63:0] t = fp_a; fp_a = fp_b; fp_b = t; end
+      return;
+    end
     ea = pick_exp();
     ma = pick_mant();
     case ($urandom_range(0, 6))
