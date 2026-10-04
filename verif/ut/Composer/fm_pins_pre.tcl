@@ -4171,7 +4171,7 @@ if {$top eq "Composer"} {
     {tage/bankTickCtrs_1_reg\[4\] tage/u_core/bankTickCtrs_reg\[1\]\[4\]}
     {tage/bankTickCtrs_1_reg\[5\] tage/u_core/bankTickCtrs_reg\[1\]\[5\]}
     {tage/bankTickCtrs_1_reg\[6\] tage/u_core/bankTickCtrs_reg\[1\]\[6\]}
-    {tage/bt/bt_0/array/array_0_0_0/rcg/CG/EN_reg tage/bt/u_core/g_bank\[0\].bt/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/bt/bt_0/array/array_0_0_0/rcg/CG/EN_reg tage/bt/u_core/g_bank\[0\].bt/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/bt/bt_0/array/array_0_0_0/rdataReg_reg\[0\] tage/bt/u_core/g_bank\[0\].bt/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/bt/bt_0/array/array_0_0_0/rdataReg_reg\[1\] tage/bt/u_core/g_bank\[0\].bt/array/array_0_0_0/rdataReg_reg\[1\]}
     {tage/bt/bt_0/array/array_0_0_0/rdataReg_reg\[2\] tage/bt/u_core/g_bank\[0\].bt/array/array_0_0_0/rdataReg_reg\[2\]}
@@ -4190,7 +4190,7 @@ if {$top eq "Composer"} {
     {tage/bt/bt_0/array/array_0_0_0/rdata_hold_data_3_reg\[1\] tage/bt/u_core/g_bank\[0\].bt/array/array_0_0_0/rdata_hold_data_3_reg\[1\]}
     {tage/bt/bt_0/array/array_0_0_0/rdata_last_REG_reg tage/bt/u_core/g_bank\[0\].bt/array/array_0_0_0/rdata_last_REG_reg}
     {tage/bt/bt_0/array/array_0_0_0/respReg_reg tage/bt/u_core/g_bank\[0\].bt/array/array_0_0_0/respReg_reg}
-    {tage/bt/bt_0/array/array_1_0_0/rcg/CG/EN_reg tage/bt/u_core/g_bank\[0\].bt/array/array_1_0_0/rcg/CG/EN_reg}
+    {tage/bt/bt_0/array/array_1_0_0/rcg/CG/EN_reg tage/bt/u_core/g_bank\[0\].bt/array/array_1_0_0/rcg/CG/enableLatched_reg}
     {tage/bt/bt_0/array/array_1_0_0/rdataReg_reg\[0\] tage/bt/u_core/g_bank\[0\].bt/array/array_1_0_0/rdataReg_reg\[0\]}
     {tage/bt/bt_0/array/array_1_0_0/rdataReg_reg\[1\] tage/bt/u_core/g_bank\[0\].bt/array/array_1_0_0/rdataReg_reg\[1\]}
     {tage/bt/bt_0/array/array_1_0_0/rdataReg_reg\[2\] tage/bt/u_core/g_bank\[0\].bt/array/array_1_0_0/rdataReg_reg\[2\]}
@@ -4216,7 +4216,7 @@ if {$top eq "Composer"} {
     {tage/bt/bt_0/holdRidx_last_REG_1_reg tage/bt/u_core/g_bank\[0\].bt/holdRidx_last_REG_1_reg}
     {tage/bt/bt_0/holdRidx_last_REG_reg tage/bt/u_core/g_bank\[0\].bt/holdRidx_last_REG_reg}
     {tage/bt/bt_0/ridx_reg tage/bt/u_core/g_bank\[0\].bt/ridx_reg}
-    {tage/bt/bt_1/array/array_0_0_0/rcg/CG/EN_reg tage/bt/u_core/g_bank\[1\].bt/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/bt/bt_1/array/array_0_0_0/rcg/CG/EN_reg tage/bt/u_core/g_bank\[1\].bt/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/bt/bt_1/array/array_0_0_0/rdataReg_reg\[0\] tage/bt/u_core/g_bank\[1\].bt/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/bt/bt_1/array/array_0_0_0/rdataReg_reg\[1\] tage/bt/u_core/g_bank\[1\].bt/array/array_0_0_0/rdataReg_reg\[1\]}
     {tage/bt/bt_1/array/array_0_0_0/rdataReg_reg\[2\] tage/bt/u_core/g_bank\[1\].bt/array/array_0_0_0/rdataReg_reg\[2\]}
@@ -4235,7 +4235,7 @@ if {$top eq "Composer"} {
     {tage/bt/bt_1/array/array_0_0_0/rdata_hold_data_3_reg\[1\] tage/bt/u_core/g_bank\[1\].bt/array/array_0_0_0/rdata_hold_data_3_reg\[1\]}
     {tage/bt/bt_1/array/array_0_0_0/rdata_last_REG_reg tage/bt/u_core/g_bank\[1\].bt/array/array_0_0_0/rdata_last_REG_reg}
     {tage/bt/bt_1/array/array_0_0_0/respReg_reg tage/bt/u_core/g_bank\[1\].bt/array/array_0_0_0/respReg_reg}
-    {tage/bt/bt_1/array/array_1_0_0/rcg/CG/EN_reg tage/bt/u_core/g_bank\[1\].bt/array/array_1_0_0/rcg/CG/EN_reg}
+    {tage/bt/bt_1/array/array_1_0_0/rcg/CG/EN_reg tage/bt/u_core/g_bank\[1\].bt/array/array_1_0_0/rcg/CG/enableLatched_reg}
     {tage/bt/bt_1/array/array_1_0_0/rdataReg_reg\[0\] tage/bt/u_core/g_bank\[1\].bt/array/array_1_0_0/rdataReg_reg\[0\]}
     {tage/bt/bt_1/array/array_1_0_0/rdataReg_reg\[1\] tage/bt/u_core/g_bank\[1\].bt/array/array_1_0_0/rdataReg_reg\[1\]}
     {tage/bt/bt_1/array/array_1_0_0/rdataReg_reg\[2\] tage/bt/u_core/g_bank\[1\].bt/array/array_1_0_0/rdataReg_reg\[2\]}
@@ -5733,7 +5733,7 @@ if {$top eq "Composer"} {
     {tage/scTables_0/table_0/_resetSet_reg\[5\] tage/scTables_0/u_core/g_bank\[0\].u_table/u_core/resetSet_reg\[5\]}
     {tage/scTables_0/table_0/_resetSet_reg\[6\] tage/scTables_0/u_core/g_bank\[0\].u_table/u_core/resetSet_reg\[6\]}
     {tage/scTables_0/table_0/_resetState_reg tage/scTables_0/u_core/g_bank\[0\].u_table/u_core/resetState_reg}
-    {tage/scTables_0/table_0/rcg/CG/EN_reg tage/scTables_0/u_core/g_bank\[0\].u_table/u_core/g_cg.rcg/CG/EN_reg}
+    {tage/scTables_0/table_0/rcg/CG/EN_reg tage/scTables_0/u_core/g_bank\[0\].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
     {tage/scTables_0/table_0/rdataReg_reg\[0\] tage/scTables_0/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[0\]}
     {tage/scTables_0/table_0/rdataReg_reg\[10\] tage/scTables_0/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[10\]}
     {tage/scTables_0/table_0/rdataReg_reg\[11\] tage/scTables_0/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[11\]}
@@ -5792,7 +5792,7 @@ if {$top eq "Composer"} {
     {tage/scTables_0/table_1/_resetSet_reg\[5\] tage/scTables_0/u_core/g_bank\[1\].u_table/u_core/resetSet_reg\[5\]}
     {tage/scTables_0/table_1/_resetSet_reg\[6\] tage/scTables_0/u_core/g_bank\[1\].u_table/u_core/resetSet_reg\[6\]}
     {tage/scTables_0/table_1/_resetState_reg tage/scTables_0/u_core/g_bank\[1\].u_table/u_core/resetState_reg}
-    {tage/scTables_0/table_1/rcg/CG/EN_reg tage/scTables_0/u_core/g_bank\[1\].u_table/u_core/g_cg.rcg/CG/EN_reg}
+    {tage/scTables_0/table_1/rcg/CG/EN_reg tage/scTables_0/u_core/g_bank\[1\].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
     {tage/scTables_0/table_1/rdataReg_reg\[0\] tage/scTables_0/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[0\]}
     {tage/scTables_0/table_1/rdataReg_reg\[10\] tage/scTables_0/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[10\]}
     {tage/scTables_0/table_1/rdataReg_reg\[11\] tage/scTables_0/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[11\]}
@@ -6799,7 +6799,7 @@ if {$top eq "Composer"} {
     {tage/scTables_1/table_0/_resetSet_reg\[5\] tage/scTables_1/u_core/g_bank\[0\].u_table/u_core/resetSet_reg\[5\]}
     {tage/scTables_1/table_0/_resetSet_reg\[6\] tage/scTables_1/u_core/g_bank\[0\].u_table/u_core/resetSet_reg\[6\]}
     {tage/scTables_1/table_0/_resetState_reg tage/scTables_1/u_core/g_bank\[0\].u_table/u_core/resetState_reg}
-    {tage/scTables_1/table_0/rcg/CG/EN_reg tage/scTables_1/u_core/g_bank\[0\].u_table/u_core/g_cg.rcg/CG/EN_reg}
+    {tage/scTables_1/table_0/rcg/CG/EN_reg tage/scTables_1/u_core/g_bank\[0\].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
     {tage/scTables_1/table_0/rdataReg_reg\[0\] tage/scTables_1/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[0\]}
     {tage/scTables_1/table_0/rdataReg_reg\[10\] tage/scTables_1/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[10\]}
     {tage/scTables_1/table_0/rdataReg_reg\[11\] tage/scTables_1/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[11\]}
@@ -6858,7 +6858,7 @@ if {$top eq "Composer"} {
     {tage/scTables_1/table_1/_resetSet_reg\[5\] tage/scTables_1/u_core/g_bank\[1\].u_table/u_core/resetSet_reg\[5\]}
     {tage/scTables_1/table_1/_resetSet_reg\[6\] tage/scTables_1/u_core/g_bank\[1\].u_table/u_core/resetSet_reg\[6\]}
     {tage/scTables_1/table_1/_resetState_reg tage/scTables_1/u_core/g_bank\[1\].u_table/u_core/resetState_reg}
-    {tage/scTables_1/table_1/rcg/CG/EN_reg tage/scTables_1/u_core/g_bank\[1\].u_table/u_core/g_cg.rcg/CG/EN_reg}
+    {tage/scTables_1/table_1/rcg/CG/EN_reg tage/scTables_1/u_core/g_bank\[1\].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
     {tage/scTables_1/table_1/rdataReg_reg\[0\] tage/scTables_1/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[0\]}
     {tage/scTables_1/table_1/rdataReg_reg\[10\] tage/scTables_1/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[10\]}
     {tage/scTables_1/table_1/rdataReg_reg\[11\] tage/scTables_1/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[11\]}
@@ -8121,7 +8121,7 @@ if {$top eq "Composer"} {
     {tage/scTables_2/table_0/_resetSet_reg\[5\] tage/scTables_2/u_core/g_bank\[0\].u_table/u_core/resetSet_reg\[5\]}
     {tage/scTables_2/table_0/_resetSet_reg\[6\] tage/scTables_2/u_core/g_bank\[0\].u_table/u_core/resetSet_reg\[6\]}
     {tage/scTables_2/table_0/_resetState_reg tage/scTables_2/u_core/g_bank\[0\].u_table/u_core/resetState_reg}
-    {tage/scTables_2/table_0/rcg/CG/EN_reg tage/scTables_2/u_core/g_bank\[0\].u_table/u_core/g_cg.rcg/CG/EN_reg}
+    {tage/scTables_2/table_0/rcg/CG/EN_reg tage/scTables_2/u_core/g_bank\[0\].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
     {tage/scTables_2/table_0/rdataReg_reg\[0\] tage/scTables_2/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[0\]}
     {tage/scTables_2/table_0/rdataReg_reg\[10\] tage/scTables_2/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[10\]}
     {tage/scTables_2/table_0/rdataReg_reg\[11\] tage/scTables_2/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[11\]}
@@ -8180,7 +8180,7 @@ if {$top eq "Composer"} {
     {tage/scTables_2/table_1/_resetSet_reg\[5\] tage/scTables_2/u_core/g_bank\[1\].u_table/u_core/resetSet_reg\[5\]}
     {tage/scTables_2/table_1/_resetSet_reg\[6\] tage/scTables_2/u_core/g_bank\[1\].u_table/u_core/resetSet_reg\[6\]}
     {tage/scTables_2/table_1/_resetState_reg tage/scTables_2/u_core/g_bank\[1\].u_table/u_core/resetState_reg}
-    {tage/scTables_2/table_1/rcg/CG/EN_reg tage/scTables_2/u_core/g_bank\[1\].u_table/u_core/g_cg.rcg/CG/EN_reg}
+    {tage/scTables_2/table_1/rcg/CG/EN_reg tage/scTables_2/u_core/g_bank\[1\].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
     {tage/scTables_2/table_1/rdataReg_reg\[0\] tage/scTables_2/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[0\]}
     {tage/scTables_2/table_1/rdataReg_reg\[10\] tage/scTables_2/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[10\]}
     {tage/scTables_2/table_1/rdataReg_reg\[11\] tage/scTables_2/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[11\]}
@@ -9443,7 +9443,7 @@ if {$top eq "Composer"} {
     {tage/scTables_3/table_0/_resetSet_reg\[5\] tage/scTables_3/u_core/g_bank\[0\].u_table/u_core/resetSet_reg\[5\]}
     {tage/scTables_3/table_0/_resetSet_reg\[6\] tage/scTables_3/u_core/g_bank\[0\].u_table/u_core/resetSet_reg\[6\]}
     {tage/scTables_3/table_0/_resetState_reg tage/scTables_3/u_core/g_bank\[0\].u_table/u_core/resetState_reg}
-    {tage/scTables_3/table_0/rcg/CG/EN_reg tage/scTables_3/u_core/g_bank\[0\].u_table/u_core/g_cg.rcg/CG/EN_reg}
+    {tage/scTables_3/table_0/rcg/CG/EN_reg tage/scTables_3/u_core/g_bank\[0\].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
     {tage/scTables_3/table_0/rdataReg_reg\[0\] tage/scTables_3/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[0\]}
     {tage/scTables_3/table_0/rdataReg_reg\[10\] tage/scTables_3/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[10\]}
     {tage/scTables_3/table_0/rdataReg_reg\[11\] tage/scTables_3/u_core/g_bank\[0\].u_table/u_core/rdataReg_reg\[11\]}
@@ -9502,7 +9502,7 @@ if {$top eq "Composer"} {
     {tage/scTables_3/table_1/_resetSet_reg\[5\] tage/scTables_3/u_core/g_bank\[1\].u_table/u_core/resetSet_reg\[5\]}
     {tage/scTables_3/table_1/_resetSet_reg\[6\] tage/scTables_3/u_core/g_bank\[1\].u_table/u_core/resetSet_reg\[6\]}
     {tage/scTables_3/table_1/_resetState_reg tage/scTables_3/u_core/g_bank\[1\].u_table/u_core/resetState_reg}
-    {tage/scTables_3/table_1/rcg/CG/EN_reg tage/scTables_3/u_core/g_bank\[1\].u_table/u_core/g_cg.rcg/CG/EN_reg}
+    {tage/scTables_3/table_1/rcg/CG/EN_reg tage/scTables_3/u_core/g_bank\[1\].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
     {tage/scTables_3/table_1/rdataReg_reg\[0\] tage/scTables_3/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[0\]}
     {tage/scTables_3/table_1/rdataReg_reg\[10\] tage/scTables_3/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[10\]}
     {tage/scTables_3/table_1/rdataReg_reg\[11\] tage/scTables_3/u_core/g_bank\[1\].u_table/u_core/rdataReg_reg\[11\]}
@@ -11651,7 +11651,7 @@ if {$top eq "Composer"} {
     {tage/tables_0/table_banks_0/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_0/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_0/table_banks_0/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_0/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_0/table_banks_0/array/array_0_0_0/_resetState_reg tage/tables_0/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_0/table_banks_0/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_0/table_banks_0/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_0/table_banks_0/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_0/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_0/table_banks_0/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_0/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_0/table_banks_0/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_0/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -11712,7 +11712,7 @@ if {$top eq "Composer"} {
     {tage/tables_0/table_banks_1/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_0/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_0/table_banks_1/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_0/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_0/table_banks_1/array/array_0_0_0/_resetState_reg tage/tables_0/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_0/table_banks_1/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_0/table_banks_1/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_0/table_banks_1/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_0/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_0/table_banks_1/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_0/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_0/table_banks_1/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_0/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -11773,7 +11773,7 @@ if {$top eq "Composer"} {
     {tage/tables_0/table_banks_2/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_0/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_0/table_banks_2/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_0/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_0/table_banks_2/array/array_0_0_0/_resetState_reg tage/tables_0/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_0/table_banks_2/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_0/table_banks_2/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_0/table_banks_2/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_0/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_0/table_banks_2/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_0/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_0/table_banks_2/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_0/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -11834,7 +11834,7 @@ if {$top eq "Composer"} {
     {tage/tables_0/table_banks_3/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_0/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_0/table_banks_3/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_0/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_0/table_banks_3/array/array_0_0_0/_resetState_reg tage/tables_0/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_0/table_banks_3/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_0/table_banks_3/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_0/table_banks_3/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_0/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_0/table_banks_3/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_0/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_0/table_banks_3/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_0/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -11894,7 +11894,7 @@ if {$top eq "Composer"} {
     {tage/tables_0/us/array/array_0_0_0/_resetSet_reg\[6\] tage/tables_0/u_core/us/array/array_0_0_0/_resetSet_reg\[6\]}
     {tage/tables_0/us/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_0/u_core/us/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_0/us/array/array_0_0_0/_resetState_reg tage/tables_0/u_core/us/array/array_0_0_0/_resetState_reg}
-    {tage/tables_0/us/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/us/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_0/us/array/array_0_0_0/rcg/CG/EN_reg tage/tables_0/u_core/us/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_0/us/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_0/u_core/us/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_0/us/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_0/u_core/us/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_0/us/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_0/u_core/us/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -13244,7 +13244,7 @@ if {$top eq "Composer"} {
     {tage/tables_1/table_banks_0/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_1/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_1/table_banks_0/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_1/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_1/table_banks_0/array/array_0_0_0/_resetState_reg tage/tables_1/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_1/table_banks_0/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_1/table_banks_0/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_1/table_banks_0/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_1/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_1/table_banks_0/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_1/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_1/table_banks_0/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_1/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -13305,7 +13305,7 @@ if {$top eq "Composer"} {
     {tage/tables_1/table_banks_1/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_1/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_1/table_banks_1/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_1/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_1/table_banks_1/array/array_0_0_0/_resetState_reg tage/tables_1/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_1/table_banks_1/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_1/table_banks_1/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_1/table_banks_1/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_1/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_1/table_banks_1/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_1/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_1/table_banks_1/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_1/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -13366,7 +13366,7 @@ if {$top eq "Composer"} {
     {tage/tables_1/table_banks_2/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_1/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_1/table_banks_2/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_1/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_1/table_banks_2/array/array_0_0_0/_resetState_reg tage/tables_1/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_1/table_banks_2/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_1/table_banks_2/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_1/table_banks_2/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_1/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_1/table_banks_2/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_1/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_1/table_banks_2/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_1/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -13427,7 +13427,7 @@ if {$top eq "Composer"} {
     {tage/tables_1/table_banks_3/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_1/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_1/table_banks_3/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_1/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_1/table_banks_3/array/array_0_0_0/_resetState_reg tage/tables_1/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_1/table_banks_3/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_1/table_banks_3/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_1/table_banks_3/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_1/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_1/table_banks_3/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_1/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_1/table_banks_3/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_1/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -13487,7 +13487,7 @@ if {$top eq "Composer"} {
     {tage/tables_1/us/array/array_0_0_0/_resetSet_reg\[6\] tage/tables_1/u_core/us/array/array_0_0_0/_resetSet_reg\[6\]}
     {tage/tables_1/us/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_1/u_core/us/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_1/us/array/array_0_0_0/_resetState_reg tage/tables_1/u_core/us/array/array_0_0_0/_resetState_reg}
-    {tage/tables_1/us/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/us/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_1/us/array/array_0_0_0/rcg/CG/EN_reg tage/tables_1/u_core/us/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_1/us/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_1/u_core/us/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_1/us/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_1/u_core/us/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_1/us/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_1/u_core/us/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -14837,7 +14837,7 @@ if {$top eq "Composer"} {
     {tage/tables_2/table_banks_0/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_2/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_2/table_banks_0/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_2/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_2/table_banks_0/array/array_0_0_0/_resetState_reg tage/tables_2/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_2/table_banks_0/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_2/table_banks_0/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_2/table_banks_0/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_2/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_2/table_banks_0/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_2/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_2/table_banks_0/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_2/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -14898,7 +14898,7 @@ if {$top eq "Composer"} {
     {tage/tables_2/table_banks_1/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_2/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_2/table_banks_1/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_2/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_2/table_banks_1/array/array_0_0_0/_resetState_reg tage/tables_2/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_2/table_banks_1/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_2/table_banks_1/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_2/table_banks_1/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_2/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_2/table_banks_1/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_2/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_2/table_banks_1/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_2/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -14959,7 +14959,7 @@ if {$top eq "Composer"} {
     {tage/tables_2/table_banks_2/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_2/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_2/table_banks_2/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_2/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_2/table_banks_2/array/array_0_0_0/_resetState_reg tage/tables_2/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_2/table_banks_2/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_2/table_banks_2/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_2/table_banks_2/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_2/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_2/table_banks_2/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_2/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_2/table_banks_2/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_2/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -15020,7 +15020,7 @@ if {$top eq "Composer"} {
     {tage/tables_2/table_banks_3/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_2/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_2/table_banks_3/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_2/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_2/table_banks_3/array/array_0_0_0/_resetState_reg tage/tables_2/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_2/table_banks_3/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_2/table_banks_3/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_2/table_banks_3/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_2/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_2/table_banks_3/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_2/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_2/table_banks_3/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_2/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -15080,7 +15080,7 @@ if {$top eq "Composer"} {
     {tage/tables_2/us/array/array_0_0_0/_resetSet_reg\[6\] tage/tables_2/u_core/us/array/array_0_0_0/_resetSet_reg\[6\]}
     {tage/tables_2/us/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_2/u_core/us/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_2/us/array/array_0_0_0/_resetState_reg tage/tables_2/u_core/us/array/array_0_0_0/_resetState_reg}
-    {tage/tables_2/us/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/us/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_2/us/array/array_0_0_0/rcg/CG/EN_reg tage/tables_2/u_core/us/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_2/us/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_2/u_core/us/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_2/us/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_2/u_core/us/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_2/us/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_2/u_core/us/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -16430,7 +16430,7 @@ if {$top eq "Composer"} {
     {tage/tables_3/table_banks_0/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_3/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_3/table_banks_0/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_3/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_3/table_banks_0/array/array_0_0_0/_resetState_reg tage/tables_3/u_core/g_bank\[0\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_3/table_banks_0/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_3/table_banks_0/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_3/table_banks_0/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_3/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_3/table_banks_0/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_3/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_3/table_banks_0/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_3/u_core/g_bank\[0\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -16491,7 +16491,7 @@ if {$top eq "Composer"} {
     {tage/tables_3/table_banks_1/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_3/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_3/table_banks_1/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_3/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_3/table_banks_1/array/array_0_0_0/_resetState_reg tage/tables_3/u_core/g_bank\[1\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_3/table_banks_1/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_3/table_banks_1/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_3/table_banks_1/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_3/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_3/table_banks_1/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_3/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_3/table_banks_1/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_3/u_core/g_bank\[1\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -16552,7 +16552,7 @@ if {$top eq "Composer"} {
     {tage/tables_3/table_banks_2/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_3/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_3/table_banks_2/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_3/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_3/table_banks_2/array/array_0_0_0/_resetState_reg tage/tables_3/u_core/g_bank\[2\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_3/table_banks_2/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_3/table_banks_2/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_3/table_banks_2/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_3/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_3/table_banks_2/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_3/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_3/table_banks_2/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_3/u_core/g_bank\[2\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -16613,7 +16613,7 @@ if {$top eq "Composer"} {
     {tage/tables_3/table_banks_3/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_3/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_3/table_banks_3/array/array_0_0_0/_resetSet_reg\[8\] tage/tables_3/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetSet_reg\[8\]}
     {tage/tables_3/table_banks_3/array/array_0_0_0/_resetState_reg tage/tables_3/u_core/g_bank\[3\].table_bank/array/array_0_0_0/_resetState_reg}
-    {tage/tables_3/table_banks_3/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_3/table_banks_3/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_3/table_banks_3/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_3/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_3/table_banks_3/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_3/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_3/table_banks_3/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_3/u_core/g_bank\[3\].table_bank/array/array_0_0_0/rdataReg_reg\[11\]}
@@ -16673,7 +16673,7 @@ if {$top eq "Composer"} {
     {tage/tables_3/us/array/array_0_0_0/_resetSet_reg\[6\] tage/tables_3/u_core/us/array/array_0_0_0/_resetSet_reg\[6\]}
     {tage/tables_3/us/array/array_0_0_0/_resetSet_reg\[7\] tage/tables_3/u_core/us/array/array_0_0_0/_resetSet_reg\[7\]}
     {tage/tables_3/us/array/array_0_0_0/_resetState_reg tage/tables_3/u_core/us/array/array_0_0_0/_resetState_reg}
-    {tage/tables_3/us/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/us/array/array_0_0_0/rcg/CG/EN_reg}
+    {tage/tables_3/us/array/array_0_0_0/rcg/CG/EN_reg tage/tables_3/u_core/us/array/array_0_0_0/rcg/CG/enableLatched_reg}
     {tage/tables_3/us/array/array_0_0_0/rdataReg_reg\[0\] tage/tables_3/u_core/us/array/array_0_0_0/rdataReg_reg\[0\]}
     {tage/tables_3/us/array/array_0_0_0/rdataReg_reg\[10\] tage/tables_3/u_core/us/array/array_0_0_0/rdataReg_reg\[10\]}
     {tage/tables_3/us/array/array_0_0_0/rdataReg_reg\[11\] tage/tables_3/u_core/us/array/array_0_0_0/rdataReg_reg\[11\]}
