@@ -205,3 +205,17 @@ UT 9 档重跑见下）。不加 fm_pins / set_user_match。
 1b 跑结果（追加）：`evidence/d0c5e050a61c/LinkMonitor` passing 2465 / unread_notcompared 192 / unmatched_unread 0(0) /
 matched_unread_notcompared_pairs 192 对、逐对同名同下标（0 例外）/ 其余全 0 → strict PARTIAL，与本节登记逐项相等。
 据此写 `verif/fm_target_config/LinkMonitor.tcl` 六条证据并开 vmucp，第二跑预测不变（passing 2657 / unread 0 / SUCCEEDED）。
+
+## 5. 对账（跑后追加；以上各节数字未改）
+
+| 目标 | receipt | 预测 passing | 实测 passing | 差 | 指认 | 其余 | 判决 |
+|---|---|---|---|---|---|---|---|
+| LCredit2Decoupled_1 | evidence/f012648e1c86/LCredit2Decoupled_1 | 87 | 87 | 0 | — | failing/unverified/unmatched/unread 全 0，无黑盒 | SUCCEEDED |
+| TLBuffer_15 | evidence/b59e6576c01e/TLBuffer_15 | 637 | 637 | 0 | — | 同上 | SUCCEEDED |
+| TLBuffer_13 | evidence/d38c0785a2bb/TLBuffer_13 | 13096（预期实测 12912） | 12912 | 184 | constant_reg 184（登记时预言） | 同上 | SUCCEEDED |
+| LinkMonitor 第一跑 | evidence/e78d61e72b1d/LinkMonitor | 2465 / unread 192 | 2465 / unread 192 | 0 | — | 192 对是 unmatched_unread（名字不同） | PARTIAL（诊断用） |
+| LinkMonitor 1b | evidence/d0c5e050a61c/LinkMonitor | 2465 / unread 192 | 2465 / unread 192 | 0 | — | 192 对 matched，按名双射 | PARTIAL（基线） |
+| LinkMonitor 第二跑 | evidence/2bca6fd7b2ca/LinkMonitor | 2657 | 2657 | 0 | — | vmucp；unread 0，全 0，无黑盒 | **SUCCEEDED** |
+
+`python3 scripts/fm_predict.py check LCredit2Decoupled_1 TLBuffer_15 TLBuffer_13 LinkMonitor` rc=0（全部对上）；
+`python3 scripts/check_lane_receipts.py /home/eda/xs-env/wt-l2-link` rc=0。
