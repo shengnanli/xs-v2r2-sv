@@ -40,7 +40,10 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 # ★三处收口（2026-09-20，TXREQ 实测逼出来的）★，逐条说明见 CHANGELOG 注释块。
 REG_RE = re.compile(r'^\s*reg\s+(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*)?([A-Za-z_]\w*)\s*'
                     r'(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*)?;', re.M)
-OUT_RE = re.compile(r'^\s*output\s+(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s+)?[A-Za-z_]\w*\s*,?\s*$',
+# ★容忍 `output wire Q` 这种带线网类型的写法★（2026-10-04 clockgate lane）：firtool 生成件
+# 从不写类型，但 golden ClockGate.sv 是 Scala 内联 SV、写的是 `output wire Q`，原正则漏数这一位，
+# 模型给 ClockGate 预测 outs=0、实测 Port 比较点 1 个 —— 差额正好是这一行。
+OUT_RE = re.compile(r'^\s*output\s+(?:(?:wire|logic|reg)\s+)?(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s+)?[A-Za-z_]\w*\s*,?\s*$',
                     re.M)
 # 模块例化：`<Type> <inst> (` 单独占一行。★首字母不再限定大写★——firtool 生成的
 # SRAM 包装模块叫 `ram_16x137` / `array_0_ext` 这类全小写名字，原来的 `[A-Z]` 把它们

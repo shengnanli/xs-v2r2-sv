@@ -84,3 +84,13 @@ M5 是等价变异（单条赋值，阻塞/非阻塞在锁存器里行为相同�
 3 个输入 TE/E/CK 全部配上。11 秒跑完。
 
 复跑：`bash scripts/run_proof.sh ClockGate ClockGate < /dev/null`
+
+### 预测差额的根因与模型修正（登记不改，差额照记）
+
+`fm_predict.py check ClockGate` 判红（预期 1 / 实测 2 / 可指认 0）。根因是模型解析器漏数：
+`fm_passing_model.OUT_RE` 只认 firtool 的 `output [h:l] name`，不认带线网类型的
+`output wire Q`（golden ClockGate.sv 是 Scala 内联 SV）。已放宽为容忍 `wire|logic|reg`。
+golden 里带类型的 output 头只有 ClockGate.sv 与 3 个 DPI helper（Mem1R1WHelper/SDCardHelper/FlashHelper，
+都不是 FM 目标），所以这条修正只动 ClockGate 一份：`fm_predict.py recompute` 全仓 600 份登记中
+ClockGate 1 -> 2「修后逐位等于实测」；另 6 份变化（Rob、TLBuffer_6/8/9/20/22）与本修正无关
+（它们的 golden 头不含带类型 output），是基线上已存在的漂移，未动其登记。`--selftest` PASS。
