@@ -347,6 +347,44 @@ flush 打断 840、反压 6361、违规发起 2902。
 
 没有做过任何 FM 试跑。可能出错处：两个同构 VectorFloatDivider 子实例在签名分析里混淆（同 §G 的现象）——若 unmatched，补匹配前钉点，不改 RTL。
 
+## 9. VIAluFix（golden 1040 行；重写 618 行）
+
+### 9.1 结构与子模块处置
+
+- VecPipedFuncUnit（LAT=1）外壳：`xs_VIAluFix_core`（§1 valid / 反压 / §2 typeMod 译码与 isSub / isMisc（QMC 化简后的表，按 golden 逐码列出）/
+  §3 两 lane 操作数分组 / §4 掩码与旧 vd 切片 / §5 两个 VIntFixpAlu64b / §6 第 1 级寄存器 / §7 vwsll 还原、比较位加尾部、Mgu / Mgtu、vxsat）+ wrapper。
+- child 全部两侧白盒：VIAluSrcTypeModule（evidence/20d19bc5cd93）、VecDataSplitModule ×2（本 lane）、VIntFixpAlu64b ×2（evidence/5a3282d30ab1）+ 闭包、
+  Mgu（evidence/d09e1997840f）+ 闭包、Mgtu（evidence/cb2892a30a11）。无钉点、无 vmucp。
+
+### 9.2 UT（9 档 × 200k，commit a2847d61f 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+按元素 oracle（同宽 vadd/vsub/vand/vor/vxor/vsll/vsrl/vsra/vmin(u)/vmax(u)/vmerge/vmv 与加宽 vwadd(u)/vwsub(u) .vv/.wv；只用合法编码；
+含 mask/tail/vstart/vstart>=vl，vxsat 应为 0）全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 91808，加宽 .vv / .wv = 12938 / 13268，
+SEW8/16/32/64 = 25266/24947/25168/16427，掩码关 45062、尾部 ta0/1 = 133849/135724、vstart 前部 24294、vstart>=vl 79564；
+差分覆盖 dstMask / narrow / ext 拍 = 18699 / 11239 / 11330。
+变异（scratchpad，20k 拍）：isSub 表去掉 0x1E ⇒ errors=44；掩码组号不看 narrow ⇒ 2；vmv.s.x 的 vl 不当 1 ⇒ 10；比较位不加尾部 ⇒ 27；
+变窄第 2 个 uop 不拼高半 ⇒ 244（均为差分抓到，oracle 范围外的路径）。
+
+### 9.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VIAluFix.json）
+
+模型 expected = 2147（寄存器 1356 = 外壳 650 + VIntFixpAlu64b 353×2；输出 791）。预期 constant reg **0**、unread 0。
+依据：lane 内非正式试跑（commit 7cd754e7e，RTL 字节同 a2847d61f，`make fm-VIAluFix FM_MODE=diagnostic-full`，不出 receipt）
+native SUCCEEDED passing 2147 / failing 0 / unverified 0 / unmatched 0 / unread 0。
+
+| 项 | 预测（正式 run_proof，signoff-strict） |
+|---|---|
+| passing | **2147** |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 0 |
+| 黑盒 / dont_verify / vmucp | 无 / 无 / 不开 |
+
 ## 对账（跑完追加）
 
 ### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule
