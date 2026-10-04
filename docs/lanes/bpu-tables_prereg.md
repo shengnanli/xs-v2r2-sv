@@ -386,3 +386,16 @@ merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageB
 | unread | 192（全 ref，= verif/dead_ref/Composer.json） |
 | unmatched compare / 黑盒 | 0 / 仅厂商叶子 array_1..6_ext |
 | mode / verdict / vmucp / merge_dup | signoff-strict / PASS_DEAD_REF / true / false |
+
+# 对账（续）：§8 重证与 §9 Composer
+| 目标 | proof commit | 证据目录 | 预测 | 实测 passing | 差 | unread | verdict | receipt sha256 |
+|---|---|---|---|---|---|---|---|---|
+| SCTable | `05394ca2` | evidence/05394ca211f8/SCTable | 1123 | 1123 | 0 | 0 | SUCCEEDED | `b3326f71418cfe02ff8aaecd73d05f9f9f4dc05ec6b8f496ebdee9afae76bbf5` |
+| SCTable_1 | `05394ca2` | evidence/05394ca211f8/SCTable_1 | 1123 | 1123 | 0 | 0 | SUCCEEDED | `052044d15511c32d3be2085fd3423c70101083d985d5dcc86fa994607b4bd2c1` |
+| SCTable_2 | `05394ca2` | evidence/05394ca211f8/SCTable_2 | 1123 | 1123 | 0 | 0 | SUCCEEDED | `e8315a67d2b67117aa7b6a60e56b30aecffdce82a90c7d18efa0f9fdde24d131` |
+| SCTable_3 | `05394ca2` | evidence/05394ca211f8/SCTable_3 | 1123 | 1123 | 0 | 0 | SUCCEEDED | `8b6eeed4a24d774fee365632bec58db7c04b08e732029d8d0028f7cfe69bda20` |
+| Tage_SC | `05394ca2` | evidence/05394ca211f8/Tage_SC | 16112 | 16112 | 0（对模型差 196 = constant 4 + unread 192） | 192 ref | PASS_DEAD_REF | `5865de8a9fa0e5dfb9aff7d19aefa927086f0a895ecf46e9ffd6bcbbdfd1e8c5` |
+| Composer | `9cc9c9c7` | evidence/9cc9c9c74aac/Composer | 42060 | 42060 | 0（对模型差 856 = constant 664 + unread 192） | 192 ref | PASS_DEAD_REF | `4e84dff35aa0c7be8cd4bdb2eefff6e81a5d8fa2843cd8224ef6b0bbd21f1118` |
+
+上表 SCTable×4 / Tage_SC 取代前一张对账表里 `1b420e20` / `312a5d35` 那几份（sctable_pkg 搬文件后 STALE）。
+复跑：`PROOF_COMMIT=9cc9c9c74 bash scripts/run_proof.sh Composer Composer < /dev/null`。
