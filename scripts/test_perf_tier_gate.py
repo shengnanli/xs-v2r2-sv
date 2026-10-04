@@ -6,9 +6,10 @@
 要求 `scripts/check_perf_tier.py --no-recompute --dir <临时目录>` 当场红；再撤掉，
 要求它绿。每一条注入都对应一种**会真实发生**的腐烂方式，不是凑数：
 
-  1. 豁免过期（★最要紧的一条★）：Tage_SC 被重写之后，那 6 条 tage provider 差异
+  1. 豁免过期（★最要紧的一条★）：持有模块被重写之后，它名下的 C_DIAG 差异
      就不再满足 codex 0162 D3 的豁免（"when the owning modules are unchanged"）。
-     把 tier 台账里 Tage_SC 的 owner_rewritten 改成 yes，闸必须红。
+     把 tier 台账里夹具持有模块的 owner_rewritten 改成 yes，闸必须红。
+     （原例 Tage_SC 已于 2026-10-03 真被重写，豁免真失效；夹具改为动态选取，见 pick_fixture）
   2. 档位被改松：把一条实测不等的计数器从 B_CONTROL 改成 C_DIAG 就能"过闸" ——
      所以 verdict 必须**现算**，且记录的 tier 与 tier 台账不一致时要红。
   3. 出现未分类：tier 台账里冒出 X_UNRESOLVED 行，必须红。
@@ -23,7 +24,7 @@
 
 ★夹具不依赖真实台账里"恰好有哪些差异行"★：Z0 口径下真实 mismatch 台账可以是 0 行，
 那样 1/2/4 就无从注入。所以 fresh() 总是往夹具里补一条与当前分档台账一致的
-WAIVED 行（Tage_SC 的 bank_1_tage_table_3_provided_at_pred，C_DIAG/owner 未重写），
+WAIVED 行（pick_fixture 选出的 C_DIAG/owner 未重写计数器），
 1/2/4 都对它下手。
 
 另外还钉住两条**纯函数**判据（不经文件，直接调 `perf_compare.verdict_of`）：
@@ -60,18 +61,43 @@ def run(d):
     return p.returncode, p.stdout.decode(errors='replace')
 
 
-FIX_SCOPE_SUFFIX = 'frontend.inner.bpu.predictors.tage'
-FIX_NAME = 'bank_1_tage_table_3_provided_at_pred'
+# 夹具计数器：必须是 C_DIAG 且持有模块**未重写**（owner_rewritten==no）——只有这种组合豁免才成立，
+# 1/2/4 才有东西可注入。原先钉死 Tage_SC 的 bank_1_tage_table_3_provided_at_pred；
+# 2026-10-03 Tage_SC 被 bpu-tables 重写签核后它变成 owner_rewritten=yes（豁免按 D3 正确失效），
+# 夹具随之失效（gatefix3）。所以改成：首选原计数器（若仍满足），否则按 (scope, name) 排序取第一条
+# 满足条件、且 name 在分档台账里唯一的 PERF 行（2/4 按 name 定位，name 不唯一会改错行）。
+PREF_SCOPE_SUFFIX = 'frontend.inner.bpu.predictors.tage'
+PREF_NAME = 'bank_1_tage_table_3_provided_at_pred'
+
+
+def pick_fixture():
+    rows = [ln.split('\t') for ln in
+            (REPO / 'docs' / 'perf_tier_ledger.tsv').read_text().splitlines()
+            if ln and not ln.startswith('#')]
+    rows = [f for f in rows if len(f) > 9]
+    name_count = {}
+    for f in rows:
+        name_count[f[2]] = name_count.get(f[2], 0) + 1
+    ok = [f for f in rows
+          if f[0] == 'PERF' and f[3] == 'C_DIAG' and f[9] == 'no' and name_count[f[2]] == 1]
+    for f in ok:
+        if f[2] == PREF_NAME and f[1].endswith(PREF_SCOPE_SUFFIX):
+            return f
+    if not ok:
+        raise SystemExit('分档台账里找不到可作夹具的计数器（C_DIAG + owner 未重写 + name 唯一）')
+    return sorted(ok, key=lambda f: (f[1], f[2]))[0]
+
+
+FIX = pick_fixture()
+FIX_NAME = FIX[2]
+FIX_OWNER = FIX[8]
 
 
 def fixture_row():
-    for ln in (REPO / 'docs' / 'perf_tier_ledger.tsv').read_text().splitlines():
-        f = ln.split('\t')
-        if len(f) > 9 and f[2] == FIX_NAME and f[1].endswith(FIX_SCOPE_SUFFIX):
-            assert f[3] == 'C_DIAG' and f[9] == 'no', '夹具计数器的档位变了：%s/%s' % (f[3], f[9])
-            return '\t'.join([f[3], f[1], f[2], '1037', '8', '-1029', f[8], f[9], 'WAIVED',
-                              'C_DIAG 且持有模块本轮未重写（codex 0162 D3）'])
-    raise SystemExit('分档台账里找不到夹具计数器 %s' % FIX_NAME)
+    f = FIX
+    assert f[3] == 'C_DIAG' and f[9] == 'no', '夹具计数器的档位变了：%s/%s' % (f[3], f[9])
+    return '\t'.join([f[3], f[1], f[2], '1037', '8', '-1029', f[8], f[9], 'WAIVED',
+                      'C_DIAG 且持有模块本轮未重写（codex 0162 D3）'])
 
 
 FIX_ROW = fixture_row()
@@ -117,19 +143,20 @@ shutil.rmtree(str(d0))
 
 
 # ---------------------------------------------------------------- 1 豁免过期
-def rewrite_tage(t):
+def rewrite_owner(t):
+    """夹具计数器的持有模块被标成已重写（原先固定是 Tage_SC）。"""
     out = []
     for ln in t.splitlines():
         f = ln.split('\t')
-        if len(f) > 9 and f[8] == 'Tage_SC':
+        if len(f) > 9 and f[8] == FIX_OWNER:
             f[9] = 'yes'
             ln = '\t'.join(f)
         out.append(ln)
     return '\n'.join(out) + '\n'
 
 
-expect_red('1 Tage_SC 一旦重写，6 条 provider 豁免必须失效',
-           'perf_tier_ledger.tsv', rewrite_tage, 'E ')
+expect_red('1 夹具持有模块（%s）一旦重写，豁免必须失效' % FIX_OWNER,
+           'perf_tier_ledger.tsv', rewrite_owner, 'E ')
 
 
 # ---------------------------------------------------------------- 2 档位被改松
