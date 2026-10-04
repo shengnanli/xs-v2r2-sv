@@ -518,3 +518,10 @@ unread 0，unmatched 全 0，constant_reg **2**，黑盒 0，dont_verify 无（3
 PROOF_COMMIT=65d1243f7，`bash scripts/run_proof.sh VIAluFix VIAluFix`：native SUCCEEDED，passing **2147** / failing 0 / unverified 0 / aborted 0 /
 unread 0，unmatched 全 0，constant_reg 0，黑盒 0，dont_verify 无，vmucp 不开、无钉点（227 s）。预测 2147 / 0 —— 逐项相等；
 `fm_predict.py check VIAluFix` rc=0。
+
+### J. VFAlu —— evidence/f60583b94598/VFAlu
+
+PROOF_COMMIT=f60583b94，`bash scripts/run_proof.sh VFAlu VFAlu`：native SUCCEEDED，passing **5319** / failing 0 / unverified 0 / aborted 0 / unread 0，
+unmatched 全 0，constant_reg **362**，黑盒 0，dont_verify 无；钉点 `VFALUP_PIN_PRE_END n=1104 bad=0`、`VFALU_PIN_END n=34`（2286 s）。
+预测 5319 / 362 —— 逐项相等；`fm_predict.py check VFAlu`：5681 − 5319 = 362，rc=0。vmucp 六条：(1) 34 点（字面钉）+ vdIdx_r[6:3] 4 位（按名）；
+(2) 38↔38；(3) unread_notcompared 0、全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VFAlu.tcl 在 script_closure。
