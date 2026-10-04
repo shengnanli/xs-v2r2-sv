@@ -508,7 +508,7 @@ def csr_conn_rule(inst, port):
 
 TARGETS = [
     dict(top='NewCSR', path=REPO / 'rtl' / 'backend' / 'NewCSR.sv', prefix='newcsr',
-         id_map=ID_MAP, rule=conn_rule, regout=True),
+         id_map=ID_MAP, rule=conn_rule, regout=True, nav=True),
     dict(top='CSR', path=REPO / 'rtl' / 'backend' / 'CSR.sv', prefix='csr',
          id_map=CSR_ID_MAP, rule=csr_conn_rule, regout=False),
 ]
@@ -801,6 +801,46 @@ def render(T, top, child_decls, inst_blocks, views, childnet_w):
     return R
 
 
+NAV_B = '// BEGIN GENERATED(newcsr-nav) —— 由 scripts/gen_newcsr.py 按分节注释算出行号，勿手改'
+NAV_E = '// END GENERATED(newcsr-nav)'
+# 导航收录的分节：手写区的 "  // <n>. 标题" 与各 GENERATED 段的起始标记
+NAV_SECT = re.compile(r'^  // (\d+)\. (.*)$')
+NAV_GEN = re.compile(r'^// BEGIN GENERATED\((newcsr-(?:ports|childnets|regout|insts))\)')
+NAV_GEN_TITLE = {'newcsr-ports': '端口表（GENERATED）',
+                 'newcsr-childnets': '410 个子模块实例的输出线（GENERATED）',
+                 'newcsr-regout': '277 个 CSR 的 regOut 打包视图（GENERATED）',
+                 'newcsr-insts': '410 个子模块例化（GENERATED）'}
+
+
+def fill_nav(path, txt):
+    """大文件导航（readability_audit E 类）：行号指向分节注释所在行。两遍定稿：
+    导航段条目数不随行号变，所以先按条目数占位、再按占位后的文本算行号。"""
+    if txt.count(NAV_B) != 1 or txt.count(NAV_E) != 1:
+        die('%s: GENERATED(newcsr-nav) 标记必须各恰好一个' % path.name)
+    def entries(t):
+        out = []
+        for i, ln in enumerate(t.split('\n'), 1):
+            m = NAV_SECT.match(ln)
+            if m:
+                out.append((i, '§%s %s' % (m.group(1), m.group(2).split('（')[0].strip())))
+                continue
+            m = NAV_GEN.match(ln)
+            if m and m.group(1) in NAV_GEN_TITLE:
+                out.append((i, NAV_GEN_TITLE[m.group(1)]))
+        return out
+    def put(t, ents):
+        head, rest = t.split(NAV_B, 1)
+        _, tail = rest.split(NAV_E, 1)
+        body = ['// 本文件导航（按"一个 golden 模块一个文件"的规范不拆分，用下面的行号定位分节）：']
+        body += ['//   L%-6d %s' % (n, title) for n, title in ents]
+        return head + NAV_B + '\n' + '\n'.join(body) + '\n' + NAV_E + tail
+    first = put(txt, entries(txt))          # 占位（条目数已定）
+    final = put(first, entries(first))      # 按占位后的行号定稿
+    if put(final, entries(final)) != final:
+        die('导航行号两遍未收敛')
+    return final
+
+
 def run_target(T, check):
     top, child_decls, inst_blocks, views = build(T)
     # golden 子模块输出线名 -> impl 名 / 位宽（regOut 视图打印用）
@@ -827,6 +867,8 @@ def run_target(T, check):
         head, rest = new.split(b, 1)
         _, tail = rest.split(e, 1)
         new = head + b + '\n' + R[r] + '\n' + e + tail
+    if T.get('nav'):
+        new = fill_nav(path, new)
     what = '%d 实例%s' % (len(inst_blocks), '，%d 个 regOut 视图' % len(views) if T['regout'] else '')
     if new != txt:
         if check:

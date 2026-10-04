@@ -32,6 +32,30 @@
 //   * difftest interrupt/exception 寄存器 golden 存 63 位、输出只用低 32 位；本实现只存 32 位
 //     （高 31 位在 golden 里是读不到的死存储，见 verif/dead_ref/NewCSR.json）。
 //   * CommitIDModule / PrintCommitIDModule：纯仿真打印 git SHA，综合口径无任何可观测点。
+// BEGIN GENERATED(newcsr-nav) —— 由 scripts/gen_newcsr.py 按分节注释算出行号，勿手改
+// 本文件导航（按"一个 golden 模块一个文件"的规范不拆分，用下面的行号定位分节）：
+//   L60     端口表（GENERATED）
+//   L414    410 个子模块实例的输出线（GENERATED）
+//   L3585   277 个 CSR 的 regOut 打包视图（GENERATED）
+//   L5661   §0 请求别名
+//   L5669   §1 特权态 / 调试态
+//   L5788   §2 CSR 地址命中 hit_<csr>
+//   L6116   §3 写使能
+//   L6339   §4 地址是否是一个存在的 CSR
+//   L6399   §5 读数据 Mux 与 regOut Mux
+//   L7032   §6 退休提交信息打一拍
+//   L7103   §7 中断
+//   L7151   §8 硬件性能计数器
+//   L7216   §9 trap 进入事件
+//   L7253   §10 触发器链
+//   L7278   §11 请求处理状态机
+//   L7471   §12 状态输出
+//   L7564   §13 TLB 相关输出
+//   L7630   §14 送译码的特权指令检查
+//   L7676   §15 IMSIC
+//   L7721   §16 difftest 事件
+//   L7895   410 个子模块例化（GENERATED）
+// END GENERATED(newcsr-nav)
 module NewCSR(
 // BEGIN GENERATED(newcsr-ports) —— 由 scripts/gen_newcsr.py 从 golden 机械产出，勿手改
   input           clock,
