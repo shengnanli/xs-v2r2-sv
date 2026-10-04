@@ -35,7 +35,7 @@
 //     · LLPTW 的 PMP 口由 1 个变 2 个（故 PMPChecker 由 3 个变 5 个）
 //     · G0 里被常量折叠掉的 toFsm_toLLPTW / toFsm_toPTW 在 G1 是真信号
 // ============================================================================
-// 本文件导航（共 11565 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 11569 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L59    设计意图来源：src/main/scala/xiangshan/cache/mmu/L2TLB.scala
 //   L95    l2tlb_pkg —— 本模块私有的参数 / 类型 / 纯函数
 //   L97    参数值由本配置
@@ -63,32 +63,32 @@
 //   L3446  ★G1★ toFsm_toLLPTW / toFsm_toPTW 在 G0 里被常量折叠成 0
 //   L3466  3. page cache 入口仲裁(arb2) 输入装配 + miss queue 仲裁(mq_arb)
 //   L3468  arb2 五路：HPTW(0) / PTW(1) / MissQueue(2) / TLB(3) / Prefetch(4)
-//   L3517  4. PTW / LLPTW / HPTW 请求分发
-//   L3519  按 cache.resp 的命中深度把 miss 请求送往三个遍历器：
-//   L3537  5. page cache resp.ready 多路选择
-//   L3539  MuxCase：按 hit / isHptwReq / toLLPTW / bypassed 决定 cache 这拍能否被消费
-//   L3553  6. 访存数据通路
-//   L3555  mem_arb 四路
-//   L3734  6b. cache.refill 装配
-//   L3736  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
-//   L3841  7. HPTW 响应分发
-//   L3843  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
-//   L3853  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
-//   L3855  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
-//   L3860  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
-//   L4897  9. PMP checker 请求装配 + prefetch 触发
-//   L4899  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
-//   L4903  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
-//   L4915  12. Bitmap 检查引擎接线
-//   L4917  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
-//   L4933  10. 顶层输出直驱
-//   L5049  10b. difftest 探针
-//   L5051  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
-//   L5181  11. 性能事件两级打拍
-//   L5183  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
-//   L5235  子模块实例
-//   L5237  BEGIN GENERATED(inst)
-//   L10803 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
+//   L3521  4. PTW / LLPTW / HPTW 请求分发
+//   L3523  按 cache.resp 的命中深度把 miss 请求送往三个遍历器：
+//   L3541  5. page cache resp.ready 多路选择
+//   L3543  MuxCase：按 hit / isHptwReq / toLLPTW / bypassed 决定 cache 这拍能否被消费
+//   L3557  6. 访存数据通路
+//   L3559  mem_arb 四路
+//   L3738  6b. cache.refill 装配
+//   L3740  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
+//   L3845  7. HPTW 响应分发
+//   L3847  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
+//   L3857  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
+//   L3859  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
+//   L3864  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
+//   L4901  9. PMP checker 请求装配 + prefetch 触发
+//   L4903  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
+//   L4907  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
+//   L4919  12. Bitmap 检查引擎接线
+//   L4921  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
+//   L4937  10. 顶层输出直驱
+//   L5053  10b. difftest 探针
+//   L5055  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
+//   L5185  11. 性能事件两级打拍
+//   L5187  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
+//   L5239  子模块实例
+//   L5241  BEGIN GENERATED(inst)
+//   L10807 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
 //
 
 // ============================================================================
@@ -1020,24 +1020,10 @@ module xs_L2TLB_core
   wire [37:0] u_bitmap_arb_out_bits_vpn;
   wire [3:0] u_bitmap_arb_out_bits_way_info;
   wire u_bitmap_arb_out_valid;
-  wire u_bitmap_cache_boreChildrenBd_bore_ack;
-  wire [89:0] u_bitmap_cache_boreChildrenBd_bore_outdata;
   wire [7:0] u_bitmap_cache_req_bits_order;
   wire [35:0] u_bitmap_cache_req_bits_tag;
-  wire u_bitmap_cache_req_ready;
   wire u_bitmap_cache_req_valid;
-  wire u_bitmap_cache_resp_bits_cfs_0;
-  wire u_bitmap_cache_resp_bits_cfs_1;
-  wire u_bitmap_cache_resp_bits_cfs_2;
-  wire u_bitmap_cache_resp_bits_cfs_3;
-  wire u_bitmap_cache_resp_bits_cfs_4;
-  wire u_bitmap_cache_resp_bits_cfs_5;
-  wire u_bitmap_cache_resp_bits_cfs_6;
-  wire u_bitmap_cache_resp_bits_cfs_7;
-  wire u_bitmap_cache_resp_bits_hit;
-  wire [7:0] u_bitmap_cache_resp_bits_order;
   wire u_bitmap_cache_resp_ready;
-  wire u_bitmap_cache_resp_valid;
   wire [47:0] u_bitmap_mem_req_bits_addr;
   wire [3:0] u_bitmap_mem_req_bits_id;
   wire u_bitmap_mem_req_valid;
@@ -1064,6 +1050,256 @@ module xs_L2TLB_core
   wire [37:0] u_bitmap_wakeup_bits_tag;
   wire [3:0] u_bitmap_wakeup_bits_way_info;
   wire u_bitmap_wakeup_valid;
+  wire u_bitmapcache_boreChildrenBd_bore_ack;
+  wire [89:0] u_bitmapcache_boreChildrenBd_bore_outdata;
+  wire u_bitmapcache_req_ready;
+  wire u_bitmapcache_resp_bits_cfs_0;
+  wire u_bitmapcache_resp_bits_cfs_1;
+  wire u_bitmapcache_resp_bits_cfs_2;
+  wire u_bitmapcache_resp_bits_cfs_3;
+  wire u_bitmapcache_resp_bits_cfs_4;
+  wire u_bitmapcache_resp_bits_cfs_5;
+  wire u_bitmapcache_resp_bits_cfs_6;
+  wire u_bitmapcache_resp_bits_cfs_7;
+  wire u_bitmapcache_resp_bits_hit;
+  wire [7:0] u_bitmapcache_resp_bits_order;
+  wire u_bitmapcache_resp_valid;
+  wire u_cache_bitmap_wakeup_ready;
+  wire u_cache_boreChildrenBd_bore_1_ack;
+  wire [113:0] u_cache_boreChildrenBd_bore_1_outdata;
+  wire u_cache_boreChildrenBd_bore_ack;
+  wire [130:0] u_cache_boreChildrenBd_bore_outdata;
+  wire [3:0] u_cache_l0_way_info;
+  wire [5:0] u_cache_perf_0_value;
+  wire [5:0] u_cache_perf_1_value;
+  wire [5:0] u_cache_perf_2_value;
+  wire [5:0] u_cache_perf_3_value;
+  wire [5:0] u_cache_perf_4_value;
+  wire [5:0] u_cache_perf_5_value;
+  wire [5:0] u_cache_perf_6_value;
+  wire [5:0] u_cache_perf_7_value;
+  wire u_cache_req_ready;
+  wire u_cache_resp_bits_bypassed;
+  wire u_cache_resp_bits_hit;
+  wire u_cache_resp_bits_isFirst;
+  wire u_cache_resp_bits_isHptwReq;
+  wire u_cache_resp_bits_prefetch;
+  wire [1:0] u_cache_resp_bits_req_info_s2xlate;
+  wire [1:0] u_cache_resp_bits_req_info_source;
+  wire [37:0] u_cache_resp_bits_req_info_vpn;
+  wire [15:0] u_cache_resp_bits_stage1_entry_0_asid;
+  wire u_cache_resp_bits_stage1_entry_0_cf;
+  wire [1:0] u_cache_resp_bits_stage1_entry_0_level;
+  wire u_cache_resp_bits_stage1_entry_0_n;
+  wire [1:0] u_cache_resp_bits_stage1_entry_0_pbmt;
+  wire u_cache_resp_bits_stage1_entry_0_perm_a;
+  wire u_cache_resp_bits_stage1_entry_0_perm_d;
+  wire u_cache_resp_bits_stage1_entry_0_perm_g;
+  wire u_cache_resp_bits_stage1_entry_0_perm_r;
+  wire u_cache_resp_bits_stage1_entry_0_perm_u;
+  wire u_cache_resp_bits_stage1_entry_0_perm_w;
+  wire u_cache_resp_bits_stage1_entry_0_perm_x;
+  wire u_cache_resp_bits_stage1_entry_0_pf;
+  wire [40:0] u_cache_resp_bits_stage1_entry_0_ppn;
+  wire [2:0] u_cache_resp_bits_stage1_entry_0_ppn_low;
+  wire [34:0] u_cache_resp_bits_stage1_entry_0_tag;
+  wire u_cache_resp_bits_stage1_entry_0_v;
+  wire [13:0] u_cache_resp_bits_stage1_entry_0_vmid;
+  wire [15:0] u_cache_resp_bits_stage1_entry_1_asid;
+  wire u_cache_resp_bits_stage1_entry_1_cf;
+  wire [1:0] u_cache_resp_bits_stage1_entry_1_level;
+  wire u_cache_resp_bits_stage1_entry_1_n;
+  wire [1:0] u_cache_resp_bits_stage1_entry_1_pbmt;
+  wire u_cache_resp_bits_stage1_entry_1_perm_a;
+  wire u_cache_resp_bits_stage1_entry_1_perm_d;
+  wire u_cache_resp_bits_stage1_entry_1_perm_g;
+  wire u_cache_resp_bits_stage1_entry_1_perm_r;
+  wire u_cache_resp_bits_stage1_entry_1_perm_u;
+  wire u_cache_resp_bits_stage1_entry_1_perm_w;
+  wire u_cache_resp_bits_stage1_entry_1_perm_x;
+  wire u_cache_resp_bits_stage1_entry_1_pf;
+  wire [40:0] u_cache_resp_bits_stage1_entry_1_ppn;
+  wire [2:0] u_cache_resp_bits_stage1_entry_1_ppn_low;
+  wire [34:0] u_cache_resp_bits_stage1_entry_1_tag;
+  wire u_cache_resp_bits_stage1_entry_1_v;
+  wire [13:0] u_cache_resp_bits_stage1_entry_1_vmid;
+  wire [15:0] u_cache_resp_bits_stage1_entry_2_asid;
+  wire u_cache_resp_bits_stage1_entry_2_cf;
+  wire [1:0] u_cache_resp_bits_stage1_entry_2_level;
+  wire u_cache_resp_bits_stage1_entry_2_n;
+  wire [1:0] u_cache_resp_bits_stage1_entry_2_pbmt;
+  wire u_cache_resp_bits_stage1_entry_2_perm_a;
+  wire u_cache_resp_bits_stage1_entry_2_perm_d;
+  wire u_cache_resp_bits_stage1_entry_2_perm_g;
+  wire u_cache_resp_bits_stage1_entry_2_perm_r;
+  wire u_cache_resp_bits_stage1_entry_2_perm_u;
+  wire u_cache_resp_bits_stage1_entry_2_perm_w;
+  wire u_cache_resp_bits_stage1_entry_2_perm_x;
+  wire u_cache_resp_bits_stage1_entry_2_pf;
+  wire [40:0] u_cache_resp_bits_stage1_entry_2_ppn;
+  wire [2:0] u_cache_resp_bits_stage1_entry_2_ppn_low;
+  wire [34:0] u_cache_resp_bits_stage1_entry_2_tag;
+  wire u_cache_resp_bits_stage1_entry_2_v;
+  wire [13:0] u_cache_resp_bits_stage1_entry_2_vmid;
+  wire [15:0] u_cache_resp_bits_stage1_entry_3_asid;
+  wire u_cache_resp_bits_stage1_entry_3_cf;
+  wire [1:0] u_cache_resp_bits_stage1_entry_3_level;
+  wire u_cache_resp_bits_stage1_entry_3_n;
+  wire [1:0] u_cache_resp_bits_stage1_entry_3_pbmt;
+  wire u_cache_resp_bits_stage1_entry_3_perm_a;
+  wire u_cache_resp_bits_stage1_entry_3_perm_d;
+  wire u_cache_resp_bits_stage1_entry_3_perm_g;
+  wire u_cache_resp_bits_stage1_entry_3_perm_r;
+  wire u_cache_resp_bits_stage1_entry_3_perm_u;
+  wire u_cache_resp_bits_stage1_entry_3_perm_w;
+  wire u_cache_resp_bits_stage1_entry_3_perm_x;
+  wire u_cache_resp_bits_stage1_entry_3_pf;
+  wire [40:0] u_cache_resp_bits_stage1_entry_3_ppn;
+  wire [2:0] u_cache_resp_bits_stage1_entry_3_ppn_low;
+  wire [34:0] u_cache_resp_bits_stage1_entry_3_tag;
+  wire u_cache_resp_bits_stage1_entry_3_v;
+  wire [13:0] u_cache_resp_bits_stage1_entry_3_vmid;
+  wire [15:0] u_cache_resp_bits_stage1_entry_4_asid;
+  wire u_cache_resp_bits_stage1_entry_4_cf;
+  wire [1:0] u_cache_resp_bits_stage1_entry_4_level;
+  wire u_cache_resp_bits_stage1_entry_4_n;
+  wire [1:0] u_cache_resp_bits_stage1_entry_4_pbmt;
+  wire u_cache_resp_bits_stage1_entry_4_perm_a;
+  wire u_cache_resp_bits_stage1_entry_4_perm_d;
+  wire u_cache_resp_bits_stage1_entry_4_perm_g;
+  wire u_cache_resp_bits_stage1_entry_4_perm_r;
+  wire u_cache_resp_bits_stage1_entry_4_perm_u;
+  wire u_cache_resp_bits_stage1_entry_4_perm_w;
+  wire u_cache_resp_bits_stage1_entry_4_perm_x;
+  wire u_cache_resp_bits_stage1_entry_4_pf;
+  wire [40:0] u_cache_resp_bits_stage1_entry_4_ppn;
+  wire [2:0] u_cache_resp_bits_stage1_entry_4_ppn_low;
+  wire [34:0] u_cache_resp_bits_stage1_entry_4_tag;
+  wire u_cache_resp_bits_stage1_entry_4_v;
+  wire [13:0] u_cache_resp_bits_stage1_entry_4_vmid;
+  wire [15:0] u_cache_resp_bits_stage1_entry_5_asid;
+  wire u_cache_resp_bits_stage1_entry_5_cf;
+  wire [1:0] u_cache_resp_bits_stage1_entry_5_level;
+  wire u_cache_resp_bits_stage1_entry_5_n;
+  wire [1:0] u_cache_resp_bits_stage1_entry_5_pbmt;
+  wire u_cache_resp_bits_stage1_entry_5_perm_a;
+  wire u_cache_resp_bits_stage1_entry_5_perm_d;
+  wire u_cache_resp_bits_stage1_entry_5_perm_g;
+  wire u_cache_resp_bits_stage1_entry_5_perm_r;
+  wire u_cache_resp_bits_stage1_entry_5_perm_u;
+  wire u_cache_resp_bits_stage1_entry_5_perm_w;
+  wire u_cache_resp_bits_stage1_entry_5_perm_x;
+  wire u_cache_resp_bits_stage1_entry_5_pf;
+  wire [40:0] u_cache_resp_bits_stage1_entry_5_ppn;
+  wire [2:0] u_cache_resp_bits_stage1_entry_5_ppn_low;
+  wire [34:0] u_cache_resp_bits_stage1_entry_5_tag;
+  wire u_cache_resp_bits_stage1_entry_5_v;
+  wire [13:0] u_cache_resp_bits_stage1_entry_5_vmid;
+  wire [15:0] u_cache_resp_bits_stage1_entry_6_asid;
+  wire u_cache_resp_bits_stage1_entry_6_cf;
+  wire [1:0] u_cache_resp_bits_stage1_entry_6_level;
+  wire u_cache_resp_bits_stage1_entry_6_n;
+  wire [1:0] u_cache_resp_bits_stage1_entry_6_pbmt;
+  wire u_cache_resp_bits_stage1_entry_6_perm_a;
+  wire u_cache_resp_bits_stage1_entry_6_perm_d;
+  wire u_cache_resp_bits_stage1_entry_6_perm_g;
+  wire u_cache_resp_bits_stage1_entry_6_perm_r;
+  wire u_cache_resp_bits_stage1_entry_6_perm_u;
+  wire u_cache_resp_bits_stage1_entry_6_perm_w;
+  wire u_cache_resp_bits_stage1_entry_6_perm_x;
+  wire u_cache_resp_bits_stage1_entry_6_pf;
+  wire [40:0] u_cache_resp_bits_stage1_entry_6_ppn;
+  wire [2:0] u_cache_resp_bits_stage1_entry_6_ppn_low;
+  wire [34:0] u_cache_resp_bits_stage1_entry_6_tag;
+  wire u_cache_resp_bits_stage1_entry_6_v;
+  wire [13:0] u_cache_resp_bits_stage1_entry_6_vmid;
+  wire [15:0] u_cache_resp_bits_stage1_entry_7_asid;
+  wire u_cache_resp_bits_stage1_entry_7_cf;
+  wire [1:0] u_cache_resp_bits_stage1_entry_7_level;
+  wire u_cache_resp_bits_stage1_entry_7_n;
+  wire [1:0] u_cache_resp_bits_stage1_entry_7_pbmt;
+  wire u_cache_resp_bits_stage1_entry_7_perm_a;
+  wire u_cache_resp_bits_stage1_entry_7_perm_d;
+  wire u_cache_resp_bits_stage1_entry_7_perm_g;
+  wire u_cache_resp_bits_stage1_entry_7_perm_r;
+  wire u_cache_resp_bits_stage1_entry_7_perm_u;
+  wire u_cache_resp_bits_stage1_entry_7_perm_w;
+  wire u_cache_resp_bits_stage1_entry_7_perm_x;
+  wire u_cache_resp_bits_stage1_entry_7_pf;
+  wire [40:0] u_cache_resp_bits_stage1_entry_7_ppn;
+  wire [2:0] u_cache_resp_bits_stage1_entry_7_ppn_low;
+  wire [34:0] u_cache_resp_bits_stage1_entry_7_tag;
+  wire u_cache_resp_bits_stage1_entry_7_v;
+  wire [13:0] u_cache_resp_bits_stage1_entry_7_vmid;
+  wire u_cache_resp_bits_stage1_not_super;
+  wire u_cache_resp_bits_stage1_pteidx_0;
+  wire u_cache_resp_bits_stage1_pteidx_1;
+  wire u_cache_resp_bits_stage1_pteidx_2;
+  wire u_cache_resp_bits_stage1_pteidx_3;
+  wire u_cache_resp_bits_stage1_pteidx_4;
+  wire u_cache_resp_bits_stage1_pteidx_5;
+  wire u_cache_resp_bits_stage1_pteidx_6;
+  wire u_cache_resp_bits_stage1_pteidx_7;
+  wire [1:0] u_cache_resp_bits_toFsm_bitmapCheck_SPlevel;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_cfs_0;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_cfs_1;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_cfs_2;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_cfs_3;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_cfs_4;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_cfs_5;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_cfs_6;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_cfs_7;
+  wire [3:0] u_cache_resp_bits_toFsm_bitmapCheck_hitway;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_pte;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_ptes_0;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_ptes_1;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_ptes_2;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_ptes_3;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_ptes_4;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_ptes_5;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_ptes_6;
+  wire [63:0] u_cache_resp_bits_toFsm_bitmapCheck_ptes_7;
+  wire u_cache_resp_bits_toFsm_bitmapCheck_toLLPTW;
+  wire u_cache_resp_bits_toFsm_l1Hit;
+  wire u_cache_resp_bits_toFsm_l2Hit;
+  wire u_cache_resp_bits_toFsm_l3Hit;
+  wire [37:0] u_cache_resp_bits_toFsm_ppn;
+  wire u_cache_resp_bits_toFsm_stage1Hit;
+  wire [1:0] u_cache_resp_bits_toHptw_bitmapCheck_SPlevel;
+  wire u_cache_resp_bits_toHptw_bitmapCheck_fromSP;
+  wire [3:0] u_cache_resp_bits_toHptw_bitmapCheck_hitway;
+  wire u_cache_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_pte;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_ptes_0;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_ptes_1;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_ptes_2;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_ptes_3;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_ptes_4;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_ptes_5;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_ptes_6;
+  wire [63:0] u_cache_resp_bits_toHptw_bitmapCheck_ptes_7;
+  wire u_cache_resp_bits_toHptw_bypassed;
+  wire [2:0] u_cache_resp_bits_toHptw_id;
+  wire u_cache_resp_bits_toHptw_l1Hit;
+  wire u_cache_resp_bits_toHptw_l2Hit;
+  wire u_cache_resp_bits_toHptw_l3Hit;
+  wire [35:0] u_cache_resp_bits_toHptw_ppn;
+  wire [1:0] u_cache_resp_bits_toHptw_resp_entry_level;
+  wire u_cache_resp_bits_toHptw_resp_entry_n;
+  wire [1:0] u_cache_resp_bits_toHptw_resp_entry_pbmt;
+  wire u_cache_resp_bits_toHptw_resp_entry_perm_a;
+  wire u_cache_resp_bits_toHptw_resp_entry_perm_d;
+  wire u_cache_resp_bits_toHptw_resp_entry_perm_g;
+  wire u_cache_resp_bits_toHptw_resp_entry_perm_r;
+  wire u_cache_resp_bits_toHptw_resp_entry_perm_u;
+  wire u_cache_resp_bits_toHptw_resp_entry_perm_w;
+  wire u_cache_resp_bits_toHptw_resp_entry_perm_x;
+  wire [37:0] u_cache_resp_bits_toHptw_resp_entry_ppn;
+  wire [37:0] u_cache_resp_bits_toHptw_resp_entry_tag;
+  wire [13:0] u_cache_resp_bits_toHptw_resp_entry_vmid;
+  wire u_cache_resp_bits_toHptw_resp_gpf;
+  wire u_cache_resp_valid;
   wire u_csr_delay_out_hPBMTE;
   wire u_csr_delay_out_hgatp_changed;
   wire [3:0] u_csr_delay_out_hgatp_mode;
@@ -1565,14 +1801,14 @@ module xs_L2TLB_core
   wire u_merge_arb_1_out_bits_s2_gpf;
   wire [1:0] u_merge_arb_1_out_bits_s2xlate;
   wire u_merge_arb_1_out_valid;
-  wire u_miss_queue_in_ready;
-  wire [2:0] u_miss_queue_out_bits_hptwId;
-  wire u_miss_queue_out_bits_isHptwReq;
-  wire u_miss_queue_out_bits_isLLptw;
-  wire [1:0] u_miss_queue_out_bits_req_info_s2xlate;
-  wire [1:0] u_miss_queue_out_bits_req_info_source;
-  wire [37:0] u_miss_queue_out_bits_req_info_vpn;
-  wire u_miss_queue_out_valid;
+  wire u_missQueue_in_ready;
+  wire [2:0] u_missQueue_out_bits_hptwId;
+  wire u_missQueue_out_bits_isHptwReq;
+  wire u_missQueue_out_bits_isLLptw;
+  wire [1:0] u_missQueue_out_bits_req_info_s2xlate;
+  wire [1:0] u_missQueue_out_bits_req_info_source;
+  wire [37:0] u_missQueue_out_bits_req_info_vpn;
+  wire u_missQueue_out_valid;
   wire u_out_arb_0_in_0_ready;
   wire [2:0] u_out_arb_0_out_bits_s1_addr_low;
   wire u_out_arb_0_out_bits_s1_af;
@@ -1693,242 +1929,6 @@ module xs_L2TLB_core
   wire u_out_arb_1_out_bits_s2_gpf;
   wire [1:0] u_out_arb_1_out_bits_s2xlate;
   wire u_out_arb_1_out_valid;
-  wire u_page_cache_bitmap_wakeup_ready;
-  wire u_page_cache_boreChildrenBd_bore_1_ack;
-  wire [113:0] u_page_cache_boreChildrenBd_bore_1_outdata;
-  wire u_page_cache_boreChildrenBd_bore_ack;
-  wire [130:0] u_page_cache_boreChildrenBd_bore_outdata;
-  wire [3:0] u_page_cache_l0_way_info;
-  wire [5:0] u_page_cache_perf_0_value;
-  wire [5:0] u_page_cache_perf_1_value;
-  wire [5:0] u_page_cache_perf_2_value;
-  wire [5:0] u_page_cache_perf_3_value;
-  wire [5:0] u_page_cache_perf_4_value;
-  wire [5:0] u_page_cache_perf_5_value;
-  wire [5:0] u_page_cache_perf_6_value;
-  wire [5:0] u_page_cache_perf_7_value;
-  wire u_page_cache_req_ready;
-  wire u_page_cache_resp_bits_bypassed;
-  wire u_page_cache_resp_bits_hit;
-  wire u_page_cache_resp_bits_isFirst;
-  wire u_page_cache_resp_bits_isHptwReq;
-  wire u_page_cache_resp_bits_prefetch;
-  wire [1:0] u_page_cache_resp_bits_req_info_s2xlate;
-  wire [1:0] u_page_cache_resp_bits_req_info_source;
-  wire [37:0] u_page_cache_resp_bits_req_info_vpn;
-  wire [15:0] u_page_cache_resp_bits_stage1_entry_0_asid;
-  wire u_page_cache_resp_bits_stage1_entry_0_cf;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_0_level;
-  wire u_page_cache_resp_bits_stage1_entry_0_n;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_0_pbmt;
-  wire u_page_cache_resp_bits_stage1_entry_0_perm_a;
-  wire u_page_cache_resp_bits_stage1_entry_0_perm_d;
-  wire u_page_cache_resp_bits_stage1_entry_0_perm_g;
-  wire u_page_cache_resp_bits_stage1_entry_0_perm_r;
-  wire u_page_cache_resp_bits_stage1_entry_0_perm_u;
-  wire u_page_cache_resp_bits_stage1_entry_0_perm_w;
-  wire u_page_cache_resp_bits_stage1_entry_0_perm_x;
-  wire u_page_cache_resp_bits_stage1_entry_0_pf;
-  wire [40:0] u_page_cache_resp_bits_stage1_entry_0_ppn;
-  wire [2:0] u_page_cache_resp_bits_stage1_entry_0_ppn_low;
-  wire [34:0] u_page_cache_resp_bits_stage1_entry_0_tag;
-  wire u_page_cache_resp_bits_stage1_entry_0_v;
-  wire [13:0] u_page_cache_resp_bits_stage1_entry_0_vmid;
-  wire [15:0] u_page_cache_resp_bits_stage1_entry_1_asid;
-  wire u_page_cache_resp_bits_stage1_entry_1_cf;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_1_level;
-  wire u_page_cache_resp_bits_stage1_entry_1_n;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_1_pbmt;
-  wire u_page_cache_resp_bits_stage1_entry_1_perm_a;
-  wire u_page_cache_resp_bits_stage1_entry_1_perm_d;
-  wire u_page_cache_resp_bits_stage1_entry_1_perm_g;
-  wire u_page_cache_resp_bits_stage1_entry_1_perm_r;
-  wire u_page_cache_resp_bits_stage1_entry_1_perm_u;
-  wire u_page_cache_resp_bits_stage1_entry_1_perm_w;
-  wire u_page_cache_resp_bits_stage1_entry_1_perm_x;
-  wire u_page_cache_resp_bits_stage1_entry_1_pf;
-  wire [40:0] u_page_cache_resp_bits_stage1_entry_1_ppn;
-  wire [2:0] u_page_cache_resp_bits_stage1_entry_1_ppn_low;
-  wire [34:0] u_page_cache_resp_bits_stage1_entry_1_tag;
-  wire u_page_cache_resp_bits_stage1_entry_1_v;
-  wire [13:0] u_page_cache_resp_bits_stage1_entry_1_vmid;
-  wire [15:0] u_page_cache_resp_bits_stage1_entry_2_asid;
-  wire u_page_cache_resp_bits_stage1_entry_2_cf;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_2_level;
-  wire u_page_cache_resp_bits_stage1_entry_2_n;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_2_pbmt;
-  wire u_page_cache_resp_bits_stage1_entry_2_perm_a;
-  wire u_page_cache_resp_bits_stage1_entry_2_perm_d;
-  wire u_page_cache_resp_bits_stage1_entry_2_perm_g;
-  wire u_page_cache_resp_bits_stage1_entry_2_perm_r;
-  wire u_page_cache_resp_bits_stage1_entry_2_perm_u;
-  wire u_page_cache_resp_bits_stage1_entry_2_perm_w;
-  wire u_page_cache_resp_bits_stage1_entry_2_perm_x;
-  wire u_page_cache_resp_bits_stage1_entry_2_pf;
-  wire [40:0] u_page_cache_resp_bits_stage1_entry_2_ppn;
-  wire [2:0] u_page_cache_resp_bits_stage1_entry_2_ppn_low;
-  wire [34:0] u_page_cache_resp_bits_stage1_entry_2_tag;
-  wire u_page_cache_resp_bits_stage1_entry_2_v;
-  wire [13:0] u_page_cache_resp_bits_stage1_entry_2_vmid;
-  wire [15:0] u_page_cache_resp_bits_stage1_entry_3_asid;
-  wire u_page_cache_resp_bits_stage1_entry_3_cf;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_3_level;
-  wire u_page_cache_resp_bits_stage1_entry_3_n;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_3_pbmt;
-  wire u_page_cache_resp_bits_stage1_entry_3_perm_a;
-  wire u_page_cache_resp_bits_stage1_entry_3_perm_d;
-  wire u_page_cache_resp_bits_stage1_entry_3_perm_g;
-  wire u_page_cache_resp_bits_stage1_entry_3_perm_r;
-  wire u_page_cache_resp_bits_stage1_entry_3_perm_u;
-  wire u_page_cache_resp_bits_stage1_entry_3_perm_w;
-  wire u_page_cache_resp_bits_stage1_entry_3_perm_x;
-  wire u_page_cache_resp_bits_stage1_entry_3_pf;
-  wire [40:0] u_page_cache_resp_bits_stage1_entry_3_ppn;
-  wire [2:0] u_page_cache_resp_bits_stage1_entry_3_ppn_low;
-  wire [34:0] u_page_cache_resp_bits_stage1_entry_3_tag;
-  wire u_page_cache_resp_bits_stage1_entry_3_v;
-  wire [13:0] u_page_cache_resp_bits_stage1_entry_3_vmid;
-  wire [15:0] u_page_cache_resp_bits_stage1_entry_4_asid;
-  wire u_page_cache_resp_bits_stage1_entry_4_cf;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_4_level;
-  wire u_page_cache_resp_bits_stage1_entry_4_n;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_4_pbmt;
-  wire u_page_cache_resp_bits_stage1_entry_4_perm_a;
-  wire u_page_cache_resp_bits_stage1_entry_4_perm_d;
-  wire u_page_cache_resp_bits_stage1_entry_4_perm_g;
-  wire u_page_cache_resp_bits_stage1_entry_4_perm_r;
-  wire u_page_cache_resp_bits_stage1_entry_4_perm_u;
-  wire u_page_cache_resp_bits_stage1_entry_4_perm_w;
-  wire u_page_cache_resp_bits_stage1_entry_4_perm_x;
-  wire u_page_cache_resp_bits_stage1_entry_4_pf;
-  wire [40:0] u_page_cache_resp_bits_stage1_entry_4_ppn;
-  wire [2:0] u_page_cache_resp_bits_stage1_entry_4_ppn_low;
-  wire [34:0] u_page_cache_resp_bits_stage1_entry_4_tag;
-  wire u_page_cache_resp_bits_stage1_entry_4_v;
-  wire [13:0] u_page_cache_resp_bits_stage1_entry_4_vmid;
-  wire [15:0] u_page_cache_resp_bits_stage1_entry_5_asid;
-  wire u_page_cache_resp_bits_stage1_entry_5_cf;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_5_level;
-  wire u_page_cache_resp_bits_stage1_entry_5_n;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_5_pbmt;
-  wire u_page_cache_resp_bits_stage1_entry_5_perm_a;
-  wire u_page_cache_resp_bits_stage1_entry_5_perm_d;
-  wire u_page_cache_resp_bits_stage1_entry_5_perm_g;
-  wire u_page_cache_resp_bits_stage1_entry_5_perm_r;
-  wire u_page_cache_resp_bits_stage1_entry_5_perm_u;
-  wire u_page_cache_resp_bits_stage1_entry_5_perm_w;
-  wire u_page_cache_resp_bits_stage1_entry_5_perm_x;
-  wire u_page_cache_resp_bits_stage1_entry_5_pf;
-  wire [40:0] u_page_cache_resp_bits_stage1_entry_5_ppn;
-  wire [2:0] u_page_cache_resp_bits_stage1_entry_5_ppn_low;
-  wire [34:0] u_page_cache_resp_bits_stage1_entry_5_tag;
-  wire u_page_cache_resp_bits_stage1_entry_5_v;
-  wire [13:0] u_page_cache_resp_bits_stage1_entry_5_vmid;
-  wire [15:0] u_page_cache_resp_bits_stage1_entry_6_asid;
-  wire u_page_cache_resp_bits_stage1_entry_6_cf;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_6_level;
-  wire u_page_cache_resp_bits_stage1_entry_6_n;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_6_pbmt;
-  wire u_page_cache_resp_bits_stage1_entry_6_perm_a;
-  wire u_page_cache_resp_bits_stage1_entry_6_perm_d;
-  wire u_page_cache_resp_bits_stage1_entry_6_perm_g;
-  wire u_page_cache_resp_bits_stage1_entry_6_perm_r;
-  wire u_page_cache_resp_bits_stage1_entry_6_perm_u;
-  wire u_page_cache_resp_bits_stage1_entry_6_perm_w;
-  wire u_page_cache_resp_bits_stage1_entry_6_perm_x;
-  wire u_page_cache_resp_bits_stage1_entry_6_pf;
-  wire [40:0] u_page_cache_resp_bits_stage1_entry_6_ppn;
-  wire [2:0] u_page_cache_resp_bits_stage1_entry_6_ppn_low;
-  wire [34:0] u_page_cache_resp_bits_stage1_entry_6_tag;
-  wire u_page_cache_resp_bits_stage1_entry_6_v;
-  wire [13:0] u_page_cache_resp_bits_stage1_entry_6_vmid;
-  wire [15:0] u_page_cache_resp_bits_stage1_entry_7_asid;
-  wire u_page_cache_resp_bits_stage1_entry_7_cf;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_7_level;
-  wire u_page_cache_resp_bits_stage1_entry_7_n;
-  wire [1:0] u_page_cache_resp_bits_stage1_entry_7_pbmt;
-  wire u_page_cache_resp_bits_stage1_entry_7_perm_a;
-  wire u_page_cache_resp_bits_stage1_entry_7_perm_d;
-  wire u_page_cache_resp_bits_stage1_entry_7_perm_g;
-  wire u_page_cache_resp_bits_stage1_entry_7_perm_r;
-  wire u_page_cache_resp_bits_stage1_entry_7_perm_u;
-  wire u_page_cache_resp_bits_stage1_entry_7_perm_w;
-  wire u_page_cache_resp_bits_stage1_entry_7_perm_x;
-  wire u_page_cache_resp_bits_stage1_entry_7_pf;
-  wire [40:0] u_page_cache_resp_bits_stage1_entry_7_ppn;
-  wire [2:0] u_page_cache_resp_bits_stage1_entry_7_ppn_low;
-  wire [34:0] u_page_cache_resp_bits_stage1_entry_7_tag;
-  wire u_page_cache_resp_bits_stage1_entry_7_v;
-  wire [13:0] u_page_cache_resp_bits_stage1_entry_7_vmid;
-  wire u_page_cache_resp_bits_stage1_not_super;
-  wire u_page_cache_resp_bits_stage1_pteidx_0;
-  wire u_page_cache_resp_bits_stage1_pteidx_1;
-  wire u_page_cache_resp_bits_stage1_pteidx_2;
-  wire u_page_cache_resp_bits_stage1_pteidx_3;
-  wire u_page_cache_resp_bits_stage1_pteidx_4;
-  wire u_page_cache_resp_bits_stage1_pteidx_5;
-  wire u_page_cache_resp_bits_stage1_pteidx_6;
-  wire u_page_cache_resp_bits_stage1_pteidx_7;
-  wire [1:0] u_page_cache_resp_bits_toFsm_bitmapCheck_SPlevel;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_0;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_1;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_2;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_3;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_4;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_5;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_6;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_7;
-  wire [3:0] u_page_cache_resp_bits_toFsm_bitmapCheck_hitway;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_pte;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_0;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_1;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_2;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_3;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_4;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_5;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_6;
-  wire [63:0] u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_7;
-  wire u_page_cache_resp_bits_toFsm_bitmapCheck_toLLPTW;
-  wire u_page_cache_resp_bits_toFsm_l1Hit;
-  wire u_page_cache_resp_bits_toFsm_l2Hit;
-  wire u_page_cache_resp_bits_toFsm_l3Hit;
-  wire [37:0] u_page_cache_resp_bits_toFsm_ppn;
-  wire u_page_cache_resp_bits_toFsm_stage1Hit;
-  wire [1:0] u_page_cache_resp_bits_toHptw_bitmapCheck_SPlevel;
-  wire u_page_cache_resp_bits_toHptw_bitmapCheck_fromSP;
-  wire [3:0] u_page_cache_resp_bits_toHptw_bitmapCheck_hitway;
-  wire u_page_cache_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_pte;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_0;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_1;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_2;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_3;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_4;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_5;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_6;
-  wire [63:0] u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_7;
-  wire u_page_cache_resp_bits_toHptw_bypassed;
-  wire [2:0] u_page_cache_resp_bits_toHptw_id;
-  wire u_page_cache_resp_bits_toHptw_l1Hit;
-  wire u_page_cache_resp_bits_toHptw_l2Hit;
-  wire u_page_cache_resp_bits_toHptw_l3Hit;
-  wire [35:0] u_page_cache_resp_bits_toHptw_ppn;
-  wire [1:0] u_page_cache_resp_bits_toHptw_resp_entry_level;
-  wire u_page_cache_resp_bits_toHptw_resp_entry_n;
-  wire [1:0] u_page_cache_resp_bits_toHptw_resp_entry_pbmt;
-  wire u_page_cache_resp_bits_toHptw_resp_entry_perm_a;
-  wire u_page_cache_resp_bits_toHptw_resp_entry_perm_d;
-  wire u_page_cache_resp_bits_toHptw_resp_entry_perm_g;
-  wire u_page_cache_resp_bits_toHptw_resp_entry_perm_r;
-  wire u_page_cache_resp_bits_toHptw_resp_entry_perm_u;
-  wire u_page_cache_resp_bits_toHptw_resp_entry_perm_w;
-  wire u_page_cache_resp_bits_toHptw_resp_entry_perm_x;
-  wire [37:0] u_page_cache_resp_bits_toHptw_resp_entry_ppn;
-  wire [37:0] u_page_cache_resp_bits_toHptw_resp_entry_tag;
-  wire [13:0] u_page_cache_resp_bits_toHptw_resp_entry_vmid;
-  wire u_page_cache_resp_bits_toHptw_resp_gpf;
-  wire u_page_cache_resp_valid;
   wire u_pmp_chk_bitmap_resp_atomic;
   wire u_pmp_chk_bitmap_resp_ld;
   wire u_pmp_chk_bitmap_resp_mmio;
@@ -2676,12 +2676,79 @@ module xs_L2TLB_core
   logic u_bitmap__mem_resp_valid;
   logic u_bitmap__resp_ready;
   logic u_bitmap__sfence_valid;
-  logic u_bitmap_cache__csr_hgatp_changed;
-  logic u_bitmap_cache__csr_mbmc_BCLEAR;
-  logic u_bitmap_cache__csr_priv_virt_changed;
-  logic u_bitmap_cache__csr_satp_changed;
-  logic u_bitmap_cache__csr_vsatp_changed;
-  logic u_bitmap_cache__sfence_valid;
+  logic u_bitmapcache__csr_hgatp_changed;
+  logic u_bitmapcache__csr_mbmc_BCLEAR;
+  logic u_bitmapcache__csr_priv_virt_changed;
+  logic u_bitmapcache__csr_satp_changed;
+  logic u_bitmapcache__csr_vsatp_changed;
+  logic u_bitmapcache__sfence_valid;
+  logic u_cache__csr_dup_0_hgatp_changed;
+  logic [3:0] u_cache__csr_dup_0_hgatp_mode;
+  logic [15:0] u_cache__csr_dup_0_hgatp_vmid;
+  logic u_cache__csr_dup_0_mbmc_BME;
+  logic u_cache__csr_dup_0_mbmc_CMODE;
+  logic u_cache__csr_dup_0_priv_virt;
+  logic u_cache__csr_dup_0_priv_virt_changed;
+  logic [15:0] u_cache__csr_dup_0_satp_asid;
+  logic u_cache__csr_dup_0_satp_changed;
+  logic [15:0] u_cache__csr_dup_0_vsatp_asid;
+  logic u_cache__csr_dup_0_vsatp_changed;
+  logic u_cache__csr_dup_1_hgatp_changed;
+  logic [3:0] u_cache__csr_dup_1_hgatp_mode;
+  logic [15:0] u_cache__csr_dup_1_hgatp_vmid;
+  logic u_cache__csr_dup_1_priv_virt;
+  logic u_cache__csr_dup_1_priv_virt_changed;
+  logic [15:0] u_cache__csr_dup_1_satp_asid;
+  logic u_cache__csr_dup_1_satp_changed;
+  logic [15:0] u_cache__csr_dup_1_vsatp_asid;
+  logic u_cache__csr_dup_1_vsatp_changed;
+  logic u_cache__csr_dup_2_hgatp_changed;
+  logic [3:0] u_cache__csr_dup_2_hgatp_mode;
+  logic [15:0] u_cache__csr_dup_2_hgatp_vmid;
+  logic u_cache__csr_dup_2_priv_virt;
+  logic u_cache__csr_dup_2_priv_virt_changed;
+  logic [15:0] u_cache__csr_dup_2_satp_asid;
+  logic u_cache__csr_dup_2_satp_changed;
+  logic [15:0] u_cache__csr_dup_2_vsatp_asid;
+  logic u_cache__csr_dup_2_vsatp_changed;
+  logic u_cache__csr_hPBMTE;
+  logic u_cache__csr_mPBMTE;
+  logic u_cache__refill_bits_levelOH_l0;
+  logic u_cache__refill_bits_levelOH_l1;
+  logic u_cache__refill_bits_levelOH_l2;
+  logic u_cache__refill_bits_levelOH_l3;
+  logic u_cache__refill_bits_levelOH_sp;
+  logic [1:0] u_cache__refill_bits_level_dup_0;
+  logic [1:0] u_cache__refill_bits_level_dup_2;
+  logic [511:0] u_cache__refill_bits_ptes;
+  logic [1:0] u_cache__refill_bits_req_info_dup_0_s2xlate;
+  logic [1:0] u_cache__refill_bits_req_info_dup_0_source;
+  logic [37:0] u_cache__refill_bits_req_info_dup_0_vpn;
+  logic [1:0] u_cache__refill_bits_req_info_dup_1_s2xlate;
+  logic [1:0] u_cache__refill_bits_req_info_dup_1_source;
+  logic [37:0] u_cache__refill_bits_req_info_dup_1_vpn;
+  logic [1:0] u_cache__refill_bits_req_info_dup_2_s2xlate;
+  logic [1:0] u_cache__refill_bits_req_info_dup_2_source;
+  logic [37:0] u_cache__refill_bits_req_info_dup_2_vpn;
+  logic [63:0] u_cache__refill_bits_sel_pte_dup_0;
+  logic [63:0] u_cache__refill_bits_sel_pte_dup_2;
+  logic u_cache__refill_valid;
+  logic u_cache__req_bits_isFirst;
+  logic u_cache__req_valid;
+  logic u_cache__resp_ready;
+  logic [49:0] u_cache__sfence_dup_0_bits_addr;
+  logic u_cache__sfence_dup_0_bits_hg;
+  logic u_cache__sfence_dup_0_bits_hv;
+  logic [15:0] u_cache__sfence_dup_0_bits_id;
+  logic u_cache__sfence_dup_0_bits_rs1;
+  logic u_cache__sfence_dup_0_bits_rs2;
+  logic u_cache__sfence_dup_0_valid;
+  logic [15:0] u_cache__sfence_dup_1_bits_id;
+  logic u_cache__sfence_dup_1_valid;
+  logic [15:0] u_cache__sfence_dup_2_bits_id;
+  logic u_cache__sfence_dup_2_bits_rs1;
+  logic u_cache__sfence_dup_2_bits_rs2;
+  logic u_cache__sfence_dup_2_valid;
   logic u_hptw__bitmap_resp_valid;
   logic u_hptw__csr_hgatp_changed;
   logic [3:0] u_hptw__csr_hgatp_mode;
@@ -3059,12 +3126,12 @@ module xs_L2TLB_core
   logic u_merge_arb_1__in_2_bits_s1_pteidx_6;
   logic u_merge_arb_1__in_2_bits_s1_pteidx_7;
   logic u_merge_arb_1__in_2_valid;
-  logic u_miss_queue__csr_hgatp_changed;
-  logic u_miss_queue__csr_priv_virt_changed;
-  logic u_miss_queue__csr_satp_changed;
-  logic u_miss_queue__csr_vsatp_changed;
-  logic u_miss_queue__out_ready;
-  logic u_miss_queue__sfence_valid;
+  logic u_missQueue__csr_hgatp_changed;
+  logic u_missQueue__csr_priv_virt_changed;
+  logic u_missQueue__csr_satp_changed;
+  logic u_missQueue__csr_vsatp_changed;
+  logic u_missQueue__out_ready;
+  logic u_missQueue__sfence_valid;
   logic [2:0] u_out_arb_0__in_0_bits_s1_addr_low;
   logic u_out_arb_0__in_0_bits_s1_af;
   logic [15:0] u_out_arb_0__in_0_bits_s1_entry_asid;
@@ -3139,73 +3206,6 @@ module xs_L2TLB_core
   logic [1:0] u_out_arb_1__in_0_bits_s2_entry_level;
   logic u_out_arb_1__in_0_bits_s2_entry_n;
   logic [37:0] u_out_arb_1__in_0_bits_s2_entry_ppn;
-  logic u_page_cache__csr_dup_0_hgatp_changed;
-  logic [3:0] u_page_cache__csr_dup_0_hgatp_mode;
-  logic [15:0] u_page_cache__csr_dup_0_hgatp_vmid;
-  logic u_page_cache__csr_dup_0_mbmc_BME;
-  logic u_page_cache__csr_dup_0_mbmc_CMODE;
-  logic u_page_cache__csr_dup_0_priv_virt;
-  logic u_page_cache__csr_dup_0_priv_virt_changed;
-  logic [15:0] u_page_cache__csr_dup_0_satp_asid;
-  logic u_page_cache__csr_dup_0_satp_changed;
-  logic [15:0] u_page_cache__csr_dup_0_vsatp_asid;
-  logic u_page_cache__csr_dup_0_vsatp_changed;
-  logic u_page_cache__csr_dup_1_hgatp_changed;
-  logic [3:0] u_page_cache__csr_dup_1_hgatp_mode;
-  logic [15:0] u_page_cache__csr_dup_1_hgatp_vmid;
-  logic u_page_cache__csr_dup_1_priv_virt;
-  logic u_page_cache__csr_dup_1_priv_virt_changed;
-  logic [15:0] u_page_cache__csr_dup_1_satp_asid;
-  logic u_page_cache__csr_dup_1_satp_changed;
-  logic [15:0] u_page_cache__csr_dup_1_vsatp_asid;
-  logic u_page_cache__csr_dup_1_vsatp_changed;
-  logic u_page_cache__csr_dup_2_hgatp_changed;
-  logic [3:0] u_page_cache__csr_dup_2_hgatp_mode;
-  logic [15:0] u_page_cache__csr_dup_2_hgatp_vmid;
-  logic u_page_cache__csr_dup_2_priv_virt;
-  logic u_page_cache__csr_dup_2_priv_virt_changed;
-  logic [15:0] u_page_cache__csr_dup_2_satp_asid;
-  logic u_page_cache__csr_dup_2_satp_changed;
-  logic [15:0] u_page_cache__csr_dup_2_vsatp_asid;
-  logic u_page_cache__csr_dup_2_vsatp_changed;
-  logic u_page_cache__csr_hPBMTE;
-  logic u_page_cache__csr_mPBMTE;
-  logic u_page_cache__refill_bits_levelOH_l0;
-  logic u_page_cache__refill_bits_levelOH_l1;
-  logic u_page_cache__refill_bits_levelOH_l2;
-  logic u_page_cache__refill_bits_levelOH_l3;
-  logic u_page_cache__refill_bits_levelOH_sp;
-  logic [1:0] u_page_cache__refill_bits_level_dup_0;
-  logic [1:0] u_page_cache__refill_bits_level_dup_2;
-  logic [511:0] u_page_cache__refill_bits_ptes;
-  logic [1:0] u_page_cache__refill_bits_req_info_dup_0_s2xlate;
-  logic [1:0] u_page_cache__refill_bits_req_info_dup_0_source;
-  logic [37:0] u_page_cache__refill_bits_req_info_dup_0_vpn;
-  logic [1:0] u_page_cache__refill_bits_req_info_dup_1_s2xlate;
-  logic [1:0] u_page_cache__refill_bits_req_info_dup_1_source;
-  logic [37:0] u_page_cache__refill_bits_req_info_dup_1_vpn;
-  logic [1:0] u_page_cache__refill_bits_req_info_dup_2_s2xlate;
-  logic [1:0] u_page_cache__refill_bits_req_info_dup_2_source;
-  logic [37:0] u_page_cache__refill_bits_req_info_dup_2_vpn;
-  logic [63:0] u_page_cache__refill_bits_sel_pte_dup_0;
-  logic [63:0] u_page_cache__refill_bits_sel_pte_dup_2;
-  logic u_page_cache__refill_valid;
-  logic u_page_cache__req_bits_isFirst;
-  logic u_page_cache__req_valid;
-  logic u_page_cache__resp_ready;
-  logic [49:0] u_page_cache__sfence_dup_0_bits_addr;
-  logic u_page_cache__sfence_dup_0_bits_hg;
-  logic u_page_cache__sfence_dup_0_bits_hv;
-  logic [15:0] u_page_cache__sfence_dup_0_bits_id;
-  logic u_page_cache__sfence_dup_0_bits_rs1;
-  logic u_page_cache__sfence_dup_0_bits_rs2;
-  logic u_page_cache__sfence_dup_0_valid;
-  logic [15:0] u_page_cache__sfence_dup_1_bits_id;
-  logic u_page_cache__sfence_dup_1_valid;
-  logic [15:0] u_page_cache__sfence_dup_2_bits_id;
-  logic u_page_cache__sfence_dup_2_bits_rs1;
-  logic u_page_cache__sfence_dup_2_bits_rs2;
-  logic u_page_cache__sfence_dup_2_valid;
   logic u_pmp_chk_bitmap__check_env_debug;
   logic u_pmp_chk_hptw__check_env_debug;
   logic u_pmp_chk_llptw0__check_env_debug;
@@ -3324,56 +3324,56 @@ module xs_L2TLB_core
   assign u_llptw__csr_hPBMTE            = csr_dup[1].hPBMTE;
   assign u_llptw__sfence_valid          = sfence_dup[1].valid;
   // page cache 自带三份 csr/sfence 副本 ← csr_dup 2/3/4、sfence_dup 2/3/4
-  assign u_page_cache__csr_dup_0_satp_asid         = csr_dup[2].satp_asid;
-  assign u_page_cache__csr_dup_0_satp_changed      = csr_dup[2].satp_changed;
-  assign u_page_cache__csr_dup_0_vsatp_asid        = csr_dup[2].vsatp_asid;
-  assign u_page_cache__csr_dup_0_vsatp_changed     = csr_dup[2].vsatp_changed;
-  assign u_page_cache__csr_dup_0_hgatp_vmid        = csr_dup[2].hgatp_vmid;
-  assign u_page_cache__csr_dup_0_hgatp_mode        = csr_dup[2].hgatp_mode;
-  assign u_page_cache__csr_dup_0_hgatp_changed     = csr_dup[2].hgatp_changed;
-  assign u_page_cache__csr_dup_0_priv_virt         = csr_dup[2].priv_virt;
-  assign u_page_cache__csr_dup_0_priv_virt_changed = csr_dup[2].priv_virt_changed;
-  assign u_page_cache__csr_dup_0_mbmc_BME          = csr_dup[2].mbmc_BME;
-  assign u_page_cache__csr_dup_0_mbmc_CMODE        = csr_dup[2].mbmc_CMODE;
-  assign u_page_cache__csr_dup_1_satp_asid         = csr_dup[3].satp_asid;
-  assign u_page_cache__csr_dup_1_satp_changed      = csr_dup[3].satp_changed;
-  assign u_page_cache__csr_dup_1_vsatp_asid        = csr_dup[3].vsatp_asid;
-  assign u_page_cache__csr_dup_1_vsatp_changed     = csr_dup[3].vsatp_changed;
-  assign u_page_cache__csr_dup_1_hgatp_vmid        = csr_dup[3].hgatp_vmid;
-  assign u_page_cache__csr_dup_1_hgatp_mode        = csr_dup[3].hgatp_mode;
-  assign u_page_cache__csr_dup_1_hgatp_changed     = csr_dup[3].hgatp_changed;
-  assign u_page_cache__csr_dup_1_priv_virt         = csr_dup[3].priv_virt;
-  assign u_page_cache__csr_dup_1_priv_virt_changed = csr_dup[3].priv_virt_changed;
-  assign u_page_cache__csr_dup_2_satp_asid         = csr_dup[4].satp_asid;
-  assign u_page_cache__csr_dup_2_satp_changed      = csr_dup[4].satp_changed;
-  assign u_page_cache__csr_dup_2_vsatp_asid        = csr_dup[4].vsatp_asid;
-  assign u_page_cache__csr_dup_2_vsatp_changed     = csr_dup[4].vsatp_changed;
-  assign u_page_cache__csr_dup_2_hgatp_vmid        = csr_dup[4].hgatp_vmid;
-  assign u_page_cache__csr_dup_2_hgatp_mode        = csr_dup[4].hgatp_mode;
-  assign u_page_cache__csr_dup_2_hgatp_changed     = csr_dup[4].hgatp_changed;
-  assign u_page_cache__csr_dup_2_priv_virt         = csr_dup[4].priv_virt;
-  assign u_page_cache__csr_dup_2_priv_virt_changed = csr_dup[4].priv_virt_changed;
-  assign u_page_cache__csr_mPBMTE = csr_dup[2].mPBMTE;
-  assign u_page_cache__csr_hPBMTE = csr_dup[2].hPBMTE;
-  assign u_page_cache__sfence_dup_0_valid     = sfence_dup[2].valid;
-  assign u_page_cache__sfence_dup_0_bits_rs1  = sfence_dup[2].rs1;
-  assign u_page_cache__sfence_dup_0_bits_rs2  = sfence_dup[2].rs2;
-  assign u_page_cache__sfence_dup_0_bits_addr = sfence_dup[2].addr;
-  assign u_page_cache__sfence_dup_0_bits_id   = sfence_dup[2].id;
-  assign u_page_cache__sfence_dup_0_bits_hv   = sfence_dup[2].hv;
-  assign u_page_cache__sfence_dup_0_bits_hg   = sfence_dup[2].hg;
-  assign u_page_cache__sfence_dup_1_valid     = sfence_dup[3].valid;
-  assign u_page_cache__sfence_dup_1_bits_id   = sfence_dup[3].id;
-  assign u_page_cache__sfence_dup_2_valid     = sfence_dup[4].valid;
-  assign u_page_cache__sfence_dup_2_bits_id   = sfence_dup[4].id;
-  assign u_page_cache__sfence_dup_2_bits_rs1  = sfence_dup[4].rs1;
-  assign u_page_cache__sfence_dup_2_bits_rs2  = sfence_dup[4].rs2;
+  assign u_cache__csr_dup_0_satp_asid         = csr_dup[2].satp_asid;
+  assign u_cache__csr_dup_0_satp_changed      = csr_dup[2].satp_changed;
+  assign u_cache__csr_dup_0_vsatp_asid        = csr_dup[2].vsatp_asid;
+  assign u_cache__csr_dup_0_vsatp_changed     = csr_dup[2].vsatp_changed;
+  assign u_cache__csr_dup_0_hgatp_vmid        = csr_dup[2].hgatp_vmid;
+  assign u_cache__csr_dup_0_hgatp_mode        = csr_dup[2].hgatp_mode;
+  assign u_cache__csr_dup_0_hgatp_changed     = csr_dup[2].hgatp_changed;
+  assign u_cache__csr_dup_0_priv_virt         = csr_dup[2].priv_virt;
+  assign u_cache__csr_dup_0_priv_virt_changed = csr_dup[2].priv_virt_changed;
+  assign u_cache__csr_dup_0_mbmc_BME          = csr_dup[2].mbmc_BME;
+  assign u_cache__csr_dup_0_mbmc_CMODE        = csr_dup[2].mbmc_CMODE;
+  assign u_cache__csr_dup_1_satp_asid         = csr_dup[3].satp_asid;
+  assign u_cache__csr_dup_1_satp_changed      = csr_dup[3].satp_changed;
+  assign u_cache__csr_dup_1_vsatp_asid        = csr_dup[3].vsatp_asid;
+  assign u_cache__csr_dup_1_vsatp_changed     = csr_dup[3].vsatp_changed;
+  assign u_cache__csr_dup_1_hgatp_vmid        = csr_dup[3].hgatp_vmid;
+  assign u_cache__csr_dup_1_hgatp_mode        = csr_dup[3].hgatp_mode;
+  assign u_cache__csr_dup_1_hgatp_changed     = csr_dup[3].hgatp_changed;
+  assign u_cache__csr_dup_1_priv_virt         = csr_dup[3].priv_virt;
+  assign u_cache__csr_dup_1_priv_virt_changed = csr_dup[3].priv_virt_changed;
+  assign u_cache__csr_dup_2_satp_asid         = csr_dup[4].satp_asid;
+  assign u_cache__csr_dup_2_satp_changed      = csr_dup[4].satp_changed;
+  assign u_cache__csr_dup_2_vsatp_asid        = csr_dup[4].vsatp_asid;
+  assign u_cache__csr_dup_2_vsatp_changed     = csr_dup[4].vsatp_changed;
+  assign u_cache__csr_dup_2_hgatp_vmid        = csr_dup[4].hgatp_vmid;
+  assign u_cache__csr_dup_2_hgatp_mode        = csr_dup[4].hgatp_mode;
+  assign u_cache__csr_dup_2_hgatp_changed     = csr_dup[4].hgatp_changed;
+  assign u_cache__csr_dup_2_priv_virt         = csr_dup[4].priv_virt;
+  assign u_cache__csr_dup_2_priv_virt_changed = csr_dup[4].priv_virt_changed;
+  assign u_cache__csr_mPBMTE = csr_dup[2].mPBMTE;
+  assign u_cache__csr_hPBMTE = csr_dup[2].hPBMTE;
+  assign u_cache__sfence_dup_0_valid     = sfence_dup[2].valid;
+  assign u_cache__sfence_dup_0_bits_rs1  = sfence_dup[2].rs1;
+  assign u_cache__sfence_dup_0_bits_rs2  = sfence_dup[2].rs2;
+  assign u_cache__sfence_dup_0_bits_addr = sfence_dup[2].addr;
+  assign u_cache__sfence_dup_0_bits_id   = sfence_dup[2].id;
+  assign u_cache__sfence_dup_0_bits_hv   = sfence_dup[2].hv;
+  assign u_cache__sfence_dup_0_bits_hg   = sfence_dup[2].hg;
+  assign u_cache__sfence_dup_1_valid     = sfence_dup[3].valid;
+  assign u_cache__sfence_dup_1_bits_id   = sfence_dup[3].id;
+  assign u_cache__sfence_dup_2_valid     = sfence_dup[4].valid;
+  assign u_cache__sfence_dup_2_bits_id   = sfence_dup[4].id;
+  assign u_cache__sfence_dup_2_bits_rs1  = sfence_dup[4].rs1;
+  assign u_cache__sfence_dup_2_bits_rs2  = sfence_dup[4].rs2;
   // missQueue ← csr 5 / sfence 6
-  assign u_miss_queue__csr_satp_changed      = csr_dup[5].satp_changed;
-  assign u_miss_queue__csr_vsatp_changed     = csr_dup[5].vsatp_changed;
-  assign u_miss_queue__csr_hgatp_changed     = csr_dup[5].hgatp_changed;
-  assign u_miss_queue__csr_priv_virt_changed = csr_dup[5].priv_virt_changed;
-  assign u_miss_queue__sfence_valid          = sfence_dup[6].valid;
+  assign u_missQueue__csr_satp_changed      = csr_dup[5].satp_changed;
+  assign u_missQueue__csr_vsatp_changed     = csr_dup[5].vsatp_changed;
+  assign u_missQueue__csr_hgatp_changed     = csr_dup[5].hgatp_changed;
+  assign u_missQueue__csr_priv_virt_changed = csr_dup[5].priv_virt_changed;
+  assign u_missQueue__sfence_valid          = sfence_dup[6].valid;
   // ptw ← csr 6 / sfence 7  （G1 去掉了 priv_mxr，加了 mbmc_BME/CMODE、priv_virt_changed）
   assign u_ptw__csr_satp_mode          = csr_dup[6].satp_mode;
   assign u_ptw__csr_satp_asid          = csr_dup[6].satp_asid;
@@ -3412,12 +3412,12 @@ module xs_L2TLB_core
   assign u_bitmap__csr_mbmc_BMA          = csr_dup[8].mbmc_BMA;
   assign u_bitmap__sfence_valid          = sfence_dup[9].valid;
   // bitmapcache ← csr 9 / sfence 10（G1 新增）
-  assign u_bitmap_cache__csr_satp_changed      = csr_dup[9].satp_changed;
-  assign u_bitmap_cache__csr_vsatp_changed     = csr_dup[9].vsatp_changed;
-  assign u_bitmap_cache__csr_hgatp_changed     = csr_dup[9].hgatp_changed;
-  assign u_bitmap_cache__csr_priv_virt_changed = csr_dup[9].priv_virt_changed;
-  assign u_bitmap_cache__csr_mbmc_BCLEAR       = csr_dup[9].mbmc_BCLEAR;
-  assign u_bitmap_cache__sfence_valid          = sfence_dup[10].valid;
+  assign u_bitmapcache__csr_satp_changed      = csr_dup[9].satp_changed;
+  assign u_bitmapcache__csr_vsatp_changed     = csr_dup[9].vsatp_changed;
+  assign u_bitmapcache__csr_hgatp_changed     = csr_dup[9].hgatp_changed;
+  assign u_bitmapcache__csr_priv_virt_changed = csr_dup[9].priv_virt_changed;
+  assign u_bitmapcache__csr_mbmc_BCLEAR       = csr_dup[9].mbmc_BCLEAR;
+  assign u_bitmapcache__sfence_valid          = sfence_dup[10].valid;
 
   // ==========================================================================
   // 2. ITLB/DTLB 请求计数与节流（tlbCounter）
@@ -3446,17 +3446,17 @@ module xs_L2TLB_core
   // ★G1★ toFsm_toLLPTW / toFsm_toPTW 在 G0 里被常量折叠成 0（bitmap 特性关闭），
   //   G1 是真信号：bitmap 检查跳转时按 toLLPTW 决定回 LLPTW 还是回 PTW。
   // ==========================================================================
-  wire       cr_valid     = u_page_cache_resp_valid;
-  wire       cr_hit       = u_page_cache_resp_bits_hit;
-  wire       cr_isHptwReq = u_page_cache_resp_bits_isHptwReq;
-  wire       cr_isFirst   = u_page_cache_resp_bits_isFirst;
-  wire       cr_bypassed  = u_page_cache_resp_bits_bypassed;
-  wire       cr_l1Hit     = u_page_cache_resp_bits_toFsm_l1Hit;
-  wire       cr_stage1Hit = u_page_cache_resp_bits_toFsm_stage1Hit;
-  wire [1:0] cr_source    = u_page_cache_resp_bits_req_info_source;
-  wire       cr_prefetch  = u_page_cache_resp_bits_prefetch;
-  wire       cr_jmp_bm    = u_page_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check;
-  wire       cr_bm_toLLPTW= u_page_cache_resp_bits_toFsm_bitmapCheck_toLLPTW;
+  wire       cr_valid     = u_cache_resp_valid;
+  wire       cr_hit       = u_cache_resp_bits_hit;
+  wire       cr_isHptwReq = u_cache_resp_bits_isHptwReq;
+  wire       cr_isFirst   = u_cache_resp_bits_isFirst;
+  wire       cr_bypassed  = u_cache_resp_bits_bypassed;
+  wire       cr_l1Hit     = u_cache_resp_bits_toFsm_l1Hit;
+  wire       cr_stage1Hit = u_cache_resp_bits_toFsm_stage1Hit;
+  wire [1:0] cr_source    = u_cache_resp_bits_req_info_source;
+  wire       cr_prefetch  = u_cache_resp_bits_prefetch;
+  wire       cr_jmp_bm    = u_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check;
+  wire       cr_bm_toLLPTW= u_cache_resp_bits_toFsm_bitmapCheck_toLLPTW;
   wire       toFsm_toLLPTW = cr_jmp_bm &  cr_bm_toLLPTW;
   wire       toFsm_toPTW   = cr_jmp_bm & ~cr_bm_toLLPTW;
   // from_pre：source==2 表示请求来自预取器，用于门控 mq_arb.in_0 与 prefetch.in。
@@ -3472,13 +3472,17 @@ module xs_L2TLB_core
   assign u_arb_cache_in__in_3_valid = tlb0_req_fire | tlb1_req_fire;   // arb1.out.fire
   assign u_arb_cache_in__in_3_bits_req_info_source = {1'b0, u_arb_tlb_chosen};
 
-  wire mq_block = u_miss_queue_out_bits_isLLptw ? ~u_llptw_in_ready : ~u_ptw_req_ready;
-  assign u_arb_cache_in__in_2_valid = u_miss_queue_out_valid & ~mq_block;
-  assign u_miss_queue__out_ready    = u_arb_cache_in_in_2_ready & ~mq_block;
+  wire mq_block = u_missQueue_out_bits_isLLptw ? ~u_llptw_in_ready : ~u_ptw_req_ready;
+  assign u_arb_cache_in__in_2_valid = u_missQueue_out_valid & ~mq_block;
+  assign u_missQueue__out_ready    = u_arb_cache_in_in_2_ready & ~mq_block;
 
   // arb2.out → cache.req
-  assign u_page_cache__req_valid = u_arb_cache_in_out_valid & u_page_cache_req_ready;
-  assign u_page_cache__req_bits_isFirst =
+  // 与门两个操作数的次序照 golden（ready & valid）写（逻辑上无所谓，只为两侧结构一字不差）。
+  // 注：曾假设这处次序是 PtwCache 里 ishptw_1/s2x_info_1 被 FM merge_dup 单边合并的原因，
+  // 第 3 次 FM（evidence/413461528f8f）证伪——改序后单边点仍在；那 3 个点改由
+  // scripts/gen_l2tlb_pins.py 的 merge_pairs() 一对多钉到 golden 侧幸存者。
+  assign u_cache__req_valid = u_cache_req_ready & u_arb_cache_in_out_valid;
+  assign u_cache__req_bits_isFirst =
       (u_arb_cache_in_chosen != IN_ARB_MQ[2:0]) & ~u_arb_cache_in_out_bits_isHptwReq;
 
   // mq_arb.in(0)：cache miss、非预取来源、非 hptwReq，且（被旁路 或 该去的遍历器忙）。
@@ -3524,12 +3528,12 @@ module xs_L2TLB_core
   assign u_llptw__in_valid = cr_valid & ~cr_hit
                            & (toFsm_toLLPTW | (cr_l1Hit & ~toFsm_toPTW))
                            & ~cr_bypassed & ~cr_isHptwReq;
-  assign u_llptw__in_bits_ppn = {6'h0, u_page_cache_resp_bits_toFsm_ppn};
+  assign u_llptw__in_bits_ppn = {6'h0, u_cache_resp_bits_toFsm_ppn};
 
   assign u_ptw__req_valid = cr_valid & ~cr_hit
                           & ((~cr_l1Hit & ~toFsm_toLLPTW) | toFsm_toPTW)
                           & ~cr_bypassed & ~cr_isFirst & ~cr_isHptwReq;
-  assign u_ptw__req_bits_ppn = {6'h0, u_page_cache_resp_bits_toFsm_ppn};
+  assign u_ptw__req_bits_ppn = {6'h0, u_cache_resp_bits_toFsm_ppn};
 
   assign u_hptw__req_valid = cr_valid & ~cr_hit & cr_isHptwReq;
 
@@ -3541,7 +3545,7 @@ module xs_L2TLB_core
   // ==========================================================================
   wire out_ready_cache_s = (cr_source == 2'h1) ? u_merge_arb_1_in_0_ready
                                                : ((|cr_source) | u_merge_arb_0_in_0_ready);
-  assign u_page_cache__resp_ready =
+  assign u_cache__resp_ready =
       (~cr_hit & cr_isHptwReq) ? u_hptw_req_ready :
       (cr_hit & cr_isHptwReq)  ? 1'b1 :
       cr_hit                   ? out_ready_cache_s :
@@ -3666,7 +3670,7 @@ module xs_L2TLB_core
   always_ff @(posedge clock) begin
     if (u_llptw_in_ready & u_llptw__in_valid)
       req_addr_low[u_llptw_mem_enq_ptr] <=
-          addr_low_from_vpn(u_page_cache_resp_bits_req_info_vpn);
+          addr_low_from_vpn(u_cache_resp_bits_req_info_vpn);
     if (mem_a_hs)
       req_addr_low[u_mem_arb_out_bits_id] <= addr_low_from_paddr(u_mem_arb_out_bits_addr);
   end
@@ -3760,8 +3764,8 @@ module xs_L2TLB_core
     if (reset) refill_valid_d <= 1'b0;
     else       refill_valid_d <= refill_valid;
   end
-  assign u_page_cache__refill_valid     = refill_valid_d;
-  assign u_page_cache__refill_bits_ptes = refill_data_flat;
+  assign u_cache__refill_valid     = refill_valid_d;
+  assign u_cache__refill_bits_ptes = refill_data_flat;
 
   ptw_req_info_t refill_req_info_sel;
   always_comb begin
@@ -3802,19 +3806,19 @@ module xs_L2TLB_core
       refill_sel_pte_r[j] <= get_part(refill_data_tmp, req_addr_low[d_src]);
     end
   end
-  assign u_page_cache__refill_bits_req_info_dup_0_vpn     = refill_req_info_r[0].vpn;
-  assign u_page_cache__refill_bits_req_info_dup_0_s2xlate = refill_req_info_r[0].s2xlate;
-  assign u_page_cache__refill_bits_req_info_dup_0_source  = refill_req_info_r[0].source;
-  assign u_page_cache__refill_bits_req_info_dup_1_vpn     = refill_req_info_r[1].vpn;
-  assign u_page_cache__refill_bits_req_info_dup_1_s2xlate = refill_req_info_r[1].s2xlate;
-  assign u_page_cache__refill_bits_req_info_dup_1_source  = refill_req_info_r[1].source;
-  assign u_page_cache__refill_bits_req_info_dup_2_vpn     = refill_req_info_r[2].vpn;
-  assign u_page_cache__refill_bits_req_info_dup_2_s2xlate = refill_req_info_r[2].s2xlate;
-  assign u_page_cache__refill_bits_req_info_dup_2_source  = refill_req_info_r[2].source;
-  assign u_page_cache__refill_bits_level_dup_0   = cache_level_dup_r[0];
-  assign u_page_cache__refill_bits_level_dup_2   = cache_level_dup_r[1];
-  assign u_page_cache__refill_bits_sel_pte_dup_0 = refill_sel_pte_r[0];
-  assign u_page_cache__refill_bits_sel_pte_dup_2 = refill_sel_pte_r[1];
+  assign u_cache__refill_bits_req_info_dup_0_vpn     = refill_req_info_r[0].vpn;
+  assign u_cache__refill_bits_req_info_dup_0_s2xlate = refill_req_info_r[0].s2xlate;
+  assign u_cache__refill_bits_req_info_dup_0_source  = refill_req_info_r[0].source;
+  assign u_cache__refill_bits_req_info_dup_1_vpn     = refill_req_info_r[1].vpn;
+  assign u_cache__refill_bits_req_info_dup_1_s2xlate = refill_req_info_r[1].s2xlate;
+  assign u_cache__refill_bits_req_info_dup_1_source  = refill_req_info_r[1].source;
+  assign u_cache__refill_bits_req_info_dup_2_vpn     = refill_req_info_r[2].vpn;
+  assign u_cache__refill_bits_req_info_dup_2_s2xlate = refill_req_info_r[2].s2xlate;
+  assign u_cache__refill_bits_req_info_dup_2_source  = refill_req_info_r[2].source;
+  assign u_cache__refill_bits_level_dup_0   = cache_level_dup_r[0];
+  assign u_cache__refill_bits_level_dup_2   = cache_level_dup_r[1];
+  assign u_cache__refill_bits_sel_pte_dup_0 = refill_sel_pte_r[0];
+  assign u_cache__refill_bits_sel_pte_dup_2 = refill_sel_pte_r[1];
 
   // levelOH：把 refill_level 译成 5 路独热打一拍。golden 每拍**无条件**赋
   // (cond & refill_valid)（非 refill 拍归 0，不是"保持"），且有复位到 0。
@@ -3831,11 +3835,11 @@ module xs_L2TLB_core
       lvOH_sp_r <= (refill_level != 2'h0) & refill_valid;
     end
   end
-  assign u_page_cache__refill_bits_levelOH_l0 = lvOH_l0_r;
-  assign u_page_cache__refill_bits_levelOH_l1 = lvOH_l1_r;
-  assign u_page_cache__refill_bits_levelOH_l2 = lvOH_l2_r;
-  assign u_page_cache__refill_bits_levelOH_l3 = lvOH_l3_r;
-  assign u_page_cache__refill_bits_levelOH_sp = lvOH_sp_r;
+  assign u_cache__refill_bits_levelOH_l0 = lvOH_l0_r;
+  assign u_cache__refill_bits_levelOH_l1 = lvOH_l1_r;
+  assign u_cache__refill_bits_levelOH_l2 = lvOH_l2_r;
+  assign u_cache__refill_bits_levelOH_l3 = lvOH_l3_r;
+  assign u_cache__refill_bits_levelOH_sp = lvOH_sp_r;
 
   // ==========================================================================
   // 7. HPTW 响应分发
@@ -3869,159 +3873,159 @@ module xs_L2TLB_core
   //   XPROBE cs1=1  cs1.entry[0..7] x=1   而 sec0/mq_s1/marb0/ls1q 全是 0
   ptw_merge_resp_noaf_t cache_stage1;
   // BEGIN GENERATED(cache_stage1)
-  assign cache_stage1.entry[0].tag     = u_page_cache_resp_bits_stage1_entry_0_tag;
-  assign cache_stage1.entry[0].asid    = u_page_cache_resp_bits_stage1_entry_0_asid;
-  assign cache_stage1.entry[0].vmid    = u_page_cache_resp_bits_stage1_entry_0_vmid;
-  assign cache_stage1.entry[0].n       = u_page_cache_resp_bits_stage1_entry_0_n;
-  assign cache_stage1.entry[0].pbmt    = u_page_cache_resp_bits_stage1_entry_0_pbmt;
-  assign cache_stage1.entry[0].perm.d  = u_page_cache_resp_bits_stage1_entry_0_perm_d;
-  assign cache_stage1.entry[0].perm.a  = u_page_cache_resp_bits_stage1_entry_0_perm_a;
-  assign cache_stage1.entry[0].perm.g  = u_page_cache_resp_bits_stage1_entry_0_perm_g;
-  assign cache_stage1.entry[0].perm.u  = u_page_cache_resp_bits_stage1_entry_0_perm_u;
-  assign cache_stage1.entry[0].perm.x  = u_page_cache_resp_bits_stage1_entry_0_perm_x;
-  assign cache_stage1.entry[0].perm.w  = u_page_cache_resp_bits_stage1_entry_0_perm_w;
-  assign cache_stage1.entry[0].perm.r  = u_page_cache_resp_bits_stage1_entry_0_perm_r;
-  assign cache_stage1.entry[0].level   = u_page_cache_resp_bits_stage1_entry_0_level;
-  assign cache_stage1.entry[0].v       = u_page_cache_resp_bits_stage1_entry_0_v;
-  assign cache_stage1.entry[0].ppn     = u_page_cache_resp_bits_stage1_entry_0_ppn;
-  assign cache_stage1.entry[0].ppn_low = u_page_cache_resp_bits_stage1_entry_0_ppn_low;
-  assign cache_stage1.entry[0].pf      = u_page_cache_resp_bits_stage1_entry_0_pf;
-  assign cache_stage1.entry[0].cf      = u_page_cache_resp_bits_stage1_entry_0_cf;
-  assign cache_stage1.entry[1].tag     = u_page_cache_resp_bits_stage1_entry_1_tag;
-  assign cache_stage1.entry[1].asid    = u_page_cache_resp_bits_stage1_entry_1_asid;
-  assign cache_stage1.entry[1].vmid    = u_page_cache_resp_bits_stage1_entry_1_vmid;
-  assign cache_stage1.entry[1].n       = u_page_cache_resp_bits_stage1_entry_1_n;
-  assign cache_stage1.entry[1].pbmt    = u_page_cache_resp_bits_stage1_entry_1_pbmt;
-  assign cache_stage1.entry[1].perm.d  = u_page_cache_resp_bits_stage1_entry_1_perm_d;
-  assign cache_stage1.entry[1].perm.a  = u_page_cache_resp_bits_stage1_entry_1_perm_a;
-  assign cache_stage1.entry[1].perm.g  = u_page_cache_resp_bits_stage1_entry_1_perm_g;
-  assign cache_stage1.entry[1].perm.u  = u_page_cache_resp_bits_stage1_entry_1_perm_u;
-  assign cache_stage1.entry[1].perm.x  = u_page_cache_resp_bits_stage1_entry_1_perm_x;
-  assign cache_stage1.entry[1].perm.w  = u_page_cache_resp_bits_stage1_entry_1_perm_w;
-  assign cache_stage1.entry[1].perm.r  = u_page_cache_resp_bits_stage1_entry_1_perm_r;
-  assign cache_stage1.entry[1].level   = u_page_cache_resp_bits_stage1_entry_1_level;
-  assign cache_stage1.entry[1].v       = u_page_cache_resp_bits_stage1_entry_1_v;
-  assign cache_stage1.entry[1].ppn     = u_page_cache_resp_bits_stage1_entry_1_ppn;
-  assign cache_stage1.entry[1].ppn_low = u_page_cache_resp_bits_stage1_entry_1_ppn_low;
-  assign cache_stage1.entry[1].pf      = u_page_cache_resp_bits_stage1_entry_1_pf;
-  assign cache_stage1.entry[1].cf      = u_page_cache_resp_bits_stage1_entry_1_cf;
-  assign cache_stage1.entry[2].tag     = u_page_cache_resp_bits_stage1_entry_2_tag;
-  assign cache_stage1.entry[2].asid    = u_page_cache_resp_bits_stage1_entry_2_asid;
-  assign cache_stage1.entry[2].vmid    = u_page_cache_resp_bits_stage1_entry_2_vmid;
-  assign cache_stage1.entry[2].n       = u_page_cache_resp_bits_stage1_entry_2_n;
-  assign cache_stage1.entry[2].pbmt    = u_page_cache_resp_bits_stage1_entry_2_pbmt;
-  assign cache_stage1.entry[2].perm.d  = u_page_cache_resp_bits_stage1_entry_2_perm_d;
-  assign cache_stage1.entry[2].perm.a  = u_page_cache_resp_bits_stage1_entry_2_perm_a;
-  assign cache_stage1.entry[2].perm.g  = u_page_cache_resp_bits_stage1_entry_2_perm_g;
-  assign cache_stage1.entry[2].perm.u  = u_page_cache_resp_bits_stage1_entry_2_perm_u;
-  assign cache_stage1.entry[2].perm.x  = u_page_cache_resp_bits_stage1_entry_2_perm_x;
-  assign cache_stage1.entry[2].perm.w  = u_page_cache_resp_bits_stage1_entry_2_perm_w;
-  assign cache_stage1.entry[2].perm.r  = u_page_cache_resp_bits_stage1_entry_2_perm_r;
-  assign cache_stage1.entry[2].level   = u_page_cache_resp_bits_stage1_entry_2_level;
-  assign cache_stage1.entry[2].v       = u_page_cache_resp_bits_stage1_entry_2_v;
-  assign cache_stage1.entry[2].ppn     = u_page_cache_resp_bits_stage1_entry_2_ppn;
-  assign cache_stage1.entry[2].ppn_low = u_page_cache_resp_bits_stage1_entry_2_ppn_low;
-  assign cache_stage1.entry[2].pf      = u_page_cache_resp_bits_stage1_entry_2_pf;
-  assign cache_stage1.entry[2].cf      = u_page_cache_resp_bits_stage1_entry_2_cf;
-  assign cache_stage1.entry[3].tag     = u_page_cache_resp_bits_stage1_entry_3_tag;
-  assign cache_stage1.entry[3].asid    = u_page_cache_resp_bits_stage1_entry_3_asid;
-  assign cache_stage1.entry[3].vmid    = u_page_cache_resp_bits_stage1_entry_3_vmid;
-  assign cache_stage1.entry[3].n       = u_page_cache_resp_bits_stage1_entry_3_n;
-  assign cache_stage1.entry[3].pbmt    = u_page_cache_resp_bits_stage1_entry_3_pbmt;
-  assign cache_stage1.entry[3].perm.d  = u_page_cache_resp_bits_stage1_entry_3_perm_d;
-  assign cache_stage1.entry[3].perm.a  = u_page_cache_resp_bits_stage1_entry_3_perm_a;
-  assign cache_stage1.entry[3].perm.g  = u_page_cache_resp_bits_stage1_entry_3_perm_g;
-  assign cache_stage1.entry[3].perm.u  = u_page_cache_resp_bits_stage1_entry_3_perm_u;
-  assign cache_stage1.entry[3].perm.x  = u_page_cache_resp_bits_stage1_entry_3_perm_x;
-  assign cache_stage1.entry[3].perm.w  = u_page_cache_resp_bits_stage1_entry_3_perm_w;
-  assign cache_stage1.entry[3].perm.r  = u_page_cache_resp_bits_stage1_entry_3_perm_r;
-  assign cache_stage1.entry[3].level   = u_page_cache_resp_bits_stage1_entry_3_level;
-  assign cache_stage1.entry[3].v       = u_page_cache_resp_bits_stage1_entry_3_v;
-  assign cache_stage1.entry[3].ppn     = u_page_cache_resp_bits_stage1_entry_3_ppn;
-  assign cache_stage1.entry[3].ppn_low = u_page_cache_resp_bits_stage1_entry_3_ppn_low;
-  assign cache_stage1.entry[3].pf      = u_page_cache_resp_bits_stage1_entry_3_pf;
-  assign cache_stage1.entry[3].cf      = u_page_cache_resp_bits_stage1_entry_3_cf;
-  assign cache_stage1.entry[4].tag     = u_page_cache_resp_bits_stage1_entry_4_tag;
-  assign cache_stage1.entry[4].asid    = u_page_cache_resp_bits_stage1_entry_4_asid;
-  assign cache_stage1.entry[4].vmid    = u_page_cache_resp_bits_stage1_entry_4_vmid;
-  assign cache_stage1.entry[4].n       = u_page_cache_resp_bits_stage1_entry_4_n;
-  assign cache_stage1.entry[4].pbmt    = u_page_cache_resp_bits_stage1_entry_4_pbmt;
-  assign cache_stage1.entry[4].perm.d  = u_page_cache_resp_bits_stage1_entry_4_perm_d;
-  assign cache_stage1.entry[4].perm.a  = u_page_cache_resp_bits_stage1_entry_4_perm_a;
-  assign cache_stage1.entry[4].perm.g  = u_page_cache_resp_bits_stage1_entry_4_perm_g;
-  assign cache_stage1.entry[4].perm.u  = u_page_cache_resp_bits_stage1_entry_4_perm_u;
-  assign cache_stage1.entry[4].perm.x  = u_page_cache_resp_bits_stage1_entry_4_perm_x;
-  assign cache_stage1.entry[4].perm.w  = u_page_cache_resp_bits_stage1_entry_4_perm_w;
-  assign cache_stage1.entry[4].perm.r  = u_page_cache_resp_bits_stage1_entry_4_perm_r;
-  assign cache_stage1.entry[4].level   = u_page_cache_resp_bits_stage1_entry_4_level;
-  assign cache_stage1.entry[4].v       = u_page_cache_resp_bits_stage1_entry_4_v;
-  assign cache_stage1.entry[4].ppn     = u_page_cache_resp_bits_stage1_entry_4_ppn;
-  assign cache_stage1.entry[4].ppn_low = u_page_cache_resp_bits_stage1_entry_4_ppn_low;
-  assign cache_stage1.entry[4].pf      = u_page_cache_resp_bits_stage1_entry_4_pf;
-  assign cache_stage1.entry[4].cf      = u_page_cache_resp_bits_stage1_entry_4_cf;
-  assign cache_stage1.entry[5].tag     = u_page_cache_resp_bits_stage1_entry_5_tag;
-  assign cache_stage1.entry[5].asid    = u_page_cache_resp_bits_stage1_entry_5_asid;
-  assign cache_stage1.entry[5].vmid    = u_page_cache_resp_bits_stage1_entry_5_vmid;
-  assign cache_stage1.entry[5].n       = u_page_cache_resp_bits_stage1_entry_5_n;
-  assign cache_stage1.entry[5].pbmt    = u_page_cache_resp_bits_stage1_entry_5_pbmt;
-  assign cache_stage1.entry[5].perm.d  = u_page_cache_resp_bits_stage1_entry_5_perm_d;
-  assign cache_stage1.entry[5].perm.a  = u_page_cache_resp_bits_stage1_entry_5_perm_a;
-  assign cache_stage1.entry[5].perm.g  = u_page_cache_resp_bits_stage1_entry_5_perm_g;
-  assign cache_stage1.entry[5].perm.u  = u_page_cache_resp_bits_stage1_entry_5_perm_u;
-  assign cache_stage1.entry[5].perm.x  = u_page_cache_resp_bits_stage1_entry_5_perm_x;
-  assign cache_stage1.entry[5].perm.w  = u_page_cache_resp_bits_stage1_entry_5_perm_w;
-  assign cache_stage1.entry[5].perm.r  = u_page_cache_resp_bits_stage1_entry_5_perm_r;
-  assign cache_stage1.entry[5].level   = u_page_cache_resp_bits_stage1_entry_5_level;
-  assign cache_stage1.entry[5].v       = u_page_cache_resp_bits_stage1_entry_5_v;
-  assign cache_stage1.entry[5].ppn     = u_page_cache_resp_bits_stage1_entry_5_ppn;
-  assign cache_stage1.entry[5].ppn_low = u_page_cache_resp_bits_stage1_entry_5_ppn_low;
-  assign cache_stage1.entry[5].pf      = u_page_cache_resp_bits_stage1_entry_5_pf;
-  assign cache_stage1.entry[5].cf      = u_page_cache_resp_bits_stage1_entry_5_cf;
-  assign cache_stage1.entry[6].tag     = u_page_cache_resp_bits_stage1_entry_6_tag;
-  assign cache_stage1.entry[6].asid    = u_page_cache_resp_bits_stage1_entry_6_asid;
-  assign cache_stage1.entry[6].vmid    = u_page_cache_resp_bits_stage1_entry_6_vmid;
-  assign cache_stage1.entry[6].n       = u_page_cache_resp_bits_stage1_entry_6_n;
-  assign cache_stage1.entry[6].pbmt    = u_page_cache_resp_bits_stage1_entry_6_pbmt;
-  assign cache_stage1.entry[6].perm.d  = u_page_cache_resp_bits_stage1_entry_6_perm_d;
-  assign cache_stage1.entry[6].perm.a  = u_page_cache_resp_bits_stage1_entry_6_perm_a;
-  assign cache_stage1.entry[6].perm.g  = u_page_cache_resp_bits_stage1_entry_6_perm_g;
-  assign cache_stage1.entry[6].perm.u  = u_page_cache_resp_bits_stage1_entry_6_perm_u;
-  assign cache_stage1.entry[6].perm.x  = u_page_cache_resp_bits_stage1_entry_6_perm_x;
-  assign cache_stage1.entry[6].perm.w  = u_page_cache_resp_bits_stage1_entry_6_perm_w;
-  assign cache_stage1.entry[6].perm.r  = u_page_cache_resp_bits_stage1_entry_6_perm_r;
-  assign cache_stage1.entry[6].level   = u_page_cache_resp_bits_stage1_entry_6_level;
-  assign cache_stage1.entry[6].v       = u_page_cache_resp_bits_stage1_entry_6_v;
-  assign cache_stage1.entry[6].ppn     = u_page_cache_resp_bits_stage1_entry_6_ppn;
-  assign cache_stage1.entry[6].ppn_low = u_page_cache_resp_bits_stage1_entry_6_ppn_low;
-  assign cache_stage1.entry[6].pf      = u_page_cache_resp_bits_stage1_entry_6_pf;
-  assign cache_stage1.entry[6].cf      = u_page_cache_resp_bits_stage1_entry_6_cf;
-  assign cache_stage1.entry[7].tag     = u_page_cache_resp_bits_stage1_entry_7_tag;
-  assign cache_stage1.entry[7].asid    = u_page_cache_resp_bits_stage1_entry_7_asid;
-  assign cache_stage1.entry[7].vmid    = u_page_cache_resp_bits_stage1_entry_7_vmid;
-  assign cache_stage1.entry[7].n       = u_page_cache_resp_bits_stage1_entry_7_n;
-  assign cache_stage1.entry[7].pbmt    = u_page_cache_resp_bits_stage1_entry_7_pbmt;
-  assign cache_stage1.entry[7].perm.d  = u_page_cache_resp_bits_stage1_entry_7_perm_d;
-  assign cache_stage1.entry[7].perm.a  = u_page_cache_resp_bits_stage1_entry_7_perm_a;
-  assign cache_stage1.entry[7].perm.g  = u_page_cache_resp_bits_stage1_entry_7_perm_g;
-  assign cache_stage1.entry[7].perm.u  = u_page_cache_resp_bits_stage1_entry_7_perm_u;
-  assign cache_stage1.entry[7].perm.x  = u_page_cache_resp_bits_stage1_entry_7_perm_x;
-  assign cache_stage1.entry[7].perm.w  = u_page_cache_resp_bits_stage1_entry_7_perm_w;
-  assign cache_stage1.entry[7].perm.r  = u_page_cache_resp_bits_stage1_entry_7_perm_r;
-  assign cache_stage1.entry[7].level   = u_page_cache_resp_bits_stage1_entry_7_level;
-  assign cache_stage1.entry[7].v       = u_page_cache_resp_bits_stage1_entry_7_v;
-  assign cache_stage1.entry[7].ppn     = u_page_cache_resp_bits_stage1_entry_7_ppn;
-  assign cache_stage1.entry[7].ppn_low = u_page_cache_resp_bits_stage1_entry_7_ppn_low;
-  assign cache_stage1.entry[7].pf      = u_page_cache_resp_bits_stage1_entry_7_pf;
-  assign cache_stage1.entry[7].cf      = u_page_cache_resp_bits_stage1_entry_7_cf;
-  assign cache_stage1.pteidx[0]        = u_page_cache_resp_bits_stage1_pteidx_0;
-  assign cache_stage1.pteidx[1]        = u_page_cache_resp_bits_stage1_pteidx_1;
-  assign cache_stage1.pteidx[2]        = u_page_cache_resp_bits_stage1_pteidx_2;
-  assign cache_stage1.pteidx[3]        = u_page_cache_resp_bits_stage1_pteidx_3;
-  assign cache_stage1.pteidx[4]        = u_page_cache_resp_bits_stage1_pteidx_4;
-  assign cache_stage1.pteidx[5]        = u_page_cache_resp_bits_stage1_pteidx_5;
-  assign cache_stage1.pteidx[6]        = u_page_cache_resp_bits_stage1_pteidx_6;
-  assign cache_stage1.pteidx[7]        = u_page_cache_resp_bits_stage1_pteidx_7;
-  assign cache_stage1.not_super        = u_page_cache_resp_bits_stage1_not_super;
+  assign cache_stage1.entry[0].tag     = u_cache_resp_bits_stage1_entry_0_tag;
+  assign cache_stage1.entry[0].asid    = u_cache_resp_bits_stage1_entry_0_asid;
+  assign cache_stage1.entry[0].vmid    = u_cache_resp_bits_stage1_entry_0_vmid;
+  assign cache_stage1.entry[0].n       = u_cache_resp_bits_stage1_entry_0_n;
+  assign cache_stage1.entry[0].pbmt    = u_cache_resp_bits_stage1_entry_0_pbmt;
+  assign cache_stage1.entry[0].perm.d  = u_cache_resp_bits_stage1_entry_0_perm_d;
+  assign cache_stage1.entry[0].perm.a  = u_cache_resp_bits_stage1_entry_0_perm_a;
+  assign cache_stage1.entry[0].perm.g  = u_cache_resp_bits_stage1_entry_0_perm_g;
+  assign cache_stage1.entry[0].perm.u  = u_cache_resp_bits_stage1_entry_0_perm_u;
+  assign cache_stage1.entry[0].perm.x  = u_cache_resp_bits_stage1_entry_0_perm_x;
+  assign cache_stage1.entry[0].perm.w  = u_cache_resp_bits_stage1_entry_0_perm_w;
+  assign cache_stage1.entry[0].perm.r  = u_cache_resp_bits_stage1_entry_0_perm_r;
+  assign cache_stage1.entry[0].level   = u_cache_resp_bits_stage1_entry_0_level;
+  assign cache_stage1.entry[0].v       = u_cache_resp_bits_stage1_entry_0_v;
+  assign cache_stage1.entry[0].ppn     = u_cache_resp_bits_stage1_entry_0_ppn;
+  assign cache_stage1.entry[0].ppn_low = u_cache_resp_bits_stage1_entry_0_ppn_low;
+  assign cache_stage1.entry[0].pf      = u_cache_resp_bits_stage1_entry_0_pf;
+  assign cache_stage1.entry[0].cf      = u_cache_resp_bits_stage1_entry_0_cf;
+  assign cache_stage1.entry[1].tag     = u_cache_resp_bits_stage1_entry_1_tag;
+  assign cache_stage1.entry[1].asid    = u_cache_resp_bits_stage1_entry_1_asid;
+  assign cache_stage1.entry[1].vmid    = u_cache_resp_bits_stage1_entry_1_vmid;
+  assign cache_stage1.entry[1].n       = u_cache_resp_bits_stage1_entry_1_n;
+  assign cache_stage1.entry[1].pbmt    = u_cache_resp_bits_stage1_entry_1_pbmt;
+  assign cache_stage1.entry[1].perm.d  = u_cache_resp_bits_stage1_entry_1_perm_d;
+  assign cache_stage1.entry[1].perm.a  = u_cache_resp_bits_stage1_entry_1_perm_a;
+  assign cache_stage1.entry[1].perm.g  = u_cache_resp_bits_stage1_entry_1_perm_g;
+  assign cache_stage1.entry[1].perm.u  = u_cache_resp_bits_stage1_entry_1_perm_u;
+  assign cache_stage1.entry[1].perm.x  = u_cache_resp_bits_stage1_entry_1_perm_x;
+  assign cache_stage1.entry[1].perm.w  = u_cache_resp_bits_stage1_entry_1_perm_w;
+  assign cache_stage1.entry[1].perm.r  = u_cache_resp_bits_stage1_entry_1_perm_r;
+  assign cache_stage1.entry[1].level   = u_cache_resp_bits_stage1_entry_1_level;
+  assign cache_stage1.entry[1].v       = u_cache_resp_bits_stage1_entry_1_v;
+  assign cache_stage1.entry[1].ppn     = u_cache_resp_bits_stage1_entry_1_ppn;
+  assign cache_stage1.entry[1].ppn_low = u_cache_resp_bits_stage1_entry_1_ppn_low;
+  assign cache_stage1.entry[1].pf      = u_cache_resp_bits_stage1_entry_1_pf;
+  assign cache_stage1.entry[1].cf      = u_cache_resp_bits_stage1_entry_1_cf;
+  assign cache_stage1.entry[2].tag     = u_cache_resp_bits_stage1_entry_2_tag;
+  assign cache_stage1.entry[2].asid    = u_cache_resp_bits_stage1_entry_2_asid;
+  assign cache_stage1.entry[2].vmid    = u_cache_resp_bits_stage1_entry_2_vmid;
+  assign cache_stage1.entry[2].n       = u_cache_resp_bits_stage1_entry_2_n;
+  assign cache_stage1.entry[2].pbmt    = u_cache_resp_bits_stage1_entry_2_pbmt;
+  assign cache_stage1.entry[2].perm.d  = u_cache_resp_bits_stage1_entry_2_perm_d;
+  assign cache_stage1.entry[2].perm.a  = u_cache_resp_bits_stage1_entry_2_perm_a;
+  assign cache_stage1.entry[2].perm.g  = u_cache_resp_bits_stage1_entry_2_perm_g;
+  assign cache_stage1.entry[2].perm.u  = u_cache_resp_bits_stage1_entry_2_perm_u;
+  assign cache_stage1.entry[2].perm.x  = u_cache_resp_bits_stage1_entry_2_perm_x;
+  assign cache_stage1.entry[2].perm.w  = u_cache_resp_bits_stage1_entry_2_perm_w;
+  assign cache_stage1.entry[2].perm.r  = u_cache_resp_bits_stage1_entry_2_perm_r;
+  assign cache_stage1.entry[2].level   = u_cache_resp_bits_stage1_entry_2_level;
+  assign cache_stage1.entry[2].v       = u_cache_resp_bits_stage1_entry_2_v;
+  assign cache_stage1.entry[2].ppn     = u_cache_resp_bits_stage1_entry_2_ppn;
+  assign cache_stage1.entry[2].ppn_low = u_cache_resp_bits_stage1_entry_2_ppn_low;
+  assign cache_stage1.entry[2].pf      = u_cache_resp_bits_stage1_entry_2_pf;
+  assign cache_stage1.entry[2].cf      = u_cache_resp_bits_stage1_entry_2_cf;
+  assign cache_stage1.entry[3].tag     = u_cache_resp_bits_stage1_entry_3_tag;
+  assign cache_stage1.entry[3].asid    = u_cache_resp_bits_stage1_entry_3_asid;
+  assign cache_stage1.entry[3].vmid    = u_cache_resp_bits_stage1_entry_3_vmid;
+  assign cache_stage1.entry[3].n       = u_cache_resp_bits_stage1_entry_3_n;
+  assign cache_stage1.entry[3].pbmt    = u_cache_resp_bits_stage1_entry_3_pbmt;
+  assign cache_stage1.entry[3].perm.d  = u_cache_resp_bits_stage1_entry_3_perm_d;
+  assign cache_stage1.entry[3].perm.a  = u_cache_resp_bits_stage1_entry_3_perm_a;
+  assign cache_stage1.entry[3].perm.g  = u_cache_resp_bits_stage1_entry_3_perm_g;
+  assign cache_stage1.entry[3].perm.u  = u_cache_resp_bits_stage1_entry_3_perm_u;
+  assign cache_stage1.entry[3].perm.x  = u_cache_resp_bits_stage1_entry_3_perm_x;
+  assign cache_stage1.entry[3].perm.w  = u_cache_resp_bits_stage1_entry_3_perm_w;
+  assign cache_stage1.entry[3].perm.r  = u_cache_resp_bits_stage1_entry_3_perm_r;
+  assign cache_stage1.entry[3].level   = u_cache_resp_bits_stage1_entry_3_level;
+  assign cache_stage1.entry[3].v       = u_cache_resp_bits_stage1_entry_3_v;
+  assign cache_stage1.entry[3].ppn     = u_cache_resp_bits_stage1_entry_3_ppn;
+  assign cache_stage1.entry[3].ppn_low = u_cache_resp_bits_stage1_entry_3_ppn_low;
+  assign cache_stage1.entry[3].pf      = u_cache_resp_bits_stage1_entry_3_pf;
+  assign cache_stage1.entry[3].cf      = u_cache_resp_bits_stage1_entry_3_cf;
+  assign cache_stage1.entry[4].tag     = u_cache_resp_bits_stage1_entry_4_tag;
+  assign cache_stage1.entry[4].asid    = u_cache_resp_bits_stage1_entry_4_asid;
+  assign cache_stage1.entry[4].vmid    = u_cache_resp_bits_stage1_entry_4_vmid;
+  assign cache_stage1.entry[4].n       = u_cache_resp_bits_stage1_entry_4_n;
+  assign cache_stage1.entry[4].pbmt    = u_cache_resp_bits_stage1_entry_4_pbmt;
+  assign cache_stage1.entry[4].perm.d  = u_cache_resp_bits_stage1_entry_4_perm_d;
+  assign cache_stage1.entry[4].perm.a  = u_cache_resp_bits_stage1_entry_4_perm_a;
+  assign cache_stage1.entry[4].perm.g  = u_cache_resp_bits_stage1_entry_4_perm_g;
+  assign cache_stage1.entry[4].perm.u  = u_cache_resp_bits_stage1_entry_4_perm_u;
+  assign cache_stage1.entry[4].perm.x  = u_cache_resp_bits_stage1_entry_4_perm_x;
+  assign cache_stage1.entry[4].perm.w  = u_cache_resp_bits_stage1_entry_4_perm_w;
+  assign cache_stage1.entry[4].perm.r  = u_cache_resp_bits_stage1_entry_4_perm_r;
+  assign cache_stage1.entry[4].level   = u_cache_resp_bits_stage1_entry_4_level;
+  assign cache_stage1.entry[4].v       = u_cache_resp_bits_stage1_entry_4_v;
+  assign cache_stage1.entry[4].ppn     = u_cache_resp_bits_stage1_entry_4_ppn;
+  assign cache_stage1.entry[4].ppn_low = u_cache_resp_bits_stage1_entry_4_ppn_low;
+  assign cache_stage1.entry[4].pf      = u_cache_resp_bits_stage1_entry_4_pf;
+  assign cache_stage1.entry[4].cf      = u_cache_resp_bits_stage1_entry_4_cf;
+  assign cache_stage1.entry[5].tag     = u_cache_resp_bits_stage1_entry_5_tag;
+  assign cache_stage1.entry[5].asid    = u_cache_resp_bits_stage1_entry_5_asid;
+  assign cache_stage1.entry[5].vmid    = u_cache_resp_bits_stage1_entry_5_vmid;
+  assign cache_stage1.entry[5].n       = u_cache_resp_bits_stage1_entry_5_n;
+  assign cache_stage1.entry[5].pbmt    = u_cache_resp_bits_stage1_entry_5_pbmt;
+  assign cache_stage1.entry[5].perm.d  = u_cache_resp_bits_stage1_entry_5_perm_d;
+  assign cache_stage1.entry[5].perm.a  = u_cache_resp_bits_stage1_entry_5_perm_a;
+  assign cache_stage1.entry[5].perm.g  = u_cache_resp_bits_stage1_entry_5_perm_g;
+  assign cache_stage1.entry[5].perm.u  = u_cache_resp_bits_stage1_entry_5_perm_u;
+  assign cache_stage1.entry[5].perm.x  = u_cache_resp_bits_stage1_entry_5_perm_x;
+  assign cache_stage1.entry[5].perm.w  = u_cache_resp_bits_stage1_entry_5_perm_w;
+  assign cache_stage1.entry[5].perm.r  = u_cache_resp_bits_stage1_entry_5_perm_r;
+  assign cache_stage1.entry[5].level   = u_cache_resp_bits_stage1_entry_5_level;
+  assign cache_stage1.entry[5].v       = u_cache_resp_bits_stage1_entry_5_v;
+  assign cache_stage1.entry[5].ppn     = u_cache_resp_bits_stage1_entry_5_ppn;
+  assign cache_stage1.entry[5].ppn_low = u_cache_resp_bits_stage1_entry_5_ppn_low;
+  assign cache_stage1.entry[5].pf      = u_cache_resp_bits_stage1_entry_5_pf;
+  assign cache_stage1.entry[5].cf      = u_cache_resp_bits_stage1_entry_5_cf;
+  assign cache_stage1.entry[6].tag     = u_cache_resp_bits_stage1_entry_6_tag;
+  assign cache_stage1.entry[6].asid    = u_cache_resp_bits_stage1_entry_6_asid;
+  assign cache_stage1.entry[6].vmid    = u_cache_resp_bits_stage1_entry_6_vmid;
+  assign cache_stage1.entry[6].n       = u_cache_resp_bits_stage1_entry_6_n;
+  assign cache_stage1.entry[6].pbmt    = u_cache_resp_bits_stage1_entry_6_pbmt;
+  assign cache_stage1.entry[6].perm.d  = u_cache_resp_bits_stage1_entry_6_perm_d;
+  assign cache_stage1.entry[6].perm.a  = u_cache_resp_bits_stage1_entry_6_perm_a;
+  assign cache_stage1.entry[6].perm.g  = u_cache_resp_bits_stage1_entry_6_perm_g;
+  assign cache_stage1.entry[6].perm.u  = u_cache_resp_bits_stage1_entry_6_perm_u;
+  assign cache_stage1.entry[6].perm.x  = u_cache_resp_bits_stage1_entry_6_perm_x;
+  assign cache_stage1.entry[6].perm.w  = u_cache_resp_bits_stage1_entry_6_perm_w;
+  assign cache_stage1.entry[6].perm.r  = u_cache_resp_bits_stage1_entry_6_perm_r;
+  assign cache_stage1.entry[6].level   = u_cache_resp_bits_stage1_entry_6_level;
+  assign cache_stage1.entry[6].v       = u_cache_resp_bits_stage1_entry_6_v;
+  assign cache_stage1.entry[6].ppn     = u_cache_resp_bits_stage1_entry_6_ppn;
+  assign cache_stage1.entry[6].ppn_low = u_cache_resp_bits_stage1_entry_6_ppn_low;
+  assign cache_stage1.entry[6].pf      = u_cache_resp_bits_stage1_entry_6_pf;
+  assign cache_stage1.entry[6].cf      = u_cache_resp_bits_stage1_entry_6_cf;
+  assign cache_stage1.entry[7].tag     = u_cache_resp_bits_stage1_entry_7_tag;
+  assign cache_stage1.entry[7].asid    = u_cache_resp_bits_stage1_entry_7_asid;
+  assign cache_stage1.entry[7].vmid    = u_cache_resp_bits_stage1_entry_7_vmid;
+  assign cache_stage1.entry[7].n       = u_cache_resp_bits_stage1_entry_7_n;
+  assign cache_stage1.entry[7].pbmt    = u_cache_resp_bits_stage1_entry_7_pbmt;
+  assign cache_stage1.entry[7].perm.d  = u_cache_resp_bits_stage1_entry_7_perm_d;
+  assign cache_stage1.entry[7].perm.a  = u_cache_resp_bits_stage1_entry_7_perm_a;
+  assign cache_stage1.entry[7].perm.g  = u_cache_resp_bits_stage1_entry_7_perm_g;
+  assign cache_stage1.entry[7].perm.u  = u_cache_resp_bits_stage1_entry_7_perm_u;
+  assign cache_stage1.entry[7].perm.x  = u_cache_resp_bits_stage1_entry_7_perm_x;
+  assign cache_stage1.entry[7].perm.w  = u_cache_resp_bits_stage1_entry_7_perm_w;
+  assign cache_stage1.entry[7].perm.r  = u_cache_resp_bits_stage1_entry_7_perm_r;
+  assign cache_stage1.entry[7].level   = u_cache_resp_bits_stage1_entry_7_level;
+  assign cache_stage1.entry[7].v       = u_cache_resp_bits_stage1_entry_7_v;
+  assign cache_stage1.entry[7].ppn     = u_cache_resp_bits_stage1_entry_7_ppn;
+  assign cache_stage1.entry[7].ppn_low = u_cache_resp_bits_stage1_entry_7_ppn_low;
+  assign cache_stage1.entry[7].pf      = u_cache_resp_bits_stage1_entry_7_pf;
+  assign cache_stage1.entry[7].cf      = u_cache_resp_bits_stage1_entry_7_cf;
+  assign cache_stage1.pteidx[0]        = u_cache_resp_bits_stage1_pteidx_0;
+  assign cache_stage1.pteidx[1]        = u_cache_resp_bits_stage1_pteidx_1;
+  assign cache_stage1.pteidx[2]        = u_cache_resp_bits_stage1_pteidx_2;
+  assign cache_stage1.pteidx[3]        = u_cache_resp_bits_stage1_pteidx_3;
+  assign cache_stage1.pteidx[4]        = u_cache_resp_bits_stage1_pteidx_4;
+  assign cache_stage1.pteidx[5]        = u_cache_resp_bits_stage1_pteidx_5;
+  assign cache_stage1.pteidx[6]        = u_cache_resp_bits_stage1_pteidx_6;
+  assign cache_stage1.pteidx[7]        = u_cache_resp_bits_stage1_pteidx_7;
+  assign cache_stage1.not_super        = u_cache_resp_bits_stage1_not_super;
   // END GENERATED
 
   ptw_merge_resp_noaf_t llptw_stage1_q [LLPTW_SIZE];
@@ -4908,7 +4912,7 @@ module xs_L2TLB_core
   assign u_pmp_chk_hptw__check_env_debug   = csr_dup[0].priv_debug;
   assign u_pmp_chk_bitmap__check_env_debug = csr_dup[0].priv_debug;
 
-  wire cache_resp_fire = cr_valid & u_page_cache__resp_ready;
+  wire cache_resp_fire = cr_valid & u_cache__resp_ready;
   assign u_prefetch__in_valid = cache_resp_fire & ~from_pre & (~cr_hit | cr_prefetch) & cr_isFirst;
 
   // ==========================================================================
@@ -5187,14 +5191,14 @@ module xs_L2TLB_core
   assign perf_src[1]  = u_llptw_perf_1_value;
   assign perf_src[2]  = u_llptw_perf_2_value;
   assign perf_src[3]  = u_llptw_perf_3_value;
-  assign perf_src[4]  = u_page_cache_perf_0_value;
-  assign perf_src[5]  = u_page_cache_perf_1_value;
-  assign perf_src[6]  = u_page_cache_perf_2_value;
-  assign perf_src[7]  = u_page_cache_perf_3_value;
-  assign perf_src[8]  = u_page_cache_perf_4_value;
-  assign perf_src[9]  = u_page_cache_perf_5_value;
-  assign perf_src[10] = u_page_cache_perf_6_value;
-  assign perf_src[11] = u_page_cache_perf_7_value;
+  assign perf_src[4]  = u_cache_perf_0_value;
+  assign perf_src[5]  = u_cache_perf_1_value;
+  assign perf_src[6]  = u_cache_perf_2_value;
+  assign perf_src[7]  = u_cache_perf_3_value;
+  assign perf_src[8]  = u_cache_perf_4_value;
+  assign perf_src[9]  = u_cache_perf_5_value;
+  assign perf_src[10] = u_cache_perf_6_value;
+  assign perf_src[11] = u_cache_perf_7_value;
   assign perf_src[12] = u_ptw_perf_0_value;
   assign perf_src[13] = u_ptw_perf_1_value;
   assign perf_src[14] = u_ptw_perf_2_value;
@@ -7641,7 +7645,7 @@ module xs_L2TLB_core
     .io_pmp_req_bits_addr            (u_bitmap_pmp_req_bits_addr),
     .io_pmp_resp_ld                  (u_pmp_chk_bitmap_resp_ld),
     .io_pmp_resp_mmio                (u_pmp_chk_bitmap_resp_mmio),
-    .io_wakeup_ready                 (u_page_cache_bitmap_wakeup_ready),
+    .io_wakeup_ready                 (u_cache_bitmap_wakeup_ready),
     .io_wakeup_valid                 (u_bitmap_wakeup_valid),
     .io_wakeup_bits_setIndex         (u_bitmap_wakeup_bits_setIndex),
     .io_wakeup_bits_tag              (u_bitmap_wakeup_bits_tag),
@@ -7649,52 +7653,52 @@ module xs_L2TLB_core
     .io_wakeup_bits_pte_index        (u_bitmap_wakeup_bits_pte_index),
     .io_wakeup_bits_check_success    (u_bitmap_wakeup_bits_check_success),
     .io_wakeup_bits_s2xlate          (u_bitmap_wakeup_bits_s2xlate),
-    .io_cache_req_ready              (u_bitmap_cache_req_ready),
+    .io_cache_req_ready              (u_bitmapcache_req_ready),
     .io_cache_req_valid              (u_bitmap_cache_req_valid),
     .io_cache_req_bits_order         (u_bitmap_cache_req_bits_order),
     .io_cache_req_bits_tag           (u_bitmap_cache_req_bits_tag),
     .io_cache_resp_ready             (u_bitmap_cache_resp_ready),
-    .io_cache_resp_valid             (u_bitmap_cache_resp_valid),
-    .io_cache_resp_bits_hit          (u_bitmap_cache_resp_bits_hit),
-    .io_cache_resp_bits_cfs_0        (u_bitmap_cache_resp_bits_cfs_0),
-    .io_cache_resp_bits_cfs_1        (u_bitmap_cache_resp_bits_cfs_1),
-    .io_cache_resp_bits_cfs_2        (u_bitmap_cache_resp_bits_cfs_2),
-    .io_cache_resp_bits_cfs_3        (u_bitmap_cache_resp_bits_cfs_3),
-    .io_cache_resp_bits_cfs_4        (u_bitmap_cache_resp_bits_cfs_4),
-    .io_cache_resp_bits_cfs_5        (u_bitmap_cache_resp_bits_cfs_5),
-    .io_cache_resp_bits_cfs_6        (u_bitmap_cache_resp_bits_cfs_6),
-    .io_cache_resp_bits_cfs_7        (u_bitmap_cache_resp_bits_cfs_7),
-    .io_cache_resp_bits_order        (u_bitmap_cache_resp_bits_order),
+    .io_cache_resp_valid             (u_bitmapcache_resp_valid),
+    .io_cache_resp_bits_hit          (u_bitmapcache_resp_bits_hit),
+    .io_cache_resp_bits_cfs_0        (u_bitmapcache_resp_bits_cfs_0),
+    .io_cache_resp_bits_cfs_1        (u_bitmapcache_resp_bits_cfs_1),
+    .io_cache_resp_bits_cfs_2        (u_bitmapcache_resp_bits_cfs_2),
+    .io_cache_resp_bits_cfs_3        (u_bitmapcache_resp_bits_cfs_3),
+    .io_cache_resp_bits_cfs_4        (u_bitmapcache_resp_bits_cfs_4),
+    .io_cache_resp_bits_cfs_5        (u_bitmapcache_resp_bits_cfs_5),
+    .io_cache_resp_bits_cfs_6        (u_bitmapcache_resp_bits_cfs_6),
+    .io_cache_resp_bits_cfs_7        (u_bitmapcache_resp_bits_cfs_7),
+    .io_cache_resp_bits_order        (u_bitmapcache_resp_bits_order),
     .io_refill_valid                 (u_bitmap_refill_valid),
     .io_refill_bits_tag              (u_bitmap_refill_bits_tag),
     .io_refill_bits_data             (u_bitmap_refill_bits_data)
   );
 
-  BitmapCache u_bitmap_cache (
+  BitmapCache u_bitmapcache (
     .clock                           (clock),
     .reset                           (reset),
-    .io_sfence_valid                 (u_bitmap_cache__sfence_valid),
-    .io_csr_satp_changed             (u_bitmap_cache__csr_satp_changed),
-    .io_csr_vsatp_changed            (u_bitmap_cache__csr_vsatp_changed),
-    .io_csr_hgatp_changed            (u_bitmap_cache__csr_hgatp_changed),
-    .io_csr_mbmc_BCLEAR              (u_bitmap_cache__csr_mbmc_BCLEAR),
-    .io_csr_priv_virt_changed        (u_bitmap_cache__csr_priv_virt_changed),
-    .io_req_ready                    (u_bitmap_cache_req_ready),
+    .io_sfence_valid                 (u_bitmapcache__sfence_valid),
+    .io_csr_satp_changed             (u_bitmapcache__csr_satp_changed),
+    .io_csr_vsatp_changed            (u_bitmapcache__csr_vsatp_changed),
+    .io_csr_hgatp_changed            (u_bitmapcache__csr_hgatp_changed),
+    .io_csr_mbmc_BCLEAR              (u_bitmapcache__csr_mbmc_BCLEAR),
+    .io_csr_priv_virt_changed        (u_bitmapcache__csr_priv_virt_changed),
+    .io_req_ready                    (u_bitmapcache_req_ready),
     .io_req_valid                    (u_bitmap_cache_req_valid),
     .io_req_bits_order               (u_bitmap_cache_req_bits_order),
     .io_req_bits_tag                 (u_bitmap_cache_req_bits_tag),
     .io_resp_ready                   (u_bitmap_cache_resp_ready),
-    .io_resp_valid                   (u_bitmap_cache_resp_valid),
-    .io_resp_bits_hit                (u_bitmap_cache_resp_bits_hit),
-    .io_resp_bits_cfs_0              (u_bitmap_cache_resp_bits_cfs_0),
-    .io_resp_bits_cfs_1              (u_bitmap_cache_resp_bits_cfs_1),
-    .io_resp_bits_cfs_2              (u_bitmap_cache_resp_bits_cfs_2),
-    .io_resp_bits_cfs_3              (u_bitmap_cache_resp_bits_cfs_3),
-    .io_resp_bits_cfs_4              (u_bitmap_cache_resp_bits_cfs_4),
-    .io_resp_bits_cfs_5              (u_bitmap_cache_resp_bits_cfs_5),
-    .io_resp_bits_cfs_6              (u_bitmap_cache_resp_bits_cfs_6),
-    .io_resp_bits_cfs_7              (u_bitmap_cache_resp_bits_cfs_7),
-    .io_resp_bits_order              (u_bitmap_cache_resp_bits_order),
+    .io_resp_valid                   (u_bitmapcache_resp_valid),
+    .io_resp_bits_hit                (u_bitmapcache_resp_bits_hit),
+    .io_resp_bits_cfs_0              (u_bitmapcache_resp_bits_cfs_0),
+    .io_resp_bits_cfs_1              (u_bitmapcache_resp_bits_cfs_1),
+    .io_resp_bits_cfs_2              (u_bitmapcache_resp_bits_cfs_2),
+    .io_resp_bits_cfs_3              (u_bitmapcache_resp_bits_cfs_3),
+    .io_resp_bits_cfs_4              (u_bitmapcache_resp_bits_cfs_4),
+    .io_resp_bits_cfs_5              (u_bitmapcache_resp_bits_cfs_5),
+    .io_resp_bits_cfs_6              (u_bitmapcache_resp_bits_cfs_6),
+    .io_resp_bits_cfs_7              (u_bitmapcache_resp_bits_cfs_7),
+    .io_resp_bits_order              (u_bitmapcache_resp_bits_order),
     .io_refill_valid                 (u_bitmap_refill_valid),
     .io_refill_bits_tag              (u_bitmap_refill_bits_tag),
     .io_refill_bits_data             (u_bitmap_refill_bits_data),
@@ -7740,329 +7744,329 @@ module xs_L2TLB_core
     .cg_bore_cgen                    (cg_bore_cgen)
   );
 
-  L2TlbMissQueue u_miss_queue (
+  L2TlbMissQueue u_missQueue (
     .clock                           (clock),
     .reset                           (reset),
-    .io_sfence_valid                 (u_miss_queue__sfence_valid),
-    .io_csr_satp_changed             (u_miss_queue__csr_satp_changed),
-    .io_csr_vsatp_changed            (u_miss_queue__csr_vsatp_changed),
-    .io_csr_hgatp_changed            (u_miss_queue__csr_hgatp_changed),
-    .io_csr_priv_virt_changed        (u_miss_queue__csr_priv_virt_changed),
-    .io_in_ready                     (u_miss_queue_in_ready),
+    .io_sfence_valid                 (u_missQueue__sfence_valid),
+    .io_csr_satp_changed             (u_missQueue__csr_satp_changed),
+    .io_csr_vsatp_changed            (u_missQueue__csr_vsatp_changed),
+    .io_csr_hgatp_changed            (u_missQueue__csr_hgatp_changed),
+    .io_csr_priv_virt_changed        (u_missQueue__csr_priv_virt_changed),
+    .io_in_ready                     (u_missQueue_in_ready),
     .io_in_valid                     (u_arb_mq_out_valid),
     .io_in_bits_req_info_vpn         (u_arb_mq_out_bits_req_info_vpn),
     .io_in_bits_req_info_s2xlate     (u_arb_mq_out_bits_req_info_s2xlate),
     .io_in_bits_req_info_source      (u_arb_mq_out_bits_req_info_source),
     .io_in_bits_isLLptw              (u_arb_mq_out_bits_isLLptw),
-    .io_out_ready                    (u_miss_queue__out_ready),
-    .io_out_valid                    (u_miss_queue_out_valid),
-    .io_out_bits_req_info_vpn        (u_miss_queue_out_bits_req_info_vpn),
-    .io_out_bits_req_info_s2xlate    (u_miss_queue_out_bits_req_info_s2xlate),
-    .io_out_bits_req_info_source     (u_miss_queue_out_bits_req_info_source),
-    .io_out_bits_isHptwReq           (u_miss_queue_out_bits_isHptwReq),
-    .io_out_bits_isLLptw             (u_miss_queue_out_bits_isLLptw),
-    .io_out_bits_hptwId              (u_miss_queue_out_bits_hptwId)
+    .io_out_ready                    (u_missQueue__out_ready),
+    .io_out_valid                    (u_missQueue_out_valid),
+    .io_out_bits_req_info_vpn        (u_missQueue_out_bits_req_info_vpn),
+    .io_out_bits_req_info_s2xlate    (u_missQueue_out_bits_req_info_s2xlate),
+    .io_out_bits_req_info_source     (u_missQueue_out_bits_req_info_source),
+    .io_out_bits_isHptwReq           (u_missQueue_out_bits_isHptwReq),
+    .io_out_bits_isLLptw             (u_missQueue_out_bits_isLLptw),
+    .io_out_bits_hptwId              (u_missQueue_out_bits_hptwId)
   );
 
-  PtwCache u_page_cache (
+  PtwCache u_cache (
     .clock                           (clock),
     .reset                           (reset),
-    .io_csr_mPBMTE                   (u_page_cache__csr_mPBMTE),
-    .io_csr_hPBMTE                   (u_page_cache__csr_hPBMTE),
-    .io_req_ready                    (u_page_cache_req_ready),
-    .io_req_valid                    (u_page_cache__req_valid),
+    .io_csr_mPBMTE                   (u_cache__csr_mPBMTE),
+    .io_csr_hPBMTE                   (u_cache__csr_hPBMTE),
+    .io_req_ready                    (u_cache_req_ready),
+    .io_req_valid                    (u_cache__req_valid),
     .io_req_bits_req_info_vpn        (u_arb_cache_in_out_bits_req_info_vpn),
     .io_req_bits_req_info_s2xlate    (u_arb_cache_in_out_bits_req_info_s2xlate),
     .io_req_bits_req_info_source     (u_arb_cache_in_out_bits_req_info_source),
-    .io_req_bits_isFirst             (u_page_cache__req_bits_isFirst),
+    .io_req_bits_isFirst             (u_cache__req_bits_isFirst),
     .io_req_bits_isHptwReq           (u_arb_cache_in_out_bits_isHptwReq),
     .io_req_bits_hptwId              (u_arb_cache_in_out_bits_hptwId),
-    .io_resp_ready                   (u_page_cache__resp_ready),
-    .io_resp_valid                   (u_page_cache_resp_valid),
-    .io_resp_bits_req_info_vpn       (u_page_cache_resp_bits_req_info_vpn),
-    .io_resp_bits_req_info_s2xlate   (u_page_cache_resp_bits_req_info_s2xlate),
-    .io_resp_bits_req_info_source    (u_page_cache_resp_bits_req_info_source),
-    .io_resp_bits_isFirst            (u_page_cache_resp_bits_isFirst),
-    .io_resp_bits_hit                (u_page_cache_resp_bits_hit),
-    .io_resp_bits_prefetch           (u_page_cache_resp_bits_prefetch),
-    .io_resp_bits_bypassed           (u_page_cache_resp_bits_bypassed),
-    .io_resp_bits_toFsm_l3Hit        (u_page_cache_resp_bits_toFsm_l3Hit),
-    .io_resp_bits_toFsm_l2Hit        (u_page_cache_resp_bits_toFsm_l2Hit),
-    .io_resp_bits_toFsm_l1Hit        (u_page_cache_resp_bits_toFsm_l1Hit),
-    .io_resp_bits_toFsm_ppn          (u_page_cache_resp_bits_toFsm_ppn),
-    .io_resp_bits_toFsm_stage1Hit    (u_page_cache_resp_bits_toFsm_stage1Hit),
-    .io_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check(u_page_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check),
-    .io_resp_bits_toFsm_bitmapCheck_toLLPTW(u_page_cache_resp_bits_toFsm_bitmapCheck_toLLPTW),
-    .io_resp_bits_toFsm_bitmapCheck_hitway(u_page_cache_resp_bits_toFsm_bitmapCheck_hitway),
-    .io_resp_bits_toFsm_bitmapCheck_pte(u_page_cache_resp_bits_toFsm_bitmapCheck_pte),
-    .io_resp_bits_toFsm_bitmapCheck_ptes_0(u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_0),
-    .io_resp_bits_toFsm_bitmapCheck_ptes_1(u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_1),
-    .io_resp_bits_toFsm_bitmapCheck_ptes_2(u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_2),
-    .io_resp_bits_toFsm_bitmapCheck_ptes_3(u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_3),
-    .io_resp_bits_toFsm_bitmapCheck_ptes_4(u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_4),
-    .io_resp_bits_toFsm_bitmapCheck_ptes_5(u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_5),
-    .io_resp_bits_toFsm_bitmapCheck_ptes_6(u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_6),
-    .io_resp_bits_toFsm_bitmapCheck_ptes_7(u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_7),
-    .io_resp_bits_toFsm_bitmapCheck_cfs_0(u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_0),
-    .io_resp_bits_toFsm_bitmapCheck_cfs_1(u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_1),
-    .io_resp_bits_toFsm_bitmapCheck_cfs_2(u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_2),
-    .io_resp_bits_toFsm_bitmapCheck_cfs_3(u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_3),
-    .io_resp_bits_toFsm_bitmapCheck_cfs_4(u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_4),
-    .io_resp_bits_toFsm_bitmapCheck_cfs_5(u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_5),
-    .io_resp_bits_toFsm_bitmapCheck_cfs_6(u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_6),
-    .io_resp_bits_toFsm_bitmapCheck_cfs_7(u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_7),
-    .io_resp_bits_toFsm_bitmapCheck_SPlevel(u_page_cache_resp_bits_toFsm_bitmapCheck_SPlevel),
-    .io_resp_bits_stage1_entry_0_tag (u_page_cache_resp_bits_stage1_entry_0_tag),
-    .io_resp_bits_stage1_entry_0_asid(u_page_cache_resp_bits_stage1_entry_0_asid),
-    .io_resp_bits_stage1_entry_0_vmid(u_page_cache_resp_bits_stage1_entry_0_vmid),
-    .io_resp_bits_stage1_entry_0_n   (u_page_cache_resp_bits_stage1_entry_0_n),
-    .io_resp_bits_stage1_entry_0_pbmt(u_page_cache_resp_bits_stage1_entry_0_pbmt),
-    .io_resp_bits_stage1_entry_0_perm_d(u_page_cache_resp_bits_stage1_entry_0_perm_d),
-    .io_resp_bits_stage1_entry_0_perm_a(u_page_cache_resp_bits_stage1_entry_0_perm_a),
-    .io_resp_bits_stage1_entry_0_perm_g(u_page_cache_resp_bits_stage1_entry_0_perm_g),
-    .io_resp_bits_stage1_entry_0_perm_u(u_page_cache_resp_bits_stage1_entry_0_perm_u),
-    .io_resp_bits_stage1_entry_0_perm_x(u_page_cache_resp_bits_stage1_entry_0_perm_x),
-    .io_resp_bits_stage1_entry_0_perm_w(u_page_cache_resp_bits_stage1_entry_0_perm_w),
-    .io_resp_bits_stage1_entry_0_perm_r(u_page_cache_resp_bits_stage1_entry_0_perm_r),
-    .io_resp_bits_stage1_entry_0_level(u_page_cache_resp_bits_stage1_entry_0_level),
-    .io_resp_bits_stage1_entry_0_v   (u_page_cache_resp_bits_stage1_entry_0_v),
-    .io_resp_bits_stage1_entry_0_ppn (u_page_cache_resp_bits_stage1_entry_0_ppn),
-    .io_resp_bits_stage1_entry_0_ppn_low(u_page_cache_resp_bits_stage1_entry_0_ppn_low),
-    .io_resp_bits_stage1_entry_0_pf  (u_page_cache_resp_bits_stage1_entry_0_pf),
-    .io_resp_bits_stage1_entry_0_cf  (u_page_cache_resp_bits_stage1_entry_0_cf),
-    .io_resp_bits_stage1_entry_1_tag (u_page_cache_resp_bits_stage1_entry_1_tag),
-    .io_resp_bits_stage1_entry_1_asid(u_page_cache_resp_bits_stage1_entry_1_asid),
-    .io_resp_bits_stage1_entry_1_vmid(u_page_cache_resp_bits_stage1_entry_1_vmid),
-    .io_resp_bits_stage1_entry_1_n   (u_page_cache_resp_bits_stage1_entry_1_n),
-    .io_resp_bits_stage1_entry_1_pbmt(u_page_cache_resp_bits_stage1_entry_1_pbmt),
-    .io_resp_bits_stage1_entry_1_perm_d(u_page_cache_resp_bits_stage1_entry_1_perm_d),
-    .io_resp_bits_stage1_entry_1_perm_a(u_page_cache_resp_bits_stage1_entry_1_perm_a),
-    .io_resp_bits_stage1_entry_1_perm_g(u_page_cache_resp_bits_stage1_entry_1_perm_g),
-    .io_resp_bits_stage1_entry_1_perm_u(u_page_cache_resp_bits_stage1_entry_1_perm_u),
-    .io_resp_bits_stage1_entry_1_perm_x(u_page_cache_resp_bits_stage1_entry_1_perm_x),
-    .io_resp_bits_stage1_entry_1_perm_w(u_page_cache_resp_bits_stage1_entry_1_perm_w),
-    .io_resp_bits_stage1_entry_1_perm_r(u_page_cache_resp_bits_stage1_entry_1_perm_r),
-    .io_resp_bits_stage1_entry_1_level(u_page_cache_resp_bits_stage1_entry_1_level),
-    .io_resp_bits_stage1_entry_1_v   (u_page_cache_resp_bits_stage1_entry_1_v),
-    .io_resp_bits_stage1_entry_1_ppn (u_page_cache_resp_bits_stage1_entry_1_ppn),
-    .io_resp_bits_stage1_entry_1_ppn_low(u_page_cache_resp_bits_stage1_entry_1_ppn_low),
-    .io_resp_bits_stage1_entry_1_pf  (u_page_cache_resp_bits_stage1_entry_1_pf),
-    .io_resp_bits_stage1_entry_1_cf  (u_page_cache_resp_bits_stage1_entry_1_cf),
-    .io_resp_bits_stage1_entry_2_tag (u_page_cache_resp_bits_stage1_entry_2_tag),
-    .io_resp_bits_stage1_entry_2_asid(u_page_cache_resp_bits_stage1_entry_2_asid),
-    .io_resp_bits_stage1_entry_2_vmid(u_page_cache_resp_bits_stage1_entry_2_vmid),
-    .io_resp_bits_stage1_entry_2_n   (u_page_cache_resp_bits_stage1_entry_2_n),
-    .io_resp_bits_stage1_entry_2_pbmt(u_page_cache_resp_bits_stage1_entry_2_pbmt),
-    .io_resp_bits_stage1_entry_2_perm_d(u_page_cache_resp_bits_stage1_entry_2_perm_d),
-    .io_resp_bits_stage1_entry_2_perm_a(u_page_cache_resp_bits_stage1_entry_2_perm_a),
-    .io_resp_bits_stage1_entry_2_perm_g(u_page_cache_resp_bits_stage1_entry_2_perm_g),
-    .io_resp_bits_stage1_entry_2_perm_u(u_page_cache_resp_bits_stage1_entry_2_perm_u),
-    .io_resp_bits_stage1_entry_2_perm_x(u_page_cache_resp_bits_stage1_entry_2_perm_x),
-    .io_resp_bits_stage1_entry_2_perm_w(u_page_cache_resp_bits_stage1_entry_2_perm_w),
-    .io_resp_bits_stage1_entry_2_perm_r(u_page_cache_resp_bits_stage1_entry_2_perm_r),
-    .io_resp_bits_stage1_entry_2_level(u_page_cache_resp_bits_stage1_entry_2_level),
-    .io_resp_bits_stage1_entry_2_v   (u_page_cache_resp_bits_stage1_entry_2_v),
-    .io_resp_bits_stage1_entry_2_ppn (u_page_cache_resp_bits_stage1_entry_2_ppn),
-    .io_resp_bits_stage1_entry_2_ppn_low(u_page_cache_resp_bits_stage1_entry_2_ppn_low),
-    .io_resp_bits_stage1_entry_2_pf  (u_page_cache_resp_bits_stage1_entry_2_pf),
-    .io_resp_bits_stage1_entry_2_cf  (u_page_cache_resp_bits_stage1_entry_2_cf),
-    .io_resp_bits_stage1_entry_3_tag (u_page_cache_resp_bits_stage1_entry_3_tag),
-    .io_resp_bits_stage1_entry_3_asid(u_page_cache_resp_bits_stage1_entry_3_asid),
-    .io_resp_bits_stage1_entry_3_vmid(u_page_cache_resp_bits_stage1_entry_3_vmid),
-    .io_resp_bits_stage1_entry_3_n   (u_page_cache_resp_bits_stage1_entry_3_n),
-    .io_resp_bits_stage1_entry_3_pbmt(u_page_cache_resp_bits_stage1_entry_3_pbmt),
-    .io_resp_bits_stage1_entry_3_perm_d(u_page_cache_resp_bits_stage1_entry_3_perm_d),
-    .io_resp_bits_stage1_entry_3_perm_a(u_page_cache_resp_bits_stage1_entry_3_perm_a),
-    .io_resp_bits_stage1_entry_3_perm_g(u_page_cache_resp_bits_stage1_entry_3_perm_g),
-    .io_resp_bits_stage1_entry_3_perm_u(u_page_cache_resp_bits_stage1_entry_3_perm_u),
-    .io_resp_bits_stage1_entry_3_perm_x(u_page_cache_resp_bits_stage1_entry_3_perm_x),
-    .io_resp_bits_stage1_entry_3_perm_w(u_page_cache_resp_bits_stage1_entry_3_perm_w),
-    .io_resp_bits_stage1_entry_3_perm_r(u_page_cache_resp_bits_stage1_entry_3_perm_r),
-    .io_resp_bits_stage1_entry_3_level(u_page_cache_resp_bits_stage1_entry_3_level),
-    .io_resp_bits_stage1_entry_3_v   (u_page_cache_resp_bits_stage1_entry_3_v),
-    .io_resp_bits_stage1_entry_3_ppn (u_page_cache_resp_bits_stage1_entry_3_ppn),
-    .io_resp_bits_stage1_entry_3_ppn_low(u_page_cache_resp_bits_stage1_entry_3_ppn_low),
-    .io_resp_bits_stage1_entry_3_pf  (u_page_cache_resp_bits_stage1_entry_3_pf),
-    .io_resp_bits_stage1_entry_3_cf  (u_page_cache_resp_bits_stage1_entry_3_cf),
-    .io_resp_bits_stage1_entry_4_tag (u_page_cache_resp_bits_stage1_entry_4_tag),
-    .io_resp_bits_stage1_entry_4_asid(u_page_cache_resp_bits_stage1_entry_4_asid),
-    .io_resp_bits_stage1_entry_4_vmid(u_page_cache_resp_bits_stage1_entry_4_vmid),
-    .io_resp_bits_stage1_entry_4_n   (u_page_cache_resp_bits_stage1_entry_4_n),
-    .io_resp_bits_stage1_entry_4_pbmt(u_page_cache_resp_bits_stage1_entry_4_pbmt),
-    .io_resp_bits_stage1_entry_4_perm_d(u_page_cache_resp_bits_stage1_entry_4_perm_d),
-    .io_resp_bits_stage1_entry_4_perm_a(u_page_cache_resp_bits_stage1_entry_4_perm_a),
-    .io_resp_bits_stage1_entry_4_perm_g(u_page_cache_resp_bits_stage1_entry_4_perm_g),
-    .io_resp_bits_stage1_entry_4_perm_u(u_page_cache_resp_bits_stage1_entry_4_perm_u),
-    .io_resp_bits_stage1_entry_4_perm_x(u_page_cache_resp_bits_stage1_entry_4_perm_x),
-    .io_resp_bits_stage1_entry_4_perm_w(u_page_cache_resp_bits_stage1_entry_4_perm_w),
-    .io_resp_bits_stage1_entry_4_perm_r(u_page_cache_resp_bits_stage1_entry_4_perm_r),
-    .io_resp_bits_stage1_entry_4_level(u_page_cache_resp_bits_stage1_entry_4_level),
-    .io_resp_bits_stage1_entry_4_v   (u_page_cache_resp_bits_stage1_entry_4_v),
-    .io_resp_bits_stage1_entry_4_ppn (u_page_cache_resp_bits_stage1_entry_4_ppn),
-    .io_resp_bits_stage1_entry_4_ppn_low(u_page_cache_resp_bits_stage1_entry_4_ppn_low),
-    .io_resp_bits_stage1_entry_4_pf  (u_page_cache_resp_bits_stage1_entry_4_pf),
-    .io_resp_bits_stage1_entry_4_cf  (u_page_cache_resp_bits_stage1_entry_4_cf),
-    .io_resp_bits_stage1_entry_5_tag (u_page_cache_resp_bits_stage1_entry_5_tag),
-    .io_resp_bits_stage1_entry_5_asid(u_page_cache_resp_bits_stage1_entry_5_asid),
-    .io_resp_bits_stage1_entry_5_vmid(u_page_cache_resp_bits_stage1_entry_5_vmid),
-    .io_resp_bits_stage1_entry_5_n   (u_page_cache_resp_bits_stage1_entry_5_n),
-    .io_resp_bits_stage1_entry_5_pbmt(u_page_cache_resp_bits_stage1_entry_5_pbmt),
-    .io_resp_bits_stage1_entry_5_perm_d(u_page_cache_resp_bits_stage1_entry_5_perm_d),
-    .io_resp_bits_stage1_entry_5_perm_a(u_page_cache_resp_bits_stage1_entry_5_perm_a),
-    .io_resp_bits_stage1_entry_5_perm_g(u_page_cache_resp_bits_stage1_entry_5_perm_g),
-    .io_resp_bits_stage1_entry_5_perm_u(u_page_cache_resp_bits_stage1_entry_5_perm_u),
-    .io_resp_bits_stage1_entry_5_perm_x(u_page_cache_resp_bits_stage1_entry_5_perm_x),
-    .io_resp_bits_stage1_entry_5_perm_w(u_page_cache_resp_bits_stage1_entry_5_perm_w),
-    .io_resp_bits_stage1_entry_5_perm_r(u_page_cache_resp_bits_stage1_entry_5_perm_r),
-    .io_resp_bits_stage1_entry_5_level(u_page_cache_resp_bits_stage1_entry_5_level),
-    .io_resp_bits_stage1_entry_5_v   (u_page_cache_resp_bits_stage1_entry_5_v),
-    .io_resp_bits_stage1_entry_5_ppn (u_page_cache_resp_bits_stage1_entry_5_ppn),
-    .io_resp_bits_stage1_entry_5_ppn_low(u_page_cache_resp_bits_stage1_entry_5_ppn_low),
-    .io_resp_bits_stage1_entry_5_pf  (u_page_cache_resp_bits_stage1_entry_5_pf),
-    .io_resp_bits_stage1_entry_5_cf  (u_page_cache_resp_bits_stage1_entry_5_cf),
-    .io_resp_bits_stage1_entry_6_tag (u_page_cache_resp_bits_stage1_entry_6_tag),
-    .io_resp_bits_stage1_entry_6_asid(u_page_cache_resp_bits_stage1_entry_6_asid),
-    .io_resp_bits_stage1_entry_6_vmid(u_page_cache_resp_bits_stage1_entry_6_vmid),
-    .io_resp_bits_stage1_entry_6_n   (u_page_cache_resp_bits_stage1_entry_6_n),
-    .io_resp_bits_stage1_entry_6_pbmt(u_page_cache_resp_bits_stage1_entry_6_pbmt),
-    .io_resp_bits_stage1_entry_6_perm_d(u_page_cache_resp_bits_stage1_entry_6_perm_d),
-    .io_resp_bits_stage1_entry_6_perm_a(u_page_cache_resp_bits_stage1_entry_6_perm_a),
-    .io_resp_bits_stage1_entry_6_perm_g(u_page_cache_resp_bits_stage1_entry_6_perm_g),
-    .io_resp_bits_stage1_entry_6_perm_u(u_page_cache_resp_bits_stage1_entry_6_perm_u),
-    .io_resp_bits_stage1_entry_6_perm_x(u_page_cache_resp_bits_stage1_entry_6_perm_x),
-    .io_resp_bits_stage1_entry_6_perm_w(u_page_cache_resp_bits_stage1_entry_6_perm_w),
-    .io_resp_bits_stage1_entry_6_perm_r(u_page_cache_resp_bits_stage1_entry_6_perm_r),
-    .io_resp_bits_stage1_entry_6_level(u_page_cache_resp_bits_stage1_entry_6_level),
-    .io_resp_bits_stage1_entry_6_v   (u_page_cache_resp_bits_stage1_entry_6_v),
-    .io_resp_bits_stage1_entry_6_ppn (u_page_cache_resp_bits_stage1_entry_6_ppn),
-    .io_resp_bits_stage1_entry_6_ppn_low(u_page_cache_resp_bits_stage1_entry_6_ppn_low),
-    .io_resp_bits_stage1_entry_6_pf  (u_page_cache_resp_bits_stage1_entry_6_pf),
-    .io_resp_bits_stage1_entry_6_cf  (u_page_cache_resp_bits_stage1_entry_6_cf),
-    .io_resp_bits_stage1_entry_7_tag (u_page_cache_resp_bits_stage1_entry_7_tag),
-    .io_resp_bits_stage1_entry_7_asid(u_page_cache_resp_bits_stage1_entry_7_asid),
-    .io_resp_bits_stage1_entry_7_vmid(u_page_cache_resp_bits_stage1_entry_7_vmid),
-    .io_resp_bits_stage1_entry_7_n   (u_page_cache_resp_bits_stage1_entry_7_n),
-    .io_resp_bits_stage1_entry_7_pbmt(u_page_cache_resp_bits_stage1_entry_7_pbmt),
-    .io_resp_bits_stage1_entry_7_perm_d(u_page_cache_resp_bits_stage1_entry_7_perm_d),
-    .io_resp_bits_stage1_entry_7_perm_a(u_page_cache_resp_bits_stage1_entry_7_perm_a),
-    .io_resp_bits_stage1_entry_7_perm_g(u_page_cache_resp_bits_stage1_entry_7_perm_g),
-    .io_resp_bits_stage1_entry_7_perm_u(u_page_cache_resp_bits_stage1_entry_7_perm_u),
-    .io_resp_bits_stage1_entry_7_perm_x(u_page_cache_resp_bits_stage1_entry_7_perm_x),
-    .io_resp_bits_stage1_entry_7_perm_w(u_page_cache_resp_bits_stage1_entry_7_perm_w),
-    .io_resp_bits_stage1_entry_7_perm_r(u_page_cache_resp_bits_stage1_entry_7_perm_r),
-    .io_resp_bits_stage1_entry_7_level(u_page_cache_resp_bits_stage1_entry_7_level),
-    .io_resp_bits_stage1_entry_7_v   (u_page_cache_resp_bits_stage1_entry_7_v),
-    .io_resp_bits_stage1_entry_7_ppn (u_page_cache_resp_bits_stage1_entry_7_ppn),
-    .io_resp_bits_stage1_entry_7_ppn_low(u_page_cache_resp_bits_stage1_entry_7_ppn_low),
-    .io_resp_bits_stage1_entry_7_pf  (u_page_cache_resp_bits_stage1_entry_7_pf),
-    .io_resp_bits_stage1_entry_7_cf  (u_page_cache_resp_bits_stage1_entry_7_cf),
-    .io_resp_bits_stage1_pteidx_0    (u_page_cache_resp_bits_stage1_pteidx_0),
-    .io_resp_bits_stage1_pteidx_1    (u_page_cache_resp_bits_stage1_pteidx_1),
-    .io_resp_bits_stage1_pteidx_2    (u_page_cache_resp_bits_stage1_pteidx_2),
-    .io_resp_bits_stage1_pteidx_3    (u_page_cache_resp_bits_stage1_pteidx_3),
-    .io_resp_bits_stage1_pteidx_4    (u_page_cache_resp_bits_stage1_pteidx_4),
-    .io_resp_bits_stage1_pteidx_5    (u_page_cache_resp_bits_stage1_pteidx_5),
-    .io_resp_bits_stage1_pteidx_6    (u_page_cache_resp_bits_stage1_pteidx_6),
-    .io_resp_bits_stage1_pteidx_7    (u_page_cache_resp_bits_stage1_pteidx_7),
-    .io_resp_bits_stage1_not_super   (u_page_cache_resp_bits_stage1_not_super),
-    .io_resp_bits_isHptwReq          (u_page_cache_resp_bits_isHptwReq),
-    .io_resp_bits_toHptw_l3Hit       (u_page_cache_resp_bits_toHptw_l3Hit),
-    .io_resp_bits_toHptw_l2Hit       (u_page_cache_resp_bits_toHptw_l2Hit),
-    .io_resp_bits_toHptw_l1Hit       (u_page_cache_resp_bits_toHptw_l1Hit),
-    .io_resp_bits_toHptw_ppn         (u_page_cache_resp_bits_toHptw_ppn),
-    .io_resp_bits_toHptw_id          (u_page_cache_resp_bits_toHptw_id),
-    .io_resp_bits_toHptw_resp_entry_tag(u_page_cache_resp_bits_toHptw_resp_entry_tag),
-    .io_resp_bits_toHptw_resp_entry_vmid(u_page_cache_resp_bits_toHptw_resp_entry_vmid),
-    .io_resp_bits_toHptw_resp_entry_n(u_page_cache_resp_bits_toHptw_resp_entry_n),
-    .io_resp_bits_toHptw_resp_entry_pbmt(u_page_cache_resp_bits_toHptw_resp_entry_pbmt),
-    .io_resp_bits_toHptw_resp_entry_ppn(u_page_cache_resp_bits_toHptw_resp_entry_ppn),
-    .io_resp_bits_toHptw_resp_entry_perm_d(u_page_cache_resp_bits_toHptw_resp_entry_perm_d),
-    .io_resp_bits_toHptw_resp_entry_perm_a(u_page_cache_resp_bits_toHptw_resp_entry_perm_a),
-    .io_resp_bits_toHptw_resp_entry_perm_g(u_page_cache_resp_bits_toHptw_resp_entry_perm_g),
-    .io_resp_bits_toHptw_resp_entry_perm_u(u_page_cache_resp_bits_toHptw_resp_entry_perm_u),
-    .io_resp_bits_toHptw_resp_entry_perm_x(u_page_cache_resp_bits_toHptw_resp_entry_perm_x),
-    .io_resp_bits_toHptw_resp_entry_perm_w(u_page_cache_resp_bits_toHptw_resp_entry_perm_w),
-    .io_resp_bits_toHptw_resp_entry_perm_r(u_page_cache_resp_bits_toHptw_resp_entry_perm_r),
-    .io_resp_bits_toHptw_resp_entry_level(u_page_cache_resp_bits_toHptw_resp_entry_level),
-    .io_resp_bits_toHptw_resp_gpf    (u_page_cache_resp_bits_toHptw_resp_gpf),
-    .io_resp_bits_toHptw_bypassed    (u_page_cache_resp_bits_toHptw_bypassed),
-    .io_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check(u_page_cache_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check),
-    .io_resp_bits_toHptw_bitmapCheck_hitway(u_page_cache_resp_bits_toHptw_bitmapCheck_hitway),
-    .io_resp_bits_toHptw_bitmapCheck_pte(u_page_cache_resp_bits_toHptw_bitmapCheck_pte),
-    .io_resp_bits_toHptw_bitmapCheck_ptes_0(u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_0),
-    .io_resp_bits_toHptw_bitmapCheck_ptes_1(u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_1),
-    .io_resp_bits_toHptw_bitmapCheck_ptes_2(u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_2),
-    .io_resp_bits_toHptw_bitmapCheck_ptes_3(u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_3),
-    .io_resp_bits_toHptw_bitmapCheck_ptes_4(u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_4),
-    .io_resp_bits_toHptw_bitmapCheck_ptes_5(u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_5),
-    .io_resp_bits_toHptw_bitmapCheck_ptes_6(u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_6),
-    .io_resp_bits_toHptw_bitmapCheck_ptes_7(u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_7),
-    .io_resp_bits_toHptw_bitmapCheck_fromSP(u_page_cache_resp_bits_toHptw_bitmapCheck_fromSP),
-    .io_resp_bits_toHptw_bitmapCheck_SPlevel(u_page_cache_resp_bits_toHptw_bitmapCheck_SPlevel),
-    .io_refill_valid                 (u_page_cache__refill_valid),
-    .io_refill_bits_ptes             (u_page_cache__refill_bits_ptes),
-    .io_refill_bits_levelOH_sp       (u_page_cache__refill_bits_levelOH_sp),
-    .io_refill_bits_levelOH_l0       (u_page_cache__refill_bits_levelOH_l0),
-    .io_refill_bits_levelOH_l1       (u_page_cache__refill_bits_levelOH_l1),
-    .io_refill_bits_levelOH_l2       (u_page_cache__refill_bits_levelOH_l2),
-    .io_refill_bits_levelOH_l3       (u_page_cache__refill_bits_levelOH_l3),
-    .io_refill_bits_req_info_dup_0_vpn(u_page_cache__refill_bits_req_info_dup_0_vpn),
-    .io_refill_bits_req_info_dup_0_s2xlate(u_page_cache__refill_bits_req_info_dup_0_s2xlate),
-    .io_refill_bits_req_info_dup_0_source(u_page_cache__refill_bits_req_info_dup_0_source),
-    .io_refill_bits_req_info_dup_1_vpn(u_page_cache__refill_bits_req_info_dup_1_vpn),
-    .io_refill_bits_req_info_dup_1_s2xlate(u_page_cache__refill_bits_req_info_dup_1_s2xlate),
-    .io_refill_bits_req_info_dup_1_source(u_page_cache__refill_bits_req_info_dup_1_source),
-    .io_refill_bits_req_info_dup_2_vpn(u_page_cache__refill_bits_req_info_dup_2_vpn),
-    .io_refill_bits_req_info_dup_2_s2xlate(u_page_cache__refill_bits_req_info_dup_2_s2xlate),
-    .io_refill_bits_req_info_dup_2_source(u_page_cache__refill_bits_req_info_dup_2_source),
-    .io_refill_bits_level_dup_0      (u_page_cache__refill_bits_level_dup_0),
-    .io_refill_bits_level_dup_2      (u_page_cache__refill_bits_level_dup_2),
-    .io_refill_bits_sel_pte_dup_0    (u_page_cache__refill_bits_sel_pte_dup_0),
-    .io_refill_bits_sel_pte_dup_2    (u_page_cache__refill_bits_sel_pte_dup_2),
-    .io_l0_way_info                  (u_page_cache_l0_way_info),
-    .io_sfence_dup_0_valid           (u_page_cache__sfence_dup_0_valid),
-    .io_sfence_dup_0_bits_rs1        (u_page_cache__sfence_dup_0_bits_rs1),
-    .io_sfence_dup_0_bits_rs2        (u_page_cache__sfence_dup_0_bits_rs2),
-    .io_sfence_dup_0_bits_addr       (u_page_cache__sfence_dup_0_bits_addr),
-    .io_sfence_dup_0_bits_id         (u_page_cache__sfence_dup_0_bits_id),
-    .io_sfence_dup_0_bits_hv         (u_page_cache__sfence_dup_0_bits_hv),
-    .io_sfence_dup_0_bits_hg         (u_page_cache__sfence_dup_0_bits_hg),
-    .io_sfence_dup_1_valid           (u_page_cache__sfence_dup_1_valid),
-    .io_sfence_dup_1_bits_id         (u_page_cache__sfence_dup_1_bits_id),
-    .io_sfence_dup_2_valid           (u_page_cache__sfence_dup_2_valid),
-    .io_sfence_dup_2_bits_rs1        (u_page_cache__sfence_dup_2_bits_rs1),
-    .io_sfence_dup_2_bits_rs2        (u_page_cache__sfence_dup_2_bits_rs2),
-    .io_sfence_dup_2_bits_id         (u_page_cache__sfence_dup_2_bits_id),
-    .io_csr_dup_0_satp_asid          (u_page_cache__csr_dup_0_satp_asid),
-    .io_csr_dup_0_satp_changed       (u_page_cache__csr_dup_0_satp_changed),
-    .io_csr_dup_0_vsatp_asid         (u_page_cache__csr_dup_0_vsatp_asid),
-    .io_csr_dup_0_vsatp_changed      (u_page_cache__csr_dup_0_vsatp_changed),
-    .io_csr_dup_0_hgatp_mode         (u_page_cache__csr_dup_0_hgatp_mode),
-    .io_csr_dup_0_hgatp_vmid         (u_page_cache__csr_dup_0_hgatp_vmid),
-    .io_csr_dup_0_hgatp_changed      (u_page_cache__csr_dup_0_hgatp_changed),
-    .io_csr_dup_0_mbmc_BME           (u_page_cache__csr_dup_0_mbmc_BME),
-    .io_csr_dup_0_mbmc_CMODE         (u_page_cache__csr_dup_0_mbmc_CMODE),
-    .io_csr_dup_0_priv_virt          (u_page_cache__csr_dup_0_priv_virt),
-    .io_csr_dup_0_priv_virt_changed  (u_page_cache__csr_dup_0_priv_virt_changed),
-    .io_csr_dup_1_satp_asid          (u_page_cache__csr_dup_1_satp_asid),
-    .io_csr_dup_1_satp_changed       (u_page_cache__csr_dup_1_satp_changed),
-    .io_csr_dup_1_vsatp_asid         (u_page_cache__csr_dup_1_vsatp_asid),
-    .io_csr_dup_1_vsatp_changed      (u_page_cache__csr_dup_1_vsatp_changed),
-    .io_csr_dup_1_hgatp_mode         (u_page_cache__csr_dup_1_hgatp_mode),
-    .io_csr_dup_1_hgatp_vmid         (u_page_cache__csr_dup_1_hgatp_vmid),
-    .io_csr_dup_1_hgatp_changed      (u_page_cache__csr_dup_1_hgatp_changed),
-    .io_csr_dup_1_priv_virt          (u_page_cache__csr_dup_1_priv_virt),
-    .io_csr_dup_1_priv_virt_changed  (u_page_cache__csr_dup_1_priv_virt_changed),
-    .io_csr_dup_2_satp_asid          (u_page_cache__csr_dup_2_satp_asid),
-    .io_csr_dup_2_satp_changed       (u_page_cache__csr_dup_2_satp_changed),
-    .io_csr_dup_2_vsatp_asid         (u_page_cache__csr_dup_2_vsatp_asid),
-    .io_csr_dup_2_vsatp_changed      (u_page_cache__csr_dup_2_vsatp_changed),
-    .io_csr_dup_2_hgatp_mode         (u_page_cache__csr_dup_2_hgatp_mode),
-    .io_csr_dup_2_hgatp_vmid         (u_page_cache__csr_dup_2_hgatp_vmid),
-    .io_csr_dup_2_hgatp_changed      (u_page_cache__csr_dup_2_hgatp_changed),
-    .io_csr_dup_2_priv_virt          (u_page_cache__csr_dup_2_priv_virt),
-    .io_csr_dup_2_priv_virt_changed  (u_page_cache__csr_dup_2_priv_virt_changed),
-    .io_bitmap_wakeup_ready          (u_page_cache_bitmap_wakeup_ready),
+    .io_resp_ready                   (u_cache__resp_ready),
+    .io_resp_valid                   (u_cache_resp_valid),
+    .io_resp_bits_req_info_vpn       (u_cache_resp_bits_req_info_vpn),
+    .io_resp_bits_req_info_s2xlate   (u_cache_resp_bits_req_info_s2xlate),
+    .io_resp_bits_req_info_source    (u_cache_resp_bits_req_info_source),
+    .io_resp_bits_isFirst            (u_cache_resp_bits_isFirst),
+    .io_resp_bits_hit                (u_cache_resp_bits_hit),
+    .io_resp_bits_prefetch           (u_cache_resp_bits_prefetch),
+    .io_resp_bits_bypassed           (u_cache_resp_bits_bypassed),
+    .io_resp_bits_toFsm_l3Hit        (u_cache_resp_bits_toFsm_l3Hit),
+    .io_resp_bits_toFsm_l2Hit        (u_cache_resp_bits_toFsm_l2Hit),
+    .io_resp_bits_toFsm_l1Hit        (u_cache_resp_bits_toFsm_l1Hit),
+    .io_resp_bits_toFsm_ppn          (u_cache_resp_bits_toFsm_ppn),
+    .io_resp_bits_toFsm_stage1Hit    (u_cache_resp_bits_toFsm_stage1Hit),
+    .io_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check(u_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check),
+    .io_resp_bits_toFsm_bitmapCheck_toLLPTW(u_cache_resp_bits_toFsm_bitmapCheck_toLLPTW),
+    .io_resp_bits_toFsm_bitmapCheck_hitway(u_cache_resp_bits_toFsm_bitmapCheck_hitway),
+    .io_resp_bits_toFsm_bitmapCheck_pte(u_cache_resp_bits_toFsm_bitmapCheck_pte),
+    .io_resp_bits_toFsm_bitmapCheck_ptes_0(u_cache_resp_bits_toFsm_bitmapCheck_ptes_0),
+    .io_resp_bits_toFsm_bitmapCheck_ptes_1(u_cache_resp_bits_toFsm_bitmapCheck_ptes_1),
+    .io_resp_bits_toFsm_bitmapCheck_ptes_2(u_cache_resp_bits_toFsm_bitmapCheck_ptes_2),
+    .io_resp_bits_toFsm_bitmapCheck_ptes_3(u_cache_resp_bits_toFsm_bitmapCheck_ptes_3),
+    .io_resp_bits_toFsm_bitmapCheck_ptes_4(u_cache_resp_bits_toFsm_bitmapCheck_ptes_4),
+    .io_resp_bits_toFsm_bitmapCheck_ptes_5(u_cache_resp_bits_toFsm_bitmapCheck_ptes_5),
+    .io_resp_bits_toFsm_bitmapCheck_ptes_6(u_cache_resp_bits_toFsm_bitmapCheck_ptes_6),
+    .io_resp_bits_toFsm_bitmapCheck_ptes_7(u_cache_resp_bits_toFsm_bitmapCheck_ptes_7),
+    .io_resp_bits_toFsm_bitmapCheck_cfs_0(u_cache_resp_bits_toFsm_bitmapCheck_cfs_0),
+    .io_resp_bits_toFsm_bitmapCheck_cfs_1(u_cache_resp_bits_toFsm_bitmapCheck_cfs_1),
+    .io_resp_bits_toFsm_bitmapCheck_cfs_2(u_cache_resp_bits_toFsm_bitmapCheck_cfs_2),
+    .io_resp_bits_toFsm_bitmapCheck_cfs_3(u_cache_resp_bits_toFsm_bitmapCheck_cfs_3),
+    .io_resp_bits_toFsm_bitmapCheck_cfs_4(u_cache_resp_bits_toFsm_bitmapCheck_cfs_4),
+    .io_resp_bits_toFsm_bitmapCheck_cfs_5(u_cache_resp_bits_toFsm_bitmapCheck_cfs_5),
+    .io_resp_bits_toFsm_bitmapCheck_cfs_6(u_cache_resp_bits_toFsm_bitmapCheck_cfs_6),
+    .io_resp_bits_toFsm_bitmapCheck_cfs_7(u_cache_resp_bits_toFsm_bitmapCheck_cfs_7),
+    .io_resp_bits_toFsm_bitmapCheck_SPlevel(u_cache_resp_bits_toFsm_bitmapCheck_SPlevel),
+    .io_resp_bits_stage1_entry_0_tag (u_cache_resp_bits_stage1_entry_0_tag),
+    .io_resp_bits_stage1_entry_0_asid(u_cache_resp_bits_stage1_entry_0_asid),
+    .io_resp_bits_stage1_entry_0_vmid(u_cache_resp_bits_stage1_entry_0_vmid),
+    .io_resp_bits_stage1_entry_0_n   (u_cache_resp_bits_stage1_entry_0_n),
+    .io_resp_bits_stage1_entry_0_pbmt(u_cache_resp_bits_stage1_entry_0_pbmt),
+    .io_resp_bits_stage1_entry_0_perm_d(u_cache_resp_bits_stage1_entry_0_perm_d),
+    .io_resp_bits_stage1_entry_0_perm_a(u_cache_resp_bits_stage1_entry_0_perm_a),
+    .io_resp_bits_stage1_entry_0_perm_g(u_cache_resp_bits_stage1_entry_0_perm_g),
+    .io_resp_bits_stage1_entry_0_perm_u(u_cache_resp_bits_stage1_entry_0_perm_u),
+    .io_resp_bits_stage1_entry_0_perm_x(u_cache_resp_bits_stage1_entry_0_perm_x),
+    .io_resp_bits_stage1_entry_0_perm_w(u_cache_resp_bits_stage1_entry_0_perm_w),
+    .io_resp_bits_stage1_entry_0_perm_r(u_cache_resp_bits_stage1_entry_0_perm_r),
+    .io_resp_bits_stage1_entry_0_level(u_cache_resp_bits_stage1_entry_0_level),
+    .io_resp_bits_stage1_entry_0_v   (u_cache_resp_bits_stage1_entry_0_v),
+    .io_resp_bits_stage1_entry_0_ppn (u_cache_resp_bits_stage1_entry_0_ppn),
+    .io_resp_bits_stage1_entry_0_ppn_low(u_cache_resp_bits_stage1_entry_0_ppn_low),
+    .io_resp_bits_stage1_entry_0_pf  (u_cache_resp_bits_stage1_entry_0_pf),
+    .io_resp_bits_stage1_entry_0_cf  (u_cache_resp_bits_stage1_entry_0_cf),
+    .io_resp_bits_stage1_entry_1_tag (u_cache_resp_bits_stage1_entry_1_tag),
+    .io_resp_bits_stage1_entry_1_asid(u_cache_resp_bits_stage1_entry_1_asid),
+    .io_resp_bits_stage1_entry_1_vmid(u_cache_resp_bits_stage1_entry_1_vmid),
+    .io_resp_bits_stage1_entry_1_n   (u_cache_resp_bits_stage1_entry_1_n),
+    .io_resp_bits_stage1_entry_1_pbmt(u_cache_resp_bits_stage1_entry_1_pbmt),
+    .io_resp_bits_stage1_entry_1_perm_d(u_cache_resp_bits_stage1_entry_1_perm_d),
+    .io_resp_bits_stage1_entry_1_perm_a(u_cache_resp_bits_stage1_entry_1_perm_a),
+    .io_resp_bits_stage1_entry_1_perm_g(u_cache_resp_bits_stage1_entry_1_perm_g),
+    .io_resp_bits_stage1_entry_1_perm_u(u_cache_resp_bits_stage1_entry_1_perm_u),
+    .io_resp_bits_stage1_entry_1_perm_x(u_cache_resp_bits_stage1_entry_1_perm_x),
+    .io_resp_bits_stage1_entry_1_perm_w(u_cache_resp_bits_stage1_entry_1_perm_w),
+    .io_resp_bits_stage1_entry_1_perm_r(u_cache_resp_bits_stage1_entry_1_perm_r),
+    .io_resp_bits_stage1_entry_1_level(u_cache_resp_bits_stage1_entry_1_level),
+    .io_resp_bits_stage1_entry_1_v   (u_cache_resp_bits_stage1_entry_1_v),
+    .io_resp_bits_stage1_entry_1_ppn (u_cache_resp_bits_stage1_entry_1_ppn),
+    .io_resp_bits_stage1_entry_1_ppn_low(u_cache_resp_bits_stage1_entry_1_ppn_low),
+    .io_resp_bits_stage1_entry_1_pf  (u_cache_resp_bits_stage1_entry_1_pf),
+    .io_resp_bits_stage1_entry_1_cf  (u_cache_resp_bits_stage1_entry_1_cf),
+    .io_resp_bits_stage1_entry_2_tag (u_cache_resp_bits_stage1_entry_2_tag),
+    .io_resp_bits_stage1_entry_2_asid(u_cache_resp_bits_stage1_entry_2_asid),
+    .io_resp_bits_stage1_entry_2_vmid(u_cache_resp_bits_stage1_entry_2_vmid),
+    .io_resp_bits_stage1_entry_2_n   (u_cache_resp_bits_stage1_entry_2_n),
+    .io_resp_bits_stage1_entry_2_pbmt(u_cache_resp_bits_stage1_entry_2_pbmt),
+    .io_resp_bits_stage1_entry_2_perm_d(u_cache_resp_bits_stage1_entry_2_perm_d),
+    .io_resp_bits_stage1_entry_2_perm_a(u_cache_resp_bits_stage1_entry_2_perm_a),
+    .io_resp_bits_stage1_entry_2_perm_g(u_cache_resp_bits_stage1_entry_2_perm_g),
+    .io_resp_bits_stage1_entry_2_perm_u(u_cache_resp_bits_stage1_entry_2_perm_u),
+    .io_resp_bits_stage1_entry_2_perm_x(u_cache_resp_bits_stage1_entry_2_perm_x),
+    .io_resp_bits_stage1_entry_2_perm_w(u_cache_resp_bits_stage1_entry_2_perm_w),
+    .io_resp_bits_stage1_entry_2_perm_r(u_cache_resp_bits_stage1_entry_2_perm_r),
+    .io_resp_bits_stage1_entry_2_level(u_cache_resp_bits_stage1_entry_2_level),
+    .io_resp_bits_stage1_entry_2_v   (u_cache_resp_bits_stage1_entry_2_v),
+    .io_resp_bits_stage1_entry_2_ppn (u_cache_resp_bits_stage1_entry_2_ppn),
+    .io_resp_bits_stage1_entry_2_ppn_low(u_cache_resp_bits_stage1_entry_2_ppn_low),
+    .io_resp_bits_stage1_entry_2_pf  (u_cache_resp_bits_stage1_entry_2_pf),
+    .io_resp_bits_stage1_entry_2_cf  (u_cache_resp_bits_stage1_entry_2_cf),
+    .io_resp_bits_stage1_entry_3_tag (u_cache_resp_bits_stage1_entry_3_tag),
+    .io_resp_bits_stage1_entry_3_asid(u_cache_resp_bits_stage1_entry_3_asid),
+    .io_resp_bits_stage1_entry_3_vmid(u_cache_resp_bits_stage1_entry_3_vmid),
+    .io_resp_bits_stage1_entry_3_n   (u_cache_resp_bits_stage1_entry_3_n),
+    .io_resp_bits_stage1_entry_3_pbmt(u_cache_resp_bits_stage1_entry_3_pbmt),
+    .io_resp_bits_stage1_entry_3_perm_d(u_cache_resp_bits_stage1_entry_3_perm_d),
+    .io_resp_bits_stage1_entry_3_perm_a(u_cache_resp_bits_stage1_entry_3_perm_a),
+    .io_resp_bits_stage1_entry_3_perm_g(u_cache_resp_bits_stage1_entry_3_perm_g),
+    .io_resp_bits_stage1_entry_3_perm_u(u_cache_resp_bits_stage1_entry_3_perm_u),
+    .io_resp_bits_stage1_entry_3_perm_x(u_cache_resp_bits_stage1_entry_3_perm_x),
+    .io_resp_bits_stage1_entry_3_perm_w(u_cache_resp_bits_stage1_entry_3_perm_w),
+    .io_resp_bits_stage1_entry_3_perm_r(u_cache_resp_bits_stage1_entry_3_perm_r),
+    .io_resp_bits_stage1_entry_3_level(u_cache_resp_bits_stage1_entry_3_level),
+    .io_resp_bits_stage1_entry_3_v   (u_cache_resp_bits_stage1_entry_3_v),
+    .io_resp_bits_stage1_entry_3_ppn (u_cache_resp_bits_stage1_entry_3_ppn),
+    .io_resp_bits_stage1_entry_3_ppn_low(u_cache_resp_bits_stage1_entry_3_ppn_low),
+    .io_resp_bits_stage1_entry_3_pf  (u_cache_resp_bits_stage1_entry_3_pf),
+    .io_resp_bits_stage1_entry_3_cf  (u_cache_resp_bits_stage1_entry_3_cf),
+    .io_resp_bits_stage1_entry_4_tag (u_cache_resp_bits_stage1_entry_4_tag),
+    .io_resp_bits_stage1_entry_4_asid(u_cache_resp_bits_stage1_entry_4_asid),
+    .io_resp_bits_stage1_entry_4_vmid(u_cache_resp_bits_stage1_entry_4_vmid),
+    .io_resp_bits_stage1_entry_4_n   (u_cache_resp_bits_stage1_entry_4_n),
+    .io_resp_bits_stage1_entry_4_pbmt(u_cache_resp_bits_stage1_entry_4_pbmt),
+    .io_resp_bits_stage1_entry_4_perm_d(u_cache_resp_bits_stage1_entry_4_perm_d),
+    .io_resp_bits_stage1_entry_4_perm_a(u_cache_resp_bits_stage1_entry_4_perm_a),
+    .io_resp_bits_stage1_entry_4_perm_g(u_cache_resp_bits_stage1_entry_4_perm_g),
+    .io_resp_bits_stage1_entry_4_perm_u(u_cache_resp_bits_stage1_entry_4_perm_u),
+    .io_resp_bits_stage1_entry_4_perm_x(u_cache_resp_bits_stage1_entry_4_perm_x),
+    .io_resp_bits_stage1_entry_4_perm_w(u_cache_resp_bits_stage1_entry_4_perm_w),
+    .io_resp_bits_stage1_entry_4_perm_r(u_cache_resp_bits_stage1_entry_4_perm_r),
+    .io_resp_bits_stage1_entry_4_level(u_cache_resp_bits_stage1_entry_4_level),
+    .io_resp_bits_stage1_entry_4_v   (u_cache_resp_bits_stage1_entry_4_v),
+    .io_resp_bits_stage1_entry_4_ppn (u_cache_resp_bits_stage1_entry_4_ppn),
+    .io_resp_bits_stage1_entry_4_ppn_low(u_cache_resp_bits_stage1_entry_4_ppn_low),
+    .io_resp_bits_stage1_entry_4_pf  (u_cache_resp_bits_stage1_entry_4_pf),
+    .io_resp_bits_stage1_entry_4_cf  (u_cache_resp_bits_stage1_entry_4_cf),
+    .io_resp_bits_stage1_entry_5_tag (u_cache_resp_bits_stage1_entry_5_tag),
+    .io_resp_bits_stage1_entry_5_asid(u_cache_resp_bits_stage1_entry_5_asid),
+    .io_resp_bits_stage1_entry_5_vmid(u_cache_resp_bits_stage1_entry_5_vmid),
+    .io_resp_bits_stage1_entry_5_n   (u_cache_resp_bits_stage1_entry_5_n),
+    .io_resp_bits_stage1_entry_5_pbmt(u_cache_resp_bits_stage1_entry_5_pbmt),
+    .io_resp_bits_stage1_entry_5_perm_d(u_cache_resp_bits_stage1_entry_5_perm_d),
+    .io_resp_bits_stage1_entry_5_perm_a(u_cache_resp_bits_stage1_entry_5_perm_a),
+    .io_resp_bits_stage1_entry_5_perm_g(u_cache_resp_bits_stage1_entry_5_perm_g),
+    .io_resp_bits_stage1_entry_5_perm_u(u_cache_resp_bits_stage1_entry_5_perm_u),
+    .io_resp_bits_stage1_entry_5_perm_x(u_cache_resp_bits_stage1_entry_5_perm_x),
+    .io_resp_bits_stage1_entry_5_perm_w(u_cache_resp_bits_stage1_entry_5_perm_w),
+    .io_resp_bits_stage1_entry_5_perm_r(u_cache_resp_bits_stage1_entry_5_perm_r),
+    .io_resp_bits_stage1_entry_5_level(u_cache_resp_bits_stage1_entry_5_level),
+    .io_resp_bits_stage1_entry_5_v   (u_cache_resp_bits_stage1_entry_5_v),
+    .io_resp_bits_stage1_entry_5_ppn (u_cache_resp_bits_stage1_entry_5_ppn),
+    .io_resp_bits_stage1_entry_5_ppn_low(u_cache_resp_bits_stage1_entry_5_ppn_low),
+    .io_resp_bits_stage1_entry_5_pf  (u_cache_resp_bits_stage1_entry_5_pf),
+    .io_resp_bits_stage1_entry_5_cf  (u_cache_resp_bits_stage1_entry_5_cf),
+    .io_resp_bits_stage1_entry_6_tag (u_cache_resp_bits_stage1_entry_6_tag),
+    .io_resp_bits_stage1_entry_6_asid(u_cache_resp_bits_stage1_entry_6_asid),
+    .io_resp_bits_stage1_entry_6_vmid(u_cache_resp_bits_stage1_entry_6_vmid),
+    .io_resp_bits_stage1_entry_6_n   (u_cache_resp_bits_stage1_entry_6_n),
+    .io_resp_bits_stage1_entry_6_pbmt(u_cache_resp_bits_stage1_entry_6_pbmt),
+    .io_resp_bits_stage1_entry_6_perm_d(u_cache_resp_bits_stage1_entry_6_perm_d),
+    .io_resp_bits_stage1_entry_6_perm_a(u_cache_resp_bits_stage1_entry_6_perm_a),
+    .io_resp_bits_stage1_entry_6_perm_g(u_cache_resp_bits_stage1_entry_6_perm_g),
+    .io_resp_bits_stage1_entry_6_perm_u(u_cache_resp_bits_stage1_entry_6_perm_u),
+    .io_resp_bits_stage1_entry_6_perm_x(u_cache_resp_bits_stage1_entry_6_perm_x),
+    .io_resp_bits_stage1_entry_6_perm_w(u_cache_resp_bits_stage1_entry_6_perm_w),
+    .io_resp_bits_stage1_entry_6_perm_r(u_cache_resp_bits_stage1_entry_6_perm_r),
+    .io_resp_bits_stage1_entry_6_level(u_cache_resp_bits_stage1_entry_6_level),
+    .io_resp_bits_stage1_entry_6_v   (u_cache_resp_bits_stage1_entry_6_v),
+    .io_resp_bits_stage1_entry_6_ppn (u_cache_resp_bits_stage1_entry_6_ppn),
+    .io_resp_bits_stage1_entry_6_ppn_low(u_cache_resp_bits_stage1_entry_6_ppn_low),
+    .io_resp_bits_stage1_entry_6_pf  (u_cache_resp_bits_stage1_entry_6_pf),
+    .io_resp_bits_stage1_entry_6_cf  (u_cache_resp_bits_stage1_entry_6_cf),
+    .io_resp_bits_stage1_entry_7_tag (u_cache_resp_bits_stage1_entry_7_tag),
+    .io_resp_bits_stage1_entry_7_asid(u_cache_resp_bits_stage1_entry_7_asid),
+    .io_resp_bits_stage1_entry_7_vmid(u_cache_resp_bits_stage1_entry_7_vmid),
+    .io_resp_bits_stage1_entry_7_n   (u_cache_resp_bits_stage1_entry_7_n),
+    .io_resp_bits_stage1_entry_7_pbmt(u_cache_resp_bits_stage1_entry_7_pbmt),
+    .io_resp_bits_stage1_entry_7_perm_d(u_cache_resp_bits_stage1_entry_7_perm_d),
+    .io_resp_bits_stage1_entry_7_perm_a(u_cache_resp_bits_stage1_entry_7_perm_a),
+    .io_resp_bits_stage1_entry_7_perm_g(u_cache_resp_bits_stage1_entry_7_perm_g),
+    .io_resp_bits_stage1_entry_7_perm_u(u_cache_resp_bits_stage1_entry_7_perm_u),
+    .io_resp_bits_stage1_entry_7_perm_x(u_cache_resp_bits_stage1_entry_7_perm_x),
+    .io_resp_bits_stage1_entry_7_perm_w(u_cache_resp_bits_stage1_entry_7_perm_w),
+    .io_resp_bits_stage1_entry_7_perm_r(u_cache_resp_bits_stage1_entry_7_perm_r),
+    .io_resp_bits_stage1_entry_7_level(u_cache_resp_bits_stage1_entry_7_level),
+    .io_resp_bits_stage1_entry_7_v   (u_cache_resp_bits_stage1_entry_7_v),
+    .io_resp_bits_stage1_entry_7_ppn (u_cache_resp_bits_stage1_entry_7_ppn),
+    .io_resp_bits_stage1_entry_7_ppn_low(u_cache_resp_bits_stage1_entry_7_ppn_low),
+    .io_resp_bits_stage1_entry_7_pf  (u_cache_resp_bits_stage1_entry_7_pf),
+    .io_resp_bits_stage1_entry_7_cf  (u_cache_resp_bits_stage1_entry_7_cf),
+    .io_resp_bits_stage1_pteidx_0    (u_cache_resp_bits_stage1_pteidx_0),
+    .io_resp_bits_stage1_pteidx_1    (u_cache_resp_bits_stage1_pteidx_1),
+    .io_resp_bits_stage1_pteidx_2    (u_cache_resp_bits_stage1_pteidx_2),
+    .io_resp_bits_stage1_pteidx_3    (u_cache_resp_bits_stage1_pteidx_3),
+    .io_resp_bits_stage1_pteidx_4    (u_cache_resp_bits_stage1_pteidx_4),
+    .io_resp_bits_stage1_pteidx_5    (u_cache_resp_bits_stage1_pteidx_5),
+    .io_resp_bits_stage1_pteidx_6    (u_cache_resp_bits_stage1_pteidx_6),
+    .io_resp_bits_stage1_pteidx_7    (u_cache_resp_bits_stage1_pteidx_7),
+    .io_resp_bits_stage1_not_super   (u_cache_resp_bits_stage1_not_super),
+    .io_resp_bits_isHptwReq          (u_cache_resp_bits_isHptwReq),
+    .io_resp_bits_toHptw_l3Hit       (u_cache_resp_bits_toHptw_l3Hit),
+    .io_resp_bits_toHptw_l2Hit       (u_cache_resp_bits_toHptw_l2Hit),
+    .io_resp_bits_toHptw_l1Hit       (u_cache_resp_bits_toHptw_l1Hit),
+    .io_resp_bits_toHptw_ppn         (u_cache_resp_bits_toHptw_ppn),
+    .io_resp_bits_toHptw_id          (u_cache_resp_bits_toHptw_id),
+    .io_resp_bits_toHptw_resp_entry_tag(u_cache_resp_bits_toHptw_resp_entry_tag),
+    .io_resp_bits_toHptw_resp_entry_vmid(u_cache_resp_bits_toHptw_resp_entry_vmid),
+    .io_resp_bits_toHptw_resp_entry_n(u_cache_resp_bits_toHptw_resp_entry_n),
+    .io_resp_bits_toHptw_resp_entry_pbmt(u_cache_resp_bits_toHptw_resp_entry_pbmt),
+    .io_resp_bits_toHptw_resp_entry_ppn(u_cache_resp_bits_toHptw_resp_entry_ppn),
+    .io_resp_bits_toHptw_resp_entry_perm_d(u_cache_resp_bits_toHptw_resp_entry_perm_d),
+    .io_resp_bits_toHptw_resp_entry_perm_a(u_cache_resp_bits_toHptw_resp_entry_perm_a),
+    .io_resp_bits_toHptw_resp_entry_perm_g(u_cache_resp_bits_toHptw_resp_entry_perm_g),
+    .io_resp_bits_toHptw_resp_entry_perm_u(u_cache_resp_bits_toHptw_resp_entry_perm_u),
+    .io_resp_bits_toHptw_resp_entry_perm_x(u_cache_resp_bits_toHptw_resp_entry_perm_x),
+    .io_resp_bits_toHptw_resp_entry_perm_w(u_cache_resp_bits_toHptw_resp_entry_perm_w),
+    .io_resp_bits_toHptw_resp_entry_perm_r(u_cache_resp_bits_toHptw_resp_entry_perm_r),
+    .io_resp_bits_toHptw_resp_entry_level(u_cache_resp_bits_toHptw_resp_entry_level),
+    .io_resp_bits_toHptw_resp_gpf    (u_cache_resp_bits_toHptw_resp_gpf),
+    .io_resp_bits_toHptw_bypassed    (u_cache_resp_bits_toHptw_bypassed),
+    .io_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check(u_cache_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check),
+    .io_resp_bits_toHptw_bitmapCheck_hitway(u_cache_resp_bits_toHptw_bitmapCheck_hitway),
+    .io_resp_bits_toHptw_bitmapCheck_pte(u_cache_resp_bits_toHptw_bitmapCheck_pte),
+    .io_resp_bits_toHptw_bitmapCheck_ptes_0(u_cache_resp_bits_toHptw_bitmapCheck_ptes_0),
+    .io_resp_bits_toHptw_bitmapCheck_ptes_1(u_cache_resp_bits_toHptw_bitmapCheck_ptes_1),
+    .io_resp_bits_toHptw_bitmapCheck_ptes_2(u_cache_resp_bits_toHptw_bitmapCheck_ptes_2),
+    .io_resp_bits_toHptw_bitmapCheck_ptes_3(u_cache_resp_bits_toHptw_bitmapCheck_ptes_3),
+    .io_resp_bits_toHptw_bitmapCheck_ptes_4(u_cache_resp_bits_toHptw_bitmapCheck_ptes_4),
+    .io_resp_bits_toHptw_bitmapCheck_ptes_5(u_cache_resp_bits_toHptw_bitmapCheck_ptes_5),
+    .io_resp_bits_toHptw_bitmapCheck_ptes_6(u_cache_resp_bits_toHptw_bitmapCheck_ptes_6),
+    .io_resp_bits_toHptw_bitmapCheck_ptes_7(u_cache_resp_bits_toHptw_bitmapCheck_ptes_7),
+    .io_resp_bits_toHptw_bitmapCheck_fromSP(u_cache_resp_bits_toHptw_bitmapCheck_fromSP),
+    .io_resp_bits_toHptw_bitmapCheck_SPlevel(u_cache_resp_bits_toHptw_bitmapCheck_SPlevel),
+    .io_refill_valid                 (u_cache__refill_valid),
+    .io_refill_bits_ptes             (u_cache__refill_bits_ptes),
+    .io_refill_bits_levelOH_sp       (u_cache__refill_bits_levelOH_sp),
+    .io_refill_bits_levelOH_l0       (u_cache__refill_bits_levelOH_l0),
+    .io_refill_bits_levelOH_l1       (u_cache__refill_bits_levelOH_l1),
+    .io_refill_bits_levelOH_l2       (u_cache__refill_bits_levelOH_l2),
+    .io_refill_bits_levelOH_l3       (u_cache__refill_bits_levelOH_l3),
+    .io_refill_bits_req_info_dup_0_vpn(u_cache__refill_bits_req_info_dup_0_vpn),
+    .io_refill_bits_req_info_dup_0_s2xlate(u_cache__refill_bits_req_info_dup_0_s2xlate),
+    .io_refill_bits_req_info_dup_0_source(u_cache__refill_bits_req_info_dup_0_source),
+    .io_refill_bits_req_info_dup_1_vpn(u_cache__refill_bits_req_info_dup_1_vpn),
+    .io_refill_bits_req_info_dup_1_s2xlate(u_cache__refill_bits_req_info_dup_1_s2xlate),
+    .io_refill_bits_req_info_dup_1_source(u_cache__refill_bits_req_info_dup_1_source),
+    .io_refill_bits_req_info_dup_2_vpn(u_cache__refill_bits_req_info_dup_2_vpn),
+    .io_refill_bits_req_info_dup_2_s2xlate(u_cache__refill_bits_req_info_dup_2_s2xlate),
+    .io_refill_bits_req_info_dup_2_source(u_cache__refill_bits_req_info_dup_2_source),
+    .io_refill_bits_level_dup_0      (u_cache__refill_bits_level_dup_0),
+    .io_refill_bits_level_dup_2      (u_cache__refill_bits_level_dup_2),
+    .io_refill_bits_sel_pte_dup_0    (u_cache__refill_bits_sel_pte_dup_0),
+    .io_refill_bits_sel_pte_dup_2    (u_cache__refill_bits_sel_pte_dup_2),
+    .io_l0_way_info                  (u_cache_l0_way_info),
+    .io_sfence_dup_0_valid           (u_cache__sfence_dup_0_valid),
+    .io_sfence_dup_0_bits_rs1        (u_cache__sfence_dup_0_bits_rs1),
+    .io_sfence_dup_0_bits_rs2        (u_cache__sfence_dup_0_bits_rs2),
+    .io_sfence_dup_0_bits_addr       (u_cache__sfence_dup_0_bits_addr),
+    .io_sfence_dup_0_bits_id         (u_cache__sfence_dup_0_bits_id),
+    .io_sfence_dup_0_bits_hv         (u_cache__sfence_dup_0_bits_hv),
+    .io_sfence_dup_0_bits_hg         (u_cache__sfence_dup_0_bits_hg),
+    .io_sfence_dup_1_valid           (u_cache__sfence_dup_1_valid),
+    .io_sfence_dup_1_bits_id         (u_cache__sfence_dup_1_bits_id),
+    .io_sfence_dup_2_valid           (u_cache__sfence_dup_2_valid),
+    .io_sfence_dup_2_bits_rs1        (u_cache__sfence_dup_2_bits_rs1),
+    .io_sfence_dup_2_bits_rs2        (u_cache__sfence_dup_2_bits_rs2),
+    .io_sfence_dup_2_bits_id         (u_cache__sfence_dup_2_bits_id),
+    .io_csr_dup_0_satp_asid          (u_cache__csr_dup_0_satp_asid),
+    .io_csr_dup_0_satp_changed       (u_cache__csr_dup_0_satp_changed),
+    .io_csr_dup_0_vsatp_asid         (u_cache__csr_dup_0_vsatp_asid),
+    .io_csr_dup_0_vsatp_changed      (u_cache__csr_dup_0_vsatp_changed),
+    .io_csr_dup_0_hgatp_mode         (u_cache__csr_dup_0_hgatp_mode),
+    .io_csr_dup_0_hgatp_vmid         (u_cache__csr_dup_0_hgatp_vmid),
+    .io_csr_dup_0_hgatp_changed      (u_cache__csr_dup_0_hgatp_changed),
+    .io_csr_dup_0_mbmc_BME           (u_cache__csr_dup_0_mbmc_BME),
+    .io_csr_dup_0_mbmc_CMODE         (u_cache__csr_dup_0_mbmc_CMODE),
+    .io_csr_dup_0_priv_virt          (u_cache__csr_dup_0_priv_virt),
+    .io_csr_dup_0_priv_virt_changed  (u_cache__csr_dup_0_priv_virt_changed),
+    .io_csr_dup_1_satp_asid          (u_cache__csr_dup_1_satp_asid),
+    .io_csr_dup_1_satp_changed       (u_cache__csr_dup_1_satp_changed),
+    .io_csr_dup_1_vsatp_asid         (u_cache__csr_dup_1_vsatp_asid),
+    .io_csr_dup_1_vsatp_changed      (u_cache__csr_dup_1_vsatp_changed),
+    .io_csr_dup_1_hgatp_mode         (u_cache__csr_dup_1_hgatp_mode),
+    .io_csr_dup_1_hgatp_vmid         (u_cache__csr_dup_1_hgatp_vmid),
+    .io_csr_dup_1_hgatp_changed      (u_cache__csr_dup_1_hgatp_changed),
+    .io_csr_dup_1_priv_virt          (u_cache__csr_dup_1_priv_virt),
+    .io_csr_dup_1_priv_virt_changed  (u_cache__csr_dup_1_priv_virt_changed),
+    .io_csr_dup_2_satp_asid          (u_cache__csr_dup_2_satp_asid),
+    .io_csr_dup_2_satp_changed       (u_cache__csr_dup_2_satp_changed),
+    .io_csr_dup_2_vsatp_asid         (u_cache__csr_dup_2_vsatp_asid),
+    .io_csr_dup_2_vsatp_changed      (u_cache__csr_dup_2_vsatp_changed),
+    .io_csr_dup_2_hgatp_mode         (u_cache__csr_dup_2_hgatp_mode),
+    .io_csr_dup_2_hgatp_vmid         (u_cache__csr_dup_2_hgatp_vmid),
+    .io_csr_dup_2_hgatp_changed      (u_cache__csr_dup_2_hgatp_changed),
+    .io_csr_dup_2_priv_virt          (u_cache__csr_dup_2_priv_virt),
+    .io_csr_dup_2_priv_virt_changed  (u_cache__csr_dup_2_priv_virt_changed),
+    .io_bitmap_wakeup_ready          (u_cache_bitmap_wakeup_ready),
     .io_bitmap_wakeup_valid          (u_bitmap_wakeup_valid),
     .io_bitmap_wakeup_bits_setIndex  (u_bitmap_wakeup_bits_setIndex),
     .io_bitmap_wakeup_bits_tag       (u_bitmap_wakeup_bits_tag),
@@ -8070,14 +8074,14 @@ module xs_L2TLB_core
     .io_bitmap_wakeup_bits_pte_index (u_bitmap_wakeup_bits_pte_index),
     .io_bitmap_wakeup_bits_check_success(u_bitmap_wakeup_bits_check_success),
     .io_bitmap_wakeup_bits_s2xlate   (u_bitmap_wakeup_bits_s2xlate),
-    .io_perf_0_value                 (u_page_cache_perf_0_value),
-    .io_perf_1_value                 (u_page_cache_perf_1_value),
-    .io_perf_2_value                 (u_page_cache_perf_2_value),
-    .io_perf_3_value                 (u_page_cache_perf_3_value),
-    .io_perf_4_value                 (u_page_cache_perf_4_value),
-    .io_perf_5_value                 (u_page_cache_perf_5_value),
-    .io_perf_6_value                 (u_page_cache_perf_6_value),
-    .io_perf_7_value                 (u_page_cache_perf_7_value),
+    .io_perf_0_value                 (u_cache_perf_0_value),
+    .io_perf_1_value                 (u_cache_perf_1_value),
+    .io_perf_2_value                 (u_cache_perf_2_value),
+    .io_perf_3_value                 (u_cache_perf_3_value),
+    .io_perf_4_value                 (u_cache_perf_4_value),
+    .io_perf_5_value                 (u_cache_perf_5_value),
+    .io_perf_6_value                 (u_cache_perf_6_value),
+    .io_perf_7_value                 (u_cache_perf_7_value),
     .boreChildrenBd_bore_array       (boreChildrenBd_bore_1_array),
     .boreChildrenBd_bore_all         (boreChildrenBd_bore_1_all),
     .boreChildrenBd_bore_req         (boreChildrenBd_bore_1_req),
@@ -8244,169 +8248,169 @@ module xs_L2TLB_core
     .io_csr_hPBMTE                   (u_ptw__csr_hPBMTE),
     .io_req_ready                    (u_ptw_req_ready),
     .io_req_valid                    (u_ptw__req_valid),
-    .io_req_bits_req_info_vpn        (u_page_cache_resp_bits_req_info_vpn),
-    .io_req_bits_req_info_s2xlate    (u_page_cache_resp_bits_req_info_s2xlate),
-    .io_req_bits_req_info_source     (u_page_cache_resp_bits_req_info_source),
-    .io_req_bits_l3Hit               (u_page_cache_resp_bits_toFsm_l3Hit),
-    .io_req_bits_l2Hit               (u_page_cache_resp_bits_toFsm_l2Hit),
+    .io_req_bits_req_info_vpn        (u_cache_resp_bits_req_info_vpn),
+    .io_req_bits_req_info_s2xlate    (u_cache_resp_bits_req_info_s2xlate),
+    .io_req_bits_req_info_source     (u_cache_resp_bits_req_info_source),
+    .io_req_bits_l3Hit               (u_cache_resp_bits_toFsm_l3Hit),
+    .io_req_bits_l2Hit               (u_cache_resp_bits_toFsm_l2Hit),
     .io_req_bits_ppn                 (u_ptw__req_bits_ppn),
-    .io_req_bits_stage1Hit           (u_page_cache_resp_bits_toFsm_stage1Hit),
-    .io_req_bits_stage1_entry_0_tag  (u_page_cache_resp_bits_stage1_entry_0_tag),
-    .io_req_bits_stage1_entry_0_asid (u_page_cache_resp_bits_stage1_entry_0_asid),
-    .io_req_bits_stage1_entry_0_vmid (u_page_cache_resp_bits_stage1_entry_0_vmid),
-    .io_req_bits_stage1_entry_0_n    (u_page_cache_resp_bits_stage1_entry_0_n),
-    .io_req_bits_stage1_entry_0_pbmt (u_page_cache_resp_bits_stage1_entry_0_pbmt),
-    .io_req_bits_stage1_entry_0_perm_d(u_page_cache_resp_bits_stage1_entry_0_perm_d),
-    .io_req_bits_stage1_entry_0_perm_a(u_page_cache_resp_bits_stage1_entry_0_perm_a),
-    .io_req_bits_stage1_entry_0_perm_g(u_page_cache_resp_bits_stage1_entry_0_perm_g),
-    .io_req_bits_stage1_entry_0_perm_u(u_page_cache_resp_bits_stage1_entry_0_perm_u),
-    .io_req_bits_stage1_entry_0_perm_x(u_page_cache_resp_bits_stage1_entry_0_perm_x),
-    .io_req_bits_stage1_entry_0_perm_w(u_page_cache_resp_bits_stage1_entry_0_perm_w),
-    .io_req_bits_stage1_entry_0_perm_r(u_page_cache_resp_bits_stage1_entry_0_perm_r),
-    .io_req_bits_stage1_entry_0_level(u_page_cache_resp_bits_stage1_entry_0_level),
-    .io_req_bits_stage1_entry_0_v    (u_page_cache_resp_bits_stage1_entry_0_v),
-    .io_req_bits_stage1_entry_0_ppn  (u_page_cache_resp_bits_stage1_entry_0_ppn),
-    .io_req_bits_stage1_entry_0_ppn_low(u_page_cache_resp_bits_stage1_entry_0_ppn_low),
-    .io_req_bits_stage1_entry_0_pf   (u_page_cache_resp_bits_stage1_entry_0_pf),
-    .io_req_bits_stage1_entry_0_cf   (u_page_cache_resp_bits_stage1_entry_0_cf),
-    .io_req_bits_stage1_entry_1_tag  (u_page_cache_resp_bits_stage1_entry_1_tag),
-    .io_req_bits_stage1_entry_1_asid (u_page_cache_resp_bits_stage1_entry_1_asid),
-    .io_req_bits_stage1_entry_1_vmid (u_page_cache_resp_bits_stage1_entry_1_vmid),
-    .io_req_bits_stage1_entry_1_n    (u_page_cache_resp_bits_stage1_entry_1_n),
-    .io_req_bits_stage1_entry_1_pbmt (u_page_cache_resp_bits_stage1_entry_1_pbmt),
-    .io_req_bits_stage1_entry_1_perm_d(u_page_cache_resp_bits_stage1_entry_1_perm_d),
-    .io_req_bits_stage1_entry_1_perm_a(u_page_cache_resp_bits_stage1_entry_1_perm_a),
-    .io_req_bits_stage1_entry_1_perm_g(u_page_cache_resp_bits_stage1_entry_1_perm_g),
-    .io_req_bits_stage1_entry_1_perm_u(u_page_cache_resp_bits_stage1_entry_1_perm_u),
-    .io_req_bits_stage1_entry_1_perm_x(u_page_cache_resp_bits_stage1_entry_1_perm_x),
-    .io_req_bits_stage1_entry_1_perm_w(u_page_cache_resp_bits_stage1_entry_1_perm_w),
-    .io_req_bits_stage1_entry_1_perm_r(u_page_cache_resp_bits_stage1_entry_1_perm_r),
-    .io_req_bits_stage1_entry_1_level(u_page_cache_resp_bits_stage1_entry_1_level),
-    .io_req_bits_stage1_entry_1_v    (u_page_cache_resp_bits_stage1_entry_1_v),
-    .io_req_bits_stage1_entry_1_ppn  (u_page_cache_resp_bits_stage1_entry_1_ppn),
-    .io_req_bits_stage1_entry_1_ppn_low(u_page_cache_resp_bits_stage1_entry_1_ppn_low),
-    .io_req_bits_stage1_entry_1_pf   (u_page_cache_resp_bits_stage1_entry_1_pf),
-    .io_req_bits_stage1_entry_1_cf   (u_page_cache_resp_bits_stage1_entry_1_cf),
-    .io_req_bits_stage1_entry_2_tag  (u_page_cache_resp_bits_stage1_entry_2_tag),
-    .io_req_bits_stage1_entry_2_asid (u_page_cache_resp_bits_stage1_entry_2_asid),
-    .io_req_bits_stage1_entry_2_vmid (u_page_cache_resp_bits_stage1_entry_2_vmid),
-    .io_req_bits_stage1_entry_2_n    (u_page_cache_resp_bits_stage1_entry_2_n),
-    .io_req_bits_stage1_entry_2_pbmt (u_page_cache_resp_bits_stage1_entry_2_pbmt),
-    .io_req_bits_stage1_entry_2_perm_d(u_page_cache_resp_bits_stage1_entry_2_perm_d),
-    .io_req_bits_stage1_entry_2_perm_a(u_page_cache_resp_bits_stage1_entry_2_perm_a),
-    .io_req_bits_stage1_entry_2_perm_g(u_page_cache_resp_bits_stage1_entry_2_perm_g),
-    .io_req_bits_stage1_entry_2_perm_u(u_page_cache_resp_bits_stage1_entry_2_perm_u),
-    .io_req_bits_stage1_entry_2_perm_x(u_page_cache_resp_bits_stage1_entry_2_perm_x),
-    .io_req_bits_stage1_entry_2_perm_w(u_page_cache_resp_bits_stage1_entry_2_perm_w),
-    .io_req_bits_stage1_entry_2_perm_r(u_page_cache_resp_bits_stage1_entry_2_perm_r),
-    .io_req_bits_stage1_entry_2_level(u_page_cache_resp_bits_stage1_entry_2_level),
-    .io_req_bits_stage1_entry_2_v    (u_page_cache_resp_bits_stage1_entry_2_v),
-    .io_req_bits_stage1_entry_2_ppn  (u_page_cache_resp_bits_stage1_entry_2_ppn),
-    .io_req_bits_stage1_entry_2_ppn_low(u_page_cache_resp_bits_stage1_entry_2_ppn_low),
-    .io_req_bits_stage1_entry_2_pf   (u_page_cache_resp_bits_stage1_entry_2_pf),
-    .io_req_bits_stage1_entry_2_cf   (u_page_cache_resp_bits_stage1_entry_2_cf),
-    .io_req_bits_stage1_entry_3_tag  (u_page_cache_resp_bits_stage1_entry_3_tag),
-    .io_req_bits_stage1_entry_3_asid (u_page_cache_resp_bits_stage1_entry_3_asid),
-    .io_req_bits_stage1_entry_3_vmid (u_page_cache_resp_bits_stage1_entry_3_vmid),
-    .io_req_bits_stage1_entry_3_n    (u_page_cache_resp_bits_stage1_entry_3_n),
-    .io_req_bits_stage1_entry_3_pbmt (u_page_cache_resp_bits_stage1_entry_3_pbmt),
-    .io_req_bits_stage1_entry_3_perm_d(u_page_cache_resp_bits_stage1_entry_3_perm_d),
-    .io_req_bits_stage1_entry_3_perm_a(u_page_cache_resp_bits_stage1_entry_3_perm_a),
-    .io_req_bits_stage1_entry_3_perm_g(u_page_cache_resp_bits_stage1_entry_3_perm_g),
-    .io_req_bits_stage1_entry_3_perm_u(u_page_cache_resp_bits_stage1_entry_3_perm_u),
-    .io_req_bits_stage1_entry_3_perm_x(u_page_cache_resp_bits_stage1_entry_3_perm_x),
-    .io_req_bits_stage1_entry_3_perm_w(u_page_cache_resp_bits_stage1_entry_3_perm_w),
-    .io_req_bits_stage1_entry_3_perm_r(u_page_cache_resp_bits_stage1_entry_3_perm_r),
-    .io_req_bits_stage1_entry_3_level(u_page_cache_resp_bits_stage1_entry_3_level),
-    .io_req_bits_stage1_entry_3_v    (u_page_cache_resp_bits_stage1_entry_3_v),
-    .io_req_bits_stage1_entry_3_ppn  (u_page_cache_resp_bits_stage1_entry_3_ppn),
-    .io_req_bits_stage1_entry_3_ppn_low(u_page_cache_resp_bits_stage1_entry_3_ppn_low),
-    .io_req_bits_stage1_entry_3_pf   (u_page_cache_resp_bits_stage1_entry_3_pf),
-    .io_req_bits_stage1_entry_3_cf   (u_page_cache_resp_bits_stage1_entry_3_cf),
-    .io_req_bits_stage1_entry_4_tag  (u_page_cache_resp_bits_stage1_entry_4_tag),
-    .io_req_bits_stage1_entry_4_asid (u_page_cache_resp_bits_stage1_entry_4_asid),
-    .io_req_bits_stage1_entry_4_vmid (u_page_cache_resp_bits_stage1_entry_4_vmid),
-    .io_req_bits_stage1_entry_4_n    (u_page_cache_resp_bits_stage1_entry_4_n),
-    .io_req_bits_stage1_entry_4_pbmt (u_page_cache_resp_bits_stage1_entry_4_pbmt),
-    .io_req_bits_stage1_entry_4_perm_d(u_page_cache_resp_bits_stage1_entry_4_perm_d),
-    .io_req_bits_stage1_entry_4_perm_a(u_page_cache_resp_bits_stage1_entry_4_perm_a),
-    .io_req_bits_stage1_entry_4_perm_g(u_page_cache_resp_bits_stage1_entry_4_perm_g),
-    .io_req_bits_stage1_entry_4_perm_u(u_page_cache_resp_bits_stage1_entry_4_perm_u),
-    .io_req_bits_stage1_entry_4_perm_x(u_page_cache_resp_bits_stage1_entry_4_perm_x),
-    .io_req_bits_stage1_entry_4_perm_w(u_page_cache_resp_bits_stage1_entry_4_perm_w),
-    .io_req_bits_stage1_entry_4_perm_r(u_page_cache_resp_bits_stage1_entry_4_perm_r),
-    .io_req_bits_stage1_entry_4_level(u_page_cache_resp_bits_stage1_entry_4_level),
-    .io_req_bits_stage1_entry_4_v    (u_page_cache_resp_bits_stage1_entry_4_v),
-    .io_req_bits_stage1_entry_4_ppn  (u_page_cache_resp_bits_stage1_entry_4_ppn),
-    .io_req_bits_stage1_entry_4_ppn_low(u_page_cache_resp_bits_stage1_entry_4_ppn_low),
-    .io_req_bits_stage1_entry_4_pf   (u_page_cache_resp_bits_stage1_entry_4_pf),
-    .io_req_bits_stage1_entry_4_cf   (u_page_cache_resp_bits_stage1_entry_4_cf),
-    .io_req_bits_stage1_entry_5_tag  (u_page_cache_resp_bits_stage1_entry_5_tag),
-    .io_req_bits_stage1_entry_5_asid (u_page_cache_resp_bits_stage1_entry_5_asid),
-    .io_req_bits_stage1_entry_5_vmid (u_page_cache_resp_bits_stage1_entry_5_vmid),
-    .io_req_bits_stage1_entry_5_n    (u_page_cache_resp_bits_stage1_entry_5_n),
-    .io_req_bits_stage1_entry_5_pbmt (u_page_cache_resp_bits_stage1_entry_5_pbmt),
-    .io_req_bits_stage1_entry_5_perm_d(u_page_cache_resp_bits_stage1_entry_5_perm_d),
-    .io_req_bits_stage1_entry_5_perm_a(u_page_cache_resp_bits_stage1_entry_5_perm_a),
-    .io_req_bits_stage1_entry_5_perm_g(u_page_cache_resp_bits_stage1_entry_5_perm_g),
-    .io_req_bits_stage1_entry_5_perm_u(u_page_cache_resp_bits_stage1_entry_5_perm_u),
-    .io_req_bits_stage1_entry_5_perm_x(u_page_cache_resp_bits_stage1_entry_5_perm_x),
-    .io_req_bits_stage1_entry_5_perm_w(u_page_cache_resp_bits_stage1_entry_5_perm_w),
-    .io_req_bits_stage1_entry_5_perm_r(u_page_cache_resp_bits_stage1_entry_5_perm_r),
-    .io_req_bits_stage1_entry_5_level(u_page_cache_resp_bits_stage1_entry_5_level),
-    .io_req_bits_stage1_entry_5_v    (u_page_cache_resp_bits_stage1_entry_5_v),
-    .io_req_bits_stage1_entry_5_ppn  (u_page_cache_resp_bits_stage1_entry_5_ppn),
-    .io_req_bits_stage1_entry_5_ppn_low(u_page_cache_resp_bits_stage1_entry_5_ppn_low),
-    .io_req_bits_stage1_entry_5_pf   (u_page_cache_resp_bits_stage1_entry_5_pf),
-    .io_req_bits_stage1_entry_5_cf   (u_page_cache_resp_bits_stage1_entry_5_cf),
-    .io_req_bits_stage1_entry_6_tag  (u_page_cache_resp_bits_stage1_entry_6_tag),
-    .io_req_bits_stage1_entry_6_asid (u_page_cache_resp_bits_stage1_entry_6_asid),
-    .io_req_bits_stage1_entry_6_vmid (u_page_cache_resp_bits_stage1_entry_6_vmid),
-    .io_req_bits_stage1_entry_6_n    (u_page_cache_resp_bits_stage1_entry_6_n),
-    .io_req_bits_stage1_entry_6_pbmt (u_page_cache_resp_bits_stage1_entry_6_pbmt),
-    .io_req_bits_stage1_entry_6_perm_d(u_page_cache_resp_bits_stage1_entry_6_perm_d),
-    .io_req_bits_stage1_entry_6_perm_a(u_page_cache_resp_bits_stage1_entry_6_perm_a),
-    .io_req_bits_stage1_entry_6_perm_g(u_page_cache_resp_bits_stage1_entry_6_perm_g),
-    .io_req_bits_stage1_entry_6_perm_u(u_page_cache_resp_bits_stage1_entry_6_perm_u),
-    .io_req_bits_stage1_entry_6_perm_x(u_page_cache_resp_bits_stage1_entry_6_perm_x),
-    .io_req_bits_stage1_entry_6_perm_w(u_page_cache_resp_bits_stage1_entry_6_perm_w),
-    .io_req_bits_stage1_entry_6_perm_r(u_page_cache_resp_bits_stage1_entry_6_perm_r),
-    .io_req_bits_stage1_entry_6_level(u_page_cache_resp_bits_stage1_entry_6_level),
-    .io_req_bits_stage1_entry_6_v    (u_page_cache_resp_bits_stage1_entry_6_v),
-    .io_req_bits_stage1_entry_6_ppn  (u_page_cache_resp_bits_stage1_entry_6_ppn),
-    .io_req_bits_stage1_entry_6_ppn_low(u_page_cache_resp_bits_stage1_entry_6_ppn_low),
-    .io_req_bits_stage1_entry_6_pf   (u_page_cache_resp_bits_stage1_entry_6_pf),
-    .io_req_bits_stage1_entry_6_cf   (u_page_cache_resp_bits_stage1_entry_6_cf),
-    .io_req_bits_stage1_entry_7_tag  (u_page_cache_resp_bits_stage1_entry_7_tag),
-    .io_req_bits_stage1_entry_7_asid (u_page_cache_resp_bits_stage1_entry_7_asid),
-    .io_req_bits_stage1_entry_7_vmid (u_page_cache_resp_bits_stage1_entry_7_vmid),
-    .io_req_bits_stage1_entry_7_n    (u_page_cache_resp_bits_stage1_entry_7_n),
-    .io_req_bits_stage1_entry_7_pbmt (u_page_cache_resp_bits_stage1_entry_7_pbmt),
-    .io_req_bits_stage1_entry_7_perm_d(u_page_cache_resp_bits_stage1_entry_7_perm_d),
-    .io_req_bits_stage1_entry_7_perm_a(u_page_cache_resp_bits_stage1_entry_7_perm_a),
-    .io_req_bits_stage1_entry_7_perm_g(u_page_cache_resp_bits_stage1_entry_7_perm_g),
-    .io_req_bits_stage1_entry_7_perm_u(u_page_cache_resp_bits_stage1_entry_7_perm_u),
-    .io_req_bits_stage1_entry_7_perm_x(u_page_cache_resp_bits_stage1_entry_7_perm_x),
-    .io_req_bits_stage1_entry_7_perm_w(u_page_cache_resp_bits_stage1_entry_7_perm_w),
-    .io_req_bits_stage1_entry_7_perm_r(u_page_cache_resp_bits_stage1_entry_7_perm_r),
-    .io_req_bits_stage1_entry_7_level(u_page_cache_resp_bits_stage1_entry_7_level),
-    .io_req_bits_stage1_entry_7_v    (u_page_cache_resp_bits_stage1_entry_7_v),
-    .io_req_bits_stage1_entry_7_ppn  (u_page_cache_resp_bits_stage1_entry_7_ppn),
-    .io_req_bits_stage1_entry_7_ppn_low(u_page_cache_resp_bits_stage1_entry_7_ppn_low),
-    .io_req_bits_stage1_entry_7_pf   (u_page_cache_resp_bits_stage1_entry_7_pf),
-    .io_req_bits_stage1_entry_7_cf   (u_page_cache_resp_bits_stage1_entry_7_cf),
-    .io_req_bits_stage1_pteidx_0     (u_page_cache_resp_bits_stage1_pteidx_0),
-    .io_req_bits_stage1_pteidx_1     (u_page_cache_resp_bits_stage1_pteidx_1),
-    .io_req_bits_stage1_pteidx_2     (u_page_cache_resp_bits_stage1_pteidx_2),
-    .io_req_bits_stage1_pteidx_3     (u_page_cache_resp_bits_stage1_pteidx_3),
-    .io_req_bits_stage1_pteidx_4     (u_page_cache_resp_bits_stage1_pteidx_4),
-    .io_req_bits_stage1_pteidx_5     (u_page_cache_resp_bits_stage1_pteidx_5),
-    .io_req_bits_stage1_pteidx_6     (u_page_cache_resp_bits_stage1_pteidx_6),
-    .io_req_bits_stage1_pteidx_7     (u_page_cache_resp_bits_stage1_pteidx_7),
-    .io_req_bits_stage1_not_super    (u_page_cache_resp_bits_stage1_not_super),
-    .io_req_bits_bitmapCheck_jmp_bitmap_check(u_page_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check),
-    .io_req_bits_bitmapCheck_pte     (u_page_cache_resp_bits_toFsm_bitmapCheck_pte),
-    .io_req_bits_bitmapCheck_SPlevel (u_page_cache_resp_bits_toFsm_bitmapCheck_SPlevel),
+    .io_req_bits_stage1Hit           (u_cache_resp_bits_toFsm_stage1Hit),
+    .io_req_bits_stage1_entry_0_tag  (u_cache_resp_bits_stage1_entry_0_tag),
+    .io_req_bits_stage1_entry_0_asid (u_cache_resp_bits_stage1_entry_0_asid),
+    .io_req_bits_stage1_entry_0_vmid (u_cache_resp_bits_stage1_entry_0_vmid),
+    .io_req_bits_stage1_entry_0_n    (u_cache_resp_bits_stage1_entry_0_n),
+    .io_req_bits_stage1_entry_0_pbmt (u_cache_resp_bits_stage1_entry_0_pbmt),
+    .io_req_bits_stage1_entry_0_perm_d(u_cache_resp_bits_stage1_entry_0_perm_d),
+    .io_req_bits_stage1_entry_0_perm_a(u_cache_resp_bits_stage1_entry_0_perm_a),
+    .io_req_bits_stage1_entry_0_perm_g(u_cache_resp_bits_stage1_entry_0_perm_g),
+    .io_req_bits_stage1_entry_0_perm_u(u_cache_resp_bits_stage1_entry_0_perm_u),
+    .io_req_bits_stage1_entry_0_perm_x(u_cache_resp_bits_stage1_entry_0_perm_x),
+    .io_req_bits_stage1_entry_0_perm_w(u_cache_resp_bits_stage1_entry_0_perm_w),
+    .io_req_bits_stage1_entry_0_perm_r(u_cache_resp_bits_stage1_entry_0_perm_r),
+    .io_req_bits_stage1_entry_0_level(u_cache_resp_bits_stage1_entry_0_level),
+    .io_req_bits_stage1_entry_0_v    (u_cache_resp_bits_stage1_entry_0_v),
+    .io_req_bits_stage1_entry_0_ppn  (u_cache_resp_bits_stage1_entry_0_ppn),
+    .io_req_bits_stage1_entry_0_ppn_low(u_cache_resp_bits_stage1_entry_0_ppn_low),
+    .io_req_bits_stage1_entry_0_pf   (u_cache_resp_bits_stage1_entry_0_pf),
+    .io_req_bits_stage1_entry_0_cf   (u_cache_resp_bits_stage1_entry_0_cf),
+    .io_req_bits_stage1_entry_1_tag  (u_cache_resp_bits_stage1_entry_1_tag),
+    .io_req_bits_stage1_entry_1_asid (u_cache_resp_bits_stage1_entry_1_asid),
+    .io_req_bits_stage1_entry_1_vmid (u_cache_resp_bits_stage1_entry_1_vmid),
+    .io_req_bits_stage1_entry_1_n    (u_cache_resp_bits_stage1_entry_1_n),
+    .io_req_bits_stage1_entry_1_pbmt (u_cache_resp_bits_stage1_entry_1_pbmt),
+    .io_req_bits_stage1_entry_1_perm_d(u_cache_resp_bits_stage1_entry_1_perm_d),
+    .io_req_bits_stage1_entry_1_perm_a(u_cache_resp_bits_stage1_entry_1_perm_a),
+    .io_req_bits_stage1_entry_1_perm_g(u_cache_resp_bits_stage1_entry_1_perm_g),
+    .io_req_bits_stage1_entry_1_perm_u(u_cache_resp_bits_stage1_entry_1_perm_u),
+    .io_req_bits_stage1_entry_1_perm_x(u_cache_resp_bits_stage1_entry_1_perm_x),
+    .io_req_bits_stage1_entry_1_perm_w(u_cache_resp_bits_stage1_entry_1_perm_w),
+    .io_req_bits_stage1_entry_1_perm_r(u_cache_resp_bits_stage1_entry_1_perm_r),
+    .io_req_bits_stage1_entry_1_level(u_cache_resp_bits_stage1_entry_1_level),
+    .io_req_bits_stage1_entry_1_v    (u_cache_resp_bits_stage1_entry_1_v),
+    .io_req_bits_stage1_entry_1_ppn  (u_cache_resp_bits_stage1_entry_1_ppn),
+    .io_req_bits_stage1_entry_1_ppn_low(u_cache_resp_bits_stage1_entry_1_ppn_low),
+    .io_req_bits_stage1_entry_1_pf   (u_cache_resp_bits_stage1_entry_1_pf),
+    .io_req_bits_stage1_entry_1_cf   (u_cache_resp_bits_stage1_entry_1_cf),
+    .io_req_bits_stage1_entry_2_tag  (u_cache_resp_bits_stage1_entry_2_tag),
+    .io_req_bits_stage1_entry_2_asid (u_cache_resp_bits_stage1_entry_2_asid),
+    .io_req_bits_stage1_entry_2_vmid (u_cache_resp_bits_stage1_entry_2_vmid),
+    .io_req_bits_stage1_entry_2_n    (u_cache_resp_bits_stage1_entry_2_n),
+    .io_req_bits_stage1_entry_2_pbmt (u_cache_resp_bits_stage1_entry_2_pbmt),
+    .io_req_bits_stage1_entry_2_perm_d(u_cache_resp_bits_stage1_entry_2_perm_d),
+    .io_req_bits_stage1_entry_2_perm_a(u_cache_resp_bits_stage1_entry_2_perm_a),
+    .io_req_bits_stage1_entry_2_perm_g(u_cache_resp_bits_stage1_entry_2_perm_g),
+    .io_req_bits_stage1_entry_2_perm_u(u_cache_resp_bits_stage1_entry_2_perm_u),
+    .io_req_bits_stage1_entry_2_perm_x(u_cache_resp_bits_stage1_entry_2_perm_x),
+    .io_req_bits_stage1_entry_2_perm_w(u_cache_resp_bits_stage1_entry_2_perm_w),
+    .io_req_bits_stage1_entry_2_perm_r(u_cache_resp_bits_stage1_entry_2_perm_r),
+    .io_req_bits_stage1_entry_2_level(u_cache_resp_bits_stage1_entry_2_level),
+    .io_req_bits_stage1_entry_2_v    (u_cache_resp_bits_stage1_entry_2_v),
+    .io_req_bits_stage1_entry_2_ppn  (u_cache_resp_bits_stage1_entry_2_ppn),
+    .io_req_bits_stage1_entry_2_ppn_low(u_cache_resp_bits_stage1_entry_2_ppn_low),
+    .io_req_bits_stage1_entry_2_pf   (u_cache_resp_bits_stage1_entry_2_pf),
+    .io_req_bits_stage1_entry_2_cf   (u_cache_resp_bits_stage1_entry_2_cf),
+    .io_req_bits_stage1_entry_3_tag  (u_cache_resp_bits_stage1_entry_3_tag),
+    .io_req_bits_stage1_entry_3_asid (u_cache_resp_bits_stage1_entry_3_asid),
+    .io_req_bits_stage1_entry_3_vmid (u_cache_resp_bits_stage1_entry_3_vmid),
+    .io_req_bits_stage1_entry_3_n    (u_cache_resp_bits_stage1_entry_3_n),
+    .io_req_bits_stage1_entry_3_pbmt (u_cache_resp_bits_stage1_entry_3_pbmt),
+    .io_req_bits_stage1_entry_3_perm_d(u_cache_resp_bits_stage1_entry_3_perm_d),
+    .io_req_bits_stage1_entry_3_perm_a(u_cache_resp_bits_stage1_entry_3_perm_a),
+    .io_req_bits_stage1_entry_3_perm_g(u_cache_resp_bits_stage1_entry_3_perm_g),
+    .io_req_bits_stage1_entry_3_perm_u(u_cache_resp_bits_stage1_entry_3_perm_u),
+    .io_req_bits_stage1_entry_3_perm_x(u_cache_resp_bits_stage1_entry_3_perm_x),
+    .io_req_bits_stage1_entry_3_perm_w(u_cache_resp_bits_stage1_entry_3_perm_w),
+    .io_req_bits_stage1_entry_3_perm_r(u_cache_resp_bits_stage1_entry_3_perm_r),
+    .io_req_bits_stage1_entry_3_level(u_cache_resp_bits_stage1_entry_3_level),
+    .io_req_bits_stage1_entry_3_v    (u_cache_resp_bits_stage1_entry_3_v),
+    .io_req_bits_stage1_entry_3_ppn  (u_cache_resp_bits_stage1_entry_3_ppn),
+    .io_req_bits_stage1_entry_3_ppn_low(u_cache_resp_bits_stage1_entry_3_ppn_low),
+    .io_req_bits_stage1_entry_3_pf   (u_cache_resp_bits_stage1_entry_3_pf),
+    .io_req_bits_stage1_entry_3_cf   (u_cache_resp_bits_stage1_entry_3_cf),
+    .io_req_bits_stage1_entry_4_tag  (u_cache_resp_bits_stage1_entry_4_tag),
+    .io_req_bits_stage1_entry_4_asid (u_cache_resp_bits_stage1_entry_4_asid),
+    .io_req_bits_stage1_entry_4_vmid (u_cache_resp_bits_stage1_entry_4_vmid),
+    .io_req_bits_stage1_entry_4_n    (u_cache_resp_bits_stage1_entry_4_n),
+    .io_req_bits_stage1_entry_4_pbmt (u_cache_resp_bits_stage1_entry_4_pbmt),
+    .io_req_bits_stage1_entry_4_perm_d(u_cache_resp_bits_stage1_entry_4_perm_d),
+    .io_req_bits_stage1_entry_4_perm_a(u_cache_resp_bits_stage1_entry_4_perm_a),
+    .io_req_bits_stage1_entry_4_perm_g(u_cache_resp_bits_stage1_entry_4_perm_g),
+    .io_req_bits_stage1_entry_4_perm_u(u_cache_resp_bits_stage1_entry_4_perm_u),
+    .io_req_bits_stage1_entry_4_perm_x(u_cache_resp_bits_stage1_entry_4_perm_x),
+    .io_req_bits_stage1_entry_4_perm_w(u_cache_resp_bits_stage1_entry_4_perm_w),
+    .io_req_bits_stage1_entry_4_perm_r(u_cache_resp_bits_stage1_entry_4_perm_r),
+    .io_req_bits_stage1_entry_4_level(u_cache_resp_bits_stage1_entry_4_level),
+    .io_req_bits_stage1_entry_4_v    (u_cache_resp_bits_stage1_entry_4_v),
+    .io_req_bits_stage1_entry_4_ppn  (u_cache_resp_bits_stage1_entry_4_ppn),
+    .io_req_bits_stage1_entry_4_ppn_low(u_cache_resp_bits_stage1_entry_4_ppn_low),
+    .io_req_bits_stage1_entry_4_pf   (u_cache_resp_bits_stage1_entry_4_pf),
+    .io_req_bits_stage1_entry_4_cf   (u_cache_resp_bits_stage1_entry_4_cf),
+    .io_req_bits_stage1_entry_5_tag  (u_cache_resp_bits_stage1_entry_5_tag),
+    .io_req_bits_stage1_entry_5_asid (u_cache_resp_bits_stage1_entry_5_asid),
+    .io_req_bits_stage1_entry_5_vmid (u_cache_resp_bits_stage1_entry_5_vmid),
+    .io_req_bits_stage1_entry_5_n    (u_cache_resp_bits_stage1_entry_5_n),
+    .io_req_bits_stage1_entry_5_pbmt (u_cache_resp_bits_stage1_entry_5_pbmt),
+    .io_req_bits_stage1_entry_5_perm_d(u_cache_resp_bits_stage1_entry_5_perm_d),
+    .io_req_bits_stage1_entry_5_perm_a(u_cache_resp_bits_stage1_entry_5_perm_a),
+    .io_req_bits_stage1_entry_5_perm_g(u_cache_resp_bits_stage1_entry_5_perm_g),
+    .io_req_bits_stage1_entry_5_perm_u(u_cache_resp_bits_stage1_entry_5_perm_u),
+    .io_req_bits_stage1_entry_5_perm_x(u_cache_resp_bits_stage1_entry_5_perm_x),
+    .io_req_bits_stage1_entry_5_perm_w(u_cache_resp_bits_stage1_entry_5_perm_w),
+    .io_req_bits_stage1_entry_5_perm_r(u_cache_resp_bits_stage1_entry_5_perm_r),
+    .io_req_bits_stage1_entry_5_level(u_cache_resp_bits_stage1_entry_5_level),
+    .io_req_bits_stage1_entry_5_v    (u_cache_resp_bits_stage1_entry_5_v),
+    .io_req_bits_stage1_entry_5_ppn  (u_cache_resp_bits_stage1_entry_5_ppn),
+    .io_req_bits_stage1_entry_5_ppn_low(u_cache_resp_bits_stage1_entry_5_ppn_low),
+    .io_req_bits_stage1_entry_5_pf   (u_cache_resp_bits_stage1_entry_5_pf),
+    .io_req_bits_stage1_entry_5_cf   (u_cache_resp_bits_stage1_entry_5_cf),
+    .io_req_bits_stage1_entry_6_tag  (u_cache_resp_bits_stage1_entry_6_tag),
+    .io_req_bits_stage1_entry_6_asid (u_cache_resp_bits_stage1_entry_6_asid),
+    .io_req_bits_stage1_entry_6_vmid (u_cache_resp_bits_stage1_entry_6_vmid),
+    .io_req_bits_stage1_entry_6_n    (u_cache_resp_bits_stage1_entry_6_n),
+    .io_req_bits_stage1_entry_6_pbmt (u_cache_resp_bits_stage1_entry_6_pbmt),
+    .io_req_bits_stage1_entry_6_perm_d(u_cache_resp_bits_stage1_entry_6_perm_d),
+    .io_req_bits_stage1_entry_6_perm_a(u_cache_resp_bits_stage1_entry_6_perm_a),
+    .io_req_bits_stage1_entry_6_perm_g(u_cache_resp_bits_stage1_entry_6_perm_g),
+    .io_req_bits_stage1_entry_6_perm_u(u_cache_resp_bits_stage1_entry_6_perm_u),
+    .io_req_bits_stage1_entry_6_perm_x(u_cache_resp_bits_stage1_entry_6_perm_x),
+    .io_req_bits_stage1_entry_6_perm_w(u_cache_resp_bits_stage1_entry_6_perm_w),
+    .io_req_bits_stage1_entry_6_perm_r(u_cache_resp_bits_stage1_entry_6_perm_r),
+    .io_req_bits_stage1_entry_6_level(u_cache_resp_bits_stage1_entry_6_level),
+    .io_req_bits_stage1_entry_6_v    (u_cache_resp_bits_stage1_entry_6_v),
+    .io_req_bits_stage1_entry_6_ppn  (u_cache_resp_bits_stage1_entry_6_ppn),
+    .io_req_bits_stage1_entry_6_ppn_low(u_cache_resp_bits_stage1_entry_6_ppn_low),
+    .io_req_bits_stage1_entry_6_pf   (u_cache_resp_bits_stage1_entry_6_pf),
+    .io_req_bits_stage1_entry_6_cf   (u_cache_resp_bits_stage1_entry_6_cf),
+    .io_req_bits_stage1_entry_7_tag  (u_cache_resp_bits_stage1_entry_7_tag),
+    .io_req_bits_stage1_entry_7_asid (u_cache_resp_bits_stage1_entry_7_asid),
+    .io_req_bits_stage1_entry_7_vmid (u_cache_resp_bits_stage1_entry_7_vmid),
+    .io_req_bits_stage1_entry_7_n    (u_cache_resp_bits_stage1_entry_7_n),
+    .io_req_bits_stage1_entry_7_pbmt (u_cache_resp_bits_stage1_entry_7_pbmt),
+    .io_req_bits_stage1_entry_7_perm_d(u_cache_resp_bits_stage1_entry_7_perm_d),
+    .io_req_bits_stage1_entry_7_perm_a(u_cache_resp_bits_stage1_entry_7_perm_a),
+    .io_req_bits_stage1_entry_7_perm_g(u_cache_resp_bits_stage1_entry_7_perm_g),
+    .io_req_bits_stage1_entry_7_perm_u(u_cache_resp_bits_stage1_entry_7_perm_u),
+    .io_req_bits_stage1_entry_7_perm_x(u_cache_resp_bits_stage1_entry_7_perm_x),
+    .io_req_bits_stage1_entry_7_perm_w(u_cache_resp_bits_stage1_entry_7_perm_w),
+    .io_req_bits_stage1_entry_7_perm_r(u_cache_resp_bits_stage1_entry_7_perm_r),
+    .io_req_bits_stage1_entry_7_level(u_cache_resp_bits_stage1_entry_7_level),
+    .io_req_bits_stage1_entry_7_v    (u_cache_resp_bits_stage1_entry_7_v),
+    .io_req_bits_stage1_entry_7_ppn  (u_cache_resp_bits_stage1_entry_7_ppn),
+    .io_req_bits_stage1_entry_7_ppn_low(u_cache_resp_bits_stage1_entry_7_ppn_low),
+    .io_req_bits_stage1_entry_7_pf   (u_cache_resp_bits_stage1_entry_7_pf),
+    .io_req_bits_stage1_entry_7_cf   (u_cache_resp_bits_stage1_entry_7_cf),
+    .io_req_bits_stage1_pteidx_0     (u_cache_resp_bits_stage1_pteidx_0),
+    .io_req_bits_stage1_pteidx_1     (u_cache_resp_bits_stage1_pteidx_1),
+    .io_req_bits_stage1_pteidx_2     (u_cache_resp_bits_stage1_pteidx_2),
+    .io_req_bits_stage1_pteidx_3     (u_cache_resp_bits_stage1_pteidx_3),
+    .io_req_bits_stage1_pteidx_4     (u_cache_resp_bits_stage1_pteidx_4),
+    .io_req_bits_stage1_pteidx_5     (u_cache_resp_bits_stage1_pteidx_5),
+    .io_req_bits_stage1_pteidx_6     (u_cache_resp_bits_stage1_pteidx_6),
+    .io_req_bits_stage1_pteidx_7     (u_cache_resp_bits_stage1_pteidx_7),
+    .io_req_bits_stage1_not_super    (u_cache_resp_bits_stage1_not_super),
+    .io_req_bits_bitmapCheck_jmp_bitmap_check(u_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check),
+    .io_req_bits_bitmapCheck_pte     (u_cache_resp_bits_toFsm_bitmapCheck_pte),
+    .io_req_bits_bitmapCheck_SPlevel (u_cache_resp_bits_toFsm_bitmapCheck_SPlevel),
     .io_resp_ready                   (u_ptw__resp_ready),
     .io_resp_valid                   (u_ptw_resp_valid),
     .io_resp_bits_source             (u_ptw_resp_bits_source),
@@ -8660,27 +8664,27 @@ module xs_L2TLB_core
     .io_csr_mPBMTE                   (u_hptw__csr_mPBMTE),
     .io_req_ready                    (u_hptw_req_ready),
     .io_req_valid                    (u_hptw__req_valid),
-    .io_req_bits_source              (u_page_cache_resp_bits_req_info_source),
-    .io_req_bits_id                  (u_page_cache_resp_bits_toHptw_id),
-    .io_req_bits_gvpn                (u_page_cache_resp_bits_req_info_vpn),
-    .io_req_bits_ppn                 (u_page_cache_resp_bits_toHptw_ppn),
-    .io_req_bits_l3Hit               (u_page_cache_resp_bits_toHptw_l3Hit),
-    .io_req_bits_l2Hit               (u_page_cache_resp_bits_toHptw_l2Hit),
-    .io_req_bits_l1Hit               (u_page_cache_resp_bits_toHptw_l1Hit),
-    .io_req_bits_bypassed            (u_page_cache_resp_bits_toHptw_bypassed),
-    .io_req_bits_bitmapCheck_jmp_bitmap_check(u_page_cache_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check),
-    .io_req_bits_bitmapCheck_pte     (u_page_cache_resp_bits_toHptw_bitmapCheck_pte),
-    .io_req_bits_bitmapCheck_ptes_0  (u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_0),
-    .io_req_bits_bitmapCheck_ptes_1  (u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_1),
-    .io_req_bits_bitmapCheck_ptes_2  (u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_2),
-    .io_req_bits_bitmapCheck_ptes_3  (u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_3),
-    .io_req_bits_bitmapCheck_ptes_4  (u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_4),
-    .io_req_bits_bitmapCheck_ptes_5  (u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_5),
-    .io_req_bits_bitmapCheck_ptes_6  (u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_6),
-    .io_req_bits_bitmapCheck_ptes_7  (u_page_cache_resp_bits_toHptw_bitmapCheck_ptes_7),
-    .io_req_bits_bitmapCheck_hitway  (u_page_cache_resp_bits_toHptw_bitmapCheck_hitway),
-    .io_req_bits_bitmapCheck_fromSP  (u_page_cache_resp_bits_toHptw_bitmapCheck_fromSP),
-    .io_req_bits_bitmapCheck_SPlevel (u_page_cache_resp_bits_toHptw_bitmapCheck_SPlevel),
+    .io_req_bits_source              (u_cache_resp_bits_req_info_source),
+    .io_req_bits_id                  (u_cache_resp_bits_toHptw_id),
+    .io_req_bits_gvpn                (u_cache_resp_bits_req_info_vpn),
+    .io_req_bits_ppn                 (u_cache_resp_bits_toHptw_ppn),
+    .io_req_bits_l3Hit               (u_cache_resp_bits_toHptw_l3Hit),
+    .io_req_bits_l2Hit               (u_cache_resp_bits_toHptw_l2Hit),
+    .io_req_bits_l1Hit               (u_cache_resp_bits_toHptw_l1Hit),
+    .io_req_bits_bypassed            (u_cache_resp_bits_toHptw_bypassed),
+    .io_req_bits_bitmapCheck_jmp_bitmap_check(u_cache_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check),
+    .io_req_bits_bitmapCheck_pte     (u_cache_resp_bits_toHptw_bitmapCheck_pte),
+    .io_req_bits_bitmapCheck_ptes_0  (u_cache_resp_bits_toHptw_bitmapCheck_ptes_0),
+    .io_req_bits_bitmapCheck_ptes_1  (u_cache_resp_bits_toHptw_bitmapCheck_ptes_1),
+    .io_req_bits_bitmapCheck_ptes_2  (u_cache_resp_bits_toHptw_bitmapCheck_ptes_2),
+    .io_req_bits_bitmapCheck_ptes_3  (u_cache_resp_bits_toHptw_bitmapCheck_ptes_3),
+    .io_req_bits_bitmapCheck_ptes_4  (u_cache_resp_bits_toHptw_bitmapCheck_ptes_4),
+    .io_req_bits_bitmapCheck_ptes_5  (u_cache_resp_bits_toHptw_bitmapCheck_ptes_5),
+    .io_req_bits_bitmapCheck_ptes_6  (u_cache_resp_bits_toHptw_bitmapCheck_ptes_6),
+    .io_req_bits_bitmapCheck_ptes_7  (u_cache_resp_bits_toHptw_bitmapCheck_ptes_7),
+    .io_req_bits_bitmapCheck_hitway  (u_cache_resp_bits_toHptw_bitmapCheck_hitway),
+    .io_req_bits_bitmapCheck_fromSP  (u_cache_resp_bits_toHptw_bitmapCheck_fromSP),
+    .io_req_bits_bitmapCheck_SPlevel (u_cache_resp_bits_toHptw_bitmapCheck_SPlevel),
     .io_resp_ready                   (u_arb_hptw_resp_in_1_ready),
     .io_resp_valid                   (u_hptw_resp_valid),
     .io_resp_bits_resp_entry_tag     (u_hptw_resp_bits_resp_entry_tag),
@@ -8723,7 +8727,7 @@ module xs_L2TLB_core
     .io_bitmap_resp_ready            (u_hptw_bitmap_resp_ready),
     .io_bitmap_resp_valid            (u_hptw__bitmap_resp_valid),
     .io_bitmap_resp_bits_cf          (u_bitmap_resp_bits_cf),
-    .io_l0_way_info                  (u_page_cache_l0_way_info)
+    .io_l0_way_info                  (u_cache_l0_way_info)
   );
 
   LLPTW u_llptw (
@@ -8741,28 +8745,28 @@ module xs_L2TLB_core
     .io_csr_hPBMTE                   (u_llptw__csr_hPBMTE),
     .io_in_ready                     (u_llptw_in_ready),
     .io_in_valid                     (u_llptw__in_valid),
-    .io_in_bits_req_info_vpn         (u_page_cache_resp_bits_req_info_vpn),
-    .io_in_bits_req_info_s2xlate     (u_page_cache_resp_bits_req_info_s2xlate),
-    .io_in_bits_req_info_source      (u_page_cache_resp_bits_req_info_source),
+    .io_in_bits_req_info_vpn         (u_cache_resp_bits_req_info_vpn),
+    .io_in_bits_req_info_s2xlate     (u_cache_resp_bits_req_info_s2xlate),
+    .io_in_bits_req_info_source      (u_cache_resp_bits_req_info_source),
     .io_in_bits_ppn                  (u_llptw__in_bits_ppn),
-    .io_in_bits_bitmapCheck_jmp_bitmap_check(u_page_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check),
-    .io_in_bits_bitmapCheck_ptes_0   (u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_0),
-    .io_in_bits_bitmapCheck_ptes_1   (u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_1),
-    .io_in_bits_bitmapCheck_ptes_2   (u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_2),
-    .io_in_bits_bitmapCheck_ptes_3   (u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_3),
-    .io_in_bits_bitmapCheck_ptes_4   (u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_4),
-    .io_in_bits_bitmapCheck_ptes_5   (u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_5),
-    .io_in_bits_bitmapCheck_ptes_6   (u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_6),
-    .io_in_bits_bitmapCheck_ptes_7   (u_page_cache_resp_bits_toFsm_bitmapCheck_ptes_7),
-    .io_in_bits_bitmapCheck_cfs_0    (u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_0),
-    .io_in_bits_bitmapCheck_cfs_1    (u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_1),
-    .io_in_bits_bitmapCheck_cfs_2    (u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_2),
-    .io_in_bits_bitmapCheck_cfs_3    (u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_3),
-    .io_in_bits_bitmapCheck_cfs_4    (u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_4),
-    .io_in_bits_bitmapCheck_cfs_5    (u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_5),
-    .io_in_bits_bitmapCheck_cfs_6    (u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_6),
-    .io_in_bits_bitmapCheck_cfs_7    (u_page_cache_resp_bits_toFsm_bitmapCheck_cfs_7),
-    .io_in_bits_bitmapCheck_hitway   (u_page_cache_resp_bits_toFsm_bitmapCheck_hitway),
+    .io_in_bits_bitmapCheck_jmp_bitmap_check(u_cache_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check),
+    .io_in_bits_bitmapCheck_ptes_0   (u_cache_resp_bits_toFsm_bitmapCheck_ptes_0),
+    .io_in_bits_bitmapCheck_ptes_1   (u_cache_resp_bits_toFsm_bitmapCheck_ptes_1),
+    .io_in_bits_bitmapCheck_ptes_2   (u_cache_resp_bits_toFsm_bitmapCheck_ptes_2),
+    .io_in_bits_bitmapCheck_ptes_3   (u_cache_resp_bits_toFsm_bitmapCheck_ptes_3),
+    .io_in_bits_bitmapCheck_ptes_4   (u_cache_resp_bits_toFsm_bitmapCheck_ptes_4),
+    .io_in_bits_bitmapCheck_ptes_5   (u_cache_resp_bits_toFsm_bitmapCheck_ptes_5),
+    .io_in_bits_bitmapCheck_ptes_6   (u_cache_resp_bits_toFsm_bitmapCheck_ptes_6),
+    .io_in_bits_bitmapCheck_ptes_7   (u_cache_resp_bits_toFsm_bitmapCheck_ptes_7),
+    .io_in_bits_bitmapCheck_cfs_0    (u_cache_resp_bits_toFsm_bitmapCheck_cfs_0),
+    .io_in_bits_bitmapCheck_cfs_1    (u_cache_resp_bits_toFsm_bitmapCheck_cfs_1),
+    .io_in_bits_bitmapCheck_cfs_2    (u_cache_resp_bits_toFsm_bitmapCheck_cfs_2),
+    .io_in_bits_bitmapCheck_cfs_3    (u_cache_resp_bits_toFsm_bitmapCheck_cfs_3),
+    .io_in_bits_bitmapCheck_cfs_4    (u_cache_resp_bits_toFsm_bitmapCheck_cfs_4),
+    .io_in_bits_bitmapCheck_cfs_5    (u_cache_resp_bits_toFsm_bitmapCheck_cfs_5),
+    .io_in_bits_bitmapCheck_cfs_6    (u_cache_resp_bits_toFsm_bitmapCheck_cfs_6),
+    .io_in_bits_bitmapCheck_cfs_7    (u_cache_resp_bits_toFsm_bitmapCheck_cfs_7),
+    .io_in_bits_bitmapCheck_hitway   (u_cache_resp_bits_toFsm_bitmapCheck_hitway),
     .io_out_ready                    (u_llptw__out_ready),
     .io_out_valid                    (u_llptw_out_valid),
     .io_out_bits_req_info_vpn        (u_llptw_out_bits_req_info_vpn),
@@ -8885,7 +8889,7 @@ module xs_L2TLB_core
     .io_bitmap_resp_bits_cfs_6       (u_bitmap_resp_bits_cfs_6),
     .io_bitmap_resp_bits_cfs_7       (u_bitmap_resp_bits_cfs_7),
     .io_bitmap_resp_bits_id          (u_bitmap_resp_bits_id),
-    .io_l0_way_info                  (u_page_cache_l0_way_info),
+    .io_l0_way_info                  (u_cache_l0_way_info),
     .io_perf_0_value                 (u_llptw_perf_0_value),
     .io_perf_1_value                 (u_llptw_perf_1_value),
     .io_perf_2_value                 (u_llptw_perf_2_value),
@@ -8921,11 +8925,11 @@ module xs_L2TLB_core
     .io_in_1_bits_req_info_source    (u_ptw_llptw_bits_req_info_source),
     .io_in_2_ready                   (u_arb_cache_in_in_2_ready),
     .io_in_2_valid                   (u_arb_cache_in__in_2_valid),
-    .io_in_2_bits_req_info_vpn       (u_miss_queue_out_bits_req_info_vpn),
-    .io_in_2_bits_req_info_s2xlate   (u_miss_queue_out_bits_req_info_s2xlate),
-    .io_in_2_bits_req_info_source    (u_miss_queue_out_bits_req_info_source),
-    .io_in_2_bits_isHptwReq          (u_miss_queue_out_bits_isHptwReq),
-    .io_in_2_bits_hptwId             (u_miss_queue_out_bits_hptwId),
+    .io_in_2_bits_req_info_vpn       (u_missQueue_out_bits_req_info_vpn),
+    .io_in_2_bits_req_info_s2xlate   (u_missQueue_out_bits_req_info_s2xlate),
+    .io_in_2_bits_req_info_source    (u_missQueue_out_bits_req_info_source),
+    .io_in_2_bits_isHptwReq          (u_missQueue_out_bits_isHptwReq),
+    .io_in_2_bits_hptwId             (u_missQueue_out_bits_hptwId),
     .io_in_3_ready                   (u_arb_cache_in_in_3_ready),
     .io_in_3_valid                   (u_arb_cache_in__in_3_valid),
     .io_in_3_bits_req_info_vpn       (u_arb_tlb_out_bits_vpn),
@@ -8935,7 +8939,7 @@ module xs_L2TLB_core
     .io_in_4_valid                   (u_prefetch_out_valid),
     .io_in_4_bits_req_info_vpn       (u_prefetch_out_bits_req_info_vpn),
     .io_in_4_bits_req_info_s2xlate   (u_prefetch_out_bits_req_info_s2xlate),
-    .io_out_ready                    (u_page_cache_req_ready),
+    .io_out_ready                    (u_cache_req_ready),
     .io_out_valid                    (u_arb_cache_in_out_valid),
     .io_out_bits_req_info_vpn        (u_arb_cache_in_out_bits_req_info_vpn),
     .io_out_bits_req_info_s2xlate    (u_arb_cache_in_out_bits_req_info_s2xlate),
@@ -8964,21 +8968,21 @@ module xs_L2TLB_core
 
   Arbiter2_L2TLBImp_Anon_1 u_arb_hptw_resp (
     .io_in_0_valid                   (u_arb_hptw_resp__in_0_valid),
-    .io_in_0_bits_resp_entry_tag     (u_page_cache_resp_bits_toHptw_resp_entry_tag),
-    .io_in_0_bits_resp_entry_vmid    (u_page_cache_resp_bits_toHptw_resp_entry_vmid),
-    .io_in_0_bits_resp_entry_n       (u_page_cache_resp_bits_toHptw_resp_entry_n),
-    .io_in_0_bits_resp_entry_pbmt    (u_page_cache_resp_bits_toHptw_resp_entry_pbmt),
-    .io_in_0_bits_resp_entry_ppn     (u_page_cache_resp_bits_toHptw_resp_entry_ppn),
-    .io_in_0_bits_resp_entry_perm_d  (u_page_cache_resp_bits_toHptw_resp_entry_perm_d),
-    .io_in_0_bits_resp_entry_perm_a  (u_page_cache_resp_bits_toHptw_resp_entry_perm_a),
-    .io_in_0_bits_resp_entry_perm_g  (u_page_cache_resp_bits_toHptw_resp_entry_perm_g),
-    .io_in_0_bits_resp_entry_perm_u  (u_page_cache_resp_bits_toHptw_resp_entry_perm_u),
-    .io_in_0_bits_resp_entry_perm_x  (u_page_cache_resp_bits_toHptw_resp_entry_perm_x),
-    .io_in_0_bits_resp_entry_perm_w  (u_page_cache_resp_bits_toHptw_resp_entry_perm_w),
-    .io_in_0_bits_resp_entry_perm_r  (u_page_cache_resp_bits_toHptw_resp_entry_perm_r),
-    .io_in_0_bits_resp_entry_level   (u_page_cache_resp_bits_toHptw_resp_entry_level),
-    .io_in_0_bits_resp_gpf           (u_page_cache_resp_bits_toHptw_resp_gpf),
-    .io_in_0_bits_id                 (u_page_cache_resp_bits_toHptw_id),
+    .io_in_0_bits_resp_entry_tag     (u_cache_resp_bits_toHptw_resp_entry_tag),
+    .io_in_0_bits_resp_entry_vmid    (u_cache_resp_bits_toHptw_resp_entry_vmid),
+    .io_in_0_bits_resp_entry_n       (u_cache_resp_bits_toHptw_resp_entry_n),
+    .io_in_0_bits_resp_entry_pbmt    (u_cache_resp_bits_toHptw_resp_entry_pbmt),
+    .io_in_0_bits_resp_entry_ppn     (u_cache_resp_bits_toHptw_resp_entry_ppn),
+    .io_in_0_bits_resp_entry_perm_d  (u_cache_resp_bits_toHptw_resp_entry_perm_d),
+    .io_in_0_bits_resp_entry_perm_a  (u_cache_resp_bits_toHptw_resp_entry_perm_a),
+    .io_in_0_bits_resp_entry_perm_g  (u_cache_resp_bits_toHptw_resp_entry_perm_g),
+    .io_in_0_bits_resp_entry_perm_u  (u_cache_resp_bits_toHptw_resp_entry_perm_u),
+    .io_in_0_bits_resp_entry_perm_x  (u_cache_resp_bits_toHptw_resp_entry_perm_x),
+    .io_in_0_bits_resp_entry_perm_w  (u_cache_resp_bits_toHptw_resp_entry_perm_w),
+    .io_in_0_bits_resp_entry_perm_r  (u_cache_resp_bits_toHptw_resp_entry_perm_r),
+    .io_in_0_bits_resp_entry_level   (u_cache_resp_bits_toHptw_resp_entry_level),
+    .io_in_0_bits_resp_gpf           (u_cache_resp_bits_toHptw_resp_gpf),
+    .io_in_0_bits_id                 (u_cache_resp_bits_toHptw_id),
     .io_in_1_ready                   (u_arb_hptw_resp_in_1_ready),
     .io_in_1_valid                   (u_hptw_resp_valid),
     .io_in_1_bits_resp_entry_tag     (u_hptw_resp_bits_resp_entry_tag),
@@ -9265,174 +9269,174 @@ module xs_L2TLB_core
   Arbiter3_L2TLBImp_Anon u_merge_arb_0 (
     .io_in_0_ready                   (u_merge_arb_0_in_0_ready),
     .io_in_0_valid                   (u_merge_arb_0__in_0_valid),
-    .io_in_0_bits_s2xlate            (u_page_cache_resp_bits_req_info_s2xlate),
-    .io_in_0_bits_s1_entry_0_tag     (u_page_cache_resp_bits_stage1_entry_0_tag),
-    .io_in_0_bits_s1_entry_0_asid    (u_page_cache_resp_bits_stage1_entry_0_asid),
-    .io_in_0_bits_s1_entry_0_vmid    (u_page_cache_resp_bits_stage1_entry_0_vmid),
-    .io_in_0_bits_s1_entry_0_n       (u_page_cache_resp_bits_stage1_entry_0_n),
-    .io_in_0_bits_s1_entry_0_pbmt    (u_page_cache_resp_bits_stage1_entry_0_pbmt),
-    .io_in_0_bits_s1_entry_0_perm_d  (u_page_cache_resp_bits_stage1_entry_0_perm_d),
-    .io_in_0_bits_s1_entry_0_perm_a  (u_page_cache_resp_bits_stage1_entry_0_perm_a),
-    .io_in_0_bits_s1_entry_0_perm_g  (u_page_cache_resp_bits_stage1_entry_0_perm_g),
-    .io_in_0_bits_s1_entry_0_perm_u  (u_page_cache_resp_bits_stage1_entry_0_perm_u),
-    .io_in_0_bits_s1_entry_0_perm_x  (u_page_cache_resp_bits_stage1_entry_0_perm_x),
-    .io_in_0_bits_s1_entry_0_perm_w  (u_page_cache_resp_bits_stage1_entry_0_perm_w),
-    .io_in_0_bits_s1_entry_0_perm_r  (u_page_cache_resp_bits_stage1_entry_0_perm_r),
-    .io_in_0_bits_s1_entry_0_level   (u_page_cache_resp_bits_stage1_entry_0_level),
-    .io_in_0_bits_s1_entry_0_v       (u_page_cache_resp_bits_stage1_entry_0_v),
-    .io_in_0_bits_s1_entry_0_ppn     (u_page_cache_resp_bits_stage1_entry_0_ppn),
-    .io_in_0_bits_s1_entry_0_ppn_low (u_page_cache_resp_bits_stage1_entry_0_ppn_low),
-    .io_in_0_bits_s1_entry_0_pf      (u_page_cache_resp_bits_stage1_entry_0_pf),
-    .io_in_0_bits_s1_entry_0_cf      (u_page_cache_resp_bits_stage1_entry_0_cf),
-    .io_in_0_bits_s1_entry_1_tag     (u_page_cache_resp_bits_stage1_entry_1_tag),
-    .io_in_0_bits_s1_entry_1_asid    (u_page_cache_resp_bits_stage1_entry_1_asid),
-    .io_in_0_bits_s1_entry_1_vmid    (u_page_cache_resp_bits_stage1_entry_1_vmid),
-    .io_in_0_bits_s1_entry_1_n       (u_page_cache_resp_bits_stage1_entry_1_n),
-    .io_in_0_bits_s1_entry_1_pbmt    (u_page_cache_resp_bits_stage1_entry_1_pbmt),
-    .io_in_0_bits_s1_entry_1_perm_d  (u_page_cache_resp_bits_stage1_entry_1_perm_d),
-    .io_in_0_bits_s1_entry_1_perm_a  (u_page_cache_resp_bits_stage1_entry_1_perm_a),
-    .io_in_0_bits_s1_entry_1_perm_g  (u_page_cache_resp_bits_stage1_entry_1_perm_g),
-    .io_in_0_bits_s1_entry_1_perm_u  (u_page_cache_resp_bits_stage1_entry_1_perm_u),
-    .io_in_0_bits_s1_entry_1_perm_x  (u_page_cache_resp_bits_stage1_entry_1_perm_x),
-    .io_in_0_bits_s1_entry_1_perm_w  (u_page_cache_resp_bits_stage1_entry_1_perm_w),
-    .io_in_0_bits_s1_entry_1_perm_r  (u_page_cache_resp_bits_stage1_entry_1_perm_r),
-    .io_in_0_bits_s1_entry_1_level   (u_page_cache_resp_bits_stage1_entry_1_level),
-    .io_in_0_bits_s1_entry_1_v       (u_page_cache_resp_bits_stage1_entry_1_v),
-    .io_in_0_bits_s1_entry_1_ppn     (u_page_cache_resp_bits_stage1_entry_1_ppn),
-    .io_in_0_bits_s1_entry_1_ppn_low (u_page_cache_resp_bits_stage1_entry_1_ppn_low),
-    .io_in_0_bits_s1_entry_1_pf      (u_page_cache_resp_bits_stage1_entry_1_pf),
-    .io_in_0_bits_s1_entry_1_cf      (u_page_cache_resp_bits_stage1_entry_1_cf),
-    .io_in_0_bits_s1_entry_2_tag     (u_page_cache_resp_bits_stage1_entry_2_tag),
-    .io_in_0_bits_s1_entry_2_asid    (u_page_cache_resp_bits_stage1_entry_2_asid),
-    .io_in_0_bits_s1_entry_2_vmid    (u_page_cache_resp_bits_stage1_entry_2_vmid),
-    .io_in_0_bits_s1_entry_2_n       (u_page_cache_resp_bits_stage1_entry_2_n),
-    .io_in_0_bits_s1_entry_2_pbmt    (u_page_cache_resp_bits_stage1_entry_2_pbmt),
-    .io_in_0_bits_s1_entry_2_perm_d  (u_page_cache_resp_bits_stage1_entry_2_perm_d),
-    .io_in_0_bits_s1_entry_2_perm_a  (u_page_cache_resp_bits_stage1_entry_2_perm_a),
-    .io_in_0_bits_s1_entry_2_perm_g  (u_page_cache_resp_bits_stage1_entry_2_perm_g),
-    .io_in_0_bits_s1_entry_2_perm_u  (u_page_cache_resp_bits_stage1_entry_2_perm_u),
-    .io_in_0_bits_s1_entry_2_perm_x  (u_page_cache_resp_bits_stage1_entry_2_perm_x),
-    .io_in_0_bits_s1_entry_2_perm_w  (u_page_cache_resp_bits_stage1_entry_2_perm_w),
-    .io_in_0_bits_s1_entry_2_perm_r  (u_page_cache_resp_bits_stage1_entry_2_perm_r),
-    .io_in_0_bits_s1_entry_2_level   (u_page_cache_resp_bits_stage1_entry_2_level),
-    .io_in_0_bits_s1_entry_2_v       (u_page_cache_resp_bits_stage1_entry_2_v),
-    .io_in_0_bits_s1_entry_2_ppn     (u_page_cache_resp_bits_stage1_entry_2_ppn),
-    .io_in_0_bits_s1_entry_2_ppn_low (u_page_cache_resp_bits_stage1_entry_2_ppn_low),
-    .io_in_0_bits_s1_entry_2_pf      (u_page_cache_resp_bits_stage1_entry_2_pf),
-    .io_in_0_bits_s1_entry_2_cf      (u_page_cache_resp_bits_stage1_entry_2_cf),
-    .io_in_0_bits_s1_entry_3_tag     (u_page_cache_resp_bits_stage1_entry_3_tag),
-    .io_in_0_bits_s1_entry_3_asid    (u_page_cache_resp_bits_stage1_entry_3_asid),
-    .io_in_0_bits_s1_entry_3_vmid    (u_page_cache_resp_bits_stage1_entry_3_vmid),
-    .io_in_0_bits_s1_entry_3_n       (u_page_cache_resp_bits_stage1_entry_3_n),
-    .io_in_0_bits_s1_entry_3_pbmt    (u_page_cache_resp_bits_stage1_entry_3_pbmt),
-    .io_in_0_bits_s1_entry_3_perm_d  (u_page_cache_resp_bits_stage1_entry_3_perm_d),
-    .io_in_0_bits_s1_entry_3_perm_a  (u_page_cache_resp_bits_stage1_entry_3_perm_a),
-    .io_in_0_bits_s1_entry_3_perm_g  (u_page_cache_resp_bits_stage1_entry_3_perm_g),
-    .io_in_0_bits_s1_entry_3_perm_u  (u_page_cache_resp_bits_stage1_entry_3_perm_u),
-    .io_in_0_bits_s1_entry_3_perm_x  (u_page_cache_resp_bits_stage1_entry_3_perm_x),
-    .io_in_0_bits_s1_entry_3_perm_w  (u_page_cache_resp_bits_stage1_entry_3_perm_w),
-    .io_in_0_bits_s1_entry_3_perm_r  (u_page_cache_resp_bits_stage1_entry_3_perm_r),
-    .io_in_0_bits_s1_entry_3_level   (u_page_cache_resp_bits_stage1_entry_3_level),
-    .io_in_0_bits_s1_entry_3_v       (u_page_cache_resp_bits_stage1_entry_3_v),
-    .io_in_0_bits_s1_entry_3_ppn     (u_page_cache_resp_bits_stage1_entry_3_ppn),
-    .io_in_0_bits_s1_entry_3_ppn_low (u_page_cache_resp_bits_stage1_entry_3_ppn_low),
-    .io_in_0_bits_s1_entry_3_pf      (u_page_cache_resp_bits_stage1_entry_3_pf),
-    .io_in_0_bits_s1_entry_3_cf      (u_page_cache_resp_bits_stage1_entry_3_cf),
-    .io_in_0_bits_s1_entry_4_tag     (u_page_cache_resp_bits_stage1_entry_4_tag),
-    .io_in_0_bits_s1_entry_4_asid    (u_page_cache_resp_bits_stage1_entry_4_asid),
-    .io_in_0_bits_s1_entry_4_vmid    (u_page_cache_resp_bits_stage1_entry_4_vmid),
-    .io_in_0_bits_s1_entry_4_n       (u_page_cache_resp_bits_stage1_entry_4_n),
-    .io_in_0_bits_s1_entry_4_pbmt    (u_page_cache_resp_bits_stage1_entry_4_pbmt),
-    .io_in_0_bits_s1_entry_4_perm_d  (u_page_cache_resp_bits_stage1_entry_4_perm_d),
-    .io_in_0_bits_s1_entry_4_perm_a  (u_page_cache_resp_bits_stage1_entry_4_perm_a),
-    .io_in_0_bits_s1_entry_4_perm_g  (u_page_cache_resp_bits_stage1_entry_4_perm_g),
-    .io_in_0_bits_s1_entry_4_perm_u  (u_page_cache_resp_bits_stage1_entry_4_perm_u),
-    .io_in_0_bits_s1_entry_4_perm_x  (u_page_cache_resp_bits_stage1_entry_4_perm_x),
-    .io_in_0_bits_s1_entry_4_perm_w  (u_page_cache_resp_bits_stage1_entry_4_perm_w),
-    .io_in_0_bits_s1_entry_4_perm_r  (u_page_cache_resp_bits_stage1_entry_4_perm_r),
-    .io_in_0_bits_s1_entry_4_level   (u_page_cache_resp_bits_stage1_entry_4_level),
-    .io_in_0_bits_s1_entry_4_v       (u_page_cache_resp_bits_stage1_entry_4_v),
-    .io_in_0_bits_s1_entry_4_ppn     (u_page_cache_resp_bits_stage1_entry_4_ppn),
-    .io_in_0_bits_s1_entry_4_ppn_low (u_page_cache_resp_bits_stage1_entry_4_ppn_low),
-    .io_in_0_bits_s1_entry_4_pf      (u_page_cache_resp_bits_stage1_entry_4_pf),
-    .io_in_0_bits_s1_entry_4_cf      (u_page_cache_resp_bits_stage1_entry_4_cf),
-    .io_in_0_bits_s1_entry_5_tag     (u_page_cache_resp_bits_stage1_entry_5_tag),
-    .io_in_0_bits_s1_entry_5_asid    (u_page_cache_resp_bits_stage1_entry_5_asid),
-    .io_in_0_bits_s1_entry_5_vmid    (u_page_cache_resp_bits_stage1_entry_5_vmid),
-    .io_in_0_bits_s1_entry_5_n       (u_page_cache_resp_bits_stage1_entry_5_n),
-    .io_in_0_bits_s1_entry_5_pbmt    (u_page_cache_resp_bits_stage1_entry_5_pbmt),
-    .io_in_0_bits_s1_entry_5_perm_d  (u_page_cache_resp_bits_stage1_entry_5_perm_d),
-    .io_in_0_bits_s1_entry_5_perm_a  (u_page_cache_resp_bits_stage1_entry_5_perm_a),
-    .io_in_0_bits_s1_entry_5_perm_g  (u_page_cache_resp_bits_stage1_entry_5_perm_g),
-    .io_in_0_bits_s1_entry_5_perm_u  (u_page_cache_resp_bits_stage1_entry_5_perm_u),
-    .io_in_0_bits_s1_entry_5_perm_x  (u_page_cache_resp_bits_stage1_entry_5_perm_x),
-    .io_in_0_bits_s1_entry_5_perm_w  (u_page_cache_resp_bits_stage1_entry_5_perm_w),
-    .io_in_0_bits_s1_entry_5_perm_r  (u_page_cache_resp_bits_stage1_entry_5_perm_r),
-    .io_in_0_bits_s1_entry_5_level   (u_page_cache_resp_bits_stage1_entry_5_level),
-    .io_in_0_bits_s1_entry_5_v       (u_page_cache_resp_bits_stage1_entry_5_v),
-    .io_in_0_bits_s1_entry_5_ppn     (u_page_cache_resp_bits_stage1_entry_5_ppn),
-    .io_in_0_bits_s1_entry_5_ppn_low (u_page_cache_resp_bits_stage1_entry_5_ppn_low),
-    .io_in_0_bits_s1_entry_5_pf      (u_page_cache_resp_bits_stage1_entry_5_pf),
-    .io_in_0_bits_s1_entry_5_cf      (u_page_cache_resp_bits_stage1_entry_5_cf),
-    .io_in_0_bits_s1_entry_6_tag     (u_page_cache_resp_bits_stage1_entry_6_tag),
-    .io_in_0_bits_s1_entry_6_asid    (u_page_cache_resp_bits_stage1_entry_6_asid),
-    .io_in_0_bits_s1_entry_6_vmid    (u_page_cache_resp_bits_stage1_entry_6_vmid),
-    .io_in_0_bits_s1_entry_6_n       (u_page_cache_resp_bits_stage1_entry_6_n),
-    .io_in_0_bits_s1_entry_6_pbmt    (u_page_cache_resp_bits_stage1_entry_6_pbmt),
-    .io_in_0_bits_s1_entry_6_perm_d  (u_page_cache_resp_bits_stage1_entry_6_perm_d),
-    .io_in_0_bits_s1_entry_6_perm_a  (u_page_cache_resp_bits_stage1_entry_6_perm_a),
-    .io_in_0_bits_s1_entry_6_perm_g  (u_page_cache_resp_bits_stage1_entry_6_perm_g),
-    .io_in_0_bits_s1_entry_6_perm_u  (u_page_cache_resp_bits_stage1_entry_6_perm_u),
-    .io_in_0_bits_s1_entry_6_perm_x  (u_page_cache_resp_bits_stage1_entry_6_perm_x),
-    .io_in_0_bits_s1_entry_6_perm_w  (u_page_cache_resp_bits_stage1_entry_6_perm_w),
-    .io_in_0_bits_s1_entry_6_perm_r  (u_page_cache_resp_bits_stage1_entry_6_perm_r),
-    .io_in_0_bits_s1_entry_6_level   (u_page_cache_resp_bits_stage1_entry_6_level),
-    .io_in_0_bits_s1_entry_6_v       (u_page_cache_resp_bits_stage1_entry_6_v),
-    .io_in_0_bits_s1_entry_6_ppn     (u_page_cache_resp_bits_stage1_entry_6_ppn),
-    .io_in_0_bits_s1_entry_6_ppn_low (u_page_cache_resp_bits_stage1_entry_6_ppn_low),
-    .io_in_0_bits_s1_entry_6_pf      (u_page_cache_resp_bits_stage1_entry_6_pf),
-    .io_in_0_bits_s1_entry_6_cf      (u_page_cache_resp_bits_stage1_entry_6_cf),
-    .io_in_0_bits_s1_entry_7_tag     (u_page_cache_resp_bits_stage1_entry_7_tag),
-    .io_in_0_bits_s1_entry_7_asid    (u_page_cache_resp_bits_stage1_entry_7_asid),
-    .io_in_0_bits_s1_entry_7_vmid    (u_page_cache_resp_bits_stage1_entry_7_vmid),
-    .io_in_0_bits_s1_entry_7_n       (u_page_cache_resp_bits_stage1_entry_7_n),
-    .io_in_0_bits_s1_entry_7_pbmt    (u_page_cache_resp_bits_stage1_entry_7_pbmt),
-    .io_in_0_bits_s1_entry_7_perm_d  (u_page_cache_resp_bits_stage1_entry_7_perm_d),
-    .io_in_0_bits_s1_entry_7_perm_a  (u_page_cache_resp_bits_stage1_entry_7_perm_a),
-    .io_in_0_bits_s1_entry_7_perm_g  (u_page_cache_resp_bits_stage1_entry_7_perm_g),
-    .io_in_0_bits_s1_entry_7_perm_u  (u_page_cache_resp_bits_stage1_entry_7_perm_u),
-    .io_in_0_bits_s1_entry_7_perm_x  (u_page_cache_resp_bits_stage1_entry_7_perm_x),
-    .io_in_0_bits_s1_entry_7_perm_w  (u_page_cache_resp_bits_stage1_entry_7_perm_w),
-    .io_in_0_bits_s1_entry_7_perm_r  (u_page_cache_resp_bits_stage1_entry_7_perm_r),
-    .io_in_0_bits_s1_entry_7_level   (u_page_cache_resp_bits_stage1_entry_7_level),
-    .io_in_0_bits_s1_entry_7_v       (u_page_cache_resp_bits_stage1_entry_7_v),
-    .io_in_0_bits_s1_entry_7_ppn     (u_page_cache_resp_bits_stage1_entry_7_ppn),
-    .io_in_0_bits_s1_entry_7_ppn_low (u_page_cache_resp_bits_stage1_entry_7_ppn_low),
-    .io_in_0_bits_s1_entry_7_pf      (u_page_cache_resp_bits_stage1_entry_7_pf),
-    .io_in_0_bits_s1_entry_7_cf      (u_page_cache_resp_bits_stage1_entry_7_cf),
-    .io_in_0_bits_s1_pteidx_0        (u_page_cache_resp_bits_stage1_pteidx_0),
-    .io_in_0_bits_s1_pteidx_1        (u_page_cache_resp_bits_stage1_pteidx_1),
-    .io_in_0_bits_s1_pteidx_2        (u_page_cache_resp_bits_stage1_pteidx_2),
-    .io_in_0_bits_s1_pteidx_3        (u_page_cache_resp_bits_stage1_pteidx_3),
-    .io_in_0_bits_s1_pteidx_4        (u_page_cache_resp_bits_stage1_pteidx_4),
-    .io_in_0_bits_s1_pteidx_5        (u_page_cache_resp_bits_stage1_pteidx_5),
-    .io_in_0_bits_s1_pteidx_6        (u_page_cache_resp_bits_stage1_pteidx_6),
-    .io_in_0_bits_s1_pteidx_7        (u_page_cache_resp_bits_stage1_pteidx_7),
-    .io_in_0_bits_s1_not_super       (u_page_cache_resp_bits_stage1_not_super),
-    .io_in_0_bits_s2_entry_tag       (u_page_cache_resp_bits_toHptw_resp_entry_tag),
-    .io_in_0_bits_s2_entry_vmid      (u_page_cache_resp_bits_toHptw_resp_entry_vmid),
-    .io_in_0_bits_s2_entry_n         (u_page_cache_resp_bits_toHptw_resp_entry_n),
-    .io_in_0_bits_s2_entry_pbmt      (u_page_cache_resp_bits_toHptw_resp_entry_pbmt),
-    .io_in_0_bits_s2_entry_ppn       (u_page_cache_resp_bits_toHptw_resp_entry_ppn),
-    .io_in_0_bits_s2_entry_perm_d    (u_page_cache_resp_bits_toHptw_resp_entry_perm_d),
-    .io_in_0_bits_s2_entry_perm_a    (u_page_cache_resp_bits_toHptw_resp_entry_perm_a),
-    .io_in_0_bits_s2_entry_perm_g    (u_page_cache_resp_bits_toHptw_resp_entry_perm_g),
-    .io_in_0_bits_s2_entry_perm_u    (u_page_cache_resp_bits_toHptw_resp_entry_perm_u),
-    .io_in_0_bits_s2_entry_perm_x    (u_page_cache_resp_bits_toHptw_resp_entry_perm_x),
-    .io_in_0_bits_s2_entry_perm_w    (u_page_cache_resp_bits_toHptw_resp_entry_perm_w),
-    .io_in_0_bits_s2_entry_perm_r    (u_page_cache_resp_bits_toHptw_resp_entry_perm_r),
-    .io_in_0_bits_s2_entry_level     (u_page_cache_resp_bits_toHptw_resp_entry_level),
-    .io_in_0_bits_s2_gpf             (u_page_cache_resp_bits_toHptw_resp_gpf),
+    .io_in_0_bits_s2xlate            (u_cache_resp_bits_req_info_s2xlate),
+    .io_in_0_bits_s1_entry_0_tag     (u_cache_resp_bits_stage1_entry_0_tag),
+    .io_in_0_bits_s1_entry_0_asid    (u_cache_resp_bits_stage1_entry_0_asid),
+    .io_in_0_bits_s1_entry_0_vmid    (u_cache_resp_bits_stage1_entry_0_vmid),
+    .io_in_0_bits_s1_entry_0_n       (u_cache_resp_bits_stage1_entry_0_n),
+    .io_in_0_bits_s1_entry_0_pbmt    (u_cache_resp_bits_stage1_entry_0_pbmt),
+    .io_in_0_bits_s1_entry_0_perm_d  (u_cache_resp_bits_stage1_entry_0_perm_d),
+    .io_in_0_bits_s1_entry_0_perm_a  (u_cache_resp_bits_stage1_entry_0_perm_a),
+    .io_in_0_bits_s1_entry_0_perm_g  (u_cache_resp_bits_stage1_entry_0_perm_g),
+    .io_in_0_bits_s1_entry_0_perm_u  (u_cache_resp_bits_stage1_entry_0_perm_u),
+    .io_in_0_bits_s1_entry_0_perm_x  (u_cache_resp_bits_stage1_entry_0_perm_x),
+    .io_in_0_bits_s1_entry_0_perm_w  (u_cache_resp_bits_stage1_entry_0_perm_w),
+    .io_in_0_bits_s1_entry_0_perm_r  (u_cache_resp_bits_stage1_entry_0_perm_r),
+    .io_in_0_bits_s1_entry_0_level   (u_cache_resp_bits_stage1_entry_0_level),
+    .io_in_0_bits_s1_entry_0_v       (u_cache_resp_bits_stage1_entry_0_v),
+    .io_in_0_bits_s1_entry_0_ppn     (u_cache_resp_bits_stage1_entry_0_ppn),
+    .io_in_0_bits_s1_entry_0_ppn_low (u_cache_resp_bits_stage1_entry_0_ppn_low),
+    .io_in_0_bits_s1_entry_0_pf      (u_cache_resp_bits_stage1_entry_0_pf),
+    .io_in_0_bits_s1_entry_0_cf      (u_cache_resp_bits_stage1_entry_0_cf),
+    .io_in_0_bits_s1_entry_1_tag     (u_cache_resp_bits_stage1_entry_1_tag),
+    .io_in_0_bits_s1_entry_1_asid    (u_cache_resp_bits_stage1_entry_1_asid),
+    .io_in_0_bits_s1_entry_1_vmid    (u_cache_resp_bits_stage1_entry_1_vmid),
+    .io_in_0_bits_s1_entry_1_n       (u_cache_resp_bits_stage1_entry_1_n),
+    .io_in_0_bits_s1_entry_1_pbmt    (u_cache_resp_bits_stage1_entry_1_pbmt),
+    .io_in_0_bits_s1_entry_1_perm_d  (u_cache_resp_bits_stage1_entry_1_perm_d),
+    .io_in_0_bits_s1_entry_1_perm_a  (u_cache_resp_bits_stage1_entry_1_perm_a),
+    .io_in_0_bits_s1_entry_1_perm_g  (u_cache_resp_bits_stage1_entry_1_perm_g),
+    .io_in_0_bits_s1_entry_1_perm_u  (u_cache_resp_bits_stage1_entry_1_perm_u),
+    .io_in_0_bits_s1_entry_1_perm_x  (u_cache_resp_bits_stage1_entry_1_perm_x),
+    .io_in_0_bits_s1_entry_1_perm_w  (u_cache_resp_bits_stage1_entry_1_perm_w),
+    .io_in_0_bits_s1_entry_1_perm_r  (u_cache_resp_bits_stage1_entry_1_perm_r),
+    .io_in_0_bits_s1_entry_1_level   (u_cache_resp_bits_stage1_entry_1_level),
+    .io_in_0_bits_s1_entry_1_v       (u_cache_resp_bits_stage1_entry_1_v),
+    .io_in_0_bits_s1_entry_1_ppn     (u_cache_resp_bits_stage1_entry_1_ppn),
+    .io_in_0_bits_s1_entry_1_ppn_low (u_cache_resp_bits_stage1_entry_1_ppn_low),
+    .io_in_0_bits_s1_entry_1_pf      (u_cache_resp_bits_stage1_entry_1_pf),
+    .io_in_0_bits_s1_entry_1_cf      (u_cache_resp_bits_stage1_entry_1_cf),
+    .io_in_0_bits_s1_entry_2_tag     (u_cache_resp_bits_stage1_entry_2_tag),
+    .io_in_0_bits_s1_entry_2_asid    (u_cache_resp_bits_stage1_entry_2_asid),
+    .io_in_0_bits_s1_entry_2_vmid    (u_cache_resp_bits_stage1_entry_2_vmid),
+    .io_in_0_bits_s1_entry_2_n       (u_cache_resp_bits_stage1_entry_2_n),
+    .io_in_0_bits_s1_entry_2_pbmt    (u_cache_resp_bits_stage1_entry_2_pbmt),
+    .io_in_0_bits_s1_entry_2_perm_d  (u_cache_resp_bits_stage1_entry_2_perm_d),
+    .io_in_0_bits_s1_entry_2_perm_a  (u_cache_resp_bits_stage1_entry_2_perm_a),
+    .io_in_0_bits_s1_entry_2_perm_g  (u_cache_resp_bits_stage1_entry_2_perm_g),
+    .io_in_0_bits_s1_entry_2_perm_u  (u_cache_resp_bits_stage1_entry_2_perm_u),
+    .io_in_0_bits_s1_entry_2_perm_x  (u_cache_resp_bits_stage1_entry_2_perm_x),
+    .io_in_0_bits_s1_entry_2_perm_w  (u_cache_resp_bits_stage1_entry_2_perm_w),
+    .io_in_0_bits_s1_entry_2_perm_r  (u_cache_resp_bits_stage1_entry_2_perm_r),
+    .io_in_0_bits_s1_entry_2_level   (u_cache_resp_bits_stage1_entry_2_level),
+    .io_in_0_bits_s1_entry_2_v       (u_cache_resp_bits_stage1_entry_2_v),
+    .io_in_0_bits_s1_entry_2_ppn     (u_cache_resp_bits_stage1_entry_2_ppn),
+    .io_in_0_bits_s1_entry_2_ppn_low (u_cache_resp_bits_stage1_entry_2_ppn_low),
+    .io_in_0_bits_s1_entry_2_pf      (u_cache_resp_bits_stage1_entry_2_pf),
+    .io_in_0_bits_s1_entry_2_cf      (u_cache_resp_bits_stage1_entry_2_cf),
+    .io_in_0_bits_s1_entry_3_tag     (u_cache_resp_bits_stage1_entry_3_tag),
+    .io_in_0_bits_s1_entry_3_asid    (u_cache_resp_bits_stage1_entry_3_asid),
+    .io_in_0_bits_s1_entry_3_vmid    (u_cache_resp_bits_stage1_entry_3_vmid),
+    .io_in_0_bits_s1_entry_3_n       (u_cache_resp_bits_stage1_entry_3_n),
+    .io_in_0_bits_s1_entry_3_pbmt    (u_cache_resp_bits_stage1_entry_3_pbmt),
+    .io_in_0_bits_s1_entry_3_perm_d  (u_cache_resp_bits_stage1_entry_3_perm_d),
+    .io_in_0_bits_s1_entry_3_perm_a  (u_cache_resp_bits_stage1_entry_3_perm_a),
+    .io_in_0_bits_s1_entry_3_perm_g  (u_cache_resp_bits_stage1_entry_3_perm_g),
+    .io_in_0_bits_s1_entry_3_perm_u  (u_cache_resp_bits_stage1_entry_3_perm_u),
+    .io_in_0_bits_s1_entry_3_perm_x  (u_cache_resp_bits_stage1_entry_3_perm_x),
+    .io_in_0_bits_s1_entry_3_perm_w  (u_cache_resp_bits_stage1_entry_3_perm_w),
+    .io_in_0_bits_s1_entry_3_perm_r  (u_cache_resp_bits_stage1_entry_3_perm_r),
+    .io_in_0_bits_s1_entry_3_level   (u_cache_resp_bits_stage1_entry_3_level),
+    .io_in_0_bits_s1_entry_3_v       (u_cache_resp_bits_stage1_entry_3_v),
+    .io_in_0_bits_s1_entry_3_ppn     (u_cache_resp_bits_stage1_entry_3_ppn),
+    .io_in_0_bits_s1_entry_3_ppn_low (u_cache_resp_bits_stage1_entry_3_ppn_low),
+    .io_in_0_bits_s1_entry_3_pf      (u_cache_resp_bits_stage1_entry_3_pf),
+    .io_in_0_bits_s1_entry_3_cf      (u_cache_resp_bits_stage1_entry_3_cf),
+    .io_in_0_bits_s1_entry_4_tag     (u_cache_resp_bits_stage1_entry_4_tag),
+    .io_in_0_bits_s1_entry_4_asid    (u_cache_resp_bits_stage1_entry_4_asid),
+    .io_in_0_bits_s1_entry_4_vmid    (u_cache_resp_bits_stage1_entry_4_vmid),
+    .io_in_0_bits_s1_entry_4_n       (u_cache_resp_bits_stage1_entry_4_n),
+    .io_in_0_bits_s1_entry_4_pbmt    (u_cache_resp_bits_stage1_entry_4_pbmt),
+    .io_in_0_bits_s1_entry_4_perm_d  (u_cache_resp_bits_stage1_entry_4_perm_d),
+    .io_in_0_bits_s1_entry_4_perm_a  (u_cache_resp_bits_stage1_entry_4_perm_a),
+    .io_in_0_bits_s1_entry_4_perm_g  (u_cache_resp_bits_stage1_entry_4_perm_g),
+    .io_in_0_bits_s1_entry_4_perm_u  (u_cache_resp_bits_stage1_entry_4_perm_u),
+    .io_in_0_bits_s1_entry_4_perm_x  (u_cache_resp_bits_stage1_entry_4_perm_x),
+    .io_in_0_bits_s1_entry_4_perm_w  (u_cache_resp_bits_stage1_entry_4_perm_w),
+    .io_in_0_bits_s1_entry_4_perm_r  (u_cache_resp_bits_stage1_entry_4_perm_r),
+    .io_in_0_bits_s1_entry_4_level   (u_cache_resp_bits_stage1_entry_4_level),
+    .io_in_0_bits_s1_entry_4_v       (u_cache_resp_bits_stage1_entry_4_v),
+    .io_in_0_bits_s1_entry_4_ppn     (u_cache_resp_bits_stage1_entry_4_ppn),
+    .io_in_0_bits_s1_entry_4_ppn_low (u_cache_resp_bits_stage1_entry_4_ppn_low),
+    .io_in_0_bits_s1_entry_4_pf      (u_cache_resp_bits_stage1_entry_4_pf),
+    .io_in_0_bits_s1_entry_4_cf      (u_cache_resp_bits_stage1_entry_4_cf),
+    .io_in_0_bits_s1_entry_5_tag     (u_cache_resp_bits_stage1_entry_5_tag),
+    .io_in_0_bits_s1_entry_5_asid    (u_cache_resp_bits_stage1_entry_5_asid),
+    .io_in_0_bits_s1_entry_5_vmid    (u_cache_resp_bits_stage1_entry_5_vmid),
+    .io_in_0_bits_s1_entry_5_n       (u_cache_resp_bits_stage1_entry_5_n),
+    .io_in_0_bits_s1_entry_5_pbmt    (u_cache_resp_bits_stage1_entry_5_pbmt),
+    .io_in_0_bits_s1_entry_5_perm_d  (u_cache_resp_bits_stage1_entry_5_perm_d),
+    .io_in_0_bits_s1_entry_5_perm_a  (u_cache_resp_bits_stage1_entry_5_perm_a),
+    .io_in_0_bits_s1_entry_5_perm_g  (u_cache_resp_bits_stage1_entry_5_perm_g),
+    .io_in_0_bits_s1_entry_5_perm_u  (u_cache_resp_bits_stage1_entry_5_perm_u),
+    .io_in_0_bits_s1_entry_5_perm_x  (u_cache_resp_bits_stage1_entry_5_perm_x),
+    .io_in_0_bits_s1_entry_5_perm_w  (u_cache_resp_bits_stage1_entry_5_perm_w),
+    .io_in_0_bits_s1_entry_5_perm_r  (u_cache_resp_bits_stage1_entry_5_perm_r),
+    .io_in_0_bits_s1_entry_5_level   (u_cache_resp_bits_stage1_entry_5_level),
+    .io_in_0_bits_s1_entry_5_v       (u_cache_resp_bits_stage1_entry_5_v),
+    .io_in_0_bits_s1_entry_5_ppn     (u_cache_resp_bits_stage1_entry_5_ppn),
+    .io_in_0_bits_s1_entry_5_ppn_low (u_cache_resp_bits_stage1_entry_5_ppn_low),
+    .io_in_0_bits_s1_entry_5_pf      (u_cache_resp_bits_stage1_entry_5_pf),
+    .io_in_0_bits_s1_entry_5_cf      (u_cache_resp_bits_stage1_entry_5_cf),
+    .io_in_0_bits_s1_entry_6_tag     (u_cache_resp_bits_stage1_entry_6_tag),
+    .io_in_0_bits_s1_entry_6_asid    (u_cache_resp_bits_stage1_entry_6_asid),
+    .io_in_0_bits_s1_entry_6_vmid    (u_cache_resp_bits_stage1_entry_6_vmid),
+    .io_in_0_bits_s1_entry_6_n       (u_cache_resp_bits_stage1_entry_6_n),
+    .io_in_0_bits_s1_entry_6_pbmt    (u_cache_resp_bits_stage1_entry_6_pbmt),
+    .io_in_0_bits_s1_entry_6_perm_d  (u_cache_resp_bits_stage1_entry_6_perm_d),
+    .io_in_0_bits_s1_entry_6_perm_a  (u_cache_resp_bits_stage1_entry_6_perm_a),
+    .io_in_0_bits_s1_entry_6_perm_g  (u_cache_resp_bits_stage1_entry_6_perm_g),
+    .io_in_0_bits_s1_entry_6_perm_u  (u_cache_resp_bits_stage1_entry_6_perm_u),
+    .io_in_0_bits_s1_entry_6_perm_x  (u_cache_resp_bits_stage1_entry_6_perm_x),
+    .io_in_0_bits_s1_entry_6_perm_w  (u_cache_resp_bits_stage1_entry_6_perm_w),
+    .io_in_0_bits_s1_entry_6_perm_r  (u_cache_resp_bits_stage1_entry_6_perm_r),
+    .io_in_0_bits_s1_entry_6_level   (u_cache_resp_bits_stage1_entry_6_level),
+    .io_in_0_bits_s1_entry_6_v       (u_cache_resp_bits_stage1_entry_6_v),
+    .io_in_0_bits_s1_entry_6_ppn     (u_cache_resp_bits_stage1_entry_6_ppn),
+    .io_in_0_bits_s1_entry_6_ppn_low (u_cache_resp_bits_stage1_entry_6_ppn_low),
+    .io_in_0_bits_s1_entry_6_pf      (u_cache_resp_bits_stage1_entry_6_pf),
+    .io_in_0_bits_s1_entry_6_cf      (u_cache_resp_bits_stage1_entry_6_cf),
+    .io_in_0_bits_s1_entry_7_tag     (u_cache_resp_bits_stage1_entry_7_tag),
+    .io_in_0_bits_s1_entry_7_asid    (u_cache_resp_bits_stage1_entry_7_asid),
+    .io_in_0_bits_s1_entry_7_vmid    (u_cache_resp_bits_stage1_entry_7_vmid),
+    .io_in_0_bits_s1_entry_7_n       (u_cache_resp_bits_stage1_entry_7_n),
+    .io_in_0_bits_s1_entry_7_pbmt    (u_cache_resp_bits_stage1_entry_7_pbmt),
+    .io_in_0_bits_s1_entry_7_perm_d  (u_cache_resp_bits_stage1_entry_7_perm_d),
+    .io_in_0_bits_s1_entry_7_perm_a  (u_cache_resp_bits_stage1_entry_7_perm_a),
+    .io_in_0_bits_s1_entry_7_perm_g  (u_cache_resp_bits_stage1_entry_7_perm_g),
+    .io_in_0_bits_s1_entry_7_perm_u  (u_cache_resp_bits_stage1_entry_7_perm_u),
+    .io_in_0_bits_s1_entry_7_perm_x  (u_cache_resp_bits_stage1_entry_7_perm_x),
+    .io_in_0_bits_s1_entry_7_perm_w  (u_cache_resp_bits_stage1_entry_7_perm_w),
+    .io_in_0_bits_s1_entry_7_perm_r  (u_cache_resp_bits_stage1_entry_7_perm_r),
+    .io_in_0_bits_s1_entry_7_level   (u_cache_resp_bits_stage1_entry_7_level),
+    .io_in_0_bits_s1_entry_7_v       (u_cache_resp_bits_stage1_entry_7_v),
+    .io_in_0_bits_s1_entry_7_ppn     (u_cache_resp_bits_stage1_entry_7_ppn),
+    .io_in_0_bits_s1_entry_7_ppn_low (u_cache_resp_bits_stage1_entry_7_ppn_low),
+    .io_in_0_bits_s1_entry_7_pf      (u_cache_resp_bits_stage1_entry_7_pf),
+    .io_in_0_bits_s1_entry_7_cf      (u_cache_resp_bits_stage1_entry_7_cf),
+    .io_in_0_bits_s1_pteidx_0        (u_cache_resp_bits_stage1_pteidx_0),
+    .io_in_0_bits_s1_pteidx_1        (u_cache_resp_bits_stage1_pteidx_1),
+    .io_in_0_bits_s1_pteidx_2        (u_cache_resp_bits_stage1_pteidx_2),
+    .io_in_0_bits_s1_pteidx_3        (u_cache_resp_bits_stage1_pteidx_3),
+    .io_in_0_bits_s1_pteidx_4        (u_cache_resp_bits_stage1_pteidx_4),
+    .io_in_0_bits_s1_pteidx_5        (u_cache_resp_bits_stage1_pteidx_5),
+    .io_in_0_bits_s1_pteidx_6        (u_cache_resp_bits_stage1_pteidx_6),
+    .io_in_0_bits_s1_pteidx_7        (u_cache_resp_bits_stage1_pteidx_7),
+    .io_in_0_bits_s1_not_super       (u_cache_resp_bits_stage1_not_super),
+    .io_in_0_bits_s2_entry_tag       (u_cache_resp_bits_toHptw_resp_entry_tag),
+    .io_in_0_bits_s2_entry_vmid      (u_cache_resp_bits_toHptw_resp_entry_vmid),
+    .io_in_0_bits_s2_entry_n         (u_cache_resp_bits_toHptw_resp_entry_n),
+    .io_in_0_bits_s2_entry_pbmt      (u_cache_resp_bits_toHptw_resp_entry_pbmt),
+    .io_in_0_bits_s2_entry_ppn       (u_cache_resp_bits_toHptw_resp_entry_ppn),
+    .io_in_0_bits_s2_entry_perm_d    (u_cache_resp_bits_toHptw_resp_entry_perm_d),
+    .io_in_0_bits_s2_entry_perm_a    (u_cache_resp_bits_toHptw_resp_entry_perm_a),
+    .io_in_0_bits_s2_entry_perm_g    (u_cache_resp_bits_toHptw_resp_entry_perm_g),
+    .io_in_0_bits_s2_entry_perm_u    (u_cache_resp_bits_toHptw_resp_entry_perm_u),
+    .io_in_0_bits_s2_entry_perm_x    (u_cache_resp_bits_toHptw_resp_entry_perm_x),
+    .io_in_0_bits_s2_entry_perm_w    (u_cache_resp_bits_toHptw_resp_entry_perm_w),
+    .io_in_0_bits_s2_entry_perm_r    (u_cache_resp_bits_toHptw_resp_entry_perm_r),
+    .io_in_0_bits_s2_entry_level     (u_cache_resp_bits_toHptw_resp_entry_level),
+    .io_in_0_bits_s2_gpf             (u_cache_resp_bits_toHptw_resp_gpf),
     .io_in_1_ready                   (u_merge_arb_0_in_1_ready),
     .io_in_1_valid                   (u_merge_arb_0__in_1_valid),
     .io_in_1_bits_s2xlate            (u_ptw_resp_bits_s2xlate),
@@ -9977,174 +9981,174 @@ module xs_L2TLB_core
   Arbiter3_L2TLBImp_Anon u_merge_arb_1 (
     .io_in_0_ready                   (u_merge_arb_1_in_0_ready),
     .io_in_0_valid                   (u_merge_arb_1__in_0_valid),
-    .io_in_0_bits_s2xlate            (u_page_cache_resp_bits_req_info_s2xlate),
-    .io_in_0_bits_s1_entry_0_tag     (u_page_cache_resp_bits_stage1_entry_0_tag),
-    .io_in_0_bits_s1_entry_0_asid    (u_page_cache_resp_bits_stage1_entry_0_asid),
-    .io_in_0_bits_s1_entry_0_vmid    (u_page_cache_resp_bits_stage1_entry_0_vmid),
-    .io_in_0_bits_s1_entry_0_n       (u_page_cache_resp_bits_stage1_entry_0_n),
-    .io_in_0_bits_s1_entry_0_pbmt    (u_page_cache_resp_bits_stage1_entry_0_pbmt),
-    .io_in_0_bits_s1_entry_0_perm_d  (u_page_cache_resp_bits_stage1_entry_0_perm_d),
-    .io_in_0_bits_s1_entry_0_perm_a  (u_page_cache_resp_bits_stage1_entry_0_perm_a),
-    .io_in_0_bits_s1_entry_0_perm_g  (u_page_cache_resp_bits_stage1_entry_0_perm_g),
-    .io_in_0_bits_s1_entry_0_perm_u  (u_page_cache_resp_bits_stage1_entry_0_perm_u),
-    .io_in_0_bits_s1_entry_0_perm_x  (u_page_cache_resp_bits_stage1_entry_0_perm_x),
-    .io_in_0_bits_s1_entry_0_perm_w  (u_page_cache_resp_bits_stage1_entry_0_perm_w),
-    .io_in_0_bits_s1_entry_0_perm_r  (u_page_cache_resp_bits_stage1_entry_0_perm_r),
-    .io_in_0_bits_s1_entry_0_level   (u_page_cache_resp_bits_stage1_entry_0_level),
-    .io_in_0_bits_s1_entry_0_v       (u_page_cache_resp_bits_stage1_entry_0_v),
-    .io_in_0_bits_s1_entry_0_ppn     (u_page_cache_resp_bits_stage1_entry_0_ppn),
-    .io_in_0_bits_s1_entry_0_ppn_low (u_page_cache_resp_bits_stage1_entry_0_ppn_low),
-    .io_in_0_bits_s1_entry_0_pf      (u_page_cache_resp_bits_stage1_entry_0_pf),
-    .io_in_0_bits_s1_entry_0_cf      (u_page_cache_resp_bits_stage1_entry_0_cf),
-    .io_in_0_bits_s1_entry_1_tag     (u_page_cache_resp_bits_stage1_entry_1_tag),
-    .io_in_0_bits_s1_entry_1_asid    (u_page_cache_resp_bits_stage1_entry_1_asid),
-    .io_in_0_bits_s1_entry_1_vmid    (u_page_cache_resp_bits_stage1_entry_1_vmid),
-    .io_in_0_bits_s1_entry_1_n       (u_page_cache_resp_bits_stage1_entry_1_n),
-    .io_in_0_bits_s1_entry_1_pbmt    (u_page_cache_resp_bits_stage1_entry_1_pbmt),
-    .io_in_0_bits_s1_entry_1_perm_d  (u_page_cache_resp_bits_stage1_entry_1_perm_d),
-    .io_in_0_bits_s1_entry_1_perm_a  (u_page_cache_resp_bits_stage1_entry_1_perm_a),
-    .io_in_0_bits_s1_entry_1_perm_g  (u_page_cache_resp_bits_stage1_entry_1_perm_g),
-    .io_in_0_bits_s1_entry_1_perm_u  (u_page_cache_resp_bits_stage1_entry_1_perm_u),
-    .io_in_0_bits_s1_entry_1_perm_x  (u_page_cache_resp_bits_stage1_entry_1_perm_x),
-    .io_in_0_bits_s1_entry_1_perm_w  (u_page_cache_resp_bits_stage1_entry_1_perm_w),
-    .io_in_0_bits_s1_entry_1_perm_r  (u_page_cache_resp_bits_stage1_entry_1_perm_r),
-    .io_in_0_bits_s1_entry_1_level   (u_page_cache_resp_bits_stage1_entry_1_level),
-    .io_in_0_bits_s1_entry_1_v       (u_page_cache_resp_bits_stage1_entry_1_v),
-    .io_in_0_bits_s1_entry_1_ppn     (u_page_cache_resp_bits_stage1_entry_1_ppn),
-    .io_in_0_bits_s1_entry_1_ppn_low (u_page_cache_resp_bits_stage1_entry_1_ppn_low),
-    .io_in_0_bits_s1_entry_1_pf      (u_page_cache_resp_bits_stage1_entry_1_pf),
-    .io_in_0_bits_s1_entry_1_cf      (u_page_cache_resp_bits_stage1_entry_1_cf),
-    .io_in_0_bits_s1_entry_2_tag     (u_page_cache_resp_bits_stage1_entry_2_tag),
-    .io_in_0_bits_s1_entry_2_asid    (u_page_cache_resp_bits_stage1_entry_2_asid),
-    .io_in_0_bits_s1_entry_2_vmid    (u_page_cache_resp_bits_stage1_entry_2_vmid),
-    .io_in_0_bits_s1_entry_2_n       (u_page_cache_resp_bits_stage1_entry_2_n),
-    .io_in_0_bits_s1_entry_2_pbmt    (u_page_cache_resp_bits_stage1_entry_2_pbmt),
-    .io_in_0_bits_s1_entry_2_perm_d  (u_page_cache_resp_bits_stage1_entry_2_perm_d),
-    .io_in_0_bits_s1_entry_2_perm_a  (u_page_cache_resp_bits_stage1_entry_2_perm_a),
-    .io_in_0_bits_s1_entry_2_perm_g  (u_page_cache_resp_bits_stage1_entry_2_perm_g),
-    .io_in_0_bits_s1_entry_2_perm_u  (u_page_cache_resp_bits_stage1_entry_2_perm_u),
-    .io_in_0_bits_s1_entry_2_perm_x  (u_page_cache_resp_bits_stage1_entry_2_perm_x),
-    .io_in_0_bits_s1_entry_2_perm_w  (u_page_cache_resp_bits_stage1_entry_2_perm_w),
-    .io_in_0_bits_s1_entry_2_perm_r  (u_page_cache_resp_bits_stage1_entry_2_perm_r),
-    .io_in_0_bits_s1_entry_2_level   (u_page_cache_resp_bits_stage1_entry_2_level),
-    .io_in_0_bits_s1_entry_2_v       (u_page_cache_resp_bits_stage1_entry_2_v),
-    .io_in_0_bits_s1_entry_2_ppn     (u_page_cache_resp_bits_stage1_entry_2_ppn),
-    .io_in_0_bits_s1_entry_2_ppn_low (u_page_cache_resp_bits_stage1_entry_2_ppn_low),
-    .io_in_0_bits_s1_entry_2_pf      (u_page_cache_resp_bits_stage1_entry_2_pf),
-    .io_in_0_bits_s1_entry_2_cf      (u_page_cache_resp_bits_stage1_entry_2_cf),
-    .io_in_0_bits_s1_entry_3_tag     (u_page_cache_resp_bits_stage1_entry_3_tag),
-    .io_in_0_bits_s1_entry_3_asid    (u_page_cache_resp_bits_stage1_entry_3_asid),
-    .io_in_0_bits_s1_entry_3_vmid    (u_page_cache_resp_bits_stage1_entry_3_vmid),
-    .io_in_0_bits_s1_entry_3_n       (u_page_cache_resp_bits_stage1_entry_3_n),
-    .io_in_0_bits_s1_entry_3_pbmt    (u_page_cache_resp_bits_stage1_entry_3_pbmt),
-    .io_in_0_bits_s1_entry_3_perm_d  (u_page_cache_resp_bits_stage1_entry_3_perm_d),
-    .io_in_0_bits_s1_entry_3_perm_a  (u_page_cache_resp_bits_stage1_entry_3_perm_a),
-    .io_in_0_bits_s1_entry_3_perm_g  (u_page_cache_resp_bits_stage1_entry_3_perm_g),
-    .io_in_0_bits_s1_entry_3_perm_u  (u_page_cache_resp_bits_stage1_entry_3_perm_u),
-    .io_in_0_bits_s1_entry_3_perm_x  (u_page_cache_resp_bits_stage1_entry_3_perm_x),
-    .io_in_0_bits_s1_entry_3_perm_w  (u_page_cache_resp_bits_stage1_entry_3_perm_w),
-    .io_in_0_bits_s1_entry_3_perm_r  (u_page_cache_resp_bits_stage1_entry_3_perm_r),
-    .io_in_0_bits_s1_entry_3_level   (u_page_cache_resp_bits_stage1_entry_3_level),
-    .io_in_0_bits_s1_entry_3_v       (u_page_cache_resp_bits_stage1_entry_3_v),
-    .io_in_0_bits_s1_entry_3_ppn     (u_page_cache_resp_bits_stage1_entry_3_ppn),
-    .io_in_0_bits_s1_entry_3_ppn_low (u_page_cache_resp_bits_stage1_entry_3_ppn_low),
-    .io_in_0_bits_s1_entry_3_pf      (u_page_cache_resp_bits_stage1_entry_3_pf),
-    .io_in_0_bits_s1_entry_3_cf      (u_page_cache_resp_bits_stage1_entry_3_cf),
-    .io_in_0_bits_s1_entry_4_tag     (u_page_cache_resp_bits_stage1_entry_4_tag),
-    .io_in_0_bits_s1_entry_4_asid    (u_page_cache_resp_bits_stage1_entry_4_asid),
-    .io_in_0_bits_s1_entry_4_vmid    (u_page_cache_resp_bits_stage1_entry_4_vmid),
-    .io_in_0_bits_s1_entry_4_n       (u_page_cache_resp_bits_stage1_entry_4_n),
-    .io_in_0_bits_s1_entry_4_pbmt    (u_page_cache_resp_bits_stage1_entry_4_pbmt),
-    .io_in_0_bits_s1_entry_4_perm_d  (u_page_cache_resp_bits_stage1_entry_4_perm_d),
-    .io_in_0_bits_s1_entry_4_perm_a  (u_page_cache_resp_bits_stage1_entry_4_perm_a),
-    .io_in_0_bits_s1_entry_4_perm_g  (u_page_cache_resp_bits_stage1_entry_4_perm_g),
-    .io_in_0_bits_s1_entry_4_perm_u  (u_page_cache_resp_bits_stage1_entry_4_perm_u),
-    .io_in_0_bits_s1_entry_4_perm_x  (u_page_cache_resp_bits_stage1_entry_4_perm_x),
-    .io_in_0_bits_s1_entry_4_perm_w  (u_page_cache_resp_bits_stage1_entry_4_perm_w),
-    .io_in_0_bits_s1_entry_4_perm_r  (u_page_cache_resp_bits_stage1_entry_4_perm_r),
-    .io_in_0_bits_s1_entry_4_level   (u_page_cache_resp_bits_stage1_entry_4_level),
-    .io_in_0_bits_s1_entry_4_v       (u_page_cache_resp_bits_stage1_entry_4_v),
-    .io_in_0_bits_s1_entry_4_ppn     (u_page_cache_resp_bits_stage1_entry_4_ppn),
-    .io_in_0_bits_s1_entry_4_ppn_low (u_page_cache_resp_bits_stage1_entry_4_ppn_low),
-    .io_in_0_bits_s1_entry_4_pf      (u_page_cache_resp_bits_stage1_entry_4_pf),
-    .io_in_0_bits_s1_entry_4_cf      (u_page_cache_resp_bits_stage1_entry_4_cf),
-    .io_in_0_bits_s1_entry_5_tag     (u_page_cache_resp_bits_stage1_entry_5_tag),
-    .io_in_0_bits_s1_entry_5_asid    (u_page_cache_resp_bits_stage1_entry_5_asid),
-    .io_in_0_bits_s1_entry_5_vmid    (u_page_cache_resp_bits_stage1_entry_5_vmid),
-    .io_in_0_bits_s1_entry_5_n       (u_page_cache_resp_bits_stage1_entry_5_n),
-    .io_in_0_bits_s1_entry_5_pbmt    (u_page_cache_resp_bits_stage1_entry_5_pbmt),
-    .io_in_0_bits_s1_entry_5_perm_d  (u_page_cache_resp_bits_stage1_entry_5_perm_d),
-    .io_in_0_bits_s1_entry_5_perm_a  (u_page_cache_resp_bits_stage1_entry_5_perm_a),
-    .io_in_0_bits_s1_entry_5_perm_g  (u_page_cache_resp_bits_stage1_entry_5_perm_g),
-    .io_in_0_bits_s1_entry_5_perm_u  (u_page_cache_resp_bits_stage1_entry_5_perm_u),
-    .io_in_0_bits_s1_entry_5_perm_x  (u_page_cache_resp_bits_stage1_entry_5_perm_x),
-    .io_in_0_bits_s1_entry_5_perm_w  (u_page_cache_resp_bits_stage1_entry_5_perm_w),
-    .io_in_0_bits_s1_entry_5_perm_r  (u_page_cache_resp_bits_stage1_entry_5_perm_r),
-    .io_in_0_bits_s1_entry_5_level   (u_page_cache_resp_bits_stage1_entry_5_level),
-    .io_in_0_bits_s1_entry_5_v       (u_page_cache_resp_bits_stage1_entry_5_v),
-    .io_in_0_bits_s1_entry_5_ppn     (u_page_cache_resp_bits_stage1_entry_5_ppn),
-    .io_in_0_bits_s1_entry_5_ppn_low (u_page_cache_resp_bits_stage1_entry_5_ppn_low),
-    .io_in_0_bits_s1_entry_5_pf      (u_page_cache_resp_bits_stage1_entry_5_pf),
-    .io_in_0_bits_s1_entry_5_cf      (u_page_cache_resp_bits_stage1_entry_5_cf),
-    .io_in_0_bits_s1_entry_6_tag     (u_page_cache_resp_bits_stage1_entry_6_tag),
-    .io_in_0_bits_s1_entry_6_asid    (u_page_cache_resp_bits_stage1_entry_6_asid),
-    .io_in_0_bits_s1_entry_6_vmid    (u_page_cache_resp_bits_stage1_entry_6_vmid),
-    .io_in_0_bits_s1_entry_6_n       (u_page_cache_resp_bits_stage1_entry_6_n),
-    .io_in_0_bits_s1_entry_6_pbmt    (u_page_cache_resp_bits_stage1_entry_6_pbmt),
-    .io_in_0_bits_s1_entry_6_perm_d  (u_page_cache_resp_bits_stage1_entry_6_perm_d),
-    .io_in_0_bits_s1_entry_6_perm_a  (u_page_cache_resp_bits_stage1_entry_6_perm_a),
-    .io_in_0_bits_s1_entry_6_perm_g  (u_page_cache_resp_bits_stage1_entry_6_perm_g),
-    .io_in_0_bits_s1_entry_6_perm_u  (u_page_cache_resp_bits_stage1_entry_6_perm_u),
-    .io_in_0_bits_s1_entry_6_perm_x  (u_page_cache_resp_bits_stage1_entry_6_perm_x),
-    .io_in_0_bits_s1_entry_6_perm_w  (u_page_cache_resp_bits_stage1_entry_6_perm_w),
-    .io_in_0_bits_s1_entry_6_perm_r  (u_page_cache_resp_bits_stage1_entry_6_perm_r),
-    .io_in_0_bits_s1_entry_6_level   (u_page_cache_resp_bits_stage1_entry_6_level),
-    .io_in_0_bits_s1_entry_6_v       (u_page_cache_resp_bits_stage1_entry_6_v),
-    .io_in_0_bits_s1_entry_6_ppn     (u_page_cache_resp_bits_stage1_entry_6_ppn),
-    .io_in_0_bits_s1_entry_6_ppn_low (u_page_cache_resp_bits_stage1_entry_6_ppn_low),
-    .io_in_0_bits_s1_entry_6_pf      (u_page_cache_resp_bits_stage1_entry_6_pf),
-    .io_in_0_bits_s1_entry_6_cf      (u_page_cache_resp_bits_stage1_entry_6_cf),
-    .io_in_0_bits_s1_entry_7_tag     (u_page_cache_resp_bits_stage1_entry_7_tag),
-    .io_in_0_bits_s1_entry_7_asid    (u_page_cache_resp_bits_stage1_entry_7_asid),
-    .io_in_0_bits_s1_entry_7_vmid    (u_page_cache_resp_bits_stage1_entry_7_vmid),
-    .io_in_0_bits_s1_entry_7_n       (u_page_cache_resp_bits_stage1_entry_7_n),
-    .io_in_0_bits_s1_entry_7_pbmt    (u_page_cache_resp_bits_stage1_entry_7_pbmt),
-    .io_in_0_bits_s1_entry_7_perm_d  (u_page_cache_resp_bits_stage1_entry_7_perm_d),
-    .io_in_0_bits_s1_entry_7_perm_a  (u_page_cache_resp_bits_stage1_entry_7_perm_a),
-    .io_in_0_bits_s1_entry_7_perm_g  (u_page_cache_resp_bits_stage1_entry_7_perm_g),
-    .io_in_0_bits_s1_entry_7_perm_u  (u_page_cache_resp_bits_stage1_entry_7_perm_u),
-    .io_in_0_bits_s1_entry_7_perm_x  (u_page_cache_resp_bits_stage1_entry_7_perm_x),
-    .io_in_0_bits_s1_entry_7_perm_w  (u_page_cache_resp_bits_stage1_entry_7_perm_w),
-    .io_in_0_bits_s1_entry_7_perm_r  (u_page_cache_resp_bits_stage1_entry_7_perm_r),
-    .io_in_0_bits_s1_entry_7_level   (u_page_cache_resp_bits_stage1_entry_7_level),
-    .io_in_0_bits_s1_entry_7_v       (u_page_cache_resp_bits_stage1_entry_7_v),
-    .io_in_0_bits_s1_entry_7_ppn     (u_page_cache_resp_bits_stage1_entry_7_ppn),
-    .io_in_0_bits_s1_entry_7_ppn_low (u_page_cache_resp_bits_stage1_entry_7_ppn_low),
-    .io_in_0_bits_s1_entry_7_pf      (u_page_cache_resp_bits_stage1_entry_7_pf),
-    .io_in_0_bits_s1_entry_7_cf      (u_page_cache_resp_bits_stage1_entry_7_cf),
-    .io_in_0_bits_s1_pteidx_0        (u_page_cache_resp_bits_stage1_pteidx_0),
-    .io_in_0_bits_s1_pteidx_1        (u_page_cache_resp_bits_stage1_pteidx_1),
-    .io_in_0_bits_s1_pteidx_2        (u_page_cache_resp_bits_stage1_pteidx_2),
-    .io_in_0_bits_s1_pteidx_3        (u_page_cache_resp_bits_stage1_pteidx_3),
-    .io_in_0_bits_s1_pteidx_4        (u_page_cache_resp_bits_stage1_pteidx_4),
-    .io_in_0_bits_s1_pteidx_5        (u_page_cache_resp_bits_stage1_pteidx_5),
-    .io_in_0_bits_s1_pteidx_6        (u_page_cache_resp_bits_stage1_pteidx_6),
-    .io_in_0_bits_s1_pteidx_7        (u_page_cache_resp_bits_stage1_pteidx_7),
-    .io_in_0_bits_s1_not_super       (u_page_cache_resp_bits_stage1_not_super),
-    .io_in_0_bits_s2_entry_tag       (u_page_cache_resp_bits_toHptw_resp_entry_tag),
-    .io_in_0_bits_s2_entry_vmid      (u_page_cache_resp_bits_toHptw_resp_entry_vmid),
-    .io_in_0_bits_s2_entry_n         (u_page_cache_resp_bits_toHptw_resp_entry_n),
-    .io_in_0_bits_s2_entry_pbmt      (u_page_cache_resp_bits_toHptw_resp_entry_pbmt),
-    .io_in_0_bits_s2_entry_ppn       (u_page_cache_resp_bits_toHptw_resp_entry_ppn),
-    .io_in_0_bits_s2_entry_perm_d    (u_page_cache_resp_bits_toHptw_resp_entry_perm_d),
-    .io_in_0_bits_s2_entry_perm_a    (u_page_cache_resp_bits_toHptw_resp_entry_perm_a),
-    .io_in_0_bits_s2_entry_perm_g    (u_page_cache_resp_bits_toHptw_resp_entry_perm_g),
-    .io_in_0_bits_s2_entry_perm_u    (u_page_cache_resp_bits_toHptw_resp_entry_perm_u),
-    .io_in_0_bits_s2_entry_perm_x    (u_page_cache_resp_bits_toHptw_resp_entry_perm_x),
-    .io_in_0_bits_s2_entry_perm_w    (u_page_cache_resp_bits_toHptw_resp_entry_perm_w),
-    .io_in_0_bits_s2_entry_perm_r    (u_page_cache_resp_bits_toHptw_resp_entry_perm_r),
-    .io_in_0_bits_s2_entry_level     (u_page_cache_resp_bits_toHptw_resp_entry_level),
-    .io_in_0_bits_s2_gpf             (u_page_cache_resp_bits_toHptw_resp_gpf),
+    .io_in_0_bits_s2xlate            (u_cache_resp_bits_req_info_s2xlate),
+    .io_in_0_bits_s1_entry_0_tag     (u_cache_resp_bits_stage1_entry_0_tag),
+    .io_in_0_bits_s1_entry_0_asid    (u_cache_resp_bits_stage1_entry_0_asid),
+    .io_in_0_bits_s1_entry_0_vmid    (u_cache_resp_bits_stage1_entry_0_vmid),
+    .io_in_0_bits_s1_entry_0_n       (u_cache_resp_bits_stage1_entry_0_n),
+    .io_in_0_bits_s1_entry_0_pbmt    (u_cache_resp_bits_stage1_entry_0_pbmt),
+    .io_in_0_bits_s1_entry_0_perm_d  (u_cache_resp_bits_stage1_entry_0_perm_d),
+    .io_in_0_bits_s1_entry_0_perm_a  (u_cache_resp_bits_stage1_entry_0_perm_a),
+    .io_in_0_bits_s1_entry_0_perm_g  (u_cache_resp_bits_stage1_entry_0_perm_g),
+    .io_in_0_bits_s1_entry_0_perm_u  (u_cache_resp_bits_stage1_entry_0_perm_u),
+    .io_in_0_bits_s1_entry_0_perm_x  (u_cache_resp_bits_stage1_entry_0_perm_x),
+    .io_in_0_bits_s1_entry_0_perm_w  (u_cache_resp_bits_stage1_entry_0_perm_w),
+    .io_in_0_bits_s1_entry_0_perm_r  (u_cache_resp_bits_stage1_entry_0_perm_r),
+    .io_in_0_bits_s1_entry_0_level   (u_cache_resp_bits_stage1_entry_0_level),
+    .io_in_0_bits_s1_entry_0_v       (u_cache_resp_bits_stage1_entry_0_v),
+    .io_in_0_bits_s1_entry_0_ppn     (u_cache_resp_bits_stage1_entry_0_ppn),
+    .io_in_0_bits_s1_entry_0_ppn_low (u_cache_resp_bits_stage1_entry_0_ppn_low),
+    .io_in_0_bits_s1_entry_0_pf      (u_cache_resp_bits_stage1_entry_0_pf),
+    .io_in_0_bits_s1_entry_0_cf      (u_cache_resp_bits_stage1_entry_0_cf),
+    .io_in_0_bits_s1_entry_1_tag     (u_cache_resp_bits_stage1_entry_1_tag),
+    .io_in_0_bits_s1_entry_1_asid    (u_cache_resp_bits_stage1_entry_1_asid),
+    .io_in_0_bits_s1_entry_1_vmid    (u_cache_resp_bits_stage1_entry_1_vmid),
+    .io_in_0_bits_s1_entry_1_n       (u_cache_resp_bits_stage1_entry_1_n),
+    .io_in_0_bits_s1_entry_1_pbmt    (u_cache_resp_bits_stage1_entry_1_pbmt),
+    .io_in_0_bits_s1_entry_1_perm_d  (u_cache_resp_bits_stage1_entry_1_perm_d),
+    .io_in_0_bits_s1_entry_1_perm_a  (u_cache_resp_bits_stage1_entry_1_perm_a),
+    .io_in_0_bits_s1_entry_1_perm_g  (u_cache_resp_bits_stage1_entry_1_perm_g),
+    .io_in_0_bits_s1_entry_1_perm_u  (u_cache_resp_bits_stage1_entry_1_perm_u),
+    .io_in_0_bits_s1_entry_1_perm_x  (u_cache_resp_bits_stage1_entry_1_perm_x),
+    .io_in_0_bits_s1_entry_1_perm_w  (u_cache_resp_bits_stage1_entry_1_perm_w),
+    .io_in_0_bits_s1_entry_1_perm_r  (u_cache_resp_bits_stage1_entry_1_perm_r),
+    .io_in_0_bits_s1_entry_1_level   (u_cache_resp_bits_stage1_entry_1_level),
+    .io_in_0_bits_s1_entry_1_v       (u_cache_resp_bits_stage1_entry_1_v),
+    .io_in_0_bits_s1_entry_1_ppn     (u_cache_resp_bits_stage1_entry_1_ppn),
+    .io_in_0_bits_s1_entry_1_ppn_low (u_cache_resp_bits_stage1_entry_1_ppn_low),
+    .io_in_0_bits_s1_entry_1_pf      (u_cache_resp_bits_stage1_entry_1_pf),
+    .io_in_0_bits_s1_entry_1_cf      (u_cache_resp_bits_stage1_entry_1_cf),
+    .io_in_0_bits_s1_entry_2_tag     (u_cache_resp_bits_stage1_entry_2_tag),
+    .io_in_0_bits_s1_entry_2_asid    (u_cache_resp_bits_stage1_entry_2_asid),
+    .io_in_0_bits_s1_entry_2_vmid    (u_cache_resp_bits_stage1_entry_2_vmid),
+    .io_in_0_bits_s1_entry_2_n       (u_cache_resp_bits_stage1_entry_2_n),
+    .io_in_0_bits_s1_entry_2_pbmt    (u_cache_resp_bits_stage1_entry_2_pbmt),
+    .io_in_0_bits_s1_entry_2_perm_d  (u_cache_resp_bits_stage1_entry_2_perm_d),
+    .io_in_0_bits_s1_entry_2_perm_a  (u_cache_resp_bits_stage1_entry_2_perm_a),
+    .io_in_0_bits_s1_entry_2_perm_g  (u_cache_resp_bits_stage1_entry_2_perm_g),
+    .io_in_0_bits_s1_entry_2_perm_u  (u_cache_resp_bits_stage1_entry_2_perm_u),
+    .io_in_0_bits_s1_entry_2_perm_x  (u_cache_resp_bits_stage1_entry_2_perm_x),
+    .io_in_0_bits_s1_entry_2_perm_w  (u_cache_resp_bits_stage1_entry_2_perm_w),
+    .io_in_0_bits_s1_entry_2_perm_r  (u_cache_resp_bits_stage1_entry_2_perm_r),
+    .io_in_0_bits_s1_entry_2_level   (u_cache_resp_bits_stage1_entry_2_level),
+    .io_in_0_bits_s1_entry_2_v       (u_cache_resp_bits_stage1_entry_2_v),
+    .io_in_0_bits_s1_entry_2_ppn     (u_cache_resp_bits_stage1_entry_2_ppn),
+    .io_in_0_bits_s1_entry_2_ppn_low (u_cache_resp_bits_stage1_entry_2_ppn_low),
+    .io_in_0_bits_s1_entry_2_pf      (u_cache_resp_bits_stage1_entry_2_pf),
+    .io_in_0_bits_s1_entry_2_cf      (u_cache_resp_bits_stage1_entry_2_cf),
+    .io_in_0_bits_s1_entry_3_tag     (u_cache_resp_bits_stage1_entry_3_tag),
+    .io_in_0_bits_s1_entry_3_asid    (u_cache_resp_bits_stage1_entry_3_asid),
+    .io_in_0_bits_s1_entry_3_vmid    (u_cache_resp_bits_stage1_entry_3_vmid),
+    .io_in_0_bits_s1_entry_3_n       (u_cache_resp_bits_stage1_entry_3_n),
+    .io_in_0_bits_s1_entry_3_pbmt    (u_cache_resp_bits_stage1_entry_3_pbmt),
+    .io_in_0_bits_s1_entry_3_perm_d  (u_cache_resp_bits_stage1_entry_3_perm_d),
+    .io_in_0_bits_s1_entry_3_perm_a  (u_cache_resp_bits_stage1_entry_3_perm_a),
+    .io_in_0_bits_s1_entry_3_perm_g  (u_cache_resp_bits_stage1_entry_3_perm_g),
+    .io_in_0_bits_s1_entry_3_perm_u  (u_cache_resp_bits_stage1_entry_3_perm_u),
+    .io_in_0_bits_s1_entry_3_perm_x  (u_cache_resp_bits_stage1_entry_3_perm_x),
+    .io_in_0_bits_s1_entry_3_perm_w  (u_cache_resp_bits_stage1_entry_3_perm_w),
+    .io_in_0_bits_s1_entry_3_perm_r  (u_cache_resp_bits_stage1_entry_3_perm_r),
+    .io_in_0_bits_s1_entry_3_level   (u_cache_resp_bits_stage1_entry_3_level),
+    .io_in_0_bits_s1_entry_3_v       (u_cache_resp_bits_stage1_entry_3_v),
+    .io_in_0_bits_s1_entry_3_ppn     (u_cache_resp_bits_stage1_entry_3_ppn),
+    .io_in_0_bits_s1_entry_3_ppn_low (u_cache_resp_bits_stage1_entry_3_ppn_low),
+    .io_in_0_bits_s1_entry_3_pf      (u_cache_resp_bits_stage1_entry_3_pf),
+    .io_in_0_bits_s1_entry_3_cf      (u_cache_resp_bits_stage1_entry_3_cf),
+    .io_in_0_bits_s1_entry_4_tag     (u_cache_resp_bits_stage1_entry_4_tag),
+    .io_in_0_bits_s1_entry_4_asid    (u_cache_resp_bits_stage1_entry_4_asid),
+    .io_in_0_bits_s1_entry_4_vmid    (u_cache_resp_bits_stage1_entry_4_vmid),
+    .io_in_0_bits_s1_entry_4_n       (u_cache_resp_bits_stage1_entry_4_n),
+    .io_in_0_bits_s1_entry_4_pbmt    (u_cache_resp_bits_stage1_entry_4_pbmt),
+    .io_in_0_bits_s1_entry_4_perm_d  (u_cache_resp_bits_stage1_entry_4_perm_d),
+    .io_in_0_bits_s1_entry_4_perm_a  (u_cache_resp_bits_stage1_entry_4_perm_a),
+    .io_in_0_bits_s1_entry_4_perm_g  (u_cache_resp_bits_stage1_entry_4_perm_g),
+    .io_in_0_bits_s1_entry_4_perm_u  (u_cache_resp_bits_stage1_entry_4_perm_u),
+    .io_in_0_bits_s1_entry_4_perm_x  (u_cache_resp_bits_stage1_entry_4_perm_x),
+    .io_in_0_bits_s1_entry_4_perm_w  (u_cache_resp_bits_stage1_entry_4_perm_w),
+    .io_in_0_bits_s1_entry_4_perm_r  (u_cache_resp_bits_stage1_entry_4_perm_r),
+    .io_in_0_bits_s1_entry_4_level   (u_cache_resp_bits_stage1_entry_4_level),
+    .io_in_0_bits_s1_entry_4_v       (u_cache_resp_bits_stage1_entry_4_v),
+    .io_in_0_bits_s1_entry_4_ppn     (u_cache_resp_bits_stage1_entry_4_ppn),
+    .io_in_0_bits_s1_entry_4_ppn_low (u_cache_resp_bits_stage1_entry_4_ppn_low),
+    .io_in_0_bits_s1_entry_4_pf      (u_cache_resp_bits_stage1_entry_4_pf),
+    .io_in_0_bits_s1_entry_4_cf      (u_cache_resp_bits_stage1_entry_4_cf),
+    .io_in_0_bits_s1_entry_5_tag     (u_cache_resp_bits_stage1_entry_5_tag),
+    .io_in_0_bits_s1_entry_5_asid    (u_cache_resp_bits_stage1_entry_5_asid),
+    .io_in_0_bits_s1_entry_5_vmid    (u_cache_resp_bits_stage1_entry_5_vmid),
+    .io_in_0_bits_s1_entry_5_n       (u_cache_resp_bits_stage1_entry_5_n),
+    .io_in_0_bits_s1_entry_5_pbmt    (u_cache_resp_bits_stage1_entry_5_pbmt),
+    .io_in_0_bits_s1_entry_5_perm_d  (u_cache_resp_bits_stage1_entry_5_perm_d),
+    .io_in_0_bits_s1_entry_5_perm_a  (u_cache_resp_bits_stage1_entry_5_perm_a),
+    .io_in_0_bits_s1_entry_5_perm_g  (u_cache_resp_bits_stage1_entry_5_perm_g),
+    .io_in_0_bits_s1_entry_5_perm_u  (u_cache_resp_bits_stage1_entry_5_perm_u),
+    .io_in_0_bits_s1_entry_5_perm_x  (u_cache_resp_bits_stage1_entry_5_perm_x),
+    .io_in_0_bits_s1_entry_5_perm_w  (u_cache_resp_bits_stage1_entry_5_perm_w),
+    .io_in_0_bits_s1_entry_5_perm_r  (u_cache_resp_bits_stage1_entry_5_perm_r),
+    .io_in_0_bits_s1_entry_5_level   (u_cache_resp_bits_stage1_entry_5_level),
+    .io_in_0_bits_s1_entry_5_v       (u_cache_resp_bits_stage1_entry_5_v),
+    .io_in_0_bits_s1_entry_5_ppn     (u_cache_resp_bits_stage1_entry_5_ppn),
+    .io_in_0_bits_s1_entry_5_ppn_low (u_cache_resp_bits_stage1_entry_5_ppn_low),
+    .io_in_0_bits_s1_entry_5_pf      (u_cache_resp_bits_stage1_entry_5_pf),
+    .io_in_0_bits_s1_entry_5_cf      (u_cache_resp_bits_stage1_entry_5_cf),
+    .io_in_0_bits_s1_entry_6_tag     (u_cache_resp_bits_stage1_entry_6_tag),
+    .io_in_0_bits_s1_entry_6_asid    (u_cache_resp_bits_stage1_entry_6_asid),
+    .io_in_0_bits_s1_entry_6_vmid    (u_cache_resp_bits_stage1_entry_6_vmid),
+    .io_in_0_bits_s1_entry_6_n       (u_cache_resp_bits_stage1_entry_6_n),
+    .io_in_0_bits_s1_entry_6_pbmt    (u_cache_resp_bits_stage1_entry_6_pbmt),
+    .io_in_0_bits_s1_entry_6_perm_d  (u_cache_resp_bits_stage1_entry_6_perm_d),
+    .io_in_0_bits_s1_entry_6_perm_a  (u_cache_resp_bits_stage1_entry_6_perm_a),
+    .io_in_0_bits_s1_entry_6_perm_g  (u_cache_resp_bits_stage1_entry_6_perm_g),
+    .io_in_0_bits_s1_entry_6_perm_u  (u_cache_resp_bits_stage1_entry_6_perm_u),
+    .io_in_0_bits_s1_entry_6_perm_x  (u_cache_resp_bits_stage1_entry_6_perm_x),
+    .io_in_0_bits_s1_entry_6_perm_w  (u_cache_resp_bits_stage1_entry_6_perm_w),
+    .io_in_0_bits_s1_entry_6_perm_r  (u_cache_resp_bits_stage1_entry_6_perm_r),
+    .io_in_0_bits_s1_entry_6_level   (u_cache_resp_bits_stage1_entry_6_level),
+    .io_in_0_bits_s1_entry_6_v       (u_cache_resp_bits_stage1_entry_6_v),
+    .io_in_0_bits_s1_entry_6_ppn     (u_cache_resp_bits_stage1_entry_6_ppn),
+    .io_in_0_bits_s1_entry_6_ppn_low (u_cache_resp_bits_stage1_entry_6_ppn_low),
+    .io_in_0_bits_s1_entry_6_pf      (u_cache_resp_bits_stage1_entry_6_pf),
+    .io_in_0_bits_s1_entry_6_cf      (u_cache_resp_bits_stage1_entry_6_cf),
+    .io_in_0_bits_s1_entry_7_tag     (u_cache_resp_bits_stage1_entry_7_tag),
+    .io_in_0_bits_s1_entry_7_asid    (u_cache_resp_bits_stage1_entry_7_asid),
+    .io_in_0_bits_s1_entry_7_vmid    (u_cache_resp_bits_stage1_entry_7_vmid),
+    .io_in_0_bits_s1_entry_7_n       (u_cache_resp_bits_stage1_entry_7_n),
+    .io_in_0_bits_s1_entry_7_pbmt    (u_cache_resp_bits_stage1_entry_7_pbmt),
+    .io_in_0_bits_s1_entry_7_perm_d  (u_cache_resp_bits_stage1_entry_7_perm_d),
+    .io_in_0_bits_s1_entry_7_perm_a  (u_cache_resp_bits_stage1_entry_7_perm_a),
+    .io_in_0_bits_s1_entry_7_perm_g  (u_cache_resp_bits_stage1_entry_7_perm_g),
+    .io_in_0_bits_s1_entry_7_perm_u  (u_cache_resp_bits_stage1_entry_7_perm_u),
+    .io_in_0_bits_s1_entry_7_perm_x  (u_cache_resp_bits_stage1_entry_7_perm_x),
+    .io_in_0_bits_s1_entry_7_perm_w  (u_cache_resp_bits_stage1_entry_7_perm_w),
+    .io_in_0_bits_s1_entry_7_perm_r  (u_cache_resp_bits_stage1_entry_7_perm_r),
+    .io_in_0_bits_s1_entry_7_level   (u_cache_resp_bits_stage1_entry_7_level),
+    .io_in_0_bits_s1_entry_7_v       (u_cache_resp_bits_stage1_entry_7_v),
+    .io_in_0_bits_s1_entry_7_ppn     (u_cache_resp_bits_stage1_entry_7_ppn),
+    .io_in_0_bits_s1_entry_7_ppn_low (u_cache_resp_bits_stage1_entry_7_ppn_low),
+    .io_in_0_bits_s1_entry_7_pf      (u_cache_resp_bits_stage1_entry_7_pf),
+    .io_in_0_bits_s1_entry_7_cf      (u_cache_resp_bits_stage1_entry_7_cf),
+    .io_in_0_bits_s1_pteidx_0        (u_cache_resp_bits_stage1_pteidx_0),
+    .io_in_0_bits_s1_pteidx_1        (u_cache_resp_bits_stage1_pteidx_1),
+    .io_in_0_bits_s1_pteidx_2        (u_cache_resp_bits_stage1_pteidx_2),
+    .io_in_0_bits_s1_pteidx_3        (u_cache_resp_bits_stage1_pteidx_3),
+    .io_in_0_bits_s1_pteidx_4        (u_cache_resp_bits_stage1_pteidx_4),
+    .io_in_0_bits_s1_pteidx_5        (u_cache_resp_bits_stage1_pteidx_5),
+    .io_in_0_bits_s1_pteidx_6        (u_cache_resp_bits_stage1_pteidx_6),
+    .io_in_0_bits_s1_pteidx_7        (u_cache_resp_bits_stage1_pteidx_7),
+    .io_in_0_bits_s1_not_super       (u_cache_resp_bits_stage1_not_super),
+    .io_in_0_bits_s2_entry_tag       (u_cache_resp_bits_toHptw_resp_entry_tag),
+    .io_in_0_bits_s2_entry_vmid      (u_cache_resp_bits_toHptw_resp_entry_vmid),
+    .io_in_0_bits_s2_entry_n         (u_cache_resp_bits_toHptw_resp_entry_n),
+    .io_in_0_bits_s2_entry_pbmt      (u_cache_resp_bits_toHptw_resp_entry_pbmt),
+    .io_in_0_bits_s2_entry_ppn       (u_cache_resp_bits_toHptw_resp_entry_ppn),
+    .io_in_0_bits_s2_entry_perm_d    (u_cache_resp_bits_toHptw_resp_entry_perm_d),
+    .io_in_0_bits_s2_entry_perm_a    (u_cache_resp_bits_toHptw_resp_entry_perm_a),
+    .io_in_0_bits_s2_entry_perm_g    (u_cache_resp_bits_toHptw_resp_entry_perm_g),
+    .io_in_0_bits_s2_entry_perm_u    (u_cache_resp_bits_toHptw_resp_entry_perm_u),
+    .io_in_0_bits_s2_entry_perm_x    (u_cache_resp_bits_toHptw_resp_entry_perm_x),
+    .io_in_0_bits_s2_entry_perm_w    (u_cache_resp_bits_toHptw_resp_entry_perm_w),
+    .io_in_0_bits_s2_entry_perm_r    (u_cache_resp_bits_toHptw_resp_entry_perm_r),
+    .io_in_0_bits_s2_entry_level     (u_cache_resp_bits_toHptw_resp_entry_level),
+    .io_in_0_bits_s2_gpf             (u_cache_resp_bits_toHptw_resp_gpf),
     .io_in_1_ready                   (u_merge_arb_1_in_1_ready),
     .io_in_1_valid                   (u_merge_arb_1__in_1_valid),
     .io_in_1_bits_s2xlate            (u_ptw_resp_bits_s2xlate),
@@ -10698,7 +10702,7 @@ module xs_L2TLB_core
     .io_csr_priv_virt                (u_prefetch__csr_priv_virt),
     .io_csr_priv_virt_changed        (u_prefetch__csr_priv_virt_changed),
     .io_in_valid                     (u_prefetch__in_valid),
-    .io_in_bits_vpn                  (u_page_cache_resp_bits_req_info_vpn),
+    .io_in_bits_vpn                  (u_cache_resp_bits_req_info_vpn),
     .io_out_ready                    (u_arb_cache_in_in_4_ready),
     .io_out_valid                    (u_prefetch_out_valid),
     .io_out_bits_req_info_vpn        (u_prefetch_out_bits_req_info_vpn),
@@ -10708,16 +10712,16 @@ module xs_L2TLB_core
   Arbiter2_L2TlbWithHptwIdBundle u_arb_mq (
     .io_in_0_ready                   (u_arb_mq_in_0_ready),
     .io_in_0_valid                   (u_arb_mq__in_0_valid),
-    .io_in_0_bits_req_info_vpn       (u_page_cache_resp_bits_req_info_vpn),
-    .io_in_0_bits_req_info_s2xlate   (u_page_cache_resp_bits_req_info_s2xlate),
-    .io_in_0_bits_req_info_source    (u_page_cache_resp_bits_req_info_source),
+    .io_in_0_bits_req_info_vpn       (u_cache_resp_bits_req_info_vpn),
+    .io_in_0_bits_req_info_s2xlate   (u_cache_resp_bits_req_info_s2xlate),
+    .io_in_0_bits_req_info_source    (u_cache_resp_bits_req_info_source),
     .io_in_0_bits_isLLptw            (u_arb_mq__in_0_bits_isLLptw),
     .io_in_1_ready                   (u_arb_mq_in_1_ready),
     .io_in_1_valid                   (u_llptw_cache_valid),
     .io_in_1_bits_req_info_vpn       (u_llptw_cache_bits_vpn),
     .io_in_1_bits_req_info_s2xlate   (u_llptw_cache_bits_s2xlate),
     .io_in_1_bits_req_info_source    (u_llptw_cache_bits_source),
-    .io_out_ready                    (u_miss_queue_in_ready),
+    .io_out_ready                    (u_missQueue_in_ready),
     .io_out_valid                    (u_arb_mq_out_valid),
     .io_out_bits_req_info_vpn        (u_arb_mq_out_bits_req_info_vpn),
     .io_out_bits_req_info_s2xlate    (u_arb_mq_out_bits_req_info_s2xlate),
