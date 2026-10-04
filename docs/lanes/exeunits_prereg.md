@@ -79,3 +79,75 @@ M4 写回丢 validPipe(2) 1425）；CVT64 在改名后重跑，对账落数。
   若出现 unmatched，先补 fail-closed 钉点再重跑，并在对账里写明。本节未做任何 FM 试跑。
 
 复跑：`bash scripts/run_proof.sh <T> <T> < /dev/null`（UT 目录名与目标同名）。
+
+## 2. ExeUnit 家族七个外壳
+
+### 2.1 结构（七个变体共用）
+
+- 共享控制核 `rtl/backend/xs_ExeUnit_core.sv`（手写 295 行）：§1 发射握手 + busy（不定延迟外壳）/ §2 inPipe 控制字段
+  延迟流水（每级随 robIdx 判冲刷；每个字段只保留到「最晚读它的 FU 级」，即 firtool 删剩的那组寄存器）/ §3 每个 FU 的
+  时钟门控使能（确定延迟：随 ready 反压前移的 valid 链 + 收尾一拍；不定延迟：in.fire 置 / out.fire 清）/
+  §4 instrAddrTransType 打一拍（每个用到的 FU 一份）/ §5 写回 valid；同文件 `xs_ExeUnit_wbsel` = 写回字段 Mux1H。
+- 各变体 wrapper `rtl/backend/ExeUnit_<k>.sv` 与 FM 钉点 `verif/ut/ExeUnit_<k>/fm_pins_pre.tcl` 由
+  `scripts/gen_exeunit.py`（`--check` 幂等）从 golden 机械生成，fail-closed：golden 每个寄存器都必须归入核按参数会生成的
+  那一个（门控链 / inPipe valid / inPipe 字段 / busy 快照 / att 打拍），inPipe 字段深度必须等于保留规则，每条实例连线与
+  每个输出口必须命中已知形状（直连 / 单元素直通 / FU 成员与 valid 一一对应的 Mux1H / io_out_valid / io_in_ready）。
+- 子模块（Dispatcher_*、全部 FU 及其子树、ClockGate）均为已签核件，两侧白盒：impl 读重写件（含本 lane 的四个叶子），
+  ref 读 golden；无重写件的 PROVEN_IN_CONE 件（CryptoModule / FloatAdder / FloatAdderF64Pipeline /
+  FarPathFloatAdderF64WidenPipeline / FPCVT / FloatDivider / FloatDividerR64）两侧同读 golden；ClockGate impl 读
+  rtl/common/ClockGate.sv（codex 0208）。**无黑盒。**
+- FM 钉点三段：(a) 外壳寄存器 golden 扁平名 ↔ 核 generate 名；(b) 子 FU 签核时用过的钉点（FMA 1636 / FCVT 128 / Bku 18 /
+  FAlu 23），用 tclsh 桩真跑原文件取调用序列加实例前缀，条数对 docs/pin_call_seq.tsv；(c) 外壳附加（FAlu 三组「同值两份」
+  寄存器 44 条、MulUnit 改读 ArrayMulDataModule 重写件后的 8 个死位），依据写在 gen_exeunit.py `EXTRA_CHILD_PINS`。
+
+| 目标 | golden 行 | impl 行（生成） | `_GEN_`/`_T_` | FU | 钉点条数 |
+|---|---|---|---|---|---|
+| ExeUnit | 791 | 531 | 0 | Alu / Mul(门控,2) / Bku(门控,2) | 70 |
+| ExeUnit_1 | 1859 | 1303 | 0 | brh / jmp（各一份 att 打拍） | 10 |
+| ExeUnit_4 | 274 | 215 | 0 | Alu | 0 |
+| ExeUnit_5 | 2713 | 1919 | 0 | brh / jmp / i2f(门控,2) / VSetRiWi / VSetRiWvf / i2v | 53 |
+| ExeUnit_8 | 1131 | 796 | 0 | Falu(门控,1) / Fcvt(门控,2) / f2v / Fmac(门控,3) | 1920 |
+| ExeUnit_9 | 395 | 269 | 0 | Fdiv（不定延迟：busy + uncer 门控） | 11 |
+| ExeUnit_10 | 731 | 483 | 0 | Falu(门控,1) / Fmac(门控,3) | 1770 |
+
+### 2.2 诊断跑（如实记）
+
+登记前做过 FM `diagnostic-full`（`FM_FAILING_LIMIT=0`，vmucp 关，不产 receipt）——外壳是大装配件，钉点与 vmucp 白名单
+需要先看到 unread / unmatched 集合才能写依据：
+1. 首跑七个全 elaborate 失败（FMR_VLOG-091：核里 need_flush 函数读模块级 flush 信号）→ 改成参数传入（`1be1cff99`，纯重构）。
+2. ExeUnit_10 首跑 FAILED（failing 66 / unmatched 32）：FAlu 三组「同值两份」寄存器在外壳里扇出签名对称、FM 配不上 →
+   按语义整组补 (c) 段钉点后 SUCCEEDED。ExeUnit 首跑 unmatched unread 8+8（MulUnit 的 ArrayMulDataModule 死位，外壳里改读
+   重写件后名字不同）→ 按下标规则钉 8 条后全部 matched_nc。
+3. 之后的诊断数字即下表「诊断」列；预测 = 诊断 passing + vmucp 打开后计入比较的 unread 数。
+
+### 2.3 UT（3 seed × 3 档 × 200k，tb 自动由 golden 结构推出 FU 名单 / fuType 编码 / 门控 / busy；每拍比全部输出）
+
+激励：fuType 85% 取本外壳某 FU 的编码（其余全随机，多数不命中任何 FU）、valid 60%、out.ready 90%、flush 10%
+（robIdx 与 flush robIdx 都落在 0..15，两种冲刷判定都常见）、cg_bore 5% 强开；暖机 5+8×N 拍轮流给每个 FU 发指令。
+覆盖（写进判据，每项 > 1000）：每个 FU 收下 / 写回、反压、未命中 FU、冲刷（有 flush 口的）、门控开 / 关（有门控的）、busy。
+
+2.3.A（本批登记）：
+
+| 目标 | 9 档 errors | 每档 checks | 覆盖（seed 1） |
+|---|---|---|---|
+| ExeUnit_1 | 全 0 | 23,597,522 | in {46070, 46119} / out {51202, 51289} / 反压 10302 / 未命中 17942 |
+| ExeUnit_4 | 全 0 | 3,999,740 | in 91736 / out 101704 / 反压 9968 / 未命中 18033 |
+| ExeUnit_9 | 全 0 | 4,399,714 | in 26035 / out 25205 / 反压 2630 / 冲刷 12040 / 门控开 105069 关 94915 / busy 149054 |
+
+变异自检（核 `xs_ExeUnit_core.sv`，seed 7 × random × 20k）：ExeUnit_8 上 C1 isAfter 写成 >= 1318 / C2 丢 flushItself 254 /
+C4 字段流水跳级 6713 / C5 写回不看 valid 407752 / C6 inPipe 不判冲刷 12416 —— 抓到；C3（门控 en_q 少开收尾一拍）**UT 没抓到**
+（errors=0：收尾那拍 FU 内已无在途操作，UT 观测不到；FM 在 ClockGate 白盒里把 E 当比较锥比，由 FM 覆盖）。
+ExeUnit_9 上 B1 收下同拍被冲不清 busy 50816 / B2 uncer 清除不看 out.ready 122364 / B3 busy 不拦 Dispatcher 315423 /
+B4 在途被冲不清 busy 323783；ExeUnit_1 上 A1 att 位序错 17107 / A2 写回选择恒看第 0 个 FU 174469。
+CVT64（§1 补）：改名后重跑 9 档全 0；变异 M1 2949 / M2 446 / M3 100 / M5 625 / M6 100 抓到，M4（第 2 级使能恒开）
+UT 抓不到：s2 只从 s1 取值、s1 只在 fire 后变，恒开使能在可达状态下与 fireReg 门控等价（属等价变异，FM 侧不作期望）。
+
+### 2.4 跑前预测（★跑完不许改本节★）—— 2.4.A 本批
+
+| 目标 | 模型 expected | 诊断 passing / constant / unread | 预测 passing | vmucp |
+|---|---|---|---|---|
+| ExeUnit_1 | 1373（10 + 1363） | 1373 / 0 / 0 | **1373** | 否 |
+| ExeUnit_4 | 789（0 + 789） | 789 / 0 / 0 | **789** | 否 |
+| ExeUnit_9 | 2158（1363 + 795） | 2127 / 30 / 1 | **2128**（+1） | 是（verif/fm_target_config/ExeUnit_9.tcl） |
+
+其余均为 failing / unverified / unmatched 0、无黑盒、无 dont_verify，SUCCEEDED。
