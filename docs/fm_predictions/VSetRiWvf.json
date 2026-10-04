@@ -1,0 +1,9 @@
+{
+  "target": "VSetRiWvf",
+  "ut": "VSetRiWvf",
+  "regs": 0,
+  "outs": 736,
+  "expected": 736,
+  "merge_dup": "false",
+  "model_applicable": true
+}
