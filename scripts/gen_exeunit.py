@@ -112,6 +112,43 @@ EXTRA_CHILD_PINS = {
          for r in ('aLZCReg_reg[6]', 'dLZCReg_reg[6]', 'udNegReg_0_reg[67]', 'udNegReg_1_reg[67]',
                    'udNegReg_3_reg[67]', 'udNegReg_4_reg[67]')]
     ),
+    # Fence（ExeUnit_7）：锁存的 uop 操作码 9 位。golden 是标量 uop_ctrl_fuOpType，重写件聚合成 struct uop
+    #   （fence_uop_t：fuOpType 在 [36:28]）。Fence 单独签核时靠签名配上；进了 ExeUnit_7，同一个发射口 fuOpType 还被
+    #   CSR 的 trapInstMod faultCsrUop fuOpType 锁存（ref 侧 [8:3] 是 golden 死位，verif/dead_ref/CSR.json），两组签名
+    #   撞在一起，诊断跑里 ref 的 [8:3] 6 位配不上 —— 按字段整组钉 9 位。
+    'Fence': (
+        [(f'uop_ctrl_fuOpType_reg[{b}]', f'u_core/uop_reg[{28 + b}]') for b in range(9)]
+    ),
+    # CSR（ExeUnit_7）：几族「golden 展平标量 / 重写件数组」寄存器。CSR 单独签核时它们全靠签名分析配上（CSR 自己的
+    #   钉点只管匹配后剩下的四族，verif/ut/CSR/fm_pins.tcl）；进了 ExeUnit_7（输入多过一层 Dispatcher / DelayN），
+    #   诊断跑里签名分析没能配上这几族（ref 侧 4921 个孤儿全落在下面各族里）。按结构整族钉（全部条目全部位，不是照
+    #   孤儿名单抄）：
+    #   * imsic 9 个 IntFile 的 eies_1..3 / eithreshold（各 64 位）：golden intFile{,_k}/eies_<w> ↔ 重写
+    #     u_core/g_file[k].intFile/u_core/eies_reg[w]、eithreshold_reg（eies_0 / eidelivery 高位留给匹配后的 CSR 钉点）；
+    #   * imsic 读数据打拍：golden intfile_rdata_d{,_k}_bits / _valid ↔ 重写 u_core/rdata_d_bits_reg[k] / rdata_d_valid_reg[k]；
+    #   * csrMod 的 PMP / PMA 32 个地址寄存器（各 46 位）：golden pmpAddr_<k>_ADDRESS / pmaAddr_<k> ↔ 重写
+    #     u_core/g_entry[k].addr_q_reg；
+    #   * isPerfCnt 两拍保持：golden io_csrio_isPerfCnt_r ↔ 重写 not_jmp_q（CSR.sv：本条不是系统指令）、golden
+    #     csrMod/io_out_bits_isPerfCnt_r ↔ 重写 csrMod/is_perf_cnt_q。
+    'CSR': (
+        [(f'imsic/imsic/intFile{"_%d" % k if k else ""}/eies_{w}_reg[{b}]',
+          f'imsic/imsic/u_core/g_file[{k}].intFile/u_core/eies_reg[{w}][{b}]')
+         for k in range(9) for w in (1, 2, 3) for b in range(64)]
+        + [(f'imsic/imsic/intFile{"_%d" % k if k else ""}/eithreshold_reg[{b}]',
+            f'imsic/imsic/u_core/g_file[{k}].intFile/u_core/eithreshold_reg[{b}]')
+           for k in range(9) for b in range(64)]
+        + [(f'imsic/imsic/intfile_rdata_d{"_%d" % k if k else ""}_bits_reg[{b}]',
+            f'imsic/imsic/u_core/rdata_d_bits_reg[{k}][{b}]')
+           for k in range(9) for b in range(64)]
+        + [(f'imsic/imsic/intfile_rdata_d{"_%d" % k if k else ""}_valid_reg',
+            f'imsic/imsic/u_core/rdata_d_valid_reg[{k}]') for k in range(9)]
+        + [(f'csrMod/pmpEntryMod/pmpAddr_{k}_ADDRESS_reg[{b}]',
+            f'csrMod/pmpEntryMod/u_core/g_entry[{k}].addr_q_reg[{b}]') for k in range(32) for b in range(46)]
+        + [(f'csrMod/pmaEntryMod/pmaAddr_{k}_reg[{b}]',
+            f'csrMod/pmaEntryMod/u_core/g_entry[{k}].addr_q_reg[{b}]') for k in range(32) for b in range(46)]
+        + [('io_csrio_isPerfCnt_r_reg', 'not_jmp_q_reg'),
+           ('csrMod/io_out_bits_isPerfCnt_r_reg', 'csrMod/is_perf_cnt_q_reg')]
+    ),
     'MulUnit': (
         [(f'mulDataModule/r_{k}_reg', f'u_core/mulDataModule/u_core/pp_reg_reg[{k}]') for k in (2303, 2304, 2305, 2306)]
         + [(f'mulDataModule/r_{2307 + j}_reg', f'u_core/mulDataModule/u_core/mid_reg_reg[{j}]')

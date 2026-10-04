@@ -9,18 +9,22 @@ ExeUnit_7 = CSR 执行单元外壳：Dispatcher_7 按 fuType 派给 csr(35'h20) 
 ExeUnit 的扁平口进：
   * 合法 CSR 地址表 LEGAL（337 个）、系统指令 funct12 池、CSR 访问 opType 池、写数据 WARL 偏置 —— 从
     verif/ut/CSR/tb.sv 原样取（取不到或个数不对即失败）；
-  * 每拍：valid 60%；fuType 72% csr / 10% Fence / 15% Div / 3% 随机（多半不命中任何 FU，Dispatcher 吞掉）；
+  * 每拍：valid 60%；fuType 82% csr / 6% Fence / 9% Div / 3% 随机（多半不命中任何 FU，Dispatcher 吞掉）；
     csr：75% CSR 访问（80% 合法地址，1/10 打间接寄存器 mireg/sireg/vsireg）、25% 系统指令
     （比 CSR UT 的 15% 高：外壳 busy 让 csr 收指令的拍数少了，xret 覆盖要补回来）；
-    Fence：99% 合法 FenceOpType（6 个），1% 随机（非法 op 会把 Fence 状态机卡死在 s_wait，靠偶发复位解开，同
-    verif/ut/Fence 的 golden 行为坑）；sbuffer 空 80%；Div：10% 除数为 0；
-    robIdx 与冲刷 robIdx 取 0..15 窄范围、冲刷 3%；trap 3%（exceptionVec 单热）；外部中断线慢变，debug/NMI 稀；
-    MSI 5%；out.ready 70%；DFT 时钟门控 cg_bore_*_cgen 1/20；NMIE=0 时的救援（同 CSR UT）。
+    Fence：只发合法 FenceOpType（6 个）—— 非法 op 会把 Fence 状态机永远卡在 s_wait（verif/ut/Fence 记的 golden
+    行为坑，那里已覆盖），而 Dispatcher_7 的 in.ready = 三个 FU ready 的与，Fence 一卡整个外壳就收不了指令；
+    sbuffer 空 80%；Div：10% 除数为 0；
+    robIdx 与冲刷 robIdx 3/4 取 0..15 窄范围、冲刷 3%；trap 3%（exceptionVec 单热）；外部中断线慢变，debug/NMI 稀；
+    MSI 5%；out.ready 80%；DFT 时钟门控 cg_bore_*_cgen 1/20；NMIE=0 时的救援（同 CSR UT）。
   * 暖机（上电复位后、开始比较之前，不比对）：CSR 的大量状态寄存器不复位，两个独立例化在随机初值档各摇一份，
-    必须先写成确定值 —— 照 CSR UT 的暖机程序：M 态 csrrw 写遍 337 个合法地址；4 组触发器 tselect/tdata1/tdata2；
-    拉 debug 中断进调试模式（进不去就走单步异常）；写 dpc/dscratch0/1；dret；打一个 trap；mret。
+    必须先写成确定值 —— 照 CSR UT 的暖机程序：M 态 csrrw 写遍 337 个合法地址；拉 debug 中断进调试模式（进不去就走
+    单步异常）；4 组触发器 tselect/tdata1/tdata2；写 dpc/dscratch0/1；dret；打一个 trap；mret。
+    ★与 CSR UT 的一处不同★：触发器放到进 debug 之后写。第一步随机写过 tdata1，若某组的 dmode 位被写成 1，M 态就
+    再也写不动它的 tdata1/tdata2（只有 debug 模式能写），那组 tdata2 留着上电随机值，两侧不等 —— seed 7 × random
+    探针跑在第 19619 拍从 tUpdate.tdata2 口上撞到过。
     uop 型步骤以 golden 外壳 busy 的上升沿判「上一条已被收下」再发下一条（暖机期不冲刷，busy 上升沿与 in.fire 一一对应）。
-    暖机做完才 arm（之后每拍都比，含偶发复位后的拍）。
+    暖机做完、且 Fence 收过第一条指令（它的 sfence 载荷寄存器不复位、直连输出口）才 arm（之后每拍都比，含偶发复位后的拍）。
 覆盖（每项 >= cov_min，否则 TEST FAILED）：三个 FU 各自的 fire / 写回、busy、冲刷命中在途、反压、trap 进 M 态、
 mret、合法 CSR 写、EX_II、xret/中断重定向、MSI。恒值输出位见 EXEMPT（逐项给理由），不要求见过 0/1 但照样逐拍比。
 
@@ -87,7 +91,7 @@ endfunction
 
 EXC = ["@io_csrio_exception_bits_exceptionVec_%d" % k for k in range(24)]
 
-STIM = """
+STIM_T = """
 logic [11:0] a;
 logic [8:0]  op;
 int          f;
@@ -106,10 +110,10 @@ e7_clint += $urandom_range(3);
 @io_csrin_msiInfo_valid = e7_pct(5);
 // ---- 发射口 uop ----
 @io_in_valid = e7_pct(60);
-@io_in_bits_robIdx_value = 8'($urandom_range(0, 15));
-@io_flush_bits_robIdx_value = 8'($urandom_range(0, 15));
+if (e7_pct(75)) @io_in_bits_robIdx_value = 8'($urandom_range(0, 15));
+if (e7_pct(75)) @io_flush_bits_robIdx_value = 8'($urandom_range(0, 15));
 f = $urandom_range(99);
-if (f < 72) begin
+if (f < 82) begin
   @io_in_bits_fuType = 35'h20;                       // csr
   if (e7_pct(75)) begin
     op = e7_CSROP[$urandom_range(5)];
@@ -124,9 +128,9 @@ if (f < 72) begin
   @io_in_bits_imm[16:12] = e7_pct(75) ? 5'($urandom_range(31, 1)) : 5'h0;
   @io_in_bits_imm[21:17] = e7_pct(75) ? 5'($urandom_range(31, 1)) : 5'h0;
   @io_in_bits_src_0 = e7_bias(a, e7_rnd64());
-end else if (f < 82) begin
-  @io_in_bits_fuType = 35'h200;                      // Fence
-  @io_in_bits_fuOpType = e7_pct(99) ? e7_FENCEOP[$urandom_range(5)] : 9'($urandom);
+end else if (f < 88) begin
+  @io_in_bits_fuType = 35'h200;                      // Fence：只发合法 op（见文件头）
+  @io_in_bits_fuOpType = e7_FENCEOP[$urandom_range(5)];
 end else if (f < 97) begin
   @io_in_bits_fuType = 35'h100;                      // Div
   if (e7_pct(10)) @io_in_bits_src_1 = '0;
@@ -151,7 +155,7 @@ endcase
 @io_csrio_vpu_dirty_vs = e7_pct(10);
 @io_csrin_fromVecExcpMod_busy = e7_pct(20);
 @io_csrin_trapInstInfo_valid = e7_pct(20);
-@io_out_ready = e7_pct(70);
+@io_out_ready = e7_pct(80);
 @io_fenceio_sbuffer_sbIsEmpty = e7_pct(80);
 @cg_bore_cgen = ($urandom_range(0, 19) == 0);
 @cg_bore_1_cgen = ($urandom_range(0, 19) == 0);
@@ -182,10 +186,13 @@ end else if (!e7_wdone) begin
   if (adv) begin e7_widx++; e7_wcnt = 0; end
   if (e7_wcnt > 200) begin e7_widx++; e7_wcnt = 0; end    // 超时跳过（不该发生；发生了覆盖会显出来）
   case (e7_wph)
-    0: if (e7_widx >= E7_NLEGAL) begin e7_wph = 1; e7_widx = 0; e7_wcnt = 0; end
-    1: if (e7_widx >= 12) begin e7_wph = 2; e7_widx = 0; e7_wcnt = 0; end
+    0: if (e7_widx >= E7_NLEGAL) begin e7_wph = 2; e7_widx = 0; e7_wcnt = 0; end
     2: if (e7_wcnt >= 14) begin e7_wph = 3; e7_widx = 0; e7_wcnt = 0; end
-    3: if (e7_wcnt >= 6) begin e7_wph = 4; e7_widx = 0; e7_wcnt = 0; end
+    3: if (e7_wcnt >= 6) begin
+         e7_wph = 1; e7_widx = 0; e7_wcnt = 0;
+         if (!%s.debugMode) $display("[WARMUP] cyc=%%0d debug 模式没进去：触发器 tdata2 可能写不进", cyc);
+       end
+    1: if (e7_widx >= 12) begin e7_wph = 4; e7_widx = 0; e7_wcnt = 0; end
     4: if (e7_widx >= 3) begin e7_wph = 5; e7_widx = 0; e7_wcnt = 0; end
     5: if (e7_widx >= 1) begin e7_wph = 6; e7_widx = 0; e7_wcnt = 0; end
     6: if (e7_wcnt >= 6) begin e7_wph = 7; e7_widx = 0; e7_wcnt = 0; end
@@ -200,7 +207,7 @@ end else if (!e7_wdone) begin
       @io_in_bits_imm[11:0] = a;
       @io_in_bits_src_0 = (a == 12'h7B0) ? 64'h0 : (a == 12'h744) ? 64'h8 : e7_bias(a, e7_rnd64());
     end
-    1: begin                                         // 触发器：tselect=t / tdata1=0 / tdata2=随机
+    1: begin                                         // 触发器（在 debug 模式里写）：tselect=t / tdata1=0 / tdata2=随机
       @io_in_valid = 1'b1;
       @io_in_bits_fuOpType = 9'h9;
       @io_in_bits_imm[11:0] = 12'h7A0 + 12'(e7_widx %% 3);
@@ -237,33 +244,69 @@ end else if (!e7_wdone) begin
   endcase
 end
 e7_pbusy = %s.busy;
-""" % ("\n".join("%s = 1'b0;" % e for e in EXC),
-       "\n".join("  %d: %s = 1'b1;" % (k, e) for k, e in enumerate(EXC)),
-       M, M, M, M, G, M, G)
+"""
 
-COV = [
+
+def csr_exu_parts(gold, pin="io_in", pout="io_out", keep_cg=True):
+    """CSR 外壳（ExeUnit_7）的激励 / 覆盖片段，供本 tb 与上层（ExuBlock）的 tb 复用。
+
+    gold：golden 侧 ExeUnit_7 实例的层次名；pin / pout：ExeUnit_7 的发射口 / 写回口在所在 tb 里的端口前缀
+    （本 tb 是 io_in / io_out，ExuBlock 里是 io_in_3_1 / io_out_3_1）；keep_cg：是否带本外壳 3 个 cg_bore 口的激励
+    （上层的 cg_bore 口编号不同，由上层自己统一给）。"""
+    m = gold + ".csr.csrMod"
+    stim = STIM_T % ("\n".join("%s = 1'b0;" % e for e in EXC),
+                     "\n".join("  %d: %s = 1'b1;" % (k, e) for k, e in enumerate(EXC)),
+                     m, m, m, m, gold, m, m, gold)
+    cov = [(n, e.replace("@@G", gold).replace("@@M", m)) for n, e in COV_T]
+
+    def ren(t):
+        t = re.sub(r"@io_in_(valid|ready|bits_)", "@" + pin + r"_\1", t)
+        return re.sub(r"@io_out_(valid|ready|bits_)", "@" + pout + r"_\1", t)
+    stim = ren(stim)
+    if not keep_cg:
+        stim = "\n".join(ln for ln in stim.split("\n") if not ln.startswith("@cg_bore"))
+    # arm：暖机做完、且 Fence 收过一条指令之后才开始比 —— Fence 的 sfence 载荷寄存器（addr / id / imm 派生的 rs1）
+    #   不复位、只在 Fence in.fire 时写，直接连到 io_fenceio_sfence_bits_* 口（seed 7 × random 探针跑实测：
+    #   arm 时 Fence 还没收过指令，两侧上电值不同 ⇒ 这三个口失配，是初值差不是 RTL 差）
+    arm = ["e7_wdone", gold + "._Fence_io_in_ready && " + gold + "._in1ToN_io_out_1_valid"]
+    return DECLS, stim, [(n, ren(e)) for n, e in cov], arm
+
+COV_T = [
     ("csr_fire", "@io_in_valid && @io_in_ready && @io_in_bits_fuType == 35'h20"),
     ("fence_fire", "@io_in_valid && @io_in_ready && @io_in_bits_fuType == 35'h200"),
     ("div_fire", "@io_in_valid && @io_in_ready && @io_in_bits_fuType == 35'h100"),
-    ("csr_out", G + "._csr_io_out_valid"),
-    ("fence_out", G + "._Fence_io_out_valid"),
-    ("div_out", G + "._Div_io_out_valid"),
-    ("busy", G + ".busy"),
-    ("flush_busy", "@io_flush_valid && " + G + ".busy"),
+    ("csr_out", "@@G._csr_io_out_valid"),
+    ("fence_out", "@@G._Fence_io_out_valid"),
+    ("div_out", "@@G._Div_io_out_valid"),
+    ("busy", "@@G.busy"),
+    ("flush_busy", "@io_flush_valid && " + "@@G.busy"),
     ("stall", "@io_out_valid && !@io_out_ready"),
-    ("trap_m", M + ".trapEntryMEvent.valid"),
-    ("mret", M + "._permitMod_io_out_hasLegalMret"),
-    ("csr_wen", M + ".wenLegalReg_last_REG"),
+    ("trap_m", "@@M.trapEntryMEvent.valid"),
+    ("mret", "@@M._permitMod_io_out_hasLegalMret"),
+    ("csr_wen", "@@M.wenLegalReg_last_REG"),
     ("ex_ii", "@io_out_valid && @io_out_bits_exceptionVec_2"),
     ("redirect", "@io_out_bits_redirect_valid"),
     ("msi", "@io_csrin_msiInfo_valid"),
 ]
 
-# 恒值输出位（不要求见过 0/1，照样逐拍比）：先空，按探针跑的实测与机理逐项补
-EXEMPT = []
 
+def exempt_ports(top):
+    """不要求见过 0/1 的输出口（照样逐拍比）。两类，都按机理圈定、不按探针跑的实测名单抄：
+      (1) 子 FU 输出口直连外壳输出口（gen_exeunit.py 判为 'direct' 的口：csr 的 csrio / csrToDecode / redirect /
+          difftest 网关 gatewayIn_*、Fence 的 fenceio …）—— 外壳在这些口上没有逻辑，翻转覆盖属于子 FU 自己的 UT
+          （CSR / Fence 已签核）；这里仍逐拍比（连线由 FM 证明）；其中大量位按构造恒值（如 csr redirect 的 cfiUpdate
+          全 0、网关里 difftest 打包的常量字段），要求翻转本来就做不到；
+      (2) io_out_bits_exceptionVec_10（VS 态 ecall）：要先 mret 进 VS 态再执行 ecall，本激励不专门进虚拟化模式。"""
+    import gen_exeunit
+    v = gen_exeunit.Variant(top)
+    return sorted(n for n, k in v.out_kind.items() if k[0] == "direct") + ["io_out_bits_exceptionVec_10"]
+
+
+EXEMPT = exempt_ports(TOP)
+
+_D, STIM, COV, ARM = csr_exu_parts(G)
 PAIRS = [Pair(TOP, X, clocked=True, stim=STIM, cov=COV, decls=DECLS, exempt=EXEMPT,
-              arm=["e7_wdone"], reset_period=20000, mode_period=2000, cov_min=100)]
+              arm=ARM, reset_period=20000, mode_period=2000, cov_min=100)]
 
 HEADER = """自动生成：verif/ut/ExeUnit_7/gen.py（scripts/dual_tb_lib.py，读 G1 golden 端口表）—— 勿手改
 ExeUnit_7 双例化逐拍比对，全部输出逐位 !==；激励 / 暖机 / 覆盖见 gen.py 文件头。"""
