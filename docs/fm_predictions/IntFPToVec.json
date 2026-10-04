@@ -1,0 +1,9 @@
+{
+  "target": "IntFPToVec",
+  "ut": "IntFPToVec",
+  "regs": 0,
+  "outs": 791,
+  "expected": 791,
+  "merge_dup": "false",
+  "model_applicable": true
+}
