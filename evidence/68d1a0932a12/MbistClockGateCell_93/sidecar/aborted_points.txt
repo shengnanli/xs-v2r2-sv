@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/MbistClockGateCell_93
+Implementation : i:/WORK/MbistClockGateCell_93
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 05:00:16 2026
+**************************************************
+
+No aborted compare points.
+
+1

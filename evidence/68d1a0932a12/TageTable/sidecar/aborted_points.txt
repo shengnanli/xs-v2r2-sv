@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/TageTable
+Implementation : i:/WORK/TageTable
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 04:54:39 2026
+**************************************************
+
+No aborted compare points.
+
+1

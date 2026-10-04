@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/DataSRAMBank_1
+Implementation : i:/WORK/DataSRAMBank_1
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 04:55:09 2026
+**************************************************
+
+No unverified compare points.
+
+1

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ClockMux
+Implementation : i:/WORK/ClockMux
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 05:00:28 2026
+**************************************************
+
+No aborted compare points.
+
+1

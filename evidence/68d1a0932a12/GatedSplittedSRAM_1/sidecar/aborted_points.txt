@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/GatedSplittedSRAM_1
+Implementation : i:/WORK/GatedSplittedSRAM_1
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 04:27:11 2026
+**************************************************
+
+No aborted compare points.
+
+1

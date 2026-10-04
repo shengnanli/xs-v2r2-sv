@@ -1,0 +1,96 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/TageTable_1
+Implementation : i:/WORK/TageTable_1
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 04:55:15 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    TECH LIBRARY - i:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      array_2_ext
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/TageTable_1/u_core/us/array/array_0_0_0/array/array/array_2_ext
+
+u      array_3_ext
+
+       Instances : 4 of 4
+       ------------------------
+       i:/WORK/TageTable_1/u_core/g_bank[3].table_bank/array/array_0_0_0/array/array/array_3_ext
+       i:/WORK/TageTable_1/u_core/g_bank[2].table_bank/array/array_0_0_0/array/array/array_3_ext
+       i:/WORK/TageTable_1/u_core/g_bank[1].table_bank/array/array_0_0_0/array/array/array_3_ext
+       i:/WORK/TageTable_1/u_core/g_bank[0].table_bank/array/array_0_0_0/array/array/array_3_ext
+
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    TageTable
+
+       Instances : 0
+
+e *    TageTable_2
+
+       Instances : 0
+
+e *    TageTable_3
+
+       Instances : 0
+
+e *    xs_TageTable_core
+
+       Instances : 0
+
+
+
+##################################################################
+####    TECH LIBRARY - r:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      array_2_ext
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/TageTable_1/us/array/array_0_0_0/array/array/array_2_ext
+
+u      array_3_ext
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/TageTable_1/table_banks_0/array/array_0_0_0/array/array/array_3_ext
+       r:/WORK/TageTable_1/table_banks_1/array/array_0_0_0/array/array/array_3_ext
+       r:/WORK/TageTable_1/table_banks_2/array/array_0_0_0/array/array/array_3_ext
+       r:/WORK/TageTable_1/table_banks_3/array/array_0_0_0/array/array/array_3_ext
+
+
+1
+
