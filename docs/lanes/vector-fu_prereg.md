@@ -429,6 +429,45 @@ passing 5319 / failing 0 / unverified 0 / unread 0，constant_reg 360，unmatche
 | constant_reg | 362 |
 | 黑盒 / dont_verify | 无 / 无 |
 
+## 11. VFMA（golden 599 行；重写 430 行）
+
+### 11.1 结构与子模块处置
+
+- VecPipedFuncUnit（LAT=3）外壳：`xs_VFMA_core`（§1 valid / 反压链与调试信息 3 级搬运 / §2 两个 VectorFloatFMA 与加宽源分组 / §3 第 3 级 Mgu 与
+  fflags 合并）+ wrapper。
+- child 全部两侧白盒：VectorFloatFMA ×2（evidence/a757ff84032a 等，impl 闭包 sha 与当前字节一致）+ BoothEncoder / CSA 闭包、VecDataSplitModule ×3、
+  Mgu + 闭包；共享辅助件 xs_VecFflagsElemMask。
+- 钉点：fm_pins_pre.tcl 3508 对（VectorFloatFMA 自签核那 1754 位 × 2 实例，前缀换成 vfmas_0 / vfmas_1）。无 vmucp（无对称死位）。
+
+### 11.2 UT（9 档 × 200k，commit 0e66b16ee 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+按元素独立 IEEE 乘加 oracle（新写 verif/ut/VFMA/fp_fma_oracle_pkg.sv：乘积精确、对齐粘滞、舍入后判 tiny；9 个运算码的取反 / 交换按 RVV 语义；
+加宽源元素按 vuopIdx[0] 选半边；Mgu mask / tail / vstart / vstart>=vl 与 fflags 元素选择）全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 81178，
+op0..8 = 10156/10090/10225/10263/10166/7609/7577/7554/7538，加宽 f32/f64 结果 = 6317/6312，SEW16/32/64 结果 = 22810/29187/29181；
+元素级 NV/OF/UF/NX = 20281/9424/3669/59859；掩码关 25731、尾部 68190/69672、vstart 前部 11807、vstart>=vl 72318、分数 LMUL 20332。
+变异（scratchpad，20k 拍）：低半 lane 加宽源取错块 ⇒ errors=678；写回 eew 不随加宽 +1 ⇒ 3091；vlmulFix 不随加宽 +1 ⇒ 375；
+★UT 抓不到★：out_valid 去掉 validPipe_3（tb 的 validPipe_3 是入口 valid 的 3 拍延迟，与本层 valid 链恒同值），归 FM。
+
+### 11.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VFMA.json）
+
+模型 expected = 6230（寄存器 5434 = 外壳 1926 + VectorFloatFMA 1754×2；输出 796）。预期 constant reg **206**（= VectorFloatFMA 103×2）。
+依据：lane 内非正式试跑（commit 0773e232e 前后同字节，`make fm-VFMA FM_MODE=diagnostic-full`，不出 receipt）native SUCCEEDED passing 6024 /
+failing 0 / unverified 0 / unmatched 0 / unread 0，constant_reg 206，`VFMAS_PIN_END ok=3508 bad=0`。
+
+| 项 | 预测（正式 run_proof，signoff-strict） |
+|---|---|
+| passing | **6024** |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 206 |
+| 黑盒 / dont_verify / vmucp | 无 / 无 / 不开 |
+
 ## 对账（跑完追加）
 
 ### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule
