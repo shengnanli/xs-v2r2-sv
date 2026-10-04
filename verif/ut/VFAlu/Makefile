@@ -46,6 +46,10 @@ FM_REF_DEPS_VFAlu = ShiftLeftPriorityWithF32EXPResult.sv ShiftLeftPriorityWithF6
 # 关 merge_dup：fm_predict 的模型（寄存器位 + 输出位）严格适用。
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：两个 VectorFloatAdder 子实例里的对称死位（本目录 fm_pins.tcl 字面钉 34 对）+ 外壳
+# mgu_io_in_info_vdIdx_r[6:3] 4 位（只读低 3 位，按名配上）；依据见 verif/fm_target_config/VFAlu.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
