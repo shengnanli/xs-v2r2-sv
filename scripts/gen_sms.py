@@ -11,7 +11,8 @@
   2. verif/ut/SMSPrefetcher/fm_pins_pre.tcl：
      (a) 本层寄存器：golden 扁平名 <-> 核 u_core 里的同义寄存器，逐位（SHELL_REGS 表，字面位数 fail-closed）；
      (b) child 自己签核时用过的钉点：tclsh 桩真跑那份钉点文件取 set_user_match 调用序列，加实例前缀照搬；
-         条数必须等于 docs/pin_call_seq.tsv 登记的调用数（只读），否则拒绝生成。
+         条数必须等于 docs/pin_call_seq.tsv 登记的调用数（只读），否则拒绝生成；
+     (c) train_filter 进了本层才变成无读者的对称死位：按语义整组钉（TF_DEAD / TF_STAGES，字面位数 fail-closed）。
 
 用法：python3 scripts/gen_sms.py [--check]   （--check 只比对不写，有漂移 rc=1）
 """
@@ -94,6 +95,41 @@ SHELL_REGS = {
     'train_region_vaddr_s0': 's0_region_vaddr',
 }
 SHELL_BITS = 186   # 字面：1+50+11×3+1+1+13+5+4+38+40
+
+# ---- train_filter 在本层新出现的对称死位（子模块自己签核时不需要钉）----
+# SMSTrainFilter 单独签核时，它的输出口 train_req.{vaddr,paddr,pc} 全部是比较点，3 级重排寄存器与 8 项
+# 表项的每一位都有读者，FM 靠扇出签名配得上。装进本层后，下面这些位**只**通向已死的逻辑：
+#   pc[0]、pc[49:20]：本层只读 pc[6:1]（PHT index）与 pc[19:7]（PHT tag）；pc[9:0] 另送 StridePF，
+#                     而 StridePF 在本配置对外不可见 —— 所以 pc[0] 与 pc[49:20] 无读者；
+#   paddr[9:0]：本层只存区域实地址 paddr[47:10]；
+#   vaddr[5:0]：本层只用 vaddr[49:6]（块地址），块内偏移无读者。
+# 这些位两侧都变成"无读者的寄存器"，没有扇出签名，FM 配不上（diagnostic-full 实测 799/799 unmatched unread）。
+# 按语义整组钉：golden 与重写核的级 / 项一一对应（golden 的 3 级 = ld_reorder_res_0_1_k / ld_reorder_res_1_2_k /
+# ld_reorder_k，重写核 = a_* / b_* / c_*；表项 entries_e = ent_*[e]），重写核把 {paddr, pc} 打包成一个
+# payload：payload[49:0] = pc，payload[97:50] = paddr。
+TF_DEAD = {'pc': [0] + list(range(20, 50)), 'paddr': list(range(10)), 'vaddr': list(range(6))}
+TF_STAGES = ([('ld_reorder_res_0_1_%d_bits_' % k, 'a', k) for k in range(3)]
+             + [('ld_reorder_res_1_2_%d_bits_' % k, 'b', k) for k in range(3)]
+             + [('ld_reorder_%d_bits_' % k, 'c', k) for k in range(3)]
+             + [('entries_%d_' % e, 'ent', e) for e in range(8)])
+TF_EXTRA_BITS = 799   # 字面：17 组 × (31 + 10 + 6)
+
+
+def train_filter_extra_pins():
+    out = []
+    for gpre, ipre, k in TF_STAGES:
+        stage_pc = 'uop_pc' if gpre.startswith('ld_reorder') else 'pc'
+        for f, bits in TF_DEAD.items():
+            for b in bits:
+                gname = '%s%s_reg[%d]' % (gpre, stage_pc if f == 'pc' else f, b)
+                if f == 'vaddr':
+                    iname = 'u_core/%s_vaddr_reg[%d][%d]' % (ipre, k, b)
+                else:
+                    iname = 'u_core/%s_payload_reg[%d][%d]' % (ipre, k, b if f == 'pc' else 50 + b)
+                out.append(('train_filter/' + gname, 'train_filter/' + iname))
+    if len(out) != TF_EXTRA_BITS:
+        die('train_filter 附加钉点 %d，字面期望 %d' % (len(out), TF_EXTRA_BITS))
+    return out
 
 
 def die(msg):
@@ -261,9 +297,10 @@ def emit_pins():
     for iname, (typ, rel) in CHILDREN.items():
         for a, b in child_pin_pairs(typ, rel):
             child.append((iname, typ, rel, '%s/%s' % (iname, a), '%s/%s' % (iname, b)))
-    total = len(rows) + len(child)
+    extra = train_filter_extra_pins()
+    total = len(rows) + len(child) + len(extra)
     ri = set()
-    for r, i in rows + [(c[3], c[4]) for c in child]:
+    for r, i in rows + [(c[3], c[4]) for c in child] + extra:
         if i in ri:
             die('impl 侧不单射：%s' % i)
         ri.add(i)
@@ -272,7 +309,8 @@ def emit_pins():
     L.append('#')
     L.append('# 只消命名差：set_user_match 只声明两点对应，比较照比；不约束 ref、不改 appvar、不加黑盒。')
     L.append('# (a) 本层寄存器 %d 位：golden 扁平名 <-> xs_SMSPrefetcher_core（u_core）的同义寄存器；' % len(rows))
-    L.append('# (b) child 签核时用过的钉点 %d 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。' % len(child))
+    L.append('# (b) child 签核时用过的钉点 %d 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀；' % len(child))
+    L.append('# (c) train_filter 在本层新出现的对称死位 %d 位：按语义整组钉（依据见 scripts/gen_sms.py TF_DEAD 注释）。' % len(extra))
     L.append('# fail-closed：逐条数返回值；拒一条或总数 != 字面整数即 error。输出一律 ASCII。')
     L.append('set ::SMS_PIN_OK 0')
     L.append('set ::SMS_PIN_BAD 0')
@@ -293,6 +331,9 @@ def emit_pins():
         if cur != iname:
             L.append('# ---- (b) %s（%s）：verif/ut/%s 的调用序列 ----' % (iname, typ, rel))
             cur = iname
+        L.append('sms_pin %s %s' % (tcl_esc(r), tcl_esc(i)))
+    L.append('# ---- (c) train_filter 本层新死位：gen_sms.py TRAIN_FILTER 附加钉点（依据见该表注释）----')
+    for r, i in extra:
         L.append('sms_pin %s %s' % (tcl_esc(r), tcl_esc(i)))
     L.append('puts "SMS_PIN_END ok=$::SMS_PIN_OK bad=$::SMS_PIN_BAD expect=%d"' % total)
     L.append('if {$::SMS_PIN_BAD != 0} { error "SMS_PIN_REFUSED=$::SMS_PIN_BAD" }')
