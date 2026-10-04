@@ -1,0 +1,33 @@
+{
+  "target": "L2TLB",
+  "ut": "L2TLB",
+  "regs": 51034,
+  "outs": 3589,
+  "expected": 57883,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 3260,
+  "bbox": {
+    "array_10_ext": {
+      "insts": 1,
+      "in_bits": 797,
+      "points": 797
+    },
+    "array_11_ext": {
+      "insts": 16,
+      "in_bits": 125,
+      "points": 2000
+    },
+    "array_9_ext": {
+      "insts": 4,
+      "in_bits": 100,
+      "points": 400
+    },
+    "ram_40x47": {
+      "insts": 1,
+      "in_bits": 63,
+      "points": 63
+    }
+  },
+  "note": "第 3 轮 child 白盒化登记。工具 57883 把白盒读入的 array_9/10/11_ext.v 当黑盒（与 PtwCache/BitmapCache 同一缺口），不是上界。手工上界 186225 = regs 51034 + outs 3589 + ram_40x47 输入 63 + array_11_ext 116848 + array_10_ext 3147 + array_9_ext 11544；merge_dup=true ⇒ 带 [186225-51034-const-unread, 186225]。判别性：vmucp 开 passing = 关时 passing + 关时 unread；passing(L2TLBWrapper)-passing(L2TLB)=228；黑盒仅 ram_40x47 1/1；failing/unmatched 全 0。详见 docs/lanes/l2tlb-assembly_prereg.md。check 机械判 ABOVE_MODEL 是工具缺口，预期内。"
+}

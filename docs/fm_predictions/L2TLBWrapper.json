@@ -1,17 +1,33 @@
 {
   "target": "L2TLBWrapper",
   "ut": "L2TLBWrapper",
-  "regs": 228,
+  "regs": 51262,
   "outs": 3589,
-  "expected": 5139,
-  "merge_dup": "false",
-  "model_applicable": true,
-  "bbin": 1322,
+  "expected": 58111,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 3260,
   "bbox": {
-    "L2TLB": {
+    "array_10_ext": {
       "insts": 1,
-      "in_bits": 1322,
-      "points": 1322
+      "in_bits": 797,
+      "points": 797
+    },
+    "array_11_ext": {
+      "insts": 16,
+      "in_bits": 125,
+      "points": 2000
+    },
+    "array_9_ext": {
+      "insts": 4,
+      "in_bits": 100,
+      "points": 400
+    },
+    "ram_40x47": {
+      "insts": 1,
+      "in_bits": 63,
+      "points": 63
     }
-  }
+  },
+  "note": "第 3 轮：impl 侧换入重写 L2TLB 白盒。工具 58111 同上缺口；手工上界 186453 = L2TLB 上界 186225 + 外壳 perf 两拍 228；merge_dup=true 只给带。判别性：passing(L2TLBWrapper)-passing(L2TLB)=228；unread 集合 = L2TLB 的加前缀 ptw/、数目相等；黑盒仅 ram_40x47 1/1。详见 docs/lanes/l2tlb-assembly_prereg.md。"
 }
