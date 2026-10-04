@@ -64,3 +64,12 @@ pftQueue valids_0..30 31、mbistPl beReg 1）。8325 + 900 + 76 = 9301 = 模型�
 | 目标 | passing 预测 | 其余 |
 |---|---|---|
 | Prefetcher | **9301** | failing 0 / unverified 0 / aborted 0 / unmatched 全 0 / unread 0 / 黑盒 = allow 声明的 4 个 array_13_ext / 无 dont_verify / SUCCEEDED |
+
+## 9. 对账（跑后追加；以上各节数字未改）
+
+| 目标 | receipt | 预测 passing | 实测 passing | 差 | 指认 | 其余 | 判决 |
+|---|---|---|---|---|---|---|---|
+| Prefetcher | evidence/16617425bad6/Prefetcher（receipt.json sha256 `023beefc97a0addac8383d5c47fea95598788fae3e7ae6779408b85e8e4ad026`） | 9301 | 9301 | 0 | — | failing 0 / unverified 0 / aborted 0 / unmatched 0(0) / unread 0（matched_unread_notcompared 0、unmatched_unread 0）/ 黑盒 = array_13_ext 两侧各 2（allow 声明）/ dont_verify [] / elab147 [] / relaxed_appvars [] / 钉点 ok=960 bad=0 / 418 s | **SUCCEEDED** |
+
+`python3 scripts/fm_predict.py check Prefetcher` rc=0（逐位相等）。
+复跑：`bash scripts/run_proof.sh Prefetcher Prefetcher < /dev/null`（PROOF_COMMIT=16617425b）。
