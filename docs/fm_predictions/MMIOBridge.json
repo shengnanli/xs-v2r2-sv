@@ -1,0 +1,10 @@
+{
+  "target": "MMIOBridge",
+  "ut": "MMIOBridge",
+  "regs": 6868,
+  "outs": 926,
+  "expected": 7794,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "lane 内 diagnostic-full 诊断跑 passing 7794、无 unread、无黑盒；预期 = 模型 7794"
+}

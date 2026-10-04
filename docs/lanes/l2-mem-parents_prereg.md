@@ -71,4 +71,44 @@
   处置：gen_l2mp_pins.py 钉 531 对（字面 531）+ vmucp（verif/fm_target_config/VBestOffsetPrefetch.tcl 六条）。
 - 预测：passing **4604**（= 模型；= 4067 + 531 + 6），其余全 0，黑盒仅 array_13_ext 两侧各 1，SUCCEEDED。
 
+## 5. MMIOBridge（golden 2673 行 / 184 端口；重写 rtl/uncore/MMIOBridge.sv 2021 行，其中手写核约 100 行）
+
+- 结构：手写胶合核 xs_MMIOBridge_core（§1 选槽：编号最小的空闲槽，全忙兜底槽 15 / §2 读保序：有槽等 ReadReceipt
+  时挡所有 ReadNoSnp / §3 RXRSP/RXDAT 按 txnID 分发 / §4 上游 ready）+ golden 同名 wrapper（`scripts/gen_mmiobridge.py`
+  生成，带 `--check`；每个 child 端口恰好命中一条规则、每个 wrapper 输出恰好被驱动一次、常量表与 golden 逐项比对、
+  每槽 io_id 字面量与 io_pCrd 接线与 golden 实例连线比对）。`_GEN_`/`_T_` = 0。
+- child 全部 PROVEN_DIRECT，两侧白盒：MMIOBridgeEntry/_2/_4/_8（xs_MMIOBridgeEntry_core）×16、RRArbiterInit_13、
+  Arbiter16_CHIDAT、Arbiter16_TLBundleD（xs_FixedPriorityArbiter_core）。0 黑盒 ⇒ `signoff-strict`。
+- UT `verif/ut/MMIOBridge`（dual_tb_lib；RX 的 txnID 3/4 时间挑 golden 侧正在等该通道的槽；16 槽未复位寄存器 0 时刻后
+  force 对齐，同 MMIOBridgeLeaves）：9 档全部 checks=22599096 errors=0 cov_fail=0。
+  覆盖（seed 1 / initreg 0）：A fire 18414、A 全满 81252、槽 15 被用 8593、D 读回 6932 / 写回 11381、TXREQ 26997、TXDAT 9574、
+  读被挡 157477、RXDAT 命中 6934 / 落空 92638、pCrd 查询（槽 9）3434。
+  变异自检（20k 拍）：M2 写也被挡 ⇒ errors=883849；M3 rxdat ready 不看 txnID ⇒ 424；
+  **M1 全忙时不兜底到槽 15 ⇒ errors=0：等价变异**——槽的 req fire = ready & valid，槽 15 不空闲时 valid 被它忽略，
+  端口与状态都看不出差别；FM 同样会判等价（不是 UT 漏洞）。
+- **lane 内诊断跑**：diagnostic-full native SUCCEEDED、passing 7794、failing 0、unmatched 0、无 unread、无黑盒、无钉点。
+- 预测：passing **7794**（= 模型 regs 6868 + outs 926），其余全 0，无黑盒，SUCCEEDED。
+
+## 6. PatternHistoryTable（golden 3739 行 / 43 端口 / 顶层 218 个寄存器 991 位；重写 rtl/memblock/PatternHistoryTable.sv 821 行，手写核约 450 行）
+
+- 结构：手写核 xs_PatternHistoryTable_core（§1 s0 选择 / §2 s1 读 RAM 与位图对齐 / §3 s2 比较与计数更新 /
+  §4 s3 写回、valid、PLRU 与预取位图 / §5 s4 三个预取请求）+ golden 同名 wrapper（`scripts/gen_pht.py` 生成，`--check`）。
+  `_GEN_`/`_T_` = 0。
+- child 全部已签核，两侧白盒：SRAMTemplate_145（xs_SRAMTemplate_core；其内 MbistClockGateCell 用本 lane §2 的重写件，
+  ClockGate 用本地共享基元）、OverrideableQueue / _1、Arbiter3_PfGenReq。厂商宏叶子 array_12_ext 两侧对称黑盒
+  （verif/allow/PatternHistoryTable.json）⇒ `assembly`。
+- FM「匹配前」钉点 `verif/ut/PatternHistoryTable/fm_pins_pre.tcl`（gen_pht.py 生成）：golden 顶层 218 个寄存器 / 991 位
+  逐位钉到 u_core 的同义寄存器（扁平名 vs 数组名），每个 golden 寄存器恰好命中一条规则、单射、字面 991。
+- UT `verif/ut/PatternHistoryTable`（dual_tb_lib；pht_index 0..3、tag 6 选 1 让组/tag 撞上；arm = 三种预取请求各发生过
+  且 SRAM 读过之后 1 拍；厂商 SRAM 行为模型的存储阵列上电值 0 时刻后对齐）：9 档全部 errors=0 cov_fail=0
+  （seed 1 checks=1398579，seed 7 1394547，seed 42 1390879）。
+  覆盖（seed 1 / initreg 0）：evict 命中 28393 / 未命中 59940、lookup 命中 4505、单次更新跳过 5488、s1_wait 96938、
+  本/下/上区域请求 1169 / 400 / 425、下一区域被挡保持 364、跨页 313、中途复位 12。
+  变异自检（40k 拍）：M1 单次更新 0 不 +2 ⇒ 40601；M2 has_been 时照加 ⇒ 17053；M3 不等同组写 ⇒ 147337；
+  M4 下一区域请求不保持 ⇒ 364；M5 上一区域不判跨页 ⇒ 28614。
+- **lane 内诊断跑**：diagnostic-full（带钉点、关 vmucp）native SUCCEEDED、passing 2166、failing 0、unmatched 0、
+  unmatched unread 0、matched-unread 19 = s3_region_vaddr[39:21]（只用 [20:0]）。处置：vmucp
+  （verif/fm_target_config/PatternHistoryTable.tcl 六条），不需额外钉点。
+- 预测：passing **2185**（= 模型 regs 1809 + outs 218 + 黑盒输入；= 2166 + 19），其余全 0，黑盒仅 array_12_ext 两侧各 1，SUCCEEDED。
+
 ## 对账（跑完追加）
