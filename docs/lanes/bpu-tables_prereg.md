@@ -436,3 +436,14 @@ merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageB
 
 本表取代此前 cee28122 / 68bffe7f / 05394ca2(Tage_SC) / 9cc9c9c7 四份 receipt（钉点脚本字节变化，按规则 STALE）。fm_predict check 全部对上。
 复跑：`PROOF_COMMIT=335a330a9 bash scripts/run_proof.sh <FauFTB|ITTage|Tage_SC|Composer> <同名> < /dev/null`。
+
+## 11. Composer 重证（ClockGate 换本地重写件之后；merge main `37f04051`）
+- 问题（集成者报）：codex 0208 把 ClockGate 换成本地重写件 rtl/common/ClockGate.sv（锁存器名 enableLatched），Composer 钉点里
+  32 处 impl 侧名字是旧 golden ClockGate 的 `…/rcg/CG/EN_reg`（来自 child_pairs/Tage_SC.tsv，c3c9307d 从旧 Tage_SC 自证 matched.rpt 收割），
+  FM 报 32 处 Unknown name，钉点 fail-closed 退出（这正是 §10 加的返回值计数在起作用）。
+- 修法：在 HEAD（`37f04051`）上重跑 Tage_SC diagnostic-full（其 impl 闭包 26 个 repo 文件与 main 上 restale-sram 的 Tage_SC receipt
+  evidence/68d1a0932a12 逐个 sha256 相等；结论同：SUCCEEDED passing 16112、unread 192、fm.log Unknown name 0），用 scripts/extract_fm_matched_pairs.py
+  从这次 matched.rpt 重新收割 `verif/ut/Composer/child_pairs/Tage_SC.tsv`：14262 对，变化恰为这 32 对的 impl 名（EN_reg → enableLatched_reg）；
+  重生成 `verif/ut/Composer/fm_pins_pre.tcl`（子实例区仍 23083 位）。FauFTB.tsv / ITTage.tsv 不含 ClockGate 内部名，未动。RTL 未改。
+- 跑前预测（★跑完不许改★）：Composer passing **42060**，PASS_DEAD_REF，unread 192（全 ref = verif/dead_ref/Composer.json），failing/unverified/aborted 0，
+  unmatched 0，COMPOSER_PINS 601/601、BPU_CHILD_PINS 23083/23083，fm.log 行首 Error / Unknown name = 0 / 0，「Set a match」23684 行。
