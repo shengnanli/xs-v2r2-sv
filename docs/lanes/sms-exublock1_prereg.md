@@ -72,3 +72,12 @@ vmucp 依据与六条证据：`verif/fm_target_config/SMSPrefetcher.tcl`。
 
 可能出错的地方：(1) 若 passing = 8719 − 799，说明第 (c) 节钉点没生效（FM 拒钉会 error，不会静默）；(2) vendor_macro 声明路径与
 实测不等 ⇒ verdict PARTIAL，不改 RTL，修声明。
+
+## 3. 对账（跑后追加；上面各节数字未改）
+
+| 目标 | 证明 commit | 预测 passing | 实测 passing | constant_reg | failing / unverified / aborted / unmatched / unread | 黑盒 / dont_verify | 判决 | fm_predict check |
+|---|---|---|---|---|---|---|---|---|
+| SMSPrefetcher | 77ecedcaa49c | 8719 | 8719 | 0 | 0 / 0 / 0 / 0 / 0（vmucp 1107 点，+1107；钉点 ok=3987 bad=0） | array_12_ext 两侧各 1（vendor_macro，声明精确相等）/ 否 | SUCCEEDED（assembly，145 s） | 差 0，逐位相等 |
+
+receipt：`evidence/77ecedcaa49c/SMSPrefetcher/receipt.json`，sha256 `673afd4d0c2bef12e0a63895c7f147860ad799b2ff2f5eed3bc442fd69e10e9e`。
+复跑：`PROOF_COMMIT=77ecedcaa bash scripts/run_proof.sh SMSPrefetcher SMSPrefetcher < /dev/null`；`python3 scripts/fm_predict.py check SMSPrefetcher`。
