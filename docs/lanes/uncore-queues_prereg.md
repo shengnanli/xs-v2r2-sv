@@ -96,9 +96,9 @@ unread 0（每个 ram 位都有出队端口读，生成器现算 0 个未读位�
 27/27 native SUCCEEDED，全部 failing 0 / unverified 0 / aborted 0 / unread_notcompared 0 / unmatched 全 0 /
 无黑盒 / 无 dont_verify / 无 ELAB-147 / 无放宽 appvar。`python3 scripts/fm_predict.py check <27 个>` rc=0：
 
-- 20 个逐位等于预测。
-- 7 个差额全部 = receipt 的 constant_reg：Queue2_TLBundleA_7 −257、B_1 −43、C −53、D_20 −3、Queue16_CHIREQ −54、
-  Queue16_CHIRSP −9（另 Pipeline 无差）。即 W0_data 常量段的 ram 位被 FM 判为常量寄存器、不产生比较点
+- 21 个逐位等于预测。
+- 6 个差额全部 = receipt 的 constant_reg：Queue2_TLBundleA_7 −257、B_1 −43、C −53、D_20 −3、Queue16_CHIREQ −54、
+  Queue16_CHIRSP −9。即 W0_data 常量段的 ram 位被 FM 判为常量寄存器、不产生比较点
   （每个常量位计 1，不随深度翻倍）。★§3「明写可能出错」第 1 条我写的是"预计不会"——这条判断错了，
   passing 数字照登记不改，差额由 constant_reg 逐位指认。★
 - `scripts/check_lane_receipts.py /home/eda/xs-env/wt-uncore-queues` rc=0。
