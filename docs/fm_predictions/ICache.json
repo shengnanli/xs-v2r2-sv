@@ -1,0 +1,23 @@
+{
+  "target": "ICache",
+  "ut": "ICache",
+  "regs": 15040,
+  "outs": 3380,
+  "expected": 21228,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 2808,
+  "bbox": {
+    "array_0_ext": {
+      "insts": 32,
+      "in_bits": 77,
+      "points": 2464
+    },
+    "array_ext": {
+      "insts": 4,
+      "in_bits": 86,
+      "points": 344
+    }
+  },
+  "note": "merge_dup=true ⇒ 模型 21228 不适用。手工预测 21174 = lane 诊断跑 2 实测 21154（一对多钉点后 failing 0）+ 新钉 20 个对称死位（out_back_q data[63:48] 16 + beReg 4）。见 docs/lanes/icache-fm_prereg.md §3。"
+}
