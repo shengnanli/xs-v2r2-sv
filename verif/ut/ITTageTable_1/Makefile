@@ -21,7 +21,7 @@ TB_SRCS = tb.sv
 #       passing=10246 / failing=0 / unmatched=0 / blackbox_out=0。
 # ★ 本变体的 FM 尚未复跑（reviewer codex 0149 冻结新 FM 启动）——待解冻后验证。★
 # ---------------------------------------------------------------------------
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/FoldedSRAMTemplate_22.sv \
                   $(GOLDEN_RTL)/IndexableCAMTemplate_41.sv \
                   $(GOLDEN_RTL)/MbistClockGateCell.sv \

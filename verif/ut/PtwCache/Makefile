@@ -23,7 +23,7 @@ TB_SRCS = tb.sv
 #     越界在结构上不可能，那条拦路石不存在。
 #   · 选 (B) 之后 SRAM 内部也进证明范围，黑盒边界为空，proof_mode 可以是
 #     signoff-strict 而不是 assembly。
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/SplittedSRAM_1.sv \
                   $(GOLDEN_RTL)/SplittedSRAM_2.sv \
                   $(GOLDEN_RTL)/SRAMTemplate_128.sv \

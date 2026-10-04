@@ -40,7 +40,7 @@ RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/FoldedSRAMTemplate.sv \
                   $(GOLDEN_RTL)/sram_array_1p512x24m12s1h0l1b_bp_tage.sv \
                   $(GOLDEN_RTL)/array_3.sv \
                   $(GOLDEN_RTL)/MbistClockGateCell.sv \
-                  $(GOLDEN_RTL)/ClockGate.sv \
+                  $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/WrBypass.sv \
                   $(GOLDEN_RTL)/IndexableCAMTemplate.sv \
                   $(GOLDEN_RTL)/data_mem_0_8x3.sv

@@ -77,7 +77,7 @@ SHARED_GOLDEN = Queue16_CHIREQ.sv Queue16_CHIRSP.sv \
                 sram_array_1p512x16m16s1h0l1b_l2_repl.sv sram_array_1p512x8m1s1h0l1b_l2_orgb.sv \
                 sram_array_1p4096x137m137s1h1l2b_l2_dat.sv \
                 array_14.sv array_15.sv array_16.sv array_17.sv array_18.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(SHARED_GOLDEN))
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(filter-out ClockGate.sv,$(SHARED_GOLDEN))) $(XSSV_HOME)/rtl/common/ClockGate.sv
 # 厂商 SRAM 叶子：UT 两侧共用（仿真需要行为），FM 两侧都不给（对称黑盒）
 VENDOR_EXT = array_14_ext.v array_15_ext.v array_16_ext.v array_17_ext.v array_18_ext.v
 TB_SRCS  = tb.sv

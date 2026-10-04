@@ -8,7 +8,7 @@ RTL_SRCS = $(RTL_DIR)/frontend/frontend_common_pkg.sv \
            $(RTL_DIR)/frontend/FTBBank.sv
 TB_SRCS = tb.sv
 
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/MbistClockGateCell.sv \
                   $(GOLDEN_RTL)/MbistPipeFtb.sv \
                   $(GOLDEN_RTL)/SRAMTemplate_36.sv \

@@ -366,6 +366,9 @@ def main():
             sim_deps |= {"MbistClockGateCell.sv", "ClockGate.sv"}
         fm_ref[i["name"]] = deps
 
+    # 本地已重写签核的共享基元：impl 侧（RTL_GOLDEN_DEPS）读本地件，ref 侧照旧读 golden。
+    # 与 scripts/ut_common.mk 的 LOCAL_SHARED_PRIMITIVES 同一份清单（那边有 fail-closed 闸）。
+    LOCAL_PRIMITIVES = {"ClockGate.sv": "$(XSSV_HOME)/rtl/common/ClockGate.sv"}
     rtl_srcs = ["$(RTL_DIR)/common/xs_SRAMTemplate_core.sv"]
     rtl_srcs += [f"$(RTL_DIR)/common/{i['name']}.sv" for i in infos]
     mk = ["# 自动生成：scripts/gen_sram_wrappers.py（G1 基线驱动）—— 勿手改",
@@ -374,8 +377,10 @@ def main():
           "TB_SRCS = tb.sv", "",
           "# 厂商 SRAM 宏链：golden 同源文件, 两侧同读(FM impl 侧经 RTL_GOLDEN_DEPS)。",
           "# 宏内 array_*_ext 是 vendor 叶子(.v, FM 不读)⇒ 对称未解析黑盒, 见 FM_MODE 说明。",
+          "# ClockGate 例外：impl 侧读本地重写签核件 rtl/common/ClockGate.sv（codex 0208），",
+          "# ref 侧 FM_REF_DEPS 仍是 golden ClockGate.sv。",
           "RTL_GOLDEN_DEPS = " + " \\\n                  ".join(
-              f"$(GOLDEN_RTL)/{d}" for d in sorted(fm_deps)),
+              LOCAL_PRIMITIVES.get(d, f"$(GOLDEN_RTL)/{d}") for d in sorted(fm_deps)),
           "",
           "GOLDEN_SRCS = " + " \\\n              ".join(
               [f"$(GOLDEN_RTL)/{i['name']}.sv" for i in infos]

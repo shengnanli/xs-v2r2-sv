@@ -22,7 +22,7 @@ TB_SRCS = tb.sv
 #   MbistBitmapCache：utility.mbist.MbistPipeline 单态化的 MBIST 分发级，本仓 rtl/dft
 #   尚无它的薄文件（gen_mbist_pipe_family.py 只把它列为 ADJACENT 邻居），故同源用 golden；
 #   将来家族生成器把它收进来时，把 impl 侧换成 rtl/dft 版本即可（PtwCache 的 MbistPipePtwL0/L1 就是这么做的）。
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/sram_array_1p32x90m45s1h0l1b_bitmap.sv \
                   $(GOLDEN_RTL)/array_9.sv \
                   $(GOLDEN_RTL)/array_9_ext.v

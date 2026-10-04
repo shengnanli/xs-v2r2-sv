@@ -31,7 +31,7 @@ IT_GRAND = ClockGate.sv MbistClockGateCell.sv \
            SRAMTemplate_76.sv SRAMTemplate_78.sv \
            WrBypass_41.sv WrBypass_43.sv IndexableCAMTemplate_41.sv IndexableCAMTemplate_43.sv \
            data_mem_0_4x2.sv array_6.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(IT_GRAND))
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(filter-out ClockGate.sv,$(IT_GRAND))) $(XSSV_HOME)/rtl/common/ClockGate.sv
 
 IT_CHILDREN = ITTageTable.sv ITTageTable_1.sv ITTageTable_2.sv ITTageTable_3.sv ITTageTable_4.sv \
               MbistPipeIttage.sv MbistPipeIttage_1.sv MbistPipeIttage_2.sv MbistPipeIttage_3.sv MbistPipeIttage_4.sv \

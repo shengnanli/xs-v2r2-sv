@@ -5,7 +5,7 @@ MODULE = ClockGateCell93
 # 与 SRAMTemplate_145 / DuplicatedTagArray 等先例一致：两侧同源读 golden ClockGate.sv。
 RTL_DIR  = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/common/MbistClockGateCell_93.sv $(RTL_DIR)/common/ClockMux.sv
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv
 TB_SRCS  = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/MbistClockGateCell_93.sv $(GOLDEN_RTL)/ClockMux.sv
