@@ -113,11 +113,11 @@ EXTRA_CHILD_PINS = {
                    'udNegReg_3_reg[67]', 'udNegReg_4_reg[67]')]
     ),
     # Fence（ExeUnit_7）：锁存的 uop 操作码 9 位。golden 是标量 uop_ctrl_fuOpType，重写件聚合成 struct uop
-    #   （fence_uop_t：fuOpType 在 [36:28]）。Fence 单独签核时靠签名配上；进了 ExeUnit_7，同一个发射口 fuOpType 还被
+    #   （fence_uop_t；FM 按字段名给 struct 寄存器起名：uop_reg[fuOpType][b]，fm_shell find_cells 实查）。Fence 单独签核时靠签名配上；进了 ExeUnit_7，同一个发射口 fuOpType 还被
     #   CSR 的 trapInstMod faultCsrUop fuOpType 锁存（ref 侧 [8:3] 是 golden 死位，verif/dead_ref/CSR.json），两组签名
     #   撞在一起，诊断跑里 ref 的 [8:3] 6 位配不上 —— 按字段整组钉 9 位。
     'Fence': (
-        [(f'uop_ctrl_fuOpType_reg[{b}]', f'u_core/uop_reg[{28 + b}]') for b in range(9)]
+        [(f'uop_ctrl_fuOpType_reg[{b}]', f'u_core/uop_reg[fuOpType][{b}]') for b in range(9)]
     ),
     # CSR（ExeUnit_7）：几族「golden 展平标量 / 重写件数组」寄存器。CSR 单独签核时它们全靠签名分析配上（CSR 自己的
     #   钉点只管匹配后剩下的四族，verif/ut/CSR/fm_pins.tcl）；进了 ExeUnit_7（输入多过一层 Dispatcher / DelayN），

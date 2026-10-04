@@ -20,10 +20,13 @@ ExeUnit 的扁平口进：
   * 暖机（上电复位后、开始比较之前，不比对）：CSR 的大量状态寄存器不复位，两个独立例化在随机初值档各摇一份，
     必须先写成确定值 —— 照 CSR UT 的暖机程序：M 态 csrrw 写遍 337 个合法地址；拉 debug 中断进调试模式（进不去就走
     单步异常）；4 组触发器 tselect/tdata1/tdata2；写 dpc/dscratch0/1；dret；打一个 trap；mret。
-    ★与 CSR UT 的一处不同★：触发器放到进 debug 之后写。第一步随机写过 tdata1，若某组的 dmode 位被写成 1，M 态就
-    再也写不动它的 tdata1/tdata2（只有 debug 模式能写），那组 tdata2 留着上电随机值，两侧不等 —— seed 7 × random
-    探针跑在第 19619 拍从 tUpdate.tdata2 口上撞到过。
-    uop 型步骤以 golden 外壳 busy 的上升沿判「上一条已被收下」再发下一条（暖机期不冲刷，busy 上升沿与 in.fire 一一对应）。
+    与 CSR UT 的一处不同：触发器放到进 debug 之后写（第一步随机写过 tdata1，若某组 dmode 位成了 1，M 态就写不动它，
+    debug 模式里总能写 —— 防御性的顺序调整）。
+    uop 型步骤以 golden 外壳 busy 的上升沿判「上一条已被收下」再发下一条（暖机期不冲刷，busy 上升沿与 in.fire 一一对应）；
+    ★收下后的下一拍保持同一条 uop 的字段★：NewCSR 的写使能是收下那拍的合法判断打一拍，写地址 / 数据却取当拍的输入
+    （golden 行为；CSR UT 暖机每条保持 2 拍也是这个原因）。不保持的话写会落到下一条的地址上 —— 第一版 tb 就因此
+    tselect 一次没写进、4 组 tdata2 留着上电随机值，seed 7 × random 在第 19619 拍 tUpdate.tdata2 口上撞出来。
+    暖机期一律保持，随机期 3/4 保持。
     暖机做完、且 Fence 收过第一条指令（它的 sfence 载荷寄存器不复位、直连输出口）才 arm（之后每拍都比，含偶发复位后的拍）。
 覆盖（每项 >= cov_min，否则 TEST FAILED）：三个 FU 各自的 fire / 写回、busy、冲刷命中在途、反压、trap 进 M 态、
 mret、合法 CSR 写、EX_II、xret/中断重定向、MSI。恒值输出位见 EXEMPT（逐项给理由），不要求见过 0/1 但照样逐拍比。
@@ -64,6 +67,9 @@ logic [63:0] e7_clint = '0;
 logic [7:0]  e7_hart = 8'h5A;
 int unsigned e7_wph = 0, e7_widx = 0, e7_wcnt = 0;   // 暖机程序：阶段 / 阶段内序号 / 阶段内拍数
 bit e7_wdone = 0, e7_pbusy = 0;
+logic [34:0] e7_h_fu;              // 上一拍驱动的 uop 字段（csr 收下后的下一拍原样保持用）
+logic [8:0]  e7_h_op;
+logic [63:0] e7_h_imm, e7_h_src;
 function automatic bit e7_pct(int p);
   return $urandom_range(9999) < p * 100;
 endfunction
@@ -243,6 +249,20 @@ end else if (!e7_wdone) begin
     default: e7_wdone = 1;
   endcase
 end
+// ---- 收下后的下一拍保持同一条 uop 的字段 ----
+// NewCSR 的写使能 wenLegalReg_last_REG 是收下那拍的合法判断打一拍，写的地址 / 数据却取**当拍**的 io_in_bits_addr /
+// wdata（golden 行为，CSR UT 的暖机也因此每条保持 2 拍）。外壳 busy 上升沿 = 上一拍收下了一条：这一拍若换成别的
+// uop，写就落到新地址上。暖机期一律保持；随机期 3/4 保持（另 1/4 照样随机，两种都是合法的激励）。
+if (%s.busy && !e7_pbusy && (!e7_wdone || e7_pct(75))) begin
+  @io_in_bits_fuType = e7_h_fu;
+  @io_in_bits_fuOpType = e7_h_op;
+  @io_in_bits_imm = e7_h_imm;
+  @io_in_bits_src_0 = e7_h_src;
+end
+e7_h_fu = @io_in_bits_fuType;
+e7_h_op = @io_in_bits_fuOpType;
+e7_h_imm = @io_in_bits_imm;
+e7_h_src = @io_in_bits_src_0;
 e7_pbusy = %s.busy;
 """
 
@@ -256,7 +276,7 @@ def csr_exu_parts(gold, pin="io_in", pout="io_out", keep_cg=True):
     m = gold + ".csr.csrMod"
     stim = STIM_T % ("\n".join("%s = 1'b0;" % e for e in EXC),
                      "\n".join("  %d: %s = 1'b1;" % (k, e) for k, e in enumerate(EXC)),
-                     m, m, m, m, gold, m, m, gold)
+                     m, m, m, m, gold, m, m, gold, gold)
     cov = [(n, e.replace("@@G", gold).replace("@@M", m)) for n, e in COV_T]
 
     def ren(t):

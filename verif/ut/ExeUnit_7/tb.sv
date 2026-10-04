@@ -21,6 +21,9 @@ module tb;
   logic [7:0]  e7_hart = 8'h5A;
   int unsigned e7_wph = 0, e7_widx = 0, e7_wcnt = 0;   // 暖机程序：阶段 / 阶段内序号 / 阶段内拍数
   bit e7_wdone = 0, e7_pbusy = 0;
+  logic [34:0] e7_h_fu;              // 上一拍驱动的 uop 字段（csr 收下后的下一拍原样保持用）
+  logic [8:0]  e7_h_op;
+  logic [63:0] e7_h_imm, e7_h_src;
   function automatic bit e7_pct(int p);
     return $urandom_range(9999) < p * 100;
   endfunction
@@ -2291,6 +2294,20 @@ module tb;
             default: e7_wdone = 1;
           endcase
         end
+        // ---- 收下后的下一拍保持同一条 uop 的字段 ----
+        // NewCSR 的写使能 wenLegalReg_last_REG 是收下那拍的合法判断打一拍，写的地址 / 数据却取**当拍**的 io_in_bits_addr /
+        // wdata（golden 行为，CSR UT 的暖机也因此每条保持 2 拍）。外壳 busy 上升沿 = 上一拍收下了一条：这一拍若换成别的
+        // uop，写就落到新地址上。暖机期一律保持；随机期 3/4 保持（另 1/4 照样随机，两种都是合法的激励）。
+        if (e7_u_gold.busy && !e7_pbusy && (!e7_wdone || e7_pct(75))) begin
+          e7_io_in_bits_fuType = e7_h_fu;
+          e7_io_in_bits_fuOpType = e7_h_op;
+          e7_io_in_bits_imm = e7_h_imm;
+          e7_io_in_bits_src_0 = e7_h_src;
+        end
+        e7_h_fu = e7_io_in_bits_fuType;
+        e7_h_op = e7_io_in_bits_fuOpType;
+        e7_h_imm = e7_io_in_bits_imm;
+        e7_h_src = e7_io_in_bits_src_0;
         e7_pbusy = e7_u_gold.busy;
       end
       #4;

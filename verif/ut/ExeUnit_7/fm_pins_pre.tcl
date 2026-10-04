@@ -5866,15 +5866,15 @@ exeunit_7_pin csr/csrMod/pmaEntryMod/pmaAddr_31_reg\[45\] csr/csrMod/pmaEntryMod
 exeunit_7_pin csr/io_csrio_isPerfCnt_r_reg csr/not_jmp_q_reg
 exeunit_7_pin csr/csrMod/io_out_bits_isPerfCnt_r_reg csr/csrMod/is_perf_cnt_q_reg
 # ---- (c) Fence（Fence 外壳附加）：gen_exeunit.py EXTRA_CHILD_PINS（依据见该表注释）----
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[0\] Fence/u_core/uop_reg\[28\]
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[1\] Fence/u_core/uop_reg\[29\]
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[2\] Fence/u_core/uop_reg\[30\]
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[3\] Fence/u_core/uop_reg\[31\]
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[4\] Fence/u_core/uop_reg\[32\]
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[5\] Fence/u_core/uop_reg\[33\]
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[6\] Fence/u_core/uop_reg\[34\]
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[7\] Fence/u_core/uop_reg\[35\]
-exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[8\] Fence/u_core/uop_reg\[36\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[0\] Fence/u_core/uop_reg\[fuOpType\]\[0\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[1\] Fence/u_core/uop_reg\[fuOpType\]\[1\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[2\] Fence/u_core/uop_reg\[fuOpType\]\[2\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[3\] Fence/u_core/uop_reg\[fuOpType\]\[3\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[4\] Fence/u_core/uop_reg\[fuOpType\]\[4\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[5\] Fence/u_core/uop_reg\[fuOpType\]\[5\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[6\] Fence/u_core/uop_reg\[fuOpType\]\[6\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[7\] Fence/u_core/uop_reg\[fuOpType\]\[7\]
+exeunit_7_pin Fence/uop_ctrl_fuOpType_reg\[8\] Fence/u_core/uop_reg\[fuOpType\]\[8\]
 # ---- (c) Div（DivUnit 外壳附加）：gen_exeunit.py EXTRA_CHILD_PINS（依据见该表注释）----
 exeunit_7_pin Div/divDataModule/aLZCReg_reg\[6\] Div/u_core/u_div/u_core/aLZCReg_reg\[6\]
 exeunit_7_pin Div/divDataModule/dLZCReg_reg\[6\] Div/u_core/u_div/u_core/dLZCReg_reg\[6\]
