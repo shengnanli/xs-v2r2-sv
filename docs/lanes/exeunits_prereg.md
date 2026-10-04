@@ -211,3 +211,6 @@ gen_exeunit.py 改为钉点数 0 时不生成该文件（`--check` 要求它不�
 RTL / Makefile 逻辑 / 其余证明输入未变（Makefile 只改注释）。
 预测（★跑完不许改★）：passing **789**（模型 789 = 0 + 789），constant_reg 0，failing / unverified / unmatched / unread 0，
 无黑盒、无 dont_verify、无钉点，SUCCEEDED。docs/fm_predictions/ExeUnit_4.json 登记不变（expected 789）。
+
+对账（§4）：evidence/78b98ba8613c/ExeUnit_4 —— SUCCEEDED，passing 789 = 预测 789，constant 0，failing / unmatched / unread 0，
+无黑盒、无 dont_verify，receipt 不含钉点脚本；fm_predict check 逐位相等。
