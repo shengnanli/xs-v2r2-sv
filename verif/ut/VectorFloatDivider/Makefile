@@ -14,7 +14,12 @@ TB_SRCS  = tb.sv
 GOLDEN_SRCS = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(CHILDREN) VectorFloatDivider))
 
 FM_VARIANTS = VectorFloatDivider
-FM_REF_DEPS_VectorFloatDivider = $(addsuffix .sv,$(CHILDREN))
+# 字面文件名（fm_predict 的模型读这一行，不展开 make 变量）
+FM_REF_DEPS_VectorFloatDivider = ShiftLeftPriorityWithLZDResult.sv ShiftLeftPriorityWithLZDResult_6.sv \
+                                 ShiftLeftPriorityWithLZDResult_8.sv CSA3to2_20.sv CSA3to2_24.sv \
+                                 r4_qds_v2.sv r4_qds_v2_spec.sv fpdiv_r64_block_vector.sv VectorFloatDividerR64.sv \
+                                 lzc.sv lzc_3.sv lzc_4.sv r4_qds_cg.sv r4_qds.sv r4_qds_spec.sv \
+                                 fpsqrt_r16_block.sv fpsqrt_vector_r16.sv
 
 # 关 merge_dup：fm_predict 的模型（寄存器位 + 输出位）只在关掉时严格适用；加强不是放宽
 FM_MERGE_DUP = false

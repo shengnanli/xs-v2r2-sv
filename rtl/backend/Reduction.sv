@@ -562,22 +562,25 @@ module xs_Reduction_core (
   logic [15:0]  cout, less, sel_lo;
   logic [127:0] alu_sum_vd, alu_max_vd, alu_vd;
   assign vs_lo_adjust = old_vd_reg ^ {128{sub_reg}};
-  always_comb begin
-    for (int i = 0; i < 16; i++) begin
-      logic cin;
-      logic elem_start;               // 第 i 字节是一个 vd 元素的最低字节
-      elem_start = (i & ((1 << vdType_reg) - 1)) == 0;
-      cin        = (i == 0 || elem_start) ? sub_reg : cout[(i == 0) ? 0 : i - 1];
-      {cout[i], byte_sum[i]} = 9'(vs_lo_adjust[8*i +: 8]) + 9'(vd_reg[8*i +: 8]) + 9'(cin);
-      less[i]   = signed_reg ? (vd_reg[8*i+7] ^ vs_lo_adjust[8*i+7] ^ cout[i]) : !cout[i];
-      sel_lo[i] = less[i] == isVredmax_reg;   // max：高半更小就取低半；min 反之
+  // 元素字节掩码：sew=8/16/32/64 → 一个元素占 1/2/4/8 字节，低 vdType 位是"元素内字节序号"
+  logic [3:0] elem_byte_mask;
+  assign elem_byte_mask = 4'((1 << vdType_reg) - 1);
+  // 进位链用 genvar 展开成连续赋值（逐字节一条，不在同一个 always_comb 里自读自写）
+  for (genvar i = 0; i < 16; i++) begin : g_alu_byte
+    logic cin;                        // 元素最低字节吃 sub（减法的 +1），其余吃下一字节的进位
+    if (i == 0) begin : g_first
+      assign cin = sub_reg;
+    end else begin : g_rest
+      assign cin = ((4'(i) & elem_byte_mask) == 4'd0) ? sub_reg : cout[i - 1];
     end
-    for (int i = 0; i < 16; i++) begin
-      int top;                        // 本字节所在元素的最高字节（符号/借位在那里）
-      top = i | ((1 << vdType_reg) - 1);
-      alu_sum_vd[8*i +: 8] = byte_sum[i];
-      alu_max_vd[8*i +: 8] = sel_lo[top] ? old_vd_reg[8*i +: 8] : vd_reg[8*i +: 8];
-    end
+    assign {cout[i], byte_sum[i]} = 9'(vs_lo_adjust[8*i +: 8]) + 9'(vd_reg[8*i +: 8]) + 9'(cin);
+    assign less[i]   = signed_reg ? (vd_reg[8*i+7] ^ vs_lo_adjust[8*i+7] ^ cout[i]) : !cout[i];
+    assign sel_lo[i] = less[i] == isVredmax_reg;   // max：高半更小就取低半；min 反之
+    // 本字节所在元素的最高字节（符号/借位在那里）：4 位下标，恒在 0..15 内
+    logic [3:0] top;
+    assign top = 4'(i) | elem_byte_mask;
+    assign alu_sum_vd[8*i +: 8] = byte_sum[i];
+    assign alu_max_vd[8*i +: 8] = sel_lo[top] ? old_vd_reg[8*i +: 8] : vd_reg[8*i +: 8];
   end
   assign alu_vd = logical_reg ? vd_reg : (sub_reg ? alu_max_vd : alu_sum_vd);
 

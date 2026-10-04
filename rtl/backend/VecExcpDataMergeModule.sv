@@ -273,12 +273,12 @@ module xs_VecExcpDataMergeModule_core
       if (sWaitRab_nonSegIndexed) begin
         filteredRabCommitted[vd] = 1'b0;
         filteredRatCommitted[vd] = 1'b0;
+        // rab 看组内最后一个 vd：((vd+1)<<n)-1；rat 看组内第一个 vd：vd<<n（vd、n 都是展开常数）
         for (int n = 0; n < 4; n++) begin
-          int rabLoc, ratLoc;
-          rabLoc = ((vd + 1) << n) - 1;
-          ratLoc = vd << n;
-          filteredRabCommitted[vd] |= sWaitRab_vemul_i_d[n] && rabCommitted[rabLoc >= MAX_LMUL ? 0 : rabLoc];
-          filteredRatCommitted[vd] |= sWaitRab_vemul_i_d[n] && ratCommitted[ratLoc >= MAX_LMUL ? 0 : ratLoc];
+          filteredRabCommitted[vd] |= sWaitRab_vemul_i_d[n]
+                                   && rabCommitted[(((vd + 1) << n) - 1) >= MAX_LMUL ? 0 : (((vd + 1) << n) - 1)];
+          filteredRatCommitted[vd] |= sWaitRab_vemul_i_d[n]
+                                   && ratCommitted[(vd << n) >= MAX_LMUL ? 0 : (vd << n)];
         end
       end else begin
         filteredRabCommitted[vd] = rabCommitted[vd];
@@ -344,6 +344,20 @@ module xs_VecExcpDataMergeModule_core
   assign firstRabBatch = sWaitRab_rabWriteOffset == 4'd0;
   assign firstRatBatch = sWaitRab_ratWriteOffset == 4'd0;
 
+  // 第 p 个提交口在这一批里落到哪个 vd（-2..10；只有 0..7 才写）
+  logic signed [4:0] rabVd [RAB_N];
+  logic signed [4:0] ratVd [RAB_N];
+  logic              rabVdOk [RAB_N];
+  logic              ratVdOk [RAB_N];
+  always_comb begin
+    for (int p = 0; p < RAB_N; p++) begin
+      rabVd[p]   = 5'(port_to_vd(p, firstRabBatch, sWaitRab_isStride));
+      ratVd[p]   = 5'(port_to_vd(p, firstRatBatch, sWaitRab_isStride));
+      rabVdOk[p] = rabVd[p] >= 0 && rabVd[p] < MAX_LMUL;
+      ratVdOk[p] = ratVd[p] >= 0 && ratVd[p] < MAX_LMUL;
+    end
+  end
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int vd = 0; vd < MAX_LMUL; vd++) begin
@@ -359,11 +373,8 @@ module xs_VecExcpDataMergeModule_core
             for (int vd = 0; vd < MAX_LMUL; vd++) commitNeeded[vd] <= maxVdIdx > 7'(vd);
         S_WAIT_RAB:
           for (int p = 0; p < RAB_N; p++) begin
-            int vdRab, vdRat;
-            vdRab = port_to_vd(p, firstRabBatch, sWaitRab_isStride);
-            vdRat = port_to_vd(p, firstRatBatch, sWaitRab_isStride);
-            if (vdRab >= 0 && vdRab < MAX_LMUL && rab_valid[p])    rabCommitted[vdRab] <= 1'b1;
-            if (vdRat >= 0 && vdRat < MAX_LMUL && oldPregValid[p]) ratCommitted[vdRat] <= 1'b1;
+            if (rabVdOk[p] && rab_valid[p])    rabCommitted[rabVd[p][2:0]] <= 1'b1;
+            if (ratVdOk[p] && oldPregValid[p]) ratCommitted[ratVd[p][2:0]] <= 1'b1;
           end
         S_MERGE_VD:
           for (int j = 0; j < MERGE_N; j++)
@@ -395,15 +406,12 @@ module xs_VecExcpDataMergeModule_core
         if (rab_valid[0])    sWaitRab_rabWriteOffset <= sWaitRab_rabWriteOffset + {1'b0, batch_count(rab_valid)};
         if (oldPregValid[0]) sWaitRab_ratWriteOffset <= sWaitRab_ratWriteOffset + {1'b0, batch_count(oldPregValid)};
         for (int p = 0; p < RAB_N; p++) begin
-          int vdRab, vdRat;
-          vdRab = port_to_vd(p, firstRabBatch, sWaitRab_isStride);
-          vdRat = port_to_vd(p, firstRatBatch, sWaitRab_isStride);
-          if (vdRab >= 0 && vdRab < MAX_LMUL && rab_valid[p]) begin
-            regMaps_lreg[vdRab]    <= rab_lreg[p];
-            regMaps_newPreg[vdRab] <= rab_preg[p];
+          if (rabVdOk[p] && rab_valid[p]) begin
+            regMaps_lreg[rabVd[p][2:0]]    <= rab_lreg[p];
+            regMaps_newPreg[rabVd[p][2:0]] <= rab_preg[p];
           end
-          if (vdRat >= 0 && vdRat < MAX_LMUL && oldPregValid[p])
-            regMaps_oldPreg[vdRat] <= oldPreg[p];
+          if (ratVdOk[p] && oldPregValid[p])
+            regMaps_oldPreg[ratVd[p][2:0]] <= oldPreg[p];
         end
       end
       S_FINISH: begin

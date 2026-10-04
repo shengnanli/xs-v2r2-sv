@@ -18,6 +18,8 @@ FM_REF_DEPS_Reduction = $(addsuffix .sv,$(CHILDREN)) $(GOLDEN_ADDERS)
 # 关 merge_dup：fm_predict 的模型（寄存器位 + 输出位）只在关掉时严格适用；
 # 本模块 vd_vsew_reg_s1 与 vdType_reg_s1[1:0] 正是一对逐位恒等的寄存器。
 FM_MERGE_DUP = false
+# 对称死位（依据与期望数见 verif/fm_target_config/Reduction.tcl）：开 vmucp 让 FM 实际比较这些点（加强不是放宽）
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail
 
