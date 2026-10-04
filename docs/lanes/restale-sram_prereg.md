@@ -148,6 +148,15 @@ Tage_SC / Composer 的 335a330a9baa receipt 在 D1 前出证，impl 闭包含 `x
 
 （Tage_SC 原 §3 行引用的 05394ca211f8 receipt 同为 16112，预测不变。）
 
+## 3c. 追加登记（证明前，merge main bd3b7081 之后）
+
+ICache（icache-fm 合入，`evidence/a72794293f57/ICache/receipt.json`，新钉点 gen_icache_pins.py 740+53）在 D1 前出证，
+impl 闭包含旧 xs_SRAMTemplate_core.sv ⇒ 失效，纳入 P2（UT Makefile 读 ClockGate.sv）。
+
+| target | ut | 阶段 | 基准 receipt | 旧 verdict | 旧 passing | 旧 unread / unmatched | 预测 passing | 预测 verdict |
+|---|---|---|---|---|---|---|---|---|
+| ICache | ICache | P2 | `a72794293f57/ICache/receipt.json` | SUCCEEDED | 21174 | 0 / 0 | 21174 | SUCCEEDED（全零） |
+
 ## 4. 对账
 
 （跑完追加）
