@@ -1487,6 +1487,7 @@ ArrayMulDataModule	c53_986	C53	UNRESOLVED				none
 ArrayMulDataModule	c53_987	C53	UNRESOLVED				none	
 ArrayMulDataModule	c53_988	C53	UNRESOLVED				none	
 ArrayMulDataModule	c53_99	C53	UNRESOLVED				none	
+AsyncResetSynchronizerShiftReg_w1_d3_i0	output_chain	AsyncResetSynchronizerPrimitiveShiftReg_d3_i0	SAME_PATH	output_chain	AsyncResetSynchronizerPrimitiveShiftReg_d3_i0		auto_same	
 BankedDataArray	data_banks_0_0	DataSRAMBank	SAME_PATH	data_banks_0_0	DataSRAMBank		auto_same	
 BankedDataArray	data_banks_0_1	DataSRAMBank_1	SAME_PATH	data_banks_0_1	DataSRAMBank_1		auto_same	
 BankedDataArray	data_banks_0_2	DataSRAMBank_2	SAME_PATH	data_banks_0_2	DataSRAMBank_2		auto_same	
@@ -1619,6 +1620,7 @@ CVT32	vfrec7Table	Rec7Table	DEEPER	u_core.vfrec7Table	Rec7Table		auto_deeper
 CVT32	vfrsqrt7Table	Rsqrt7Table	DEEPER	u_core.vfrsqrt7Table	Rsqrt7Table		auto_deeper	
 CVT32	zero_minus_lzc_f16_clz	CLZ_28	DEEPER	u_core.zero_minus_lzc_f16_clz	CLZ_28		auto_deeper	
 CVT32	zero_minus_lzc_f32_clz	CLZ_29	DEEPER	u_core.zero_minus_lzc_f32_clz	CLZ_29		auto_deeper	
+CVT64	fpcvt	FP_INCVT	DEEPER	u_core.fpcvt	FP_INCVT		auto_deeper	
 CVT64_1	estmate7	Estimate7	DEEPER	u_core.estmate7	Estimate7		auto_deeper	
 CVT64_1	fpcvt	FP_INCVT	DEEPER	u_core.fpcvt	FP_INCVT		auto_deeper	
 CVT64_1	int2fp	INT2FP	DEEPER	u_core.int2fp	INT2FP		auto_deeper	
@@ -1711,6 +1713,7 @@ DCache	stu_1	StorePipe	SAME_PATH	stu_1	StorePipe		auto_same
 DCache	tagArray	DuplicatedTagArray	SAME_PATH	tagArray	DuplicatedTagArray		auto_same	
 DCache	tag_write_arb	Arbiter1_TagWriteReq	SAME_PATH	tag_write_arb	Arbiter1_TagWriteReq		auto_same	
 DCache	wb	WritebackQueue	SAME_PATH	wb	WritebackQueue		auto_same	
+DCacheWrapper	dcache	DCache	SAME_PATH	dcache	DCache		auto_same	
 DataPath	exuOHNoLoad_ext	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext	UIntExtractor_27_000011100000000000001010101		auto_same	
 DataPath	exuOHNoLoad_ext_1	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext_1	UIntExtractor_27_000011100000000000001010101		auto_same	
 DataPath	exuOHNoLoad_ext_10	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext_10	UIntExtractor_27_000011100000000000001010101		auto_same	
@@ -2129,6 +2132,41 @@ EntriesVlduVstuVseglduVsegstu	simpTransPolicy	EnqPolicy_14	UNRESOLVED				none
 Estimate7	leadZerosNext_clz	CLZ_6	DEEPER	u_core.leadZerosNext_clz	CLZ_6		auto_deeper	
 Estimate7	rec7Table	Rec7Table	DEEPER	u_core.rec7Table	Rec7Table		auto_deeper	
 Estimate7	rsqrt7Table	Rsqrt7Table	DEEPER	u_core.rsqrt7Table	Rsqrt7Table		auto_deeper	
+ExeUnit	Alu	Alu	SAME_PATH	Alu	Alu		auto_same	
+ExeUnit	Bku	Bku	SAME_PATH	Bku	Bku		auto_same	
+ExeUnit	ClockGate	ClockGate	SAME_PATH	ClockGate	ClockGate		auto_same	
+ExeUnit	ClockGate_1	ClockGate	SAME_PATH	ClockGate_1	ClockGate		auto_same	
+ExeUnit	Mul	MulUnit	SAME_PATH	Mul	MulUnit		auto_same	
+ExeUnit	in1ToN	Dispatcher	SAME_PATH	in1ToN	Dispatcher		auto_same	
+ExeUnit_1	brh	BranchUnit	SAME_PATH	brh	BranchUnit		auto_same	
+ExeUnit_1	in1ToN	Dispatcher_1	SAME_PATH	in1ToN	Dispatcher_1		auto_same	
+ExeUnit_1	jmp	JumpUnit	SAME_PATH	jmp	JumpUnit		auto_same	
+ExeUnit_10	ClockGate	ClockGate	SAME_PATH	ClockGate	ClockGate		auto_same	
+ExeUnit_10	ClockGate_1	ClockGate	SAME_PATH	ClockGate_1	ClockGate		auto_same	
+ExeUnit_10	Falu	FAlu	SAME_PATH	Falu	FAlu		auto_same	
+ExeUnit_10	Fmac	FMA	SAME_PATH	Fmac	FMA		auto_same	
+ExeUnit_10	in1ToN	Dispatcher_10	SAME_PATH	in1ToN	Dispatcher_10		auto_same	
+ExeUnit_4	Alu	Alu	SAME_PATH	Alu	Alu		auto_same	
+ExeUnit_4	in1ToN	Dispatcher_4	SAME_PATH	in1ToN	Dispatcher_4		auto_same	
+ExeUnit_5	ClockGate	ClockGate	SAME_PATH	ClockGate	ClockGate		auto_same	
+ExeUnit_5	VSetRiWi	VSetRiWi	SAME_PATH	VSetRiWi	VSetRiWi		auto_same	
+ExeUnit_5	VSetRiWvf	VSetRiWvf	SAME_PATH	VSetRiWvf	VSetRiWvf		auto_same	
+ExeUnit_5	brh	BranchUnit	SAME_PATH	brh	BranchUnit		auto_same	
+ExeUnit_5	i2f	IntToFP_3	SAME_PATH	i2f	IntToFP_3		auto_same	
+ExeUnit_5	i2v	IntFPToVec	SAME_PATH	i2v	IntFPToVec		auto_same	
+ExeUnit_5	in1ToN	Dispatcher_5	SAME_PATH	in1ToN	Dispatcher_5		auto_same	
+ExeUnit_5	jmp	JumpUnit	SAME_PATH	jmp	JumpUnit		auto_same	
+ExeUnit_8	ClockGate	ClockGate	SAME_PATH	ClockGate	ClockGate		auto_same	
+ExeUnit_8	ClockGate_1	ClockGate	SAME_PATH	ClockGate_1	ClockGate		auto_same	
+ExeUnit_8	ClockGate_2	ClockGate	SAME_PATH	ClockGate_2	ClockGate		auto_same	
+ExeUnit_8	Falu	FAlu	SAME_PATH	Falu	FAlu		auto_same	
+ExeUnit_8	Fcvt	FCVT	SAME_PATH	Fcvt	FCVT		auto_same	
+ExeUnit_8	Fmac	FMA	SAME_PATH	Fmac	FMA		auto_same	
+ExeUnit_8	f2v	IntFPToVec	SAME_PATH	f2v	IntFPToVec		auto_same	
+ExeUnit_8	in1ToN	Dispatcher_8	SAME_PATH	in1ToN	Dispatcher_8		auto_same	
+ExeUnit_9	ClockGate	ClockGate	SAME_PATH	ClockGate	ClockGate		auto_same	
+ExeUnit_9	Fdiv	FDivSqrt	SAME_PATH	Fdiv	FDivSqrt		auto_same	
+ExeUnit_9	in1ToN	Dispatcher_9	SAME_PATH	in1ToN	Dispatcher_9		auto_same	
 FAlu	falu	FloatAdder	DEEPER	u_core.falu	FloatAdder		auto_deeper	
 FCVT	fcvt	FPCVT	DEEPER	u_core.fcvt	FPCVT		auto_deeper	
 FDivSqrt	fdiv	FloatDivider	ONE_SITE	u_core.u_fdiv	FloatDivider		auto_one_site	
@@ -2423,6 +2461,9 @@ ITTageTable_4	table_0	FoldedSRAMTemplate_24	SAME_PATH	table_0	FoldedSRAMTemplate
 ITTageTable_4	wrbypass	WrBypass_43	SAME_PATH	wrbypass	WrBypass_43		auto_same	
 InstrUncache	entries_0	InstrMMIOEntry	SAME_PATH	entries_0	InstrMMIOEntry		auto_same	
 InstrUncache	resp_arb	Arbiter1_InsUncacheResp	SAME_PATH	resp_arb	Arbiter1_InsUncacheResp		auto_same	
+IntFPToVec	FliDTable	FliDTable	DEEPER	u_core.FliDTable	FliDTable		auto_deeper	
+IntFPToVec	FliHTable	FliHTable	DEEPER	u_core.FliHTable	FliHTable		auto_deeper	
+IntFPToVec	FliSTable	FliSTable	DEEPER	u_core.FliSTable	FliSTable		auto_deeper	
 IntRFReadArbiter	arbiters_0	WBArbiter_30	SAME_PATH	arbiters_0	WBArbiter_30		auto_same	
 IntRFReadArbiter	arbiters_1	WBArbiter_30	SAME_PATH	arbiters_1	WBArbiter_30		auto_same	
 IntRFReadArbiter	arbiters_10	WBArbiter_38	SAME_PATH	arbiters_10	WBArbiter_38		auto_same	
@@ -2451,6 +2492,7 @@ IntToFP_1	post_norm	IntToFP_postnorm_1	DEEPER	u_core.post_norm	IntToFP_postnorm_
 IntToFP_1	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
 IntToFP_2	post_norm	IntToFP_postnorm_2	DEEPER	u_core.post_norm	IntToFP_postnorm_2		auto_deeper	
 IntToFP_2	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
+IntToFP_3	dataModule	IntToFPDataModule	DEEPER	u_core.dataModule	IntToFPDataModule		auto_deeper	
 IntToFP_postnorm	rounder	RoundingUnit	DEEPER	u_core.rounder	RoundingUnit		auto_deeper	
 IntToFP_postnorm_1	rounder	RoundingUnit_1	DEEPER	u_core.rounder	RoundingUnit_1		auto_deeper	
 IntToFP_postnorm_2	rounder	RoundingUnit_2	DEEPER	u_core.rounder	RoundingUnit_2		auto_deeper	
@@ -2636,12 +2678,12 @@ LLPTW	hptw_req_arb	Arbiter2_LLPTW_Anon	DEEPER	u_core.hptw_req_arb	Arbiter2_LLPTW
 LLPTW	hyper_arb1	RRArbiterInit_1	DEEPER	u_core.hyper_arb1	RRArbiterInit_1		auto_deeper	
 LLPTW	hyper_arb2	RRArbiterInit_1	DEEPER	u_core.hyper_arb2	RRArbiterInit_1		auto_deeper	
 LLPTW	mem_arb	RRArbiterInit_1	DEEPER	u_core.mem_arb	RRArbiterInit_1		auto_deeper	
-LinkMonitor	Decoupled2LCredit_txdatLink	Decoupled2LCredit_2	ONE_SITE	u_core.Decoupled2LCredit_txdat	Decoupled2LCredit_2		auto_one_site	
-LinkMonitor	Decoupled2LCredit_txreqLink	Decoupled2LCredit	ONE_SITE	u_core.Decoupled2LCredit_txreq	Decoupled2LCredit		auto_one_site	
-LinkMonitor	Decoupled2LCredit_txrspLink	Decoupled2LCredit_1	ONE_SITE	u_core.Decoupled2LCredit_txrsp	Decoupled2LCredit_1		auto_one_site	
-LinkMonitor	LCredit2Decoupled_rxdat	LCredit2Decoupled_2	DEEPER	u_core.LCredit2Decoupled_rxdat	LCredit2Decoupled_2		auto_deeper	
-LinkMonitor	LCredit2Decoupled_rxrsp	LCredit2Decoupled_1	DEEPER	u_core.LCredit2Decoupled_rxrsp	LCredit2Decoupled_1		auto_deeper	
-LinkMonitor	LCredit2Decoupled_rxsnp	LCredit2Decoupled	DEEPER	u_core.LCredit2Decoupled_rxsnp	LCredit2Decoupled		auto_deeper	
+LinkMonitor	Decoupled2LCredit_txdatLink	Decoupled2LCredit_2	SAME_PATH	Decoupled2LCredit_txdatLink	Decoupled2LCredit_2		auto_same	
+LinkMonitor	Decoupled2LCredit_txreqLink	Decoupled2LCredit	SAME_PATH	Decoupled2LCredit_txreqLink	Decoupled2LCredit		auto_same	
+LinkMonitor	Decoupled2LCredit_txrspLink	Decoupled2LCredit_1	SAME_PATH	Decoupled2LCredit_txrspLink	Decoupled2LCredit_1		auto_same	
+LinkMonitor	LCredit2Decoupled_rxdat	LCredit2Decoupled_2	SAME_PATH	LCredit2Decoupled_rxdat	LCredit2Decoupled_2		auto_same	
+LinkMonitor	LCredit2Decoupled_rxrsp	LCredit2Decoupled_1	SAME_PATH	LCredit2Decoupled_rxrsp	LCredit2Decoupled_1		auto_same	
+LinkMonitor	LCredit2Decoupled_rxsnp	LCredit2Decoupled	SAME_PATH	LCredit2Decoupled_rxsnp	LCredit2Decoupled		auto_same	
 LoadQueue	exceptionBuffer	LqExceptionBuffer	SAME_PATH	exceptionBuffer	LqExceptionBuffer		auto_same	
 LoadQueue	loadQueueRAR	LoadQueueRAR	SAME_PATH	loadQueueRAR	LoadQueueRAR		auto_same	
 LoadQueue	loadQueueRAW	LoadQueueRAW	SAME_PATH	loadQueueRAW	LoadQueueRAW		auto_same	
@@ -2979,6 +3021,25 @@ LqVAddrModule	sx_writeData_resp_pipMod_9	DelayNWithValid_155	GEN_SITE_UNINDEXED	
 LsqWrapper	loadQueue	LoadQueue	SAME_PATH	loadQueue	LoadQueue		auto_same	
 LsqWrapper	storeQueue	StoreQueue	SAME_PATH	storeQueue	StoreQueue		auto_same	
 MEFreeList	snapshots_snapshotGen	SnapshotGenerator	DEEPER	u_core.snapshots_snapshotGen	xs_SnapshotGenerator_core		auto_deeper	
+MMIOBridge	entries_0	MMIOBridgeEntry	SAME_PATH	entries_0	MMIOBridgeEntry		auto_same	
+MMIOBridge	entries_1	MMIOBridgeEntry	SAME_PATH	entries_1	MMIOBridgeEntry		auto_same	
+MMIOBridge	entries_10	MMIOBridgeEntry_8	SAME_PATH	entries_10	MMIOBridgeEntry_8		auto_same	
+MMIOBridge	entries_11	MMIOBridgeEntry_8	SAME_PATH	entries_11	MMIOBridgeEntry_8		auto_same	
+MMIOBridge	entries_12	MMIOBridgeEntry_8	SAME_PATH	entries_12	MMIOBridgeEntry_8		auto_same	
+MMIOBridge	entries_13	MMIOBridgeEntry_8	SAME_PATH	entries_13	MMIOBridgeEntry_8		auto_same	
+MMIOBridge	entries_14	MMIOBridgeEntry_8	SAME_PATH	entries_14	MMIOBridgeEntry_8		auto_same	
+MMIOBridge	entries_15	MMIOBridgeEntry_8	SAME_PATH	entries_15	MMIOBridgeEntry_8		auto_same	
+MMIOBridge	entries_2	MMIOBridgeEntry_2	SAME_PATH	entries_2	MMIOBridgeEntry_2		auto_same	
+MMIOBridge	entries_3	MMIOBridgeEntry_2	SAME_PATH	entries_3	MMIOBridgeEntry_2		auto_same	
+MMIOBridge	entries_4	MMIOBridgeEntry_4	SAME_PATH	entries_4	MMIOBridgeEntry_4		auto_same	
+MMIOBridge	entries_5	MMIOBridgeEntry_4	SAME_PATH	entries_5	MMIOBridgeEntry_4		auto_same	
+MMIOBridge	entries_6	MMIOBridgeEntry_4	SAME_PATH	entries_6	MMIOBridgeEntry_4		auto_same	
+MMIOBridge	entries_7	MMIOBridgeEntry_4	SAME_PATH	entries_7	MMIOBridgeEntry_4		auto_same	
+MMIOBridge	entries_8	MMIOBridgeEntry_8	SAME_PATH	entries_8	MMIOBridgeEntry_8		auto_same	
+MMIOBridge	entries_9	MMIOBridgeEntry_8	SAME_PATH	entries_9	MMIOBridgeEntry_8		auto_same	
+MMIOBridge	mmio_channel_D_arb	Arbiter16_TLBundleD	SAME_PATH	mmio_channel_D_arb	Arbiter16_TLBundleD		auto_same	
+MMIOBridge	mmio_txdat_arb	Arbiter16_CHIDAT	SAME_PATH	mmio_txdat_arb	Arbiter16_CHIDAT		auto_same	
+MMIOBridge	txreqArb	RRArbiterInit_13	SAME_PATH	txreqArb	RRArbiterInit_13		auto_same	
 MSHRCtl	mshrSelector	MSHRSelector	DEEPER	u_core.mshrSelector	MSHRSelector		auto_deeper	
 MSHRCtl	mshr_task_arb	FastArbiter_7	DEEPER	u_core.mshr_task_arb	FastArbiter_7		auto_deeper	
 MSHRCtl	mshrs_0	MSHR	GEN_SITE	u_core.mshrs[0].entry	MSHR		auto_gen_site_suffix	
@@ -3008,6 +3069,7 @@ MainPipe_1	toSourceD_arb	Arbiter3_TaskWithData	SAME_PATH	toSourceD_arb	Arbiter3_
 MainPipe_1	toTXDAT_arb	Arbiter3_TaskWithData	SAME_PATH	toTXDAT_arb	Arbiter3_TaskWithData		auto_same	
 MainPipe_1	toTXREQ_arb	Arbiter3_CHIREQ	SAME_PATH	toTXREQ_arb	Arbiter3_CHIREQ		auto_same	
 MainPipe_1	toTXRSP_arb	Arbiter3_TaskBundle	SAME_PATH	toTXRSP_arb	Arbiter3_TaskBundle		auto_same	
+MbistClockGateCell	CG	ClockGate	SAME_PATH	CG	ClockGate		auto_same	
 MbistClockGateCell_93	CG	ClockGate	SAME_PATH	CG	ClockGate		auto_same	
 MbistClockGateCell_93	clockMux	ClockMux	SAME_PATH	clockMux	ClockMux		auto_same	
 MemCtrl	ssit	SSIT	DEEPER	u_core.ssit	SSIT		auto_deeper	
@@ -3085,6 +3147,9 @@ OpenLLC	slices_3	Slice_4	DEEPER	u_core.slices_3	Slice_4		auto_deeper
 OpenLLC	snLinkMonitor	SNLinkMonitor	DEEPER	u_core.snLinkMonitor	SNLinkMonitor		auto_deeper	
 OpenLLC	snXbar	SNXbar	DEEPER	u_core.snXbar	SNXbar		auto_deeper	
 OpenLLC	topDown	TopDownMonitor_1	DEEPER	u_core.topDown	TopDownMonitor_1		auto_deeper	
+PBestOffsetPrefetch	delayQueue	DelayQueue	SAME_PATH	delayQueue	DelayQueue		auto_same	
+PBestOffsetPrefetch	rrTable	RecentRequestTable	SAME_PATH	rrTable	RecentRequestTable		auto_same	
+PBestOffsetPrefetch	scoreTable	OffsetScoreTable	SAME_PATH	scoreTable	OffsetScoreTable		auto_same	
 PFEvent	perfEvents_0	perfEventsModule	GEN_SITE	g_evt[0].perfEvents	perfEventsModule		auto_gen_site_suffix	
 PFEvent	perfEvents_1	perfEventsModule	GEN_SITE	g_evt[1].perfEvents	perfEventsModule		auto_gen_site_suffix	
 PFEvent	perfEvents_10	perfEventsModule	GEN_SITE	g_evt[10].perfEvents	perfEventsModule		auto_gen_site_suffix	
@@ -3116,6 +3181,10 @@ PTWNewFilter	prefetch_filter_prefetch_entry	PTWFilterEntry_1	UNRESOLVED				none
 PTWNewFilter	ptw_arb	RRArbiterInit_12	DEEPER	u_core.ptw_arb	RRArbiterInit_12		auto_deeper	
 PTWNewFilter	store_filter_store_entry	PTWFilterEntry_1	UNRESOLVED				none	
 PTWRepeaterNB	delay	DelayN_1	DEEPER	u_core.delay	DelayN_1		auto_deeper	
+PatternHistoryTable	evict_queue	OverrideableQueue_1	SAME_PATH	evict_queue	OverrideableQueue_1		auto_same	
+PatternHistoryTable	lookup_queue	OverrideableQueue	SAME_PATH	lookup_queue	OverrideableQueue		auto_same	
+PatternHistoryTable	pf_gen_req_arb	Arbiter3_PfGenReq	SAME_PATH	pf_gen_req_arb	Arbiter3_PfGenReq		auto_same	
+PatternHistoryTable	pht_ram	SRAMTemplate_145	SAME_PATH	pht_ram	SRAMTemplate_145		auto_same	
 Permutation	vslidednOffset	slidednVs2VdTable	DEEPER	u_core.vslidednOffset	slidednVs2VdTable		auto_deeper	
 Permutation	vslideupOffset	slideupVs2VdTable	DEEPER	u_core.vslideupOffset	slideupVs2VdTable		auto_deeper	
 Pipeline	stages_0	Queue1_L1PrefetchReq	ONE_SITE	u_core.prefetch_stage	Queue1_L1PrefetchReq		auto_one_site	
@@ -3944,26 +4013,28 @@ TLBNonBlock_2	entries	TlbStorageWrapper_3	SAME_PATH	entries	TlbStorageWrapper_3	
 TLBNonBlock_2	sfence_delay	DelayN_9	SAME_PATH	sfence_delay	DelayN_9		auto_same	
 TLBuffer	nodeIn_d_q	Queue2_TLBundleD	ONE_SITE	u_core.response_queue	Queue2_TLBundleD		auto_one_site	
 TLBuffer	nodeOut_a_q	Queue2_TLBundleA	ONE_SITE	u_core.request_queue	Queue2_TLBundleA		auto_one_site	
-TLBuffer_13	nodeIn_b_q	Queue2_TLBundleB_1	DEEPER	u_core.g_bank[b].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_deeper	
-TLBuffer_13	nodeIn_b_q_1	Queue2_TLBundleB_1	GEN_SITE	u_core.g_bank[1].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_gen_site_suffix	
-TLBuffer_13	nodeIn_b_q_2	Queue2_TLBundleB_1	GEN_SITE	u_core.g_bank[2].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_gen_site_suffix	
-TLBuffer_13	nodeIn_b_q_3	Queue2_TLBundleB_1	GEN_SITE	u_core.g_bank[3].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_gen_site_suffix	
-TLBuffer_13	nodeIn_d_q	Queue2_TLBundleD_20	DEEPER	u_core.g_bank[b].u_bank.nodeIn_d_q	Queue2_TLBundleD_20		auto_deeper	
-TLBuffer_13	nodeIn_d_q_1	Queue2_TLBundleD_20	GEN_SITE	u_core.g_bank[1].u_bank.nodeIn_d_q	Queue2_TLBundleD_20		auto_gen_site_suffix	
-TLBuffer_13	nodeIn_d_q_2	Queue2_TLBundleD_20	GEN_SITE	u_core.g_bank[2].u_bank.nodeIn_d_q	Queue2_TLBundleD_20		auto_gen_site_suffix	
-TLBuffer_13	nodeIn_d_q_3	Queue2_TLBundleD_20	GEN_SITE	u_core.g_bank[3].u_bank.nodeIn_d_q	Queue2_TLBundleD_20		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_a_q	Queue2_TLBundleA_19	DEEPER	u_core.g_bank[b].u_bank.nodeOut_a_q	Queue2_TLBundleA_19		auto_deeper	
-TLBuffer_13	nodeOut_a_q_1	Queue2_TLBundleA_19	GEN_SITE	u_core.g_bank[1].u_bank.nodeOut_a_q	Queue2_TLBundleA_19		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_a_q_2	Queue2_TLBundleA_19	GEN_SITE	u_core.g_bank[2].u_bank.nodeOut_a_q	Queue2_TLBundleA_19		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_a_q_3	Queue2_TLBundleA_19	GEN_SITE	u_core.g_bank[3].u_bank.nodeOut_a_q	Queue2_TLBundleA_19		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_c_q	Queue2_TLBundleC_1	DEEPER	u_core.g_bank[b].u_bank.nodeOut_c_q	Queue2_TLBundleC_1		auto_deeper	
-TLBuffer_13	nodeOut_c_q_1	Queue2_TLBundleC_1	GEN_SITE	u_core.g_bank[1].u_bank.nodeOut_c_q	Queue2_TLBundleC_1		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_c_q_2	Queue2_TLBundleC_1	GEN_SITE	u_core.g_bank[2].u_bank.nodeOut_c_q	Queue2_TLBundleC_1		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_c_q_3	Queue2_TLBundleC_1	GEN_SITE	u_core.g_bank[3].u_bank.nodeOut_c_q	Queue2_TLBundleC_1		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_e_q	Queue2_TLBundleE_1	DEEPER	u_core.g_bank[b].u_bank.nodeOut_e_q	Queue2_TLBundleE_1		auto_deeper	
-TLBuffer_13	nodeOut_e_q_1	Queue2_TLBundleE_1	GEN_SITE	u_core.g_bank[1].u_bank.nodeOut_e_q	Queue2_TLBundleE_1		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_e_q_2	Queue2_TLBundleE_1	GEN_SITE	u_core.g_bank[2].u_bank.nodeOut_e_q	Queue2_TLBundleE_1		auto_gen_site_suffix	
-TLBuffer_13	nodeOut_e_q_3	Queue2_TLBundleE_1	GEN_SITE	u_core.g_bank[3].u_bank.nodeOut_e_q	Queue2_TLBundleE_1		auto_gen_site_suffix	
+TLBuffer_13	nodeIn_b_q	Queue2_TLBundleB_1	UNRESOLVED				none	
+TLBuffer_13	nodeIn_b_q_1	Queue2_TLBundleB_1	UNRESOLVED				none	
+TLBuffer_13	nodeIn_b_q_2	Queue2_TLBundleB_1	UNRESOLVED				none	
+TLBuffer_13	nodeIn_b_q_3	Queue2_TLBundleB_1	UNRESOLVED				none	
+TLBuffer_13	nodeIn_d_q	Queue2_TLBundleD_20	UNRESOLVED				none	
+TLBuffer_13	nodeIn_d_q_1	Queue2_TLBundleD_20	UNRESOLVED				none	
+TLBuffer_13	nodeIn_d_q_2	Queue2_TLBundleD_20	UNRESOLVED				none	
+TLBuffer_13	nodeIn_d_q_3	Queue2_TLBundleD_20	UNRESOLVED				none	
+TLBuffer_13	nodeOut_a_q	Queue2_TLBundleA_19	UNRESOLVED				none	
+TLBuffer_13	nodeOut_a_q_1	Queue2_TLBundleA_19	UNRESOLVED				none	
+TLBuffer_13	nodeOut_a_q_2	Queue2_TLBundleA_19	UNRESOLVED				none	
+TLBuffer_13	nodeOut_a_q_3	Queue2_TLBundleA_19	UNRESOLVED				none	
+TLBuffer_13	nodeOut_c_q	Queue2_TLBundleC_1	UNRESOLVED				none	
+TLBuffer_13	nodeOut_c_q_1	Queue2_TLBundleC_1	UNRESOLVED				none	
+TLBuffer_13	nodeOut_c_q_2	Queue2_TLBundleC_1	UNRESOLVED				none	
+TLBuffer_13	nodeOut_c_q_3	Queue2_TLBundleC_1	UNRESOLVED				none	
+TLBuffer_13	nodeOut_e_q	Queue2_TLBundleE_1	UNRESOLVED				none	
+TLBuffer_13	nodeOut_e_q_1	Queue2_TLBundleE_1	UNRESOLVED				none	
+TLBuffer_13	nodeOut_e_q_2	Queue2_TLBundleE_1	UNRESOLVED				none	
+TLBuffer_13	nodeOut_e_q_3	Queue2_TLBundleE_1	UNRESOLVED				none	
+TLBuffer_15	nodeIn_d_q	Queue2_TLBundleD_13	SAME_PATH	nodeIn_d_q	Queue2_TLBundleD_13		auto_same	
+TLBuffer_15	nodeOut_a_q	Queue2_TLBundleA_12	SAME_PATH	nodeOut_a_q	Queue2_TLBundleA_12		auto_same	
 TLBuffer_2	nodeIn_d_q	Queue2_TLBundleD_3	DEEPER	u_core.nodeIn_d_q	Queue2_TLBundleD_3		auto_deeper	
 TLBuffer_2	nodeOut_a_q	Queue2_TLBundleA_2	DEEPER	u_core.nodeOut_a_q	Queue2_TLBundleA_2		auto_deeper	
 TLBuffer_20	nodeIn_d_q	Queue2_TLBundleD_11	SAME_PATH	nodeIn_d_q	Queue2_TLBundleD_11		auto_same	
@@ -4141,6 +4212,10 @@ V0RFWBCollideChecker	arbiters_2	WBArbiter_2	SAME_PATH	arbiters_2	WBArbiter_2		au
 V0RFWBCollideChecker	arbiters_3	WBArbiter_2	SAME_PATH	arbiters_3	WBArbiter_2		auto_same	
 V0RFWBCollideChecker	arbiters_4	WBArbiter_3	SAME_PATH	arbiters_4	WBArbiter_3		auto_same	
 V0RFWBCollideChecker	arbiters_5	WBArbiter_3	SAME_PATH	arbiters_5	WBArbiter_3		auto_same	
+VBestOffsetPrefetch	delayQueue	DelayQueue_1	SAME_PATH	delayQueue	DelayQueue_1		auto_same	
+VBestOffsetPrefetch	reqFilter	PrefetchReqBuffer	SAME_PATH	reqFilter	PrefetchReqBuffer		auto_same	
+VBestOffsetPrefetch	rrTable	RecentRequestTable_1	SAME_PATH	rrTable	RecentRequestTable_1		auto_same	
+VBestOffsetPrefetch	scoreTable	OffsetScoreTable_1	SAME_PATH	scoreTable	OffsetScoreTable_1		auto_same	
 VCVT	vcvtImpl	CVT64_1	SAME_PATH	vcvtImpl	CVT64_1		auto_same	
 VCVT_1	vcvtImpl	CVT32	SAME_PATH	vcvtImpl	CVT32		auto_same	
 VCVT_2	vcvtImpl	CVT16	SAME_PATH	vcvtImpl	CVT16		auto_same	
@@ -4176,6 +4251,7 @@ VSSplitImp	splitPipeline	VSSplitPipelineImp	SAME_PATH	splitPipeline	VSSplitPipel
 VSegmentUnit	VSegmentUnitPipelineConnect	NewPipelineConnectPipe_33	DEEPER	u_core.VSegmentUnitPipelineConnect	NewPipelineConnectPipe_33		auto_deeper	
 VSegmentUnit	segmentTrigger	VSegmentTrigger	DEEPER	u_core.segmentTrigger	VSegmentTrigger		auto_deeper	
 VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。
+VSetRiWvf	vsetModule	VsetModule	UNRESOLVED				none	
 VSetRvfWvf	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	同上
 VTypeBuffer	vtypeBuffer	SyncDataModuleTemplate__64entry_4	DEEPER	u_core.vtypeBuffer	SyncDataModuleTemplate__64entry_4		auto_deeper	
 VTypeBuffer	walkPtrSnapshots_snapshotGen	SnapshotGenerator_1	DEEPER	u_core.walkPtrSnapshots_snapshotGen	SnapshotGenerator_1		auto_deeper	

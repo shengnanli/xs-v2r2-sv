@@ -20,8 +20,8 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED        7611
-# status GAP            16398
+# status MEASURED        7557
+# status GAP            16452
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -68,49 +68,49 @@ ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob.vtypeBuffe
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob.vtypeBuffer.walkPtrSnapshots_snapshotGen	snapshots should not be empty when dequeue!\n	A_FUNC_ASSERT	GAP	1	0	1	SnapshotGenerator_1	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob.vtypeBuffer.walkVTypeSnapshots_snapshotGen	snapshots should not be empty when dequeue!\n	A_FUNC_ASSERT	GAP	1	0	1	SnapshotGenerator_2	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.snpt	snapshots should not be empty when dequeue!\n	A_FUNC_ASSERT	MEASURED	1	0	0	SnapshotGenerator_14	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_8	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_8	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus.Falu	falu OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FAlu	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus.Fcvt	Vfcvt OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FCVT	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus.Fmac	fma OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FMA	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_8	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_8	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_1	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	1	1	0	ExeUnit_9	no	assert_is_cycle_visible_behavior	sy & _in1ToN_io_in_ready; wire _GEN_0 = io_out_ready & _Fdiv_io_out_valid; wire [8:0] _inPipe_flushVec_flushI…
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_1	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	1	1	0	ExeUnit_9	yes	assert_is_cycle_visible_behavior	sy & _in1ToN_io_in_ready; wire _GEN_0 = io_out_ready & _Fdiv_io_out_valid; wire [8:0] _inPipe_flushVec_flushI…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_1.Fdiv	fdiv OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FDivSqrt	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_1.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	1	1	0	Dispatcher_9	yes	assert_is_cycle_visible_behavior	in_bits_fuType == 35'h4000; wire _GEN = io_in_valid & ~data_0_probe; assign io_in_ready = io_out_0_ready; ass…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_1.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_9	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_10	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_10	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2.Falu	falu OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FAlu	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2.Fmac	fma OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FMA	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_10	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_10	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_3	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	1	1	0	ExeUnit_9	no	assert_is_cycle_visible_behavior	sy & _in1ToN_io_in_ready; wire _GEN_0 = io_out_ready & _Fdiv_io_out_valid; wire [8:0] _inPipe_flushVec_flushI…
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_3	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	1	1	0	ExeUnit_9	yes	assert_is_cycle_visible_behavior	sy & _in1ToN_io_in_ready; wire _GEN_0 = io_out_ready & _Fdiv_io_out_valid; wire [8:0] _inPipe_flushVec_flushI…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_3.Fdiv	fdiv OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FDivSqrt	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_3.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	1	1	0	Dispatcher_9	yes	assert_is_cycle_visible_behavior	in_bits_fuType == 35'h4000; wire _GEN = io_in_valid & ~data_0_probe; assign io_in_ready = io_out_0_ready; ass…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_3.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_9	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_10	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_10	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4.Falu	falu OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FAlu	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4.Fmac	fma OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	FMA	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_10	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_10	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_1	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_1	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_1	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_1	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_1.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_1	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_1.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_1	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_3	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_1	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_3	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_1	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_3.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_1	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_3.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_1	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_4	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	1	1	0	ExeUnit_4	no	assert_is_cycle_visible_behavior	um_uopIdx) ); wire data_0_probe; assign data_0_probe = _Alu_io_out_valid; Dispatcher_4 in1ToN ( .clock (clock…
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_4	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	1	1	0	ExeUnit_4	yes	assert_is_cycle_visible_behavior	um_uopIdx) ); wire data_0_probe; assign data_0_probe = _Alu_io_out_valid; Dispatcher_4 in1ToN ( .clock (clock…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_4.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	1	1	0	Dispatcher_4	yes	assert_is_cycle_visible_behavior	o_in_bits_fuType == 35'h40; wire _GEN = io_in_valid & ~data_0_probe; assign io_in_ready = io_out_0_ready; ass…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_4.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_4	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_5	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_5	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_5	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_5	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_6	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	1	1	0	ExeUnit_4	no	assert_is_cycle_visible_behavior	um_uopIdx) ); wire data_0_probe; assign data_0_probe = _Alu_io_out_valid; Dispatcher_4 in1ToN ( .clock (clock…
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_6	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	1	1	0	ExeUnit_4	yes	assert_is_cycle_visible_behavior	um_uopIdx) ); wire data_0_probe; assign data_0_probe = _Alu_io_out_valid; Dispatcher_4 in1ToN ( .clock (clock…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_6.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	1	1	0	Dispatcher_4	yes	assert_is_cycle_visible_behavior	o_in_bits_fuType == 35'h40; wire _GEN = io_in_valid & ~data_0_probe; assign io_in_ready = io_out_0_ready; ass…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_6.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_4	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_7	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_7	no	assert_is_cycle_visible_behavior	
@@ -2984,16 +2984,16 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock	FEX3_fire_cnt	C
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock	FEX4_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_1._GEN_3
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock	alu_fire_0_cnt	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock	brh_fire_0_cnt	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	clock_gate_en_f2v	C_DIAG	MEASURED	1	0	0	ExeUnit_8	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_8.clk_en_2_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	clock_gate_en_falu	B_CONTROL	MEASURED	1	1	0	ExeUnit_8	no	FC/drives_child_input:ExeUnit_8.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	clock_gate_en_fcvt	B_CONTROL	MEASURED	1	1	0	ExeUnit_8	no	FC/drives_child_input:ExeUnit_8.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	clock_gate_en_fmac	B_CONTROL	MEASURED	1	1	0	ExeUnit_8	no	FC/drives_child_input:ExeUnit_8.clk_en_3_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_1	clock_gate_en_fdiv	B_CONTROL	MEASURED	1	1	0	ExeUnit_9	no	FC/drives_child_input:ExeUnit_9.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2	clock_gate_en_falu	B_CONTROL	MEASURED	1	1	0	ExeUnit_10	no	FC/drives_child_input:ExeUnit_10.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2	clock_gate_en_fmac	B_CONTROL	MEASURED	1	1	0	ExeUnit_10	no	FC/drives_child_input:ExeUnit_10.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_3	clock_gate_en_fdiv	B_CONTROL	MEASURED	1	1	0	ExeUnit_9	no	FC/drives_child_input:ExeUnit_9.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4	clock_gate_en_falu	B_CONTROL	MEASURED	1	1	0	ExeUnit_10	no	FC/drives_child_input:ExeUnit_10.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4	clock_gate_en_fmac	B_CONTROL	MEASURED	1	1	0	ExeUnit_10	no	FC/drives_child_input:ExeUnit_10.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	clock_gate_en_f2v	C_DIAG	MEASURED	1	0	0	ExeUnit_8	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_8.clk_en_2_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	clock_gate_en_falu	B_CONTROL	GAP	1	1	1	ExeUnit_8	yes	FC/drives_child_input:ExeUnit_8.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	clock_gate_en_fcvt	B_CONTROL	GAP	1	1	1	ExeUnit_8	yes	FC/drives_child_input:ExeUnit_8.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus	clock_gate_en_fmac	B_CONTROL	GAP	1	1	1	ExeUnit_8	yes	FC/drives_child_input:ExeUnit_8.clk_en_3_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_1	clock_gate_en_fdiv	B_CONTROL	GAP	1	1	1	ExeUnit_9	yes	FC/drives_child_input:ExeUnit_9.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2	clock_gate_en_falu	B_CONTROL	GAP	1	1	1	ExeUnit_10	yes	FC/drives_child_input:ExeUnit_10.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_2	clock_gate_en_fmac	B_CONTROL	GAP	1	1	1	ExeUnit_10	yes	FC/drives_child_input:ExeUnit_10.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_3	clock_gate_en_fdiv	B_CONTROL	GAP	1	1	1	ExeUnit_9	yes	FC/drives_child_input:ExeUnit_9.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4	clock_gate_en_falu	B_CONTROL	GAP	1	1	1	ExeUnit_10	yes	FC/drives_child_input:ExeUnit_10.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpExuBlock.exus_4	clock_gate_en_fmac	B_CONTROL	GAP	1	1	1	ExeUnit_10	yes	FC/drives_child_input:ExeUnit_10.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpScheduler.IssueQueueFaluFcvtF2vFmacFdiv	deqDelay0_fire_cnt	B_CONTROL	MEASURED	1	1	0	IssueQueueFaluFcvtF2vFmacFdiv	yes	FC/read_by_logic:IssueQueueFaluFcvtF2vFmacFdiv._io_validCntDeqVec_0_T_1_probe	io_valid[17] & deqCanAcceptVec_0_17})})})})}) - {5'h0, _io_validCntDeqVec_0_T_1_probe}); io_validCntDeqVec_1_…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpScheduler.IssueQueueFaluFcvtF2vFmacFdiv	deqDelay1_fire_cnt	B_CONTROL	MEASURED	1	1	0	IssueQueueFaluFcvtF2vFmacFdiv	yes	FC/read_by_logic:IssueQueueFaluFcvtF2vFmacFdiv._io_validCntDeqVec_1_T_1_probe	ies_io_valid[17] & fuTypeVec_17[14]})})})})}) - {5'h0, _io_validCntDeqVec_1_T_1_probe}); end `ifdef ENABLE_IN…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.fpScheduler.IssueQueueFaluFcvtF2vFmacFdiv	enq_alu_fire_cnt	C_DIAG	MEASURED	1	0	0	IssueQueueFaluFcvtF2vFmacFdiv	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	IssueQueueFaluFcvtF2vFmacFdiv._GEN_14
@@ -4431,24 +4431,24 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock	brh_fire_0_cnt
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock	brh_fire_1_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock._GEN_8
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock	brh_fire_2_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock._GEN_9
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock	brh_fire_3_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock._GEN_10
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus	clock_gate_en_alu	C_DIAG	MEASURED	1	0	0	ExeUnit	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit.clk_en_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus	clock_gate_en_bku	B_CONTROL	MEASURED	1	1	0	ExeUnit	no	FC/drives_child_input:ExeUnit.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus	clock_gate_en_mul	B_CONTROL	MEASURED	1	1	0	ExeUnit	no	FC/drives_child_input:ExeUnit.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_1	clock_gate_en_brh	C_DIAG	MEASURED	1	0	0	ExeUnit_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_1.clk_en_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_1	clock_gate_en_jmp	C_DIAG	MEASURED	1	0	0	ExeUnit_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_1.clk_en_1_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2	clock_gate_en_alu	C_DIAG	MEASURED	1	0	0	ExeUnit	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit.clk_en_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2	clock_gate_en_bku	B_CONTROL	MEASURED	1	1	0	ExeUnit	no	FC/drives_child_input:ExeUnit.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2	clock_gate_en_mul	B_CONTROL	MEASURED	1	1	0	ExeUnit	no	FC/drives_child_input:ExeUnit.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_3	clock_gate_en_brh	C_DIAG	MEASURED	1	0	0	ExeUnit_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_1.clk_en_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_3	clock_gate_en_jmp	C_DIAG	MEASURED	1	0	0	ExeUnit_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_1.clk_en_1_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_4	clock_gate_en_alu	C_DIAG	MEASURED	1	0	0	ExeUnit_4	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_4.clk_en_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_brh	C_DIAG	MEASURED	1	0	0	ExeUnit_5	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_i2f	B_CONTROL	MEASURED	1	1	0	ExeUnit_5	no	FC/drives_child_input:ExeUnit_5.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_i2v	C_DIAG	MEASURED	1	0	0	ExeUnit_5	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_5_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_jmp	C_DIAG	MEASURED	1	0	0	ExeUnit_5	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_1_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_vsetriwi	C_DIAG	MEASURED	1	0	0	ExeUnit_5	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_3_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_vsetriwvf	C_DIAG	MEASURED	1	0	0	ExeUnit_5	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_4_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_6	clock_gate_en_alu	C_DIAG	MEASURED	1	0	0	ExeUnit_4	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_4.clk_en_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus	clock_gate_en_alu	C_DIAG	MEASURED	1	0	0	ExeUnit	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit.clk_en_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus	clock_gate_en_bku	B_CONTROL	GAP	1	1	1	ExeUnit	yes	FC/drives_child_input:ExeUnit.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus	clock_gate_en_mul	B_CONTROL	GAP	1	1	1	ExeUnit	yes	FC/drives_child_input:ExeUnit.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_1	clock_gate_en_brh	C_DIAG	MEASURED	1	0	0	ExeUnit_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_1.clk_en_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_1	clock_gate_en_jmp	C_DIAG	MEASURED	1	0	0	ExeUnit_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_1.clk_en_1_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2	clock_gate_en_alu	C_DIAG	MEASURED	1	0	0	ExeUnit	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit.clk_en_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2	clock_gate_en_bku	B_CONTROL	GAP	1	1	1	ExeUnit	yes	FC/drives_child_input:ExeUnit.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_2	clock_gate_en_mul	B_CONTROL	GAP	1	1	1	ExeUnit	yes	FC/drives_child_input:ExeUnit.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_3	clock_gate_en_brh	C_DIAG	MEASURED	1	0	0	ExeUnit_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_1.clk_en_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_3	clock_gate_en_jmp	C_DIAG	MEASURED	1	0	0	ExeUnit_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_1.clk_en_1_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_4	clock_gate_en_alu	C_DIAG	MEASURED	1	0	0	ExeUnit_4	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_4.clk_en_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_brh	C_DIAG	MEASURED	1	0	0	ExeUnit_5	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_i2f	B_CONTROL	GAP	1	1	1	ExeUnit_5	yes	FC/drives_child_input:ExeUnit_5.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_i2v	C_DIAG	MEASURED	1	0	0	ExeUnit_5	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_5_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_jmp	C_DIAG	MEASURED	1	0	0	ExeUnit_5	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_1_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_vsetriwi	C_DIAG	MEASURED	1	0	0	ExeUnit_5	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_3_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_5	clock_gate_en_vsetriwvf	C_DIAG	MEASURED	1	0	0	ExeUnit_5	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_5.clk_en_4_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_6	clock_gate_en_alu	C_DIAG	MEASURED	1	0	0	ExeUnit_4	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_4.clk_en_probe
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_7	clock_gate_en_csr	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_7	clock_gate_en_div	B_CONTROL	MEASURED	1	1	0	ExeUnit_7	no	FC/drives_child_input:ExeUnit_7.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_7	clock_gate_en_fence	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
@@ -18883,49 +18883,49 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pf_filter	s
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pf_filter	sms_pf_filter_tlb_resp_drop_by_pmp_af	C_DIAG	GAP	1	0	1	PrefetchFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchFilter._GEN_2
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pf_filter	sms_pf_filter_tlb_resp_drop_by_uncache	C_DIAG	GAP	1	0	1	PrefetchFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchFilter._GEN_1
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pf_filter	sms_pf_filter_tlb_resp_miss	C_DIAG	MEASURED	1	0	0	PrefetchFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchFilter._GEN
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_evict_in	B_CONTROL	MEASURED	1	1	0	PatternHistoryTable	no	FC/own_port:PatternHistoryTable.io_agt_update_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_evict_out	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_0
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_evict_in	B_CONTROL	MEASURED	1	1	0	PatternHistoryTable	yes	FC/own_port:PatternHistoryTable.io_agt_update_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_evict_out	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_0
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_lookup	B_CONTROL	MEASURED	1	1	0	SMSPrefetcher	no	FC/read_by_logic:SMSPrefetcher._probe_3	le_io_s2_evict_valid; wire _probe_3; assign _probe_3 = _active_gen_table_io_s2_pht_lookup_valid; StridePF str…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_lookup_hit	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_99
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_lookup_in	B_CONTROL	MEASURED	1	1	0	PatternHistoryTable	no	FC/own_port:PatternHistoryTable.io_s2_agt_lookup_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_lookup_out	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_lookup_hit	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_99
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_lookup_in	B_CONTROL	MEASURED	1	1	0	PatternHistoryTable	yes	FC/own_port:PatternHistoryTable.io_s2_agt_lookup_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_lookup_out	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_pf_gen	B_CONTROL	MEASURED	1	1	0	SMSPrefetcher	no	FC/read_by_logic:SMSPrefetcher._probe_4	_s0; reg [39:0] train_region_vaddr_s0; wire _probe_0 = _pht_io_pf_gen_req_valid & io_pht_en; wire _GEN = io_l…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_update	B_CONTROL	MEASURED	1	1	0	SMSPrefetcher	no	FC/read_by_logic:SMSPrefetcher._probe_2	de (io_act_stride) ); wire _probe_2; assign _probe_2 = _active_gen_table_io_s2_evict_valid; wire _probe_3; as…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_update_hit	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_98
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_0	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_102
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_1	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_103
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_10	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_112
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_11	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_113
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_12	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_114
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_13	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_115
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_14	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_116
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_15	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_117
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_16	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_118
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_17	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_119
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_18	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_120
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_19	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_121
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_2	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_104
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_20	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_122
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_21	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_123
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_22	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_124
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_23	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_125
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_24	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_126
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_25	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_127
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_26	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_128
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_27	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_129
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_28	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_130
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_29	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_131
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_3	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_105
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_30	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_132
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_31	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_133
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_4	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_106
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_5	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_107
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_6	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_108
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_7	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_109
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_8	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_110
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_9	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_111
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_way_0	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_100
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_way_1	C_DIAG	MEASURED	1	0	0	PatternHistoryTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_101
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_update_hit	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_98
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_0	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_102
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_1	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_103
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_10	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_112
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_11	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_113
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_12	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_114
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_13	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_115
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_14	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_116
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_15	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_117
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_16	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_118
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_17	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_119
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_18	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_120
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_19	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_121
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_2	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_104
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_20	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_122
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_21	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_123
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_22	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_124
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_23	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_125
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_24	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_126
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_25	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_127
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_26	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_128
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_27	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_129
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_28	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_130
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_29	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_131
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_3	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_105
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_30	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_132
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_31	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_133
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_4	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_106
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_5	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_107
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_6	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_108
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_7	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_109
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_8	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_110
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_set_9	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_111
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_way_0	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_100
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.pht	sms_pht_write_way_1	C_DIAG	GAP	1	0	1	PatternHistoryTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PatternHistoryTable._GEN_101
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.train_filter	sms_train_filter_actual_enq_pattern_0	C_DIAG	GAP	1	0	1	SMSTrainFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SMSTrainFilter._GEN_84
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.train_filter	sms_train_filter_actual_enq_pattern_1	C_DIAG	MEASURED	1	0	0	SMSTrainFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SMSTrainFilter._GEN_1
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.train_filter	sms_train_filter_actual_enq_pattern_10	C_DIAG	MEASURED	1	0	0	SMSTrainFilter	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SMSTrainFilter._GEN_4
@@ -19877,54 +19877,54 @@ PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher	prefetch_req_s
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher	prefetch_req_selectTP	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher	prefetch_req_selectVBOP	B_CONTROL	MEASURED	1	1	0	Prefetcher	no	FC/read_by_logic:Prefetcher._GEN_0	qArb_io_in_2_ready & _pbop_io_req_valid; wire _GEN_2 = _GEN_0 | _GEN_1; wire _GEN_3 = _pfRcv_io_req_valid & _…
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher	prefetch_train_valid	B_CONTROL	MEASURED	1	1	0	TL2CHICoupledL2	no	FC/read_by_logic:TL2CHICoupledL2._probe	io_out_bits_reqsource) ); wire _probe; assign _probe = _prefetch_train_arb_io_out_valid; FastArbiter_1 prefet…
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_1	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_19
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_10	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_11
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_12	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_10
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_15	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_9
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_16	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_8
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_18	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_7
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_2	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_18
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_20	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_6
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_24	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_5
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_25	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_4
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_27	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_3
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_3	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_17
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_30	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_2
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_32	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_1
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_4	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_16
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_5	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_15
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_6	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_14
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_8	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_13
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_9	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_12
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_1	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_20
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_10	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_28
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_12	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_29
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_15	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_30
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_16	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_31
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_18	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_32
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_2	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_21
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_20	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_33
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_24	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_34
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_25	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_35
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_27	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_36
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_3	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_22
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_30	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_37
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_4	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_23
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_5	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_24
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_6	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_25
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_8	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_26
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_9	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_27
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_drop_for_cross_page	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_41
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_drop_for_disable	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_42
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_req	B_CONTROL	MEASURED	1	1	0	PBestOffsetPrefetch	no	FC/read_by_logic:PBestOffsetPrefetch._GEN	& ~_scoreTable_io_prefetchDisable; else req_valid <= ~_GEN & req_valid; end `ifdef ENABLE_INITIAL_REG_ logic …
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_resp	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_39
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_train	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_38
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_train_stall_for_st_not_ready	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_40
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_1	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_19
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_10	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_11
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_12	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_10
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_15	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_9
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_16	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_8
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_18	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_7
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_2	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_18
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_20	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_6
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_24	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_5
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_25	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_4
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_27	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_3
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_3	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_17
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_30	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_2
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_32	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_1
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_4	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_16
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_5	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_15
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_6	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_14
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_8	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_13
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_neg_9	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_12
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_1	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_20
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_10	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_28
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_12	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_29
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_15	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_30
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_16	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_31
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_18	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_32
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_2	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_21
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_20	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_33
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_24	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_34
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_25	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_35
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_27	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_36
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_3	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_22
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_30	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_37
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_4	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_23
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_5	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_24
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_6	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_25
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_8	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_26
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	best_offset_pos_9	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_27
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_drop_for_cross_page	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_41
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_drop_for_disable	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_42
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_req	B_CONTROL	MEASURED	1	1	0	PBestOffsetPrefetch	yes	FC/read_by_logic:PBestOffsetPrefetch._GEN	& ~_scoreTable_io_prefetchDisable; else req_valid <= ~_GEN & req_valid; end `ifdef ENABLE_INITIAL_REG_ logic …
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_resp	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_39
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_train	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_38
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop	bop_train_stall_for_st_not_ready	C_DIAG	MEASURED	1	0	0	PBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PBestOffsetPrefetch._GEN_40
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.delayQueue	empty	B_CONTROL	GAP	1	1	1	DelayQueue	yes	FC/read_by_logic:DelayQueue.empty_probe	{valids_2}, {valids_1}, {valids_0}}; wire outValid = ~empty_probe & _GEN_0[head] == 10'h0 & _GEN_1[head]; wir…
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.delayQueue	entryNumber	C_DIAG	GAP	1	0	1	DelayQueue	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DelayQueue._GEN_2
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.delayQueue	full	B_CONTROL	GAP	1	1	1	DelayQueue	yes	FC/read_by_logic:DelayQueue.full_probe	OfDelayLatency : 10'h12C; wire _GEN_3 = io_in_valid & ~full_probe; wire _GEN_4 = _GEN_3 & tail == 4'h0; wire …
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.delayQueue	inNumber	B_CONTROL	MEASURED	1	1	0	PBestOffsetPrefetch	no	FC/own_port:PBestOffsetPrefetch.io_train_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.delayQueue	outNumber	B_CONTROL	MEASURED	1	1	0	PBestOffsetPrefetch	no	FC/read_by_logic:PBestOffsetPrefetch._probe	elayQueue_io_out_bits) ); wire _probe; assign _probe = _delayQueue_io_out_valid; RecentRequestTable rrTable (…
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.delayQueue	inNumber	B_CONTROL	MEASURED	1	1	0	PBestOffsetPrefetch	yes	FC/own_port:PBestOffsetPrefetch.io_train_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.delayQueue	outNumber	B_CONTROL	MEASURED	1	1	0	PBestOffsetPrefetch	yes	FC/read_by_logic:PBestOffsetPrefetch._probe	elayQueue_io_out_bits) ); wire _probe; assign _probe = _delayQueue_io_out_valid; RecentRequestTable rrTable (…
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.scoreTable	best_offset_neg_10_learning_phases	C_DIAG	GAP	1	0	1	OffsetScoreTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	OffsetScoreTable._GEN_13
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.scoreTable	best_offset_neg_12_learning_phases	C_DIAG	GAP	1	0	1	OffsetScoreTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	OffsetScoreTable._GEN_12
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pbop.scoreTable	best_offset_neg_15_learning_phases	C_DIAG	GAP	1	0	1	OffsetScoreTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	OffsetScoreTable._GEN_11
@@ -20014,133 +20014,133 @@ PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pftQueue	prefe
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pftQueue	prefetch_queue_entry_sum	C_DIAG	GAP	1	0	1	PrefetchQueue	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchQueue._GEN_14
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pftQueue	prefetch_queue_entry_underflow	D_CONST	BY_CONSTRUCTION	0	0	0		-	print_arg_is_literal	64'h0
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.pftQueue	prefetch_queue_full	B_CONTROL	GAP	1	1	1	PrefetchQueue	yes	FC/read_by_logic:PrefetchQueue.full_probe	= ~(_GEN_15 & (&head)) & valids_31; if (io_enq_valid & full_probe & ~io_deq_ready) head <= 5'(head + 5'h1); e…
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_1	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_56
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_10	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_48
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_100	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_23
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_108	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_22
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_117	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_12	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_47
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_120	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_21
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_125	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_20
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_128	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_19
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_135	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_18
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_144	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_17
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_147	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_0
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_15	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_46
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_150	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_16
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_16	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_45
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_160	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_15
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_162	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_14
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_18	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_44
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_180	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_13
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_192	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_12
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_2	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_55
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_20	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_43
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_200	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_11
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_216	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_10
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_225	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_9
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_24	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_42
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_240	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_8
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_243	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_7
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_25	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_41
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_250	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_6
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_256	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_5
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_27	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_40
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_3	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_54
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_30	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_39
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_32	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_38
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_36	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_37
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_4	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_53
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_40	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_36
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_45	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_35
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_48	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_34
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_5	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_52
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_50	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_33
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_54	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_32
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_6	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_51
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_60	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_31
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_64	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_30
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_72	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_29
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_75	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_28
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_8	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_50
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_80	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_27
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_81	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_26
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_9	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_49
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_90	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_25
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_91	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_1
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_96	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_24
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_1	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_57
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_10	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_65
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_100	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_90
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_108	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_91
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_117	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_2
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_12	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_66
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_120	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_92
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_125	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_93
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_128	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_94
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_135	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_95
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_144	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_96
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_147	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_3
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_15	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_67
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_150	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_97
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_16	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_68
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_160	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_98
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_162	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_99
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_18	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_69
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_180	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_100
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_192	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_101
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_2	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_58
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_20	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_70
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_200	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_102
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_216	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_103
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_225	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_104
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_24	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_71
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_240	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_105
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_243	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_106
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_25	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_72
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_250	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_107
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_27	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_73
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_3	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_59
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_30	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_74
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_32	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_75
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_36	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_76
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_4	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_60
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_40	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_77
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_45	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_78
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_48	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_79
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_5	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_61
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_50	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_80
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_54	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_81
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_6	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_62
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_60	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_82
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_64	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_83
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_72	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_84
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_75	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_85
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_8	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_63
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_80	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_86
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_81	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_87
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_9	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_64
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_90	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_88
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_91	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_4
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_96	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_89
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_drop_for_disable	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_112
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_req	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_108
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_resp	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_110
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_train	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_109
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_train_stall_for_st_not_ready	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_111
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_1	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_56
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_10	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_48
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_100	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_23
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_108	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_22
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_117	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_12	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_47
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_120	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_21
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_125	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_20
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_128	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_19
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_135	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_18
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_144	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_17
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_147	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_0
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_15	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_46
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_150	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_16
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_16	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_45
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_160	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_15
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_162	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_14
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_18	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_44
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_180	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_13
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_192	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_12
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_2	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_55
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_20	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_43
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_200	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_11
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_216	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_10
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_225	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_9
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_24	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_42
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_240	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_8
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_243	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_7
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_25	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_41
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_250	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_6
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_256	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_5
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_27	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_40
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_3	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_54
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_30	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_39
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_32	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_38
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_36	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_37
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_4	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_53
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_40	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_36
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_45	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_35
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_48	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_34
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_5	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_52
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_50	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_33
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_54	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_32
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_6	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_51
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_60	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_31
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_64	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_30
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_72	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_29
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_75	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_28
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_8	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_50
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_80	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_27
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_81	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_26
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_9	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_49
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_90	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_25
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_91	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_1
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_neg_96	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_24
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_1	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_57
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_10	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_65
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_100	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_90
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_108	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_91
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_117	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_2
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_12	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_66
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_120	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_92
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_125	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_93
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_128	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_94
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_135	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_95
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_144	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_96
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_147	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_3
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_15	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_67
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_150	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_97
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_16	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_68
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_160	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_98
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_162	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_99
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_18	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_69
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_180	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_100
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_192	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_101
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_2	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_58
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_20	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_70
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_200	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_102
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_216	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_103
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_225	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_104
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_24	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_71
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_240	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_105
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_243	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_106
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_25	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_72
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_250	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_107
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_27	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_73
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_3	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_59
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_30	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_74
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_32	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_75
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_36	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_76
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_4	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_60
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_40	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_77
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_45	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_78
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_48	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_79
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_5	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_61
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_50	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_80
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_54	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_81
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_6	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_62
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_60	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_82
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_64	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_83
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_72	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_84
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_75	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_85
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_8	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_63
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_80	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_86
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_81	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_87
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_9	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_64
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_90	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_88
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_91	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_4
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	best_offset_pos_96	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_89
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_drop_for_disable	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_112
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_req	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_108
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_resp	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_110
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_train	C_DIAG	GAP	1	0	1	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_109
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_train_stall_for_st_not_ready	C_DIAG	MEASURED	1	0	0	VBestOffsetPrefetch	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VBestOffsetPrefetch._GEN_111
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop	bop_train_stall_for_tlb_not_ready	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.delayQueue	empty	B_CONTROL	GAP	1	1	1	DelayQueue_1	yes	FC/read_by_logic:DelayQueue_1.empty_probe	{valids_2}, {valids_1}, {valids_0}}; wire outValid = ~empty_probe & _GEN_0[head] == 10'h0 & _GEN_1[head]; wir…
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.delayQueue	entryNumber	C_DIAG	GAP	1	0	1	DelayQueue_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	DelayQueue_1._GEN_2
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.delayQueue	full	B_CONTROL	GAP	1	1	1	DelayQueue_1	yes	FC/read_by_logic:DelayQueue_1.full_probe	OfDelayLatency : 10'h12C; wire _GEN_3 = io_in_valid & ~full_probe; wire _GEN_4 = _GEN_3 & tail == 4'h0; wire …
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.delayQueue	inNumber	B_CONTROL	MEASURED	1	1	0	VBestOffsetPrefetch	no	FC/own_port:VBestOffsetPrefetch.io_train_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.delayQueue	outNumber	B_CONTROL	MEASURED	1	1	0	VBestOffsetPrefetch	no	FC/read_by_logic:VBestOffsetPrefetch._probe_0	Queue_io_out_bits) ); wire _probe_0; assign _probe_0 = _delayQueue_io_out_valid; RecentRequestTable_1 rrTable…
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.delayQueue	inNumber	B_CONTROL	MEASURED	1	1	0	VBestOffsetPrefetch	yes	FC/own_port:VBestOffsetPrefetch.io_train_valid_probe	是本模块端口（逃出模块 = FM 比较边界）
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.delayQueue	outNumber	B_CONTROL	MEASURED	1	1	0	VBestOffsetPrefetch	yes	FC/read_by_logic:VBestOffsetPrefetch._probe_0	Queue_io_out_bits) ); wire _probe_0; assign _probe_0 = _delayQueue_io_out_valid; RecentRequestTable_1 rrTable…
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	entry_alloc	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_9
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	entry_excp	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_12
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	entry_merge	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_13
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	entry_miss_drop	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_11
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	entry_miss_first_replay	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_10
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	entry_pf_fire	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_14
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	recv_req	B_CONTROL	MEASURED	1	1	0	VBestOffsetPrefetch	no	FC/drives_child_input:VBestOffsetPrefetch._probe	喂给子实例 PrefetchReqBuffer 的 io_in_req_valid 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	recv_req	B_CONTROL	GAP	1	1	1	VBestOffsetPrefetch	yes	FC/drives_child_input:VBestOffsetPrefetch._probe	喂给子实例 PrefetchReqBuffer 的 io_in_req_valid 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	recv_req_drop_conflict	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	recv_req_drop_full	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_2
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	recv_req_drop_match	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_1
@@ -20148,7 +20148,7 @@ PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	tlb_excp_pmp_af	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_7
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	tlb_excp_uncache	C_DIAG	GAP	1	0	1	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_8
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	tlb_miss	C_DIAG	MEASURED	1	0	0	PrefetchReqBuffer	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	PrefetchReqBuffer._GEN_3
-PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	tlb_req	B_CONTROL	MEASURED	1	1	0	VBestOffsetPrefetch	no	FC/read_by_logic:VBestOffsetPrefetch._probe_1	o_req_bits_source) ); wire _probe_1; assign _probe_1 = _reqFilter_io_tlb_req_req_valid; assign io_tlb_req_req…
+PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.reqFilter	tlb_req	B_CONTROL	MEASURED	1	1	0	VBestOffsetPrefetch	yes	FC/read_by_logic:VBestOffsetPrefetch._probe_1	o_req_bits_source) ); wire _probe_1; assign _probe_1 = _reqFilter_io_tlb_req_req_valid; assign io_tlb_req_req…
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.scoreTable	best_offset_neg_100_learning_phases	C_DIAG	GAP	1	0	1	OffsetScoreTable_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	OffsetScoreTable_1._GEN_27
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.scoreTable	best_offset_neg_108_learning_phases	C_DIAG	GAP	1	0	1	OffsetScoreTable_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	OffsetScoreTable_1._GEN_26
 PERF	SimTop.cpu.l_soc.core_with_l2.l2top.inner.l2cache.prefetcher.vbop.scoreTable	best_offset_neg_10_learning_phases	C_DIAG	GAP	1	0	1	OffsetScoreTable_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	OffsetScoreTable_1._GEN_52
