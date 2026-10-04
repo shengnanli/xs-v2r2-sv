@@ -833,6 +833,8 @@ def gen_pins(v):
         for rp, ip in EXTRA_CHILD_PINS.get(typ, []):
             child.append((name, typ + ' 外壳附加', tcl_esc(rp), tcl_esc(ip)))
     total = shell_n + len(child)
+    if total == 0:
+        return None          # 没有要钉的点：不生成钉点文件（空钉点文件没有意义，gate 的钉点结构闸要求期望数为正）
     tag = re.sub(r'\W', '_', v.top).upper()
     L = []
     L.append(f'# {v.top} FM「匹配前」钉点 —— 自动生成：scripts/gen_exeunit.py（勿手改）')
@@ -884,6 +886,15 @@ def main():
         }
         for p, text in outs.items():
             cur = p.read_text() if p.exists() else None
+            if text is None:                       # 本变体不该有这个文件
+                if cur is not None:
+                    if a.check:
+                        print(f'DRIFT {p.relative_to(REPO)}（应不存在）')
+                        drift = 1
+                    else:
+                        p.unlink()
+                        print(f'removed {p.relative_to(REPO)}')
+                continue
             if a.check:
                 if cur != text:
                     print(f'DRIFT {p.relative_to(REPO)}')

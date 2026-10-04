@@ -1,7 +1,7 @@
 MODULE = ExeUnit_4
 
 # ExeUnit_4：执行单元外壳 —— 单 Alu（延迟 0、无门控、无 inPipe）。
-# wrapper rtl/backend/ExeUnit_4.sv 与 fm_pins_pre.tcl 由 scripts/gen_exeunit.py 从 golden 生成；控制逻辑在
+# wrapper rtl/backend/ExeUnit_4.sv 由 scripts/gen_exeunit.py 从 golden 生成（本变体没有要钉的寄存器，不生成 fm_pins_pre.tcl）；控制逻辑在
 #   rtl/backend/xs_ExeUnit_core.sv（共享核）。tb 由 scripts/gen_exeunits_ut.py 生成。
 # 子树处置（rewrite 优先，逐模块查 docs/coverage_three_axis.tsv，全部 PROVEN_*）：
 #   RTL_SRCS        —— 已签核重写件（含本 lane 的叶子），两侧白盒：impl 读重写件、ref 读 golden；
