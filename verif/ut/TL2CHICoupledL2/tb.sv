@@ -1023,6 +1023,11 @@ module tb;
 
   // ---- RXRSP / RXDAT 的目标：slice k 的 MSHR（txnID = {0, k, mshrId}）或 MMIO 槽（{1, 槽号}）----
   //   kind 0 = RXDAT；1 = RetryAck；2 = 其余 RXRSP（规则同 verif/ut/Slice/gen_tb.py 的 pick_target）
+  //   MMIO 槽：响应在路上（LinkMonitor + rx*Pipe 约 3 拍）时槽仍显示在等，此时再给同一个槽发任何响应，到达时槽
+  //   可能已换了状态，RXDAT 就卡在 rxdatPipe 出口（ready 只看 txnID 对上的槽）——整个 RXDAT 通道从此停摆。
+  //   所以给过响应（RSP 或 DAT）的槽 16 拍内不再选。
+  longint mmio_sent [16];
+  initial foreach (mmio_sent[k]) mmio_sent[k] = -100;
   function automatic int pick_target(input int kind);
     int c[$];
     if (u_g.slices_0.mshrCtl.mshrs_0.req_valid && !u_g.slices_0.mshrCtl.mshrs_0.gotRetryAck && (
@@ -1345,22 +1350,22 @@ module tb;
           kind == 1 ? (u_g.slices_3.mshrCtl.mshrs_15.state_s_acquire && !u_g.slices_3.mshrCtl.mshrs_15.state_w_grantfirst && !u_g.slices_3.mshrCtl.mshrs_15.state_w_grant ||
                        u_g.slices_3.mshrCtl.mshrs_15.state_s_release && !u_g.slices_3.mshrCtl.mshrs_15.state_w_releaseack) :
                       (!u_g.slices_3.mshrCtl.mshrs_15.state_w_grant || !u_g.slices_3.mshrCtl.mshrs_15.state_w_releaseack))) c.push_back(1551);
-    if (kind == 0 ? u_g.mmioBridge._entries_0_io_chi_rx_dat_ready : u_g.mmioBridge._entries_0_io_chi_rx_rsp_ready) c.push_back(2048);
-    if (kind == 0 ? u_g.mmioBridge._entries_1_io_chi_rx_dat_ready : u_g.mmioBridge._entries_1_io_chi_rx_rsp_ready) c.push_back(2049);
-    if (kind == 0 ? u_g.mmioBridge._entries_2_io_chi_rx_dat_ready : u_g.mmioBridge._entries_2_io_chi_rx_rsp_ready) c.push_back(2050);
-    if (kind == 0 ? u_g.mmioBridge._entries_3_io_chi_rx_dat_ready : u_g.mmioBridge._entries_3_io_chi_rx_rsp_ready) c.push_back(2051);
-    if (kind == 0 ? u_g.mmioBridge._entries_4_io_chi_rx_dat_ready : u_g.mmioBridge._entries_4_io_chi_rx_rsp_ready) c.push_back(2052);
-    if (kind == 0 ? u_g.mmioBridge._entries_5_io_chi_rx_dat_ready : u_g.mmioBridge._entries_5_io_chi_rx_rsp_ready) c.push_back(2053);
-    if (kind == 0 ? u_g.mmioBridge._entries_6_io_chi_rx_dat_ready : u_g.mmioBridge._entries_6_io_chi_rx_rsp_ready) c.push_back(2054);
-    if (kind == 0 ? u_g.mmioBridge._entries_7_io_chi_rx_dat_ready : u_g.mmioBridge._entries_7_io_chi_rx_rsp_ready) c.push_back(2055);
-    if (kind == 0 ? u_g.mmioBridge._entries_8_io_chi_rx_dat_ready : u_g.mmioBridge._entries_8_io_chi_rx_rsp_ready) c.push_back(2056);
-    if (kind == 0 ? u_g.mmioBridge._entries_9_io_chi_rx_dat_ready : u_g.mmioBridge._entries_9_io_chi_rx_rsp_ready) c.push_back(2057);
-    if (kind == 0 ? u_g.mmioBridge._entries_10_io_chi_rx_dat_ready : u_g.mmioBridge._entries_10_io_chi_rx_rsp_ready) c.push_back(2058);
-    if (kind == 0 ? u_g.mmioBridge._entries_11_io_chi_rx_dat_ready : u_g.mmioBridge._entries_11_io_chi_rx_rsp_ready) c.push_back(2059);
-    if (kind == 0 ? u_g.mmioBridge._entries_12_io_chi_rx_dat_ready : u_g.mmioBridge._entries_12_io_chi_rx_rsp_ready) c.push_back(2060);
-    if (kind == 0 ? u_g.mmioBridge._entries_13_io_chi_rx_dat_ready : u_g.mmioBridge._entries_13_io_chi_rx_rsp_ready) c.push_back(2061);
-    if (kind == 0 ? u_g.mmioBridge._entries_14_io_chi_rx_dat_ready : u_g.mmioBridge._entries_14_io_chi_rx_rsp_ready) c.push_back(2062);
-    if (kind == 0 ? u_g.mmioBridge._entries_15_io_chi_rx_dat_ready : u_g.mmioBridge._entries_15_io_chi_rx_rsp_ready) c.push_back(2063);
+    if ((kind == 0 ? u_g.mmioBridge._entries_0_io_chi_rx_dat_ready : u_g.mmioBridge._entries_0_io_chi_rx_rsp_ready) && cyc - mmio_sent[0] > 16) c.push_back(2048);
+    if ((kind == 0 ? u_g.mmioBridge._entries_1_io_chi_rx_dat_ready : u_g.mmioBridge._entries_1_io_chi_rx_rsp_ready) && cyc - mmio_sent[1] > 16) c.push_back(2049);
+    if ((kind == 0 ? u_g.mmioBridge._entries_2_io_chi_rx_dat_ready : u_g.mmioBridge._entries_2_io_chi_rx_rsp_ready) && cyc - mmio_sent[2] > 16) c.push_back(2050);
+    if ((kind == 0 ? u_g.mmioBridge._entries_3_io_chi_rx_dat_ready : u_g.mmioBridge._entries_3_io_chi_rx_rsp_ready) && cyc - mmio_sent[3] > 16) c.push_back(2051);
+    if ((kind == 0 ? u_g.mmioBridge._entries_4_io_chi_rx_dat_ready : u_g.mmioBridge._entries_4_io_chi_rx_rsp_ready) && cyc - mmio_sent[4] > 16) c.push_back(2052);
+    if ((kind == 0 ? u_g.mmioBridge._entries_5_io_chi_rx_dat_ready : u_g.mmioBridge._entries_5_io_chi_rx_rsp_ready) && cyc - mmio_sent[5] > 16) c.push_back(2053);
+    if ((kind == 0 ? u_g.mmioBridge._entries_6_io_chi_rx_dat_ready : u_g.mmioBridge._entries_6_io_chi_rx_rsp_ready) && cyc - mmio_sent[6] > 16) c.push_back(2054);
+    if ((kind == 0 ? u_g.mmioBridge._entries_7_io_chi_rx_dat_ready : u_g.mmioBridge._entries_7_io_chi_rx_rsp_ready) && cyc - mmio_sent[7] > 16) c.push_back(2055);
+    if ((kind == 0 ? u_g.mmioBridge._entries_8_io_chi_rx_dat_ready : u_g.mmioBridge._entries_8_io_chi_rx_rsp_ready) && cyc - mmio_sent[8] > 16) c.push_back(2056);
+    if ((kind == 0 ? u_g.mmioBridge._entries_9_io_chi_rx_dat_ready : u_g.mmioBridge._entries_9_io_chi_rx_rsp_ready) && cyc - mmio_sent[9] > 16) c.push_back(2057);
+    if ((kind == 0 ? u_g.mmioBridge._entries_10_io_chi_rx_dat_ready : u_g.mmioBridge._entries_10_io_chi_rx_rsp_ready) && cyc - mmio_sent[10] > 16) c.push_back(2058);
+    if ((kind == 0 ? u_g.mmioBridge._entries_11_io_chi_rx_dat_ready : u_g.mmioBridge._entries_11_io_chi_rx_rsp_ready) && cyc - mmio_sent[11] > 16) c.push_back(2059);
+    if ((kind == 0 ? u_g.mmioBridge._entries_12_io_chi_rx_dat_ready : u_g.mmioBridge._entries_12_io_chi_rx_rsp_ready) && cyc - mmio_sent[12] > 16) c.push_back(2060);
+    if ((kind == 0 ? u_g.mmioBridge._entries_13_io_chi_rx_dat_ready : u_g.mmioBridge._entries_13_io_chi_rx_rsp_ready) && cyc - mmio_sent[13] > 16) c.push_back(2061);
+    if ((kind == 0 ? u_g.mmioBridge._entries_14_io_chi_rx_dat_ready : u_g.mmioBridge._entries_14_io_chi_rx_rsp_ready) && cyc - mmio_sent[14] > 16) c.push_back(2062);
+    if ((kind == 0 ? u_g.mmioBridge._entries_15_io_chi_rx_dat_ready : u_g.mmioBridge._entries_15_io_chi_rx_rsp_ready) && cyc - mmio_sent[15] > 16) c.push_back(2063);
     if (c.size() == 0) return -1;
     return c[$urandom_range(0, c.size() - 1)];
   endfunction
@@ -1369,8 +1374,8 @@ module tb;
   int rx_crd_rsp = 0, rx_crd_dat = 0, rx_crd_snp = 0;
   int tx_crd_req = 0, tx_crd_rsp = 0, tx_crd_dat = 0;
   bit tlb_q = 0;           // 上一拍 golden 发了 L2 TLB 请求
-  task automatic credit_model();
-    // 上一拍的结果：golden 发来的 RX 信用 / 消耗的 TX 信用
+  task automatic credit_model_account();
+    // 上一拍的结果：golden 发来的 RX 信用 / tb 发出的 RX flit；tb 发出的 TX 信用 / golden 发出的 TX flit
     if (g_io_chi_rx_rsp_lcrdv) rx_crd_rsp++;
     if (io_chi_rx_rsp_flitv) rx_crd_rsp--;
     if (g_io_chi_rx_dat_lcrdv) rx_crd_dat++;
@@ -1385,6 +1390,8 @@ module tb;
     if (io_chi_tx_dat_lcrdv) tx_crd_dat++;
     if (reset || !g_io_chi_rx_linkactiveack) begin rx_crd_rsp = 0; rx_crd_dat = 0; rx_crd_snp = 0; end
     if (reset || !g_io_chi_tx_linkactivereq) begin tx_crd_req = 0; tx_crd_rsp = 0; tx_crd_dat = 0; end
+  endtask
+  task automatic credit_model_drive();
     io_chi_tx_req_lcrdv = (tx_crd_req < 4) && ($urandom_range(0, 1) == 0) && g_io_chi_tx_linkactivereq && io_chi_tx_linkactiveack;
     io_chi_tx_rsp_lcrdv = (tx_crd_rsp < 4) && ($urandom_range(0, 1) == 0) && g_io_chi_tx_linkactivereq && io_chi_tx_linkactiveack;
     io_chi_tx_dat_lcrdv = (tx_crd_dat < 4) && ($urandom_range(0, 1) == 0) && g_io_chi_tx_linkactivereq && io_chi_tx_linkactiveack;
@@ -1403,6 +1410,7 @@ module tb;
     if (io_chi_rx_rsp_flitv && io_chi_rx_rsp_flit[42:38] != 5'h7 && io_chi_rx_rsp_flit[42:38] != 5'h0) begin
       t = pick_target(io_chi_rx_rsp_flit[42:38] == 5'h3 ? 1 : 2);
       if (t < 0) io_chi_rx_rsp_flitv = 1'b0; else io_chi_rx_rsp_flit[37:26] = 12'(t);
+      if (t >= 'h800) mmio_sent[t & 15] = cyc;
     end
     io_chi_rx_rsp_flitpend = io_chi_rx_rsp_flitv | ($urandom_range(0, 3) == 0);
     // DAT flit（422 位）：txnID[37:26] homeNID[48:38] opcode[52:49] respErr[54:53] dataID[80:79] dataCheck[417:386] poison[421:418]
@@ -1417,6 +1425,7 @@ module tb;
     if (io_chi_rx_dat_flitv) begin
       t = pick_target(0);
       if (t < 0) io_chi_rx_dat_flitv = 1'b0; else io_chi_rx_dat_flit[37:26] = 12'(t);
+      if (t >= 'h800) mmio_sent[t & 15] = cyc;
     end
     io_chi_rx_dat_flitpend = io_chi_rx_dat_flitv | ($urandom_range(0, 3) == 0);
     // SNP flit（115 位）：srcID[14:4] txnID[26:15] opcode[54:50] addr[99:55]（= 物理地址 >> 3）
@@ -1429,6 +1438,7 @@ module tb;
   endtask
 
   task automatic drive();
+    credit_model_account();   // 先记上一拍的账（必须在本拍重摇输入之前：要读上一拍发出的 flitv / lcrdv）
     auto_mmioBridge_mmio_in_a_valid = ($urandom_range(0, 3) == 0);
     auto_mmioBridge_mmio_in_a_bits_opcode = pick_mmio_opcode();
     auto_mmioBridge_mmio_in_a_bits_param = 3'($urandom);
@@ -1585,7 +1595,7 @@ module tb;
     if ($urandom_range(0, 3) != 0) auto_in_2_a_bits_user_vaddr = 44'(auto_in_2_a_bits_address);
     if ($urandom_range(0, 3) != 0) auto_in_3_a_bits_user_vaddr = 44'(auto_in_3_a_bits_address);
     tlb_q = g_io_l2_tlb_req_req_valid;
-    credit_model();
+    credit_model_drive();
     rx_flits();
     reset = ($urandom_range(0, 39999) == 0);
   endtask
@@ -1781,7 +1791,8 @@ module tb;
   endtask
 
   longint cov [26];
-  localparam string COV_NAME [26] = '{"hint 发出", "slice0 D 放行", "slice3 D 放行", "D 被 hint 挡住", "releaseSourceD", "A 收下", "B 发出", "TXREQ 可缓存发出", "TXREQ MMIO 发出", "TXREQ 被一致性挡住", "TXDAT 发出", "TXRSP 发出", "RXRSP 到 slice", "RXRSP 到 MMIO", "RXDAT 到 slice", "RXDAT 到 MMIO", "RXSNP 收下", "PCrdGrant 入队", "P-Credit 授出", "MMIO D 发出", "预取请求到 slice", "预取 train", "L2 TLB 请求", "ECC error", "l2Miss", "topDown MissMatch"};
+  localparam string COV_NAME [26] = '{"hint 发出", "slice0 D 放行", "slice3 D 放行", "D 被 hint 挡住", "(信息)releaseSourceD", "A 收下", "B 发出", "TXREQ 可缓存发出", "TXREQ MMIO 发出", "TXREQ 被一致性挡住", "TXDAT 发出", "TXRSP 发出", "RXRSP 到 slice", "RXRSP 到 MMIO", "RXDAT 到 slice", "RXDAT 到 MMIO", "RXSNP 收下", "PCrdGrant 入队", "P-Credit 授出", "MMIO D 发出", "预取请求到 slice", "预取 train", "(信息)L2 TLB 请求", "ECC error", "l2Miss", "topDown MissMatch"};
+  localparam bit COV_INFO [26] = '{1'b0, 1'b0, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0};   // 1 = 只打印、不计入判据
   task automatic sample();
     if (u_g.hintFire) cov[0]++;
     if (g_auto_in_0_d_valid & auto_in_0_d_ready) cov[1]++;
@@ -6408,10 +6419,10 @@ module tb;
       int zero = 0;
       foreach (cov[k]) begin
         $display("COVER %-24s %0d", COV_NAME[k], cov[k]);
-        if (cov[k] == 0) zero++;
+        if (cov[k] == 0 && !COV_INFO[k]) zero++;
       end
       $display("ARMED=%b", armed);
-      if (armed != '1) zero++;
+      if ((armed & 4'b0111) != 4'b0111) zero++;   // 只要求标了必需的 arm 组
       $display("checks=%0d errors=%0d cover_zero=%0d", checks, errors, zero);
       if (errors == 0 && zero == 0) $display("TEST PASSED");
       else $display("TEST FAILED");

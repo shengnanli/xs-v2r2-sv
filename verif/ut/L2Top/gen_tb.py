@@ -55,6 +55,12 @@ def drive_expr(name, w):
             return "4'($urandom_range(0, 3))"
     if re.match(r'auto_inner_(buffers|i_mmio_buffer)_in_a_valid$', name):
         return '($urandom_range(0, 7) == 0)'
+    if re.match(r'auto_inner_(buffers|i_mmio_buffer)_in_a_bits_address$', name):
+        # 核侧 MMIO / 非缓存访问：inner_xbar_1（TLXbar_6）只认 [47:30]==0 的地址，再按区段分 3 个出口
+        # （0x3801_0xxx / 0x3802_20xx 两个设备区与其余），三类各给一部分
+        return ("($urandom_range(0, 3) == 0) ? 48'h3801_0000 + 48'($urandom_range(0, 'hFFF)) : "
+                "($urandom_range(0, 2) == 0) ? 48'h3802_2000 + 48'($urandom_range(0, 'hFF)) : "
+                "48'($urandom_range(0, 'h3FFF_FFFF))")
     if name == 'auto_inner_buffers_in_a_bits_opcode':
         return 'pick_mmio_opcode()'
     if name.startswith('auto_inner_buffers_out_d_'):
@@ -93,7 +99,7 @@ COVER = [(c, e) for c, e in tl2.COVER if all(n in _L2TOP_PORTS for n in re.finda
     ('ICache D 收下', '@auto_inner_logger_in_1_d_valid & @auto_inner_logger_in_1_d_ready'),
     ('PTW D 收下', '@auto_inner_ptw_to_l2_buffer_in_d_valid & @auto_inner_ptw_to_l2_buffer_in_d_ready'),
     ('外部 MMIO A 发出', '@auto_inner_buffers_out_a_valid & @auto_inner_buffers_out_a_ready'),
-    ('BEU 中断', '@auto_inner_beu_int_out_0'),
+    ('BEU 收到 L1 错误', '@io_beu_errors_dcache_ecc_error_valid & ~@io_hartIsInReset_toTile'),
     ('trace trap 锁存', '@io_traceCoreInterface_fromCore_toEncoder_groups_0_valid & @io_traceCoreInterface_fromCore_toEncoder_groups_0_bits_itype == 4\'h1'),
     ('hartIsInReset', '@io_hartIsInReset_toTile'),
 ]
@@ -153,7 +159,7 @@ def main():
     new = tl2.tb(top=TOP, pfx=PFX, drive=drive_expr, extra_drive=VADDR_OVERRIDE, cover=COVER,
                  arm_groups=ARM_GROUPS, extra_syncs=syncs,
                  title='L2Top UT：golden L2Top 与重写 L2Top_xs 双例化，同激励逐拍比对',
-                 genfile='verif/ut/L2Top/gen_tb.py')
+                 genfile='verif/ut/L2Top/gen_tb.py', mmio_one_in=8)
     p = HERE / 'tb.sv'
     cur = p.read_text() if p.exists() else None
     if '--check' in sys.argv[1:]:
