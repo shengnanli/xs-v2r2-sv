@@ -115,7 +115,9 @@ package xs_ptwcache_pkg;
     pte_perm_t       perm;
     logic [1:0]      level;
     logic            v;
-    logic            prefetch;
+    // ★没有 prefetch★（第 3 轮 FM 实测）：命中项的 prefetch 位走 sp_pre_c/sp_pre_ck 那一份，
+    // 打拍进 check 级的整条 struct 里再存一位就是 impl 独有的死寄存器
+    // （golden 只有 spPre 一份；FM 报 sp_hitdata_ck[prefetch] impl-only unmatched-unread）。
   } sp_hit_t;
 
   typedef struct packed {

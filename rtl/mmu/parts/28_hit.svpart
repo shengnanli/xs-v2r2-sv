@@ -221,7 +221,6 @@
     sp_pick.perm     = e.perm;
     sp_pick.level    = e.level;
     sp_pick.v        = e.v;
-    sp_pick.prefetch = e.prefetch;
   endfunction
 
   always_comb begin
@@ -237,7 +236,12 @@
                          & sp_hitdata_c.v;
   assign sp_hit_c        = sp_bitmap_gate ? 1'b0 : sp_hit_or;
   assign sp_jmp_bitmap_c = sp_bitmap_gate & sp_hit_or;
-  assign sp_pre_c        = sp_hitdata_c.prefetch;
+  // prefetch 位单独选（与 sp_hitdata_c 同一条优先级链、同一个 tie-break），不进 struct。
+  always_comb begin
+    sp_pre_c = sp_entry[SP_N-1].prefetch;
+    for (int i = SP_N-2; i >= 0; i--)
+      sp_pre_c = sp_hitvec[i] ? sp_entry[i].prefetch : sp_pre_c;
+  end
 
   always_ff @(posedge clock) begin
     if (sram_read_fire) begin
@@ -247,7 +251,7 @@
     if (left_fire_delay) begin
       sp_hit_ck        <= sp_hit_c;
       sp_hitdata_ck    <= sp_hitdata_c;
-      sp_pre_ck        <= sp_hitdata_c.prefetch;
+      sp_pre_ck        <= sp_pre_c;
       sp_valid_ck      <= sp_hitdata_c.v;
       sp_jmp_bitmap_ck <= sp_jmp_bitmap_c;
     end

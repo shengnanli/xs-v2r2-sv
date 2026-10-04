@@ -1,0 +1,9 @@
+{
+  "target": "Queue1_L1PrefetchReq",
+  "ut": "Queue1_L1PrefetchReq",
+  "regs": 56,
+  "outs": 57,
+  "expected": 113,
+  "merge_dup": "false",
+  "model_applicable": true
+}

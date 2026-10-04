@@ -1,0 +1,9 @@
+{
+  "target": "MaxPeriodFibonacciLFSR",
+  "ut": "MaxPeriodFibonacciLFSR",
+  "regs": 15,
+  "outs": 15,
+  "expected": 30,
+  "merge_dup": "false",
+  "model_applicable": true
+}

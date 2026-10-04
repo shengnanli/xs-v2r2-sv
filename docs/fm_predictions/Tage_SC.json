@@ -1,0 +1,32 @@
+{
+  "target": "Tage_SC",
+  "ut": "Tage_SC",
+  "regs": 14454,
+  "outs": 678,
+  "expected": 16308,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 1176,
+  "bbox": {
+    "array_2_ext": {
+      "insts": 4,
+      "in_bits": 43,
+      "points": 172
+    },
+    "array_3_ext": {
+      "insts": 16,
+      "in_bits": 38,
+      "points": 608
+    },
+    "array_4_ext": {
+      "insts": 4,
+      "in_bits": 23,
+      "points": 92
+    },
+    "array_5_ext": {
+      "insts": 8,
+      "in_bits": 38,
+      "points": 304
+    }
+  }
+}

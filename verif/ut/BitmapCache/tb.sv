@@ -314,6 +314,7 @@ module tb;
   initial clock = 0;
   always #5 clock = ~clock;
 
+  bit resp_armed = 1'b0;
   initial begin
     if (!$value$plusargs("ncycles=%d", ncycles)) ncycles = 200000;
     for (int i = 0; i < 8; i++) begin
@@ -343,9 +344,28 @@ module tb;
     cg_bore_cgen = 0;
     repeat (4) @(posedge clock);
     #1 reset = 0;
+    resp_armed = 1'b0;
+    // 上电初始化（不比较）：SRAM 不复位，+vcs+initreg+random 下两侧宏的初始内容不同，
+    // 而 miss 拍的 cfs 输出照样透出 SRAM 读数 —— 先用 MBIST 广播把 64 个地址的两路全写一遍
+    // （两侧写入同一数据），再广播读一遍让 MBIST 读回保持寄存器也装上确定值，然后 DFT 口回到 0。
+    for (int k = 0; k < 128; k++) begin
+      @(negedge clock);
+      boreChildrenBd_bore_all = 1; boreChildrenBd_bore_req = 1; boreChildrenBd_bore_be = '1;
+      boreChildrenBd_bore_writeen = (k < 64); boreChildrenBd_bore_readen = (k >= 64);
+      boreChildrenBd_bore_addr = 6'(k); boreChildrenBd_bore_addr_rd = 6'(k);
+      boreChildrenBd_bore_indata = {$urandom, $urandom, $urandom};
+    end
+    @(negedge clock);
+    boreChildrenBd_bore_all = 0; boreChildrenBd_bore_req = 0; boreChildrenBd_bore_be = 0;
+    boreChildrenBd_bore_writeen = 0; boreChildrenBd_bore_readen = 0;
+    boreChildrenBd_bore_addr = 0; boreChildrenBd_bore_addr_rd = 0; boreChildrenBd_bore_indata = 0;
+    repeat (8) @(negedge clock);
+    // resp 通道的 order/cfs 是不复位的流水寄存器，第一个响应写进之前两侧初值不同：
+    // 见到 golden 第一个 io_resp_valid 之后再开始比（armed）。
     for (cyc = 1; cyc <= ncycles; cyc++) begin
       @(negedge clock);
-      compare_outputs(cyc);
+      if (resp_armed) compare_outputs(cyc);
+      if (g_io_resp_valid) resp_armed = 1'b1;
       count_cov();
       drive_random();
     end

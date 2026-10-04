@@ -1,0 +1,42 @@
+{
+  "target": "Composer",
+  "ut": "Composer",
+  "regs": 35505,
+  "outs": 4491,
+  "expected": 42916,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 2920,
+  "bbox": {
+    "array_1_ext": {
+      "insts": 8,
+      "in_bits": 56,
+      "points": 448
+    },
+    "array_2_ext": {
+      "insts": 4,
+      "in_bits": 43,
+      "points": 172
+    },
+    "array_3_ext": {
+      "insts": 16,
+      "in_bits": 38,
+      "points": 608
+    },
+    "array_4_ext": {
+      "insts": 4,
+      "in_bits": 23,
+      "points": 92
+    },
+    "array_5_ext": {
+      "insts": 8,
+      "in_bits": 38,
+      "points": 304
+    },
+    "array_6_ext": {
+      "insts": 8,
+      "in_bits": 162,
+      "points": 1296
+    }
+  }
+}

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/SCTable
+Implementation : i:/WORK/SCTable
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 08:49:09 2026
+**************************************************
+
+No aborted compare points.
+
+1

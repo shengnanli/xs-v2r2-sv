@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter8_MainPipeReq",
+  "ut": "Arbiter8_MainPipeReq",
+  "regs": 0,
+  "outs": 116,
+  "expected": 116,
+  "merge_dup": "false",
+  "model_applicable": true
+}

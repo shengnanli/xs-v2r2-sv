@@ -81,6 +81,11 @@ def evaluate(expr, env):
     if not e:
         raise ElabError('空表达式')
     e = _SIZED.sub(_lit, e)
+    # 数组参数的赋值模式 '{a, b, ...}（如 xs_mbist_pipe_core 的 ID_LO/ID_CNT）：逐项求值成元组。
+    # 它们只作参数值传递，不参与本工具关心的例化层次；遇到就按元组返回，不再当成语法错误。
+    m_ap = re.fullmatch(r"'\{(.*)\}", e.strip())
+    if m_ap:
+        return tuple(evaluate(x, env) for x in m_ap.group(1).split(',') if x.strip())
     e = _drop_casts(e)
     e = re.sub(r'\$clog2\s*\(', '_clog2(', e)
     e = re.sub(r'\$bits\s*\(', '_unsupported(', e)
@@ -107,6 +112,8 @@ def evaluate(expr, env):
             continue
         if n not in env:
             raise ElabError(f'未知标识符 {n} in {expr!r}')
+        if isinstance(env[n], _Deferred):
+            raise ElabError(f'用到了未求值的参数 {n}: {env[n].msg}')
         g[n] = env[n]
     try:
         return int(eval(e, {'__builtins__': {}}, g))
@@ -389,6 +396,13 @@ def parse_file(path):
         name = m.group(1)
         i = m.end()
         hdr_start = i
+        # 模块头里的包导入 `module M import p::*; #(...) (...);`（CONVENTIONS：import 必须写在模块头里）
+        # —— 跳过这些 import 子句，否则会把它的分号当成模块头结束。
+        while True:
+            mi = re.match(r'\s*import\s+[^;]*;', s[i:])
+            if not mi:
+                break
+            i += mi.end()
         while i < len(s) and s[i] not in '(;':
             i += 1
         while i < len(s) and s[i] == '(':
@@ -455,6 +469,14 @@ def _mod_env(mod, overrides):
     return LazyEnv(env, thunks)
 
 
+class _Deferred(object):
+    """覆盖值里含 $bits(端口...) 这类本工具不建模的表达式（变体薄文件给共享核传的自检参数）：
+    不当场报错，记下来；只有真被用到（参与层次/generate 判定）时才报 —— 用不到就说明它与例化层次无关。"""
+
+    def __init__(self, msg):
+        self.msg = msg
+
+
 def _parse_overrides(text, env):
     out = {}
     if not text.strip():
@@ -478,7 +500,12 @@ def _parse_overrides(text, env):
         m = re.match(r'\.\s*([A-Za-z_]\w*)\s*\((.*)\)\s*$', p, re.S)
         if not m:
             raise ElabError(f'仅支持具名参数覆盖: {p!r}')
-        out[m.group(1)] = evaluate(m.group(2), env)
+        try:
+            out[m.group(1)] = evaluate(m.group(2), env)
+        except ElabError as ex:
+            if '$bits' not in m.group(2):
+                raise
+            out[m.group(1)] = _Deferred(str(ex))
     return out
 
 

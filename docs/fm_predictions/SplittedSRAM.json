@@ -1,0 +1,17 @@
+{
+  "target": "SplittedSRAM",
+  "ut": "SplittedSRAMBitmap",
+  "regs": 364,
+  "outs": 716,
+  "expected": 1480,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 400,
+  "bbox": {
+    "array_9_ext": {
+      "insts": 4,
+      "in_bits": 100,
+      "points": 400
+    }
+  }
+}

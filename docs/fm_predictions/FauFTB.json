@@ -1,0 +1,9 @@
+{
+  "target": "FauFTB",
+  "ut": "FauFTB",
+  "regs": 3991,
+  "outs": 1669,
+  "expected": 5660,
+  "merge_dup": "false",
+  "model_applicable": true
+}

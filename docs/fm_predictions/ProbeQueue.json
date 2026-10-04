@@ -1,0 +1,10 @@
+{
+  "target": "ProbeQueue",
+  "ut": "ProbeQueue",
+  "regs": 955,
+  "outs": 139,
+  "expected": 1094,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "子模块改读重写件后的重证；预测 passing 1092 = 模型 1094 - constant_reg 2（与上一份 receipt f40deba9 同读数）"
+}

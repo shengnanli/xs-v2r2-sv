@@ -1,0 +1,10 @@
+{
+  "target": "RobEnqPtrWrapper",
+  "ut": "RobPtrLeaves",
+  "regs": 54,
+  "outs": 54,
+  "expected": 108,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "regs+outs 模型；预测差额 0（无常量寄存器、无 unread）"
+}

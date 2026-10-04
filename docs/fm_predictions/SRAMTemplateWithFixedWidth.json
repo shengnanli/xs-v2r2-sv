@@ -1,0 +1,17 @@
+{
+  "target": "SRAMTemplateWithFixedWidth",
+  "ut": "SRAMTemplateWithFixedWidth",
+  "regs": 143,
+  "outs": 131,
+  "expected": 351,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 77,
+  "bbox": {
+    "array_0_ext": {
+      "insts": 1,
+      "in_bits": 77,
+      "points": 77
+    }
+  }
+}

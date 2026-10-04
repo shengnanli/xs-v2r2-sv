@@ -9,7 +9,9 @@
 # DivUnit：6 个对称死位，全在 divDataModule 子层（钉点文件 _expected 表）：
 #   aLZCReg_reg[6] / dLZCReg_reg[6] / udNegReg_{0,1,3,4}_reg[67]
 #   ref  r:/WORK/DivUnit/divDataModule/<leaf>
-#   impl i:/WORK/DivUnit/u_core/u_div/<leaf>
+#   impl i:/WORK/DivUnit/u_core/u_div/u_core/<leaf>
+#   （2026-10-03 agent/rob-regcache：impl 改读重写件 SRT16DividerDataModule，wrapper 下多一层 u_core/；
+#    叶名不变，钉点文件按叶名配对，本身不改。旧路径 u_core/u_div/<leaf> 见 evidence/786d0b438756。）
 # 两侧列表顺序照真实 FM 的返回顺序（调用序列按 ref 列表顺序发出）。
 # 逐条核过真实 fm.log：evidence/786d0b438756/DivUnit/fm.log 的 6 条
 # "Set a match" 回显与桩序列逐字节相同；另四个叶子的 fm.log 钉点段 0 条。
@@ -23,7 +25,7 @@ proc report_unmatched_points {args} {
     foreach leaf {aLZCReg_reg[6] dLZCReg_reg[6] udNegReg_0_reg[67] udNegReg_1_reg[67]
                   udNegReg_3_reg[67] udNegReg_4_reg[67]} {
         lappend ref  "r:/WORK/$top/divDataModule/$leaf"
-        lappend impl "i:/WORK/$top/u_core/u_div/$leaf"
+        lappend impl "i:/WORK/$top/u_core/u_div/u_core/$leaf"
     }
     if {[lindex $args 0] eq "-reference"} { return $ref }
     return $impl

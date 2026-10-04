@@ -1,0 +1,10 @@
+{
+  "target": "VsetModule",
+  "ut": "BeDataLeaves",
+  "regs": 0,
+  "outs": 24,
+  "expected": 24,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合：expected = 输出位数；恒 0 输出位仍计入 passing，预测差额 0"
+}

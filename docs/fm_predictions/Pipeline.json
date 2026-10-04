@@ -1,0 +1,9 @@
+{
+  "target": "Pipeline",
+  "ut": "Pipeline",
+  "regs": 56,
+  "outs": 57,
+  "expected": 113,
+  "merge_dup": "true",
+  "model_applicable": false
+}

@@ -1,0 +1,9 @@
+{
+  "target": "perfEventsModule",
+  "ut": "perfEventsModule",
+  "regs": 61,
+  "outs": 64,
+  "expected": 125,
+  "merge_dup": "false",
+  "model_applicable": true
+}

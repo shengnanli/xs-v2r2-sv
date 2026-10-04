@@ -50,6 +50,8 @@ EXTRA_MODS = ['L2Slice', 'L2Slice_1', 'L2Slice_2', 'L2Slice_3',
               'L2DataStorage', 'L2DataStorage_1', 'L2DataStorage_2', 'L2DataStorage_3',
               # Directory_1..3 层的普通叶子（slice 0 的 L2Directory 另有已签核的手写件 rtl/uncore/L2Directory.sv，不在此列）
               'L2Directory_1', 'L2Directory_2', 'L2Directory_3',
+              # L2TLB bitmap cache 的叶子（agent/fe-mem-misc 并入，UT 另立 verif/ut/MbistBitmapCache）
+              'MbistBitmapCache',
               # L2 顶层 MBIST 分发级（agent/csr-l2-leaves 并入）：child0 的 array 端口 1 位宽，
               # golden 把它折成 `doSpread & arrayReg[0]`，parse_golden 已认这一形状。
               'L2Cache']
@@ -91,6 +93,7 @@ SERVES = {
  'L2Directory_1':          ('Directory_1',   'L2 slice 1 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
  'L2Directory_2':          ('Directory_2',   'L2 slice 2 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
  'L2Directory_3':          ('Directory_3',   'L2 slice 3 目录层 7 块 SRAM（tag 4 块 + meta + 替换状态 + origin 位）'),
+ 'MbistBitmapCache':       ('BitmapCache',   'L2TLB bitmap cache 的 SplittedSRAM 4 块物理 SRAM（2 way 组 x 2 数据段，每块 90 位宽）'),
  'L2Slice_3':              ('Slice_3',       'L2 slice 3 的 MBIST 子树：child0=Directory 层(L2Directory_3)、child1=DataStorage 层(L2DataStorage_3)'),
  'L2Cache':                ('TL2CHICoupledL2', 'L2 顶层 MBIST 分发级（实例 mbistPl）：child0=Prefetcher(MbistPipeL2Prefetcher)、child1..4=Slice/Slice_1/Slice_2/Slice_3'),
 }
