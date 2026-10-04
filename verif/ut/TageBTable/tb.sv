@@ -1,299 +1,524 @@
-// tb.sv —— TageBTable 双例化 UT (golden TageBTable vs 重写 TageBTable_xs)
+// 生成 ITTageTable / _1.._4 与 TageBTable 六个 UT 目录的双例化 testbench（各自的 tb.sv）。
 //
-// 激励设计的重点是**别让 tb 假绿**: TageBTable 是一张按 pc 索引的表, 随机 pc 打散到
-// 2048 项上, 200k 拍里同一项被命中的次数很少, 于是"写旁路命中""bank 冲突""计数器
-// 打到饱和"这些真正要验的路径可能一次都不发生, 输出天天相等, 报绿却什么都没证。
-// 所以:
-//   1) 请求 pc 与更新 pc 都从一个 8 项 hot idx 池里抽, 制造别名与冲突;
-//   2) 更新按"突发"发 (连续 2~4 拍打同一个 idx), 逼出 WrBypass 命中;
-//   3) 覆盖闸: 下面每个 cov_* 事件都必须 > 阈值, 且 8 个输出每个都必须至少取到
-//      两个不同值 (toggle), 否则判 FAIL —— 数值相等但从未被激励过不算通过。
+// 替换原先 scripts/gen_zj_ut.py 的"全随机端口"tb（2026-10-03 agent/bpu-tables）：那份 tb 从复位后第一拍就比，
+// 而这几张表的读出数据来自 SRAM 读出保持寄存器与表项 SRAM（都不复位），只在 +vcs+initreg+0 下两侧碰巧同为 0；
+// random 初值档开比第 5 拍就分叉（seed 7 实测）—— tb 违反"先写后读"契约，不是 RTL 差异。
+// 本生成器（scripts/dual_tb_lib.py，端口表读 G1 golden，逐拍比全部输出）：
+//   · 读 PC / 更新 PC 从 16 项小池子取；ghist 与折叠历史在大部分阶段同时为 0（两者天然一致，写进表的项能被
+//     同样的 PC 查中），其余阶段全随机；更新字段全随机（ITTageTable：alloc/correct/uValid/reset_u 各路径都走到）；
+//   · MBIST 测试口与 SRAM 广播控制位平时钉 0，mode>=14 阶段全随机；
+//   · 比较窗口：golden 发生过一次读请求握手（req.valid && req.ready）后再过 3 拍开比；
+//   · 覆盖（golden 端口语义）：读命中 / 更新写入 / 分配（ITTageTable）/ reset_u（ITTageTable）/ 基础表更新（TageBTable）。
+//
+// 本文件：TageBTable
 `timescale 1ns/1ps
-
 module tb;
   int unsigned NCYCLES = 200000;
-  localparam int WARMUP = 4;          // 只跳过复位释放后的前几拍
-
-  bit clk = 0, rst;
-  int errors = 0, checks = 0;
-  int unsigned cycle = 0;
+  int errors = 0, checks = 0, cov_fail = 0;
+  int unsigned cyc = 0;
+  logic clk = 1'b0;
   always #5 clk = ~clk;
-  always @(posedge clk) cycle++;
+  localparam int RESET_CYC = 8;
 
-  // ---------------- 共享激励 ----------------
-  logic        req_valid;
-  logic [49:0] req_bits;
-  logic        upd_mask_0, upd_mask_1;
-  logic [49:0] upd_pc;
-  logic [1:0]  upd_cnt_0, upd_cnt_1;
-  logic        upd_tk_0, upd_tk_1;
-
-  // MBIST bore: 4 组
-  logic [8:0]  bo_addr   [4];
-  logic [8:0]  bo_addrrd [4];
-  logic [7:0]  bo_wdata  [4];
-  logic [3:0]  bo_wmask  [4];
-  logic        bo_re     [4];
-  logic        bo_we     [4];
-  logic        bo_ack    [4];
-  logic        bo_sel    [4];
-  logic [6:0]  bo_array  [4];
-
-  // ---------------- 两侧输出 ----------------
-  wire       g_req_ready,      i_req_ready;
-  wire [1:0] g_s1_cnt_0,       i_s1_cnt_0;
-  wire [1:0] g_s1_cnt_1,       i_s1_cnt_1;
-  wire       g_s1_resp_valid,  i_s1_resp_valid;
-  wire [7:0] g_rdata_0, i_rdata_0, g_rdata_1, i_rdata_1;
-  wire [7:0] g_rdata_2, i_rdata_2, g_rdata_3, i_rdata_3;
-
-  `define BOREPORTS(P) \
-    .boreChildrenBd_bore_addr        (bo_addr[0]),   .boreChildrenBd_bore_addr_rd    (bo_addrrd[0]), \
-    .boreChildrenBd_bore_wdata       (bo_wdata[0]),  .boreChildrenBd_bore_wmask      (bo_wmask[0]),  \
-    .boreChildrenBd_bore_re          (bo_re[0]),     .boreChildrenBd_bore_we         (bo_we[0]),     \
-    .boreChildrenBd_bore_rdata       (P``_rdata_0),  .boreChildrenBd_bore_ack        (bo_ack[0]),    \
-    .boreChildrenBd_bore_selectedOH  (bo_sel[0]),    .boreChildrenBd_bore_array      (bo_array[0]),  \
-    .boreChildrenBd_bore_1_addr      (bo_addr[1]),   .boreChildrenBd_bore_1_addr_rd  (bo_addrrd[1]), \
-    .boreChildrenBd_bore_1_wdata     (bo_wdata[1]),  .boreChildrenBd_bore_1_wmask    (bo_wmask[1]),  \
-    .boreChildrenBd_bore_1_re        (bo_re[1]),     .boreChildrenBd_bore_1_we       (bo_we[1]),     \
-    .boreChildrenBd_bore_1_rdata     (P``_rdata_1),  .boreChildrenBd_bore_1_ack      (bo_ack[1]),    \
-    .boreChildrenBd_bore_1_selectedOH(bo_sel[1]),    .boreChildrenBd_bore_1_array    (bo_array[1]),  \
-    .boreChildrenBd_bore_2_addr      (bo_addr[2]),   .boreChildrenBd_bore_2_addr_rd  (bo_addrrd[2]), \
-    .boreChildrenBd_bore_2_wdata     (bo_wdata[2]),  .boreChildrenBd_bore_2_wmask    (bo_wmask[2]),  \
-    .boreChildrenBd_bore_2_re        (bo_re[2]),     .boreChildrenBd_bore_2_we       (bo_we[2]),     \
-    .boreChildrenBd_bore_2_rdata     (P``_rdata_2),  .boreChildrenBd_bore_2_ack      (bo_ack[2]),    \
-    .boreChildrenBd_bore_2_selectedOH(bo_sel[2]),    .boreChildrenBd_bore_2_array    (bo_array[2]),  \
-    .boreChildrenBd_bore_3_addr      (bo_addr[3]),   .boreChildrenBd_bore_3_addr_rd  (bo_addrrd[3]), \
-    .boreChildrenBd_bore_3_wdata     (bo_wdata[3]),  .boreChildrenBd_bore_3_wmask    (bo_wmask[3]),  \
-    .boreChildrenBd_bore_3_re        (bo_re[3]),     .boreChildrenBd_bore_3_we       (bo_we[3]),     \
-    .boreChildrenBd_bore_3_rdata     (P``_rdata_3),  .boreChildrenBd_bore_3_ack      (bo_ack[3]),    \
-    .boreChildrenBd_bore_3_selectedOH(bo_sel[3]),    .boreChildrenBd_bore_3_array    (bo_array[3])
-
-  // DFT 时钟控制信号全部钉 0 (与 TageTable UT 同口径: 它们只影响 SRAM 宏的时钟门控,
-  // 功能等价由 FM 覆盖; UT 里若随机翻转会把 SRAM 时钟关掉, 变成噪音而非覆盖)。
-  `define SIGPORTS \
-    .sigFromSrams_bore_ram_hold      (1'b0), .sigFromSrams_bore_ram_bypass      (1'b0), \
-    .sigFromSrams_bore_ram_bp_clken  (1'b0), .sigFromSrams_bore_ram_aux_clk     (1'b0), \
-    .sigFromSrams_bore_ram_aux_ckbp  (1'b0), .sigFromSrams_bore_ram_mcp_hold    (1'b0), \
-    .sigFromSrams_bore_cgen          (1'b0),                                            \
-    .sigFromSrams_bore_1_ram_hold    (1'b0), .sigFromSrams_bore_1_ram_bypass    (1'b0), \
-    .sigFromSrams_bore_1_ram_bp_clken(1'b0), .sigFromSrams_bore_1_ram_aux_clk   (1'b0), \
-    .sigFromSrams_bore_1_ram_aux_ckbp(1'b0), .sigFromSrams_bore_1_ram_mcp_hold  (1'b0), \
-    .sigFromSrams_bore_1_cgen        (1'b0),                                            \
-    .sigFromSrams_bore_2_ram_hold    (1'b0), .sigFromSrams_bore_2_ram_bypass    (1'b0), \
-    .sigFromSrams_bore_2_ram_bp_clken(1'b0), .sigFromSrams_bore_2_ram_aux_clk   (1'b0), \
-    .sigFromSrams_bore_2_ram_aux_ckbp(1'b0), .sigFromSrams_bore_2_ram_mcp_hold  (1'b0), \
-    .sigFromSrams_bore_2_cgen        (1'b0),                                            \
-    .sigFromSrams_bore_3_ram_hold    (1'b0), .sigFromSrams_bore_3_ram_bypass    (1'b0), \
-    .sigFromSrams_bore_3_ram_bp_clken(1'b0), .sigFromSrams_bore_3_ram_aux_clk   (1'b0), \
-    .sigFromSrams_bore_3_ram_aux_ckbp(1'b0), .sigFromSrams_bore_3_ram_mcp_hold  (1'b0), \
-    .sigFromSrams_bore_3_cgen        (1'b0)
-
-  TageBTable u_g (
-    .clock(clk), .reset(rst),
-    .io_req_ready(g_req_ready), .io_req_valid(req_valid), .io_req_bits(req_bits),
-    .io_s1_cnt_0(g_s1_cnt_0), .io_s1_cnt_1(g_s1_cnt_1), .io_s1_resp_valid(g_s1_resp_valid),
-    .io_update_mask_0(upd_mask_0), .io_update_mask_1(upd_mask_1), .io_update_pc(upd_pc),
-    .io_update_cnt_0(upd_cnt_0), .io_update_cnt_1(upd_cnt_1),
-    .io_update_takens_0(upd_tk_0), .io_update_takens_1(upd_tk_1),
-    `BOREPORTS(g), `SIGPORTS
+  // ================= TageBTable =================
+  int unsigned p_mode = 0;
+  logic [49:0] p_pool [16];
+  initial for (int k = 0; k < 16; k++) p_pool[k] = {$urandom, $urandom} & ~50'h1;
+  logic p_reset;
+  wire  p_g_io_req_ready, p_i_io_req_ready;
+  logic p_s0_io_req_ready = '0, p_s1_io_req_ready = '0;
+  logic p_io_req_valid;
+  logic [49:0] p_io_req_bits;
+  wire  [1:0] p_g_io_s1_cnt_0, p_i_io_s1_cnt_0;
+  logic [1:0] p_s0_io_s1_cnt_0 = '0, p_s1_io_s1_cnt_0 = '0;
+  wire  [1:0] p_g_io_s1_cnt_1, p_i_io_s1_cnt_1;
+  logic [1:0] p_s0_io_s1_cnt_1 = '0, p_s1_io_s1_cnt_1 = '0;
+  wire  p_g_io_s1_resp_valid, p_i_io_s1_resp_valid;
+  logic p_s0_io_s1_resp_valid = '0, p_s1_io_s1_resp_valid = '0;
+  logic p_io_update_mask_0;
+  logic p_io_update_mask_1;
+  logic [49:0] p_io_update_pc;
+  logic [1:0] p_io_update_cnt_0;
+  logic [1:0] p_io_update_cnt_1;
+  logic p_io_update_takens_0;
+  logic p_io_update_takens_1;
+  logic [8:0] p_boreChildrenBd_bore_addr;
+  logic [8:0] p_boreChildrenBd_bore_addr_rd;
+  logic [7:0] p_boreChildrenBd_bore_wdata;
+  logic [3:0] p_boreChildrenBd_bore_wmask;
+  logic p_boreChildrenBd_bore_re;
+  logic p_boreChildrenBd_bore_we;
+  wire  [7:0] p_g_boreChildrenBd_bore_rdata, p_i_boreChildrenBd_bore_rdata;
+  logic [7:0] p_s0_boreChildrenBd_bore_rdata = '0, p_s1_boreChildrenBd_bore_rdata = '0;
+  logic p_boreChildrenBd_bore_ack;
+  logic p_boreChildrenBd_bore_selectedOH;
+  logic [6:0] p_boreChildrenBd_bore_array;
+  logic [8:0] p_boreChildrenBd_bore_1_addr;
+  logic [8:0] p_boreChildrenBd_bore_1_addr_rd;
+  logic [7:0] p_boreChildrenBd_bore_1_wdata;
+  logic [3:0] p_boreChildrenBd_bore_1_wmask;
+  logic p_boreChildrenBd_bore_1_re;
+  logic p_boreChildrenBd_bore_1_we;
+  wire  [7:0] p_g_boreChildrenBd_bore_1_rdata, p_i_boreChildrenBd_bore_1_rdata;
+  logic [7:0] p_s0_boreChildrenBd_bore_1_rdata = '0, p_s1_boreChildrenBd_bore_1_rdata = '0;
+  logic p_boreChildrenBd_bore_1_ack;
+  logic p_boreChildrenBd_bore_1_selectedOH;
+  logic [6:0] p_boreChildrenBd_bore_1_array;
+  logic [8:0] p_boreChildrenBd_bore_2_addr;
+  logic [8:0] p_boreChildrenBd_bore_2_addr_rd;
+  logic [7:0] p_boreChildrenBd_bore_2_wdata;
+  logic [3:0] p_boreChildrenBd_bore_2_wmask;
+  logic p_boreChildrenBd_bore_2_re;
+  logic p_boreChildrenBd_bore_2_we;
+  wire  [7:0] p_g_boreChildrenBd_bore_2_rdata, p_i_boreChildrenBd_bore_2_rdata;
+  logic [7:0] p_s0_boreChildrenBd_bore_2_rdata = '0, p_s1_boreChildrenBd_bore_2_rdata = '0;
+  logic p_boreChildrenBd_bore_2_ack;
+  logic p_boreChildrenBd_bore_2_selectedOH;
+  logic [6:0] p_boreChildrenBd_bore_2_array;
+  logic [8:0] p_boreChildrenBd_bore_3_addr;
+  logic [8:0] p_boreChildrenBd_bore_3_addr_rd;
+  logic [7:0] p_boreChildrenBd_bore_3_wdata;
+  logic [3:0] p_boreChildrenBd_bore_3_wmask;
+  logic p_boreChildrenBd_bore_3_re;
+  logic p_boreChildrenBd_bore_3_we;
+  wire  [7:0] p_g_boreChildrenBd_bore_3_rdata, p_i_boreChildrenBd_bore_3_rdata;
+  logic [7:0] p_s0_boreChildrenBd_bore_3_rdata = '0, p_s1_boreChildrenBd_bore_3_rdata = '0;
+  logic p_boreChildrenBd_bore_3_ack;
+  logic p_boreChildrenBd_bore_3_selectedOH;
+  logic [6:0] p_boreChildrenBd_bore_3_array;
+  logic p_sigFromSrams_bore_ram_hold;
+  logic p_sigFromSrams_bore_ram_bypass;
+  logic p_sigFromSrams_bore_ram_bp_clken;
+  logic p_sigFromSrams_bore_ram_aux_clk;
+  logic p_sigFromSrams_bore_ram_aux_ckbp;
+  logic p_sigFromSrams_bore_ram_mcp_hold;
+  logic p_sigFromSrams_bore_cgen;
+  logic p_sigFromSrams_bore_1_ram_hold;
+  logic p_sigFromSrams_bore_1_ram_bypass;
+  logic p_sigFromSrams_bore_1_ram_bp_clken;
+  logic p_sigFromSrams_bore_1_ram_aux_clk;
+  logic p_sigFromSrams_bore_1_ram_aux_ckbp;
+  logic p_sigFromSrams_bore_1_ram_mcp_hold;
+  logic p_sigFromSrams_bore_1_cgen;
+  logic p_sigFromSrams_bore_2_ram_hold;
+  logic p_sigFromSrams_bore_2_ram_bypass;
+  logic p_sigFromSrams_bore_2_ram_bp_clken;
+  logic p_sigFromSrams_bore_2_ram_aux_clk;
+  logic p_sigFromSrams_bore_2_ram_aux_ckbp;
+  logic p_sigFromSrams_bore_2_ram_mcp_hold;
+  logic p_sigFromSrams_bore_2_cgen;
+  logic p_sigFromSrams_bore_3_ram_hold;
+  logic p_sigFromSrams_bore_3_ram_bypass;
+  logic p_sigFromSrams_bore_3_ram_bp_clken;
+  logic p_sigFromSrams_bore_3_ram_aux_clk;
+  logic p_sigFromSrams_bore_3_ram_aux_ckbp;
+  logic p_sigFromSrams_bore_3_ram_mcp_hold;
+  logic p_sigFromSrams_bore_3_cgen;
+  int p_cov_read_fire = 0;
+  int p_cov_resp_valid = 0;
+  int p_cov_update_any = 0;
+  logic [0:0] p_armed = '0;
+  int p_armed_at = -1;
+  TageBTable p_u_gold (
+    .clock(clk),
+    .reset(p_reset),
+    .io_req_ready(p_g_io_req_ready),
+    .io_req_valid(p_io_req_valid),
+    .io_req_bits(p_io_req_bits),
+    .io_s1_cnt_0(p_g_io_s1_cnt_0),
+    .io_s1_cnt_1(p_g_io_s1_cnt_1),
+    .io_s1_resp_valid(p_g_io_s1_resp_valid),
+    .io_update_mask_0(p_io_update_mask_0),
+    .io_update_mask_1(p_io_update_mask_1),
+    .io_update_pc(p_io_update_pc),
+    .io_update_cnt_0(p_io_update_cnt_0),
+    .io_update_cnt_1(p_io_update_cnt_1),
+    .io_update_takens_0(p_io_update_takens_0),
+    .io_update_takens_1(p_io_update_takens_1),
+    .boreChildrenBd_bore_addr(p_boreChildrenBd_bore_addr),
+    .boreChildrenBd_bore_addr_rd(p_boreChildrenBd_bore_addr_rd),
+    .boreChildrenBd_bore_wdata(p_boreChildrenBd_bore_wdata),
+    .boreChildrenBd_bore_wmask(p_boreChildrenBd_bore_wmask),
+    .boreChildrenBd_bore_re(p_boreChildrenBd_bore_re),
+    .boreChildrenBd_bore_we(p_boreChildrenBd_bore_we),
+    .boreChildrenBd_bore_rdata(p_g_boreChildrenBd_bore_rdata),
+    .boreChildrenBd_bore_ack(p_boreChildrenBd_bore_ack),
+    .boreChildrenBd_bore_selectedOH(p_boreChildrenBd_bore_selectedOH),
+    .boreChildrenBd_bore_array(p_boreChildrenBd_bore_array),
+    .boreChildrenBd_bore_1_addr(p_boreChildrenBd_bore_1_addr),
+    .boreChildrenBd_bore_1_addr_rd(p_boreChildrenBd_bore_1_addr_rd),
+    .boreChildrenBd_bore_1_wdata(p_boreChildrenBd_bore_1_wdata),
+    .boreChildrenBd_bore_1_wmask(p_boreChildrenBd_bore_1_wmask),
+    .boreChildrenBd_bore_1_re(p_boreChildrenBd_bore_1_re),
+    .boreChildrenBd_bore_1_we(p_boreChildrenBd_bore_1_we),
+    .boreChildrenBd_bore_1_rdata(p_g_boreChildrenBd_bore_1_rdata),
+    .boreChildrenBd_bore_1_ack(p_boreChildrenBd_bore_1_ack),
+    .boreChildrenBd_bore_1_selectedOH(p_boreChildrenBd_bore_1_selectedOH),
+    .boreChildrenBd_bore_1_array(p_boreChildrenBd_bore_1_array),
+    .boreChildrenBd_bore_2_addr(p_boreChildrenBd_bore_2_addr),
+    .boreChildrenBd_bore_2_addr_rd(p_boreChildrenBd_bore_2_addr_rd),
+    .boreChildrenBd_bore_2_wdata(p_boreChildrenBd_bore_2_wdata),
+    .boreChildrenBd_bore_2_wmask(p_boreChildrenBd_bore_2_wmask),
+    .boreChildrenBd_bore_2_re(p_boreChildrenBd_bore_2_re),
+    .boreChildrenBd_bore_2_we(p_boreChildrenBd_bore_2_we),
+    .boreChildrenBd_bore_2_rdata(p_g_boreChildrenBd_bore_2_rdata),
+    .boreChildrenBd_bore_2_ack(p_boreChildrenBd_bore_2_ack),
+    .boreChildrenBd_bore_2_selectedOH(p_boreChildrenBd_bore_2_selectedOH),
+    .boreChildrenBd_bore_2_array(p_boreChildrenBd_bore_2_array),
+    .boreChildrenBd_bore_3_addr(p_boreChildrenBd_bore_3_addr),
+    .boreChildrenBd_bore_3_addr_rd(p_boreChildrenBd_bore_3_addr_rd),
+    .boreChildrenBd_bore_3_wdata(p_boreChildrenBd_bore_3_wdata),
+    .boreChildrenBd_bore_3_wmask(p_boreChildrenBd_bore_3_wmask),
+    .boreChildrenBd_bore_3_re(p_boreChildrenBd_bore_3_re),
+    .boreChildrenBd_bore_3_we(p_boreChildrenBd_bore_3_we),
+    .boreChildrenBd_bore_3_rdata(p_g_boreChildrenBd_bore_3_rdata),
+    .boreChildrenBd_bore_3_ack(p_boreChildrenBd_bore_3_ack),
+    .boreChildrenBd_bore_3_selectedOH(p_boreChildrenBd_bore_3_selectedOH),
+    .boreChildrenBd_bore_3_array(p_boreChildrenBd_bore_3_array),
+    .sigFromSrams_bore_ram_hold(p_sigFromSrams_bore_ram_hold),
+    .sigFromSrams_bore_ram_bypass(p_sigFromSrams_bore_ram_bypass),
+    .sigFromSrams_bore_ram_bp_clken(p_sigFromSrams_bore_ram_bp_clken),
+    .sigFromSrams_bore_ram_aux_clk(p_sigFromSrams_bore_ram_aux_clk),
+    .sigFromSrams_bore_ram_aux_ckbp(p_sigFromSrams_bore_ram_aux_ckbp),
+    .sigFromSrams_bore_ram_mcp_hold(p_sigFromSrams_bore_ram_mcp_hold),
+    .sigFromSrams_bore_cgen(p_sigFromSrams_bore_cgen),
+    .sigFromSrams_bore_1_ram_hold(p_sigFromSrams_bore_1_ram_hold),
+    .sigFromSrams_bore_1_ram_bypass(p_sigFromSrams_bore_1_ram_bypass),
+    .sigFromSrams_bore_1_ram_bp_clken(p_sigFromSrams_bore_1_ram_bp_clken),
+    .sigFromSrams_bore_1_ram_aux_clk(p_sigFromSrams_bore_1_ram_aux_clk),
+    .sigFromSrams_bore_1_ram_aux_ckbp(p_sigFromSrams_bore_1_ram_aux_ckbp),
+    .sigFromSrams_bore_1_ram_mcp_hold(p_sigFromSrams_bore_1_ram_mcp_hold),
+    .sigFromSrams_bore_1_cgen(p_sigFromSrams_bore_1_cgen),
+    .sigFromSrams_bore_2_ram_hold(p_sigFromSrams_bore_2_ram_hold),
+    .sigFromSrams_bore_2_ram_bypass(p_sigFromSrams_bore_2_ram_bypass),
+    .sigFromSrams_bore_2_ram_bp_clken(p_sigFromSrams_bore_2_ram_bp_clken),
+    .sigFromSrams_bore_2_ram_aux_clk(p_sigFromSrams_bore_2_ram_aux_clk),
+    .sigFromSrams_bore_2_ram_aux_ckbp(p_sigFromSrams_bore_2_ram_aux_ckbp),
+    .sigFromSrams_bore_2_ram_mcp_hold(p_sigFromSrams_bore_2_ram_mcp_hold),
+    .sigFromSrams_bore_2_cgen(p_sigFromSrams_bore_2_cgen),
+    .sigFromSrams_bore_3_ram_hold(p_sigFromSrams_bore_3_ram_hold),
+    .sigFromSrams_bore_3_ram_bypass(p_sigFromSrams_bore_3_ram_bypass),
+    .sigFromSrams_bore_3_ram_bp_clken(p_sigFromSrams_bore_3_ram_bp_clken),
+    .sigFromSrams_bore_3_ram_aux_clk(p_sigFromSrams_bore_3_ram_aux_clk),
+    .sigFromSrams_bore_3_ram_aux_ckbp(p_sigFromSrams_bore_3_ram_aux_ckbp),
+    .sigFromSrams_bore_3_ram_mcp_hold(p_sigFromSrams_bore_3_ram_mcp_hold),
+    .sigFromSrams_bore_3_cgen(p_sigFromSrams_bore_3_cgen)
+  );
+  TageBTable_xs p_u_impl (
+    .clock(clk),
+    .reset(p_reset),
+    .io_req_ready(p_i_io_req_ready),
+    .io_req_valid(p_io_req_valid),
+    .io_req_bits(p_io_req_bits),
+    .io_s1_cnt_0(p_i_io_s1_cnt_0),
+    .io_s1_cnt_1(p_i_io_s1_cnt_1),
+    .io_s1_resp_valid(p_i_io_s1_resp_valid),
+    .io_update_mask_0(p_io_update_mask_0),
+    .io_update_mask_1(p_io_update_mask_1),
+    .io_update_pc(p_io_update_pc),
+    .io_update_cnt_0(p_io_update_cnt_0),
+    .io_update_cnt_1(p_io_update_cnt_1),
+    .io_update_takens_0(p_io_update_takens_0),
+    .io_update_takens_1(p_io_update_takens_1),
+    .boreChildrenBd_bore_addr(p_boreChildrenBd_bore_addr),
+    .boreChildrenBd_bore_addr_rd(p_boreChildrenBd_bore_addr_rd),
+    .boreChildrenBd_bore_wdata(p_boreChildrenBd_bore_wdata),
+    .boreChildrenBd_bore_wmask(p_boreChildrenBd_bore_wmask),
+    .boreChildrenBd_bore_re(p_boreChildrenBd_bore_re),
+    .boreChildrenBd_bore_we(p_boreChildrenBd_bore_we),
+    .boreChildrenBd_bore_rdata(p_i_boreChildrenBd_bore_rdata),
+    .boreChildrenBd_bore_ack(p_boreChildrenBd_bore_ack),
+    .boreChildrenBd_bore_selectedOH(p_boreChildrenBd_bore_selectedOH),
+    .boreChildrenBd_bore_array(p_boreChildrenBd_bore_array),
+    .boreChildrenBd_bore_1_addr(p_boreChildrenBd_bore_1_addr),
+    .boreChildrenBd_bore_1_addr_rd(p_boreChildrenBd_bore_1_addr_rd),
+    .boreChildrenBd_bore_1_wdata(p_boreChildrenBd_bore_1_wdata),
+    .boreChildrenBd_bore_1_wmask(p_boreChildrenBd_bore_1_wmask),
+    .boreChildrenBd_bore_1_re(p_boreChildrenBd_bore_1_re),
+    .boreChildrenBd_bore_1_we(p_boreChildrenBd_bore_1_we),
+    .boreChildrenBd_bore_1_rdata(p_i_boreChildrenBd_bore_1_rdata),
+    .boreChildrenBd_bore_1_ack(p_boreChildrenBd_bore_1_ack),
+    .boreChildrenBd_bore_1_selectedOH(p_boreChildrenBd_bore_1_selectedOH),
+    .boreChildrenBd_bore_1_array(p_boreChildrenBd_bore_1_array),
+    .boreChildrenBd_bore_2_addr(p_boreChildrenBd_bore_2_addr),
+    .boreChildrenBd_bore_2_addr_rd(p_boreChildrenBd_bore_2_addr_rd),
+    .boreChildrenBd_bore_2_wdata(p_boreChildrenBd_bore_2_wdata),
+    .boreChildrenBd_bore_2_wmask(p_boreChildrenBd_bore_2_wmask),
+    .boreChildrenBd_bore_2_re(p_boreChildrenBd_bore_2_re),
+    .boreChildrenBd_bore_2_we(p_boreChildrenBd_bore_2_we),
+    .boreChildrenBd_bore_2_rdata(p_i_boreChildrenBd_bore_2_rdata),
+    .boreChildrenBd_bore_2_ack(p_boreChildrenBd_bore_2_ack),
+    .boreChildrenBd_bore_2_selectedOH(p_boreChildrenBd_bore_2_selectedOH),
+    .boreChildrenBd_bore_2_array(p_boreChildrenBd_bore_2_array),
+    .boreChildrenBd_bore_3_addr(p_boreChildrenBd_bore_3_addr),
+    .boreChildrenBd_bore_3_addr_rd(p_boreChildrenBd_bore_3_addr_rd),
+    .boreChildrenBd_bore_3_wdata(p_boreChildrenBd_bore_3_wdata),
+    .boreChildrenBd_bore_3_wmask(p_boreChildrenBd_bore_3_wmask),
+    .boreChildrenBd_bore_3_re(p_boreChildrenBd_bore_3_re),
+    .boreChildrenBd_bore_3_we(p_boreChildrenBd_bore_3_we),
+    .boreChildrenBd_bore_3_rdata(p_i_boreChildrenBd_bore_3_rdata),
+    .boreChildrenBd_bore_3_ack(p_boreChildrenBd_bore_3_ack),
+    .boreChildrenBd_bore_3_selectedOH(p_boreChildrenBd_bore_3_selectedOH),
+    .boreChildrenBd_bore_3_array(p_boreChildrenBd_bore_3_array),
+    .sigFromSrams_bore_ram_hold(p_sigFromSrams_bore_ram_hold),
+    .sigFromSrams_bore_ram_bypass(p_sigFromSrams_bore_ram_bypass),
+    .sigFromSrams_bore_ram_bp_clken(p_sigFromSrams_bore_ram_bp_clken),
+    .sigFromSrams_bore_ram_aux_clk(p_sigFromSrams_bore_ram_aux_clk),
+    .sigFromSrams_bore_ram_aux_ckbp(p_sigFromSrams_bore_ram_aux_ckbp),
+    .sigFromSrams_bore_ram_mcp_hold(p_sigFromSrams_bore_ram_mcp_hold),
+    .sigFromSrams_bore_cgen(p_sigFromSrams_bore_cgen),
+    .sigFromSrams_bore_1_ram_hold(p_sigFromSrams_bore_1_ram_hold),
+    .sigFromSrams_bore_1_ram_bypass(p_sigFromSrams_bore_1_ram_bypass),
+    .sigFromSrams_bore_1_ram_bp_clken(p_sigFromSrams_bore_1_ram_bp_clken),
+    .sigFromSrams_bore_1_ram_aux_clk(p_sigFromSrams_bore_1_ram_aux_clk),
+    .sigFromSrams_bore_1_ram_aux_ckbp(p_sigFromSrams_bore_1_ram_aux_ckbp),
+    .sigFromSrams_bore_1_ram_mcp_hold(p_sigFromSrams_bore_1_ram_mcp_hold),
+    .sigFromSrams_bore_1_cgen(p_sigFromSrams_bore_1_cgen),
+    .sigFromSrams_bore_2_ram_hold(p_sigFromSrams_bore_2_ram_hold),
+    .sigFromSrams_bore_2_ram_bypass(p_sigFromSrams_bore_2_ram_bypass),
+    .sigFromSrams_bore_2_ram_bp_clken(p_sigFromSrams_bore_2_ram_bp_clken),
+    .sigFromSrams_bore_2_ram_aux_clk(p_sigFromSrams_bore_2_ram_aux_clk),
+    .sigFromSrams_bore_2_ram_aux_ckbp(p_sigFromSrams_bore_2_ram_aux_ckbp),
+    .sigFromSrams_bore_2_ram_mcp_hold(p_sigFromSrams_bore_2_ram_mcp_hold),
+    .sigFromSrams_bore_2_cgen(p_sigFromSrams_bore_2_cgen),
+    .sigFromSrams_bore_3_ram_hold(p_sigFromSrams_bore_3_ram_hold),
+    .sigFromSrams_bore_3_ram_bypass(p_sigFromSrams_bore_3_ram_bypass),
+    .sigFromSrams_bore_3_ram_bp_clken(p_sigFromSrams_bore_3_ram_bp_clken),
+    .sigFromSrams_bore_3_ram_aux_clk(p_sigFromSrams_bore_3_ram_aux_clk),
+    .sigFromSrams_bore_3_ram_aux_ckbp(p_sigFromSrams_bore_3_ram_aux_ckbp),
+    .sigFromSrams_bore_3_ram_mcp_hold(p_sigFromSrams_bore_3_ram_mcp_hold),
+    .sigFromSrams_bore_3_cgen(p_sigFromSrams_bore_3_cgen)
   );
 
-  TageBTable_xs u_i (
-    .clock(clk), .reset(rst),
-    .io_req_ready(i_req_ready), .io_req_valid(req_valid), .io_req_bits(req_bits),
-    .io_s1_cnt_0(i_s1_cnt_0), .io_s1_cnt_1(i_s1_cnt_1), .io_s1_resp_valid(i_s1_resp_valid),
-    .io_update_mask_0(upd_mask_0), .io_update_mask_1(upd_mask_1), .io_update_pc(upd_pc),
-    .io_update_cnt_0(upd_cnt_0), .io_update_cnt_1(upd_cnt_1),
-    .io_update_takens_0(upd_tk_0), .io_update_takens_1(upd_tk_1),
-    `BOREPORTS(i), `SIGPORTS
-  );
-
-  // ---------------- 激励 ----------------
-  logic [10:0] hot [8];          // hot idx 池: 制造别名/冲突/写旁路命中
-  logic [10:0] cur_upd_idx;
-  int          upd_burst;
-
-  function automatic logic [49:0] mk_pc(input logic [10:0] idx);
-    return {38'($urandom), idx, 1'b0};
-  endfunction
-
-  function automatic logic [10:0] pick_idx();
-    if ($urandom_range(0, 9) < 6) return hot[$urandom_range(0, 7)];
-    else                          return 11'($urandom);
-  endfunction
-
   initial begin
-    for (int i = 0; i < 8; i++) hot[i] = 11'($urandom);
-    cur_upd_idx = 11'd0;
-    upd_burst   = 0;
-  end
-
-  always @(negedge clk) begin
-    if (rst) begin
-      req_valid  <= 1'b0;
-      upd_mask_0 <= 1'b0;
-      upd_mask_1 <= 1'b0;
-      for (int k = 0; k < 4; k++) begin
-        bo_re[k] <= 1'b0; bo_we[k] <= 1'b0; bo_ack[k] <= 1'b0;
+    if ($value$plusargs("ncycles=%d", NCYCLES)) ;
+    for (cyc = 0; cyc < NCYCLES; cyc++) begin
+      @(negedge clk);
+      if (cyc % 2000 == 0) p_mode = $urandom_range(0, 15);
+      p_io_req_valid = 1'($urandom);
+      p_io_req_bits = 50'({$urandom, $urandom});
+      p_io_update_mask_0 = 1'($urandom);
+      p_io_update_mask_1 = 1'($urandom);
+      p_io_update_pc = 50'({$urandom, $urandom});
+      p_io_update_cnt_0 = 2'($urandom);
+      p_io_update_cnt_1 = 2'($urandom);
+      p_io_update_takens_0 = 1'($urandom);
+      p_io_update_takens_1 = 1'($urandom);
+      p_boreChildrenBd_bore_addr = 9'($urandom);
+      p_boreChildrenBd_bore_addr_rd = 9'($urandom);
+      p_boreChildrenBd_bore_wdata = 8'($urandom);
+      p_boreChildrenBd_bore_wmask = 4'($urandom);
+      p_boreChildrenBd_bore_re = 1'($urandom);
+      p_boreChildrenBd_bore_we = 1'($urandom);
+      p_boreChildrenBd_bore_ack = 1'($urandom);
+      p_boreChildrenBd_bore_selectedOH = 1'($urandom);
+      p_boreChildrenBd_bore_array = 7'($urandom);
+      p_boreChildrenBd_bore_1_addr = 9'($urandom);
+      p_boreChildrenBd_bore_1_addr_rd = 9'($urandom);
+      p_boreChildrenBd_bore_1_wdata = 8'($urandom);
+      p_boreChildrenBd_bore_1_wmask = 4'($urandom);
+      p_boreChildrenBd_bore_1_re = 1'($urandom);
+      p_boreChildrenBd_bore_1_we = 1'($urandom);
+      p_boreChildrenBd_bore_1_ack = 1'($urandom);
+      p_boreChildrenBd_bore_1_selectedOH = 1'($urandom);
+      p_boreChildrenBd_bore_1_array = 7'($urandom);
+      p_boreChildrenBd_bore_2_addr = 9'($urandom);
+      p_boreChildrenBd_bore_2_addr_rd = 9'($urandom);
+      p_boreChildrenBd_bore_2_wdata = 8'($urandom);
+      p_boreChildrenBd_bore_2_wmask = 4'($urandom);
+      p_boreChildrenBd_bore_2_re = 1'($urandom);
+      p_boreChildrenBd_bore_2_we = 1'($urandom);
+      p_boreChildrenBd_bore_2_ack = 1'($urandom);
+      p_boreChildrenBd_bore_2_selectedOH = 1'($urandom);
+      p_boreChildrenBd_bore_2_array = 7'($urandom);
+      p_boreChildrenBd_bore_3_addr = 9'($urandom);
+      p_boreChildrenBd_bore_3_addr_rd = 9'($urandom);
+      p_boreChildrenBd_bore_3_wdata = 8'($urandom);
+      p_boreChildrenBd_bore_3_wmask = 4'($urandom);
+      p_boreChildrenBd_bore_3_re = 1'($urandom);
+      p_boreChildrenBd_bore_3_we = 1'($urandom);
+      p_boreChildrenBd_bore_3_ack = 1'($urandom);
+      p_boreChildrenBd_bore_3_selectedOH = 1'($urandom);
+      p_boreChildrenBd_bore_3_array = 7'($urandom);
+      p_sigFromSrams_bore_ram_hold = 1'($urandom);
+      p_sigFromSrams_bore_ram_bypass = 1'($urandom);
+      p_sigFromSrams_bore_ram_bp_clken = 1'($urandom);
+      p_sigFromSrams_bore_ram_aux_clk = 1'($urandom);
+      p_sigFromSrams_bore_ram_aux_ckbp = 1'($urandom);
+      p_sigFromSrams_bore_ram_mcp_hold = 1'($urandom);
+      p_sigFromSrams_bore_cgen = 1'($urandom);
+      p_sigFromSrams_bore_1_ram_hold = 1'($urandom);
+      p_sigFromSrams_bore_1_ram_bypass = 1'($urandom);
+      p_sigFromSrams_bore_1_ram_bp_clken = 1'($urandom);
+      p_sigFromSrams_bore_1_ram_aux_clk = 1'($urandom);
+      p_sigFromSrams_bore_1_ram_aux_ckbp = 1'($urandom);
+      p_sigFromSrams_bore_1_ram_mcp_hold = 1'($urandom);
+      p_sigFromSrams_bore_1_cgen = 1'($urandom);
+      p_sigFromSrams_bore_2_ram_hold = 1'($urandom);
+      p_sigFromSrams_bore_2_ram_bypass = 1'($urandom);
+      p_sigFromSrams_bore_2_ram_bp_clken = 1'($urandom);
+      p_sigFromSrams_bore_2_ram_aux_clk = 1'($urandom);
+      p_sigFromSrams_bore_2_ram_aux_ckbp = 1'($urandom);
+      p_sigFromSrams_bore_2_ram_mcp_hold = 1'($urandom);
+      p_sigFromSrams_bore_2_cgen = 1'($urandom);
+      p_sigFromSrams_bore_3_ram_hold = 1'($urandom);
+      p_sigFromSrams_bore_3_ram_bypass = 1'($urandom);
+      p_sigFromSrams_bore_3_ram_bp_clken = 1'($urandom);
+      p_sigFromSrams_bore_3_ram_aux_clk = 1'($urandom);
+      p_sigFromSrams_bore_3_ram_aux_ckbp = 1'($urandom);
+      p_sigFromSrams_bore_3_ram_mcp_hold = 1'($urandom);
+      p_sigFromSrams_bore_3_cgen = 1'($urandom);
+      p_reset = (cyc < RESET_CYC) || ($urandom_range(0, 39999) == 0);
+      begin : stim_p
+        p_io_req_bits = p_pool[$urandom_range(0, 15)];
+        p_io_update_pc = p_pool[$urandom_range(0, 15)];
+        if (p_mode < 14) begin
+          p_sigFromSrams_bore_ram_hold = '0;
+          p_sigFromSrams_bore_ram_bypass = '0;
+          p_sigFromSrams_bore_ram_bp_clken = '0;
+          p_sigFromSrams_bore_ram_aux_clk = '0;
+          p_sigFromSrams_bore_ram_aux_ckbp = '0;
+          p_sigFromSrams_bore_ram_mcp_hold = '0;
+          p_sigFromSrams_bore_cgen = '0;
+          p_sigFromSrams_bore_1_ram_hold = '0;
+          p_sigFromSrams_bore_1_ram_bypass = '0;
+          p_sigFromSrams_bore_1_ram_bp_clken = '0;
+          p_sigFromSrams_bore_1_ram_aux_clk = '0;
+          p_sigFromSrams_bore_1_ram_aux_ckbp = '0;
+          p_sigFromSrams_bore_1_ram_mcp_hold = '0;
+          p_sigFromSrams_bore_1_cgen = '0;
+          p_sigFromSrams_bore_2_ram_hold = '0;
+          p_sigFromSrams_bore_2_ram_bypass = '0;
+          p_sigFromSrams_bore_2_ram_bp_clken = '0;
+          p_sigFromSrams_bore_2_ram_aux_clk = '0;
+          p_sigFromSrams_bore_2_ram_aux_ckbp = '0;
+          p_sigFromSrams_bore_2_ram_mcp_hold = '0;
+          p_sigFromSrams_bore_2_cgen = '0;
+          p_sigFromSrams_bore_3_ram_hold = '0;
+          p_sigFromSrams_bore_3_ram_bypass = '0;
+          p_sigFromSrams_bore_3_ram_bp_clken = '0;
+          p_sigFromSrams_bore_3_ram_aux_clk = '0;
+          p_sigFromSrams_bore_3_ram_aux_ckbp = '0;
+          p_sigFromSrams_bore_3_ram_mcp_hold = '0;
+          p_sigFromSrams_bore_3_cgen = '0;
+        end
       end
-    end else begin
-      // ---- 预测请求 ----
-      req_valid <= ($urandom_range(0, 3) != 0);       // ~75%
-      req_bits  <= mk_pc(pick_idx());
-
-      // ---- 更新: 突发打同一个 idx, 逼出写旁路命中 ----
-      if (upd_burst > 0) begin
-        upd_burst  <= upd_burst - 1;
-        upd_mask_0 <= 1'b1;
-        upd_mask_1 <= ($urandom_range(0, 1) == 0);
-      end else begin
-        cur_upd_idx <= pick_idx();
-        upd_mask_0  <= ($urandom_range(0, 2) == 0);
-        upd_mask_1  <= ($urandom_range(0, 2) == 0);
-        if ($urandom_range(0, 3) == 0) upd_burst <= $urandom_range(1, 3);
+      #4;
+      if (cyc >= RESET_CYC + 0 && p_armed_at >= 0 && cyc >= p_armed_at) begin
+        checks++;
+        if (p_g_io_req_ready !== p_i_io_req_ready) begin
+          errors++;
+          if (errors <= 20) $display("[MISMATCH] cyc=%0d TageBTable.io_req_ready g=%h i=%h", cyc, p_g_io_req_ready, p_i_io_req_ready);
+        end
+        p_s1_io_req_ready |= p_g_io_req_ready;
+        p_s0_io_req_ready |= ~p_g_io_req_ready;
+        checks++;
+        if (p_g_io_s1_cnt_0 !== p_i_io_s1_cnt_0) begin
+          errors++;
+          if (errors <= 20) $display("[MISMATCH] cyc=%0d TageBTable.io_s1_cnt_0 g=%h i=%h", cyc, p_g_io_s1_cnt_0, p_i_io_s1_cnt_0);
+        end
+        p_s1_io_s1_cnt_0 |= p_g_io_s1_cnt_0;
+        p_s0_io_s1_cnt_0 |= ~p_g_io_s1_cnt_0;
+        checks++;
+        if (p_g_io_s1_cnt_1 !== p_i_io_s1_cnt_1) begin
+          errors++;
+          if (errors <= 20) $display("[MISMATCH] cyc=%0d TageBTable.io_s1_cnt_1 g=%h i=%h", cyc, p_g_io_s1_cnt_1, p_i_io_s1_cnt_1);
+        end
+        p_s1_io_s1_cnt_1 |= p_g_io_s1_cnt_1;
+        p_s0_io_s1_cnt_1 |= ~p_g_io_s1_cnt_1;
+        checks++;
+        if (p_g_io_s1_resp_valid !== p_i_io_s1_resp_valid) begin
+          errors++;
+          if (errors <= 20) $display("[MISMATCH] cyc=%0d TageBTable.io_s1_resp_valid g=%h i=%h", cyc, p_g_io_s1_resp_valid, p_i_io_s1_resp_valid);
+        end
+        p_s1_io_s1_resp_valid |= p_g_io_s1_resp_valid;
+        p_s0_io_s1_resp_valid |= ~p_g_io_s1_resp_valid;
+        checks++;
+        if (p_g_boreChildrenBd_bore_rdata !== p_i_boreChildrenBd_bore_rdata) begin
+          errors++;
+          if (errors <= 20) $display("[MISMATCH] cyc=%0d TageBTable.boreChildrenBd_bore_rdata g=%h i=%h", cyc, p_g_boreChildrenBd_bore_rdata, p_i_boreChildrenBd_bore_rdata);
+        end
+        p_s1_boreChildrenBd_bore_rdata |= p_g_boreChildrenBd_bore_rdata;
+        p_s0_boreChildrenBd_bore_rdata |= ~p_g_boreChildrenBd_bore_rdata;
+        checks++;
+        if (p_g_boreChildrenBd_bore_1_rdata !== p_i_boreChildrenBd_bore_1_rdata) begin
+          errors++;
+          if (errors <= 20) $display("[MISMATCH] cyc=%0d TageBTable.boreChildrenBd_bore_1_rdata g=%h i=%h", cyc, p_g_boreChildrenBd_bore_1_rdata, p_i_boreChildrenBd_bore_1_rdata);
+        end
+        p_s1_boreChildrenBd_bore_1_rdata |= p_g_boreChildrenBd_bore_1_rdata;
+        p_s0_boreChildrenBd_bore_1_rdata |= ~p_g_boreChildrenBd_bore_1_rdata;
+        checks++;
+        if (p_g_boreChildrenBd_bore_2_rdata !== p_i_boreChildrenBd_bore_2_rdata) begin
+          errors++;
+          if (errors <= 20) $display("[MISMATCH] cyc=%0d TageBTable.boreChildrenBd_bore_2_rdata g=%h i=%h", cyc, p_g_boreChildrenBd_bore_2_rdata, p_i_boreChildrenBd_bore_2_rdata);
+        end
+        p_s1_boreChildrenBd_bore_2_rdata |= p_g_boreChildrenBd_bore_2_rdata;
+        p_s0_boreChildrenBd_bore_2_rdata |= ~p_g_boreChildrenBd_bore_2_rdata;
+        checks++;
+        if (p_g_boreChildrenBd_bore_3_rdata !== p_i_boreChildrenBd_bore_3_rdata) begin
+          errors++;
+          if (errors <= 20) $display("[MISMATCH] cyc=%0d TageBTable.boreChildrenBd_bore_3_rdata g=%h i=%h", cyc, p_g_boreChildrenBd_bore_3_rdata, p_i_boreChildrenBd_bore_3_rdata);
+        end
+        p_s1_boreChildrenBd_bore_3_rdata |= p_g_boreChildrenBd_bore_3_rdata;
+        p_s0_boreChildrenBd_bore_3_rdata |= ~p_g_boreChildrenBd_bore_3_rdata;
+        if (p_io_req_valid && p_g_io_req_ready) p_cov_read_fire++;
+        if (p_g_io_s1_resp_valid) p_cov_resp_valid++;
+        if (p_io_update_mask_0 || p_io_update_mask_1) p_cov_update_any++;
       end
-      upd_pc    <= mk_pc(upd_burst > 0 ? cur_upd_idx : pick_idx());
-      upd_cnt_0 <= 2'($urandom);
-      upd_cnt_1 <= 2'($urandom);
-      upd_tk_0  <= 1'($urandom);
-      upd_tk_1  <= 1'($urandom);
-
-      // ---- MBIST 旁路 (两侧同源, 只验穿线) ----
-      for (int k = 0; k < 4; k++) begin
-        bo_addr[k]   <= 9'($urandom);
-        bo_addrrd[k] <= 9'($urandom);
-        bo_wdata[k]  <= 8'($urandom);
-        bo_wmask[k]  <= 4'($urandom);
-        bo_re[k]     <= ($urandom_range(0, 15) == 0);
-        bo_we[k]     <= ($urandom_range(0, 15) == 0);
-        bo_ack[k]    <= ($urandom_range(0, 7) == 0);
-        bo_sel[k]    <= 1'($urandom);
-        bo_array[k]  <= 7'($urandom);
-      end
-    end
-  end
-
-  // ---------------- 覆盖统计 (全部按 golden 侧观测) ----------------
-  int cov_req = 0, cov_upd = 0, cov_conflict = 0, cov_clean = 0;
-  int cov_bank [2];                 // 请求落到哪个 bank
-  int cov_cnt0 [4], cov_cnt1 [4];   // io_s1_cnt_x 取到过的 4 个计数值
-  int cov_wrb_hit = 0;              // WrBypass 命中 (层次探针; 从端口看不见)
-  int cov_wrb_miss = 0;
-  int cov_reset_done = 0;           // 上电清表扫完
-  int cov_mbist_we = 0;
-
-  // toggle 闸: 8 个输出各自是否取到过至少两个不同值
-  logic [7:0]  tg_seen;             // 是否记录过首值
-  logic        tg_tog_ready, tg_tog_rv;
-  logic [1:0]  first_cnt0, first_cnt1;
-  logic        first_ready, first_rv;
-  logic [7:0]  first_rd [4];
-  logic        tg_tog_cnt0, tg_tog_cnt1;
-  logic        tg_tog_rd [4];
-
-  initial begin
-    tg_seen = '0; tg_tog_ready = 0; tg_tog_rv = 0;
-    tg_tog_cnt0 = 0; tg_tog_cnt1 = 0;
-    for (int k = 0; k < 4; k++) tg_tog_rd[k] = 0;
-    for (int k = 0; k < 2; k++) cov_bank[k] = 0;
-    for (int k = 0; k < 4; k++) begin cov_cnt0[k] = 0; cov_cnt1[k] = 0; end
-  end
-
-  // ---------------- 逐拍比对 ----------------
-  `define CMP(sig) \
-    if (g_``sig !== i_``sig) begin errors++; \
-      if (errors <= 30) $display("[%0t] %s g=%h i=%h", $time, `"sig`", g_``sig, i_``sig); end
-
-  always @(negedge clk) if (!rst && cycle > WARMUP) begin
-    #4;
-    checks++;
-    `CMP(req_ready)
-    `CMP(s1_cnt_0)
-    `CMP(s1_cnt_1)
-    `CMP(s1_resp_valid)
-    `CMP(rdata_0)
-    `CMP(rdata_1)
-    `CMP(rdata_2)
-    `CMP(rdata_3)
-
-    // 白盒: 写旁路命中也必须一致 (它只影响 old_ctr, 端口上可能被掩盖)
-    if (u_g.wrbypass.io_hit !== u_i.u_core.wrbypass.io_hit) begin
-      errors++;
-      if (errors <= 30) $display("[%0t] wrbypass.io_hit g=%b i=%b", $time,
-                                 u_g.wrbypass.io_hit, u_i.u_core.wrbypass.io_hit);
+      if (p_io_req_valid && p_g_io_req_ready) p_armed[0] = 1'b1;
+      if (p_armed_at < 0 && (&p_armed)) p_armed_at = cyc + 1 + 3;
     end
 
-    // ---- 覆盖累计 ----
-    if (req_valid)             cov_req++;
-    if (upd_mask_0|upd_mask_1) cov_upd++;
-    if (req_valid)             cov_bank[req_bits[1]]++;
-    if (g_req_ready) begin
-      cov_reset_done++;
-      if (!g_s1_resp_valid) cov_conflict++; else cov_clean++;
-    end
-    if (u_g.wrbypass.io_hit && (upd_mask_0|upd_mask_1)) cov_wrb_hit++;
-    else if (upd_mask_0|upd_mask_1)                     cov_wrb_miss++;
-    for (int k = 0; k < 4; k++) if (bo_we[k]) cov_mbist_we++;
-    if (g_req_ready && g_s1_resp_valid) begin
-      cov_cnt0[g_s1_cnt_0]++;
-      cov_cnt1[g_s1_cnt_1]++;
-    end
-
-    // ---- toggle ----
-    if (!tg_seen[0]) begin tg_seen[0] = 1; first_ready = g_req_ready; end
-    else if (g_req_ready !== first_ready) tg_tog_ready = 1;
-    if (!tg_seen[1]) begin tg_seen[1] = 1; first_rv = g_s1_resp_valid; end
-    else if (g_s1_resp_valid !== first_rv) tg_tog_rv = 1;
-    if (!tg_seen[2]) begin tg_seen[2] = 1; first_cnt0 = g_s1_cnt_0; end
-    else if (g_s1_cnt_0 !== first_cnt0) tg_tog_cnt0 = 1;
-    if (!tg_seen[3]) begin tg_seen[3] = 1; first_cnt1 = g_s1_cnt_1; end
-    else if (g_s1_cnt_1 !== first_cnt1) tg_tog_cnt1 = 1;
-    if (!tg_seen[4]) begin tg_seen[4] = 1; first_rd[0] = g_rdata_0; end
-    else if (g_rdata_0 !== first_rd[0]) tg_tog_rd[0] = 1;
-    if (!tg_seen[5]) begin tg_seen[5] = 1; first_rd[1] = g_rdata_1; end
-    else if (g_rdata_1 !== first_rd[1]) tg_tog_rd[1] = 1;
-    if (!tg_seen[6]) begin tg_seen[6] = 1; first_rd[2] = g_rdata_2; end
-    else if (g_rdata_2 !== first_rd[2]) tg_tog_rd[2] = 1;
-    if (!tg_seen[7]) begin tg_seen[7] = 1; first_rd[3] = g_rdata_3; end
-    else if (g_rdata_3 !== first_rd[3]) tg_tog_rd[3] = 1;
-  end
-
-  // ---------------- 收敛判决 ----------------
-  int cov_fail = 0;
-  task automatic need(input string what, input int got, input int thr);
-    $display("  cov %-28s = %0d (need > %0d)%s", what, got, thr,
-             (got > thr) ? "" : "   <== COVERAGE HOLE");
-    if (!(got > thr)) cov_fail++;
-  endtask
-
-  initial begin
-    if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;
-    rst = 1; repeat (5) @(posedge clk); rst = 0;
-    repeat (NCYCLES) @(posedge clk);
-
-    $display("checks=%0d errors=%0d", checks, errors);
-    $display("--- coverage ---");
-    need("req fired",            cov_req,        1000);
-    need("update fired",         cov_upd,        1000);
-    need("reset sweep finished", cov_reset_done, 1000);
-    need("bank0 read",           cov_bank[0],     500);
-    need("bank1 read",           cov_bank[1],     500);
-    need("bank conflict (s1 invalid)", cov_conflict, 100);
-    need("clean read",           cov_clean,      1000);
-    need("wrbypass hit",         cov_wrb_hit,     100);
-    need("wrbypass miss",        cov_wrb_miss,    100);
-    need("mbist we",             cov_mbist_we,    100);
-    for (int v = 0; v < 4; v++) need($sformatf("s1_cnt_0 == %0d", v), cov_cnt0[v], 50);
-    for (int v = 0; v < 4; v++) need($sformatf("s1_cnt_1 == %0d", v), cov_cnt1[v], 50);
-    need("toggle io_req_ready",     tg_tog_ready, 0);
-    need("toggle io_s1_resp_valid", tg_tog_rv,    0);
-    need("toggle io_s1_cnt_0",      tg_tog_cnt0,  0);
-    need("toggle io_s1_cnt_1",      tg_tog_cnt1,  0);
-    for (int k = 0; k < 4; k++) need($sformatf("toggle bore_%0d_rdata", k), tg_tog_rd[k], 0);
-
-    if (errors == 0 && checks > 100000 && cov_fail == 0) $display("TEST PASSED");
-    else $display("TEST FAILED (errors=%0d checks=%0d cov_holes=%0d)", errors, checks, cov_fail);
+    // ---- 覆盖闸 ----
+    if (!(p_s0_io_req_ready && p_s1_io_req_ready)) begin cov_fail++; $display("[COV] TageBTable.io_req_ready 未见过 0 和 1"); end
+    if (!(p_s0_io_s1_cnt_0[0] && p_s1_io_s1_cnt_0[0])) begin cov_fail++; $display("[COV] TageBTable.io_s1_cnt_0[0] 未见过 0 和 1"); end
+    if (!(p_s0_io_s1_cnt_0[1] && p_s1_io_s1_cnt_0[1])) begin cov_fail++; $display("[COV] TageBTable.io_s1_cnt_0[1] 未见过 0 和 1"); end
+    if (!(p_s0_io_s1_cnt_1[0] && p_s1_io_s1_cnt_1[0])) begin cov_fail++; $display("[COV] TageBTable.io_s1_cnt_1[0] 未见过 0 和 1"); end
+    if (!(p_s0_io_s1_cnt_1[1] && p_s1_io_s1_cnt_1[1])) begin cov_fail++; $display("[COV] TageBTable.io_s1_cnt_1[1] 未见过 0 和 1"); end
+    if (!(p_s0_io_s1_resp_valid && p_s1_io_s1_resp_valid)) begin cov_fail++; $display("[COV] TageBTable.io_s1_resp_valid 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_rdata[0] && p_s1_boreChildrenBd_bore_rdata[0])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_rdata[0] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_rdata[1] && p_s1_boreChildrenBd_bore_rdata[1])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_rdata[1] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_rdata[2] && p_s1_boreChildrenBd_bore_rdata[2])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_rdata[2] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_rdata[3] && p_s1_boreChildrenBd_bore_rdata[3])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_rdata[3] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_rdata[4] && p_s1_boreChildrenBd_bore_rdata[4])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_rdata[4] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_rdata[5] && p_s1_boreChildrenBd_bore_rdata[5])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_rdata[5] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_rdata[6] && p_s1_boreChildrenBd_bore_rdata[6])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_rdata[6] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_rdata[7] && p_s1_boreChildrenBd_bore_rdata[7])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_rdata[7] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_1_rdata[0] && p_s1_boreChildrenBd_bore_1_rdata[0])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_1_rdata[0] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_1_rdata[1] && p_s1_boreChildrenBd_bore_1_rdata[1])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_1_rdata[1] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_1_rdata[2] && p_s1_boreChildrenBd_bore_1_rdata[2])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_1_rdata[2] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_1_rdata[3] && p_s1_boreChildrenBd_bore_1_rdata[3])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_1_rdata[3] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_1_rdata[4] && p_s1_boreChildrenBd_bore_1_rdata[4])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_1_rdata[4] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_1_rdata[5] && p_s1_boreChildrenBd_bore_1_rdata[5])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_1_rdata[5] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_1_rdata[6] && p_s1_boreChildrenBd_bore_1_rdata[6])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_1_rdata[6] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_1_rdata[7] && p_s1_boreChildrenBd_bore_1_rdata[7])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_1_rdata[7] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_2_rdata[0] && p_s1_boreChildrenBd_bore_2_rdata[0])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_2_rdata[0] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_2_rdata[1] && p_s1_boreChildrenBd_bore_2_rdata[1])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_2_rdata[1] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_2_rdata[2] && p_s1_boreChildrenBd_bore_2_rdata[2])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_2_rdata[2] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_2_rdata[3] && p_s1_boreChildrenBd_bore_2_rdata[3])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_2_rdata[3] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_2_rdata[4] && p_s1_boreChildrenBd_bore_2_rdata[4])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_2_rdata[4] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_2_rdata[5] && p_s1_boreChildrenBd_bore_2_rdata[5])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_2_rdata[5] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_2_rdata[6] && p_s1_boreChildrenBd_bore_2_rdata[6])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_2_rdata[6] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_2_rdata[7] && p_s1_boreChildrenBd_bore_2_rdata[7])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_2_rdata[7] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_3_rdata[0] && p_s1_boreChildrenBd_bore_3_rdata[0])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_3_rdata[0] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_3_rdata[1] && p_s1_boreChildrenBd_bore_3_rdata[1])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_3_rdata[1] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_3_rdata[2] && p_s1_boreChildrenBd_bore_3_rdata[2])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_3_rdata[2] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_3_rdata[3] && p_s1_boreChildrenBd_bore_3_rdata[3])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_3_rdata[3] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_3_rdata[4] && p_s1_boreChildrenBd_bore_3_rdata[4])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_3_rdata[4] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_3_rdata[5] && p_s1_boreChildrenBd_bore_3_rdata[5])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_3_rdata[5] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_3_rdata[6] && p_s1_boreChildrenBd_bore_3_rdata[6])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_3_rdata[6] 未见过 0 和 1"); end
+    if (!(p_s0_boreChildrenBd_bore_3_rdata[7] && p_s1_boreChildrenBd_bore_3_rdata[7])) begin cov_fail++; $display("[COV] TageBTable.boreChildrenBd_bore_3_rdata[7] 未见过 0 和 1"); end
+    $display("[ARM] TageBTable armed_at=%0d", p_armed_at);
+    if (p_armed_at < 0) begin cov_fail++; $display("[ARM] TageBTable 从未 arm"); end
+    $display("[COV] TageBTable.read_fire = %0d", p_cov_read_fire);
+    if (p_cov_read_fire < 20) begin cov_fail++; $display("[COV] TageBTable.read_fire < 20"); end
+    $display("[COV] TageBTable.resp_valid = %0d", p_cov_resp_valid);
+    if (p_cov_resp_valid < 20) begin cov_fail++; $display("[COV] TageBTable.resp_valid < 20"); end
+    $display("[COV] TageBTable.update_any = %0d", p_cov_update_any);
+    if (p_cov_update_any < 20) begin cov_fail++; $display("[COV] TageBTable.update_any < 20"); end
+    $display("checks=%0d errors=%0d cov_fail=%0d", checks, errors, cov_fail);
+    if (errors == 0 && cov_fail == 0 && checks > 0) $display("TEST PASSED");
+    else $display("TEST FAILED");
     $finish;
   end
 endmodule

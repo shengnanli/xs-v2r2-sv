@@ -44,9 +44,10 @@ FM_REF_DEPS_TageBTable = FoldedSRAMTemplate_20.sv SplittedSRAMTemplate_23.sv SRA
                          sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv array_4.sv \
                          MbistClockGateCell.sv ClockGate.sv \
                          WrBypass_32.sv IndexableCAMTemplate_32.sv data_mem_8x4.sv
-FM_MODE = assembly
-FM_ALLOWLIST ?= 0
+# 2026-10-03 agent/bpu-tables：改 signoff-strict（子模块两侧同源白盒、唯一黑盒为厂商叶子，strict 判据适用）。
 FM_VARIANTS = TageBTable
+# 关 merge_duplicated_registers：逐个比，fm_predict 的 passing 模型严格适用（2026-10-03 agent/bpu-tables）。
+FM_MERGE_DUP = false
 
 # matched-unread 加强（vmucp）：本目标残余的 10 个 unread 点全是 matched_nc 且严格双射
 # （ref 10 ↔ impl 10，末段名同为 s1_idx_reg[1..10]）。这不是 waiver —— true 是要求 FM
@@ -57,4 +58,20 @@ FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS +vcs+initreg+random
+# ★initreg 三档（2026-10-03 agent/bpu-tables 补）★：INITREG=0 / random / <seed>017；后两档用 initreg 配置文件，
+# 其余状态随机、厂商 SRAM 行为模型（array_4_ext）存储与 golden SRAM 包装链（FoldedSRAMTemplate_20 / SRAMTemplate_64 / SplittedSRAMTemplate_23，两侧同一份 golden 模块）
+# 的读出保持寄存器钉 0（表项 SRAM 与读出保持寄存器都无复位，两实例读"从没写过"的条目 / 未读过的 bank 时随机值不同 ——
+# seed 42 random 档实测 ITTageTable_2 开比当拍 4 位分叉；
+# tb 先写后读契约，同 verif/ut/ITTage）。厂商叶子 .v 只给 VCS，FM 两侧黑盒（verif/vendor_boundary.tsv）。
+INITREG ?= 0
+SRAM_LEAVES = array_4_ext FoldedSRAMTemplate_20 SRAMTemplate_64 SplittedSRAMTemplate_23
+ifeq ($(INITREG),0)
 SIM_ARGS += +vcs+initreg+0
+else
+SIM_ARGS += +vcs+initreg+config+$(UT_GEN_DIR)/initreg_$(INITREG).cfg
+endif
+$(UT_GEN_DIR)/initreg_%.cfg: Makefile
+	@mkdir -p $(UT_GEN_DIR)
+	@{ if [ "$*" = random ]; then echo "defaultvalue random"; else echo "defaultvalue random $*"; fi; \
+	   for m in $(SRAM_LEAVES); do echo "module $$m 0"; done; } > $@
+run: $(if $(filter-out 0,$(INITREG)),$(UT_GEN_DIR)/initreg_$(INITREG).cfg)

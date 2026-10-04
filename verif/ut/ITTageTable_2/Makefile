@@ -29,13 +29,13 @@ RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
                   $(GOLDEN_RTL)/SplittedSRAMTemplate_27.sv \
                   $(GOLDEN_RTL)/WrBypass_43.sv \
                   $(GOLDEN_RTL)/array_6.sv \
-                  $(GOLDEN_RTL)/array_6_ext.v \
                   $(GOLDEN_RTL)/data_mem_0_4x2.sv \
                   $(GOLDEN_RTL)/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
 
 # golden 双例化：golden 顶 + 只属于 golden 侧的 MBIST 流水（其余子模块闭包见
 # RTL_GOLDEN_DEPS，两侧共用同一份定义）。
 GOLDEN_SRCS = $(GOLDEN_RTL)/ITTageTable_2.sv \
+              $(GOLDEN_RTL)/array_6_ext.v \
               $(GOLDEN_RTL)/MbistPipeIttage_2.sv
 
 # vmucp（verification_verify_matched_unread_compare_points）——**加强**证明，不是 waiver：
@@ -49,9 +49,27 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/ITTageTable_2.sv \
 # 为死位。逐行依据见本目录 fm_pins.tcl。白名单见 verif/fm_target_config/<top>.tcl。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = ITTageTable_2
-FM_REF_DEPS_ITTageTable_2 = ClockGate.sv FoldedSRAMTemplate_24.sv IndexableCAMTemplate_43.sv MbistClockGateCell.sv MbistPipeIttage_2.sv SRAMTemplate_78.sv SplittedSRAMTemplate_27.sv WrBypass_43.sv array_6.sv array_6_ext.v data_mem_0_4x2.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
+# 关 merge_duplicated_registers：逐个比，fm_predict 的 passing 模型严格适用（2026-10-03 agent/bpu-tables）。
+FM_MERGE_DUP = false
+FM_REF_DEPS_ITTageTable_2 = ClockGate.sv FoldedSRAMTemplate_24.sv IndexableCAMTemplate_43.sv MbistClockGateCell.sv MbistPipeIttage_2.sv SRAMTemplate_78.sv SplittedSRAMTemplate_27.sv WrBypass_43.sv array_6.sv data_mem_0_4x2.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
 
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS +vcs+initreg+random
+# ★initreg 三档（2026-10-03 agent/bpu-tables 补）★：INITREG=0 / random / <seed>017；后两档用 initreg 配置文件，
+# 其余状态随机、厂商 SRAM 行为模型（array_6_ext）存储与 golden SRAM 包装链（FoldedSRAMTemplate_24 / SRAMTemplate_78 / SplittedSRAMTemplate_27，两侧同一份 golden 模块）
+# 的读出保持寄存器钉 0（表项 SRAM 与读出保持寄存器都无复位，两实例读"从没写过"的条目 / 未读过的 bank 时随机值不同 ——
+# seed 42 random 档实测 ITTageTable_2 开比当拍 4 位分叉；
+# tb 先写后读契约，同 verif/ut/ITTage）。厂商叶子 .v 只给 VCS，FM 两侧黑盒（verif/vendor_boundary.tsv）。
+INITREG ?= 0
+SRAM_LEAVES = array_6_ext FoldedSRAMTemplate_24 SRAMTemplate_78 SplittedSRAMTemplate_27
+ifeq ($(INITREG),0)
 SIM_ARGS += +vcs+initreg+0
+else
+SIM_ARGS += +vcs+initreg+config+$(UT_GEN_DIR)/initreg_$(INITREG).cfg
+endif
+$(UT_GEN_DIR)/initreg_%.cfg: Makefile
+	@mkdir -p $(UT_GEN_DIR)
+	@{ if [ "$*" = random ]; then echo "defaultvalue random"; else echo "defaultvalue random $*"; fi; \
+	   for m in $(SRAM_LEAVES); do echo "module $$m 0"; done; } > $@
+run: $(if $(filter-out 0,$(INITREG)),$(UT_GEN_DIR)/initreg_$(INITREG).cfg)

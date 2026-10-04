@@ -1,0 +1,17 @@
+{
+  "target": "SCTable",
+  "ut": "SCTable",
+  "regs": 998,
+  "outs": 49,
+  "expected": 1123,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 76,
+  "bbox": {
+    "array_5_ext": {
+      "insts": 2,
+      "in_bits": 38,
+      "points": 76
+    }
+  }
+}

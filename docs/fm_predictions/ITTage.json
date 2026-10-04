@@ -1,0 +1,17 @@
+{
+  "target": "ITTage",
+  "ut": "ITTage",
+  "regs": 6402,
+  "outs": 2728,
+  "expected": 10426,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 1296,
+  "bbox": {
+    "array_6_ext": {
+      "insts": 8,
+      "in_bits": 162,
+      "points": 1296
+    }
+  }
+}

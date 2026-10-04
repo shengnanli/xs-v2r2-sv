@@ -3808,8 +3808,13 @@ module tb;
   endtask
 
   int unsigned c;
+  // +warmup=<n>（2026-10-03 agent/bpu-tables 加）：前 n 拍不比。initreg 随机初值档下，两侧各自同源的
+  // golden 子模块（FTB / RAS 等）里不复位的流水寄存器上电值互不相同（两个实例各摇各的），要等随机激励把它们
+  // 写一遍才一致 —— tb 先写后读契约；initreg 0 档默认 0 拍（行为与原 tb 完全相同）。
+  int unsigned WARMUP = 0;
   initial begin
     if ($value$plusargs("ncycles=%d", NCYCLES)) begin end
+    if ($value$plusargs("warmup=%d", WARMUP)) begin end
     for (int d = 0; d < 4; d++) begin s0f[d]=0; s1f[d]=0; s2f[d]=0; end
     for (int k = 0; k < 3; k++) begin s1r_lo[k]=0; s1r_only_lo[k]=0; end
     for (int k = 0; k < 4; k++) begin
@@ -3828,8 +3833,10 @@ module tb;
       drive_random_inputs();
       @(posedge clock);
       #1;
-      check_outputs();
-      check_hier();
+      if (c >= WARMUP) begin
+        check_outputs();
+        check_hier();
+      end
       sample_coverage();
     end
 

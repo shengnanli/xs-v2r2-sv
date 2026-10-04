@@ -1,0 +1,465 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "ITTage",
+ "run_id": "ITTage-20261003T140911Z-68bffe7f2",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/ITTage.sv",
+   "kind": "golden",
+   "sha256": "951a1841cf0459a734a4799c1a8ab415018e06b6c1e224f94da16d28c99b718b"
+  },
+  {
+   "path": "golden-rtl/ITTageTable.sv",
+   "kind": "golden",
+   "sha256": "ebb4a7e78f713adac7daccbdad25f2b116c12c2e083b837137bf4db5b8aec037"
+  },
+  {
+   "path": "golden-rtl/ITTageTable_1.sv",
+   "kind": "golden",
+   "sha256": "51e75455a8a1e20a23bd36e5a43beea0ce740970b77ca113c1f1ada208e73d28"
+  },
+  {
+   "path": "golden-rtl/ITTageTable_2.sv",
+   "kind": "golden",
+   "sha256": "72b8fa393aa689cc2bf55e17bc6fb0551dec96fc011abed21be197f1473db6b1"
+  },
+  {
+   "path": "golden-rtl/ITTageTable_3.sv",
+   "kind": "golden",
+   "sha256": "18fdc20b419ea9ce722c822d72f2657a25391bc157e81a256f4e80e597abc68f"
+  },
+  {
+   "path": "golden-rtl/ITTageTable_4.sv",
+   "kind": "golden",
+   "sha256": "1b0f4a3da11eb26230254c65d5f4ecb8f7c99039df2d803482ad5fceb0b82f26"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIttage.sv",
+   "kind": "golden",
+   "sha256": "0c8145350c1005ab79d59c1027208c22e38db4f02f3d997e98cd088cf75bc4aa"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIttage_1.sv",
+   "kind": "golden",
+   "sha256": "d6d4c9e5cdef44c3769463eb097e293f0e8692943ac6d500906e2e50070b3f81"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIttage_2.sv",
+   "kind": "golden",
+   "sha256": "4ac305b224e154392ce9cea760fcbdc8c24fea3030dffaae4aae7fdd0c69e653"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIttage_3.sv",
+   "kind": "golden",
+   "sha256": "ce4d275fe3dc6ee646e033fbd8150e2eabb06d144984c799032883254a483bab"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIttage_4.sv",
+   "kind": "golden",
+   "sha256": "de2ccb252f34de08b10e455b877204ac5891a01fde56fb0e1f77bc46bdfb9f22"
+  },
+  {
+   "path": "golden-rtl/RegionWays.sv",
+   "kind": "golden",
+   "sha256": "4c1428648ffaae6021ff016de3d7c7b055228a255ad4381047c53e87be87ff4d"
+  },
+  {
+   "path": "golden-rtl/MaxPeriodFibonacciLFSR.sv",
+   "kind": "golden",
+   "sha256": "1c978986035cdf73992dc427f3806eff1de362ee9fad8fb649dae3734460437c"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/FoldedSRAMTemplate_22.sv",
+   "kind": "golden",
+   "sha256": "d24ee1b59f93a5f139561de0d02d0ec97b581920e82ac5e02e0f5c87fff0e4cd"
+  },
+  {
+   "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+   "kind": "golden",
+   "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_25.sv",
+   "kind": "golden",
+   "sha256": "e09a6e83d421c169821b62ccac78013a8081f942a859aa8ae882b679113d0543"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+   "kind": "golden",
+   "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_76.sv",
+   "kind": "golden",
+   "sha256": "9d5ca6fbb68d209d26e343aaf48ef5e12b86ef7c8c11c5ce0192b7fc228a8da1"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_78.sv",
+   "kind": "golden",
+   "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+  },
+  {
+   "path": "golden-rtl/WrBypass_41.sv",
+   "kind": "golden",
+   "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
+  },
+  {
+   "path": "golden-rtl/WrBypass_43.sv",
+   "kind": "golden",
+   "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+  },
+  {
+   "path": "golden-rtl/IndexableCAMTemplate_41.sv",
+   "kind": "golden",
+   "sha256": "e28782c82a9284e98a7b571ace1e8a9be98b3452440544b7f4fd292246879b2d"
+  },
+  {
+   "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+   "kind": "golden",
+   "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+  },
+  {
+   "path": "golden-rtl/data_mem_0_4x2.sv",
+   "kind": "golden",
+   "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+  },
+  {
+   "path": "golden-rtl/array_6.sv",
+   "kind": "golden",
+   "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+   "kind": "golden",
+   "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_BpuStagePc.sv",
+   "kind": "repo",
+   "sha256": "212cdf0946daea8ae0736e94959e7f379da67ae59fed2bb01d4357dec66b270c"
+  },
+  {
+   "path": "rtl/common/xs_PlruReplacer.sv",
+   "kind": "repo",
+   "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+  },
+  {
+   "path": "rtl/common/MaxPeriodFibonacciLFSR.sv",
+   "kind": "repo",
+   "sha256": "2d5497f211fd60e92f2fc176313e49175e26e21c7508c6525634d65a2f087bd6"
+  },
+  {
+   "path": "rtl/frontend/RegionWays.sv",
+   "kind": "repo",
+   "sha256": "69eb1ec036ae5baebbad3a32d340e95ee3ecd6fc9d851606235da13c65068ca9"
+  },
+  {
+   "path": "rtl/frontend/ITTageTable.sv",
+   "kind": "repo",
+   "sha256": "e30de252f6a5ed8d576c85c97eb8c537d913ac21ad7a879cb3473b0df5162975"
+  },
+  {
+   "path": "rtl/frontend/ITTageTable_1.sv",
+   "kind": "repo",
+   "sha256": "72b21e31a48fd3527b33b435412d983d46efcb4abcabc0e5b9648a588d97d97a"
+  },
+  {
+   "path": "rtl/frontend/ITTageTable_2.sv",
+   "kind": "repo",
+   "sha256": "b42d4dbc61601519c2d0c87efcfa4f9b9c7806844e17f7c5fef2a13f99e7cf01"
+  },
+  {
+   "path": "rtl/frontend/ITTageTable_3.sv",
+   "kind": "repo",
+   "sha256": "adb56d94931047f46d726295be88e383ba5340fd98a6531d120fbd4aca16f927"
+  },
+  {
+   "path": "rtl/frontend/ITTageTable_4.sv",
+   "kind": "repo",
+   "sha256": "00c9d9835845a1d92c88c6cb9d953f5a21795d0f975b41b46142d5cfa14583b6"
+  },
+  {
+   "path": "rtl/frontend/ITTage.sv",
+   "kind": "repo",
+   "sha256": "fb5ea8631e3a9669ba6193cf0888a340120b142fdb574b146c05d83199318eba"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/FoldedSRAMTemplate_22.sv",
+   "kind": "golden",
+   "sha256": "d24ee1b59f93a5f139561de0d02d0ec97b581920e82ac5e02e0f5c87fff0e4cd"
+  },
+  {
+   "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+   "kind": "golden",
+   "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_25.sv",
+   "kind": "golden",
+   "sha256": "e09a6e83d421c169821b62ccac78013a8081f942a859aa8ae882b679113d0543"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+   "kind": "golden",
+   "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_76.sv",
+   "kind": "golden",
+   "sha256": "9d5ca6fbb68d209d26e343aaf48ef5e12b86ef7c8c11c5ce0192b7fc228a8da1"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_78.sv",
+   "kind": "golden",
+   "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+  },
+  {
+   "path": "golden-rtl/WrBypass_41.sv",
+   "kind": "golden",
+   "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
+  },
+  {
+   "path": "golden-rtl/WrBypass_43.sv",
+   "kind": "golden",
+   "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+  },
+  {
+   "path": "golden-rtl/IndexableCAMTemplate_41.sv",
+   "kind": "golden",
+   "sha256": "e28782c82a9284e98a7b571ace1e8a9be98b3452440544b7f4fd292246879b2d"
+  },
+  {
+   "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+   "kind": "golden",
+   "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+  },
+  {
+   "path": "golden-rtl/data_mem_0_4x2.sv",
+   "kind": "golden",
+   "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+  },
+  {
+   "path": "golden-rtl/array_6.sv",
+   "kind": "golden",
+   "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+   "kind": "golden",
+   "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+  }
+ ],
+ "impl_commit": "68bffe7f29382d77fdeb4d700408df42379df2aa",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "25754001bb8e83eee890ef4e45011d4dc03ceddbb712b0a7fd10d88ddda37232"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ITTage-20261003T140911Z-68bffe7f2",
+  "top": "ITTage",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 10426,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/ITTage/tables_0/table_0/array/array_0_0_0/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTage/tables_0/table_0/array/array_0_0_0/array/array/array_6_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ITTage/tables_1/table_0/array/array_0_0_0/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTage/tables_1/table_0/array/array_0_0_0/array/array/array_6_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ITTage/tables_2/table_0/array/array_0_0_0/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTage/tables_2/table_0/array/array_0_0_0/array/array/array_6_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ITTage/tables_2/table_0/array/array_0_0_1/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTage/tables_2/table_0/array/array_0_0_1/array/array/array_6_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ITTage/tables_3/table_0/array/array_0_0_0/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTage/tables_3/table_0/array/array_0_0_0/array/array/array_6_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ITTage/tables_3/table_0/array/array_0_0_1/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTage/tables_3/table_0/array/array_0_0_1/array/array/array_6_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ITTage/tables_4/table_0/array/array_0_0_0/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTage/tables_4/table_0/array/array_0_0_0/array/array/array_6_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ITTage/tables_4/table_0/array/array_0_0_1/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTage/tables_4/table_0/array/array_0_0_1/array/array/array_6_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/ITTage/tables_0/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "r:/WORK/ITTage/tables_1/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "r:/WORK/ITTage/tables_2/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "r:/WORK/ITTage/tables_2/table_0/array/array_0_0_1/array/array/array_6_ext",
+    "r:/WORK/ITTage/tables_3/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "r:/WORK/ITTage/tables_3/table_0/array/array_0_0_1/array/array/array_6_ext",
+    "r:/WORK/ITTage/tables_4/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "r:/WORK/ITTage/tables_4/table_0/array/array_0_0_1/array/array/array_6_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/ITTage/tables_0/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "i:/WORK/ITTage/tables_1/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "i:/WORK/ITTage/tables_2/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "i:/WORK/ITTage/tables_2/table_0/array/array_0_0_1/array/array/array_6_ext",
+    "i:/WORK/ITTage/tables_3/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "i:/WORK/ITTage/tables_3/table_0/array/array_0_0_1/array/array/array_6_ext",
+    "i:/WORK/ITTage/tables_4/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "i:/WORK/ITTage/tables_4/table_0/array/array_0_0_1/array/array/array_6_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 10426,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "ITTage",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
