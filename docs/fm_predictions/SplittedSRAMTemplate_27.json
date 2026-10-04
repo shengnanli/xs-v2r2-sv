@@ -1,0 +1,18 @@
+{
+  "target": "SplittedSRAMTemplate_27",
+  "ut": "SplittedSRAMTemplate",
+  "regs": 326,
+  "outs": 305,
+  "expected": 955,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 324,
+  "bbox": {
+    "array_6_ext": {
+      "insts": 2,
+      "in_bits": 162,
+      "points": 324
+    }
+  },
+  "note": "restale-sram: codex 0206 D1 只删 impl 独有死位 rdata_last_REG；预期实测 passing 与旧 receipt 一致（见 docs/lanes/restale-sram_prereg.md）"
+}
