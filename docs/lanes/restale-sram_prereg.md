@@ -277,5 +277,142 @@ Predictor 的 fm_predict 模型给 44750（标"模型适用"），与旧 receipt
 
 ## 4. 对账
 
-（跑完追加）
+
+### 4.1 实测（P1 证明提交 4464d4e05，P2 证明提交 68d1a0932）
+
+| target | 阶段 | 旧 passing | 新 passing | 差 | verdict | failing/unv/aborted/unmatched | receipt | sha256 |
+|---|---|---|---|---|---|---|---|---|
+| Arbiter1_L1BankedDataWriteReq | P1 | 521 | 521 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/Arbiter1_L1BankedDataWriteReq/receipt.json` | `a50083eff2c465ce3e4839043280c7f9d53def86c4799f3febe977338cbfa391` |
+| Arbiter1_L1BankedDataWriteReqCtrl | P1 | 53 | 53 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/Arbiter1_L1BankedDataWriteReqCtrl/receipt.json` | `375e0bc6b5cd5d8d63954ec65df9eadc211bdcd48b693c8799ddc85528c537ff` |
+| Arbiter1_TagWriteReq | P1 | 49 | 49 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/Arbiter1_TagWriteReq/receipt.json` | `84e18aa3e8c5ed66945ce299ead236edec129f5ded85ad59a5b14b114a238fcd` |
+| Directory | P1 | 1953 | 1953 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/Directory/receipt.json` | `db0a603aabc4abec88f6629554fe63642075edb67341745a54114f4b0ef15fb4` |
+| Directory_1 | P1 | 1954 | 1954 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/Directory_1/receipt.json` | `f72aaddce5e1dd81d4149a30316c932ef722dca9ee983add56100327b216ee01` |
+| Directory_2 | P1 | 1954 | 1954 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/Directory_2/receipt.json` | `a068afebdeba6661b7a329fc022cc715eca7931c3335138a48d4815407022f19` |
+| Directory_3 | P1 | 1955 | 1955 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/Directory_3/receipt.json` | `0c29992057c0e5d78b5b4161648f0cde527795990bf2eebbff60538cc4922928` |
+| MissReadyGen | P1 | 412 | 412 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/MissReadyGen/receipt.json` | `0f9d7a5db1867ac9bf4ca844cb451bb2cd0b2f73da38d07399af80161e39756b` |
+| PrefetcherMonitor | P1 | 96 | 96 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/PrefetcherMonitor/receipt.json` | `55a85f27004d21a7bd7d00fb38943b545e85e1c42655d3fa10344fbdcd0d998e` |
+| RecentRequestTable | P1 | 97 | 97 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/RecentRequestTable/receipt.json` | `53a8498c9877a3652cd6ce8cbeb3d225f720604cdf98768e7f2f39e291b3a83c` |
+| RecentRequestTable_1 | P1 | 100 | 100 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/RecentRequestTable_1/receipt.json` | `c3ddbeba7c31c38bc667d613ff7063db0fa321c352d832b64fa32bd37fe5a58a` |
+| SRAMTemplateWithFixedWidth | P1 | 351 | 351 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SRAMTemplateWithFixedWidth/receipt.json` | `dddae69a3118ac05ed2a184590c31bd2c584c702041ccbe39c0e72df31a20e7b` |
+| SRAMTemplateWithFixedWidth_12 | P1 | 351 | 351 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SRAMTemplateWithFixedWidth_12/receipt.json` | `cabf52d23d6f6bd40a52f42dc3a331eb0b7cf48192c76c323903e49f9db6bc11` |
+| SRAMTemplateWithFixedWidth_28 | P1 | 351 | 351 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SRAMTemplateWithFixedWidth_28/receipt.json` | `809ee27d02f5ad0c431e0926e7b3a7cb41964d44df57e01b2e5662e0b44c3686` |
+| SRAMTemplateWithFixedWidth_4 | P1 | 351 | 351 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SRAMTemplateWithFixedWidth_4/receipt.json` | `e07430a745a810cea4ab99ebcae5f1ad88a5231ba48d44585024befc3c497c7c` |
+| SplittedSRAM | P1 | 1480 | 1480 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SplittedSRAM/receipt.json` | `96473248bc13500267bbf687a26a49f243ac81dd5b5d0f0eb98a47d448227a26` |
+| SplittedSRAM_1 | P1 | 2487 | 2487 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SplittedSRAM_1/receipt.json` | `c4ac67f939ce5bbdea55966f0e7b9201e827411cd38c8c34e04518214a1c4b6f` |
+| SplittedSRAM_2 | P1 | 7472 | 7472 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SplittedSRAM_2/receipt.json` | `a214043934f675bec40006bedc480454b28159ecca870a7127845e882bbc4b40` |
+| SplittedSRAM_3 | P1 | 1286 | 1286 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SplittedSRAM_3/receipt.json` | `1c66041786a606c2397fa0a6fa4907d695c06639ae13804b31a8127384a5c12b` |
+| SplittedSRAM_4 | P1 | 1286 | 1286 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SplittedSRAM_4/receipt.json` | `e7e57dbcaf6b6130c99ce818b8cbc6a6c7f2e90be27f2300281bbd609d3adc52` |
+| SplittedSRAM_5 | P1 | 1286 | 1286 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SplittedSRAM_5/receipt.json` | `a5e8a4e7b0d66d5246a56ac16669914ee923eea17dae61d47c7df6f8655a84ff` |
+| SplittedSRAM_6 | P1 | 1286 | 1286 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/SplittedSRAM_6/receipt.json` | `f85757ecafca0ddf34f9ce0ab64aa9240f20932449b9480feede76954a1f01b7` |
+| TreeArbiter | P1 | 981 | 981 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/4464d4e059b0/TreeArbiter/receipt.json` | `ce27640dada5453ba17c7cd6e596b0d6bad65b281d4bd465176ac782204a3313` |
+| BankedDataArray | P2 | 10342 | 10342 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/BankedDataArray/receipt.json` | `53bffa5d42781cfd70e24a6da96ff0432ae239204ccfbe2519c7fb63693a6b15` |
+| BitmapCache | P2 | 13069 | 13069 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/BitmapCache/receipt.json` | `0aad390e53541a79d0879f011f489153d0a1a39acb7cfbb4d5ca6d2666f7f2ea` |
+| ClockMux | P2 | 1 | 1 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ClockMux/receipt.json` | `2afc9502ce9759564d4be9b143bbfb67a4ff8cb9b6b3eaf374be808bb3b6e03e` |
+| DCache | P2 | 82086 | 82086 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DCache/receipt.json` | `e85050b68efe1e64ec36b124ef88e7663b3ed8c136d3fd98a8262d52a913fb26` |
+| DataSRAMBank | P2 | 1205 | 1205 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DataSRAMBank/receipt.json` | `b9b68b32a91b414131a1ab169d01932f491874670f6624b37c6c832a01e17469` |
+| DataSRAMBank_1 | P2 | 1205 | 1205 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DataSRAMBank_1/receipt.json` | `f2daea30f9909cdba2edd421bcd8e786cf4c85c8a21119c58be1d5abf9096a7c` |
+| DataSRAMBank_2 | P2 | 1205 | 1205 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DataSRAMBank_2/receipt.json` | `0a67226a4f546fe04b7b633acac34f23d0d552d27da7ab610c1b233f12fb2bf7` |
+| DataSRAMBank_4 | P2 | 1205 | 1205 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DataSRAMBank_4/receipt.json` | `9304820ddceb71117ed1dde53ed39fa93516fbf1cd33a6558d354666a9e4196d` |
+| DataStorage | P2 | 2532 | 2532 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DataStorage/receipt.json` | `23e0a777ea2f8409fbceb51ca47a7e2ae744844244be48c1b2b59225d87614b5` |
+| DataStorage_1 | P2 | 2533 | 2533 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DataStorage_1/receipt.json` | `8818e587d36ad82061456d5c816a679539583ba3c99c545391cf6162943dfb37` |
+| DataStorage_2 | P2 | 2534 | 2534 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DataStorage_2/receipt.json` | `f4daf2dccafb3db4bbc44fe0b57f2733cf5beb520d2f379f62c21e9e502b50c7` |
+| DataStorage_3 | P2 | 2534 | 2534 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DataStorage_3/receipt.json` | `3ee8c31d89d0ac77bd01fd7a9fcc8998fe9e082fd484c4e41b691069eb9765c3` |
+| DuplicatedTagArray | P2 | 2460 | 2460 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/DuplicatedTagArray/receipt.json` | `fda4c7d363ca13e44744b693a58de15f3984ae4f4bf8f5549072f0bd9675016e` |
+| FTB | P2 | 8605 | 8605 | +0 | PASS_DEAD_REF | 0/0/0/0 (unread_ref 50, unread_impl 0) | `evidence/68d1a0932a12/FTB/receipt.json` | `8b0c2d65afd454b50370889407a47578496f7fdae676b33ac4cee56385352234` |
+| FTBBank | P2 | 3276 | 3276 | +0 | PASS_DEAD_REF | 0/0/0/0 (unread_ref 50, unread_impl 0) | `evidence/68d1a0932a12/FTBBank/receipt.json` | `9898e35caa670d48d1470f9bf7e4d50b4db229174f441d3f908dfe568379b51d` |
+| FoldedSRAMTemplate | P2 | 113 | 113 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/FoldedSRAMTemplate/receipt.json` | `c623417a838aff7d995a4bbe12d9b2eed84096e908807bca76aeb777866eb5b7` |
+| FoldedSRAMTemplate_1 | P2 | 148 | 148 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/FoldedSRAMTemplate_1/receipt.json` | `c8a819d33e490c9cf1783e519bfe05ef930b8dd51597b79b55d3eb1978b900be` |
+| FoldedSRAMTemplate_20 | P2 | 109 | 109 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/FoldedSRAMTemplate_20/receipt.json` | `b88efd89db1d03f539d729afc2f6e989bb6cc210acc2b3745a1180aed5b122d5` |
+| FoldedSRAMTemplate_22 | P2 | 443 | 443 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/FoldedSRAMTemplate_22/receipt.json` | `74f3805e9fc55812d1a0e787466fc2daffc28d865d2e489307cb2b4a1b2bc542` |
+| FoldedSRAMTemplate_24 | P2 | 846 | 846 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/FoldedSRAMTemplate_24/receipt.json` | `712a40656f9d631f1b4de97d45f56392739b4fcbf94db4421ee2b309bacab2f9` |
+| GatedSplittedSRAM | P2 | 2272 | 2272 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/GatedSplittedSRAM/receipt.json` | `535b17674207a81dba0b89e38fb7f78cd397d5a4f4b93706b8bce1833fa9a90a` |
+| GatedSplittedSRAM_1 | P2 | 2272 | 2272 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/GatedSplittedSRAM_1/receipt.json` | `f571980f277619a2e05f8169220227bb229dcf1aefca72eaf3242924062e26f3` |
+| GatedSplittedSRAM_2 | P2 | 2272 | 2272 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/GatedSplittedSRAM_2/receipt.json` | `b6e716058ef5e5d3a68b33da5dc910773900b3fd584ef5852328152ec20aeab9` |
+| GatedSplittedSRAM_3 | P2 | 2272 | 2272 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/GatedSplittedSRAM_3/receipt.json` | `523c41b1f133f68799a7d8a179e20251d50a03c0aac46fc80bb5c72ba8fb85a1` |
+| ICache | P2 | 21174 | 21174 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ICache/receipt.json` | `0cc254c06aa6879675b5e7db21e625b2cd07d63f9e21b35dd786feb75519a152` |
+| ICacheMetaArray | P2 | 2500 | 2500 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ICacheMetaArray/receipt.json` | `19bbd98a76cc6a4bdd95723737e042064bb0437e8e909cdd41a32940cceaf50a` |
+| ITTage | P2 | 10426 | 10426 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ITTage/receipt.json` | `91d4dba8ea262bca8d923c2e9b7bbc746a9f25259102d81268c842f38a482fa0` |
+| ITTageTable | P2 | 682 | 682 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ITTageTable/receipt.json` | `042b0d94c7ac70ae51549700bf52e3a3b4bd553e01534a72628f2d71ba69bd62` |
+| ITTageTable_1 | P2 | 682 | 682 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ITTageTable_1/receipt.json` | `7ad568b3b5e6139c80c02bb7ac06302ee54e6e0cf41fe98861c69a5953d66c24` |
+| ITTageTable_2 | P2 | 1014 | 1014 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ITTageTable_2/receipt.json` | `0746db7023ddc6bf3772feea9e8f8e3a6ac5f6f25d74228d37233a59fa8c2722` |
+| ITTageTable_3 | P2 | 1014 | 1014 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ITTageTable_3/receipt.json` | `f99705a29d6976d1b5fdce0add95d07d4e234b392cb65e447b4576b5d3d43042` |
+| ITTageTable_4 | P2 | 1014 | 1014 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/ITTageTable_4/receipt.json` | `d969010349ff0f7e0dceaf23d09e1328b0f6ae85691f0fb0a7f7f7b6c4d047d5` |
+| L2TLB | P2 | 180735 | 180735 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/L2TLB/receipt.json` | `2d1d2b42ac7d4c734293fe8552384d38c6ced83b8f5746fc375142d4228d393b` |
+| MbistClockGateCell_93 | P2 | 2 | 2 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/MbistClockGateCell_93/receipt.json` | `3bbd4496c197ef3be0c084a25b8f5d3221d53f24595c236a9e7bc7e5fd25a84d` |
+| Predictor | P2 | 528967 | 528967 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/Predictor/receipt.json` | `47e7c0faf87fd17269be1b83218d1fcca5ffb6b6351d579fd760bf86062b89ac` |
+| PtwCache | P2 | 143797 | 143797 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/PtwCache/receipt.json` | `ba3b3f6a40be19d3c51fb8ffa8dd296e130be77bb8bc4c3c5ec5c26b63dd4a67` |
+| SCTable | P2 | 1123 | 1123 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SCTable/receipt.json` | `e1c8a3c88badacf26f3bf0569928ef7153c26a40540449e4b8d4484cdee4c5e4` |
+| SCTable_1 | P2 | 1123 | 1123 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SCTable_1/receipt.json` | `b8669069e41c16d4d3601531a64c744443bcaf63ec5460a3804ec831a3df0ee5` |
+| SCTable_2 | P2 | 1123 | 1123 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SCTable_2/receipt.json` | `4f0950c76152b270d176cce836b6f707be646bb87e0c2b8bba6dbd1a8b73a9dd` |
+| SCTable_3 | P2 | 1123 | 1123 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SCTable_3/receipt.json` | `7041cd43462855396c7c984c587c2c3895e6c1993d19d0264263d0e324909c58` |
+| SRAMTemplate | P2 | 394 | 394 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate/receipt.json` | `7c0b99f830c03f8be958e99095baf2aec5946ca983eb60d04488974b1449a0fe` |
+| SRAMTemplate_100 | P2 | 301 | 301 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_100/receipt.json` | `122cfab231737df890462d47a58a0dcb789c77720caad8fc7bab20785aec2717` |
+| SRAMTemplate_116 | P2 | 359 | 359 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_116/receipt.json` | `c88696e72a54533f14f95dc6780cd9ae556b9e1b0cf22d037fccd1c011c5063c` |
+| SRAMTemplate_124 | P2 | 371 | 371 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_124/receipt.json` | `e5510c1f63fbd213dc0d4a1d3ae1b7221a7fc85afb2de33c2e0af2357d925b76` |
+| SRAMTemplate_128 | P2 | 2507(fastlane) | 2507 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_128/receipt.json` | `3dcb629a17cc380ee3f6a4b42f90fc053c689b03c1510b3809e74f1bcfe669fd` |
+| SRAMTemplate_129 | P2 | 468 | 468 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_129/receipt.json` | `fcce550b458390fed237b6ca9617a83d5659dd4edf671e655d664c3e498c4d95` |
+| SRAMTemplate_143 | P2 | 468 | 468 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_143/receipt.json` | `3da050ae5808d7f81ff62c077ceef2871067d70e2f9d637d14641b2ac3d8e597` |
+| SRAMTemplate_145 | P2 | 602 | 602 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_145/receipt.json` | `e67280d5a410354a639df596155a4713bf70760d6011b97918d66dc3e6a8f11d` |
+| SRAMTemplate_146 | P2 | 75 | 75 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_146/receipt.json` | `15bfcf702130b5ab24721ad56a9bb2e9e4fc417697fae27c37b413f1db6677b4` |
+| SRAMTemplate_148 | P2 | 322 | 322 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_148/receipt.json` | `b5007a6a6f9d3f0e0299fb313336c064d0acff4b04abf10c15f97d6860d84b9b` |
+| SRAMTemplate_150 | P2 | 321 | 321 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_150/receipt.json` | `5cd8fb7bc82f6f84dfc49f934c46eaaefd9b40e7602745f2a9de0505a9ae2559` |
+| SRAMTemplate_152 | P2 | 440 | 440 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_152/receipt.json` | `d44c5d75eb7a35ae6418cc417e3815e629210270398b5376eb0c26dfb3d66c6c` |
+| SRAMTemplate_153 | P2 | 87 | 87 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_153/receipt.json` | `1df1e6073500e610224fb70203095ab4d5432b1ade89579cc8b68fea9a8beb9d` |
+| SRAMTemplate_154 | P2 | 63 | 63 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_154/receipt.json` | `0ba5d2f4b16850c48a2d7ca6f07ec2373c51c0cd0034f285ced33a21bc1c6450` |
+| SRAMTemplate_155 | P2 | 569 | 569 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_155/receipt.json` | `e130f07035a579b0ead446ca5ab324e79ba4b97770328f8c9c6cce093f27fd27` |
+| SRAMTemplate_159 | P2 | 322 | 322 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_159/receipt.json` | `20b6c668cd8177809f433a2e1f0034b7f3c4a1591b13deaad5e9bb11057823ee` |
+| SRAMTemplate_16 | P2 | 352 | 352 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_16/receipt.json` | `93a85bc3b2ae96cf15de70da5f6981810464862e312eef5b6f6fda1e1e2bad3a` |
+| SRAMTemplate_162 | P2 | 322 | 322 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_162/receipt.json` | `d2b1e5fd41f3fded81593764e36d2d252a8c20165c487cb449a3d79efed239c4` |
+| SRAMTemplate_163 | P2 | 440 | 440 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_163/receipt.json` | `8554692331897fc6d808d0b7c809985b42ca476155e8fc9a589b3a6cd3e29ea7` |
+| SRAMTemplate_164 | P2 | 87 | 87 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_164/receipt.json` | `bf1ff86dbd61ef8d0f5fda0c57f12f350ddcdbb61d94b44a2b97f35b4edf0c28` |
+| SRAMTemplate_165 | P2 | 63 | 63 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_165/receipt.json` | `a4a31491e3dd53afdd0ec0e767332f39b90161552f00a911b8d9545d387b5506` |
+| SRAMTemplate_166 | P2 | 569 | 569 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_166/receipt.json` | `6e1019e1e90f372d068e9c89f1a38609ddede5aca97bcae5354652a7e2079220` |
+| SRAMTemplate_178 | P2 | 569 | 569 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_178/receipt.json` | `1f806de07af34dfbc2c4e2451d754c8681223bda3575ed42691b4a9a3355bab0` |
+| SRAMTemplate_181 | P2 | 322 | 322 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_181/receipt.json` | `74ab98aec7fad8859949b0031e4cef19c6c4c9011675d7547de4f11481111710` |
+| SRAMTemplate_185 | P2 | 440 | 440 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_185/receipt.json` | `5bd0507027a484f4985bf66d0d79c12ad489cc2c3d244211d9c2b4c841f80599` |
+| SRAMTemplate_186 | P2 | 87 | 87 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_186/receipt.json` | `f6cf434468006548ce372ed947c7e3122b4e26196fe50122a408f34d2c19a2b4` |
+| SRAMTemplate_187 | P2 | 63 | 63 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_187/receipt.json` | `49db584a66906b6e643f5c92bdaeea5f14893eb280f8b7fe56058cad6cb68214` |
+| SRAMTemplate_2 | P2 | 394 | 394 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_2/receipt.json` | `ff2052fa934c1e5f59f0e597a1e439de2c40cb02e15fa7fe7c9df6aad57e16a4` |
+| SRAMTemplate_32 | P2 | 352 | 352 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_32/receipt.json` | `a7c41540f1f2dd94be2c9c0c40b4e242cc8a0217ca69d6443544720908921def` |
+| SRAMTemplate_36 | P2 | 189 | 189 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_36/receipt.json` | `baf9d7bccd6c8f014f62e0496403724da006fa98a32325364da3535c4ff6ed51` |
+| SRAMTemplate_4 | P2 | 352 | 352 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_4/receipt.json` | `9ca5a8d49b2f7544e889300956b428c4d6a399a1f962c2dce647daba44e81e8b` |
+| SRAMTemplate_44 | P2 | 120 | 120 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_44/receipt.json` | `6f489e53b9d0492f5e33b800cae63e08821e31031ea8c397ff590571c6cc96a2` |
+| SRAMTemplate_45 | P2 | 148 | 148 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_45/receipt.json` | `10fef485abb9e72f16919baeee686eac3ef668aabed60672bd1a21b2c43bbc2d` |
+| SRAMTemplate_64 | P2 | 58 | 58 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_64/receipt.json` | `23e08319af18b21ad26d33296b405a8de253d88f6ef2359c90fa484ad782f339` |
+| SRAMTemplate_68 | P2 | 145 | 145 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_68/receipt.json` | `01ee8cad68369cb342f64ca0f0308f9463b88efc3975ca49ea35a84a00cee457` |
+| SRAMTemplate_76 | P2 | 478 | 478 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_76/receipt.json` | `6656df13147c2815e83a42f1f51da53c8884eb49e7cdf2a4a2b28e316c37fb09` |
+| SRAMTemplate_78 | P2 | 478 | 478 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_78/receipt.json` | `56224f87e33bc90720d823436ec7749b12caddd93f2bd50e3fe4d237d1fc75b3` |
+| SRAMTemplate_8 | P2 | 352 | 352 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_8/receipt.json` | `d5fdea5f6e039a3c5c89b0d00aef43b584db0cccdcb9d926cfd84ebab46c2d4b` |
+| SRAMTemplate_84 | P2 | 301 | 301 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_84/receipt.json` | `206646f921ccd5236830f863ee65bad475ff15f29dc477d59bff2416fa5cbfca` |
+| SRAMTemplate_86 | P2 | 301 | 301 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_86/receipt.json` | `8318fc370717d425500e3431bc03586f50540099f81dfab4948b5a03d1e0a032` |
+| SRAMTemplate_88 | P2 | 301 | 301 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_88/receipt.json` | `abaa89dd4557d15661a4db6f3a28e5659d307642b94b705cbcb0dfaf757482f1` |
+| SRAMTemplate_92 | P2 | 301 | 301 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SRAMTemplate_92/receipt.json` | `0c78052a41c9e3538018ea9f203efcecab793e5310d55af561a70f4e8385f00d` |
+| Slice | P2 | 68305 | 68305 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/Slice/receipt.json` | `1a41a584f7c30cbfce9934f08fe6b4f60f173f89b6ba556856274a2780a2b203` |
+| Slice_1 | P2 | 68308 | 68308 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/Slice_1/receipt.json` | `e64f79ea33f1296df9ecadb13be96256fddf752b81d3786ce3287b84bc0cfc52` |
+| Slice_2 | P2 | 68310 | 68310 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/Slice_2/receipt.json` | `d430600d84d8337ce94da1a9957bffcbfe1cd1acbfb3eea1f4a1c7023c1d4598` |
+| Slice_3 | P2 | 68311 | 68311 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/Slice_3/receipt.json` | `3a800c96e0626c32712a42bf61ce0e7bc1b541f38eed4ee2af273a825c3b39ba` |
+| SplittedSRAMTemplate | P2 | 787 | 787 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SplittedSRAMTemplate/receipt.json` | `cf4d564d6f4f29fcc3fa2d780a2d0c63c4383dfaad58b3217f7b7099675fb5c9` |
+| SplittedSRAMTemplate_1 | P2 | 787 | 787 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SplittedSRAMTemplate_1/receipt.json` | `f78df7f27c9f340f56af538a4af20ad407f8815b75bd3c7b272a8ffd2f01e2f1` |
+| SplittedSRAMTemplate_2 | P2 | 1505 | 1505 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SplittedSRAMTemplate_2/receipt.json` | `d1cacda56d07f2cf2e34261564163bf187d6f2f00c35de006c0113560a97d48d` |
+| SplittedSRAMTemplate_23 | P2 | 110 | 110 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SplittedSRAMTemplate_23/receipt.json` | `7448c24871e088e913b7d0c58413765cb1efff3973aa10ddd0352bf3ce4a93af` |
+| SplittedSRAMTemplate_25 | P2 | 478 | 478 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SplittedSRAMTemplate_25/receipt.json` | `7331eb9f928aa8ac44b0ee54112ad7df6ae70e52c5c37f5dbd7238ab09e3daa3` |
+| SplittedSRAMTemplate_27 | P2 | 955 | 955 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SplittedSRAMTemplate_27/receipt.json` | `c62992517a56e5a130ec05536ffb374a69be6e8fb22c893443ab839c990b2d4d` |
+| SplittedSRAMTemplate_3 | P2 | 120 | 120 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SplittedSRAMTemplate_3/receipt.json` | `ea11c61ef96ac5c9a003e236804ab8a087b4391fae974f272de6e3aa6c425fcd` |
+| SplittedSRAMTemplate_4 | P2 | 148 | 148 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/SplittedSRAMTemplate_4/receipt.json` | `4fe8af75d944f365c46a7bf535866cc102b038ddfed5664d23b4df9e70696db4` |
+| TagArray | P2 | 737 | 737 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/TagArray/receipt.json` | `3ed1b97cef615273bf9b443f3277bfd39c4b1c20c1430244c4b3313aba87ae21` |
+| TagSRAMBank | P2 | 369 | 369 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/TagSRAMBank/receipt.json` | `d44598420a782ca26d2c0d31b1328db9ff7a813bd24bb4edcedc0fda526e939c` |
+| TageBTable | P2 | 396 | 396 | +0 | SUCCEEDED | 0/0/0/0 (unread_ref 0, unread_impl 0) | `evidence/68d1a0932a12/TageBTable/receipt.json` | `acd090bf9e567c2becd06432ebee962d7c7c8b5343d269b20c661ab56e778641` |
+| TageTable | P2 | 1585 | 1585 | +0 | PASS_DEAD_REF | 0/0/0/0 (unread_ref 48, unread_impl 0) | `evidence/68d1a0932a12/TageTable/receipt.json` | `027cca7b806250ee32ed6dcf89c85f3430f8abd9a624ea1dbc9cc0c061dee4db` |
+| TageTable_1 | P2 | 1585 | 1585 | +0 | PASS_DEAD_REF | 0/0/0/0 (unread_ref 48, unread_impl 0) | `evidence/68d1a0932a12/TageTable_1/receipt.json` | `030ad69859aba0718bce80a98585cf78a3c9439b48cc7d636676757e89fb10b5` |
+| TageTable_2 | P2 | 1585 | 1585 | +0 | PASS_DEAD_REF | 0/0/0/0 (unread_ref 48, unread_impl 0) | `evidence/68d1a0932a12/TageTable_2/receipt.json` | `338d2e01d6395f0a8e15a7f0e5063d8100fcef56044ccef702c2c97f677d7606` |
+| TageTable_3 | P2 | 1585 | 1585 | +0 | PASS_DEAD_REF | 0/0/0/0 (unread_ref 48, unread_impl 0) | `evidence/68d1a0932a12/TageTable_3/receipt.json` | `e2b2d3d4baab2e5912e2af40067d6bba132f5be1f0afd0a89780288fcafda2cf` |
+| Tage_SC | P2 | 16112 | 16112 | +0 | PASS_DEAD_REF | 0/0/0/0 (unread_ref 192, unread_impl 0) | `evidence/68d1a0932a12/Tage_SC/receipt.json` | `6a79061571a9718c223f93c4e0c1a6e30842715db023e1fb26682ae4b014f5a1` |
+
+### 4.2 结论与异常
+
+- 124 份 receipt（P1 23 + P2 101；P2 含 Predictor）全部**等于预测**：passing 差 0、verdict 不变、failing/unverified/aborted/unmatched=0、unread_impl=0；PASS_DEAD_REF 目标 golden-only unread_ref 不变（FTB/FTBBank 50、TageTable×4 48、Tage_SC 192）。
+- D1（删 rdata_last_REG）与 ClockGate 换本地件，对父级 passing 均**无影响**。
+- ★Composer 未出证（make_rc=1，非 FM 判定）★：`verif/ut/Composer/fm_pins_pre.tcl` 32 条钉点（来源 `child_pairs/Tage_SC.tsv`，c3c9307d6 从旧 Tage_SC 自证收割）的 impl 侧写死 golden ClockGate 的内部名 `.../rcg/CG/EN_reg`；重写件 `rtl/common/ClockGate.sv` 的锁存器叫 `enableLatched` ⇒ FM-036 Unknown name ×32 ⇒ BPU_CHILD_PIN_FAIL ⇒ 没有 sidecar、没有 receipt。首个最小反例：`r:/WORK/Composer/tage/bt/bt_0/array/array_0_0_0/rcg/CG/EN_reg <-> i:/WORK/Composer/tage/bt/u_core/g_bank[0].bt/array/array_0_0_0/rcg/CG/EN_reg`。本 lane 不改钉点（属 bpu-tables 生成物），Composer 仍 STALE。
+- SRAMTemplate_128 是首证（之前没有已跟踪 receipt），实测 2507 = fastlane 记录。
+
 
