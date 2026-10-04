@@ -131,6 +131,23 @@ D1 只删 impl 独有、与 respReg 同方程的死寄存器 rdata_last_REG。�
 | Tage_SC | Tage_SC | P2 | `evidence/05394ca211f8/Tage_SC/receipt.json` | PASS_DEAD_REF | 16112 | 0 | 16112 | 0 |
 | TreeArbiter | DCacheLeaves | P1 | `evidence/414ed06a79c5/TreeArbiter/receipt.json` | SUCCEEDED | 981 | 0 | 981 | 0 |
 
+## 3b. 追加登记（证明前，2026-10-04，merge main c712edae 之后）
+
+集成者通知：main c712edae 合入 bpu-tables 的 ITTage 钉点修复（新 receipt `evidence/335a330a9baa/`，钉点文件换新）。
+Tage_SC / Composer 的 335a330a9baa receipt 在 D1 前出证，impl 闭包含 `xs_SRAMTemplate_core.sv` 旧字节，已失效。
+
+- **Composer 纳入**（P2，UT Makefile 读 ClockGate.sv）。`stale_impl_targets()` 没列它，原因：仍有一份更早的已跟踪绿 receipt
+  `evidence/eb08246eb9a9/Composer/receipt.json`（SUCCEEDED passing 526285，impl 闭包 92 个文件、**不含** xs_SRAMTemplate_core.sv，
+  旧证明形态）字节全匹配，于是判"不陈旧"。这是判据的盲点（另报），不影响本 lane 重证。
+- 预测基准改用 335a330a9baa（新钉点）的 receipt：
+
+| target | ut | 阶段 | 基准 receipt | 旧 verdict | 旧 passing | 旧 unread_ref / unread_impl | 预测 passing | 预测 verdict |
+|---|---|---|---|---|---|---|---|---|
+| Composer | Composer | P2 | `335a330a9baa/Composer/receipt.json` | PASS_DEAD_REF | 42060 | 192 / 0 | 42060 | PASS_DEAD_REF（unread_ref=192，unread_impl=0） |
+| Tage_SC | Tage_SC | P2 | `335a330a9baa/Tage_SC/receipt.json` | PASS_DEAD_REF | 16112 | 192 / 0 | 16112 | PASS_DEAD_REF（unread_ref=192，unread_impl=0） |
+
+（Tage_SC 原 §3 行引用的 05394ca211f8 receipt 同为 16112，预测不变。）
+
 ## 4. 对账
 
 （跑完追加）
