@@ -92,3 +92,44 @@ arm：ram 无复位、deq_bits 空队列时也读 ram[deq_ptr]，故 A/D 各在 
 | TLBuffer_15 | **637**（寄存器 424 = A: 2x133+3 / D: 2x76+3；输出 213） | failing 0 / unverified 0 / unmatched 全 0 / unread 0 / 无黑盒 / SUCCEEDED |
 
 交叉核对：两个 child 单独签核实测 404 = 269+135、233 = 155+78，与本模型逐项一致。没有做过任何 FM 试跑。
+
+## 3. TLBuffer_13（golden 917 行 / 374 端口；L2Top.inner_buffer，4 路 TL-C 五通道缓冲）
+
+### 3.1 结构与子模块处置
+
+- `rtl/memblock/TLBuffer_13.sv` 重写（旧件 1911 行：pkg 结构体 + core 复述全部 374 端口 + wrapper 再复述一遍，
+  注释指向本仓没有的 xs-v2r2-sv 生成器、impl 读 golden Queue2）→ 新件 1047 行：
+  手写 `xs_TLBuffer_13_bank`（一条 TL-C 链路的 5 个 Queue2，例化名同 golden bank 0）+
+  `scripts/gen_tlbuffer13.py`（带 `--check`，fail-closed：4 bank 端口集合相同、手写 bank 端口表与之逐项相等、
+  每个 golden 端口恰连一次）生成的 golden 同名 wrapper（4 个 `u_bank_<b>`）。`_GEN_`/`_T_` = 0。
+- child：Queue2_TLBundle{A_19,B_1,C_1,D_20,E_1} 均已签（evidence/1fda02fae0f1：362 / 1018 / 968 / 851 / 29）。
+  **两侧白盒**：ref = golden 同名件，impl = `rtl/uncore/` 重写件 + `rtl/common/xs_ChiselQueue_core.sv`。
+  ram_2x119 / 2x352 / 2x321 / 2x283 / ram_sink_2x8 两侧同源 inline（2 项 / 1 位地址）。无黑盒。
+- 名差：golden 20 个队列平铺（`nodeOut_a_q`、`nodeOut_a_q_1`…），impl 是 `u_bank_<b>/nodeOut_a_q`。
+  不加 fm_pins，靠 FM 名字/签名匹配（上一轮 g_bank[N].u_bank 形态实测 0 unmatched）。
+
+### 3.2 UT（verif/ut/TLBuffer_13，gen.py 生成；200k 拍，每拍比全部输出）
+
+arm：20 个队列各在 ptr=0/1 入队过一次才开始比（40 个条件，armed_at≈21 拍）。
+覆盖闸豁免（结构上恒定）：B 出口 size/source/mask/corrupt、D 出口 size（golden 写 ram 的常量位）、
+E 入口 ready（E 出口 ready 恒 1，2 项队列满不了）——各 ×4 bank。
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=36796136 errors=0 | checks=36796136 errors=0 | checks=36796136 errors=0 |
+| 7  | checks=36797240 errors=0 | checks=36797240 errors=0 | checks=36797240 errors=0 |
+| 42 | checks=36796688 errors=0 | checks=36796688 errors=0 | checks=36796688 errors=0 |
+
+全部 cov_fail=0。seed 1 bank0 覆盖：A/B/C/D 满反压 23499/23425/23161/23624，同拍进出 33655/33127/33133/33264，E 同拍进出 57652。
+变异 3/3 被抓（20k 拍）：bank1/2 A valid 串线 errors=127489；B address 接成 data 79916；D echo 接成 denied 39730。
+
+复跑：`cd verif/ut/TLBuffer_13 && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 3.3 跑前预测（★跑完不许改本节★）
+
+| 目标 | 模型 expected | 预期 constant_reg | 预期实测 passing | 其余 |
+|---|---|---|---|---|
+| TLBuffer_13 | **13096**（寄存器 8724 + 输出 4372） | **184** = 4 × (B_1 的 43 + D_20 的 3) | **12912** | failing 0 / unverified 0 / unmatched 全 0 / unread 0 / 无黑盒 / SUCCEEDED |
+
+依据：B_1 / D_20 单独签核 receipt 里 constant_reg 分别为 43 / 3（golden 写 ram 的常量位）；12912 也与旧 Makefile 注释里
+上一轮 merge=false 的实测数一致。若 constant_reg 不是 184，差额按 bank×队列逐项指认。没有做过任何 FM 试跑。
