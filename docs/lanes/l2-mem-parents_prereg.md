@@ -130,3 +130,39 @@
   failing / unverified / unmatched / unread 全 0，黑盒对象 84（同 DCache），无 dont_verify，SUCCEEDED。
 
 ## 对账（跑完追加）
+
+| 目标 | 证明 commit | 口径 | 预测 passing | 实测 passing | 差 | failing / unverified / unmatched / unread | 黑盒 | receipt.json sha256 |
+|---|---|---|---|---|---|---|---|---|
+| AsyncResetSynchronizerShiftReg_w1_d3_i0 | 2948215a047b | signoff-strict | 4 | 4 | 0 | 0 / 0 / 0 / 0 | 无 | fe3a27f1ee9c6a79aba4bea56614443f0a176d188540362098d5cfa18e992379 |
+| MbistClockGateCell | 2948215a047b | signoff-strict | 2 | 2 | 0 | 0 / 0 / 0 / 0 | 无 | fc95e255df7d36ac56cea9fc49d29ce7e101756b6bf297a59e10a5c9f07c900d |
+| PBestOffsetPrefetch | e76a4ff889a2 | assembly + vmucp + 钉 353 | 1310 | 1310 | 0 | 0 / 0 / 0 / 0 | array_13_ext 两侧各 1（allow） | 82af3edf02da5e35db21921e90f8389e2dfa4fcfbda272e472d19804bded34a0 |
+| VBestOffsetPrefetch | e76a4ff889a2 | assembly + vmucp + 钉 531 | 4604 | 4604 | 0 | 0 / 0 / 0 / 0 | array_13_ext 两侧各 1（allow） | 169e6ee79c989d02f0724eca44e1237559d052cfa550b2ebf37e6217a1d0b96b |
+| MMIOBridge | 0394e97e720c | signoff-strict | 7794 | 7794 | 0 | 0 / 0 / 0 / 0 | 无 | e8d52bd508677b3d5514e2d1209f2faf11581dbd36555649e02411ab29c2e553 |
+| PatternHistoryTable | 0394e97e720c | assembly + vmucp + 钉 991 | 2185 | 2185 | 0 | 0 / 0 / 0 / 0 | array_12_ext 两侧各 1（allow） | c8e2204f6afb931d04b484bfa06289fbe9124172244dbbb002f42c29f73e4612 |
+
+- 全部 native SUCCEEDED，无 dont_verify / elab147 / relaxed appvar；钉点运行期计数：PBOP `L2MP_PIN_END ok=353 bad=0`、
+  VBOP `ok=531 bad=0`、PHT `PHT_PIN_END ok=991 bad=0`。`python3 scripts/fm_predict.py check <6 个目标>` rc=0（全部逐位相等）；
+  `python3 scripts/check_lane_receipts.py /home/eda/xs-env/wt-l2-mem-parents` rc=0。
+- 复跑：`TMPDIR=<非 /tmp 目录> PROOF_COMMIT=<上表 commit> bash scripts/run_proof.sh <UT 目录> <目标> < /dev/null`
+  （UT 目录：AsyncResetSyncShiftReg_w1_d3_i0 / MbistClockGateCell / PBestOffsetPrefetch / VBestOffsetPrefetch / MMIOBridge / PatternHistoryTable）。
+  本 lane 跑证明时根分区（/tmp 所在）只剩 ~900MB，detached worktree 建不出来，故 TMPDIR 指到 /home/eda/xs-env/l2-mem-parents-scratch/tmp。
+- UT 复跑：`cd verif/ut/<目录> && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`（DCacheWrapper 用 INITREG=<0|glue|glue017>）。
+
+### DCacheWrapper（证明 commit b491b909e262，assembly + vmucp + 钉 13157）—— **native SUCCEEDED，validator PARTIAL（阻塞，待集成者）**
+
+- UT 9 档（0 / glue / glue017 × seed 1/7/42，各 200k 拍）：全部 checks=199977 errors=0 cov_fail=0，单档约 11 分钟。
+  覆盖（seed 1 / initreg 0，DCache tb 原样）：D→MissQueue 41026、ReleaseAck 13489、非法 D 412、Probe 1411、store replay 3592、
+  错误上报 16734、l2_hint 5926 等（atomic_resp_mq_only=0、tag_write_unintended=0 为 DCache tb 自身只报告不闸项）。
+  变异自检：perf 只打一拍 ⇒ errors=33561（5k 拍）。
+- FM 读数：passing **82170**、failing 0、unverified 0、unmatched 0、unread 0（unread_points 空）、constant_reg **807**、
+  黑盒对象同 DCache（厂商叶子 + StorePipe），无 dont_verify；钉点运行期 `DCW_PREPIN_END n=13157 expect=13157`。
+- 预测 vs 实测：本节登记的预测 passing 82566（假设 constant_reg 仍为 DCache 的 411）**错了 −396**：实测 constant_reg 807 = 411 + 396，
+  passing 82170 = 模型 82977 − 807。`fm_predict.py check DCacheWrapper` 判「差额被指认（constant_reg 807 + unread 0）」rc=0；
+  但我手算的 82566 是错的预测，多出的 396 个常量寄存器**未逐项指认**（396 = 33 × 12，疑为 33 个 perf 计数在 DCache 子树里是
+  时序常量、本层两级各 6 位随之被判常量，未核实）。
+- **validator 判 PARTIAL，reason = `assembly_disabled_empty_module_wrong_parent:StorePipe@DCacheWrapper`**：
+  scripts/fm_verdict.py 的 DISABLED_EMPTY_MODULES 只批准 StorePipe 以 **DCache 为父**、实例路径 `/WORK/DCache/stu_{0,1}`；
+  外壳里路径是 `/WORK/DCacheWrapper/dcache/stu_{0,1}`。这是共享闸脚本的白名单形状问题（只认直接父级），不是 RTL 问题。
+  按规范（共享脚本不许 lane 改）停在这里：需集成者让该条目接受「DCache 实例在上层父级里」的路径（MemBlock 将同样踩到），
+  之后原样重跑 `TMPDIR=/home/eda/xs-env/tmp-l2memparents PROOF_COMMIT=b491b909e262 bash scripts/run_proof.sh DCacheWrapper DCacheWrapper < /dev/null` 即可。
+- receipt：evidence/b491b909e262/DCacheWrapper/receipt.json sha256 16f2764697b8ddab866e4c691c1e86bef1d39c2c179e2f9fddff49fe627c96e8（verdict PARTIAL，留档）。
