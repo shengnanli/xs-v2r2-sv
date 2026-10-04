@@ -108,10 +108,12 @@ module xs_LinkMonitor_core
   // ---------------------------------------------------------------------------
   link_state_e tx_state_q, rx_state_q;
 
-  // §5 性能计数器（无输出，见文件头）
-  logic [63:0] retry_ack_cnt;
-  logic [63:0] pcrd_grant_cnt;
-  logic [63:0] no_allow_retry_cnt;
+  // §5 性能计数器（无输出，见文件头）。名字照 Scala / golden（retryAckCnt …）：它们没有扇出，
+  //    FM 的签名分析配不上无扇出的寄存器，只能靠同名配对（第一跑名字不同时 192 位全成了
+  //    unmatched unread，见 docs/lanes/l2-link_prereg.md §4.4）。
+  logic [63:0] retryAckCnt;
+  logic [63:0] pCrdGrantCnt;
+  logic [63:0] noAllowRetryCnt;
 
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
@@ -122,9 +124,9 @@ module xs_LinkMonitor_core
       syscoreq_q         <= 1'b0;
       out_of_reset_q     <= 1'b0;
       rx_linkactiveack_q <= 1'b0;
-      retry_ack_cnt      <= '0;
-      pcrd_grant_cnt     <= '0;
-      no_allow_retry_cnt <= '0;
+      retryAckCnt        <= '0;
+      pCrdGrantCnt       <= '0;
+      noAllowRetryCnt    <= '0;
     end else begin
       tx_state_q         <= decode_link_state(tx_linkactivereq_q, tx_linkactiveack);
       rx_state_q         <= decode_link_state(rx_linkactivereq, rx_linkactiveack_q);
@@ -134,11 +136,11 @@ module xs_LinkMonitor_core
       out_of_reset_q     <= 1'b1;
       rx_linkactiveack_q <= rx_linkactivereq_q | ~rx_deact;
       if (rxrsp_fire && rxrsp_opcode == RSP_RETRY_ACK)
-        retry_ack_cnt <= retry_ack_cnt + 64'd1;
+        retryAckCnt <= retryAckCnt + 64'd1;
       if (rxrsp_fire && rxrsp_opcode == RSP_PCRD_GRANT)
-        pcrd_grant_cnt <= pcrd_grant_cnt + 64'd1;
+        pCrdGrantCnt <= pCrdGrantCnt + 64'd1;
       if (txreq_fire && !txreq_allow_retry)
-        no_allow_retry_cnt <= no_allow_retry_cnt + 64'd1;
+        noAllowRetryCnt <= noAllowRetryCnt + 64'd1;
     end
   end
 

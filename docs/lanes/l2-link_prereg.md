@@ -177,3 +177,27 @@ LinkMonitor 自身 202（txState 2 + rxState 2 + exitcoDone_REG + tx.linkactiver
 | 第二跑 | vmucp **开**（第一跑后另起 commit，补 verif/fm_target_config/LinkMonitor.tcl 六条证据） | **2657**（正好 +192） | 0 | 全 0 | **SUCCEEDED** |
 
 若第一跑 unread 不是正好这 192 位（或不能两侧双射），停下诊断，不开 vmucp。没有做过任何 FM 试跑。
+
+### 4.4 第一跑结果（追加；§4.3 数字未改）与第二轮登记
+
+第一跑 `evidence/e78d61e72b1d/LinkMonitor`（commit `e78d61e72`，vmucp 关）：native SUCCEEDED，
+passing **2465** / failing 0 / unverified 0 / unmatched 0(0) / unread **192** / 无黑盒 → strict **PARTIAL**（strict_unread≠0）。
+数字与 §4.3 预测逐项相等。unread 点集合恰为 ref `retryAckCnt/pCrdGrantCnt/noAllowRetryCnt_reg[0..63]` 与
+impl `u_core/retry_ack_cnt/pcrd_grant_cnt/no_allow_retry_cnt_reg[0..63]`，各 192。
+
+★但 native_facts 里它们是 `unmatched_unread_{ref,impl}`，`matched_unread_notcompared_pairs` 为空★：
+无扇出寄存器没有签名可配，名字又不同（我把计数器改成了 snake_case），FM 配不上。这种情况下单开 vmucp
+必然空转（fm_eq.tcl 的 vmucp 段注释：unmatched unread 不会因 vmucp 变成比较点）。
+修法：impl 计数器改回 Scala/golden 原名 `retryAckCnt` / `pCrdGrantCnt` / `noAllowRetryCnt`（纯改名，无功能变化；
+UT 9 档重跑见下）。不加 fm_pins / set_user_match。
+
+第二轮两跑（跑前登记）：
+
+| 跑次 | 配置 | passing | unread | 配对 | 判决 |
+|---|---|---|---|---|---|
+| 1b | 改名后、vmucp **关** | **2465** | **192** | `matched_unread_notcompared_pairs` = 192 对，三组计数器逐位同名同下标双射；`unmatched_unread` 两侧 0 | native SUCCEEDED / strict PARTIAL |
+| 2 | vmucp **开** + `verif/fm_target_config/LinkMonitor.tcl` 写入六条证据 | **2657**（正好 +192） | 0 | — | **SUCCEEDED** |
+
+两跑都要求 failing / unverified / aborted / unmatched 全 0、无黑盒、无 dont_verify。若 1b 的 matched 对数不是 192，停下。
+
+改名后 UT 9 档重跑（同一 tb、同一 seed 集）：读数与 §4.2 逐档相同（checks 14198651 / 14198580 / 14198296，errors=0，cov_fail=0）。
