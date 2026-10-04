@@ -33,3 +33,5 @@ diff_rat_state_bank_320x776	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer
 stateBankTags_320x3	DiffRatStateBuffer.sv	rtl/backend/DiffRatStateBuffer.sv	value<160@robIdx=CircularQueuePtr(RobSize=160),value∈[0,159] 由 Rob 维护
 # ram_10x89 M3 impl 侧人工复核结论（codex 0202，原写在第 4 列，第 4 列只放形态 B 契约，故移到注释）：M3 impl 侧人工复核（codex 0202）：地址来自 xs_ChiselQueue_core #(.DEPTH(10),.FLOW(1)) 的 enq_ptr/deq_ptr，复位 0、唯一更新 next_ptr、p==9 回 0，归纳 ∈[0,9]；非形态 B 接口契约
 ram_10x89	Queue10_GrantBuffer_Anon.sv	rtl/uncore/Queue10_GrantBuffer_Anon.sv	-	codex_0202;rtl/uncore/Queue10_GrantBuffer_Anon.sv=f3966df0733c17eb6e49e83a69c14019c7d3855c79435b833a8a157a20553d55;rtl/common/xs_ChiselQueue_core.sv=dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689
+# ram_78x15 M3 impl 侧人工复核结论（codex 0210 R1）：地址来自 xs_ChiselQueue_core #(.DEPTH(78),.FLOW(1'b0)) 的 enq_ptr/deq_ptr，复位 0、唯一更新 next_ptr、p==77 回 0，归纳 ∈[0,77]；非形态 B 接口契约
+ram_78x15	Queue78_PCrdGranted.sv	rtl/uncore/Queue78_PCrdGranted.sv	-	codex_0210;rtl/uncore/Queue78_PCrdGranted.sv=4b0d25dff57ae6e2ca9f6cc660827ca0fd53a0f83796ec156ee6aaa5a5bdb55a;rtl/common/xs_ChiselQueue_core.sv=dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689
