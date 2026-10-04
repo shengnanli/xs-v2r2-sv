@@ -932,16 +932,24 @@ def refresh_inst_map(dump):
     known = {'tb.u_g_Frontend': [], 'tb.u_i_Frontend': []}
     G = collections.defaultdict(list)
     I = collections.defaultdict(list)
+    gmods = {re.sub(r'_xs$', '', m) for _, m in rows}
     for path, mod in rows:
         par = max((k for k in known if path.startswith(k + '.')), key=len)
-        known[path] = known[par] + [path[len(par) + 1:]]
+        tok = path[len(par) + 1:]
+        # UT 派生（derive_ut_impl.py）把与 golden 模块同名的**实例名**也加了 _xs（如 RASStack_xs），
+        # FM 读的是原文件，实例名没有这个后缀 —— 还原。
+        if path.startswith('tb.u_i_') and tok.endswith('_xs') and tok[:-3] in gmods:
+            tok = tok[:-3]
+        known[path] = known[par] + [tok]
         fm = '/'.join(known[path])
         if path.startswith('tb.u_g_'):
             G[mod].append(fm)
         else:
             I[re.sub(r'_xs$', '', mod)].append(fm)
-    need = sorted(set(d for d, _ in CHILD_PIN_SRC) | set(d for d, _ in CHILD_FIELD_MAP) |
-                  set(x[0] for x in CHILD_PIN_LITERAL) | {'Predictor'})
+    pin_designs = (set(d for d, _ in CHILD_PIN_SRC) | set(d for d, _ in CHILD_FIELD_MAP) |
+                   set(x[0] for x in CHILD_PIN_LITERAL) | {'Predictor'})
+    hv_designs = set(load_harvest())
+    need = sorted(pin_designs | hv_designs)
 
     def norm(p):
         return '/'.join(t for t in p.split('/') if t != 'u_core')
@@ -959,11 +967,19 @@ def refresh_inst_map(dump):
         byn = collections.defaultdict(list)
         for q in I.get(d, []):
             byn[norm(q)].append(q)
+        hv_only = d in hv_designs and d not in pin_designs
+        nclean = 0
         for gp in gps:
             c = byn.get(gp, [])
             if len(c) != 1:
+                if hv_only:
+                    # 录制设计：只需要"干净可对应"的实例（不干净的实例落在其上层录制设计的范围里）
+                    continue
                 fail('设计 %s 的 golden 实例 %s 在重写侧对应 %d 个（%s）' % (d, gp, len(c), I.get(d, [])[:3]))
             out.append('%s\t%s\t%s\t.' % (d, gp, c[0]))
+            nclean += 1
+        if nclean == 0:
+            fail('设计 %s 没有一个可干净对应的实例' % d)
     INST_MAP.write_text('\n'.join(out) + '\n')
     print('wrote %s (%d 行)' % (INST_MAP.relative_to(REPO), len(out) - 2))
     hh = ['# 自动生成：scripts/gen_frontend.py --refresh-inst-map <UCLI 层次清单>（勿手改）',
@@ -987,8 +1003,9 @@ SPECIAL_INST = {
 }
 
 
-def render_child_pins():
-    seen, per_src = rebase_child_pins()
+def render_child_pins(seen=None, per_src=None):
+    if seen is None:
+        seen, per_src = rebase_child_pins()
     L = []
     A = L.append
     A('# ---- 二、子树钉点重定位（%d 个钉点源 -> %d 条，去重后；规则见 scripts/gen_frontend.py）----'
@@ -1017,6 +1034,83 @@ def render_child_pins():
     return '\n'.join(L) + '\n'
 
 
+# ---------------------------------------------------------------------------
+# 三、子树"自配对"录制钉点
+#   第二节之外，子模块在**自己**签核时有大量寄存器是 FM 自己配上的（按名 / 按函数 / 顶层 auto-match），没有钉点文件。
+#   放进 Frontend 后 FM 不再做签名分析（Frontend 诊断跑实测 "0 Compare points matched by signature analysis"，
+#   子模块单独跑时有，如 IBuffer 929 个），这些点就配不上了（诊断跑 23138(22576) 个未配对）。
+#   做法：对每个"未配对点所在的最近一层可干净对应的实例"的设计 X，单独跑一次 FM 匹配（ref = golden X 子树，
+#   impl = 本目标 impl 闭包里 X 的子树，与 Frontend 同一套重写件），把 matched.rpt 里 X 范围内的配对（DFF / 锁存器 /
+#   黑盒实例）录成 verif/ut/Frontend/harvest_pins.tsv；这里按 X 的每个实例重定位。录制脚本与每个设计的跑法见该文件头。
+#   只消名差：录的就是 FM 自己在 X 层给出的配对；钉错了在 Frontend 层判不等价（响亮失败），不会静默放过。
+# ---------------------------------------------------------------------------
+HARVEST = REPO / 'verif' / 'ut' / 'Frontend' / 'harvest_pins.tsv'
+
+
+def load_harvest():
+    rows = collections.OrderedDict()
+    if not HARVEST.exists():
+        return rows
+    for ln in HARVEST.read_text().splitlines():
+        if ln.startswith('#') or not ln.strip():
+            continue
+        d, kind, r, i = ln.split('\t')
+        rows.setdefault(d, []).append((kind, r, i))
+    return rows
+
+
+def render_harvest_pins(already):
+    hv = load_harvest()
+    imap = load_inst_map()
+    out = collections.OrderedDict()
+    per = []
+    for d, pairs in hv.items():
+        if d not in imap:
+            fail('fe_inst_map.tsv 里没有录制设计 %s 的实例对应' % d)
+        n = 0
+        for gp, ip, root in imap[d]:
+            if root != '.':
+                fail('录制设计 %s 的实例对应不该有根偏移' % d)
+            for kind, r, i in pairs:
+                nr = 'r:/WORK/Frontend/%s/%s' % (gp, r)
+                ni = 'i:/WORK/Frontend/%s/%s' % (ip, i)
+                if nr in already:
+                    continue
+                if nr in out:
+                    if out[nr] != ni:
+                        fail('录制钉点冲突: %s -> %s vs %s' % (nr, out[nr], ni))
+                    continue
+                out[nr] = ni
+                n += 1
+        per.append((d, len(pairs), len(imap[d]), n))
+    L = []
+    A = L.append
+    A('# ---- 三、子树自配对录制钉点（%d 个设计 -> %d 条；数据 verif/ut/Frontend/harvest_pins.tsv，规则见生成器）----'
+      % (len(per), len(out)))
+    for d, n0, ninst, n in per:
+        A('#   %-36s 录 %6d 对 x %3d 个实例 -> 新增 %6d 条' % (d, n0, ninst, n))
+    A('set ::FE_HV_EXPECT %d' % len(out))
+    A('set ::FE_HV_OK 0')
+    A('set ::FE_HV_BAD 0')
+    # 录到的都是单元（寄存器 / 锁存器 / 黑盒实例），显式 -type cell：golden 里常有"寄存器 x 的单元名 x_reg"与
+    # "另一个名叫 x_reg 的寄存器的线网"同名（HPerfCounter 的 event_op_2 / event_op_2_reg），不指明类型时
+    # 层次路径会先解析成线网而报 FM-013（2026-10-04 诊断跑实测）。
+    A('proc fe_hv_pin {r i} {')
+    A('  if {[set_user_match -type cell $r $i]} { incr ::FE_HV_OK } else {')
+    A('    incr ::FE_HV_BAD')
+    A('    if {$::FE_HV_BAD <= 10} { puts "FE_HV_PIN_FAIL: $r <-> $i" }')
+    A('  }')
+    A('}')
+    A('puts "FE_HV_PIN_BEGIN expect=$::FE_HV_EXPECT"')
+    for r, i in out.items():
+        A('fe_hv_pin {%s} {%s}' % (r, i))
+    A('puts "FE_HV_PIN_END ok=$::FE_HV_OK bad=$::FE_HV_BAD expect=$::FE_HV_EXPECT"')
+    A('if {$::FE_HV_BAD != 0 || $::FE_HV_OK != $::FE_HV_EXPECT} {')
+    A('  error "FE_HV_PIN: ok=$::FE_HV_OK bad=$::FE_HV_BAD expect=$::FE_HV_EXPECT"')
+    A('}')
+    return '\n'.join(L) + '\n'
+
+
 def splice(text, gen):
     if BEGIN in text:
         i = text.index(BEGIN)
@@ -1034,8 +1128,12 @@ def main():
         refresh_inst_map(a.refresh_inst_map)
         return 0
     text = OUT.read_text()
+    seen, per_src = rebase_child_pins()
+    core_refs = set(re.findall(r'^fe_core_pin \{(\S+)\}', render_pins(), re.M))
+    already = set(seen) | core_refs
     outs = [(OUT, text, splice(text, render())),
-            (PINS, PINS.read_text() if PINS.exists() else '', render_pins() + render_child_pins())]
+            (PINS, PINS.read_text() if PINS.exists() else '',
+             render_pins() + render_child_pins(seen, per_src) + render_harvest_pins(already))]
     rc = 0
     for path, old, new in outs:
         if a.check:

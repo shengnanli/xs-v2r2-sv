@@ -611,8 +611,8 @@ inner_bpu/predictors/tage/scTables_3/mbistPl	MbistPipeSc_3
 inner_bpu/predictors/tage/scTables_3/mbistPl/u_core	xs_mbist_pipe_core
 inner_bpu/predictors/ras	RAS
 inner_bpu/predictors/ras/u_core	xs_RAS_core
-inner_bpu/predictors/ras/RASStack_xs	RASStack
-inner_bpu/predictors/ras/RASStack_xs/u_core	xs_RASStack
+inner_bpu/predictors/ras/RASStack	RASStack
+inner_bpu/predictors/ras/RASStack/u_core	xs_RASStack
 inner_bpu/predictors/ittage	ITTage
 inner_bpu/predictors/ittage/u_core	xs_ITTage_core
 inner_bpu/predictors/ittage/u_core/u_stage_pc	xs_BpuStagePc
@@ -764,8 +764,8 @@ inner_ftq/u_core/ftq_meta_mem/u_core/g_bank[0].dataBank	xs_DataModule
 inner_ftq/u_core/ftq_meta_mem/u_core/g_bank[1].dataBank	xs_DataModule
 inner_ftq/u_core/ftq_meta_mem/u_core/g_bank[2].dataBank	xs_DataModule
 inner_ftq/u_core/ftq_meta_mem/u_core/g_bank[3].dataBank	xs_DataModule
-inner_ftq/u_core/FTBEntryGen_xs	FTBEntryGen
-inner_ftq/u_core/FTBEntryGen_xs/u_core	xs_FTBEntryGen
+inner_ftq/u_core/FTBEntryGen	FTBEntryGen
+inner_ftq/u_core/FTBEntryGen/u_core	xs_FTBEntryGen
 inner_icache	ICache
 inner_icache/u_core	xs_ICache_core
 inner_icache/u_core/ctrlUnitOpt	ICacheCtrlUnit
