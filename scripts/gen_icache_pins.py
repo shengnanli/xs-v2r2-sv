@@ -12,12 +12,32 @@ unmatched compare 597(ref)，并因此连带 325 个 failing（全部落在 miss
   missUnit/{...同上...}/vSetIdx_reg[b]                            <-> u_core/missUnit/u_core/<同名实例>/u_core/vset_idx_q_reg[b]    (8 位)
   missUnit/priorityFIFO/regFiles_<k>_reg[b]                       <-> u_core/missUnit/u_core/priorityFIFO/u_core/regfile_reg[k][b] (10 项 × 4 位)
   共 14 × 50 + 40 = 740 条。
+  ★例外（一对多，24 条）★：取指 MSHR（fetchMSHRs_0..3）的 vSetIdx[5:0] 不钉 ref 同名位，而钉到 ref 的
+    blkPaddr[5:0]（impl 侧 blk_paddr_q[b] 与 vset_idx_q[b] 两个寄存器都配同一个 ref blkPaddr_reg[b]）：
+      missUnit/fetchMSHRs_<n>/blkPaddr_reg[b] <-> u_core/missUnit/u_core/fetchMSHRs_<n>/u_core/vset_idx_q_reg[b]   (b < 6)
+    依据（下面 shared_low_bits() 从 golden 机械复核，不读 FM 结果）：golden ICacheMainPipe 送 MSHR 的请求里
+    blkPaddr = {s2_req_ptags_p, s2_req_vaddr_p[11:6]}、vSetIdx = s2_req_vaddr_p[13:6]，两字段低 6 位是同一组
+    vaddr 位（页内偏移里的 set 索引位），经 Arbiter2 / ICache 顶层 / fetchDemux 原样直通进 4 格取指 MSHR，
+    同一拍同一使能写入 ⇒ 每格 MSHR 的 blkPaddr[5:0] 与 vSetIdx[5:0] 恒等。merge_dup（默认开）下 FM 在 ref 侧
+    把这对恒等寄存器并成一个（诊断跑 fm.log："Merging duplicated registers in block r:/WORK/ICache/missUnit/
+    fetchMSHRs_<n>"，被并掉的是 vSetIdx），impl 侧没并（重写件 4 格取指 MSHR 经 u_core 多一层；即便把 14 格核
+    做成 14 个独立设计也照样不并——lane icache-fm 诊断跑 2 实测，读数不变），impl 的 vset_idx_q[5:0] 于是成了
+    无对家的自由状态。FM 允许一个 ref 点配多个 impl 点（set_user_match 手册：each implementation object is
+    verified against the reference object），所以这里让 impl 两份副本各自都对 ref 代表点做真比较 ——
+    不约束 ref、不放宽任何东西，impl 侧两个寄存器都要证明等于 golden。
 匹配后（fm_pins.tcl）—— 两侧零扇出、名字不同的死位（unread 点 FM 不做签名分析）：
   dataArray/dataArrays_<w>_<b>/srams_0/rdata_hold_data_0_reg[65] <-> u_core/dataArray/dataArrays_<w>_<b>/srams_0/u_core/rdata_hold_reg[65]
       —— SRAMTemplateWithFixedWidth 把 65 位数据补成 66 位写 SRAM、读回截掉最高位（与该目标单独签核时同一死位）；32 条
   missUnit/refill_done_r_counter_reg <-> u_core/missUnit/u_core/grant_beat_left_q_reg
       —— 只被 `ifndef SYNTHESIS 断言读的 1 位计数器（verif/ut/ICacheMissUnit/fm_pins.tcl 同一条）；1 条
-  共 33 条。配上后由 vmucp 真比较（verif/fm_target_config/ICache.tcl）。
+  ctrlUnitOpt/out_back_q/ram_reg[53+k] <-> u_core/ctrlUnitOpt/out_back_q/slot_reg\[data][48+k]   (k=0..15)
+      —— Queue1_RegMapperInput_5 的 data[63:48]：ICacheCtrlUnit 只读 data[47:0]，这 16 位入队不出队
+         （与 verif/ut/ICacheCtrlUnit/fm_pins.tcl 同一组死位，golden 打包在 ram 的绝对位 53..68）；16 条
+  dataArray/{res,res_1,res_2,res_3}/beReg_reg <-> u_core/dataArray/<同名>/u_core/beReg_reg[0]
+      —— MbistPipeIcacheDataWay0..3 的 1 位 MBIST 写使能锁存（父级不读；重写核 xs_mbist_pipe_core 声明成
+         [BE_W-1:0]，FM 展平名多一个 [0]）；4 条
+  共 53 条（lane icache-fm 诊断跑 2：钉完前 33 条后，FM 报两侧各 20 个 unmatched unread，正是后两组）。
+  配上后由 vmucp 真比较（verif/fm_target_config/ICache.tcl）。
 golden 里每个被钉的寄存器都必须以对应位宽声明过，否则拒绝生成；两份产物都 fail-closed（拒一条或条数不等于
 字面常数即 error）。
 
@@ -50,14 +70,50 @@ def mshr_module(inst):
     return m.group(1)
 
 
+def shared_low_bits():
+    """golden 取指 MSHR 请求里 blkPaddr 与 vSetIdx 共用的低位数（机械复核整条直通路径，任何一处不符即拒绝生成）。"""
+    mp = open(os.path.join(G, 'ICacheMainPipe.sv')).read()
+    n = None
+    for p in (0, 1):
+        mb = re.search(r'\.io_in_%d_bits_blkPaddr\s*\(\{s2_req_ptags_%d, s2_req_vaddr_%d\[(\d+):(\d+)\]\}\)' % (p, p, p), mp)
+        mv = re.search(r'\.io_in_%d_bits_vSetIdx\s*\(s2_req_vaddr_%d\[(\d+):(\d+)\]\)' % (p, p), mp)
+        if not (mb and mv) or mb.group(2) != mv.group(2):
+            raise SystemExit('gen_icache_pins: golden ICacheMainPipe toMSHRArbiter 口 %d 的 blkPaddr/vSetIdx 低位不再同源' % p)
+        k = int(mb.group(1)) - int(mb.group(2)) + 1
+        if n is not None and k != n:
+            raise SystemExit('gen_icache_pins: 两个口共用低位数不一致 %d/%d' % (n, k))
+        n = k
+    top = open(os.path.join(G, 'ICache.sv')).read()
+    for f in ('blkPaddr', 'vSetIdx'):
+        if not re.search(r'\.io_fetch_req_bits_%s\s*\(_mainPipe_io_mshr_req_bits_%s\)' % (f, f), top):
+            raise SystemExit('gen_icache_pins: golden ICache 里 missUnit.fetch_req.%s 不再直连 mainPipe.mshr_req' % f)
+    mu = open(os.path.join(G, 'ICacheMissUnit.sv')).read()
+    dm = open(os.path.join(G, 'DeMultiplexer.sv')).read()
+    if not re.search(r'\n  DeMultiplexer fetchDemux \(', mu) or \
+       not re.search(r'\.io_in_bits_blkPaddr\s*\(io_fetch_req_bits_blkPaddr\)', mu) or \
+       not re.search(r'\.io_in_bits_vSetIdx\s*\(io_fetch_req_bits_vSetIdx\)', mu):
+        raise SystemExit('gen_icache_pins: golden ICacheMissUnit fetchDemux 输入不再是 io_fetch_req')
+    for i in range(4):
+        for f in ('blkPaddr', 'vSetIdx'):
+            if not re.search(r'assign io_out_%d_bits_%s = io_in_bits_%s;' % (i, f, f), dm):
+                raise SystemExit('gen_icache_pins: golden DeMultiplexer 出口 %d 的 %s 不再直通' % (i, f))
+            if not re.search(r'\.io_req_bits_%s\s*\(_fetchDemux_io_out_%d_bits_%s\)' % (f, i, f), mu):
+                raise SystemExit('gen_icache_pins: golden fetchMSHRs_%d.io_req.%s 不接 fetchDemux 出口 %d' % (i, f, i))
+    return n
+
+
 def pre_pairs():
     P = []
+    nshared = shared_low_bits()
     for inst in MSHRS:
         mod = mshr_module(inst)
         for gname, iname, w in (('blkPaddr', 'blk_paddr_q', 42), ('vSetIdx', 'vset_idx_q', 8)):
             need_reg(mod, gname, w)
             for b in range(w):
-                P.append(('r:/WORK/ICache/missUnit/%s/%s_reg[%d]' % (inst, gname, b),
+                rname = gname
+                if inst.startswith('fetchMSHRs_') and gname == 'vSetIdx' and b < nshared:
+                    rname = 'blkPaddr'   # 一对多：见文件头「例外」
+                P.append(('r:/WORK/ICache/missUnit/%s/%s_reg[%d]' % (inst, rname, b),
                           'i:/WORK/ICache/u_core/missUnit/u_core/%s/u_core/%s_reg[%d]' % (inst, iname, b)))
     for k in range(10):
         need_reg('FIFOReg', 'regFiles_%d' % k, 4)
@@ -82,6 +138,23 @@ def post_pairs():
     need_reg('ICacheMissUnit', 'refill_done_r_counter', 1)
     P.append(('r:/WORK/ICache/missUnit/refill_done_r_counter_reg',
               'i:/WORK/ICache/u_core/missUnit/u_core/grant_beat_left_q_reg'))
+    need_reg('Queue1_RegMapperInput_5', 'ram', 84)
+    q = open(os.path.join(G, 'Queue1_RegMapperInput_5.sv')).read()
+    if 'assign io_deq_bits_data = ram[68:5];' not in q:
+        raise SystemExit('gen_icache_pins: golden Queue1_RegMapperInput_5 的 data 段不再是 ram[68:5]')
+    if not re.search(r'\n  Queue1_RegMapperInput_5 out_back_q \(', open(os.path.join(G, 'ICacheCtrlUnit.sv')).read()):
+        raise SystemExit('gen_icache_pins: golden ICacheCtrlUnit 里找不到 out_back_q')
+    for k in range(16):
+        P.append(('r:/WORK/ICache/ctrlUnitOpt/out_back_q/ram_reg[%d]' % (53 + k),
+                  'i:/WORK/ICache/u_core/ctrlUnitOpt/out_back_q/slot_reg\\[data][%d]' % (48 + k)))
+    da = open(os.path.join(G, 'ICacheDataArray.sv')).read()
+    for w, inst in enumerate(('res', 'res_1', 'res_2', 'res_3')):
+        mod = 'MbistPipeIcacheDataWay%d' % w
+        if not re.search(r'\n  %s %s \(' % (mod, inst), da):
+            raise SystemExit('gen_icache_pins: golden ICacheDataArray 里找不到 %s %s' % (mod, inst))
+        need_reg(mod, 'beReg', 1)
+        P.append(('r:/WORK/ICache/dataArray/%s/beReg_reg' % inst,
+                  'i:/WORK/ICache/u_core/dataArray/%s/u_core/beReg_reg[0]' % inst))
     return P
 
 

@@ -9,14 +9,23 @@
 #   unread 两类，全是两侧对称死位：
 #   (a) matched_nc 197 位（按名配上）—— 各子模块单独签核时 vmucp 集合在父级的再现（MainPipe / IPrefetchPipe /
 #       MetaArray / DataArray 的 MBIST addrReg 高位、打拍寄存器的零扇出切片等）；
-#   (b) 两侧各 33 位未配上（零扇出、名字不同）：DataArray 32 块 SRAM 读保持寄存器补位 [65]
+#   (b) 两侧各 33 位（2026-10-04 起 53 位，见下）未配上（零扇出、名字不同）：DataArray 32 块 SRAM 读保持寄存器补位 [65]
 #       + missUnit 断言专用计数器 refill_done_r_counter / grant_beat_left_q；
-#       由 scripts/gen_icache_pins.py 生成的 verif/ut/ICache/fm_pins.tcl 一一钉上（字面 33，fail-closed）。
+#       由 scripts/gen_icache_pins.py 生成的 verif/ut/ICache/fm_pins.tcl 一一钉上（字面 53，fail-closed）。
 #   missUnit 的 MSHR blkPaddr / vSetIdx 与优先级 FIFO regFiles（740 位）由 fm_pins_pre.tcl 钉（活位，消名差）。
 #
+# ---- 2026-10-04 修订（agent/icache-fm）----
+#   (c) 取指 MSHR vSetIdx[5:0]：golden 里与 blkPaddr[5:0] 同源（均为 MainPipe s2 vaddr[11:6]），merge_dup 下
+#       ref 侧被并进 blkPaddr，impl 侧不并 → 24 个 impl 自由状态、808 failing。fm_pins_pre.tcl 改为一对多：
+#       ref blkPaddr_reg[b] 同时配 impl blk_paddr_q[b] 与 vset_idx_q[b]（各自真比较），条数仍 740。
+#   (b) 追加 20 个两侧对称、名字不同的死位进 fm_pins.tcl（33 -> 53）：ctrlUnitOpt/out_back_q data[63:48]
+#       （同 verif/ut/ICacheCtrlUnit/fm_pins.tcl）16 位 + dataArray/res{,_1,_2,_3}/beReg 4 位。
+#   诊断跑（无 receipt）读数：(c) 前 passing 20342 / failing 808 / unmatched 24；(c) 后 passing 21154 /
+#   failing 0 / unmatched 0 / unread 20（即上面 20 位）；(b) 后的读数以正式 receipt 为准。
+#
 # ---- 六条证据（以 evidence/ 下 receipt 为准）----
-#   (1) 精确绑定：unread 点集合 = (a) 197 ∪ (b) 33 = 230 位（钉点生效后以正式跑 receipt 为准）。
-#   (2) 双射：(a) 按名配上，(b) 钉点字面 33，拒一条即 error。
+#   (1) 精确绑定：unread 点集合 = (a) 197 ∪ (b) 53 = 250 位（钉点生效后以正式跑 receipt 为准）。
+#   (2) 双射：(a) 按名配上，(b) 钉点字面 53，拒一条即 error。
 #   (3) 真比较：开 vmucp 后 unread 归零、passing 增加恰为 unread 位数。
 #   (4) 全零：failing / unverified / aborted / unmatched 全 0。
 #   (5) 无放宽：dont_verify_objects [] / elab147 [] / relaxed_appvars []；黑盒只有 verif/allow/ICache.json
