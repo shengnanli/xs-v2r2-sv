@@ -1,0 +1,209 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "FTB",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "golden-only cone-dead，且全部在已签核子模块 ftbBank 内部：req_pc_reg_1_reg 是 golden FTBBank 里 FTB fallThrough 断言专用的 PC 副本，SYNTHESIS 下断言被编译掉 ⇒ 写入但零功能扇出；已签核的 FTBBank 重写件（rtl/frontend/FTBBank.sv）正确地不建该寄存器，与 verif/dead_ref/FTBBank.json 声明的是同一批 50 位，只是路径多了一层 ftbBank/。本 lane 诊断跑（merge_dup 默认、vmucp 开）观测 unmatched-unread(ref)=50、impl=0，与本声明精确相等；native SUCCEEDED，failing=0，unmatched compare points=0。非 waiver：全部可达比较点仍被 FM 证明等价。",
+ "observed_points": 50,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[0]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[10]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[11]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[12]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[13]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[14]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[15]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[16]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[17]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[18]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[19]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[1]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[20]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[21]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[22]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[23]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[24]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[25]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[26]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[27]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[28]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[29]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[2]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[30]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[31]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[32]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[33]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[34]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[35]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[36]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[37]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[38]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[39]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[3]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[40]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[41]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[42]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[43]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[44]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[45]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[46]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[47]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[48]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[49]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[4]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[5]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[6]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[7]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[8]",
+   "class": "assert_only_pc_copy"
+  },
+  {
+   "ref_path": "r:/WORK/FTB/ftbBank/req_pc_reg_1_reg[9]",
+   "class": "assert_only_pc_copy"
+  }
+ ]
+}

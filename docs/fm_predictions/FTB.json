@@ -1,0 +1,18 @@
+{
+  "target": "FTB",
+  "ut": "FTB",
+  "regs": 6178,
+  "outs": 2199,
+  "expected": 8825,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 448,
+  "bbox": {
+    "array_1_ext": {
+      "insts": 8,
+      "in_bits": 56,
+      "points": 448
+    }
+  },
+  "note": "merge_dup=true（与子模块 FTBBank 签核口径一致，理由见 verif/ut/FTB/Makefile），按 merge 带判。lane 诊断跑（commit 26691dff RTL 同字节、vmucp 开）实测 passing 8605 / unread 50（ref-only，dead_ref）。8825-8605=220 落在 merge 带内（regs=6178）。"
+}

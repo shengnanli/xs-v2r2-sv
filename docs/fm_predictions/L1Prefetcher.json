@@ -1,0 +1,10 @@
+{
+  "target": "L1Prefetcher",
+  "ut": "L1Prefetcher",
+  "regs": 8856,
+  "outs": 293,
+  "expected": 9149,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing 9089 = 模型 9149 - constant_reg 60（各子模块 RegNext(io.flush) 恒 0，MLPF REG_6..37 等）；vmucp 开 1011 位"
+}

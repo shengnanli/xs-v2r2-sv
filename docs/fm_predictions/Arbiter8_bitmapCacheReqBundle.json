@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter8_bitmapCacheReqBundle",
+  "ut": "Arbiter8_bitmapCacheReqBundle",
+  "regs": 0,
+  "outs": 48,
+  "expected": 48,
+  "merge_dup": "false",
+  "model_applicable": true
+}

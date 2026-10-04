@@ -1,0 +1,10 @@
+{
+  "target": "RAS",
+  "ut": "RASTop",
+  "regs": 3775,
+  "outs": 2817,
+  "expected": 6592,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "无 vmucp、无 dead_ref、无黑盒；lane 内诊断跑（commit 57dd59cc9 RTL 同字节 + 修正后钉点）实测 passing 6592 = 模型"
+}

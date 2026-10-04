@@ -2,135 +2,510 @@
  "schema": "xs-v2-sv-allow-v1",
  "target": "ICache",
  "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "note": "assembly 边界声明：ICache 顶层是装配+仲裁层，8 个功能子模块在**两侧对称**黑盒（ref 侧 r:/WORK/ICache/<inst>，impl 侧 i:/WORK/ICache/u_core/<inst>，同名同数，见 evidence/<commit12>/ICache/black_boxes.rpt）。★这 8 个都不是厂商宏，一个都不许写成 vendor_macro 绕过★。它们各自是独立 FM target，按 D57 须持 verif/proof_certificates/<target>.json 背书；本 commit 上 8 个 child **一个证书都还没有**，所以这里**故意不填 certificate_sha256**——让判定卡在指名道姓的 green_child 证书缺失上，而不是含糊的 assembly_no_allow_decl。当前 child 进度（2026-09-21 实测）：ICacheCtrlUnit / ICacheDataArray / ICacheReplacer / WayLookup 有历史 SUCCEEDED receipt 但不在本 commit 上、尚未出证书；ICacheMetaArray / ICacheMissUnit 有 UT 目录未在本轮出绿；★ICacheMainPipe 与 IPrefetchPipe 在 rtl/ 下根本没有实现文件★（不是没跑，是没写）。",
  "objects": [
   {
    "side": "i",
-   "design": "ICacheCtrlUnit",
-   "path": "i:/WORK/ICache/u_core/ctrlUnitOpt",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_0_0/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheCtrlUnit"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "ICacheDataArray",
-   "path": "i:/WORK/ICache/u_core/dataArray",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_0_1/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheDataArray"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "ICacheMainPipe",
-   "path": "i:/WORK/ICache/u_core/mainPipe",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_0_2/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheMainPipe"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "ICacheMetaArray",
-   "path": "i:/WORK/ICache/u_core/metaArray",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_0_3/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheMetaArray"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "ICacheMissUnit",
-   "path": "i:/WORK/ICache/u_core/missUnit",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_0_4/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheMissUnit"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "ICacheReplacer",
-   "path": "i:/WORK/ICache/u_core/replacer",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_0_5/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheReplacer"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "IPrefetchPipe",
-   "path": "i:/WORK/ICache/u_core/prefetcher",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_0_6/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "IPrefetchPipe"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "WayLookup",
-   "path": "i:/WORK/ICache/u_core/wayLookup",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_0_7/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "WayLookup"
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_1_0/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_1_1/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_1_2/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_1_3/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_1_4/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_1_5/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_1_6/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_1_7/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_2_0/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_2_1/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_2_2/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_2_3/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_2_4/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_2_5/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_2_6/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_2_7/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_3_0/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_3_1/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_3_2/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_3_3/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_3_4/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_3_5/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_3_6/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/ICache/u_core/dataArray/dataArrays_3_7/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_ext",
+   "path": "i:/WORK/ICache/u_core/metaArray/tagArrays_0/array_0_0_0/array/array/array_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_ext",
+   "path": "i:/WORK/ICache/u_core/metaArray/tagArrays_0/array_0_1_0/array/array/array_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_ext",
+   "path": "i:/WORK/ICache/u_core/metaArray/tagArrays_1/array_0_0_0/array/array/array_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_ext",
+   "path": "i:/WORK/ICache/u_core/metaArray/tagArrays_1/array_0_1_0/array/array/array_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "ICacheCtrlUnit",
-   "path": "r:/WORK/ICache/ctrlUnitOpt",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_0_0/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheCtrlUnit"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "ICacheDataArray",
-   "path": "r:/WORK/ICache/dataArray",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_0_1/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheDataArray"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "ICacheMainPipe",
-   "path": "r:/WORK/ICache/mainPipe",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_0_2/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheMainPipe"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "ICacheMetaArray",
-   "path": "r:/WORK/ICache/metaArray",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_0_3/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheMetaArray"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "ICacheMissUnit",
-   "path": "r:/WORK/ICache/missUnit",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_0_4/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheMissUnit"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "ICacheReplacer",
-   "path": "r:/WORK/ICache/replacer",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_0_5/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "ICacheReplacer"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "IPrefetchPipe",
-   "path": "r:/WORK/ICache/prefetcher",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_0_6/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "IPrefetchPipe"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "WayLookup",
-   "path": "r:/WORK/ICache/wayLookup",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_0_7/srams_0/array/array/array_0_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "WayLookup"
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_1_0/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_1_1/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_1_2/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_1_3/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_1_4/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_1_5/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_1_6/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_1_7/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_2_0/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_2_1/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_2_2/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_2_3/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_2_4/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_2_5/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_2_6/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_2_7/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_3_0/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_3_1/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_3_2/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_3_3/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_3_4/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_3_5/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_3_6/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/ICache/dataArray/dataArrays_3_7/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_ext",
+   "path": "r:/WORK/ICache/metaArray/tagArrays_0/array_0_0_0/array/array/array_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_ext",
+   "path": "r:/WORK/ICache/metaArray/tagArrays_0/array_0_1_0/array/array/array_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_ext",
+   "path": "r:/WORK/ICache/metaArray/tagArrays_1/array_0_0_0/array/array/array_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_ext",
+   "path": "r:/WORK/ICache/metaArray/tagArrays_1/array_0_1_0/array/array/array_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
   }
  ]
 }
