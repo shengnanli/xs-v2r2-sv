@@ -129,7 +129,9 @@ EXTRA_CHILD_PINS = {
     #   * csrMod 的 PMP / PMA 32 个地址寄存器（各 46 位）：golden pmpAddr_<k>_ADDRESS / pmaAddr_<k> ↔ 重写
     #     u_core/g_entry[k].addr_q_reg；
     #   * isPerfCnt 两拍保持：golden io_csrio_isPerfCnt_r ↔ 重写 not_jmp_q（CSR.sv：本条不是系统指令）、golden
-    #     csrMod/io_out_bits_isPerfCnt_r ↔ 重写 csrMod/is_perf_cnt_q。
+    #     csrMod/io_out_bits_isPerfCnt_r ↔ 重写 csrMod/is_perf_cnt_q；
+    #   * 两个 1 位中断使能 / 挂起位：golden csrMod/mvip/reg_SSIP ↔ 重写 mvip/u_core/ssip_q、golden csrMod/sie/reg_SSIE ↔
+    #     重写 sie/u_core/g_bit[1].g_flop.q（SSIE 是 sie 的第 1 位）—— 第二次诊断跑匹配后仅剩的 2 个族外孤儿。
     'CSR': (
         [(f'imsic/imsic/intFile{"_%d" % k if k else ""}/eies_{w}_reg[{b}]',
           f'imsic/imsic/u_core/g_file[{k}].intFile/u_core/eies_reg[{w}][{b}]')
@@ -147,7 +149,9 @@ EXTRA_CHILD_PINS = {
         + [(f'csrMod/pmaEntryMod/pmaAddr_{k}_reg[{b}]',
             f'csrMod/pmaEntryMod/u_core/g_entry[{k}].addr_q_reg[{b}]') for k in range(32) for b in range(46)]
         + [('io_csrio_isPerfCnt_r_reg', 'not_jmp_q_reg'),
-           ('csrMod/io_out_bits_isPerfCnt_r_reg', 'csrMod/is_perf_cnt_q_reg')]
+           ('csrMod/io_out_bits_isPerfCnt_r_reg', 'csrMod/is_perf_cnt_q_reg'),
+           ('csrMod/mvip/reg_SSIP_reg', 'csrMod/mvip/u_core/ssip_q_reg'),
+           ('csrMod/sie/reg_SSIE_reg', 'csrMod/sie/u_core/g_bit[1].g_flop.q_reg')]
     ),
     'MulUnit': (
         [(f'mulDataModule/r_{k}_reg', f'u_core/mulDataModule/u_core/pp_reg_reg[{k}]') for k in (2303, 2304, 2305, 2306)]

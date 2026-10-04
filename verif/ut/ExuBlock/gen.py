@@ -94,7 +94,43 @@ if csr is None:
 cdecl, cstim, ccov, carm = e7gen.csr_exu_parts(G + "." + csr[0], pin=csr[1], pout=csr[2], keep_cg=False)
 COV += [(csr[0] + "_" + n, e) for n, e in ccov]
 
-# 恒值输出位（不要求见过 0/1，照样逐拍比）：先空，按探针跑的实测与机理逐项补
+
+# ---- 不要求见过 0/1 的输出位（照样逐拍比），全部按机理圈定 ----
+_gtxt = open(os.path.join(GOLDEN, TOP + ".sv")).read()
+_e7c = dict((c.group(1), " ".join(c.group(2).split())) for c in re.finditer(
+    r"\.(\w+)\s*\((.*?)\)\s*(?:,|$)",
+    re.search(r"^  ExeUnit_7 %s \(\n(.*?)^  \);" % csr[0], _gtxt, re.S | re.M).group(1), re.S))
+_assigns = dict(re.findall(r"^  assign (\w+) = (\w+);", _gtxt, re.M))
+# (1) exus_7（ExeUnit_7）上 ExeUnit_7 自己 tb 豁免的口（子 FU 直连口、VS 态 ecall 位），经本层直连 / assign 到顶层口的那些
+for _p in e7gen.exempt_ports("ExeUnit_7"):
+    _e = _e7c.get(_p, "")
+    if _e in ports:
+        EXEMPT.append(_e)
+    for _o, _src in _assigns.items():
+        if _e and _src == _e:
+            EXEMPT.append(_o)
+for typ, iname, pin, pout in INSTS:
+    if typ == "ExeUnit_7":
+        continue
+    v = gen_exeunit.Variant(typ)
+    etxt = open(os.path.join(GOLDEN, typ + ".sv")).read()
+    # (2) 无 busy 的 ExeUnit 的 in.ready 恒 1（同 ExuBlock_1）
+    if not v.has_busy:
+        EXEMPT.append(pin + "_ready")
+    # (3) golden ExeUnit 里写成 {64'h0, ...} 的数据口高 64 位恒 0（同 ExuBlock_1）
+    for m in re.finditer(r"assign io_out_bits_(data_\d+) = \{64'h0,", etxt):
+        EXEMPT += ["%s_bits_%s[%d]" % (pout, m.group(1), b) for b in range(64, 128)]
+    if typ == "ExeUnit_5":
+        # (4) data_5 = {64'h0, VSetRiWvf.res_data}，而 VSetRiWvf 的 res_data = {56'h0, vl}（golden VSetRiWvf.sv）⇒ [63:8] 也恒 0
+        if not re.search(r"assign io_out_bits_data_5 = \{64'h0, _VSetRiWvf_io_out_bits_res_data\};", etxt) or \
+                "assign io_out_bits_res_data = {56'h0, _vsetModule_io_out_vconfig_vl};" not in \
+                open(os.path.join(GOLDEN, "VSetRiWvf.sv")).read():
+            raise SystemExit("ExeUnit_5 data_5 / VSetRiWvf res_data 形状变了，恒值位豁免要重核")
+        EXEMPT += ["%s_bits_data_5[%d]" % (pout, b) for b in range(8, 64)]
+        # (5) fflags 只来自 i2f（整数转浮点）：只可能报 NX / OF，UF[1]、DZ[3]、NV[4] 按 IEEE 语义恒 0
+        EXEMPT += ["%s_bits_fflags[%d]" % (pout, b) for b in (1, 3, 4)]
+EXEMPT = sorted(set(EXEMPT))
+
 PAIRS = [Pair(TOP, X, clocked=True, stim="\n".join(STIM) + "\nbegin : csr_exu\n" + cstim + "\nend", cov=COV,
               decls="\n".join(DECLS) + "\n" + cdecl, exempt=EXEMPT,
               arm=carm, reset_period=20000, mode_period=2000, cov_min=100)]
