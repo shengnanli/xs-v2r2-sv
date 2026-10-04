@@ -1117,9 +1117,10 @@ def render_harvest_pins(already):
 #   SyncDataModule 每 bank 一份的写数据/写地址寄存器、FTBBank 的 req_pc_reg_1..3），重写件常只存一份
 #   （或份数不同）。这些目标自己签核时用的是 FM_MERGE_DUP=true（FM 先把恒等副本并成一个再配对）；
 #   Frontend 层不能整体打开 merge（Predictor 实测打开后到达 Matching 慢 7 倍，见 docs/predictor_fm_scaling_wall.md），
-#   改为：在诊断跑里让 FM 自己做结构识别（identify_duplicate_registers -by_structure），把它给出的、且包含
-#   未配对点的副本组原样写成 set_user_match（同侧对象成组 = 声明它们是恒等副本，效果与 merge 相同、范围只到这些组）。
-#   数据 verif/ut/Frontend/dup_groups.tsv（FM 输出原样转写，见文件头）。
+#   改为：在诊断跑里让 FM 自己做结构识别（identify_duplicate_registers -by_structure），对它给出的每个同侧副本组，
+#   取组内任一成员**已配上的对侧对象**作锚点，写成一对多的 set_user_match <锚> <组内全部成员>
+#   （FM 不接受同侧对象直接成组，FM-012；一对多可以，且多次一对多会把两侧的副本组并成一个配对类 —— 效果与 merge
+#   相同、范围只到这些组）。数据 verif/ut/Frontend/dup_groups.tsv（由诊断跑的 FM 输出与配对表机械转写，见文件头）。
 # ---------------------------------------------------------------------------
 DUP_GROUPS = REPO / 'verif' / 'ut' / 'Frontend' / 'dup_groups.tsv'
 
@@ -1131,13 +1132,14 @@ def render_dup_groups():
             if ln.startswith('#') or not ln.strip():
                 continue
             objs = ln.split('\t')
-            if len(objs) < 2 or len({o[0] for o in objs}) != 1:
-                fail('dup_groups.tsv 行形状不对（须同侧 >=2 个对象）: %r' % ln[:120])
+            # 一行 = 对侧锚点 + 同侧恒等副本组：set_user_match <锚> <副本...>（FM 只接受"一对多"，同侧成组会报 FM-012）
+            if len(objs) < 2 or objs[0][0] == objs[1][0] or len({o[0] for o in objs[1:]}) != 1:
+                fail('dup_groups.tsv 行形状不对（须"对侧锚点 + 同侧 >=1 个对象"）: %r' % ln[:120])
             groups.append(objs)
     L = []
     A = L.append
-    A('# ---- 四、恒等副本寄存器组（%d 组 / %d 个对象；数据 verif/ut/Frontend/dup_groups.tsv）----'
-      % (len(groups), sum(len(g) for g in groups)))
+    A('# ---- 四、恒等副本寄存器组（%d 组 / %d 个副本；数据 verif/ut/Frontend/dup_groups.tsv）----'
+      % (len(groups), sum(len(g) - 1 for g in groups)))
     A('set ::FE_DUP_EXPECT %d' % len(groups))
     A('set ::FE_DUP_OK 0')
     A('set ::FE_DUP_BAD 0')

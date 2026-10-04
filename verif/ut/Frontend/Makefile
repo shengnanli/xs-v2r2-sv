@@ -387,7 +387,13 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Frontend.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS
     $(GOLDEN_RTL)/array_ext.v
 
 FM_VARIANTS = Frontend
+# 唯一黑盒 = 存储宏叶子 array_*_ext（84 对，vendor_macro），逐对象声明在 verif/allow/Frontend.json。
 FM_MODE = assembly
+# 不合并重复寄存器：Predictor 打开 merge 到达 Matching 慢 7 倍（docs/predictor_fm_scaling_wall.md）；golden 的恒等副本
+# 改由钉点第四节（FM 结构识别的副本组，一对多）配对。比较点 = 寄存器位 + 输出位 + 黑盒输入位，fm_predict 模型严格适用。
+FM_MERGE_DUP = false
+# 两侧对称死位（子模块各自签核时已由 vmucp 真比较的那批）在本层继续真比；依据与六条见 verif/fm_target_config/Frontend.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
