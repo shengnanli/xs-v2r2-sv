@@ -171,3 +171,15 @@ UT 抓不到：s2 只从 s1 取值、s1 只在 fire 后变，恒开使能在可�
 | 目标 | 模型 expected | 诊断 passing / constant / unread | 预测 passing | vmucp |
 |---|---|---|---|---|
 | ExeUnit_10 | 6501（5641 + 860） | 6224 / 272 / 5 | **6229**（+5） | 是（verif/fm_target_config/ExeUnit_10.tcl） |
+
+2.3.D / 2.4.D（第四批：ExeUnit / ExeUnit_8）
+
+| 目标 | 9 档 errors | 每档 checks | 覆盖（seed 1） |
+|---|---|---|---|
+| ExeUnit | 全 0 | 3,999,420 | in {30612, 33854, 33823} / out {34086, 30666, 30547} / 反压 8647 / 冲刷 16396 / 未命中 17957 / 门控开 213887 关 186079 |
+| ExeUnit_8 | 全 0 | 5,598,964 | in {25372, 25612, 22990, 25639} / out {24356, 23053, 25523, 21917} / 反压 7865 / 冲刷 16568 / 未命中 17940 / 门控开 257107 关 342845 |
+
+| 目标 | 模型 expected | 诊断 passing / constant / unread | 预测 passing | vmucp |
+|---|---|---|---|---|
+| ExeUnit | 7839（7050 + 789） | 7325 / 487 / 27 | **7352**（+27） | 是（verif/fm_target_config/ExeUnit.tcl） |
+| ExeUnit_8 | 8894（7584 + 1310） | 8585 / 299 / 10 | **8595**（+10） | 是（verif/fm_target_config/ExeUnit_8.tcl） |
