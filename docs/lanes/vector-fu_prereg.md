@@ -175,6 +175,48 @@ b 的 canonical 标志接成 a 的 ⇒ 829。
 
 没有做过任何 FM 试跑。
 
+## 5. FPCVT（golden 145 行；重写 87 行）
+
+### 5.1 结构与子模块处置
+
+- 标量浮点转换外壳：`xs_FPCVT_core`（{opType[4:3], sew} → 源 / 结果宽度独热两张译码表，case 表与 Scala TruthTable 逐行对应；
+  golden 的 PLA 积之和与该表 16 种输入逐一核对相等）+ wrapper（wrapper 里例化 CVT64 fcvt，层次名同 golden）。本层纯组合。
+- child：**CVT64 —— docs/coverage_three_axis.tsv 第 3 列 PROVEN_IN_CONE，main 无重写件**（exeunits lane 有，分支未合入、属其认领）→
+  两侧同源 golden（RTL_GOLDEN_DEPS，同 verif/ut/FCVT 的处置），不设黑盒；CVT64 例化的 FP_INCVT 及其 4 个 child（已签核）
+  两侧白盒（ref golden / impl 重写件）。★exeunits 的 CVT64 重写件合入 main 后，本 receipt 的 impl 闭包会变（CVT64 golden→重写件），需重证。★
+- vmucp：FP_INCVT 内 fcvtmodTrueExpReg[4:0] 5 位两侧对称死位（与 FP_INCVT / FCVT 签核同一组，按名配上，无钉点）。
+
+### 5.2 UT（9 档 × 200k，commit fcbaac7f0 的字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED |
+| 7  | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED |
+| 42 | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED |
+
+★UT 限度★：CVT64 两侧共用 golden 定义，FP_INCVT 在两侧都解析到 golden（重写件的替换由 FM 兜底；其自身 UT 在 verif/ut/FP_INCVT）。
+独立 oracle：tb 内按 Scala TruthTable 另写的表逐拍比重写核的 input1H / output1H，oracle_errors=0；16 种 {宽度关系, sew} 各 >= 1000 拍；
+fire 计数（seed 1 / +0）f2i 71406 / i2f 35839 / f2f 32676 / fround 24250 / fcvtmod 9222；result 64 位、fflags 除 DZ 外每位见过 0/1。
+变异（scratchpad，20k 拍）：变窄 32→16 表项结果宽度改 32 ⇒ errors=1159；f64→f16 表项改 64 ⇒ 386；
+★default 行 input1H 改 W8 ⇒ 差分 0、oracle 5634★（非法组合下 CVT64 输出不受 input1H 影响，只有 oracle 看得见；FM 同样只比输出，
+这类变异两侧等价，不构成可观测差异）。
+
+### 5.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/FPCVT.json）
+
+模型 expected = 572（寄存器 503 = CVT64 78 + FP_INCVT 425；输出 69）。预期 constant reg **27**（= FP_INCVT 自签核与 FCVT 签核的
+constant_reg 27，本层只是把 input1H/output1H 从自由输入换成译码表输出，不新增常量寄存器）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **545**（= 572 − 27） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 27 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过任何 FM 试跑。
+
 ## 对账（跑完追加）
 
 ### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule
