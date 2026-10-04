@@ -90,3 +90,17 @@ unread 0（每个 ram 位都有出队端口读，生成器现算 0 个未读位�
 2. 指针名不同（golden `wrap`/`enq_ptr_value`，impl `u_core/enq_ptr`），靠签名匹配；L2Queues 先例无需钉点。
 3. Queue2_TLBundleE_1 无 io_deq_ready（恒 1），impl 把核的 deq_ready 接 1'b1；FM 应当常量传播后等价。
 4. 本节之前没有做过任何 FM 试跑。
+
+## 4. 对账（证明 commit `1fda02fae`，evidence/1fda02fae0f1，追加于跑后）
+
+27/27 native SUCCEEDED，全部 failing 0 / unverified 0 / aborted 0 / unread_notcompared 0 / unmatched 全 0 /
+无黑盒 / 无 dont_verify / 无 ELAB-147 / 无放宽 appvar。`python3 scripts/fm_predict.py check <27 个>` rc=0：
+
+- 20 个逐位等于预测。
+- 7 个差额全部 = receipt 的 constant_reg：Queue2_TLBundleA_7 −257、B_1 −43、C −53、D_20 −3、Queue16_CHIREQ −54、
+  Queue16_CHIRSP −9（另 Pipeline 无差）。即 W0_data 常量段的 ram 位被 FM 判为常量寄存器、不产生比较点
+  （每个常量位计 1，不随深度翻倍）。★§3「明写可能出错」第 1 条我写的是"预计不会"——这条判断错了，
+  passing 数字照登记不改，差额由 constant_reg 逐位指认。★
+- `scripts/check_lane_receipts.py /home/eda/xs-env/wt-uncore-queues` rc=0。
+
+未跑 FM：Queue78_PCrdGranted、Queue40_L2TlbMQBundle（ram 边界待 codex 裁定，见 §1）。
