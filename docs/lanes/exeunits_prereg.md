@@ -151,3 +151,13 @@ UT 抓不到：s2 只从 s1 取值、s1 只在 fire 后变，恒开使能在可�
 | ExeUnit_9 | 2158（1363 + 795） | 2127 / 30 / 1 | **2128**（+1） | 是（verif/fm_target_config/ExeUnit_9.tcl） |
 
 其余均为 failing / unverified / unmatched 0、无黑盒、无 dont_verify，SUCCEEDED。
+
+2.3.B / 2.4.B（第二批：ExeUnit_5）
+
+| 目标 | 9 档 errors | 每档 checks | 覆盖（seed 1） |
+|---|---|---|---|
+| ExeUnit_5 | 全 0 | 27,192,792 | in {15439, 15270, 16929, 15190, 15323, 15378} / out {17109, 16934, 15216, 16878, 16963, 17084} / 反压 9203 / 冲刷 16703 / 未命中 18230 / 门控开 60962 关 139022 |
+
+| 目标 | 模型 expected | 诊断 passing / constant / unread | 预测 passing | vmucp |
+|---|---|---|---|---|
+| ExeUnit_5 | 3505（1481 + 2024） | 3505 / 0 / 0 | **3505** | 否 |
