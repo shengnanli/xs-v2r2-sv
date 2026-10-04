@@ -64,10 +64,11 @@ def main():
         if not good_:
             fails.append(name)
     fails += scope_cases()
+    fails += ram40_cases()
     if fails:
         print(f'test_audit_ram_manual_review: ★{len(fails)} 条不过★ {fails}')
         return 1
-    print('test_audit_ram_manual_review: 全过（M3 复核 1 正 + 7 负；父级范围 2 正 + 10 负）')
+    print('test_audit_ram_manual_review: 全过（M3 复核 1 正 + 7 负；父级范围 2 正 + 10 负；ram_40x47 3 正 + 10 负）')
     return 0
 
 
@@ -136,6 +137,75 @@ def scope_cases():
     chk('C2 impl 闭包字节变了', F._child_cert_current(tamper('impl'), 'GrantBuffer', canon), False)
     chk('C3 golden 闭包字节变了', F._child_cert_current(tamper('golden'), 'GrantBuffer', canon), False)
     chk('C4 G1 canonical 不同源', F._child_cert_current(ctx, 'GrantBuffer', 'G1-deadbeef'), False)
+    return fails
+
+
+
+def ram40_cases():
+    """codex 0209：ram_40x47 父级范围 {L2TlbMissQueue, L2TLB, L2TLBWrapper}，仅限 L2TlbMissQueue 子树。
+    R0 三个父级的真实 allow 声明通过（L2TLB/L2TLBWrapper 同时机器复算 child receipt 未 stale）
+    R1 别的父级（L2Top）                 R2 别的 ram 套 L2TLB 的路径（ram_10x89）
+    R3 路径不在 L2TlbMissQueue 子树      R4 两侧不对称（impl 缺）    R5 一侧两个实例
+    R6 child receipt 的 impl 闭包 stale  R7 child receipt verdict 不合格  R8 child receipt 不存在
+    R9 fm_verdict 判据：L2TLB 声明里多出一个子树外的 ram_40x47 → 红"""
+    import json
+    import shutil
+    import tempfile
+    import fm_verdict as F
+    fails = []
+
+    def chk(name, got, want):
+        ok = (got is True) == want
+        print(f'  {name:28s} {"ok" if ok else "★FAIL★"}  {str(got)[:110]}')
+        if not ok:
+            fails.append(name)
+
+    def objs(t):
+        d = json.loads((REPO / 'verif' / 'allow' / f'{t}.json').read_text())
+        return [e for e in d['objects'] if e['design'] == 'ram_40x47']
+
+    for t in ('L2TlbMissQueue', 'L2TLB', 'L2TLBWrapper'):
+        ok, msg, _ = A.check_parent_scope('ram_40x47', t, objs(t))
+        chk(f'R0 {t}', ok or msg, True)
+    lt = objs('L2TLB')
+    l2 = [dict(e, path=e['path'].replace('/WORK/L2TLB/', '/WORK/L2Top/')) for e in lt]
+    chk('R1 别的父级 L2Top', A.check_parent_scope('ram_40x47', 'L2Top', l2)[0] or 'red', False)
+    chk('R2 别的 ram', A.check_parent_scope('ram_10x89', 'L2TLB', lt)[0] or 'red', False)
+    out = [dict(e, path=e['path'].replace('issQueue/io_out_q', 'issQueue2/io_out_q')) for e in lt]
+    chk('R3 不在 MissQueue 子树', A.check_parent_scope('ram_40x47', 'L2TLB', out)[0] or 'red', False)
+    chk('R4 两侧不对称', A.check_parent_scope(
+        'ram_40x47', 'L2TLB', [e for e in lt if e['side'] == 'r'])[0] or 'red', False)
+    chk('R5 一侧两个实例', A.check_parent_scope('ram_40x47', 'L2TLB', lt + lt[:1])[0] or 'red', False)
+
+    rel = A.L2TLB_MQ_RECEIPT[len('receipt:'):]
+    rec = json.loads((REPO / rel).read_text())
+    with tempfile.TemporaryDirectory() as td:
+        tdp = pathlib.Path(td)
+
+        def mk(doc, tamper_impl=False):
+            for sub in (tdp / 'evidence', tdp / 'rtl'):
+                shutil.rmtree(sub, ignore_errors=True)
+            (tdp / rel).parent.mkdir(parents=True, exist_ok=True)
+            (tdp / rel).write_text(json.dumps(doc))
+            for e in doc['impl_closure']:
+                dst = tdp / e['path']
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                b = (REPO / e['path']).read_bytes()
+                dst.write_bytes(b + (b'\n// tampered\n' if tamper_impl else b''))
+        mk(rec)
+        chk('R6- 副本仓库原样通过', A.check_child_receipt_current(rel, repo=tdp)[0] or 'red', True)
+        mk(rec, tamper_impl=True)
+        chk('R6 impl 闭包 stale', A.check_child_receipt_current(rel, repo=tdp)[0] or 'red', False)
+        mk(dict(rec, verdict='PARTIAL'))
+        chk('R7 verdict 不合格', A.check_child_receipt_current(rel, repo=tdp)[0] or 'red', False)
+        chk('R8 receipt 不存在', A.check_child_receipt_current(
+            'evidence/000000000000/L2TlbMissQueue/receipt.json')[0] or 'red', False)
+
+    extra = dict(lt[0], path='r:/WORK/L2TLB/cache/ram_ext')
+    decl = {(e['side'], e['design'], e['path']): e for e in lt + [extra]}
+    chk('R9 fm_verdict 子树外多一个', F._ram_parent_scope_check(decl, 'L2TLB', None, None), False)
+    decl_ok = {(e['side'], e['design'], e['path']): e for e in lt}
+    chk('R9- fm_verdict 真实声明通过', F._ram_parent_scope_check(decl_ok, 'L2TLB', None, None), True)
     return fails
 
 
