@@ -1,0 +1,200 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/Queue2_TLBundleA_19
+Implementation : i:/WORK/Queue2_TLBundleA_19
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 06:49:16 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    Queue2_TLBundleA_10
+
+       Instances : 0
+
+e *    Queue2_TLBundleA_12
+
+       Instances : 0
+
+e *    Queue2_TLBundleA_14
+
+       Instances : 0
+
+e *    Queue2_TLBundleA_15
+
+       Instances : 0
+
+e *    Queue2_TLBundleA_31
+
+       Instances : 0
+
+e *    Queue2_TLBundleA_6
+
+       Instances : 0
+
+e *    Queue2_TLBundleA_7
+
+       Instances : 0
+
+e *    Queue2_TLBundleA_8
+
+       Instances : 0
+
+e *    Queue2_TLBundleB
+
+       Instances : 0
+
+e *    Queue2_TLBundleB_1
+
+       Instances : 0
+
+e *    Queue2_TLBundleC
+
+       Instances : 0
+
+e *    Queue2_TLBundleC_1
+
+       Instances : 0
+
+e *    Queue2_TLBundleD_11
+
+       Instances : 0
+
+e *    Queue2_TLBundleD_13
+
+       Instances : 0
+
+e *    Queue2_TLBundleD_15
+
+       Instances : 0
+
+e *    Queue2_TLBundleD_20
+
+       Instances : 0
+
+e *    Queue2_TLBundleD_7
+
+       Instances : 0
+
+e *    Queue2_TLBundleD_8
+
+       Instances : 0
+
+e *    Queue2_TLBundleE
+
+       Instances : 0
+
+e *    Queue2_TLBundleE_1
+
+       Instances : 0
+
+e *    ram_2x116
+
+       Instances : 0
+
+e *    ram_2x117
+
+       Instances : 0
+
+e *    ram_2x133
+
+       Instances : 0
+
+e *    ram_2x136
+
+       Instances : 0
+
+e *    ram_2x137
+
+       Instances : 0
+
+e *    ram_2x281
+
+       Instances : 0
+
+e *    ram_2x283
+
+       Instances : 0
+
+e *    ram_2x284
+
+       Instances : 0
+
+e *    ram_2x309
+
+       Instances : 0
+
+e *    ram_2x321
+
+       Instances : 0
+
+e *    ram_2x352
+
+       Instances : 0
+
+e *    ram_2x356
+
+       Instances : 0
+
+e *    ram_2x359
+
+       Instances : 0
+
+e *    ram_2x373
+
+       Instances : 0
+
+e *    ram_2x406
+
+       Instances : 0
+
+e *    ram_2x76
+
+       Instances : 0
+
+e *    ram_2x79
+
+       Instances : 0
+
+e *    ram_2x80
+
+       Instances : 0
+
+e *    ram_sink_2x10
+
+       Instances : 0
+
+e *    ram_sink_2x8
+
+       Instances : 0
+
+e *    xs_ChiselQueue_core
+
+       Instances : 0
+
+
+1
+

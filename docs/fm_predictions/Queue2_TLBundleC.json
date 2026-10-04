@@ -1,0 +1,9 @@
+{
+  "target": "Queue2_TLBundleC",
+  "ut": "UncoreTLQueues",
+  "regs": 749,
+  "outs": 375,
+  "expected": 1124,
+  "merge_dup": "false",
+  "model_applicable": true
+}

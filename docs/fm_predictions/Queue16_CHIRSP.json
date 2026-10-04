@@ -1,0 +1,9 @@
+{
+  "target": "Queue16_CHIRSP",
+  "ut": "UncoreChiQueues",
+  "regs": 1001,
+  "outs": 68,
+  "expected": 1069,
+  "merge_dup": "false",
+  "model_applicable": true
+}

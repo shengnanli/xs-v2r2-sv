@@ -1,0 +1,9 @@
+{
+  "target": "Queue16_CHIREQ",
+  "ut": "UncoreChiQueues",
+  "regs": 2201,
+  "outs": 143,
+  "expected": 2344,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Queue2_TLBundleD_7
+Implementation : i:/WORK/Queue2_TLBundleD_7
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 06:51:03 2026
+**************************************************
+
+No aborted compare points.
+
+1
