@@ -183,3 +183,32 @@ b 的 canonical 标志接成 a 的 ⇒ 829。
 native SUCCEEDED，passing 512 / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，黑盒 0，dont_verify 无。
 impl_closure `rtl/backend/VecDataSplitModule.sv` sha256 4c5691e6…（= 提交字节）。
 预测 512 vs 实测 512，差 0（`fm_predict.py check VecDataSplitModule` rc=0）。
+
+### B. FloatAdderF64Pipeline —— 首跑 FAILED（未收录）→ 补「匹配前」钉点后 evidence/56fb4b9ce03f/FloatAdderF64Pipeline
+
+**首跑（commit 9ba6efb8a，evidence/9ba6efb8ae1f，FAILED，不 add）**：native FAILED，passing 875 / failing 20（FM 默认 limit 截断，
+「至少 20」）/ unverified 43 / unmatched 125+125，constant_reg 12。unmatched.rpt 逐类：本体常量位 119 对（ref
+`float_adder_result_r_1[51:0]`/`_r_2[62:0]`/`io_fflags_r_1[3:0]` 为 DFF0X ↔ impl `s1_inf_result`/`s1_both_zero_result`/`s1_fflags_stage0`
+为 DFF0，名字不同、又是常量无签名）+ close 子树两对同源双份寄存器 6 位（golden `U_Lshift_io_src_r[1:0]` / `lshift_result_head_is_one_r_1[1:0]` /
+`close_fraction_result_r` / `EA_sub_value_r`，同一 D 输入两份，签名分析分不清）。20 个 failing 全是 `io_fp_c` 位，落在这些未配上寄存器的锥里。
+**根因是配对，不是 RTL**：修法 = `verif/ut/FloatAdderF64Pipeline/fm_pins_pre.tcl`（commit 75f0b38a2，字面 443 对：本体 15 寄存器 334 位
+按 golden 名 ↔ 语义名、close 两对按各自读者一一对应），RTL 一字未改（impl 闭包 sha 两跑相同：FloatAdderF64Pipeline.sv bb030055…）。
+预测（§2.3）登记在首跑之前，未改。
+
+**第二跑（PROOF_COMMIT=56fb4b9ce，`bash scripts/run_proof.sh FloatAdderF64Pipeline FloatAdderF64Pipeline`）**：
+native SUCCEEDED，passing **944** / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，constant_reg **131**，黑盒 0，
+dont_verify 无；钉点 `F64P_PIN_PRE_END n=443 bad=0`、`FADD64TOP_PIN_END n=3`。预测 944 / constant 131 —— 逐项相等；
+`fm_predict.py check FloatAdderF64Pipeline`：1075 − 944 = 131 = constant_reg 131，rc=0。
+vmucp 六条：(1) 精确绑定 = close 子树 3 点（钉点文件字面 3 对）；(2) 双射 3↔3；(3) 真比较：unread_notcompared 0、
+3 点里 CS4 op1[52] 归 constant（含在 131 内）、其余 2 点进 passing（模型 1075 − 131 = 944 恰好全比）；(4) 全零；(5) 无 dont_verify / elab147 /
+放宽 appvar / 黑盒；(6) `verif/fm_target_config/FloatAdderF64Pipeline.tcl` 在 sidecar/script_closure.list。
+变异（scratchpad，30k 拍，判据 = 失配数）：sgnj 不做 canonical 修正 ⇒ errors=51；fltq 的 NV 改任意 NaN ⇒ 177；
+去掉「差 1 且恰一个零指数归 far」 ⇒ 2；两零相加符号用 RUP ⇒ 42；fminm 不判 NaN ⇒ 97；fclass 不看 canonical ⇒ 15（全部 oracle 也同数抓到）。
+
+### C. FloatDivider —— evidence/56fb4b9ce03f/FloatDivider
+
+PROOF_COMMIT=56fb4b9ce，`bash scripts/run_proof.sh FloatDivider FloatDivider`：native SUCCEEDED，passing **721** / failing 0 / unverified 0 /
+aborted 0 / unread 0，unmatched 全 0，constant_reg **30**，黑盒 0，dont_verify 无。预测 721 / 30 —— 逐项相等；
+`fm_predict.py check FloatDivider`：751 − 721 = 30 = constant_reg 30，rc=0。vmucp 六条：(1) 精确绑定 = FloatDividerR64 的
+fp_format_onehot_q[2] 1 位（FM 按名配上，无钉点）；(2) 双射 1↔1；(3) 真比较：unread_notcompared 0，passing 含此点（751 − 30 恰好全比）；
+(4) 全零；(5) 无放宽、无黑盒；(6) `verif/fm_target_config/FloatDivider.tcl` 在 script_closure。
