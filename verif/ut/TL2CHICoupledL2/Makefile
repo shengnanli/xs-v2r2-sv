@@ -156,6 +156,8 @@ FM_VARIANTS = TL2CHICoupledL2
 FM_MERGE_DUP = false
 FM_MODE = assembly
 FM_ALLOWLIST ?= 0
+# vmucp（加强不是放宽）：37783 个对称 matched-unread 点，依据与六条证据见 verif/fm_target_config/TL2CHICoupledL2.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail
 
