@@ -1,0 +1,326 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/Slice_1
+Implementation : i:/WORK/Slice_1
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 08:41:23 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    TECH LIBRARY - i:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      array_14_ext
+
+       Instances : 4 of 4
+       ------------------------
+       i:/WORK/Slice_1/directory/tagArray/array_0_0_0/array/array/array_14_ext
+       i:/WORK/Slice_1/directory/tagArray/array_0_0_1/array/array/array_14_ext
+       i:/WORK/Slice_1/directory/tagArray/array_0_1_0/array/array/array_14_ext
+       i:/WORK/Slice_1/directory/tagArray/array_0_1_1/array/array/array_14_ext
+
+u      array_15_ext
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Slice_1/directory/metaArray/array/array/array_15_ext
+
+u      array_16_ext
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Slice_1/directory/replacer_sram_opt/array/array/array_16_ext
+
+u      array_17_ext
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Slice_1/directory/origin_bit_opt/array/array/array_17_ext
+
+u      array_18_ext
+
+       Instances : 4 of 4
+       ------------------------
+       i:/WORK/Slice_1/dataStorage/array/array_0_0_0/array/array/array_18_ext
+       i:/WORK/Slice_1/dataStorage/array/array_0_0_1/array/array/array_18_ext
+       i:/WORK/Slice_1/dataStorage/array/array_0_0_2/array/array/array_18_ext
+       i:/WORK/Slice_1/dataStorage/array/array_0_0_3/array/array/array_18_ext
+
+u      ram_10x89
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Slice_1/u_core/grantBuf/pftRespQueue/ram_ext
+
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    DataStorage
+
+       Instances : 0
+
+e *    DataStorage_2
+
+       Instances : 0
+
+e *    DataStorage_3
+
+       Instances : 0
+
+e *    Directory
+
+       Instances : 0
+
+e *    Directory_2
+
+       Instances : 0
+
+e *    Directory_3
+
+       Instances : 0
+
+e *    GatedSplittedSRAM
+
+       Instances : 0
+
+e *    GatedSplittedSRAM_2
+
+       Instances : 0
+
+e *    GatedSplittedSRAM_3
+
+       Instances : 0
+
+e *    L2DataStorage
+
+       Instances : 0
+
+e *    L2DataStorage_2
+
+       Instances : 0
+
+e *    L2DataStorage_3
+
+       Instances : 0
+
+e *    L2Directory
+
+       Instances : 0
+
+e *    L2Directory_2
+
+       Instances : 0
+
+e *    L2Directory_3
+
+       Instances : 0
+
+e *    L2Slice
+
+       Instances : 0
+
+e *    L2Slice_2
+
+       Instances : 0
+
+e *    L2Slice_3
+
+       Instances : 0
+
+e *    RRArbiterInit
+
+       Instances : 0
+
+e *    SRAMTemplate_148
+
+       Instances : 0
+
+e *    SRAMTemplate_150
+
+       Instances : 0
+
+e *    SRAMTemplate_152
+
+       Instances : 0
+
+e *    SRAMTemplate_153
+
+       Instances : 0
+
+e *    SRAMTemplate_154
+
+       Instances : 0
+
+e *    SRAMTemplate_155
+
+       Instances : 0
+
+e *    SRAMTemplate_178
+
+       Instances : 0
+
+e *    SRAMTemplate_181
+
+       Instances : 0
+
+e *    SRAMTemplate_185
+
+       Instances : 0
+
+e *    SRAMTemplate_186
+
+       Instances : 0
+
+e *    SRAMTemplate_187
+
+       Instances : 0
+
+e *    Slice
+
+       Instances : 0
+
+e *    Slice_2
+
+       Instances : 0
+
+e *    Slice_3
+
+       Instances : 0
+
+e *    SplittedSRAM_3
+
+       Instances : 0
+
+e *    SplittedSRAM_5
+
+       Instances : 0
+
+e *    SplittedSRAM_6
+
+       Instances : 0
+
+e *    xs_ChiselQueue1_core
+
+       Instances : 0
+
+e *    xs_ChiselQueue_core
+
+       Instances : 0
+
+e *    xs_FastArbiter_core
+
+       Instances : 0
+
+e *    xs_FixedPriorityArbiter_core
+
+       Instances : 0
+
+e *    xs_L2Directory_core
+
+       Instances : 0
+
+e *    xs_MSHRBuffer_core
+
+       Instances : 0
+
+e *    xs_RRArbiterInit_core
+
+       Instances : 0
+
+e *    xs_SRAMTemplate_core
+
+       Instances : 0
+
+e *    xs_Slice_core
+
+       Instances : 0
+
+e *    xs_mbist_hold_leaf_core
+
+       Instances : 0
+
+e *    xs_mbist_pipe_core
+
+       Instances : 0
+
+e *    xs_mbist_pipe_ctrl
+
+       Instances : 0
+
+
+
+##################################################################
+####    TECH LIBRARY - r:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      array_14_ext
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/Slice_1/directory/tagArray/array_0_0_0/array/array/array_14_ext
+       r:/WORK/Slice_1/directory/tagArray/array_0_0_1/array/array/array_14_ext
+       r:/WORK/Slice_1/directory/tagArray/array_0_1_0/array/array/array_14_ext
+       r:/WORK/Slice_1/directory/tagArray/array_0_1_1/array/array/array_14_ext
+
+u      array_15_ext
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Slice_1/directory/metaArray/array/array/array_15_ext
+
+u      array_16_ext
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Slice_1/directory/replacer_sram_opt/array/array/array_16_ext
+
+u      array_17_ext
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Slice_1/directory/origin_bit_opt/array/array/array_17_ext
+
+u      array_18_ext
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/Slice_1/dataStorage/array/array_0_0_0/array/array/array_18_ext
+       r:/WORK/Slice_1/dataStorage/array/array_0_0_1/array/array/array_18_ext
+       r:/WORK/Slice_1/dataStorage/array/array_0_0_2/array/array/array_18_ext
+       r:/WORK/Slice_1/dataStorage/array/array_0_0_3/array/array/array_18_ext
+
+u      ram_10x89
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Slice_1/grantBuf/pftRespQueue/ram_ext
+
+
+1
+

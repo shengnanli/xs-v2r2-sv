@@ -74,7 +74,8 @@ module DataStorage_2 (
   logic [136:0]  sramBore_rdata      [4];
   logic          sramBore_ack        [4];
   logic          sramBore_selectedOH [4];
-  logic [4:0]    sramBore_array      [4];
+  // sramBore_array 各 bank 位宽不同（golden: 5/6/6/6 位），按最宽声明，窄的 bank 在连接处取低位
+  logic [5:0]    sramBore_array      [4];
 
   xs_DataStorage_core u_core (
     .clock       (clock),
@@ -113,7 +114,7 @@ module DataStorage_2 (
     .boreChildrenBd_bore_rdata        (sramBore_rdata[0]),
     .boreChildrenBd_bore_ack          (sramBore_ack[0]),
     .boreChildrenBd_bore_selectedOH   (sramBore_selectedOH[0]),
-    .boreChildrenBd_bore_array        (sramBore_array[0]),
+    .boreChildrenBd_bore_array        (sramBore_array[0][4:0]),
     .boreChildrenBd_bore_1_addr       (sramBore_addr[1]),
     .boreChildrenBd_bore_1_addr_rd    (sramBore_addr_rd[1]),
     .boreChildrenBd_bore_1_wdata      (sramBore_wdata[1]),
@@ -197,7 +198,7 @@ module DataStorage_2 (
     .toSRAM_0_rdata       (sramBore_rdata[0]),
     .toSRAM_0_ack         (sramBore_ack[0]),
     .toSRAM_0_selectedOH  (sramBore_selectedOH[0]),
-    .toSRAM_0_array       (sramBore_array[0]),
+    .toSRAM_0_array       (sramBore_array[0][4:0]),
     .toSRAM_1_addr        (sramBore_addr[1]),
     .toSRAM_1_addr_rd     (sramBore_addr_rd[1]),
     .toSRAM_1_wdata       (sramBore_wdata[1]),

@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/BoothEncoderF64F32F16
+Implementation : i:/WORK/BoothEncoderF64F32F16
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:33:46 2026
+**************************************************
+
+No unverified compare points.
+
+1

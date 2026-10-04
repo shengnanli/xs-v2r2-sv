@@ -29,4 +29,18 @@ module FDPrefetcherMonitor(
   input io_pollution_cache_pollution_2
 );
   // 无输出、无状态：全部输入在本配置下没有观察者（见文件头）。
+  // golden 体内残留的三个无人读的 PopCount（性能计数探针）照抄：没有它们本模块是**空模块**，
+  // Formality 会把空模块当黑盒（black_boxes.rpt 属性 e），父级 DCache 的证明里就会多出一个
+  // impl 侧黑盒 + 10 个未配对的黑盒输入脚（2026-10-02 DCache diagnostic 实测）。
+  // 三条加法与 golden 逐字同形，仍然没有观察者，不产生任何比较点。
+  wire [1:0] useful_or_late_count =
+    2'(2'({1'h0, io_accuracy_useful_prefetch_0} + {1'h0, io_accuracy_useful_prefetch_1})
+       + 2'({1'h0, io_accuracy_useful_prefetch_2} + {1'h0, io_timely_late_prefetch}));
+  wire [1:0] demand_miss_count =
+    2'({1'h0, io_pollution_demand_miss_0}
+       + 2'({1'h0, io_pollution_demand_miss_1} + {1'h0, io_pollution_demand_miss_2}));
+  wire [1:0] cache_pollution_count =
+    2'({1'h0, io_pollution_cache_pollution_0}
+       + 2'({1'h0, io_pollution_cache_pollution_1}
+            + {1'h0, io_pollution_cache_pollution_2}));
 endmodule

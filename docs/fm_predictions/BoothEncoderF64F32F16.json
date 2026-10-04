@@ -1,0 +1,10 @@
+{
+  "target": "BoothEncoderF64F32F16",
+  "ut": "BoothEncoderF64F32F16",
+  "regs": 0,
+  "outs": 2889,
+  "expected": 2889,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "misc-core 登记：纯组合，预测 passing 2889 = 模型，constant_reg 0，unread 0。lane 非正式试跑（diagnostic-full）同为 2889。"
+}

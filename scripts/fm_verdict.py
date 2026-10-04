@@ -412,7 +412,206 @@ def _failure_reason(q, stats_err):
 #                     hash** 放行，禁止按 `_ext` 后缀或 ELAB-147 诊断文本放行★。
 #                     codex 0158 明确：**是 clean native 结果让目标转绿，不是入表本身**；
 #                     入表只是允许把同一个精确边界在两侧对称黑盒，证明仍要自己跑过。
-ALLOWED_BBOX_CLASSES = {'vendor_macro', 'green_child', 'APPROVED_MEMORY_MACRO_MODEL'}
+#   disabled_empty_module  当前配置下被 firtool 裁成空壳的禁用功能模块（codex 0206 D2）——
+#                     ★不是"凡空模块皆放行"★：只认下面 DISABLED_EMPTY_MODULES 里**精确 design 名 +
+#                     golden 文件 sha256 + 唯一父级 + 逐项实例路径**；FM 报告属性必须恰为 `e`
+#                     （FM 自动产生的 empty 黑盒，不吞 u/i/s 等其它 unresolved/interface-only）；
+#                     两侧模块源码无 output、无寄存器/always/例化；本次 FM 无黑盒输出比较点，
+#                     且父级 native SUCCEEDED、0 failing/unverified/aborted/unmatched、无 dont_verify。
+ALLOWED_BBOX_CLASSES = {'vendor_macro', 'green_child', 'APPROVED_MEMORY_MACRO_MODEL',
+                        'disabled_empty_module'}
+
+# codex 0206 D2：KunminghuV2Config 下 StorePrefetchL1Enabled=false，DCacheWrapper 只钉 miss_req.ready，
+# golden StorePipe.sv 被 DCE 成 1 个输入、0 输出、0 寄存器（仓内结论 StorePipe=EXPLICITLY_UNPROVABLE）。
+DISABLED_EMPTY_MODULES = {
+    'StorePipe': {
+        'golden_sha256': 'daf59d16df99faf0dc1a2aeb75e378e069fed773c229b333253a37eb5c1c8537',
+        'parent': 'DCache',
+        'insts': ('stu_0', 'stu_1'),
+        'impl_file': 'rtl/memblock/StorePipe.sv',
+    },
+}
+
+
+def _module_text(text, name):
+    """取 `module <name>` 到其 `endmodule` 的正文（已去注释）；找不到返回 None。"""
+    t = re.sub(r'//[^\n]*', '', re.sub(r'/\*.*?\*/', '', text, flags=re.S))
+    m = re.search(r'\bmodule\s+%s\s*[(#;]' % re.escape(name), t)
+    if not m:
+        return None
+    e = t.find('endmodule', m.end())
+    return None if e < 0 else t[m.start():e]
+
+
+_HDL_KW = {'input', 'output', 'inout', 'wire', 'logic', 'reg', 'assign', 'module', 'parameter',
+           'localparam', 'genvar', 'generate', 'endgenerate', 'if', 'else', 'for', 'begin', 'end',
+           'always', 'always_ff', 'always_comb', 'always_latch', 'initial', 'function', 'task'}
+
+
+def _empty_module_problem(body):
+    """模块正文里有任何输出口 / 状态 / 子模块例化就返回问题描述，否则 None。"""
+    if body is None:
+        return 'module_not_found'
+    if re.search(r'\b(output|inout)\b', body):
+        return 'has_output_port'
+    if re.search(r'\b(reg|always|always_ff|always_comb|always_latch|initial)\b', body):
+        return 'has_state_or_process'
+    for m in re.finditer(r'(?m)^\s*([A-Za-z_]\w*)\s+(?:#\s*\(.*?\)\s*)?([A-Za-z_]\w*)\s*\(', body):
+        if m.group(1) not in _HDL_KW and m.group(1) != 'module':
+            return f'has_instance:{m.group(1)}'
+    return None
+
+
+def _git_show(commit, path):
+    import subprocess
+    try:
+        return subprocess.run(['git', '-C', str(_repo_home()), 'show', f'{commit}:{path}'],
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              check=True).stdout.decode('utf-8')
+    except Exception:                                       # noqa: BLE001
+        return None
+
+
+def _disabled_empty_module_check(declared, attrs, top, q, expect_impl_commit,
+                                 golden_text=None, impl_text=None):
+    """declared = {key: entry}（只含 class=disabled_empty_module 的条目）。返回 True 或失败原因串。
+    golden_text / impl_text 只给负测注入用（design -> 文本）；正式路径读 G1 与 impl commit 的字节。"""
+    import hashlib
+    by_design = {}
+    for k, e in declared.items():
+        by_design.setdefault(k[1], set()).add(k)
+    for design, keys in sorted(by_design.items()):
+        spec = DISABLED_EMPTY_MODULES.get(design)
+        if spec is None:
+            return f'disabled_empty_module_not_approved:{design}'
+        if top != spec['parent']:
+            return f'disabled_empty_module_wrong_parent:{design}@{top}'
+        want = {(sd, design, f'{sd}:/WORK/{top}/{inst}') for sd in ('r', 'i') for inst in spec['insts']}
+        if keys != want:
+            extra, missing = keys - want, want - keys
+            return (f'disabled_empty_module_inst_set_mismatch:{design}:extra={len(extra)},missing={len(missing)}')
+        for k in sorted(keys):
+            if attrs.get(k) != 'e':
+                return f'disabled_empty_module_not_fm_empty:{k[2]}(attrs={attrs.get(k)!r})'
+        if golden_text is not None:
+            gtxt = golden_text.get(design)
+        else:
+            g1 = os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical'
+            try:
+                gtxt = open(os.path.join(g1, 'golden-rtl', design + '.sv'), 'rb').read().decode()
+            except OSError:
+                gtxt = None
+        if gtxt is None:
+            return f'disabled_empty_module_golden_missing:{design}'
+        if hashlib.sha256(gtxt.encode()).hexdigest() != spec['golden_sha256']:
+            return f'disabled_empty_module_golden_sha_mismatch:{design}'
+        pr = _empty_module_problem(_module_text(gtxt, design))
+        if pr:
+            return f'disabled_empty_module_golden_{pr}:{design}'
+        if impl_text is not None:
+            itxt = impl_text.get(design)
+        else:
+            if not expect_impl_commit:
+                return 'disabled_empty_module_no_commit_context(须 --impl-commit)'
+            itxt = _git_show(expect_impl_commit, spec['impl_file'])
+        if itxt is None:
+            return f'disabled_empty_module_impl_missing:{design}'
+        pr = _empty_module_problem(_module_text(itxt, design))
+        if pr:
+            return f'disabled_empty_module_impl_{pr}:{design}'
+    # 父级自身必须是干净的 native 证明（不靠 assembly 的 unmatched 配额）
+    if q is None:
+        return 'disabled_empty_module_no_stats'
+    if q.get('native') != 'SUCCEEDED':
+        return f'disabled_empty_module_native_{q.get("native")}'
+    for k in ('failing', 'unmatched'):
+        if q.get(k) != 0:
+            return f'disabled_empty_module_{k}={q.get(k)}'
+    for k in ('unverified', 'aborted', 'blackbox_out'):
+        if q.get(k) not in (0, None):
+            return f'disabled_empty_module_{k}={q.get(k)}'
+    if q.get('dont_verify') or q.get('elab147'):
+        return 'disabled_empty_module_has_dontverify_or_elab147'
+    return True
+
+
+def _child_cert_current(ctx, child, expect_canonical):
+    """codex 0206 D3 的「GrantBuffer 当前证书有效」：child 的 tracked 证书在父 commit 上仍描述
+    **同一份被证明的东西**。逐条复用 proof_certificate 的 D57 判据：证书来自该 commit、schema 合格、
+    target 对、verdict 合格、G1 同源、工具/钉死 appvar 与 policy 一致、allow 声明字节未变、
+    impl 与脚本闭包在父 commit 上逐字节复算一致、golden 闭包（含 impl 侧挂的 golden 存储模型）
+    与 G1 MANIFEST 一致、证书 commit 是父 commit 的祖先。
+    与 green_child 的两处差别（照实写明，不是放宽 green_child）：
+      · 不要求 impl_commit == policy.freeze_commit —— 那条是冻结日 green_child 计绿用的；这里只问
+        「此刻 child 的证明是否仍然成立」，与 check_shared_impl_impact 的 STALE 口径一致；
+      · impl 侧挂的 golden（GrantBuffer 的 ram_16x25 / ram_data_16x256 两侧同源存储模型）不要求
+        自身是 FM target 并持证，只要求字节与 G1 MANIFEST 相同（3c 同口径）。
+    返回 True 或失败原因串（fail-closed）。"""
+    PC, repo, c, pol = ctx['PC'], ctx['repo'], ctx['commit'], ctx['policy']
+    doc, _blob, err = PC.load_certificate(repo, c, child)
+    if err:
+        return f'certificate:{err}'
+    errs = PC.validate_document(doc)
+    if errs:
+        return f'certificate_invalid:{errs[0]}'
+    if doc.get('target') != child:
+        return 'certificate_target_mismatch'
+    if doc.get('verdict') not in (pol.get('qualifying_verdicts') or list(PC.QUALIFYING_VERDICTS)):
+        return f'certificate_verdict_not_qualifying:{doc.get("verdict")}'
+    if expect_canonical and doc.get('g1_canonical_id') != expect_canonical:
+        return 'certificate_canonical_mismatch'
+    if pol.get('g1_canonical_id') and doc.get('g1_canonical_id') != pol['g1_canonical_id']:
+        return 'certificate_canonical_not_policy'
+    pt = pol['tool']
+    if any(doc['tool'].get(k) != pt.get(k) for k in ('name', 'version', 'build')):
+        return 'certificate_tool_policy_mismatch'
+    av = doc['proof_config'].get('entry_appvars_readback') or {}
+    for k, want in pol['pinned_entry_appvars'].items():
+        if av.get(k) != want:
+            return f'certificate_appvar_policy_mismatch:{k}'
+    import hashlib
+    for kind, rec in (doc['proof_config'].get('declarations') or {}).items():
+        blob = repo.show(c, rec.get('path') or '')
+        if blob is None or hashlib.sha256(blob).hexdigest() != rec.get('sha256'):
+            return f'certificate_declaration_changed:{rec.get("path")}'
+    for name, ents in (('impl', doc['input_closure']['impl']),
+                       ('script', doc['script_closure']['entries'])):
+        ok, changed, missing = PC.recompute_closure_at(repo, c, ents)
+        if missing or changed or ok == 0:
+            return f'certificate_{name}_closure_stale:{(missing or changed or ["empty"])[0]}'
+    man = PC._g1_manifest(ctx['g1'])
+    if not man:
+        return 'certificate_g1_manifest_unavailable'
+    for e in list(doc['input_closure']['golden']) + PC.impl_golden_entries(doc):
+        base = e['path'].split('/')[-1]
+        if man.get(base) != e['sha256']:
+            return f'certificate_golden_changed:{base}'
+    if not repo.is_ancestor(doc['impl_commit'], c):
+        return 'certificate_commit_not_ancestor'
+    return True
+
+
+def _ram_parent_scope_check(declared, top, expect_impl_commit, expect_canonical):
+    """codex 0206 D3：MANUAL_REVIEW 的 ram_* 只能出现在授权父级的授权路径上；经由已签 child
+    授权的（Slice×4 经 GrantBuffer），child 的 tracked 证书须在本次父 commit 上仍然有效。"""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import audit_ram_memory_model as _ARM
+    by_design = {}
+    for k, e in declared.items():
+        if e.get('class') == 'APPROVED_MEMORY_MACRO_MODEL' and k[1] in _ARM.MANUAL_REVIEW_DESIGNS:
+            by_design.setdefault(k[1], []).append(e)
+    for design, objs in sorted(by_design.items()):
+        ok, msg, via = _ARM.check_parent_scope(design, top, objs)
+        if not ok:
+            return f'ram_parent_scope:{msg}'
+        if via:
+            ctx, cerr = _cert_ctx(expect_impl_commit)
+            if cerr:
+                return f'ram_parent_scope_via_{via}:{cerr}'
+            r = _child_cert_current(ctx, via, expect_canonical)
+            if r is not True:
+                return f'ram_parent_scope_via_{via}:{r}'
+    return True
 
 
 def _hier_key(path):
@@ -478,7 +677,8 @@ def _in_top_root(key, top):
 
 
 def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None,
-                         expect_impl_commit=None, top=None, diag=None):
+                         expect_impl_commit=None, top=None, diag=None, q=None,
+                         _inject=None):
     """观测黑盒集合须与声明**精确相等**，且每条类别合法、ref/impl 成对。
     返回 True 或失败原因串。
 
@@ -532,6 +732,19 @@ def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None,
         diff = sorted(set(ref_cnt) ^ set(impl_cnt)) or \
             sorted(d for d in ref_cnt if ref_cnt[d] != impl_cnt.get(d))
         return f'assembly_bbox_not_symmetric:{diff[0]}(ref={ref_cnt.get(diff[0], 0)},impl={impl_cnt.get(diff[0], 0)})'
+    # --- disabled_empty_module（codex 0206 D2）---------------------------------
+    dem = {k: e for k, e in declared.items() if e.get('class') == 'disabled_empty_module'}
+    if dem:
+        inj = _inject or {}
+        r = _disabled_empty_module_check(dem, attrs, top, q, expect_impl_commit,
+                                         golden_text=inj.get('golden_text'),
+                                         impl_text=inj.get('impl_text'))
+        if r is not True:
+            return 'assembly_' + r
+    # --- MANUAL_REVIEW ram_* 的父级授权范围（codex 0206 D3）---------------------
+    r = _ram_parent_scope_check(declared, top, expect_impl_commit, expect_canonical)
+    if r is not True:
+        return 'assembly_' + r
     # --- green_child：D57 证书路径 -------------------------------------------
     gc = [(k, e) for k, e in declared.items() if e.get('class') == 'green_child']
     if gc:
@@ -713,7 +926,7 @@ def _verdict_core(log_text, make_rc=0, mode="signoff-strict", expected_top=None,
         _diag = {}
         bb = _assembly_bbox_check(bbox_obs, bbox_attrs or {}, allow_decl,
                                   expect_canonical, expect_impl_commit,
-                                  top=q["top"], diag=_diag)
+                                  top=q["top"], diag=_diag, q=q)
         q.update(_diag)
         if bb is not True:
             q["reason"] = bb

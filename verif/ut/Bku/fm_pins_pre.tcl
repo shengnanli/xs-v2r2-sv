@@ -45,3 +45,17 @@ if {$top eq "Bku"} {
   }
   puts "BKU_PINS: funcReg<->func_s1 whole-register bijection pinned=$_n miss=$_miss (expect 9 / 0)"
 }
+
+# ============================================================================
+# ★2026-10-03（agent/misc-core，合 main 后）：countModule 换成重写件 rtl/backend/CountModule.sv★
+#   它的 funcReg 在 u_core 下（u_core/countModule/u_core/funcReg_reg），死位 [8:3] 与独立签核时同型
+#   （verif/ut/BkuLeaves/fm_pins_pre.tcl 的 CountModule 段）：整寄存器 9 位一一对应钉上，只消名差。
+# ============================================================================
+set _bku_cm_n 0
+for {set b 0} {$b < 9} {incr b} {
+  if {[set_user_match "r:/WORK/Bku/countModule/funcReg_reg\[$b\]" "i:/WORK/Bku/u_core/countModule/u_core/funcReg_reg\[$b\]"]} {
+    incr _bku_cm_n
+  }
+}
+puts "BKU_COUNTMODULE_PIN_END n=$_bku_cm_n expect=9"
+if {$_bku_cm_n != 9} { error "BKU_COUNTMODULE_PIN_MISS n=$_bku_cm_n expect=9" }

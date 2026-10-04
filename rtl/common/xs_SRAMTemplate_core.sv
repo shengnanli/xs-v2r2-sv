@@ -270,7 +270,9 @@ module xs_SRAMTemplate_core #(
     assign wckEn       = ramWen & ~wckEnReg;
     assign respCapture = respReg[0];
     assign readLast    = 1'b0;   // MCP 形态不用 holdRead
-  end else begin : g_nomcp
+  end else if (ENABLE_HOLDREAD) begin : g_nomcp
+    // 非多周期宏 + holdRead 开：respReg 采 MBIST 读数据，rdata_last_REG 记“上一拍在读”，
+    // 供 io_r_resp_data 在非读拍保持上次读值。
     logic respReg;
     logic rdata_last_REG;        // 上一拍是否在读（功能读保持）
     always_ff @(posedge clock or posedge reset) begin
@@ -279,16 +281,27 @@ module xs_SRAMTemplate_core #(
         rdata_last_REG <= 1'b0;
       end else begin
         respReg        <= rckEn;
-        // holdRead 关闭时 rdata_last_REG 是死状态(rdata_hold 不更新), 让它与 respReg 同方程
-        // (rckEn), merge_duplicated_registers 合并掉→消 golden 无对应的 unread; holdRead 开
-        // 时保持 ren(该路 live, 不动其 MBIST 行为)。参数守卫, 非全局改。
-        rdata_last_REG <= ENABLE_HOLDREAD ? ren : rckEn;
+        rdata_last_REG <= ren;
       end
     end
     assign rckEn       = ramRen;
     assign wckEn       = ramWen;
     assign respCapture = respReg;
     assign readLast    = rdata_last_REG;
+  end else begin : g_nomcp
+    // 非多周期宏 + holdRead 关：readLast 没有任何读者（rdata_hold 的更新条件
+    // ENABLE_HOLDREAD && readLast 恒假，输出直接透 ram_rdata），golden 里也没有这个寄存器，
+    // 所以这里根本不生成 rdata_last_REG，readLast 取常量 0（codex 0206 D1）。
+    // 与上一分支同名 g_nomcp（条件生成的互斥分支允许同名），层次路径 g_nomcp.respReg 不变。
+    logic respReg;
+    always_ff @(posedge clock or posedge reset) begin
+      if (reset) respReg <= 1'b0;
+      else       respReg <= rckEn;
+    end
+    assign rckEn       = ramRen;
+    assign wckEn       = ramWen;
+    assign respCapture = respReg;
+    assign readLast    = 1'b0;
   end
   endgenerate
 

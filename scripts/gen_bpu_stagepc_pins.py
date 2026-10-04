@@ -14,7 +14,8 @@
   · 各目标自己的寄存器见 RULES[目标]。
 fail-closed（生成期）：golden 寄存器名与位宽从 G1 golden 现读；目标声明 FULL=True 时，golden 顶层每一个寄存器都必须
   恰好被一条规则认领（多认领 / 漏认领都拒绝生成）；映射必须单射；位宽来自 golden 声明。
-fail-closed（运行期）：生成的 tcl 逐条数 set_user_match 返回值（catch 只用来计数失败），成功数必须等于字面总数，否则 error。
+fail-closed（运行期）：生成的 tcl 逐条按 set_user_match 的**返回值**计数（它遇坏名不抛异常、只返回 0 并在 fm.log 记一行
+  Error —— 旧版用 catch 计数是空的，ITTage 曾因此 250 位静默落空），成功数必须等于字面总数，否则 error。
 
 父级：PARENTS 里的父目标（Composer）的 fm_pins_pre.tcl 里维护一个 GENERATED(bpu-child-pins) 区，
   把各预测器子实例的钉点加实例前缀并入；父级自己的钉点在区外、不碰。父级另并入子模块自证时 FM 自己给出的
@@ -91,8 +92,10 @@ ITTAGE_SIMPLE = {
 ITTAGE_TBL = {"valid_REG": "upd_valid_q", "reset_u_REG": "upd_reset_u_q", "uValid_r": "upd_u_valid_q",
               "correct_r": "upd_correct_q", "alloc_r": "upd_alloc_q", "oldCtr_r": "upd_old_ctr_q",
               "u_r": "upd_u_q", "pc_r": "upd_pc_q", "ghist_r": "upd_ghist_q"}
-# ittage_offset_t = {offset[19:0], pointer[3:0], usePCRegion}：打平后的位偏移
-OFF_FIELD = {"offset": 5, "pointer": 1, "usePCRegion": 0}
+# ittage_offset_t 字段寄存器：FM elaborate 后按结构体字段名起名 —— <数组>_reg[i]\[<字段>][位]（1 位字段无位号）。
+# ★2026-10-04 修正★：原先按打平位号写成 <数组>_reg[i][5+位]，FM 不认（fm.log 行首 250 行 Unknown name），
+# 而旧模板用 catch 数钉点、set_user_match 遇坏名不抛异常 —— 静默落空、照样打印 3301/3301。见 render() 的返回值计数。
+OFF_FIELDS = ("offset", "pointer", "usePCRegion")
 
 
 def ittage_rules():
@@ -103,8 +106,8 @@ def ittage_rules():
     r.append((r"tables_(\d)_io_update_(%s)" % "|".join(ITTAGE_TBL),
               lambda m: "u_core/%s_reg[%s]" % (ITTAGE_TBL[m.group(2)], m.group(1))))
     r.append((r"tables_(\d)_io_update_(old_target_offset|target_offset)_r_(offset|pointer|usePCRegion)",
-              lambda m: "u_core/%s_reg[%s]{off%d}" % ("upd_old_off_q" if m.group(2).startswith("old") else
-                                                    "upd_tgt_off_q", m.group(1), OFF_FIELD[m.group(3)])))
+              lambda m: "u_core/%s_reg[%s]\\[%s]" % ("upd_old_off_q" if m.group(2).startswith("old") else
+                                                   "upd_tgt_off_q", m.group(1), m.group(3))))
     return r
 
 
@@ -141,11 +144,7 @@ def pairs_for(top, prefix=""):
         base = fn(rx.fullmatch(name))
         for b in range(w):
             ref = "%s_reg[%d]" % (name, b) if w > 1 else "%s_reg" % name
-            m = re.search(r"\{off(\d+)\}$", base)
-            if m:
-                impl = base[:m.start()] + "[%d]" % (int(m.group(1)) + b)
-            else:
-                impl = base + ("[%d]" % b if w > 1 else "")
+            impl = base + ("[%d]" % b if w > 1 else "")
             out.append((prefix + ref, prefix + impl))
     refs = [r for r, _ in out]
     impls = [i for _, i in out]
@@ -205,9 +204,10 @@ def render_parent(parent):
     L.append("  foreach _p $_cpairs {")
     L.append("    set _r \"r:/WORK/$top/[lindex $_p 0]\"")
     L.append("    set _i \"i:/WORK/$top/[lindex $_p 1]\"")
-    L.append("    if {[catch {set_user_match $_r $_i} _msg]} {")
+    L.append("    # set_user_match 遇坏名不抛异常、返回 0（CONVENTIONS）：按返回值计数，catch 只兜底真异常")
+    L.append("    if {[catch {set_user_match $_r $_i} _rv] || $_rv != 1} {")
     L.append("      incr _cmiss")
-    L.append("      if {$_cmiss <= 10} { puts \"BPU_CHILD_PIN_FAIL: $_r <-> $_i ($_msg)\" }")
+    L.append("      if {$_cmiss <= 10} { puts \"BPU_CHILD_PIN_FAIL: $_r <-> $_i ($_rv)\" }")
     L.append("    } else {")
     L.append("      incr _cn")
     L.append("    }")
@@ -238,9 +238,10 @@ def render(top):
     L.append("  foreach _p $_pairs {")
     L.append("    set _r \"r:/WORK/$top/[lindex $_p 0]\"")
     L.append("    set _i \"i:/WORK/$top/[lindex $_p 1]\"")
-    L.append("    if {[catch {set_user_match $_r $_i} _msg]} {")
+    L.append("    # set_user_match 遇坏名不抛异常、返回 0（CONVENTIONS）：按返回值计数，catch 只兜底真异常")
+    L.append("    if {[catch {set_user_match $_r $_i} _rv] || $_rv != 1} {")
     L.append("      incr _miss")
-    L.append("      if {$_miss <= 10} { puts \"BPU_PIN_FAIL: $_r <-> $_i ($_msg)\" }")
+    L.append("      if {$_miss <= 10} { puts \"BPU_PIN_FAIL: $_r <-> $_i ($_rv)\" }")
     L.append("    } else {")
     L.append("      incr _n")
     L.append("    }")

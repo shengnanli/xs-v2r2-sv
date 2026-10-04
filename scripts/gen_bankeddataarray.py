@@ -22,8 +22,8 @@
       每个 SRAMTemplate 的 MBIST 回读寄存器 rdataReg[71:0]：golden data_banks_0_b/data_bank_w/rdataReg_reg[bit]
         <-> 重写 data_banks_0_b/data_bank_w/u_core/rdataReg_reg[bit]（32 × 72 = 2304 对；BankedDataArray 的
         MBIST 回读借用整行读寄存器，这条 bore_rdata 在两侧都悬空）；
-      它的采样使能 golden respReg <-> 重写 u_core/g_nomcp.rdata_last_REG（32 对；共享核里 respReg 与
-        rdata_last_REG 同方程 RegNext(rckEn)，merge_dup 把前者并进后者，幸存的是后者这个名字）；
+      它的采样使能 golden respReg <-> 重写 u_core/g_nomcp.respReg（32 对；codex 0206 D1 起共享核在
+        holdRead 关时不再生成与它同方程的 rdata_last_REG，不再有 merge 幸存名的问题）；
       MbistPipeDCacheData 的 addrReg[8:0] / addrRdReg[8] / beReg（11 对，同 DuplicatedTagArray 的那批死位）。
   只消命名鸿沟，不约束 ref。
 
@@ -178,7 +178,7 @@ def pins():
          "    for {set _w 0} {$_w < 4} {incr _w} {",
          '        set _p "data_banks_0_$_b/data_bank_$_w"',
          '        set _r "r:/WORK/' + top + '/$_p/respReg_reg"',
-         '        set _i "i:/WORK/' + top + '/$_p/u_core/g_nomcp.rdata_last_REG_reg"',
+         '        set _i "i:/WORK/' + top + '/$_p/u_core/g_nomcp.respReg_reg"',
          '        if {![set_user_match $_r $_i]} { puts "BDA_PREPIN_FAIL: $_r <-> $_i"; error "BDA_PREPIN_MISS=$_r" }',
          "        incr _bda_n",
          "        for {set _bit 0} {$_bit < 72} {incr _bit} {",

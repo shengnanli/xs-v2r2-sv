@@ -12,7 +12,10 @@
   (2) 映射是单射（两个 golden 寄存器不许落到同一个 impl 位）；
   (3) impl 侧的基名必须在 rtl/backend/VectorFloatFMA.sv 里以该名字声明过；
   (4) 运行时逐条数 set_user_match 的返回值，拒一条或总数不等于字面整数（= golden 顶层寄存器位数）即 error。
-子模块（U_CSAnto2 的 4 个 107 位寄存器）两侧同名，不钉。
+子模块 U_CSAnto2 的 4 个 107 位流水线寄存器（2026-10-03 起 impl 侧是重写件
+rtl/backend/CSA_Nto2With3to2MainPipeline.sv，agent/misc-core）：两侧名字不同
+（golden U_CSA4to2_io_in_{a,b,c,d}_r ↔ 重写 u_core/level4_q[0..3]），按 CSA_CHILD_PINS 一并钉上
+——其中几个位恒 0，签名分析配不上（lane 内实测：压缩树独立证明时 4(4) unmatched）。
 
 用法:
   scripts/gen_vfma.py            # 写文件
@@ -102,6 +105,10 @@ RULES = [
 ]
 RULES = [(re.compile(p + r"\Z"), w, f) for p, w, f in RULES]
 
+# 子模块 U_CSAnto2（重写件 rtl/backend/CSA_Nto2With3to2MainPipeline.sv）的寄存器：(golden 名, impl 路径, 位宽)
+CSA_CHILD_PINS = [("U_CSAnto2/U_CSA4to2_io_in_%s_r" % c, "U_CSAnto2/u_core/level4_q_reg\\[%d\\]" % k, 107)
+                  for k, c in enumerate("abcd")]
+
 
 def golden_regs():
     """golden 顶层 VectorFloatFMA 的寄存器表：[(name, width)]，按声明顺序。"""
@@ -140,6 +147,9 @@ def build():
             path = "g_lane[%s].u_lane/%s_reg%s" % (where[4:], base, impl[len(base):])
         pins.append((name, path.replace("[", "\\[").replace("]", "\\]"), width))
         total += width
+    for g, i, w in CSA_CHILD_PINS:
+        pins.append((g, i, w))
+        total += w
     return pins, total, len(regs)
 
 
@@ -152,7 +162,7 @@ def render():
     L.append("# set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。")
     L.append("# fail-closed：set_user_match 不抛异常（返回 0 = 没配上），所以逐条数返回值；")
     L.append("# 拒一条或总数不等于字面整数（= golden 顶层 %d 个寄存器的位数）就 error。" % nreg)
-    L.append("# U_CSAnto2 内部的寄存器两侧同名，不钉。进 fm.log 的输出一律 ASCII。")
+    L.append("# 末尾 4 条是子模块 U_CSAnto2（重写件）的流水线寄存器。进 fm.log 的输出一律 ASCII。")
     L.append("set ::VFMA_PIN_EXPECT %d" % total)
     L.append("set ::VFMA_PIN_OK 0")
     L.append("set ::VFMA_PIN_BAD 0")

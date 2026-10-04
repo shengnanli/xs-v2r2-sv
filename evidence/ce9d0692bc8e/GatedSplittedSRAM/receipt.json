@@ -1,0 +1,334 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "GatedSplittedSRAM",
+ "run_id": "DataStorage-20261003T120753Z-ce9d0692b",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/GatedSplittedSRAM.sv",
+   "kind": "golden",
+   "sha256": "2b28b58c90e6efae472c1bb39ee03312902cdef444b512b5d7f6bb244ac2862b"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_155.sv",
+   "kind": "golden",
+   "sha256": "f646e2e7b1554066988f2dd2b7abfac57f8d608e7284e7df14e635175c6b9c76"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell_93.sv",
+   "kind": "golden",
+   "sha256": "553bfa5a34f0addf4bfc45ca97adf58ca36c436155bccbc99d15d7f174bf6a13"
+  },
+  {
+   "path": "golden-rtl/ClockMux.sv",
+   "kind": "golden",
+   "sha256": "b0ee47becdcc32c1bbba124fc6d080da25750cbf86d266969bbbe30eb41a65e5"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "kind": "golden",
+   "sha256": "f0f2e53a82ae880e5cc7bf6b0c8b835ad06dd0422c0ee7c328ff97b6a3e1b5a2"
+  },
+  {
+   "path": "golden-rtl/array_18.sv",
+   "kind": "golden",
+   "sha256": "038df97bd3611ed4e1d8b1762a8a54bf7bdcbd9d5de6e4db83f3edaf2bc52f62"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/uncore/xs_DataStorage_core.sv",
+   "kind": "repo",
+   "sha256": "0e684c3a53ab7426988e61bbd039ecfcab003ae3b8e30c15182680451b3cdb0c"
+  },
+  {
+   "path": "rtl/uncore/DataStorage.sv",
+   "kind": "repo",
+   "sha256": "b850f14eea109f214fa4571e34cc8c1b1d0efd7ed0933cdea9605eefef1e7e06"
+  },
+  {
+   "path": "rtl/uncore/DataStorage_1.sv",
+   "kind": "repo",
+   "sha256": "f835864d9b9ae9d8c5083e27ee0668c28216c72438ec36a3ea2af15fa21f3598"
+  },
+  {
+   "path": "rtl/uncore/DataStorage_2.sv",
+   "kind": "repo",
+   "sha256": "1f4a9a45a7bc306921d7cdcebbda3cf1e42aae33155096838c3f9a8f6a42da03"
+  },
+  {
+   "path": "rtl/uncore/DataStorage_3.sv",
+   "kind": "repo",
+   "sha256": "312f7e975576bef0b02ab0edebbddc2f1f278c6c574040a737ae66fb250ee46c"
+  },
+  {
+   "path": "rtl/uncore/GatedSplittedSRAM.sv",
+   "kind": "repo",
+   "sha256": "0b1cad54f25e5448cd6b5541191b715aefa0a94964511474076b25ff02dd16d0"
+  },
+  {
+   "path": "rtl/uncore/GatedSplittedSRAM_1.sv",
+   "kind": "repo",
+   "sha256": "6cec07f8677ecd12f9935bbffa51f9bb9c49450a789b132e1994e702f80b7a68"
+  },
+  {
+   "path": "rtl/uncore/GatedSplittedSRAM_2.sv",
+   "kind": "repo",
+   "sha256": "0aeb2dd7cfd99919d866cbb7efafa255d120086d0f6cb48537ac99f0c2681b54"
+  },
+  {
+   "path": "rtl/uncore/GatedSplittedSRAM_3.sv",
+   "kind": "repo",
+   "sha256": "1947ab68e97c503591f51cbcd36bde2350fb59d1f347e564c8fe651b0b62da2a"
+  },
+  {
+   "path": "rtl/common/MbistClockGateCell_93.sv",
+   "kind": "repo",
+   "sha256": "818bb56a41557d2638fdae8cb0c6b8e34f2d57751e929f27f4c9f0ead55c4654"
+  },
+  {
+   "path": "rtl/common/ClockMux.sv",
+   "kind": "repo",
+   "sha256": "f295d3a7f557744136826c204af5f5dc0a5d079f2c566b9af5de7ad3dbe9fa5b"
+  },
+  {
+   "path": "rtl/dft/xs_mbist_hold_leaf_core.sv",
+   "kind": "repo",
+   "sha256": "65acb62a7ef631d1fd190a8ebdc32a17521f3b9bd3a506afe000776b76acebf3"
+  },
+  {
+   "path": "rtl/dft/L2DataStorage.sv",
+   "kind": "repo",
+   "sha256": "5ec4e03d1decb2a7b1e992adfe11941e25f51833f27b4ce8d67f45373401f70f"
+  },
+  {
+   "path": "rtl/dft/L2DataStorage_1.sv",
+   "kind": "repo",
+   "sha256": "6f5830e0c288680586c29b70a0cbdfbe30708efe47378b7834ed5bbe8d93395a"
+  },
+  {
+   "path": "rtl/dft/L2DataStorage_2.sv",
+   "kind": "repo",
+   "sha256": "f626ca8a7d5c0ddd8685795b1282f39144ebe6e641ce33cd5cbf4dfd793bb0aa"
+  },
+  {
+   "path": "rtl/dft/L2DataStorage_3.sv",
+   "kind": "repo",
+   "sha256": "d7fefeb72f536e8ed510090625e5f2e65ded23d6f387c28e38e28bc819d1d1f7"
+  },
+  {
+   "path": "rtl/common/xs_SRAMTemplate_core.sv",
+   "kind": "repo",
+   "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_155.sv",
+   "kind": "repo",
+   "sha256": "cd2082894d9c64f4d46df8bff6ef7cae34baf7cb179210ab0da0e8b39db74bb1"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_166.sv",
+   "kind": "repo",
+   "sha256": "81c4c2612d773dd1634d44efcf3a7d2700f0b6e9b27be1085d2c4087bb90373a"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_178.sv",
+   "kind": "repo",
+   "sha256": "16371e306a5963332552e7e4e798c14d7fe603aae9e49013d97f0f9eea903dd9"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "kind": "golden",
+   "sha256": "f0f2e53a82ae880e5cc7bf6b0c8b835ad06dd0422c0ee7c328ff97b6a3e1b5a2"
+  },
+  {
+   "path": "golden-rtl/array_18.sv",
+   "kind": "golden",
+   "sha256": "038df97bd3611ed4e1d8b1762a8a54bf7bdcbd9d5de6e4db83f3edaf2bc52f62"
+  }
+ ],
+ "impl_commit": "ce9d0692bc8ed2c3d257eda783e6d5f415e164c5",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "8",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "0f334776be5678534628af56e1ecf61db0b661b53b0543da8a24cba24382e7c9"
+  },
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/GatedSplittedSRAM.json",
+    "sha256": "f5919abd2f2d14c73e45b7078974c332eb34e4ee50b32cc8decb575833b0848d"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "DataStorage-20261003T120753Z-ce9d0692b",
+  "top": "GatedSplittedSRAM",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 2272,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/GatedSplittedSRAM/array_0_0_0/array/array/array_18_ext",
+     "impl_path": "i:/WORK/GatedSplittedSRAM/array_0_0_0/array/array/array_18_ext"
+    },
+    {
+     "ref_path": "r:/WORK/GatedSplittedSRAM/array_0_0_1/array/array/array_18_ext",
+     "impl_path": "i:/WORK/GatedSplittedSRAM/array_0_0_1/array/array/array_18_ext"
+    },
+    {
+     "ref_path": "r:/WORK/GatedSplittedSRAM/array_0_0_2/array/array/array_18_ext",
+     "impl_path": "i:/WORK/GatedSplittedSRAM/array_0_0_2/array/array/array_18_ext"
+    },
+    {
+     "ref_path": "r:/WORK/GatedSplittedSRAM/array_0_0_3/array/array/array_18_ext",
+     "impl_path": "i:/WORK/GatedSplittedSRAM/array_0_0_3/array/array/array_18_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/GatedSplittedSRAM/array_0_0_0/array/array/array_18_ext",
+    "r:/WORK/GatedSplittedSRAM/array_0_0_1/array/array/array_18_ext",
+    "r:/WORK/GatedSplittedSRAM/array_0_0_2/array/array/array_18_ext",
+    "r:/WORK/GatedSplittedSRAM/array_0_0_3/array/array/array_18_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/GatedSplittedSRAM/array_0_0_0/array/array/array_18_ext",
+    "i:/WORK/GatedSplittedSRAM/array_0_0_1/array/array/array_18_ext",
+    "i:/WORK/GatedSplittedSRAM/array_0_0_2/array/array/array_18_ext",
+    "i:/WORK/GatedSplittedSRAM/array_0_0_3/array/array/array_18_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 2272,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "GatedSplittedSRAM",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_aux_observed": 0,
+  "bbox_aux_declared": 0,
+  "bbox_objects": 8
+ }
+}

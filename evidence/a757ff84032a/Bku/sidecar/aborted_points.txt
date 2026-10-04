@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Bku
+Implementation : i:/WORK/Bku
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:51:05 2026
+**************************************************
+
+No aborted compare points.
+
+1
