@@ -114,3 +114,46 @@ P-Credit 不比 srcID 320704、perf 少一拍 14164、coEnable 不看 syscoack 3
 未抓 5：hint 不查 DCache source（tb 的 source 都 < 36）、训练 set 不补 bank（只改 BOP 内部学习，20k 拍不外显）、
 txnID 的 MMIO 位改按 chosen==4（与 mmioFire 在 out.valid 时可能等价）、RXRSP ready 去掉 PCrdGrant 项（slice / MMIO 的 rsp ready
 在本配置恒 1，功能等价）、txnID 还原保留 slice 号（slice 只用低位）——由 FM 判定（等价则无害、不等价必报）。
+
+### 2.3 FM 诊断跑（diagnostic-full，不出证；在 fd55d88e0 的 detached worktree 里跑，未登记）
+
+带 118484 位钉点（`TL2_PIN_END ok=118484 bad=0`），vmucp 关。黑盒恰为 8 类（array_13..18_ext 与 ram_10x89 / ram_78x15，两侧对称）。
+**匹配不完整**：matched by user 98392 / by name 120402 / by signature 0 / by topology 816；**unmatched compare 25051(25050)**、
+unmatched unread 17831(17832)。unmatched 主体：slices_<k>/mshrCtl 的 16 个 MSHR（每 slice ≈4.5k 位，impl 在
+`slices_<k>/u_core/mshrCtl/u_core/mshrs[..]`）、prefetcher/pftQueue、vbop reqFilter / scoreTable、pbop/vbop delayQueue。
+成因（读 scripts/fm_eq.tcl 的 auto_match_flattened_arrays 得出）：它只剥掉**顶层**的 `u_core/` 再按展平名配对，child 单独签核时这些
+数组寄存器正是靠它自动配上的；进了父级后路径是 `slices_<k>/u_core/...`，规则不再命中，签名分析在这个规模下也一个没配上。
+匹配不完整导致下游数据寄存器（releaseBuf buffer、txreq/txrsp 队列存储等）成批"failing"——是匹配伪影还是真差异，**未判定**
+（已停掉该诊断跑：25051 个未配对点下 verify 跑完无意义）。下一步：钉点生成器再收割 child 签核时的全部配对（不只是钉点文件），
+或把父级实例前缀纳入自动配对（fm_eq.tcl 是共享脚本，须集成者 / codex 同意）。
+UT 9 档 errors=0 是目前对本层胶合逻辑的唯一正面证据。
+
+## 3. L2Top（golden 3779 行 / 382 端口；XSTile.l2top）—— FM 待 codex 扩授权
+
+### 3.1 结构
+
+- `rtl/l2/L2Top.sv`（3503 行）：手写核 `xs_L2Top_core`（约 140 行：§1 MSI / halt / critical error / L3 miss 打拍、§2 trace 接口打拍与
+  条件锁存、§3 hartIsInReset、§4 BEU 的 L2 ECC 地址补位）+ golden 同名 wrapper（21 个 child，实例名同 golden；`scripts/gen_l2top.py`，
+  共用 parent_wrapper_lib，`--check`）。`_GEN_` / `_T_` = 0。
+- child：TL2CHICoupledL2（本 lane）、TLBuffer_13/15×3/20×2/22/6/8×2、TLXbar_5/6、TLLogger/_1/_2、BusErrorUnit、BusPerfMonitor、
+  IntBuffer、DelayN_334、DelayNWithValid_203；闭包 221 个 golden 模块，除 TL2CHICoupledL2 外全部 PROVEN_DIRECT，两侧白盒（impl 203 个 rtl 文件）。
+- FM 对称黑盒与 TL2CHICoupledL2 相同（路径多一层 inner_l2cache/），**同样需要 ram_10x89 ×4 / ram_78x15 ×1 对父级 L2Top 扩授权**；
+  另 L2Top 自己的 ram_2x* / ram_sink_2x8 全是 2 的幂深度，两侧同源白盒，不需要授权。钉点同 TL2（前缀 inner_l2cache/，118484 位）。
+- 依赖：L2Top 的正式 FM 还要等 TL2CHICoupledL2 签核（它是 L2Top 的 child）。
+
+### 3.2 UT（verif/ut/L2Top，gen_tb.py 复用 TL2 tb 骨架；200k 拍，每拍比全部 382 端口里的输出）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=40598236 errors=0 | 同左 | 同左 |
+| 7  | checks=40598350 errors=0 | 同左 | 同左 |
+| 42 | checks=40598170 errors=0 | 同左 | 同左 |
+
+9 档 cover_zero=0。seed 1 initreg 0 覆盖：hint 128、D 被 hint 挡住 17、TXREQ 可缓存 980 / MMIO 208 / 被一致性挡住 34、TXDAT 89、
+TXRSP 1108、RXRSP 到 slice 1275 / MMIO 671、RXDAT 到 slice 1607 / MMIO 110、PCrdGrant 5024、P-Credit 授出 51、预取请求 153、
+DCache A 413 / D 846 / B 31、ICache D 409、PTW D 318、外部 MMIO A 106、trace trap 锁存 28357、hartIsInReset 3109。
+（第一版 tb 在 random / <seed>017 档有 3~6 个前几拍的失配：trap_cause/tval、msiInfo bits、clintTime bits 这些只在使能时锁存、
+不复位的寄存器上电值两侧不同——tb 补了初值同步后 9 档全 0，RTL 未改。）
+变异（20k 拍）8 个抓 7：critical error 复位值 1、trap 不看 itype、priv 无条件锁存、hartIsInReset 复位 0、MSI bits 无条件锁存、
+iaddr/ilastsize 用第 0 组 valid、l3Miss 接错；未抓：BEU 的 L2 错误地址错位（只进 BEU 内部寄存器，经 TL 读口才外显）→ FM 覆盖。
+复跑：`cd verif/ut/L2Top && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
