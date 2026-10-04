@@ -77,7 +77,10 @@ FM_REF_DEPS_ICache = $(ICACHE_CHILDREN)
 FM_MODE = assembly
 FM_ALLOWLIST ?= 0
 FM_VARIANTS = ICache
-FM_MERGE_DUP = false
+# 对称死位按 vmucp standing rule 加强，见 verif/fm_target_config/ICache.tcl；钉点由 scripts/gen_icache_pins.py 生成
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+# merge_dup 用工具默认（true）：与 8 个子模块各自单独签核时同口径（重写核把 golden 的若干份
+# 恒等打拍寄存器合成一份，如 ICacheMainPipe 的 s1_datas_REG_0..6 -> s1_fire_q；关 merge 它们在 ref 侧无对家）。
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
