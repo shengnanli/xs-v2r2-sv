@@ -91,6 +91,7 @@ COVERED_DYNAMIC = {
     'verif/ut/MEFreeList/fm_pins.tcl',
     'verif/ut/MemCtrl/fm_pins.tcl',
     'verif/ut/NCBTransactionQueue/fm_pins.tcl',
+    'verif/ut/PtwCache/fm_pins.tcl',
     'verif/ut/Rename/fm_pins.tcl',
     'verif/ut/RenameBuffer/fm_pins.tcl',
     'verif/ut/SSIT/fm_pins.tcl',
