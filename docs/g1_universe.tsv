@@ -84,7 +84,7 @@ FreeList	FreeList	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 Frontend	Frontend	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 Ftq	Ftq	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 FtqPcMemWrapper	FtqPcMemWrapper	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-GrantBuffer	GrantBuffer	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
+GrantBuffer	GrantBuffer	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/GrantBuffer.json sha256=5c7e929840c6bd0b
 HPTW	HPTW	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 IBuffer	IBuffer	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 ICache	ICache	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
