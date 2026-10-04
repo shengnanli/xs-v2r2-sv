@@ -203,3 +203,11 @@ UT 抓不到：s2 只从 s1 取值、s1 只在 fire 后变，恒开使能在可�
 vmucp 六条：精确绑定（unread 集合与 verif/fm_target_config/<T>.tcl 所列逐点一致，均来自诊断跑）/ 双射（全部 matched_nc，
 ref = impl 点数）/ 真比较（passing 恰好 + 点数）/ 全零 / 无 dont_verify、无黑盒、无放宽 appvar / 配置文件进 receipt script_closure。
 11 个目标全部 SUCCEEDED，预测与实测零偏差。
+
+## 4. ExeUnit_4 重证（集成者要求：删空钉点文件）—— 跑前登记
+
+`verif/ut/ExeUnit_4/fm_pins_pre.tcl` 是 0 条钉点的空文件，被 main 上 gate_all 的「FM 钉点结构闸」判红（期望数须为正）。
+gen_exeunit.py 改为钉点数 0 时不生成该文件（`--check` 要求它不存在），文件已删。receipt 的 pin_scripts 闭包因此变化，重证。
+RTL / Makefile 逻辑 / 其余证明输入未变（Makefile 只改注释）。
+预测（★跑完不许改★）：passing **789**（模型 789 = 0 + 789），constant_reg 0，failing / unverified / unmatched / unread 0，
+无黑盒、无 dont_verify、无钉点，SUCCEEDED。docs/fm_predictions/ExeUnit_4.json 登记不变（expected 789）。
