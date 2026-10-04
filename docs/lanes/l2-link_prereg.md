@@ -56,3 +56,39 @@ LCrdReturn 被吞 22910、同拍发+收 41736、池耗尽 58412、reclaim 10640�
 | LCredit2Decoupled_1 | **87**（寄存器 11 = 5+5+1；输出 76） | failing 0 / unverified 0 / unmatched 全 0 / unread 0 / 无黑盒 / SUCCEEDED |
 
 依据：同构的 LCredit2Decoupled_2 实测 436 = 11 + 425 输出位。无 vmucp、无 fm_pins。没有做过任何 FM 试跑。
+
+## 2. TLBuffer_15（golden 189 行 / 46 端口；L2Top inner_i_mmio_buffer / inner_buffers / inner_buffers_1）
+
+### 2.1 结构与子模块处置
+
+- 新文件 `rtl/memblock/TLBuffer_15.sv`（commit 见 git log）：设参例化**已签共享核** `xs_TLBuffer_ad_core`
+  （SOURCE_W=1、ADDR_W=48、DATA_W=64、MASK_W=8、A/D_SIZE_W=2、D_SINK_W=1、A_USER_W=2、A_RAM_WIDTH=133、D_RAM_WIDTH=76；
+  **核未改一字节**），A/D 各接一个 Queue2。端口表/连线首稿用 `gen_tlbuffer_ad_family.py` 的 Variant/gen_rtl
+  现读 golden 生成（该生成器本身不改、VARIANTS 不加：它的 tb 覆盖闸按 source>=8 设计，不适用 1 位 source），
+  文件头手写。`_GEN_`/`_T_` = 0。
+- child：Queue2_TLBundleA_12 / Queue2_TLBundleD_13 —— 已签（evidence/1fda02fae0f1，各 SUCCEEDED 404 / 233）。
+  **两侧白盒**：ref = golden 同名件，impl = `rtl/uncore/Queue2_TLBundle{A_12,D_13}.sv` + `rtl/common/xs_ChiselQueue_core.sv`。
+  ram_2x133 / ram_2x76 两侧读同一份 golden 文件（2^1 == 2 项，无 ELAB-147 越界问题）。无黑盒。
+
+### 2.2 UT（verif/ut/TLBuffer_15，gen.py 生成；200k 拍，每拍比全部 213 个输出位）
+
+arm：ram 无复位、deq_bits 空队列时也读 ram[deq_ptr]，故 A/D 各在 ptr=0/1 上入队过一次才开始比（armed_at 12~16 拍）。
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=4399648 errors=0 | checks=4399648 errors=0 | checks=4399648 errors=0 |
+| 7  | checks=4399736 errors=0 | checks=4399736 errors=0 | checks=4399736 errors=0 |
+| 42 | checks=4399670 errors=0 | checks=4399670 errors=0 | checks=4399670 errors=0 |
+
+全部 cov_fail=0。seed 1 覆盖：A 入/出 77993/77987、D 入/出 77830/77821、A/D 满反压 35308/34989、同拍进出 30527/30327。
+变异 3/3 被抓（20k 拍）：user NC/MM 交叉 errors=9917；D sink 接成 source 10058；D 出口 ready 恒 1 27329。
+
+复跑：`cd verif/ut/TLBuffer_15 && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 2.3 跑前预测（★跑完不许改本节★）
+
+| 目标 | passing 预测 | 其余 |
+|---|---|---|
+| TLBuffer_15 | **637**（寄存器 424 = A: 2x133+3 / D: 2x76+3；输出 213） | failing 0 / unverified 0 / unmatched 全 0 / unread 0 / 无黑盒 / SUCCEEDED |
+
+交叉核对：两个 child 单独签核实测 404 = 269+135、233 = 155+78，与本模型逐项一致。没有做过任何 FM 试跑。

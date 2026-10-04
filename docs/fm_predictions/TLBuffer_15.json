@@ -1,0 +1,9 @@
+{
+  "target": "TLBuffer_15",
+  "ut": "TLBuffer_15",
+  "regs": 424,
+  "outs": 213,
+  "expected": 637,
+  "merge_dup": "false",
+  "model_applicable": true
+}
