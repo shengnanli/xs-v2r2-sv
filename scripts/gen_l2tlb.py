@@ -38,9 +38,9 @@ INSTANCES = [
     ("PMPChecker",  "PMPChecker_3",     "u_pmp_chk_hptw"),    # HPTW 访存检查
     ("PMPChecker",  "PMPChecker_4",     "u_pmp_chk_bitmap"),  # Bitmap 访存检查（G1 新增）
     ("Bitmap",      "bitmap",           "u_bitmap"),          # G1 新增：PTE bitmap 检查引擎
-    ("BitmapCache", "bitmapcache",      "u_bitmap_cache"),    # G1 新增：bitmap 行缓存
-    ("L2TlbMissQueue", "missQueue",     "u_miss_queue"),
-    ("PtwCache",    "cache",            "u_page_cache"),
+    ("BitmapCache", "bitmapcache",      "u_bitmapcache"),    # G1 新增：bitmap 行缓存
+    ("L2TlbMissQueue", "missQueue",     "u_missQueue"),
+    ("PtwCache",    "cache",            "u_cache"),
     ("PTW",         "ptw",              "u_ptw"),
     ("HPTW",        "hptw",             "u_hptw"),
     ("LLPTW",       "llptw",            "u_llptw"),
@@ -223,7 +223,7 @@ def build():
 
     # cache.resp.bits.stage1（扁平）-> struct cache_stage1
     secs["cache_stage1"] = emit_flatmap([
-        (f"cache_stage1{flat_to_path(t)}", f"u_page_cache_resp_bits_stage1_{t}")
+        (f"cache_stage1{flat_to_path(t)}", f"u_cache_resp_bits_stage1_{t}")
         for _p, t in flat_ports("PtwCache", r"io_resp_bits_stage1_(.+)")])
 
     # struct mq_s1 -> mergeArb_{0,1}.in_2.bits.s1（扁平 glue 网）

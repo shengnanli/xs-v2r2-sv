@@ -2,23 +2,21 @@
  "schema": "xs-v2-sv-allow-v1",
  "target": "L2TLBWrapper",
  "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "note": "assembly 边界声明：L2TLBWrapper 只有一个子模块 L2TLB（共享 MMU 顶层，本仓已有重写 rtl/memblock/L2TLB.sv，其 FM 为条件绿：assembly native SUCCEEDED 但 8 个 child 未签核）。本层两侧都把 L2TLB 作对称黑盒（FM_INTERFACE_ONLY=L2TLB，impl 侧读 golden L2TLB.sv 只取接口），只证外壳 glue（端口直通 + 19 个 perf 计数两拍寄存）。L2TLB 尚无已签核证书，故**故意不填 certificate_sha256**：判定据此停在条件绿，指名挂着 L2TLB。★不许把 class 改成 vendor_macro 绕过★。",
+ "note": "assembly 边界声明（2026-10-03 第 3 轮，agent/l2tlb-assembly）：L2TLB 不再黑盒——ref 侧 golden L2TLB、impl 侧重写 rtl/memblock/L2TLB.sv，其下 child 闭包两侧同为 golden 定义（UNCHANGED_GOLDEN_DEP）。原因：green_child 证书路线要求 certificate.impl_commit == POLICY.freeze_commit，freeze_commit 仍为 null（fail-closed），任何 green_child 都过不了闸；照 CtrlBlock 第 2 轮先例改白盒。黑盒只剩 L2TlbMissQueue 内 Queue40_L2TlbMQBundle 的 ram_ext（ram_40x47，inline 触发 FMR_ELAB-147），verif/vendor_boundary.tsv 已单条审定为 APPROVED_MEMORY_MACRO_MODEL（codex 0158 §1，symmetric_both_sides_only），两侧各 1 个实例。★不许把 class 改成 vendor_macro 绕过★。",
  "objects": [
   {
    "side": "r",
-   "design": "L2TLB",
-   "path": "r:/WORK/L2TLBWrapper/ptw",
+   "design": "ram_40x47",
+   "path": "r:/WORK/L2TLBWrapper/ptw/missQueue/io_out_q/ram_ext",
    "attrs": "i",
-   "class": "green_child",
-   "child_target": "L2TLB"
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
   },
   {
    "side": "i",
-   "design": "L2TLB",
-   "path": "i:/WORK/L2TLBWrapper/ptw",
+   "design": "ram_40x47",
+   "path": "i:/WORK/L2TLBWrapper/ptw/u_core/u_missQueue/io_out_q/ram_ext",
    "attrs": "i",
-   "class": "green_child",
-   "child_target": "L2TLB"
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
   }
  ]
 }

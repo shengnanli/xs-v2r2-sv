@@ -19,7 +19,9 @@ TB_SRCS = tb.sv
 
 # 厂商 SRAM 宏链：golden 同源文件, 两侧同读(FM impl 侧经 RTL_GOLDEN_DEPS)。
 # 宏内 array_*_ext 是 vendor 叶子(.v, FM 不读)⇒ 对称未解析黑盒。
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+# ClockGate 例外：impl 侧读本地重写签核件 rtl/common/ClockGate.sv（codex 0208），
+# ref 侧 FM_REF_DEPS 仍是 golden ClockGate.sv。
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/MbistClockGateCell.sv \
                   $(GOLDEN_RTL)/array_10.sv \
                   $(GOLDEN_RTL)/array_12.sv \

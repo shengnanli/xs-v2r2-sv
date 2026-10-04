@@ -567,6 +567,11 @@ endmodule
 
 
 # ---------------------------------------------------------------- Makefile
+# 本地已重写签核的共享基元：impl 侧（RTL_GOLDEN_DEPS）读本地件，ref 侧照旧读 golden。
+# 与 scripts/ut_common.mk 的 LOCAL_SHARED_PRIMITIVES 同一份清单（那边有 fail-closed 闸）。
+LOCAL_PRIMITIVES = {"ClockGate.sv": "$(XSSV_HOME)/rtl/common/ClockGate.sv"}
+
+
 def emit_mk(infos):
     rtl = ["$(RTL_DIR)/common/xs_SRAMTemplate_core.sv"] + \
           [f"$(RTL_DIR)/common/{i['name']}.sv" for i in infos]
@@ -589,8 +594,10 @@ def emit_mk(infos):
           "TB_SRCS = tb.sv", "",
           "# 厂商 SRAM 宏链：golden 同源文件, 两侧同读(FM impl 侧经 RTL_GOLDEN_DEPS)。",
           "# 宏内 array_*_ext 是 vendor 叶子(.v, FM 不读)⇒ 对称未解析黑盒。",
+          "# ClockGate 例外：impl 侧读本地重写签核件 rtl/common/ClockGate.sv（codex 0208），",
+          "# ref 侧 FM_REF_DEPS 仍是 golden ClockGate.sv。",
           "RTL_GOLDEN_DEPS = " + " \\\n                  ".join(
-              f"$(GOLDEN_RTL)/{d}" for d in sorted(fm_deps)),
+              LOCAL_PRIMITIVES.get(d, f"$(GOLDEN_RTL)/{d}") for d in sorted(fm_deps)),
           "",
           "GOLDEN_SRCS = " + " \\\n              ".join(
               [f"$(GOLDEN_RTL)/{i['name']}.sv" for i in infos]
@@ -611,11 +618,19 @@ def emit_mk(infos):
 
 def main():
     infos = [analyze(t) for t in TARGETS]
-    for i in infos:
-        (XSSV / "rtl/common" / f"{i['name']}.sv").write_text(emit_wrapper(i))
+    outputs = {XSSV / "rtl/common" / f"{i['name']}.sv": emit_wrapper(i) for i in infos}
+    outputs[HERE / "tb.sv"] = emit_tb(infos)
+    outputs[HERE / "Makefile"] = emit_mk(infos)
+    # --check：只比不写（2026-10-04 补：原先没有 --check，带 --check 调用会直接覆写产物）
+    if "--check" in sys.argv[1:]:
+        drift = [q for q, c in outputs.items() if not q.exists() or q.read_text() != c]
+        for q in drift:
+            print(f"DRIFT: {q}")
+        print("OK" if not drift else f"{len(drift)}/{len(outputs)} 个产物与生成器重算结果不一致")
+        return 1 if drift else 0
     HERE.mkdir(parents=True, exist_ok=True)
-    (HERE / "tb.sv").write_text(emit_tb(infos))
-    (HERE / "Makefile").write_text(emit_mk(infos))
+    for q, c in outputs.items():
+        q.write_text(c)
     for i in infos:
         print(f"{i['name']}: set={i['set']} way={i['way']} dw={i['data_w']} mw={i['mw']} "
               f"wmask={i['wmask_w']}x{i['macro_seg']} rep={i['mask_rep']} "

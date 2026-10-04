@@ -49,7 +49,7 @@ TAGE_GRAND = ClockGate.sv MbistClockGateCell.sv \
              WrBypass_32.sv IndexableCAMTemplate_32.sv data_mem_8x4.sv \
              sram_array_1p128x24m6s1h0l1b_bp_sc.sv array_5.sv
 TAGE_EXT   = array_2_ext.v array_3_ext.v array_4_ext.v array_5_ext.v
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(TAGE_GRAND))
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(filter-out ClockGate.sv,$(TAGE_GRAND))) $(XSSV_HOME)/rtl/common/ClockGate.sv
 
 TAGE_CHILDREN = TageTable.sv TageTable_1.sv TageTable_2.sv TageTable_3.sv TageBTable.sv MbistPipeTage.sv \
                 SCTable.sv SCTable_1.sv SCTable_2.sv SCTable_3.sv \

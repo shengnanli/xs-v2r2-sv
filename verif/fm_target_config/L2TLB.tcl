@@ -43,4 +43,15 @@
 # 打开 vmucp 是**要求 FM 证更多**（unread 点变成真比较点），不是 waiver：
 # 预期 passing 由 28263 涨到 28263+809=29072、unread 归零；
 # 若打开后出现任何 failing，按 standing rule 立即停下诊断，不得回填白名单绕过。
+#
+# ---- 第 3 轮更新（2026-10-03，agent/l2tlb-assembly，8 个 child 两侧白盒展开之后）----
+# 关闭 vmucp 的读数（evidence/413461528f8f/L2TLB，输入 commit 413461528f8f）：matched-unread
+# **1288** 对，逐对核过全是双射（复核脚本逻辑写在 docs/lanes/l2tlb-assembly_prereg.md §9）：
+#   1144 对：两侧去掉前缀（r:/WORK/L2TLB/ 与 i:/WORK/L2TLB/u_core/，实例 u_<x>↔<x>、
+#            u_csr_delay↔csr_tmp_delay、u_sfence_delay↔sfence_tmp_delay）后后缀逐字相同，
+#            或 csr_dup_<n>_<f>_reg[b] ↔ csr_dup_reg[n]\[f][b]（24 对）；
+#            pmp 809 / llptw 109 / cache 93 / bitmapcache 42 / bitmap 25 / csr_tmp_delay 24 /
+#            sfence_tmp_delay 10 / prefetch 4 / hptw 3 / ptw 1 / csr_dup 24。
+#   144 对：verif/ut/L2TLB/fm_pins.tcl（scripts/gen_l2tlb_pins.py）按命名规则钉上的 glue 位。
+# 预期打开后 passing 恰增 1288、unread 归零；出现 failing 即停下诊断。
 fm_target_vmucp_allow

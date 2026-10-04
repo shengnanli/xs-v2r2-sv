@@ -56,7 +56,7 @@ RTL_SRCS = $(RTL_DIR)/frontend/Composer.sv \
            $(RTL_DIR)/frontend/Tage_SC.sv
 TB_SRCS = tb.sv
 
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/DelayN.sv \
                   $(GOLDEN_RTL)/DelayNWithValid.sv \
                   $(GOLDEN_RTL)/DelayNWithValid_1.sv \

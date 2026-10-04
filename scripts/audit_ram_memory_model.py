@@ -736,7 +736,29 @@ BRIDGE_OUTBOX = pathlib.Path('/home/eda/xs-env/.agent-bridge/outbox')
 # 父级内相对路径：ref 侧 r:/WORK/<T>/<rel>，impl 侧 i:/WORK/<T>/u_core/<rel>（wrapper 例化可读核
 # 多一层 u_core）或 i:/WORK/<T>/<rel>，两侧**各恰好一个**、且归一后路径相同。
 # 表外的父级、表外的 ram_*、同一父级里别的路径，一律拒绝。
+#
+# ram_40x47（codex 0158 §1 原授权 L2TlbMissQueue；codex 0209 显式扩到 L2TLB / L2TLBWrapper，
+# 仅限其 L2TlbMissQueue 子树 missQueue.io_out_q 下的同一个 ram_ext）。与 ram_10x89 的两处不同：
+#   · 父级内相对路径两侧不同名（重写核把 missQueue 例化成 u_missQueue；L2TlbMissQueue 自己的
+#     重写核把 Queue40 内联，ram_ext 直接挂在 u_core 下），所以 rel 写成 (ref_rel, impl_rel) 二元组；
+#   · 经由的 child 没有 tracked 证书（verif/proof_certificates/L2TlbMissQueue.json 不存在，0209 明令
+#     不得虚构「证书有效」），via 写成 'receipt:<tracked receipt 路径>'：在本 commit 的字节上机器复算
+#     该 receipt 的 impl 闭包（repo 文件）与 golden 闭包（G1 文件）逐个 sha256 不 stale、verdict 合格、
+#     非 dirty / provisional——见 check_child_receipt_current()。
+# 0209 其余绑定：design + golden sha256 + 8 端口签名（MANUAL_REVIEW_GOLDEN，并与 vendor_boundary.tsv
+# 同行逐字核对）；每个父级两侧各恰好 1 个实例、在授权路径上（本函数）；指针复位 0 / ==39 回卷
+# 的归纳由 `audit_ram_memory_model.py --check` 的 M3 机器 PASS 管（parent-map 的 Queue40 行）；
+# 父级自己 official FM 全零、无 dont_verify/elab147/放宽 appvar 与「allow 只列实测对象集」由
+# fm_verdict 的 assembly 判据管（观测黑盒集合与声明精确相等）。
+L2TLB_MQ_RECEIPT = 'receipt:evidence/dd55953a7513/L2TlbMissQueue/receipt.json'
 MANUAL_REVIEW_PARENTS = {
+    'ram_40x47': {
+        'L2TlbMissQueue': ('codex_0158', None, ('io_out_q/ram_ext', 'ram_ext')),
+        'L2TLB':          ('codex_0209', L2TLB_MQ_RECEIPT,
+                           ('missQueue/io_out_q/ram_ext', 'u_missQueue/io_out_q/ram_ext')),
+        'L2TLBWrapper':   ('codex_0209', L2TLB_MQ_RECEIPT,
+                           ('ptw/missQueue/io_out_q/ram_ext', 'ptw/u_core/u_missQueue/io_out_q/ram_ext')),
+    },
     'ram_10x89': {
         'GrantBuffer':              ('codex_0202', None, 'pftRespQueue/ram_ext'),
         'Queue10_GrantBuffer_Anon': ('codex_0202', None, 'ram_ext'),
@@ -748,6 +770,9 @@ MANUAL_REVIEW_PARENTS = {
 }
 # 0202 的精确绑定（golden 文件 sha256 + 端口签名），与 verif/vendor_boundary.tsv 第 5/7 列相同。
 MANUAL_REVIEW_GOLDEN = {
+    'ram_40x47': ('68dbc6df0bcb0aafe5bdf199e6241e5a744207d34db15af3dd7aa191413f9766',
+                  'input [5:0] R0_addr;input R0_en;input R0_clk;output [46:0] R0_data;'
+                  'input [5:0] W0_addr;input W0_en;input W0_clk;input [46:0] W0_data'),
     'ram_10x89': ('7cdc3e1c7dd131d409d1ed2b639b7cdb1f5ef12bad423815e50fed20fa6c2f0f',
                   'input [3:0] R0_addr;input R0_en;input R0_clk;output [88:0] R0_data;'
                   'input [3:0] W0_addr;input W0_en;input W0_clk;input [88:0] W0_data'),
@@ -778,8 +803,9 @@ def check_parent_scope(design, target, objects, golden_rtl=None):
            if ln.split('\t')[0] == design] if vb.is_file() else []
     if len(row) != 1 or len(row[0]) < 7 or row[0][4] != want_sha or row[0][6] != want_ports:
         return False, f'verif/vendor_boundary.tsv 的 {design} 行与授权绑定（sha256/端口签名）不符', None
-    want = {('r', f'r:/WORK/{target}/{rel}'),
-            ('i', f'i:/WORK/{target}/{rel}'), ('i', f'i:/WORK/{target}/u_core/{rel}')}
+    ref_rel, impl_rel = rel if isinstance(rel, tuple) else (rel, rel)
+    want = {('r', f'r:/WORK/{target}/{ref_rel}'),
+            ('i', f'i:/WORK/{target}/{impl_rel}'), ('i', f'i:/WORK/{target}/u_core/{impl_rel}')}
     got = [(o.get('side'), o.get('path')) for o in objects]
     for o in objects:
         if o.get('class') != 'APPROVED_MEMORY_MACRO_MODEL':
@@ -791,8 +817,47 @@ def check_parent_scope(design, target, objects, golden_rtl=None):
     n_i = sum(1 for sd, _ in got if sd == 'i')
     if n_r != 1 or n_i != 1:
         return False, f'{target} 里 {design} 两侧实例不对称/不唯一（ref={n_r}, impl={n_i}，须各恰好 1）', None
-    return True, (f'{design}@{target}:{rel} 在 {msg_id} 授权内'
+    if via and via.startswith('receipt:'):
+        ok, why = check_child_receipt_current(via[len('receipt:'):], golden_rtl=golden_rtl)
+        if not ok:
+            return False, f'{design}@{target} 经由的 child receipt 不成立：{why}', None
+        return True, f'{design}@{target}:{ref_rel} 在 {msg_id} 授权内（child receipt 未 stale：{why}）', None
+    return True, (f'{design}@{target}:{ref_rel} 在 {msg_id} 授权内'
                   + (f'（经由已签 {via}，证书须另验）' if via else '')), via
+
+
+def check_child_receipt_current(rel_path, golden_rtl=None, repo=None):
+    """codex 0209：经由 child 的 tracked receipt（不是证书）判它此刻仍成立。返回 (ok, msg)。
+    在 repo（默认本脚本所在仓库 = 被证明的那个 commit 的 worktree）的字节上逐个复算。"""
+    import json as _json
+    repo = pathlib.Path(repo or REPO)
+    f = repo / rel_path
+    if not f.is_file():
+        return False, f'receipt {rel_path} 不存在'
+    try:
+        d = _json.loads(f.read_text())
+    except Exception as e:                                   # noqa: BLE001
+        return False, f'receipt {rel_path} 读不了：{e}'
+    if d.get('verdict') not in ('SUCCEEDED', 'PASS_DEAD_REF'):
+        return False, f'receipt verdict={d.get("verdict")!r} 不合格'
+    if d.get('impl_worktree_dirty') is not False or d.get('provisional') is not False:
+        return False, 'receipt 是 dirty 或 provisional'
+    g = pathlib.Path(golden_rtl or (pathlib.Path(DEFAULT_G1) / 'golden-rtl'))
+    impl = d.get('impl_closure') or []
+    if not impl:
+        return False, 'receipt 没有 impl 闭包'
+    for e in impl + list(d.get('golden_closure') or []):
+        if e.get('kind') == 'repo':
+            p = repo / e['path']
+        elif e.get('kind') == 'golden':
+            p = g / e['path'].split('golden-rtl/', 1)[-1]
+        else:
+            return False, f'receipt 闭包条目 kind={e.get("kind")!r} 认不出'
+        if not p.is_file():
+            return False, f'闭包文件 {e["path"]} 不存在'
+        if hashlib.sha256(p.read_bytes()).hexdigest() != e.get('sha256'):
+            return False, f'闭包文件 {e["path"]} 已 stale'
+    return True, f'{rel_path} {d.get("verdict")}，{len(impl)} 个 impl + {len(d.get("golden_closure") or [])} 个 golden 文件字节未变'
 
 
 def check_manual_review(design, review, parent_impl):

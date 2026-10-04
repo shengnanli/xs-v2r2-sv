@@ -19,7 +19,7 @@ TB_SRCS = tb.sv
 #       文件已重写成 xs_MbistPipeIttage_core，故**不**放进 impl 侧依赖——它由
 #       impl 自己的可读核承担，是本目标真正在证的东西之一。
 # ---------------------------------------------------------------------------
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/FoldedSRAMTemplate_22.sv \
                   $(GOLDEN_RTL)/IndexableCAMTemplate_41.sv \
                   $(GOLDEN_RTL)/MbistClockGateCell.sv \

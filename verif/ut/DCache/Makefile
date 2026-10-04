@@ -74,7 +74,7 @@ RTL_GOLDEN_DEPS = \
   $(RTL_DIR)/memblock/MissReadyGen.sv \
   $(RTL_DIR)/memblock/PrefetcherMonitor.sv \
   $(RTL_DIR)/memblock/FDPrefetcherMonitor.sv \
-  $(addprefix $(GOLDEN_RTL)/,$(SHARED_GOLDEN))
+  $(addprefix $(GOLDEN_RTL)/,$(filter-out ClockGate.sv,$(SHARED_GOLDEN))) $(XSSV_HOME)/rtl/common/ClockGate.sv
 
 # UT 的 golden 侧：本体 + 厂商宏的行为模型（FM 不读 *_ext.v，它们在 FM 里是黑盒）
 GOLDEN_SRCS = $(GOLDEN_RTL)/DCache.sv $(GOLDEN_RTL)/array_7_ext.v $(GOLDEN_RTL)/array_8_ext.v

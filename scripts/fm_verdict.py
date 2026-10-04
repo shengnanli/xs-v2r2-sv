@@ -598,7 +598,8 @@ def _ram_parent_scope_check(declared, top, expect_impl_commit, expect_canonical)
     import audit_ram_memory_model as _ARM
     by_design = {}
     for k, e in declared.items():
-        if e.get('class') == 'APPROVED_MEMORY_MACRO_MODEL' and k[1] in _ARM.MANUAL_REVIEW_DESIGNS:
+        # 父级授权表里有的 design（ram_10x89 / ram_40x47）一律走父级范围判据（codex 0206 D3 / 0209）。
+        if e.get('class') == 'APPROVED_MEMORY_MACRO_MODEL' and k[1] in _ARM.MANUAL_REVIEW_PARENTS:
             by_design.setdefault(k[1], []).append(e)
     for design, objs in sorted(by_design.items()):
         ok, msg, via = _ARM.check_parent_scope(design, top, objs)

@@ -33,9 +33,21 @@ SIM_ARGS ?= +ncycles=$(NCYCLES)
 
 UT_GEN_DIR := ut_gen
 UT_SRCS    := $(addprefix $(UT_GEN_DIR)/,$(notdir $(RTL_SRCS)))
-# RTL_GOLDEN_DEPS: golden 行为模型/闭包（不 derive 不改名, UT 两侧共用同一定义;
-# FM 时并入 impl 侧与 ref 侧同源 elaborate）。模块 Makefile 可选定义。
+# RTL_GOLDEN_DEPS: 不 derive 不改名、UT 两侧共用同一定义的依赖（golden 行为模型/闭包，
+# 或本地已重写签核的共享件）；FM 时并入 impl 侧。模块 Makefile 可选定义。
 RTL_GOLDEN_DEPS ?=
+
+# 本地重写的共享基元（codex 0208：ClockGate 选 B，rtl/common/ClockGate.sv 独立签核）。
+# 规矩：impl 侧（RTL_GOLDEN_DEPS）一律读 $(XSSV_HOME)/rtl/common/<名>，ref 侧
+# （FM_REF_DEPS_<top>，裸文件名）照旧读 golden。
+#   * LOCAL_PRIM_VIOLATION 非空 = 有 Makefile 让 impl 侧又读回了 golden 那份 ——
+#     compile 与 fm-% 前都会拦下（fail-closed，不许靠"下次注意"）。
+#   * UT 里两个实例共用 RTL_GOLDEN_DEPS 的那一份定义，GOLDEN_SRCS 里同名的 golden
+#     文件要剔掉，否则同一模块声明两次。只在本地件确实进了 RTL_GOLDEN_DEPS 时才剔
+#     （ClockGate 自己的 standalone UT 是 RTL_SRCS 派生成 ClockGate_xs，仍要 golden 那份）。
+LOCAL_SHARED_PRIMITIVES = ClockGate.sv
+LOCAL_PRIM_VIOLATION = $(filter $(addprefix $(GOLDEN_RTL)/,$(LOCAL_SHARED_PRIMITIVES)),$(RTL_GOLDEN_DEPS))
+LOCAL_PRIM_GOLDEN_DUPS = $(foreach p,$(LOCAL_SHARED_PRIMITIVES),$(if $(filter %/rtl/common/$(p),$(RTL_GOLDEN_DEPS)),$(GOLDEN_RTL)/$(p)))
 
 .PHONY: compile run verdi fm clean derive portlint
 
@@ -100,9 +112,13 @@ compile: simv
 # ★在这里去重，不去改各 UT 的 Makefile★：其中好几个（SRAMTemplate 家族、
 # TLBuffer 家族）是生成产物，手改会被下一次跑生成器静默删掉——本轮已经踩过两次。
 # 用 filter-out 而不是 $(sort)：sort 会重排，而源文件顺序在 SV 里不是无关紧要的。
-GOLDEN_SRCS_UNIQ = $(filter-out $(RTL_GOLDEN_DEPS),$(GOLDEN_SRCS))
+GOLDEN_SRCS_UNIQ = $(filter-out $(RTL_GOLDEN_DEPS) $(LOCAL_PRIM_GOLDEN_DUPS),$(GOLDEN_SRCS))
 
-simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | portlint derive
+.PHONY: localprim
+localprim:
+	@$(if $(strip $(LOCAL_PRIM_VIOLATION)),echo "ERROR($(MODULE)): impl 侧 RTL_GOLDEN_DEPS 读了 golden 的 $(notdir $(LOCAL_PRIM_VIOLATION)) —— 改读 $$(XSSV_HOME)/rtl/common/ 下的本地件（codex 0208）"; exit 1,:)
+
+simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | localprim portlint derive
 	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS_UNIQ) $(TB_SRCS) -top tb -o simv
 
 # 两轮 initreg 的日志原先同名 sim_$(SEED).log —— 后跑的那轮把前一轮**静默覆盖**，
@@ -158,7 +174,7 @@ FM_RUN_ID := $(if $(FM_RUN_ID),$(FM_RUN_ID),$(MODULE)-$(shell date -u +%Y%m%dT%H
 # 上面的 `fm` 目标已经拒绝空 FM_VARIANTS；这里把同一条规矩钉到 fm-% 上，堵住
 # 直接 `make fm-<某个没声明的顶层>` 绕过去、却照样生成 receipt 的路。
 # 合法用法（`fm` 展开出来的、或手工重跑某个已声明变体）不受影响。
-fm-%:
+fm-%: localprim
 	@case " $(strip $(FM_VARIANTS)) " in \
 	  *" $* "*) ;; \
 	  *) echo "ERROR($(MODULE)): '$*' 不在 FM_VARIANTS='$(FM_VARIANTS)' 里 ——" \

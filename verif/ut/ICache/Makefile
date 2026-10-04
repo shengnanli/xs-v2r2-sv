@@ -55,7 +55,7 @@ TB_SRCS = tb.sv
 RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv \
                   $(GOLDEN_RTL)/array.sv \
                   $(GOLDEN_RTL)/MbistClockGateCell.sv \
-                  $(GOLDEN_RTL)/ClockGate.sv \
+                  $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv \
                   $(GOLDEN_RTL)/array_0.sv
 

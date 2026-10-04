@@ -23,7 +23,7 @@ RTL_GOLDEN_DEPS = \
   $(GOLDEN_RTL)/Arbiter8_bitmapCacheReqBundle.sv \
   $(GOLDEN_RTL)/Bitmap.sv \
   $(GOLDEN_RTL)/BitmapCache.sv \
-  $(GOLDEN_RTL)/ClockGate.sv \
+  $(XSSV_HOME)/rtl/common/ClockGate.sv \
   $(GOLDEN_RTL)/DelayN_13.sv \
   $(GOLDEN_RTL)/DelayN_220.sv \
   $(GOLDEN_RTL)/DelayN_221.sv \
@@ -63,44 +63,88 @@ RTL_GOLDEN_DEPS = \
 GOLDEN_SRCS = $(GOLDEN_RTL)/L2TLB.sv $(RTL_GOLDEN_DEPS)
 
 # FM：golden 顶层 L2TLB 为 ref，重写的同名 wrapper 为 impl；两侧读入同一批 golden
-# 子模块，于是队列/遍历器/SRAM 在两侧实化成同一份定义，FM 真正验证的是**本层 glue**
-# （CSR/sfence 复制扇出、仲裁装配、访存数据通路、PTE→sector 合并、bitmap 接线、perf）。
+# 子模块（UNCHANGED_GOLDEN_DEP，两侧同源）。
+#
+# ★2026-10-03 第 3 轮（agent/l2tlb-assembly）：8 个大 child 从「两侧对称黑盒」改为
+#  「两侧白盒展开」★
+# 原配置把 PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch/Bitmap/BitmapCache
+# 两侧黑盒，靠 verif/allow/L2TLB.json 的 green_child 声明挂条件绿。截至 main 3cd47062
+# 这 8 个 child 都已各自签核（receipt 闭包与当前字节逐个核过，见
+# docs/lanes/l2tlb-assembly_prereg.md），但 green_child 这条路**在本仓当前状态下走不通**：
+# proof_certificate.py 要求 child 证书 impl_commit == POLICY.json 的 freeze_commit，
+# 而 freeze_commit 仍是 null（fail-closed，全部拒绝）—— 那是 integrator 的冻结动作，
+# 不是本 lane 能改的。于是照 CtrlBlock 第 2 轮的先例：child 两侧白盒展开（同一份
+# golden 定义），黑盒只剩不可 inline 的存储宏行为模型。
+# 这样证明**更强**：child 内部每一个寄存器与输出都进比较，本层 glue 驱动 child 输入
+# 的路径不再止于黑盒输入引脚，而是一直比到 child 内部状态。
+#
+# 唯一保留的黑盒：ram_40x47（L2TlbMissQueue 里 Queue40 的 ram_ext）。
+# 深度 40 / 6 位地址，inline 会触发 FMR_ELAB-147（越界静态下标）→ set_top 失败；
+# 已在 verif/vendor_boundary.tsv 以 APPROVED_MEMORY_MACRO_MODEL 单条审定
+# （codex 0158 §1，symmetric_both_sides_only），本目标两侧各 1 个实例、对称黑盒，
+# 声明在 verif/allow/L2TLB.json。L2TlbMissQueue 自己的证明用的是同一条边界。
+#
+# PMP / PMPChecker / 各 Arbiter / DelayN 与以前一样两侧展开（golden 定义，两侧同源）。
+# ★本轮不把 impl 侧 child 换成重写件★（main 6a06215f 曾试把 PMP 换成重写件，FM 不收敛已 revert）。
 FM_VARIANTS = L2TLB
-FM_REF_DEPS_L2TLB = $(notdir $(RTL_GOLDEN_DEPS))
+# ★字面文件名★（fm_passing_model 不展开 make 函数；与 RTL_GOLDEN_DEPS 逐项相同）
+FM_REF_DEPS_L2TLB = \
+  Arbiter1_L2TLBImp_Anon.sv \
+  Arbiter2_L2TLBImp_Anon.sv \
+  Arbiter2_L2TLBImp_Anon_1.sv \
+  Arbiter2_L2TlbWithHptwIdBundle.sv \
+  Arbiter2_LLPTW_Anon.sv \
+  Arbiter2_PtwReq.sv \
+  Arbiter3_L2TLBImp_Anon.sv \
+  Arbiter3_bitmapReqBundle.sv \
+  Arbiter4_L2TlbMemReqBundle.sv \
+  Arbiter5_L2TlbWithHptwIdBundle.sv \
+  Arbiter8_bitmapCacheReqBundle.sv \
+  Bitmap.sv \
+  BitmapCache.sv \
+  ClockGate.sv \
+  DelayN_13.sv \
+  DelayN_220.sv \
+  DelayN_221.sv \
+  HPTW.sv \
+  L2TlbMissQueue.sv \
+  L2TlbPrefetch.sv \
+  LLPTW.sv \
+  MbistBitmapCache.sv \
+  MbistPipePtwL0.sv \
+  MbistPipePtwL1.sv \
+  PMP.sv \
+  PMPChecker.sv \
+  PTW.sv \
+  PtwCache.sv \
+  Queue40_L2TlbMQBundle.sv \
+  RRArbiterInit.sv \
+  RRArbiterInit_1.sv \
+  RRArbiterInit_4.sv \
+  SRAMTemplate_124.sv \
+  SRAMTemplate_128.sv \
+  SRAMTemplate_129.sv \
+  SRAMTemplate_143.sv \
+  SplittedSRAM.sv \
+  SplittedSRAM_1.sv \
+  SplittedSRAM_2.sv \
+  array_10.sv \
+  array_11.sv \
+  array_9.sv \
+  ram_40x47.sv \
+  sram_array_1p32x90m45s1h0l1b_bitmap.sv \
+  sram_array_1p4x786m131s1h0l1b_ptw_l1.sv \
+  sram_array_1p64x114m57s1h0l1b_ptw_l0.sv \
+  array_10_ext.v \
+  array_11_ext.v \
+  array_9_ext.v
 
-# ★assembly 模式★：把带内部状态的大子模块在**两侧对称**黑盒（只留端口方向）。
-# 理由：L2TLB 是装配层，重写对象是顶层 glue；这些子模块各自是独立 FM target，内部
-# 等价由它们自己的证明负责。不黑盒的话 FM 会去逐位配对 PtwCache 一个模块里 8 万多个
-# 内部寄存器——顶层实例名与内部层次两侧不同，绝大多数配不上，剩下的按输入锥比会大批
-# 误判，证明本身就没意义了。
-#
-# ★诚实声明★：这批黑盒目前**都还没有本轮的独立签核**（PtwCache / PTW / LLPTW /
-# HPTW / L2TlbMissQueue / L2TlbPrefetch / Bitmap / BitmapCache 在本轮台账里
-# 都是 MISSING）。所以本目标即便 native SUCCEEDED，也只能算**条件绿**，
-# 要等这 8 个 child 各自 SIGNOFF_PASS 之后才能计入闭包。
-#
-# ★2026-09-20 复核修正：把 PMP 从本表里去掉★
-# 落地这份 Makefile 时表里有 9 项（多一个 PMP），而同一个 commit 登记的
-# docs/l2tlb_fm_prediction.md 预测的是 **8 个黑盒**，并白纸黑字写着
-# 「PMP / PMPChecker / 各 Arbiter / DelayN 是两侧 elaborate（不黑盒），
-#   这是照搬 G0 那次成功证明的配置」，预测里 ~1000 条 unread 也全部外推自
-# **被展开的** PMP 的 pmaMapping 死寄存器。两者互相矛盾，跑之前必须选一个。
-#
-# 查 G0 那次证明的原始配置（可复跑核对，不是转述）：
-#   $ grep FM_INTERFACE_ONLY /home/eda/xs-env/xs-v2r2-sv/scripts/sidecar/\
-#       signoff-evidence-delta2/L2TLB/make.out
-#   FM_INTERFACE_ONLY="PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch"
-#   （6 项，**没有 PMP**；同目录 native_facts.json 的 537 条 unread 全是
-#    r:/WORK/L2TLB/pmp/pmaMapping_*_reg[*] ↔ i:/.../u_pmp/pmaMapping_*_reg[*]
-#    的**配对**点 —— 能配上对，正说明 PMP 当时是两侧展开的。）
-#
-# 按预测 + G0 实证取 8 项。方向也对：黑盒**少**一个 = 证明**强**一分
-# （PMP 内部路径从"只比端口"变成逐位比对），而且 PMP 不是厂商宏、
-# 本轮也没有独立签核，按黑盒边界审核判据它本来就不该随手黑盒。
-FM_INTERFACE_ONLY = PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch Bitmap BitmapCache
+FM_INTERFACE_ONLY = ram_40x47
 
-# 子模块黑盒后内部寄存器不参与比对，需要开「合并同值重复寄存器」：golden 顶层把
-# CSR/sfence 复制成 10/11 份，impl 侧同样复制；开启合并让两侧的多副本各自归一后配对。
+# 合并重复寄存器：开（与以前一样）。golden 把 CSR/sfence 复制成 10/11 份、每份被 firtool
+# 按消费者裁成字段子集（csr_dup_0 15 个字段、csr_dup_5 只 4 个……）；重写核 csr_dup[i] /
+# sfence_dup[i] 每份都是完整 struct。不合并，重写侧多出来的字段副本在 golden 里没有对应；
+# 合并后同输入的副本各自归一，两侧才能配对。代价：fm_predict 模型只给上界带，不给点值。
 FM_MERGE_DUP = true
 
 # ★vmucp（verify_matched_unread_compare_points）= true★（2026-09-21 打开）
@@ -108,6 +152,9 @@ FM_MERGE_DUP = true
 # 本层锥内无读者的寄存器，ref `pmp/<X>` ↔ impl `u_core/u_pmp/<X>` 后缀逐字相同、
 # 809↔809 双射，无任何人工强配。打开 = 让 FM 把这 809 点也证一遍（更严，不是放松）。
 # 白名单条目与逐条依据在 verif/fm_target_config/L2TLB.tcl（没有那份文件就不在白名单上）。
+# ★第 3 轮（child 白盒化）先关掉跑一遍★：unread 集合会随 8 个 child 展开而变，按 standing
+# rule 先拿到不开时的 matched-unread 清单逐条核双射（第 3 次跑 413461528f8f：1288 对，1144 对后缀逐字
+# 相同/csr_dup 字段对应 + 144 对 fm_pins.tcl 钉点），再打开并核 passing 正好增 unread 数。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk

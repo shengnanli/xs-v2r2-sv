@@ -137,6 +137,10 @@ run "钉点调用序列闸负测"  python3 scripts/pin_call_equiv.py --selftest
 # `Error: Unknown name`。fm_verdict 见到它就不许给 SUCCEEDED/PASS_DEAD_REF。双向负测：
 # 注入一行 -> 红；注释/缩进里提到同一串 -> 仍绿；修之前的真实日志 -> 红（秒级）。
 run "钉点落空判据负测"    python3 scripts/test_unknown_name_verdict.py
+# 同一判据在 receipt 收录表上的落点：gen_receipt_harvest.py chk_facts 只看 native_facts 数，
+# 早于该判据的 receipt（ITTage@68bffe7f2938，250 行 FM-036）曾被收成 COLLECTED。双向负测：
+# 注入 -> DIFFER；注释回显 -> 仍 same；真实脏日志 -> DIFFER；且与 fm_verdict 共用同一正则对象。
+run "收录表钉点落空负测"  python3 scripts/test_harvest_unknown_name.py
 run "钉点调用序列闸"     python3 scripts/pin_call_equiv.py --check
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族

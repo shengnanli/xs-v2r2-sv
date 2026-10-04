@@ -24,7 +24,7 @@ TB_SRCS = tb.sv
 # 厂商 SRAM 宏：golden 同源，两侧同读（唯一黑盒是宏内 array_*_ext 叶子）
 RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_4.sv \
                   $(GOLDEN_RTL)/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv \
-                  $(GOLDEN_RTL)/ClockGate.sv \
+                  $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/MbistClockGateCell.sv \
                   $(GOLDEN_RTL)/array.sv \
                   $(GOLDEN_RTL)/array_1.sv \
