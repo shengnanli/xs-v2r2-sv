@@ -116,7 +116,7 @@ PriorityMuxModule_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	2	Predictor	rtl/
 PriorityMuxModule_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	4	Predictor	rtl/frontend/PriorityMuxModule_8.sv
 Queue1_RegMapperInput	GOLDEN_ONLY	ABSORBED_DIRECT	TLPLIC	1	TLPLIC	$(GOLDEN_RTL)/Queue1_RegMapperInput.sv
 Queue1_RegMapperInput_5	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ICacheCtrlUnit	1	ICacheCtrlUnit	rtl/frontend/Queue1_RegMapperInput_5.sv
-Queue40_L2TlbMQBundle	GOLDEN_ONLY	ABSORBED_DIRECT	L2TlbMissQueue	1	L2TlbMissQueue	$(GOLDEN_RTL)/Queue40_L2TlbMQBundle.sv
+Queue40_L2TlbMQBundle	SIGNED_OFF_TARGET	ABSORBED_DIRECT	L2TlbMissQueue	1	L2TlbMissQueue	rtl/memblock/Queue40_L2TlbMQBundle.sv
 RVCExpander	SIGNED_OFF_TARGET	ABSORBED_DIRECT	NewIFU	17	NewIFU	rtl/frontend/RVCExpander.sv
 RealWBArbiter	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RealWBCollideChecker	1	RealWBCollideChecker	rtl/backend/RealWBArbiter.sv
 RealWBArbiter_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RealWBCollideChecker	1	RealWBCollideChecker	rtl/backend/RealWBArbiter_1.sv
