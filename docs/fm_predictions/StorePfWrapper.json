@@ -1,0 +1,10 @@
+{
+  "target": "StorePfWrapper",
+  "ut": "StorePfWrapper",
+  "regs": 5,
+  "outs": 0,
+  "expected": 5,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "vmucp + assume_reg_init none：serializer 死指针 5 位全靠 vmucp 比；预测 passing 5（试跑 5）"
+}

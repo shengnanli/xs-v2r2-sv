@@ -1,0 +1,10 @@
+{
+  "target": "FarPathFloatAdderF64WidenPipeline",
+  "ut": "FarPathFloatAdderF64WidenPipeline",
+  "regs": 361,
+  "outs": 81,
+  "expected": 442,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing = 模型 442（试跑 442 SUCCEEDED）"
+}

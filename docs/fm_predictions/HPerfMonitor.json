@@ -1,0 +1,10 @@
+{
+  "target": "HPerfMonitor",
+  "ut": "HPerfMonitor",
+  "regs": 640,
+  "outs": 48,
+  "expected": 688,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "PASS_DEAD_REF：差额 64 = child HPerfCounter* 的 event_op[4:3] golden-only 死位（verif/dead_ref/HPerfMonitor.json 逐点声明），预测 passing = 模型 − 64"
+}

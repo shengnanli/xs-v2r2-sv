@@ -13,7 +13,10 @@ GOLDEN_ADDERS = Adder_xb.sv Adder_xb_3.sv Adder_xb_8.sv Adder_xb_20.sv
 GOLDEN_SRCS = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(CHILDREN)) $(GOLDEN_ADDERS)) \
               $(GOLDEN_RTL)/Reduction.sv
 FM_VARIANTS = Reduction
-FM_REF_DEPS_Reduction = $(addsuffix .sv,$(CHILDREN)) $(GOLDEN_ADDERS)
+# 字面文件名（scripts/fm_predict.py 按字面解析，不展开 make 变量）
+FM_REF_DEPS_Reduction = CSA3to2_124.sv CSA3to2_125.sv CSA3to2_127.sv CSA3to2_132.sv CSA4to2_15.sv CSA4to2_16.sv \
+                        compare_2to1.sv compare_2to1_2.sv compare_3to1.sv compare_3to1_1.sv compare_3to1_2.sv \
+                        compare_3to1_6.sv Adder_xb.sv Adder_xb_3.sv Adder_xb_8.sv Adder_xb_20.sv
 
 # 关 merge_dup：fm_predict 的模型（寄存器位 + 输出位）只在关掉时严格适用；
 # 本模块 vd_vsew_reg_s1 与 vdType_reg_s1[1:0] 正是一对逐位恒等的寄存器。
