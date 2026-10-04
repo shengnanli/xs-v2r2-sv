@@ -90,3 +90,53 @@ StorePfWrapper（层次探针 + 状态注入）与 VecExcpDataMergeModule 只做
 ## 6. 正式证明命令
 
 `bash scripts/run_proof.sh <UT> <T...> < /dev/null`，同时最多 2 个。
+
+## 对账 1：正式证明（run_proof.sh，impl commit `6038c4afb` = 登记 commit，登记早于证明；receipt 入库 `d0fa8332f`）
+
+| 目标 | 预测 | 实测 passing | constant_reg | unread / failing / unmatched | 黑盒 / dont_verify | 判定 | receipt.json sha256 |
+|---|---:|---:|---:|---|---|---|---|
+| CryptoModule | 703 | **703** | 0 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `dffe7971b722824fbebbe81edd0cd5992bd9f385d325f17a19e4b5da6bfbca9e` |
+| StorePfWrapper | 5 | **5** | 0 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `9a9522daf75f2b80889b87b076a417b064b33db5a6bdf23dd2c6d941d350f69b` |
+| VectorFloatDivider | 1089 | **1089** | 1 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `be6782c0a160d89f04e54647e38c193256ce89865efd0f19c48a54b7d0810b06` |
+| PFEvent | 3000 | **3000** | 0 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `db41aa7145749a09d96797367fde3e74999cda1375e6dfb64ced0d49395d53b3` |
+| HPerfMonitor | 624 | **624** | 0 | 64 ref（= dead_ref）/ 0 / 0 | 0 / 否 | PASS_DEAD_REF | `8ff9a9a8709e382efc1ad39badda467060c7946235e219787f52b39105f712d2` |
+| HPerfMonitor_1 | 390 | **390** | 0 | 40 ref（= dead_ref）/ 0 / 0 | 0 / 否 | PASS_DEAD_REF | `ef67ee17c4a2cbedd69f54aa815fdc93ca106e5cc76240a510501b677384b7f0` |
+| HPerfMonitor_2 | 624 | **624** | 0 | 64 ref（= dead_ref）/ 0 / 0 | 0 / 否 | PASS_DEAD_REF | `cbc007137e99ad9776847a5dedf00f5f033ceb0389c7ae1bf362a116c34f4c1b` |
+| VecExcpDataMergeModule | 1363 | **1363** | 0 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `23c5721845466cce847dab94e0eb5542cce34459670abc25c1034e87e3512814` |
+| FloatDividerR64 | 410 | **410** | 27 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `d1ae3481807989d86617e7f23ea0fe9e0ca42133f94a85d6b2a8ce3a3454e975` |
+| Reduction | 945 | **945** | 0 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `b9564ae6dcd8776c85497548343271d9b9e1a20e80620c20667ffb8924cfec58` |
+| FloatAdderF16Pipeline | 225 | **225** | 5 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `d0f366974a0e3d63d420e9660bf1f5a21ca34ebfe0f3deda7012d3fdaf5b5cf9` |
+| FarPathFloatAdderF64WidenPipeline | 442 | **442** | 0 | 0 / 0 / 0 | 0 / 否 | SUCCEEDED | `dce82fe5e2ebc38c49d80a41bbfda3fd920696825c46f4112ea837107974c185` |
+
+`python3 scripts/fm_predict.py check <12 个目标>` rc=0「全部对上」（5 个逐位相等之外，差额全部由 receipt 的 constant_reg / unread 指认）；
+`python3 scripts/check_lane_receipts.py /home/eda/xs-env/wt-backend-misc` rc=0。
+插曲：PFEvent / VectorFloatDivider 第一次 run_proof 因根分区写满（`No space left on device`，git worktree add 失败，未进 FM）没跑起来，
+删掉本 lane 自己的 4 个 fork clone 腾出空间、`TMPDIR` 指到 /home 后同一 commit 重跑通过。
+
+## 对账 2：UT 9 档（lane 分支字节，seed 串行，各 200k 拍）
+
+全部 108 档 TEST PASSED、errors=0（每目标 9 档；HPerfMonitor 族三对同 tb）：
+
+| UT | checks/档（seed 1 / 7 / 42） | 独立 oracle | 覆盖（seed 1，均写进 PASS 判据） |
+|---|---|---|---|
+| CryptoModule | 199992 ×3 | 哈希 51483 次 0 错 | 10 条哈希指令各 ≥5043；选哈希/选密码 99586/100406；保持拍 50285 |
+| StorePfWrapper | 200000 ×3 | —（层次探针 + 状态注入） | 32 种注入值各 ≥200；回绕 30630；复位 4024 |
+| VectorFloatDivider | 799928 / 799954 / 799968 | 15124 / 15142 / 15084 次 0 错（除法 + 开方） | div 结果六类 8582/3260/1629/2564/1118/1057；sqrt 四类 12075/5026/451/890；flush 中途 914；违规发起 2915 |
+| PFEvent | 4799808 ×3 | 199992 拍 0 错 | 24 副本各被写；越界地址写 12433；OPTYPE 拒收 22195 |
+| HPerfMonitor（三对） | 4199664 ×3 | 三变体各 199995 拍 0 错 | op2 四种 ≥1000（ADD 37238 等）；缺槽 25256 / 越界 29526（_1 无缺槽，越界 73829） |
+| VecExcpDataMergeModule | 6398720 ×3（修后字节 d32f9a1） | — | 状态五态全到（见 fork 报告） |
+| FloatDividerR64 | 799982 / 799990 / 799992 | 32530 / 32527 / 32390 次 0 错 | 3 格式 × 5 rm；结果六类与五标志 |
+| Reduction | 199997 ×3（修后字节 d32f9a1） | 170004 / 170040 / 170170 次 0 错 | 8 运算 × 4 sew ≥1725 |
+| FloatAdderF16Pipeline | 199999 / 199998 / 199999 | 0 错 | 22 op 各 ≥1000 |
+| FarPathFloatAdderF64WidenPipeline | 399999 / 399997 / 399999 | 0 错 | 四种进位/溢出路径 |
+
+同一 seed 的三个 initreg 档读数相同：各 tb 都在全部不复位寄存器被写过之后才开始比（暖机 / arm），initreg 只影响比较窗口之前。
+VecExcpDataMergeModule 修前字节（9166c27）的 9 档也全过（6398720 ×9）。
+
+变异自证（scratchpad 拷贝，seed 7 / initreg 0 / 20k 拍，独立施变，不进库），lane 主体 7 个目标 11/11 被差分抓到：
+C1 选择位 [4]→[3] 15735（oracle 4190）；C2 用当拍 io_func 选 12659（2649）；C3 funcReg 去掉使能 3063（613）；
+P1 基址 0x323→0x324 957488（oracle 478744）；P2 写使能去掉 valid 658388（329194）；
+H1 HPerfMonitor_2 第 3 路少打一拍 36676（18342）；H2 HPerfMonitor_1 第 4 计数器接 hpm_event_3 38246（19128）；
+V1 start_ready 与→或 16967；V2 开方格式不减 1 10501（oracle 792）；V3 结果按 sqrt 优先二选一 16625；S1 serializer 不接复位 400。
+fork 目标的变异（VecExcp 6/7、FDivR64 5/6、Reduction 8/8、F16 5/5、F64W 4/4）见各 fork 报告；UT 漏网的两个
+（VecExcp M5 hasReadRf 写优先级反转——等价变异；FDivR64 M5 sticky_correct 去 rem_is_not_zero——随机打不到）由 FM 覆盖（两目标 FM 全过）。
