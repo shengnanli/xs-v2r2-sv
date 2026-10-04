@@ -217,6 +217,52 @@ constant_reg 27，本层只是把 input1H/output1H 从自由输入换成译码�
 
 没有做过任何 FM 试跑。
 
+## 6. VectorFloatAdder（golden 304 行；重写 281 行）
+
+### 6.1 结构与子模块处置
+
+- 向量浮点加法单元 64 位一组：`xs_VectorFloatAdder_core`（§1 三个加宽格式化件 / §2 折叠路由 / §3 五条运算 lane / §4 按锁存格式拼结果与
+  20 位 fflags）+ wrapper。本层唯一寄存器 fp_format_reg（2 位）。
+- child 全部两侧白盒（ref golden / impl 重写件）：FloatAdderWidenFormat ×3（evidence/d65d2da418a4）、
+  FloatAdderF32WidenF16MixedPipeline ×2（evidence/194f78e14165）、FloatAdderF64WidenPipeline ×1（本 lane §3/§D）、
+  FloatAdderF16Pipeline ×2（evidence/6038c4afbc60）及各自闭包。无黑盒。
+- 钉点：`fm_pins_pre.tcl`（匹配前，字面 444 对 = F64 lane 自签核的同一套，前缀换成 U_F64_Widen_0）+ `fm_pins.tcl`（匹配后，
+  五条 lane 的对称死位字面 17 对 = 各 lane 自签核的同一组）。vmucp 配置 `verif/fm_target_config/VectorFloatAdder.tcl`。
+
+### 6.2 UT（9 档 × 200k，commit fcbaac7f0 的字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+| 7  | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED |
+| 42 | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+
+独立按元素 IEEE oracle（加减含加宽 .vv/.wv 与 uop_idx 半边选择、min/max、feq/flt/fle；fflags 组布局按 golden 怪癖建模）
+全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 88066，加减 f16/f32/f64 = 15826/11947/11977，加宽 f32/f64 = 4003/3915
+（.wv 956/973、uop_idx=1 2037/1943），比较类 40398，fold 单热 1/2/4 = 10635/10499/10529，fp_format=0 9254 拍；
+NaN 结果 24194 / NV 25762 / OF 1074 / NX 51055；输出每位见过 0/1（fflags 各组 DZ/UF 只要求见过 0）。
+变异（scratchpad，20k 拍）：fflags[9:5] 在 f32 时取错 lane ⇒ errors=1724（oracle 986）；U_F32_Mixed_1 的掩码位固定取 mask[2] ⇒ 30；
+fold[2] 取错 vs2_fold 半字 ⇒ 448；F64 lane 折叠加宽源不选 fold 件 ⇒ 43；fp_format_reg 去掉 fire 使能 ⇒ 2727。
+（后三个 oracle 0：折叠 / merge 不在 oracle 范围，差分抓到。）
+
+### 6.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VectorFloatAdder.json）
+
+模型 expected = 2131（寄存器 2047 = 本层 2 + F32Mixed 310×2 + F64Widen 1007 + F16 209×2；输出 84）。预期 constant reg **181**
+（= 各 lane 自签核 constant_reg 之和：F32Mixed 20×2 + F64Widen 131 + F16 5×2；本层不把任何 lane 输入接成常量，
+三个格式化件无寄存器）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **1950**（= 2131 − 181） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 181 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过任何 FM 试跑。可能出错处：两份同构 lane（F32Mixed ×2、F16 ×2）的内部寄存器在签名分析里互相混淆——若出现 unmatched，
+按 F64 lane 的办法补匹配前钉点（只消名差），不改 RTL。
+
 ## 对账（跑完追加）
 
 ### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule
