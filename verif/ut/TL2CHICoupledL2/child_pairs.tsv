@@ -1,47 +1,47 @@
 # child_pairs.tsv —— scripts/gen_tl2chi_pins.py --harvest 从各 child 的 diagnostic-full matched.rpt 收割（勿手改）
 # 列：child  ref 相对路径  impl 相对路径  宽度（0 = 单点；W = 两侧 [0..W-1] 逐位对应）。只收两侧路径不同的寄存器配对。
-# Slice	ut=Slice	matched.rpt sha256=83fccb7f2ec1509496a671cb47929f2baff63fb9e4b8fd7efefe9ee12531f823	bits=65661
-# Slice_1	ut=Slice	matched.rpt sha256=86d40020e24adac96378ea7b1aae588c0170f8eab31f589b38138e899f01675f	bits=65664
-# Slice_2	ut=Slice	matched.rpt sha256=488a976496987f49068654eb5e183aa38f71306c74e936821f76bc177fee4892	bits=65666
-# Slice_3	ut=Slice	matched.rpt sha256=bcbbda8ad15a33bffa47131b5fba05a044644c2bbba1f83b796451fba7c8eeee	bits=65667
-# Prefetcher	ut=Prefetcher	matched.rpt sha256=74c4183603140f29c68d3a6f68660cf3f02c5424ef82ea93066ee7d6cbcccb73	bits=8926
-# MMIOBridge	ut=MMIOBridge	matched.rpt sha256=6468b8412b1fc360f6836fe2e617dbef15e2e158b8c124035b6ed19210d35749	bits=6868
-# LinkMonitor	ut=LinkMonitor	matched.rpt sha256=3aa0402bdc217b0a56eefdd113b3a425e3b51000dcdd424b2aab56c84c9977d0	bits=1371
-# Queue78_PCrdGranted	ut=UncoreChiQueues	matched.rpt sha256=20232c5562f45156ef96615c808c9fdd3ec872ffb72d5e6e1b4387bf6f05a3c9	bits=15
-# Queue2_PCrdGranted	ut=UncoreChiQueues	matched.rpt sha256=0a498bafdfee89458a53836e33bb031428e00af9b9300dd8b0d2c34d933d50d3	bits=3
-# FastArbiter	ut=FastArbiterL2c	matched.rpt sha256=d1265a57b9dfc338acc185294f8a4662017b59394016cc667f61f90996c97f45	bits=8
-# FastArbiter_1	ut=FastArbiterL2c	matched.rpt sha256=a818b2aa9c4a33f9d1613371de151aebf8a57105f0ea45582afd0eb99d9f2934	bits=8
-# FastArbiter_26	ut=FastArbiterL2c	matched.rpt sha256=2a778516c5e27dd51fbf0ccfba7a92fea9974c115524b46691f6f5688f7cbe94	bits=8
-# FastArbiter_27	ut=Arithmetic200c	matched.rpt sha256=4d54f2731a3eee22129df20a7921e9ac831a94be32c4e2cd7bfd127dd2c7013e	bits=10
-# FastArbiter_28	ut=FastArbiter_28	matched.rpt sha256=e1c7f939d683a8da4babd68fe10fb101ddf7d9c5367ed474c22e72b9835eeb42	bits=160
-# RRArbiterInit_20	ut=RRArbiterInitVariants	matched.rpt sha256=f31d4dc5d5e95c49e438f67577b03467f1575c62a03f3b81d742c95d01962699	bits=3
-# Pipeline_2	ut=L2PipelineLeaves4	matched.rpt sha256=a54bcb283cf57a46f2a0d7cd7eaae9e07a29079b4a22a4094f29092ccfba5fe4	bits=105
-# Pipeline_3	ut=L2PipelineLeaves4	matched.rpt sha256=7b00fdf4eb3674fda06986d5eaaa2482215224c5a202c52a7ae0d1b142dd01c1	bits=92
-# Pipeline_10	ut=L2PipelineLeaves4	matched.rpt sha256=667e9bcae80c4676e1a992975a4d815432ff7ed640f88fdbd1ef6e094da3e169	bits=66
-# Pipeline_11	ut=L2PipelineLeaves4	matched.rpt sha256=33c372ae5ebeaa22b56081f5f09cda6d4c7b09b4751621d6220ccb418334e50f	bits=33
-# Pipeline_12	ut=ChiRxPipelines	matched.rpt sha256=4b45e9e7e878b7743841919c0c864214d0dc7a524c1896862a7351f2c0d40aa3	bits=423
-# Pipeline_13	ut=ChiRxPipelines	matched.rpt sha256=4719fecdbf877a0e8bd3cc69479add1cb8a682e241d726b01b922c5bb6c1d396	bits=74
-# Arbiter4_L2CacheErrorInfo	ut=ArbiterLeaves5	matched.rpt sha256=53324ef4885391ade7d99b8d14f1ace39130fb9cd3765895683d835b0ccea940	bits=0
-# Arbiter4_L2ToL1Hint	ut=Pipeline200c	matched.rpt sha256=eca830ab1c5ae690473860f87a65de35b5b4729bf31a2e1997e796ca3646dbb8	bits=0
-# TopDownMonitor	ut=TopDownMonitor	matched.rpt sha256=1acf1a6834c82901638da4a95bc1c8aa0b46c642e01d84a51eed27cedd00bc4c	bits=0
-# L2Cache	ut=L2Cache	matched.rpt sha256=3c9e9bb17458cbdacc8dceb854782f91643e16ab1c7865cb9fb622f2bc1d630a	bits=318
-# MbistIntfL2	ut=MbistIntfL2	matched.rpt sha256=d30941b0bed749b411b994aa9db60871ae367d82e8a4313b95ba16d6153ff9a1	bits=0
-# TLBuffer_13	ut=TLBuffer_13	matched.rpt sha256=885a1f35f393decc62289cf89c97ccb47cd31c9c4466e59378fcd2f9b509ecef	bits=8724
-# TLBuffer_15	ut=TLBuffer_15	matched.rpt sha256=23f47f4aaf17cd68277dbfbc99c46f86c0b7356b57cbda78f52298bb820a07e7	bits=6
-# TLBuffer_20	ut=TLBuffer_20	matched.rpt sha256=e488a4ac492859e79282f34825eebef9d7f9a8e33178e6b163456113b5ec1a69	bits=0
-# TLBuffer_22	ut=TLBuffer_22	matched.rpt sha256=f5b3202344f478c3b6e882784c935bb652be5ba197bef6e31108859c579be988	bits=0
-# TLBuffer_6	ut=TLBuffer_6	matched.rpt sha256=c9930e25308e8e326e02ce7196c9ee9649717bd11d80a201c335ef7f3d3e8310	bits=0
-# TLBuffer_8	ut=TLBuffer_8	matched.rpt sha256=75328b86a1e2c582c23c89460fae30a61294b562fe7a4ffca424a00ca23f94a0	bits=0
-# TLXbar_5	ut=TLXbar_5	matched.rpt sha256=1e0109d01f45349c560aaff6a0f426b3fa78cca62d4ddac4f7560cf36771378b	bits=64
-# TLXbar_6	ut=TLXbar_6	matched.rpt sha256=7cda9bb988df287c86573cdc9c971e61bac57deb615e11becf4434cf259fc0aa	bits=29
-# TLLogger	ut=TLLogger	matched.rpt sha256=21f477a6781c824d980cf890dce0530571a93486530270a50b75937cedd24bf9	bits=0
-# TLLogger_1	ut=QueueChiSpillLogger200c	matched.rpt sha256=83ceaaa2c8355a4bdcecb7e3ccd73bfc8523a2b55e837082e7d572ca57d23133	bits=0
-# TLLogger_2	ut=QueueChiSpillLogger200c	matched.rpt sha256=265c93a298beeea7693747412af8d32691c412ca189a41bcdf4f1cf7ced19b48	bits=0
-# BusErrorUnit	ut=BusHPerfCounter200c	matched.rpt sha256=624fa08185be3c5cf76fad3782fc2acc5177329936043e911843adcae1860b3a	bits=66
-# BusPerfMonitor	ut=BusArbLeaves	matched.rpt sha256=ce186007e0706ddfa9c88016b2469bec0db166bf4500805b5a5372ad3d2585c7	bits=0
-# IntBuffer	ut=IntBuffer	matched.rpt sha256=2564dec57ebccc1a54d62ff0655d11b9502882186a42581823fc310ad6fa675d	bits=1
-# DelayN_334	ut=DelayN	matched.rpt sha256=002c7f295ec9f48101bf9ca3474f6ca71050bba4dbf7d3ee7178c4bbdf636005	bits=240
-# DelayNWithValid_203	ut=DelayNWithValid	matched.rpt sha256=4b4cccb24326b8a9d6426720310fd4bfe0e35c3b0a3772d77d605d4738a01652	bits=65
+# Slice	ut=Slice	matched.rpt+fm.log sha256=8d1e676857631d0350cc1f6c0109b353b9e83210c1cde70851f04b155c3826bb	bits=65771
+# Slice_1	ut=Slice	matched.rpt+fm.log sha256=73ab3ef309dbd1b7cadf79942a37bd56b3c3a4089de357910481437f2b9707cf	bits=65774
+# Slice_2	ut=Slice	matched.rpt+fm.log sha256=ff4f0c218e6f9d6b25f504881461409a7be475d87de33cd02729e1768481d2e3	bits=65776
+# Slice_3	ut=Slice	matched.rpt+fm.log sha256=bc19c1ca67c6c6e2e2361632dfddf4aab88a927c157b93b56d4d1c2273d9990f	bits=65777
+# Prefetcher	ut=Prefetcher	matched.rpt+fm.log sha256=7b67cf2255e45ae0738de77a494d1930bb922ec3d592082af635a3b9c068c63d	bits=8926
+# MMIOBridge	ut=MMIOBridge	matched.rpt+fm.log sha256=fd695e7f6597c504beafc6c6ff940ed2110df38488273c033ceb5e041fcab57f	bits=6868
+# LinkMonitor	ut=LinkMonitor	matched.rpt+fm.log sha256=dfab73745c2592d96836251572327c5289d42263c1e73c5923f8c7bb8c7e5362	bits=1371
+# Queue78_PCrdGranted	ut=UncoreChiQueues	matched.rpt+fm.log sha256=4e9a561bf7f2f723c30bcaa7dad9be33a607d8742e39ca039e7669e08f3a40db	bits=15
+# Queue2_PCrdGranted	ut=UncoreChiQueues	matched.rpt+fm.log sha256=f6c6588bceaf17d92dcdf1cb36cbe1c2ed3ed7a23b9ef6945d1e93f31ad40a23	bits=3
+# FastArbiter	ut=FastArbiterL2c	matched.rpt+fm.log sha256=a456c266ed767b1f2794427d2a81ca1fc4335ca01b8a4505ba62bd47cea93190	bits=8
+# FastArbiter_1	ut=FastArbiterL2c	matched.rpt+fm.log sha256=7a0a0db6483c7a7f54ddd68d6be6b3f6f3e80dd58ed97f5d5daa92c99004f759	bits=8
+# FastArbiter_26	ut=FastArbiterL2c	matched.rpt+fm.log sha256=d7b7a2398f12e0ea9d842bca6ce989cbf0bc2c890ebe9e16056acc97bafd43ae	bits=8
+# FastArbiter_27	ut=Arithmetic200c	matched.rpt+fm.log sha256=5dbe1fb3b5795f5d9c9ed863cfd6b622cd4cfa19ed77d5b1fb14d9e81734e5eb	bits=10
+# FastArbiter_28	ut=FastArbiter_28	matched.rpt+fm.log sha256=c3ab8db465adb6b596abf4abea435fbcbc6bef79d1dc379cd1d7328ffae0984f	bits=160
+# RRArbiterInit_20	ut=RRArbiterInitVariants	matched.rpt+fm.log sha256=d2b0ddf22e0b0d32fff1f1a1241554d9a3438016b1e51618ca362047c6663deb	bits=3
+# Pipeline_2	ut=L2PipelineLeaves4	matched.rpt+fm.log sha256=3a06c72e93050cd631e886333216c7bd8d05a02e5200a702e85c8544c8d60a94	bits=105
+# Pipeline_3	ut=L2PipelineLeaves4	matched.rpt+fm.log sha256=1eb59e9b399ba197137dea10d012b08733c716a2dd15a122c5e47702bf60bd6e	bits=92
+# Pipeline_10	ut=L2PipelineLeaves4	matched.rpt+fm.log sha256=132c27f8b87f946363b620565f3b67e8a22a875c7c8da93da76a33813b5afb8c	bits=66
+# Pipeline_11	ut=L2PipelineLeaves4	matched.rpt+fm.log sha256=1ca243770b37124bc0b372424463483c15d8bcf2a8bc03578607a93f7729d59b	bits=33
+# Pipeline_12	ut=ChiRxPipelines	matched.rpt+fm.log sha256=ff675e5d0673f4e4563e53cc15c9f6741ec3c7a0ad75ba82a2e3afb35ff8bc7f	bits=423
+# Pipeline_13	ut=ChiRxPipelines	matched.rpt+fm.log sha256=fad161094a3c35018fe1c0d80da453a749d4e6400d574eeb86b22ecc600579e2	bits=74
+# Arbiter4_L2CacheErrorInfo	ut=ArbiterLeaves5	matched.rpt+fm.log sha256=d5d6087babd8d62174c62da0a991e095c465379f152ed3e83c81f38b133cfab5	bits=0
+# Arbiter4_L2ToL1Hint	ut=Pipeline200c	matched.rpt+fm.log sha256=711a70abbf7e8687857c4d443ce7e210e9a42f2a944fe83b43a59a76a969e5a4	bits=0
+# TopDownMonitor	ut=TopDownMonitor	matched.rpt+fm.log sha256=6d5b09db484f4059df5669287781f2e4500911841fb2598a82337863d7fefa88	bits=0
+# L2Cache	ut=L2Cache	matched.rpt+fm.log sha256=3446ef057354916cd517766843de9b57d01f3ef880f7845f24d6a890c163356f	bits=318
+# MbistIntfL2	ut=MbistIntfL2	matched.rpt+fm.log sha256=fb3ac8365b732772045aa5c651c4fe678a93eaf89bb8c1a3b42f786b975b626e	bits=0
+# TLBuffer_13	ut=TLBuffer_13	matched.rpt+fm.log sha256=7974355b3fa09d038d1666c08856057700f7d5f46255aabf5a874366aa8d4ae1	bits=8724
+# TLBuffer_15	ut=TLBuffer_15	matched.rpt+fm.log sha256=a4dbe3c9ed980741a1893de793abc7885ddbdc58b2f167b90328f0287f8bf072	bits=6
+# TLBuffer_20	ut=TLBuffer_20	matched.rpt+fm.log sha256=abb490c40a35fe05d57a2d314bf11b0dd87200e534434138836b3d60e139e9c3	bits=0
+# TLBuffer_22	ut=TLBuffer_22	matched.rpt+fm.log sha256=5acf0cfbbe5d9d937fea7bcf56f6b433fc69d2400d08dcd22e3fd416a5fba267	bits=0
+# TLBuffer_6	ut=TLBuffer_6	matched.rpt+fm.log sha256=51e76051ae2034f806c9d9f7fd8dea16ee8c9b50aad2bfaf6c1b670f8fab0be4	bits=0
+# TLBuffer_8	ut=TLBuffer_8	matched.rpt+fm.log sha256=0fd4beab559e6a20e19e46e5591223722fa790339214aa0c87462b1288acafbc	bits=0
+# TLXbar_5	ut=TLXbar_5	matched.rpt+fm.log sha256=c39082242fd79e17b56728dab98f58449f18d5fe8e87ebaee65e46e288a76145	bits=64
+# TLXbar_6	ut=TLXbar_6	matched.rpt+fm.log sha256=a38fd906aa6596752339a07150e11952d56612cbf28fffd76e3b4b9c1c005b21	bits=29
+# TLLogger	ut=TLLogger	matched.rpt+fm.log sha256=db42c10992d9e4c14547f91a41a98fbd5421c833075a8a4437b70abdb3e537a5	bits=0
+# TLLogger_1	ut=QueueChiSpillLogger200c	matched.rpt+fm.log sha256=5ceddf985d76982a75b7833787b64ece838c8b63b0d328a9dd07460b8f767589	bits=0
+# TLLogger_2	ut=QueueChiSpillLogger200c	matched.rpt+fm.log sha256=695464b36ce00198dee2f4652655f48195fc769597cb92047325f110f0ebee18	bits=0
+# BusErrorUnit	ut=BusHPerfCounter200c	matched.rpt+fm.log sha256=30f554b5eddcd7fb5bc328eb465361996750b8eaf2ef66122bb3df2abb701153	bits=66
+# BusPerfMonitor	ut=BusArbLeaves	matched.rpt+fm.log sha256=3e91c4329f1a09eef3b6c1cb567f0cd7c297a4de5195bdd79734b8dbaeba4af6	bits=0
+# IntBuffer	ut=IntBuffer	matched.rpt+fm.log sha256=ddefe36deab39ea687be3c7a98ec8a48ddc565577357849fb351aad03c11ddba	bits=1
+# DelayN_334	ut=DelayN	matched.rpt+fm.log sha256=86dfa6c11339b1c1d674250c075f6a952bec12a4d853043e70a2dc9408340cba	bits=240
+# DelayNWithValid_203	ut=DelayNWithValid	matched.rpt+fm.log sha256=b02c1fd379fa5bccbbf679ff03357dec9466d3fea4609c4e2169454255f13130	bits=65
 Slice	dataStorage/REG_1_reg	dataStorage/u_core/enPrev_reg	0
 Slice	dataStorage/REG_2_reg	dataStorage/u_core/reqPrev_reg	14
 Slice	dataStorage/REG_3_reg	dataStorage/u_core/wrEnPrev_reg	0
@@ -2653,7 +2653,7 @@ Slice	mshrCtl/sourceB/probes_0_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_co
 Slice	mshrCtl/sourceB/probes_0_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[0]	9
 Slice	mshrCtl/sourceB/probes_0_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[0]	31
 Slice	mshrCtl/sourceB/probes_0_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[0]	0
-Slice	mshrCtl/sourceB/probes_0_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]	4
+Slice	mshrCtl/sourceB/probes_0_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]	7
 Slice	mshrCtl/sourceB/probes_1_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[1]	0
 Slice	mshrCtl/sourceB/probes_1_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[1]	2
 Slice	mshrCtl/sourceB/probes_1_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[1]	3
@@ -2661,7 +2661,7 @@ Slice	mshrCtl/sourceB/probes_1_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_co
 Slice	mshrCtl/sourceB/probes_1_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[1]	9
 Slice	mshrCtl/sourceB/probes_1_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[1]	31
 Slice	mshrCtl/sourceB/probes_1_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[1]	0
-Slice	mshrCtl/sourceB/probes_1_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]	4
+Slice	mshrCtl/sourceB/probes_1_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]	7
 Slice	mshrCtl/sourceB/probes_2_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[2]	0
 Slice	mshrCtl/sourceB/probes_2_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[2]	2
 Slice	mshrCtl/sourceB/probes_2_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[2]	3
@@ -2669,7 +2669,7 @@ Slice	mshrCtl/sourceB/probes_2_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_co
 Slice	mshrCtl/sourceB/probes_2_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[2]	9
 Slice	mshrCtl/sourceB/probes_2_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[2]	31
 Slice	mshrCtl/sourceB/probes_2_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[2]	0
-Slice	mshrCtl/sourceB/probes_2_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]	4
+Slice	mshrCtl/sourceB/probes_2_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]	7
 Slice	mshrCtl/sourceB/probes_3_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[3]	0
 Slice	mshrCtl/sourceB/probes_3_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[3]	2
 Slice	mshrCtl/sourceB/probes_3_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[3]	3
@@ -2677,7 +2677,7 @@ Slice	mshrCtl/sourceB/probes_3_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_co
 Slice	mshrCtl/sourceB/probes_3_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[3]	9
 Slice	mshrCtl/sourceB/probes_3_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[3]	31
 Slice	mshrCtl/sourceB/probes_3_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[3]	0
-Slice	mshrCtl/sourceB/probes_3_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]	4
+Slice	mshrCtl/sourceB/probes_3_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]	7
 Slice	mshrCtl/source_b_arb/pendingMask_reg	u_core/mshrCtl/u_core/source_b_arb/u_core/pendingMask_reg	16
 Slice	mshrCtl/source_b_arb/rrGrantMask_reg	u_core/mshrCtl/u_core/source_b_arb/u_core/rrGrantMask_reg	16
 Slice	mshrCtl/timers_0_reg	u_core/mshrCtl/u_core/timers_reg[0]	64
@@ -2772,10 +2772,12 @@ Slice	reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_reg	u_core/reqArb/u_core/msh
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]	0
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]	2
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]	0
+Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]	0
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]	0
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]	3
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]	0
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]	2
+Slice	reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]	0
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_off_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]	6
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]	3
 Slice	reqArb/mshr_task_s1_bits_aMergeTask_param_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]	3
@@ -2784,6 +2786,7 @@ Slice	reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg	u_core/reqArb/u_core/mshr_ta
 Slice	reqArb/mshr_task_s1_bits_aliasTask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]	0
 Slice	reqArb/mshr_task_s1_bits_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]	2
 Slice	reqArb/mshr_task_s1_bits_allowRetry_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]	0
+Slice	reqArb/mshr_task_s1_bits_bufIdx_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]	2
 Slice	reqArb/mshr_task_s1_bits_channel_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]	3
 Slice	reqArb/mshr_task_s1_bits_chiOpcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]	7
 Slice	reqArb/mshr_task_s1_bits_cmoAll_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]	0
@@ -2820,6 +2823,7 @@ Slice	reqArb/mshr_task_s1_bits_mshrId_reg	u_core/reqArb/u_core/mshr_task_s1_bits
 Slice	reqArb/mshr_task_s1_bits_mshrRetry_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]	0
 Slice	reqArb/mshr_task_s1_bits_mshrTask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]	0
 Slice	reqArb/mshr_task_s1_bits_needHint_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]	0
+Slice	reqArb/mshr_task_s1_bits_needProbeAckData_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]	0
 Slice	reqArb/mshr_task_s1_bits_off_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]	6
 Slice	reqArb/mshr_task_s1_bits_opcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]	4
 Slice	reqArb/mshr_task_s1_bits_pCrdType_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]	4
@@ -2830,8 +2834,7 @@ Slice	reqArb/mshr_task_s1_bits_reqSource_reg	u_core/reqArb/u_core/mshr_task_s1_b
 Slice	reqArb/mshr_task_s1_bits_resp_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]	3
 Slice	reqArb/mshr_task_s1_bits_retToSrc_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]	0
 Slice	reqArb/mshr_task_s1_bits_set_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]	9
-Slice	reqArb/mshr_task_s1_bits_size_reg[1]	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][1]	0
-Slice	reqArb/mshr_task_s1_bits_size_reg[2]	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][2]	0
+Slice	reqArb/mshr_task_s1_bits_size_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]	3
 Slice	reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]	8
 Slice	reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]	0
 Slice	reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]	2
@@ -2856,6 +2859,7 @@ Slice	reqArb/mshr_task_s1_bits_txChannel_reg	u_core/reqArb/u_core/mshr_task_s1_b
 Slice	reqArb/mshr_task_s1_bits_txnID_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]	12
 Slice	reqArb/mshr_task_s1_bits_useProbeData_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]	0
 Slice	reqArb/mshr_task_s1_bits_vaddr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]	44
+Slice	reqArb/mshr_task_s1_bits_wayMask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]	8
 Slice	reqArb/mshr_task_s1_bits_way_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]	3
 Slice	reqArb/mshr_task_s1_valid_reg	u_core/reqArb/u_core/mshr_task_s1_valid_reg	0
 Slice	reqArb/resetFinish_reg	u_core/reqArb/u_core/resetFinish_reg	0
@@ -3134,27 +3138,34 @@ Slice	sinkC/r_0_reg	u_core/sinkC/u_core/bufRespStage_reg[0]	256
 Slice	sinkC/r_1_reg	u_core/sinkC/u_core/bufRespStage_reg[1]	256
 Slice	sinkC/r_counter_reg	u_core/sinkC/u_core/r_counter_reg	0
 Slice	sinkC/taskArb/ctrl_validMask_grantMask_lastGrant_reg	u_core/sinkC/taskArb/u_core/last_grant_q_reg	2
+Slice	sinkC/taskBuf_0_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]	2
 Slice	sinkC/taskBuf_0_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]	0
 Slice	sinkC/taskBuf_0_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]	0
 Slice	sinkC/taskBuf_0_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]	2
 Slice	sinkC/taskBuf_0_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]	0
+Slice	sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]	0
 Slice	sinkC/taskBuf_0_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]	0
 Slice	sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]	3
 Slice	sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]	0
 Slice	sinkC/taskBuf_0_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]	2
+Slice	sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]	0
+Slice	sinkC/taskBuf_0_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]	6
 Slice	sinkC/taskBuf_0_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]	3
 Slice	sinkC/taskBuf_0_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]	3
 Slice	sinkC/taskBuf_0_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]	7
 Slice	sinkC/taskBuf_0_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]	44
+Slice	sinkC/taskBuf_0_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]	0
 Slice	sinkC/taskBuf_0_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]	2
 Slice	sinkC/taskBuf_0_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]	0
 Slice	sinkC/taskBuf_0_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]	2
 Slice	sinkC/taskBuf_0_channel_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[channel]	3
 Slice	sinkC/taskBuf_0_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]	7
 Slice	sinkC/taskBuf_0_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]	0
+Slice	sinkC/taskBuf_0_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]	0
 Slice	sinkC/taskBuf_0_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]	0
 Slice	sinkC/taskBuf_0_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]	12
 Slice	sinkC/taskBuf_0_denied_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[denied]	0
+Slice	sinkC/taskBuf_0_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]	0
 Slice	sinkC/taskBuf_0_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]	0
 Slice	sinkC/taskBuf_0_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]	0
 Slice	sinkC/taskBuf_0_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]	0
@@ -3173,14 +3184,17 @@ Slice	sinkC/taskBuf_0_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[metaWen]	0
 Slice	sinkC/taskBuf_0_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]	0
 Slice	sinkC/taskBuf_0_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]	2
 Slice	sinkC/taskBuf_0_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]	0
+Slice	sinkC/taskBuf_0_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]	0
 Slice	sinkC/taskBuf_0_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]	0
 Slice	sinkC/taskBuf_0_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]	3
 Slice	sinkC/taskBuf_0_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]	0
 Slice	sinkC/taskBuf_0_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]	2
 Slice	sinkC/taskBuf_0_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]	0
 Slice	sinkC/taskBuf_0_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]	8
+Slice	sinkC/taskBuf_0_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]	0
 Slice	sinkC/taskBuf_0_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]	0
 Slice	sinkC/taskBuf_0_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]	0
+Slice	sinkC/taskBuf_0_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]	0
 Slice	sinkC/taskBuf_0_off_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[off]	6
 Slice	sinkC/taskBuf_0_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]	4
 Slice	sinkC/taskBuf_0_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]	4
@@ -3192,10 +3206,11 @@ Slice	sinkC/taskBuf_0_resp_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[resp]	3
 Slice	sinkC/taskBuf_0_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]	0
 Slice	sinkC/taskBuf_0_set_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[set]	9
 Slice	sinkC/taskBuf_0_size_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[size]	3
-Slice	sinkC/taskBuf_0_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]	4
+Slice	sinkC/taskBuf_0_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]	8
 Slice	sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]	0
 Slice	sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]	2
 Slice	sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]	0
+Slice	sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]	0
 Slice	sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]	0
 Slice	sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice	sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]	0
@@ -3217,27 +3232,34 @@ Slice	sinkC/taskBuf_0_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[usePr
 Slice	sinkC/taskBuf_0_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]	44
 Slice	sinkC/taskBuf_0_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]	8
 Slice	sinkC/taskBuf_0_way_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[way]	3
+Slice	sinkC/taskBuf_1_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]	2
 Slice	sinkC/taskBuf_1_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]	0
 Slice	sinkC/taskBuf_1_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]	0
 Slice	sinkC/taskBuf_1_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]	2
 Slice	sinkC/taskBuf_1_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]	0
+Slice	sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]	0
 Slice	sinkC/taskBuf_1_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]	0
 Slice	sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]	3
 Slice	sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]	0
 Slice	sinkC/taskBuf_1_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]	2
+Slice	sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]	0
+Slice	sinkC/taskBuf_1_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]	6
 Slice	sinkC/taskBuf_1_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]	3
 Slice	sinkC/taskBuf_1_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]	3
 Slice	sinkC/taskBuf_1_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]	7
 Slice	sinkC/taskBuf_1_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]	44
+Slice	sinkC/taskBuf_1_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]	0
 Slice	sinkC/taskBuf_1_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]	2
 Slice	sinkC/taskBuf_1_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]	0
 Slice	sinkC/taskBuf_1_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]	2
 Slice	sinkC/taskBuf_1_channel_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[channel]	3
 Slice	sinkC/taskBuf_1_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]	7
 Slice	sinkC/taskBuf_1_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]	0
+Slice	sinkC/taskBuf_1_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]	0
 Slice	sinkC/taskBuf_1_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]	0
 Slice	sinkC/taskBuf_1_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]	12
 Slice	sinkC/taskBuf_1_denied_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[denied]	0
+Slice	sinkC/taskBuf_1_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]	0
 Slice	sinkC/taskBuf_1_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]	0
 Slice	sinkC/taskBuf_1_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]	0
 Slice	sinkC/taskBuf_1_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]	0
@@ -3256,14 +3278,17 @@ Slice	sinkC/taskBuf_1_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[metaWen]	0
 Slice	sinkC/taskBuf_1_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]	0
 Slice	sinkC/taskBuf_1_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]	2
 Slice	sinkC/taskBuf_1_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]	0
+Slice	sinkC/taskBuf_1_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]	0
 Slice	sinkC/taskBuf_1_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]	0
 Slice	sinkC/taskBuf_1_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]	3
 Slice	sinkC/taskBuf_1_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]	0
 Slice	sinkC/taskBuf_1_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]	2
 Slice	sinkC/taskBuf_1_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]	0
 Slice	sinkC/taskBuf_1_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]	8
+Slice	sinkC/taskBuf_1_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]	0
 Slice	sinkC/taskBuf_1_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]	0
 Slice	sinkC/taskBuf_1_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]	0
+Slice	sinkC/taskBuf_1_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]	0
 Slice	sinkC/taskBuf_1_off_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[off]	6
 Slice	sinkC/taskBuf_1_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]	4
 Slice	sinkC/taskBuf_1_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]	4
@@ -3275,10 +3300,11 @@ Slice	sinkC/taskBuf_1_resp_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[resp]	3
 Slice	sinkC/taskBuf_1_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]	0
 Slice	sinkC/taskBuf_1_set_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[set]	9
 Slice	sinkC/taskBuf_1_size_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[size]	3
-Slice	sinkC/taskBuf_1_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]	4
+Slice	sinkC/taskBuf_1_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]	8
 Slice	sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]	0
 Slice	sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]	2
 Slice	sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]	0
+Slice	sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]	0
 Slice	sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]	0
 Slice	sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice	sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]	0
@@ -3300,27 +3326,34 @@ Slice	sinkC/taskBuf_1_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[usePr
 Slice	sinkC/taskBuf_1_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]	44
 Slice	sinkC/taskBuf_1_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]	8
 Slice	sinkC/taskBuf_1_way_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[way]	3
+Slice	sinkC/taskBuf_2_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]	2
 Slice	sinkC/taskBuf_2_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]	0
 Slice	sinkC/taskBuf_2_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]	0
 Slice	sinkC/taskBuf_2_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]	2
 Slice	sinkC/taskBuf_2_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]	0
+Slice	sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]	0
 Slice	sinkC/taskBuf_2_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]	0
 Slice	sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]	3
 Slice	sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]	0
 Slice	sinkC/taskBuf_2_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]	2
+Slice	sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]	0
+Slice	sinkC/taskBuf_2_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]	6
 Slice	sinkC/taskBuf_2_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]	3
 Slice	sinkC/taskBuf_2_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]	3
 Slice	sinkC/taskBuf_2_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]	7
 Slice	sinkC/taskBuf_2_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]	44
+Slice	sinkC/taskBuf_2_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]	0
 Slice	sinkC/taskBuf_2_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]	2
 Slice	sinkC/taskBuf_2_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]	0
 Slice	sinkC/taskBuf_2_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]	2
 Slice	sinkC/taskBuf_2_channel_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[channel]	3
 Slice	sinkC/taskBuf_2_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]	7
 Slice	sinkC/taskBuf_2_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]	0
+Slice	sinkC/taskBuf_2_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]	0
 Slice	sinkC/taskBuf_2_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]	0
 Slice	sinkC/taskBuf_2_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]	12
 Slice	sinkC/taskBuf_2_denied_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[denied]	0
+Slice	sinkC/taskBuf_2_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]	0
 Slice	sinkC/taskBuf_2_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]	0
 Slice	sinkC/taskBuf_2_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]	0
 Slice	sinkC/taskBuf_2_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]	0
@@ -3339,14 +3372,17 @@ Slice	sinkC/taskBuf_2_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[metaWen]	0
 Slice	sinkC/taskBuf_2_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]	0
 Slice	sinkC/taskBuf_2_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]	2
 Slice	sinkC/taskBuf_2_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]	0
+Slice	sinkC/taskBuf_2_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]	0
 Slice	sinkC/taskBuf_2_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]	0
 Slice	sinkC/taskBuf_2_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]	3
 Slice	sinkC/taskBuf_2_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]	0
 Slice	sinkC/taskBuf_2_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]	2
 Slice	sinkC/taskBuf_2_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]	0
 Slice	sinkC/taskBuf_2_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]	8
+Slice	sinkC/taskBuf_2_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]	0
 Slice	sinkC/taskBuf_2_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]	0
 Slice	sinkC/taskBuf_2_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]	0
+Slice	sinkC/taskBuf_2_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]	0
 Slice	sinkC/taskBuf_2_off_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[off]	6
 Slice	sinkC/taskBuf_2_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]	4
 Slice	sinkC/taskBuf_2_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]	4
@@ -3358,10 +3394,11 @@ Slice	sinkC/taskBuf_2_resp_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[resp]	3
 Slice	sinkC/taskBuf_2_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]	0
 Slice	sinkC/taskBuf_2_set_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[set]	9
 Slice	sinkC/taskBuf_2_size_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[size]	3
-Slice	sinkC/taskBuf_2_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]	4
+Slice	sinkC/taskBuf_2_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]	8
 Slice	sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]	0
 Slice	sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]	2
 Slice	sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]	0
+Slice	sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]	0
 Slice	sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]	0
 Slice	sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice	sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]	0
@@ -3383,27 +3420,34 @@ Slice	sinkC/taskBuf_2_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[usePr
 Slice	sinkC/taskBuf_2_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]	44
 Slice	sinkC/taskBuf_2_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]	8
 Slice	sinkC/taskBuf_2_way_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[way]	3
+Slice	sinkC/taskBuf_3_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]	2
 Slice	sinkC/taskBuf_3_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]	0
 Slice	sinkC/taskBuf_3_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]	0
 Slice	sinkC/taskBuf_3_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]	2
 Slice	sinkC/taskBuf_3_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]	0
+Slice	sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]	0
 Slice	sinkC/taskBuf_3_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]	0
 Slice	sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]	3
 Slice	sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]	0
 Slice	sinkC/taskBuf_3_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]	2
+Slice	sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]	0
+Slice	sinkC/taskBuf_3_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]	6
 Slice	sinkC/taskBuf_3_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]	3
 Slice	sinkC/taskBuf_3_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]	3
 Slice	sinkC/taskBuf_3_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]	7
 Slice	sinkC/taskBuf_3_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]	44
+Slice	sinkC/taskBuf_3_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]	0
 Slice	sinkC/taskBuf_3_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]	2
 Slice	sinkC/taskBuf_3_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]	0
 Slice	sinkC/taskBuf_3_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]	2
 Slice	sinkC/taskBuf_3_channel_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[channel]	3
 Slice	sinkC/taskBuf_3_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]	7
 Slice	sinkC/taskBuf_3_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]	0
+Slice	sinkC/taskBuf_3_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]	0
 Slice	sinkC/taskBuf_3_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]	0
 Slice	sinkC/taskBuf_3_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]	12
 Slice	sinkC/taskBuf_3_denied_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[denied]	0
+Slice	sinkC/taskBuf_3_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]	0
 Slice	sinkC/taskBuf_3_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]	0
 Slice	sinkC/taskBuf_3_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]	0
 Slice	sinkC/taskBuf_3_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]	0
@@ -3422,14 +3466,17 @@ Slice	sinkC/taskBuf_3_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[metaWen]	0
 Slice	sinkC/taskBuf_3_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]	0
 Slice	sinkC/taskBuf_3_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]	2
 Slice	sinkC/taskBuf_3_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]	0
+Slice	sinkC/taskBuf_3_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]	0
 Slice	sinkC/taskBuf_3_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]	0
 Slice	sinkC/taskBuf_3_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]	3
 Slice	sinkC/taskBuf_3_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]	0
 Slice	sinkC/taskBuf_3_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]	2
 Slice	sinkC/taskBuf_3_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]	0
 Slice	sinkC/taskBuf_3_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]	8
+Slice	sinkC/taskBuf_3_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]	0
 Slice	sinkC/taskBuf_3_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]	0
 Slice	sinkC/taskBuf_3_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]	0
+Slice	sinkC/taskBuf_3_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]	0
 Slice	sinkC/taskBuf_3_off_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[off]	6
 Slice	sinkC/taskBuf_3_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]	4
 Slice	sinkC/taskBuf_3_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]	4
@@ -3441,10 +3488,11 @@ Slice	sinkC/taskBuf_3_resp_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[resp]	3
 Slice	sinkC/taskBuf_3_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]	0
 Slice	sinkC/taskBuf_3_set_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[set]	9
 Slice	sinkC/taskBuf_3_size_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[size]	3
-Slice	sinkC/taskBuf_3_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]	4
+Slice	sinkC/taskBuf_3_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]	8
 Slice	sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]	0
 Slice	sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]	2
 Slice	sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]	0
+Slice	sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]	0
 Slice	sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]	0
 Slice	sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice	sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]	0
@@ -6189,7 +6237,7 @@ Slice_1	mshrCtl/sourceB/probes_0_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_1	mshrCtl/sourceB/probes_0_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[0]	9
 Slice_1	mshrCtl/sourceB/probes_0_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[0]	31
 Slice_1	mshrCtl/sourceB/probes_0_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[0]	0
-Slice_1	mshrCtl/sourceB/probes_0_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]	4
+Slice_1	mshrCtl/sourceB/probes_0_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]	7
 Slice_1	mshrCtl/sourceB/probes_1_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[1]	0
 Slice_1	mshrCtl/sourceB/probes_1_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[1]	2
 Slice_1	mshrCtl/sourceB/probes_1_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[1]	3
@@ -6197,7 +6245,7 @@ Slice_1	mshrCtl/sourceB/probes_1_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_1	mshrCtl/sourceB/probes_1_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[1]	9
 Slice_1	mshrCtl/sourceB/probes_1_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[1]	31
 Slice_1	mshrCtl/sourceB/probes_1_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[1]	0
-Slice_1	mshrCtl/sourceB/probes_1_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]	4
+Slice_1	mshrCtl/sourceB/probes_1_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]	7
 Slice_1	mshrCtl/sourceB/probes_2_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[2]	0
 Slice_1	mshrCtl/sourceB/probes_2_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[2]	2
 Slice_1	mshrCtl/sourceB/probes_2_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[2]	3
@@ -6205,7 +6253,7 @@ Slice_1	mshrCtl/sourceB/probes_2_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_1	mshrCtl/sourceB/probes_2_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[2]	9
 Slice_1	mshrCtl/sourceB/probes_2_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[2]	31
 Slice_1	mshrCtl/sourceB/probes_2_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[2]	0
-Slice_1	mshrCtl/sourceB/probes_2_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]	4
+Slice_1	mshrCtl/sourceB/probes_2_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]	7
 Slice_1	mshrCtl/sourceB/probes_3_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[3]	0
 Slice_1	mshrCtl/sourceB/probes_3_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[3]	2
 Slice_1	mshrCtl/sourceB/probes_3_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[3]	3
@@ -6213,7 +6261,7 @@ Slice_1	mshrCtl/sourceB/probes_3_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_1	mshrCtl/sourceB/probes_3_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[3]	9
 Slice_1	mshrCtl/sourceB/probes_3_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[3]	31
 Slice_1	mshrCtl/sourceB/probes_3_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[3]	0
-Slice_1	mshrCtl/sourceB/probes_3_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]	4
+Slice_1	mshrCtl/sourceB/probes_3_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]	7
 Slice_1	mshrCtl/source_b_arb/pendingMask_reg	u_core/mshrCtl/u_core/source_b_arb/u_core/pendingMask_reg	16
 Slice_1	mshrCtl/source_b_arb/rrGrantMask_reg	u_core/mshrCtl/u_core/source_b_arb/u_core/rrGrantMask_reg	16
 Slice_1	mshrCtl/timers_0_reg	u_core/mshrCtl/u_core/timers_reg[0]	64
@@ -6308,10 +6356,12 @@ Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_reg	u_core/reqArb/u_core/m
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]	0
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]	2
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]	0
+Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]	0
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]	0
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]	3
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]	0
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]	2
+Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]	0
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_off_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]	6
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]	3
 Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_param_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]	3
@@ -6320,6 +6370,7 @@ Slice_1	reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg	u_core/reqArb/u_core/mshr_
 Slice_1	reqArb/mshr_task_s1_bits_aliasTask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]	0
 Slice_1	reqArb/mshr_task_s1_bits_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]	2
 Slice_1	reqArb/mshr_task_s1_bits_allowRetry_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]	0
+Slice_1	reqArb/mshr_task_s1_bits_bufIdx_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]	2
 Slice_1	reqArb/mshr_task_s1_bits_channel_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]	3
 Slice_1	reqArb/mshr_task_s1_bits_chiOpcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]	7
 Slice_1	reqArb/mshr_task_s1_bits_cmoAll_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]	0
@@ -6356,6 +6407,7 @@ Slice_1	reqArb/mshr_task_s1_bits_mshrId_reg	u_core/reqArb/u_core/mshr_task_s1_bi
 Slice_1	reqArb/mshr_task_s1_bits_mshrRetry_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]	0
 Slice_1	reqArb/mshr_task_s1_bits_mshrTask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]	0
 Slice_1	reqArb/mshr_task_s1_bits_needHint_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]	0
+Slice_1	reqArb/mshr_task_s1_bits_needProbeAckData_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]	0
 Slice_1	reqArb/mshr_task_s1_bits_off_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]	6
 Slice_1	reqArb/mshr_task_s1_bits_opcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]	4
 Slice_1	reqArb/mshr_task_s1_bits_pCrdType_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]	4
@@ -6366,8 +6418,7 @@ Slice_1	reqArb/mshr_task_s1_bits_reqSource_reg	u_core/reqArb/u_core/mshr_task_s1
 Slice_1	reqArb/mshr_task_s1_bits_resp_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]	3
 Slice_1	reqArb/mshr_task_s1_bits_retToSrc_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]	0
 Slice_1	reqArb/mshr_task_s1_bits_set_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]	9
-Slice_1	reqArb/mshr_task_s1_bits_size_reg[1]	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][1]	0
-Slice_1	reqArb/mshr_task_s1_bits_size_reg[2]	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][2]	0
+Slice_1	reqArb/mshr_task_s1_bits_size_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]	3
 Slice_1	reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]	8
 Slice_1	reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]	0
 Slice_1	reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]	2
@@ -6392,6 +6443,7 @@ Slice_1	reqArb/mshr_task_s1_bits_txChannel_reg	u_core/reqArb/u_core/mshr_task_s1
 Slice_1	reqArb/mshr_task_s1_bits_txnID_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]	12
 Slice_1	reqArb/mshr_task_s1_bits_useProbeData_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]	0
 Slice_1	reqArb/mshr_task_s1_bits_vaddr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]	44
+Slice_1	reqArb/mshr_task_s1_bits_wayMask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]	8
 Slice_1	reqArb/mshr_task_s1_bits_way_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]	3
 Slice_1	reqArb/mshr_task_s1_valid_reg	u_core/reqArb/u_core/mshr_task_s1_valid_reg	0
 Slice_1	reqArb/resetFinish_reg	u_core/reqArb/u_core/resetFinish_reg	0
@@ -6670,27 +6722,34 @@ Slice_1	sinkC/r_0_reg	u_core/sinkC/u_core/bufRespStage_reg[0]	256
 Slice_1	sinkC/r_1_reg	u_core/sinkC/u_core/bufRespStage_reg[1]	256
 Slice_1	sinkC/r_counter_reg	u_core/sinkC/u_core/r_counter_reg	0
 Slice_1	sinkC/taskArb/ctrl_validMask_grantMask_lastGrant_reg	u_core/sinkC/taskArb/u_core/last_grant_q_reg	2
+Slice_1	sinkC/taskBuf_0_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]	2
 Slice_1	sinkC/taskBuf_0_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]	0
 Slice_1	sinkC/taskBuf_0_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]	0
 Slice_1	sinkC/taskBuf_0_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]	2
 Slice_1	sinkC/taskBuf_0_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]	0
+Slice_1	sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]	0
 Slice_1	sinkC/taskBuf_0_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]	0
 Slice_1	sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]	0
 Slice_1	sinkC/taskBuf_0_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]	2
+Slice_1	sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]	0
+Slice_1	sinkC/taskBuf_0_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]	6
 Slice_1	sinkC/taskBuf_0_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]	3
 Slice_1	sinkC/taskBuf_0_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]	3
 Slice_1	sinkC/taskBuf_0_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]	7
 Slice_1	sinkC/taskBuf_0_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]	44
+Slice_1	sinkC/taskBuf_0_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]	0
 Slice_1	sinkC/taskBuf_0_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]	2
 Slice_1	sinkC/taskBuf_0_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]	0
 Slice_1	sinkC/taskBuf_0_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]	2
 Slice_1	sinkC/taskBuf_0_channel_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[channel]	3
 Slice_1	sinkC/taskBuf_0_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]	7
 Slice_1	sinkC/taskBuf_0_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]	0
+Slice_1	sinkC/taskBuf_0_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]	0
 Slice_1	sinkC/taskBuf_0_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]	0
 Slice_1	sinkC/taskBuf_0_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]	12
 Slice_1	sinkC/taskBuf_0_denied_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[denied]	0
+Slice_1	sinkC/taskBuf_0_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]	0
 Slice_1	sinkC/taskBuf_0_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]	0
 Slice_1	sinkC/taskBuf_0_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]	0
 Slice_1	sinkC/taskBuf_0_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]	0
@@ -6709,14 +6768,17 @@ Slice_1	sinkC/taskBuf_0_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[metaWen]
 Slice_1	sinkC/taskBuf_0_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]	0
 Slice_1	sinkC/taskBuf_0_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]	2
 Slice_1	sinkC/taskBuf_0_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]	0
+Slice_1	sinkC/taskBuf_0_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]	0
 Slice_1	sinkC/taskBuf_0_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]	0
 Slice_1	sinkC/taskBuf_0_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_0_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]	0
 Slice_1	sinkC/taskBuf_0_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]	2
 Slice_1	sinkC/taskBuf_0_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]	0
 Slice_1	sinkC/taskBuf_0_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]	8
+Slice_1	sinkC/taskBuf_0_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]	0
 Slice_1	sinkC/taskBuf_0_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]	0
 Slice_1	sinkC/taskBuf_0_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]	0
+Slice_1	sinkC/taskBuf_0_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]	0
 Slice_1	sinkC/taskBuf_0_off_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[off]	6
 Slice_1	sinkC/taskBuf_0_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]	4
 Slice_1	sinkC/taskBuf_0_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]	4
@@ -6728,10 +6790,11 @@ Slice_1	sinkC/taskBuf_0_resp_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[resp]	3
 Slice_1	sinkC/taskBuf_0_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]	0
 Slice_1	sinkC/taskBuf_0_set_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[set]	9
 Slice_1	sinkC/taskBuf_0_size_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[size]	3
-Slice_1	sinkC/taskBuf_0_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]	4
+Slice_1	sinkC/taskBuf_0_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]	8
 Slice_1	sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]	0
 Slice_1	sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]	2
 Slice_1	sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]	0
+Slice_1	sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]	0
 Slice_1	sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]	0
 Slice_1	sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]	0
@@ -6753,27 +6816,34 @@ Slice_1	sinkC/taskBuf_0_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[use
 Slice_1	sinkC/taskBuf_0_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]	44
 Slice_1	sinkC/taskBuf_0_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]	8
 Slice_1	sinkC/taskBuf_0_way_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[way]	3
+Slice_1	sinkC/taskBuf_1_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]	2
 Slice_1	sinkC/taskBuf_1_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]	0
 Slice_1	sinkC/taskBuf_1_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]	0
 Slice_1	sinkC/taskBuf_1_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]	2
 Slice_1	sinkC/taskBuf_1_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]	0
+Slice_1	sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]	0
 Slice_1	sinkC/taskBuf_1_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]	0
 Slice_1	sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]	0
 Slice_1	sinkC/taskBuf_1_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]	2
+Slice_1	sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]	0
+Slice_1	sinkC/taskBuf_1_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]	6
 Slice_1	sinkC/taskBuf_1_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]	3
 Slice_1	sinkC/taskBuf_1_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]	3
 Slice_1	sinkC/taskBuf_1_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]	7
 Slice_1	sinkC/taskBuf_1_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]	44
+Slice_1	sinkC/taskBuf_1_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]	0
 Slice_1	sinkC/taskBuf_1_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]	2
 Slice_1	sinkC/taskBuf_1_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]	0
 Slice_1	sinkC/taskBuf_1_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]	2
 Slice_1	sinkC/taskBuf_1_channel_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[channel]	3
 Slice_1	sinkC/taskBuf_1_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]	7
 Slice_1	sinkC/taskBuf_1_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]	0
+Slice_1	sinkC/taskBuf_1_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]	0
 Slice_1	sinkC/taskBuf_1_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]	0
 Slice_1	sinkC/taskBuf_1_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]	12
 Slice_1	sinkC/taskBuf_1_denied_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[denied]	0
+Slice_1	sinkC/taskBuf_1_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]	0
 Slice_1	sinkC/taskBuf_1_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]	0
 Slice_1	sinkC/taskBuf_1_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]	0
 Slice_1	sinkC/taskBuf_1_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]	0
@@ -6792,14 +6862,17 @@ Slice_1	sinkC/taskBuf_1_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[metaWen]
 Slice_1	sinkC/taskBuf_1_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]	0
 Slice_1	sinkC/taskBuf_1_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]	2
 Slice_1	sinkC/taskBuf_1_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]	0
+Slice_1	sinkC/taskBuf_1_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]	0
 Slice_1	sinkC/taskBuf_1_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]	0
 Slice_1	sinkC/taskBuf_1_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_1_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]	0
 Slice_1	sinkC/taskBuf_1_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]	2
 Slice_1	sinkC/taskBuf_1_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]	0
 Slice_1	sinkC/taskBuf_1_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]	8
+Slice_1	sinkC/taskBuf_1_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]	0
 Slice_1	sinkC/taskBuf_1_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]	0
 Slice_1	sinkC/taskBuf_1_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]	0
+Slice_1	sinkC/taskBuf_1_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]	0
 Slice_1	sinkC/taskBuf_1_off_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[off]	6
 Slice_1	sinkC/taskBuf_1_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]	4
 Slice_1	sinkC/taskBuf_1_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]	4
@@ -6811,10 +6884,11 @@ Slice_1	sinkC/taskBuf_1_resp_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[resp]	3
 Slice_1	sinkC/taskBuf_1_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]	0
 Slice_1	sinkC/taskBuf_1_set_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[set]	9
 Slice_1	sinkC/taskBuf_1_size_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[size]	3
-Slice_1	sinkC/taskBuf_1_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]	4
+Slice_1	sinkC/taskBuf_1_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]	8
 Slice_1	sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]	0
 Slice_1	sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]	2
 Slice_1	sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]	0
+Slice_1	sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]	0
 Slice_1	sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]	0
 Slice_1	sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]	0
@@ -6836,27 +6910,34 @@ Slice_1	sinkC/taskBuf_1_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[use
 Slice_1	sinkC/taskBuf_1_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]	44
 Slice_1	sinkC/taskBuf_1_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]	8
 Slice_1	sinkC/taskBuf_1_way_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[way]	3
+Slice_1	sinkC/taskBuf_2_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]	2
 Slice_1	sinkC/taskBuf_2_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]	0
 Slice_1	sinkC/taskBuf_2_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]	0
 Slice_1	sinkC/taskBuf_2_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]	2
 Slice_1	sinkC/taskBuf_2_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]	0
+Slice_1	sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]	0
 Slice_1	sinkC/taskBuf_2_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]	0
 Slice_1	sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]	0
 Slice_1	sinkC/taskBuf_2_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]	2
+Slice_1	sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]	0
+Slice_1	sinkC/taskBuf_2_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]	6
 Slice_1	sinkC/taskBuf_2_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]	3
 Slice_1	sinkC/taskBuf_2_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]	3
 Slice_1	sinkC/taskBuf_2_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]	7
 Slice_1	sinkC/taskBuf_2_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]	44
+Slice_1	sinkC/taskBuf_2_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]	0
 Slice_1	sinkC/taskBuf_2_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]	2
 Slice_1	sinkC/taskBuf_2_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]	0
 Slice_1	sinkC/taskBuf_2_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]	2
 Slice_1	sinkC/taskBuf_2_channel_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[channel]	3
 Slice_1	sinkC/taskBuf_2_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]	7
 Slice_1	sinkC/taskBuf_2_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]	0
+Slice_1	sinkC/taskBuf_2_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]	0
 Slice_1	sinkC/taskBuf_2_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]	0
 Slice_1	sinkC/taskBuf_2_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]	12
 Slice_1	sinkC/taskBuf_2_denied_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[denied]	0
+Slice_1	sinkC/taskBuf_2_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]	0
 Slice_1	sinkC/taskBuf_2_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]	0
 Slice_1	sinkC/taskBuf_2_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]	0
 Slice_1	sinkC/taskBuf_2_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]	0
@@ -6875,14 +6956,17 @@ Slice_1	sinkC/taskBuf_2_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[metaWen]
 Slice_1	sinkC/taskBuf_2_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]	0
 Slice_1	sinkC/taskBuf_2_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]	2
 Slice_1	sinkC/taskBuf_2_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]	0
+Slice_1	sinkC/taskBuf_2_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]	0
 Slice_1	sinkC/taskBuf_2_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]	0
 Slice_1	sinkC/taskBuf_2_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_2_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]	0
 Slice_1	sinkC/taskBuf_2_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]	2
 Slice_1	sinkC/taskBuf_2_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]	0
 Slice_1	sinkC/taskBuf_2_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]	8
+Slice_1	sinkC/taskBuf_2_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]	0
 Slice_1	sinkC/taskBuf_2_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]	0
 Slice_1	sinkC/taskBuf_2_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]	0
+Slice_1	sinkC/taskBuf_2_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]	0
 Slice_1	sinkC/taskBuf_2_off_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[off]	6
 Slice_1	sinkC/taskBuf_2_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]	4
 Slice_1	sinkC/taskBuf_2_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]	4
@@ -6894,10 +6978,11 @@ Slice_1	sinkC/taskBuf_2_resp_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[resp]	3
 Slice_1	sinkC/taskBuf_2_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]	0
 Slice_1	sinkC/taskBuf_2_set_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[set]	9
 Slice_1	sinkC/taskBuf_2_size_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[size]	3
-Slice_1	sinkC/taskBuf_2_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]	4
+Slice_1	sinkC/taskBuf_2_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]	8
 Slice_1	sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]	0
 Slice_1	sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]	2
 Slice_1	sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]	0
+Slice_1	sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]	0
 Slice_1	sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]	0
 Slice_1	sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]	0
@@ -6919,27 +7004,34 @@ Slice_1	sinkC/taskBuf_2_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[use
 Slice_1	sinkC/taskBuf_2_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]	44
 Slice_1	sinkC/taskBuf_2_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]	8
 Slice_1	sinkC/taskBuf_2_way_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[way]	3
+Slice_1	sinkC/taskBuf_3_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]	2
 Slice_1	sinkC/taskBuf_3_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]	0
 Slice_1	sinkC/taskBuf_3_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]	0
 Slice_1	sinkC/taskBuf_3_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]	2
 Slice_1	sinkC/taskBuf_3_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]	0
+Slice_1	sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]	0
 Slice_1	sinkC/taskBuf_3_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]	0
 Slice_1	sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]	0
 Slice_1	sinkC/taskBuf_3_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]	2
+Slice_1	sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]	0
+Slice_1	sinkC/taskBuf_3_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]	6
 Slice_1	sinkC/taskBuf_3_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]	3
 Slice_1	sinkC/taskBuf_3_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]	3
 Slice_1	sinkC/taskBuf_3_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]	7
 Slice_1	sinkC/taskBuf_3_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]	44
+Slice_1	sinkC/taskBuf_3_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]	0
 Slice_1	sinkC/taskBuf_3_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]	2
 Slice_1	sinkC/taskBuf_3_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]	0
 Slice_1	sinkC/taskBuf_3_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]	2
 Slice_1	sinkC/taskBuf_3_channel_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[channel]	3
 Slice_1	sinkC/taskBuf_3_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]	7
 Slice_1	sinkC/taskBuf_3_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]	0
+Slice_1	sinkC/taskBuf_3_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]	0
 Slice_1	sinkC/taskBuf_3_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]	0
 Slice_1	sinkC/taskBuf_3_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]	12
 Slice_1	sinkC/taskBuf_3_denied_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[denied]	0
+Slice_1	sinkC/taskBuf_3_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]	0
 Slice_1	sinkC/taskBuf_3_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]	0
 Slice_1	sinkC/taskBuf_3_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]	0
 Slice_1	sinkC/taskBuf_3_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]	0
@@ -6958,14 +7050,17 @@ Slice_1	sinkC/taskBuf_3_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[metaWen]
 Slice_1	sinkC/taskBuf_3_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]	0
 Slice_1	sinkC/taskBuf_3_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]	2
 Slice_1	sinkC/taskBuf_3_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]	0
+Slice_1	sinkC/taskBuf_3_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]	0
 Slice_1	sinkC/taskBuf_3_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]	0
 Slice_1	sinkC/taskBuf_3_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_3_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]	0
 Slice_1	sinkC/taskBuf_3_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]	2
 Slice_1	sinkC/taskBuf_3_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]	0
 Slice_1	sinkC/taskBuf_3_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]	8
+Slice_1	sinkC/taskBuf_3_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]	0
 Slice_1	sinkC/taskBuf_3_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]	0
 Slice_1	sinkC/taskBuf_3_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]	0
+Slice_1	sinkC/taskBuf_3_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]	0
 Slice_1	sinkC/taskBuf_3_off_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[off]	6
 Slice_1	sinkC/taskBuf_3_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]	4
 Slice_1	sinkC/taskBuf_3_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]	4
@@ -6977,10 +7072,11 @@ Slice_1	sinkC/taskBuf_3_resp_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[resp]	3
 Slice_1	sinkC/taskBuf_3_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]	0
 Slice_1	sinkC/taskBuf_3_set_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[set]	9
 Slice_1	sinkC/taskBuf_3_size_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[size]	3
-Slice_1	sinkC/taskBuf_3_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]	4
+Slice_1	sinkC/taskBuf_3_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]	8
 Slice_1	sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]	0
 Slice_1	sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]	2
 Slice_1	sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]	0
+Slice_1	sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]	0
 Slice_1	sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]	0
 Slice_1	sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_1	sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]	0
@@ -9725,7 +9821,7 @@ Slice_2	mshrCtl/sourceB/probes_0_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_2	mshrCtl/sourceB/probes_0_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[0]	9
 Slice_2	mshrCtl/sourceB/probes_0_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[0]	31
 Slice_2	mshrCtl/sourceB/probes_0_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[0]	0
-Slice_2	mshrCtl/sourceB/probes_0_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]	4
+Slice_2	mshrCtl/sourceB/probes_0_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]	7
 Slice_2	mshrCtl/sourceB/probes_1_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[1]	0
 Slice_2	mshrCtl/sourceB/probes_1_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[1]	2
 Slice_2	mshrCtl/sourceB/probes_1_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[1]	3
@@ -9733,7 +9829,7 @@ Slice_2	mshrCtl/sourceB/probes_1_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_2	mshrCtl/sourceB/probes_1_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[1]	9
 Slice_2	mshrCtl/sourceB/probes_1_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[1]	31
 Slice_2	mshrCtl/sourceB/probes_1_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[1]	0
-Slice_2	mshrCtl/sourceB/probes_1_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]	4
+Slice_2	mshrCtl/sourceB/probes_1_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]	7
 Slice_2	mshrCtl/sourceB/probes_2_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[2]	0
 Slice_2	mshrCtl/sourceB/probes_2_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[2]	2
 Slice_2	mshrCtl/sourceB/probes_2_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[2]	3
@@ -9741,7 +9837,7 @@ Slice_2	mshrCtl/sourceB/probes_2_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_2	mshrCtl/sourceB/probes_2_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[2]	9
 Slice_2	mshrCtl/sourceB/probes_2_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[2]	31
 Slice_2	mshrCtl/sourceB/probes_2_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[2]	0
-Slice_2	mshrCtl/sourceB/probes_2_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]	4
+Slice_2	mshrCtl/sourceB/probes_2_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]	7
 Slice_2	mshrCtl/sourceB/probes_3_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[3]	0
 Slice_2	mshrCtl/sourceB/probes_3_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[3]	2
 Slice_2	mshrCtl/sourceB/probes_3_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[3]	3
@@ -9749,7 +9845,7 @@ Slice_2	mshrCtl/sourceB/probes_3_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_2	mshrCtl/sourceB/probes_3_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[3]	9
 Slice_2	mshrCtl/sourceB/probes_3_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[3]	31
 Slice_2	mshrCtl/sourceB/probes_3_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[3]	0
-Slice_2	mshrCtl/sourceB/probes_3_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]	4
+Slice_2	mshrCtl/sourceB/probes_3_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]	7
 Slice_2	mshrCtl/source_b_arb/pendingMask_reg	u_core/mshrCtl/u_core/source_b_arb/u_core/pendingMask_reg	16
 Slice_2	mshrCtl/source_b_arb/rrGrantMask_reg	u_core/mshrCtl/u_core/source_b_arb/u_core/rrGrantMask_reg	16
 Slice_2	mshrCtl/timers_0_reg	u_core/mshrCtl/u_core/timers_reg[0]	64
@@ -9844,10 +9940,12 @@ Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_reg	u_core/reqArb/u_core/m
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]	0
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]	2
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]	0
+Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]	0
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]	0
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]	3
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]	0
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]	2
+Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]	0
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_off_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]	6
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]	3
 Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_param_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]	3
@@ -9856,6 +9954,7 @@ Slice_2	reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg	u_core/reqArb/u_core/mshr_
 Slice_2	reqArb/mshr_task_s1_bits_aliasTask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]	0
 Slice_2	reqArb/mshr_task_s1_bits_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]	2
 Slice_2	reqArb/mshr_task_s1_bits_allowRetry_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]	0
+Slice_2	reqArb/mshr_task_s1_bits_bufIdx_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]	2
 Slice_2	reqArb/mshr_task_s1_bits_channel_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]	3
 Slice_2	reqArb/mshr_task_s1_bits_chiOpcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]	7
 Slice_2	reqArb/mshr_task_s1_bits_cmoAll_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]	0
@@ -9892,6 +9991,7 @@ Slice_2	reqArb/mshr_task_s1_bits_mshrId_reg	u_core/reqArb/u_core/mshr_task_s1_bi
 Slice_2	reqArb/mshr_task_s1_bits_mshrRetry_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]	0
 Slice_2	reqArb/mshr_task_s1_bits_mshrTask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]	0
 Slice_2	reqArb/mshr_task_s1_bits_needHint_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]	0
+Slice_2	reqArb/mshr_task_s1_bits_needProbeAckData_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]	0
 Slice_2	reqArb/mshr_task_s1_bits_off_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]	6
 Slice_2	reqArb/mshr_task_s1_bits_opcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]	4
 Slice_2	reqArb/mshr_task_s1_bits_pCrdType_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]	4
@@ -9902,8 +10002,7 @@ Slice_2	reqArb/mshr_task_s1_bits_reqSource_reg	u_core/reqArb/u_core/mshr_task_s1
 Slice_2	reqArb/mshr_task_s1_bits_resp_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]	3
 Slice_2	reqArb/mshr_task_s1_bits_retToSrc_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]	0
 Slice_2	reqArb/mshr_task_s1_bits_set_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]	9
-Slice_2	reqArb/mshr_task_s1_bits_size_reg[1]	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][1]	0
-Slice_2	reqArb/mshr_task_s1_bits_size_reg[2]	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][2]	0
+Slice_2	reqArb/mshr_task_s1_bits_size_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]	3
 Slice_2	reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]	8
 Slice_2	reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]	0
 Slice_2	reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]	2
@@ -9928,6 +10027,7 @@ Slice_2	reqArb/mshr_task_s1_bits_txChannel_reg	u_core/reqArb/u_core/mshr_task_s1
 Slice_2	reqArb/mshr_task_s1_bits_txnID_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]	12
 Slice_2	reqArb/mshr_task_s1_bits_useProbeData_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]	0
 Slice_2	reqArb/mshr_task_s1_bits_vaddr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]	44
+Slice_2	reqArb/mshr_task_s1_bits_wayMask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]	8
 Slice_2	reqArb/mshr_task_s1_bits_way_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]	3
 Slice_2	reqArb/mshr_task_s1_valid_reg	u_core/reqArb/u_core/mshr_task_s1_valid_reg	0
 Slice_2	reqArb/resetFinish_reg	u_core/reqArb/u_core/resetFinish_reg	0
@@ -10206,27 +10306,34 @@ Slice_2	sinkC/r_0_reg	u_core/sinkC/u_core/bufRespStage_reg[0]	256
 Slice_2	sinkC/r_1_reg	u_core/sinkC/u_core/bufRespStage_reg[1]	256
 Slice_2	sinkC/r_counter_reg	u_core/sinkC/u_core/r_counter_reg	0
 Slice_2	sinkC/taskArb/ctrl_validMask_grantMask_lastGrant_reg	u_core/sinkC/taskArb/u_core/last_grant_q_reg	2
+Slice_2	sinkC/taskBuf_0_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]	2
 Slice_2	sinkC/taskBuf_0_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]	0
 Slice_2	sinkC/taskBuf_0_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]	0
 Slice_2	sinkC/taskBuf_0_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]	2
 Slice_2	sinkC/taskBuf_0_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]	0
+Slice_2	sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]	0
 Slice_2	sinkC/taskBuf_0_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]	0
 Slice_2	sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]	0
 Slice_2	sinkC/taskBuf_0_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]	2
+Slice_2	sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]	0
+Slice_2	sinkC/taskBuf_0_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]	6
 Slice_2	sinkC/taskBuf_0_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]	3
 Slice_2	sinkC/taskBuf_0_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]	3
 Slice_2	sinkC/taskBuf_0_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]	7
 Slice_2	sinkC/taskBuf_0_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]	44
+Slice_2	sinkC/taskBuf_0_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]	0
 Slice_2	sinkC/taskBuf_0_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]	2
 Slice_2	sinkC/taskBuf_0_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]	0
 Slice_2	sinkC/taskBuf_0_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]	2
 Slice_2	sinkC/taskBuf_0_channel_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[channel]	3
 Slice_2	sinkC/taskBuf_0_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]	7
 Slice_2	sinkC/taskBuf_0_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]	0
+Slice_2	sinkC/taskBuf_0_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]	0
 Slice_2	sinkC/taskBuf_0_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]	0
 Slice_2	sinkC/taskBuf_0_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]	12
 Slice_2	sinkC/taskBuf_0_denied_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[denied]	0
+Slice_2	sinkC/taskBuf_0_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]	0
 Slice_2	sinkC/taskBuf_0_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]	0
 Slice_2	sinkC/taskBuf_0_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]	0
 Slice_2	sinkC/taskBuf_0_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]	0
@@ -10245,14 +10352,17 @@ Slice_2	sinkC/taskBuf_0_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[metaWen]
 Slice_2	sinkC/taskBuf_0_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]	0
 Slice_2	sinkC/taskBuf_0_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]	2
 Slice_2	sinkC/taskBuf_0_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]	0
+Slice_2	sinkC/taskBuf_0_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]	0
 Slice_2	sinkC/taskBuf_0_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]	0
 Slice_2	sinkC/taskBuf_0_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_0_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]	0
 Slice_2	sinkC/taskBuf_0_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]	2
 Slice_2	sinkC/taskBuf_0_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]	0
 Slice_2	sinkC/taskBuf_0_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]	8
+Slice_2	sinkC/taskBuf_0_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]	0
 Slice_2	sinkC/taskBuf_0_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]	0
 Slice_2	sinkC/taskBuf_0_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]	0
+Slice_2	sinkC/taskBuf_0_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]	0
 Slice_2	sinkC/taskBuf_0_off_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[off]	6
 Slice_2	sinkC/taskBuf_0_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]	4
 Slice_2	sinkC/taskBuf_0_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]	4
@@ -10264,10 +10374,11 @@ Slice_2	sinkC/taskBuf_0_resp_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[resp]	3
 Slice_2	sinkC/taskBuf_0_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]	0
 Slice_2	sinkC/taskBuf_0_set_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[set]	9
 Slice_2	sinkC/taskBuf_0_size_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[size]	3
-Slice_2	sinkC/taskBuf_0_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]	4
+Slice_2	sinkC/taskBuf_0_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]	8
 Slice_2	sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]	0
 Slice_2	sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]	2
 Slice_2	sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]	0
+Slice_2	sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]	0
 Slice_2	sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]	0
 Slice_2	sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]	0
@@ -10289,27 +10400,34 @@ Slice_2	sinkC/taskBuf_0_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[use
 Slice_2	sinkC/taskBuf_0_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]	44
 Slice_2	sinkC/taskBuf_0_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]	8
 Slice_2	sinkC/taskBuf_0_way_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[way]	3
+Slice_2	sinkC/taskBuf_1_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]	2
 Slice_2	sinkC/taskBuf_1_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]	0
 Slice_2	sinkC/taskBuf_1_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]	0
 Slice_2	sinkC/taskBuf_1_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]	2
 Slice_2	sinkC/taskBuf_1_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]	0
+Slice_2	sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]	0
 Slice_2	sinkC/taskBuf_1_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]	0
 Slice_2	sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]	0
 Slice_2	sinkC/taskBuf_1_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]	2
+Slice_2	sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]	0
+Slice_2	sinkC/taskBuf_1_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]	6
 Slice_2	sinkC/taskBuf_1_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]	3
 Slice_2	sinkC/taskBuf_1_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]	3
 Slice_2	sinkC/taskBuf_1_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]	7
 Slice_2	sinkC/taskBuf_1_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]	44
+Slice_2	sinkC/taskBuf_1_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]	0
 Slice_2	sinkC/taskBuf_1_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]	2
 Slice_2	sinkC/taskBuf_1_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]	0
 Slice_2	sinkC/taskBuf_1_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]	2
 Slice_2	sinkC/taskBuf_1_channel_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[channel]	3
 Slice_2	sinkC/taskBuf_1_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]	7
 Slice_2	sinkC/taskBuf_1_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]	0
+Slice_2	sinkC/taskBuf_1_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]	0
 Slice_2	sinkC/taskBuf_1_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]	0
 Slice_2	sinkC/taskBuf_1_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]	12
 Slice_2	sinkC/taskBuf_1_denied_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[denied]	0
+Slice_2	sinkC/taskBuf_1_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]	0
 Slice_2	sinkC/taskBuf_1_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]	0
 Slice_2	sinkC/taskBuf_1_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]	0
 Slice_2	sinkC/taskBuf_1_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]	0
@@ -10328,14 +10446,17 @@ Slice_2	sinkC/taskBuf_1_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[metaWen]
 Slice_2	sinkC/taskBuf_1_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]	0
 Slice_2	sinkC/taskBuf_1_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]	2
 Slice_2	sinkC/taskBuf_1_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]	0
+Slice_2	sinkC/taskBuf_1_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]	0
 Slice_2	sinkC/taskBuf_1_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]	0
 Slice_2	sinkC/taskBuf_1_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_1_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]	0
 Slice_2	sinkC/taskBuf_1_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]	2
 Slice_2	sinkC/taskBuf_1_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]	0
 Slice_2	sinkC/taskBuf_1_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]	8
+Slice_2	sinkC/taskBuf_1_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]	0
 Slice_2	sinkC/taskBuf_1_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]	0
 Slice_2	sinkC/taskBuf_1_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]	0
+Slice_2	sinkC/taskBuf_1_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]	0
 Slice_2	sinkC/taskBuf_1_off_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[off]	6
 Slice_2	sinkC/taskBuf_1_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]	4
 Slice_2	sinkC/taskBuf_1_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]	4
@@ -10347,10 +10468,11 @@ Slice_2	sinkC/taskBuf_1_resp_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[resp]	3
 Slice_2	sinkC/taskBuf_1_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]	0
 Slice_2	sinkC/taskBuf_1_set_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[set]	9
 Slice_2	sinkC/taskBuf_1_size_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[size]	3
-Slice_2	sinkC/taskBuf_1_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]	4
+Slice_2	sinkC/taskBuf_1_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]	8
 Slice_2	sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]	0
 Slice_2	sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]	2
 Slice_2	sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]	0
+Slice_2	sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]	0
 Slice_2	sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]	0
 Slice_2	sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]	0
@@ -10372,27 +10494,34 @@ Slice_2	sinkC/taskBuf_1_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[use
 Slice_2	sinkC/taskBuf_1_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]	44
 Slice_2	sinkC/taskBuf_1_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]	8
 Slice_2	sinkC/taskBuf_1_way_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[way]	3
+Slice_2	sinkC/taskBuf_2_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]	2
 Slice_2	sinkC/taskBuf_2_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]	0
 Slice_2	sinkC/taskBuf_2_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]	0
 Slice_2	sinkC/taskBuf_2_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]	2
 Slice_2	sinkC/taskBuf_2_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]	0
+Slice_2	sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]	0
 Slice_2	sinkC/taskBuf_2_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]	0
 Slice_2	sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]	0
 Slice_2	sinkC/taskBuf_2_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]	2
+Slice_2	sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]	0
+Slice_2	sinkC/taskBuf_2_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]	6
 Slice_2	sinkC/taskBuf_2_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]	3
 Slice_2	sinkC/taskBuf_2_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]	3
 Slice_2	sinkC/taskBuf_2_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]	7
 Slice_2	sinkC/taskBuf_2_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]	44
+Slice_2	sinkC/taskBuf_2_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]	0
 Slice_2	sinkC/taskBuf_2_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]	2
 Slice_2	sinkC/taskBuf_2_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]	0
 Slice_2	sinkC/taskBuf_2_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]	2
 Slice_2	sinkC/taskBuf_2_channel_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[channel]	3
 Slice_2	sinkC/taskBuf_2_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]	7
 Slice_2	sinkC/taskBuf_2_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]	0
+Slice_2	sinkC/taskBuf_2_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]	0
 Slice_2	sinkC/taskBuf_2_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]	0
 Slice_2	sinkC/taskBuf_2_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]	12
 Slice_2	sinkC/taskBuf_2_denied_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[denied]	0
+Slice_2	sinkC/taskBuf_2_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]	0
 Slice_2	sinkC/taskBuf_2_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]	0
 Slice_2	sinkC/taskBuf_2_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]	0
 Slice_2	sinkC/taskBuf_2_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]	0
@@ -10411,14 +10540,17 @@ Slice_2	sinkC/taskBuf_2_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[metaWen]
 Slice_2	sinkC/taskBuf_2_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]	0
 Slice_2	sinkC/taskBuf_2_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]	2
 Slice_2	sinkC/taskBuf_2_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]	0
+Slice_2	sinkC/taskBuf_2_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]	0
 Slice_2	sinkC/taskBuf_2_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]	0
 Slice_2	sinkC/taskBuf_2_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_2_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]	0
 Slice_2	sinkC/taskBuf_2_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]	2
 Slice_2	sinkC/taskBuf_2_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]	0
 Slice_2	sinkC/taskBuf_2_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]	8
+Slice_2	sinkC/taskBuf_2_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]	0
 Slice_2	sinkC/taskBuf_2_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]	0
 Slice_2	sinkC/taskBuf_2_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]	0
+Slice_2	sinkC/taskBuf_2_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]	0
 Slice_2	sinkC/taskBuf_2_off_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[off]	6
 Slice_2	sinkC/taskBuf_2_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]	4
 Slice_2	sinkC/taskBuf_2_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]	4
@@ -10430,10 +10562,11 @@ Slice_2	sinkC/taskBuf_2_resp_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[resp]	3
 Slice_2	sinkC/taskBuf_2_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]	0
 Slice_2	sinkC/taskBuf_2_set_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[set]	9
 Slice_2	sinkC/taskBuf_2_size_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[size]	3
-Slice_2	sinkC/taskBuf_2_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]	4
+Slice_2	sinkC/taskBuf_2_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]	8
 Slice_2	sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]	0
 Slice_2	sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]	2
 Slice_2	sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]	0
+Slice_2	sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]	0
 Slice_2	sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]	0
 Slice_2	sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]	0
@@ -10455,27 +10588,34 @@ Slice_2	sinkC/taskBuf_2_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[use
 Slice_2	sinkC/taskBuf_2_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]	44
 Slice_2	sinkC/taskBuf_2_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]	8
 Slice_2	sinkC/taskBuf_2_way_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[way]	3
+Slice_2	sinkC/taskBuf_3_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]	2
 Slice_2	sinkC/taskBuf_3_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]	0
 Slice_2	sinkC/taskBuf_3_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]	0
 Slice_2	sinkC/taskBuf_3_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]	2
 Slice_2	sinkC/taskBuf_3_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]	0
+Slice_2	sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]	0
 Slice_2	sinkC/taskBuf_3_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]	0
 Slice_2	sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]	0
 Slice_2	sinkC/taskBuf_3_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]	2
+Slice_2	sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]	0
+Slice_2	sinkC/taskBuf_3_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]	6
 Slice_2	sinkC/taskBuf_3_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]	3
 Slice_2	sinkC/taskBuf_3_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]	3
 Slice_2	sinkC/taskBuf_3_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]	7
 Slice_2	sinkC/taskBuf_3_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]	44
+Slice_2	sinkC/taskBuf_3_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]	0
 Slice_2	sinkC/taskBuf_3_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]	2
 Slice_2	sinkC/taskBuf_3_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]	0
 Slice_2	sinkC/taskBuf_3_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]	2
 Slice_2	sinkC/taskBuf_3_channel_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[channel]	3
 Slice_2	sinkC/taskBuf_3_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]	7
 Slice_2	sinkC/taskBuf_3_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]	0
+Slice_2	sinkC/taskBuf_3_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]	0
 Slice_2	sinkC/taskBuf_3_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]	0
 Slice_2	sinkC/taskBuf_3_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]	12
 Slice_2	sinkC/taskBuf_3_denied_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[denied]	0
+Slice_2	sinkC/taskBuf_3_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]	0
 Slice_2	sinkC/taskBuf_3_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]	0
 Slice_2	sinkC/taskBuf_3_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]	0
 Slice_2	sinkC/taskBuf_3_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]	0
@@ -10494,14 +10634,17 @@ Slice_2	sinkC/taskBuf_3_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[metaWen]
 Slice_2	sinkC/taskBuf_3_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]	0
 Slice_2	sinkC/taskBuf_3_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]	2
 Slice_2	sinkC/taskBuf_3_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]	0
+Slice_2	sinkC/taskBuf_3_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]	0
 Slice_2	sinkC/taskBuf_3_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]	0
 Slice_2	sinkC/taskBuf_3_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_3_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]	0
 Slice_2	sinkC/taskBuf_3_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]	2
 Slice_2	sinkC/taskBuf_3_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]	0
 Slice_2	sinkC/taskBuf_3_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]	8
+Slice_2	sinkC/taskBuf_3_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]	0
 Slice_2	sinkC/taskBuf_3_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]	0
 Slice_2	sinkC/taskBuf_3_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]	0
+Slice_2	sinkC/taskBuf_3_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]	0
 Slice_2	sinkC/taskBuf_3_off_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[off]	6
 Slice_2	sinkC/taskBuf_3_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]	4
 Slice_2	sinkC/taskBuf_3_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]	4
@@ -10513,10 +10656,11 @@ Slice_2	sinkC/taskBuf_3_resp_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[resp]	3
 Slice_2	sinkC/taskBuf_3_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]	0
 Slice_2	sinkC/taskBuf_3_set_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[set]	9
 Slice_2	sinkC/taskBuf_3_size_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[size]	3
-Slice_2	sinkC/taskBuf_3_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]	4
+Slice_2	sinkC/taskBuf_3_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]	8
 Slice_2	sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]	0
 Slice_2	sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]	2
 Slice_2	sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]	0
+Slice_2	sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]	0
 Slice_2	sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]	0
 Slice_2	sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_2	sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]	0
@@ -13261,7 +13405,7 @@ Slice_3	mshrCtl/sourceB/probes_0_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_3	mshrCtl/sourceB/probes_0_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[0]	9
 Slice_3	mshrCtl/sourceB/probes_0_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[0]	31
 Slice_3	mshrCtl/sourceB/probes_0_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[0]	0
-Slice_3	mshrCtl/sourceB/probes_0_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]	4
+Slice_3	mshrCtl/sourceB/probes_0_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]	7
 Slice_3	mshrCtl/sourceB/probes_1_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[1]	0
 Slice_3	mshrCtl/sourceB/probes_1_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[1]	2
 Slice_3	mshrCtl/sourceB/probes_1_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[1]	3
@@ -13269,7 +13413,7 @@ Slice_3	mshrCtl/sourceB/probes_1_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_3	mshrCtl/sourceB/probes_1_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[1]	9
 Slice_3	mshrCtl/sourceB/probes_1_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[1]	31
 Slice_3	mshrCtl/sourceB/probes_1_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[1]	0
-Slice_3	mshrCtl/sourceB/probes_1_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]	4
+Slice_3	mshrCtl/sourceB/probes_1_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]	7
 Slice_3	mshrCtl/sourceB/probes_2_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[2]	0
 Slice_3	mshrCtl/sourceB/probes_2_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[2]	2
 Slice_3	mshrCtl/sourceB/probes_2_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[2]	3
@@ -13277,7 +13421,7 @@ Slice_3	mshrCtl/sourceB/probes_2_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_3	mshrCtl/sourceB/probes_2_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[2]	9
 Slice_3	mshrCtl/sourceB/probes_2_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[2]	31
 Slice_3	mshrCtl/sourceB/probes_2_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[2]	0
-Slice_3	mshrCtl/sourceB/probes_2_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]	4
+Slice_3	mshrCtl/sourceB/probes_2_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]	7
 Slice_3	mshrCtl/sourceB/probes_3_rdy_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[3]	0
 Slice_3	mshrCtl/sourceB/probes_3_task_alias_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[3]	2
 Slice_3	mshrCtl/sourceB/probes_3_task_opcode_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[3]	3
@@ -13285,7 +13429,7 @@ Slice_3	mshrCtl/sourceB/probes_3_task_param_reg	u_core/mshrCtl/u_core/sourceB/u_
 Slice_3	mshrCtl/sourceB/probes_3_task_set_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[3]	9
 Slice_3	mshrCtl/sourceB/probes_3_task_tag_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[3]	31
 Slice_3	mshrCtl/sourceB/probes_3_valid_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[3]	0
-Slice_3	mshrCtl/sourceB/probes_3_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]	4
+Slice_3	mshrCtl/sourceB/probes_3_waitG_reg	u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]	7
 Slice_3	mshrCtl/source_b_arb/pendingMask_reg	u_core/mshrCtl/u_core/source_b_arb/u_core/pendingMask_reg	16
 Slice_3	mshrCtl/source_b_arb/rrGrantMask_reg	u_core/mshrCtl/u_core/source_b_arb/u_core/rrGrantMask_reg	16
 Slice_3	mshrCtl/timers_0_reg	u_core/mshrCtl/u_core/timers_reg[0]	64
@@ -13380,10 +13524,12 @@ Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_reg	u_core/reqArb/u_core/m
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]	0
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]	2
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]	0
+Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]	0
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]	0
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]	3
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]	0
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]	2
+Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]	0
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_off_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]	6
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]	3
 Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_param_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]	3
@@ -13392,6 +13538,7 @@ Slice_3	reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg	u_core/reqArb/u_core/mshr_
 Slice_3	reqArb/mshr_task_s1_bits_aliasTask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]	0
 Slice_3	reqArb/mshr_task_s1_bits_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]	2
 Slice_3	reqArb/mshr_task_s1_bits_allowRetry_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]	0
+Slice_3	reqArb/mshr_task_s1_bits_bufIdx_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]	2
 Slice_3	reqArb/mshr_task_s1_bits_channel_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]	3
 Slice_3	reqArb/mshr_task_s1_bits_chiOpcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]	7
 Slice_3	reqArb/mshr_task_s1_bits_cmoAll_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]	0
@@ -13428,6 +13575,7 @@ Slice_3	reqArb/mshr_task_s1_bits_mshrId_reg	u_core/reqArb/u_core/mshr_task_s1_bi
 Slice_3	reqArb/mshr_task_s1_bits_mshrRetry_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]	0
 Slice_3	reqArb/mshr_task_s1_bits_mshrTask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]	0
 Slice_3	reqArb/mshr_task_s1_bits_needHint_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]	0
+Slice_3	reqArb/mshr_task_s1_bits_needProbeAckData_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]	0
 Slice_3	reqArb/mshr_task_s1_bits_off_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]	6
 Slice_3	reqArb/mshr_task_s1_bits_opcode_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]	4
 Slice_3	reqArb/mshr_task_s1_bits_pCrdType_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]	4
@@ -13438,8 +13586,7 @@ Slice_3	reqArb/mshr_task_s1_bits_reqSource_reg	u_core/reqArb/u_core/mshr_task_s1
 Slice_3	reqArb/mshr_task_s1_bits_resp_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]	3
 Slice_3	reqArb/mshr_task_s1_bits_retToSrc_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]	0
 Slice_3	reqArb/mshr_task_s1_bits_set_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]	9
-Slice_3	reqArb/mshr_task_s1_bits_size_reg[1]	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][1]	0
-Slice_3	reqArb/mshr_task_s1_bits_size_reg[2]	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][2]	0
+Slice_3	reqArb/mshr_task_s1_bits_size_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]	3
 Slice_3	reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]	8
 Slice_3	reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]	0
 Slice_3	reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]	2
@@ -13464,6 +13611,7 @@ Slice_3	reqArb/mshr_task_s1_bits_txChannel_reg	u_core/reqArb/u_core/mshr_task_s1
 Slice_3	reqArb/mshr_task_s1_bits_txnID_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]	12
 Slice_3	reqArb/mshr_task_s1_bits_useProbeData_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]	0
 Slice_3	reqArb/mshr_task_s1_bits_vaddr_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]	44
+Slice_3	reqArb/mshr_task_s1_bits_wayMask_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]	8
 Slice_3	reqArb/mshr_task_s1_bits_way_reg	u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]	3
 Slice_3	reqArb/mshr_task_s1_valid_reg	u_core/reqArb/u_core/mshr_task_s1_valid_reg	0
 Slice_3	reqArb/resetFinish_reg	u_core/reqArb/u_core/resetFinish_reg	0
@@ -13742,27 +13890,34 @@ Slice_3	sinkC/r_0_reg	u_core/sinkC/u_core/bufRespStage_reg[0]	256
 Slice_3	sinkC/r_1_reg	u_core/sinkC/u_core/bufRespStage_reg[1]	256
 Slice_3	sinkC/r_counter_reg	u_core/sinkC/u_core/r_counter_reg	0
 Slice_3	sinkC/taskArb/ctrl_validMask_grantMask_lastGrant_reg	u_core/sinkC/taskArb/u_core/last_grant_q_reg	2
+Slice_3	sinkC/taskBuf_0_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]	2
 Slice_3	sinkC/taskBuf_0_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]	0
 Slice_3	sinkC/taskBuf_0_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]	0
 Slice_3	sinkC/taskBuf_0_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]	2
 Slice_3	sinkC/taskBuf_0_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]	0
+Slice_3	sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]	0
 Slice_3	sinkC/taskBuf_0_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]	0
 Slice_3	sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]	0
 Slice_3	sinkC/taskBuf_0_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]	2
+Slice_3	sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]	0
+Slice_3	sinkC/taskBuf_0_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]	6
 Slice_3	sinkC/taskBuf_0_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]	3
 Slice_3	sinkC/taskBuf_0_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]	3
 Slice_3	sinkC/taskBuf_0_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]	7
 Slice_3	sinkC/taskBuf_0_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]	44
+Slice_3	sinkC/taskBuf_0_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]	0
 Slice_3	sinkC/taskBuf_0_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]	2
 Slice_3	sinkC/taskBuf_0_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]	0
 Slice_3	sinkC/taskBuf_0_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]	2
 Slice_3	sinkC/taskBuf_0_channel_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[channel]	3
 Slice_3	sinkC/taskBuf_0_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]	7
 Slice_3	sinkC/taskBuf_0_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]	0
+Slice_3	sinkC/taskBuf_0_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]	0
 Slice_3	sinkC/taskBuf_0_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]	0
 Slice_3	sinkC/taskBuf_0_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]	12
 Slice_3	sinkC/taskBuf_0_denied_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[denied]	0
+Slice_3	sinkC/taskBuf_0_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]	0
 Slice_3	sinkC/taskBuf_0_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]	0
 Slice_3	sinkC/taskBuf_0_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]	0
 Slice_3	sinkC/taskBuf_0_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]	0
@@ -13781,14 +13936,17 @@ Slice_3	sinkC/taskBuf_0_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[metaWen]
 Slice_3	sinkC/taskBuf_0_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]	0
 Slice_3	sinkC/taskBuf_0_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]	2
 Slice_3	sinkC/taskBuf_0_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]	0
+Slice_3	sinkC/taskBuf_0_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]	0
 Slice_3	sinkC/taskBuf_0_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]	0
 Slice_3	sinkC/taskBuf_0_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_0_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]	0
 Slice_3	sinkC/taskBuf_0_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]	2
 Slice_3	sinkC/taskBuf_0_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]	0
 Slice_3	sinkC/taskBuf_0_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]	8
+Slice_3	sinkC/taskBuf_0_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]	0
 Slice_3	sinkC/taskBuf_0_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]	0
 Slice_3	sinkC/taskBuf_0_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]	0
+Slice_3	sinkC/taskBuf_0_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]	0
 Slice_3	sinkC/taskBuf_0_off_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[off]	6
 Slice_3	sinkC/taskBuf_0_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]	4
 Slice_3	sinkC/taskBuf_0_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]	4
@@ -13800,10 +13958,11 @@ Slice_3	sinkC/taskBuf_0_resp_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[resp]	3
 Slice_3	sinkC/taskBuf_0_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]	0
 Slice_3	sinkC/taskBuf_0_set_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[set]	9
 Slice_3	sinkC/taskBuf_0_size_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[size]	3
-Slice_3	sinkC/taskBuf_0_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]	4
+Slice_3	sinkC/taskBuf_0_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]	8
 Slice_3	sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]	0
 Slice_3	sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]	2
 Slice_3	sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]	0
+Slice_3	sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]	0
 Slice_3	sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]	0
 Slice_3	sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]	0
@@ -13825,27 +13984,34 @@ Slice_3	sinkC/taskBuf_0_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[use
 Slice_3	sinkC/taskBuf_0_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]	44
 Slice_3	sinkC/taskBuf_0_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]	8
 Slice_3	sinkC/taskBuf_0_way_reg	u_core/sinkC/u_core/taskBuf_reg[0]\[way]	3
+Slice_3	sinkC/taskBuf_1_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]	2
 Slice_3	sinkC/taskBuf_1_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]	0
 Slice_3	sinkC/taskBuf_1_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]	0
 Slice_3	sinkC/taskBuf_1_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]	2
 Slice_3	sinkC/taskBuf_1_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]	0
+Slice_3	sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]	0
 Slice_3	sinkC/taskBuf_1_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]	0
 Slice_3	sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]	0
 Slice_3	sinkC/taskBuf_1_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]	2
+Slice_3	sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]	0
+Slice_3	sinkC/taskBuf_1_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]	6
 Slice_3	sinkC/taskBuf_1_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]	3
 Slice_3	sinkC/taskBuf_1_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]	3
 Slice_3	sinkC/taskBuf_1_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]	7
 Slice_3	sinkC/taskBuf_1_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]	44
+Slice_3	sinkC/taskBuf_1_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]	0
 Slice_3	sinkC/taskBuf_1_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]	2
 Slice_3	sinkC/taskBuf_1_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]	0
 Slice_3	sinkC/taskBuf_1_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]	2
 Slice_3	sinkC/taskBuf_1_channel_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[channel]	3
 Slice_3	sinkC/taskBuf_1_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]	7
 Slice_3	sinkC/taskBuf_1_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]	0
+Slice_3	sinkC/taskBuf_1_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]	0
 Slice_3	sinkC/taskBuf_1_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]	0
 Slice_3	sinkC/taskBuf_1_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]	12
 Slice_3	sinkC/taskBuf_1_denied_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[denied]	0
+Slice_3	sinkC/taskBuf_1_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]	0
 Slice_3	sinkC/taskBuf_1_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]	0
 Slice_3	sinkC/taskBuf_1_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]	0
 Slice_3	sinkC/taskBuf_1_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]	0
@@ -13864,14 +14030,17 @@ Slice_3	sinkC/taskBuf_1_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[metaWen]
 Slice_3	sinkC/taskBuf_1_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]	0
 Slice_3	sinkC/taskBuf_1_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]	2
 Slice_3	sinkC/taskBuf_1_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]	0
+Slice_3	sinkC/taskBuf_1_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]	0
 Slice_3	sinkC/taskBuf_1_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]	0
 Slice_3	sinkC/taskBuf_1_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_1_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]	0
 Slice_3	sinkC/taskBuf_1_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]	2
 Slice_3	sinkC/taskBuf_1_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]	0
 Slice_3	sinkC/taskBuf_1_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]	8
+Slice_3	sinkC/taskBuf_1_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]	0
 Slice_3	sinkC/taskBuf_1_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]	0
 Slice_3	sinkC/taskBuf_1_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]	0
+Slice_3	sinkC/taskBuf_1_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]	0
 Slice_3	sinkC/taskBuf_1_off_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[off]	6
 Slice_3	sinkC/taskBuf_1_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]	4
 Slice_3	sinkC/taskBuf_1_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]	4
@@ -13883,10 +14052,11 @@ Slice_3	sinkC/taskBuf_1_resp_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[resp]	3
 Slice_3	sinkC/taskBuf_1_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]	0
 Slice_3	sinkC/taskBuf_1_set_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[set]	9
 Slice_3	sinkC/taskBuf_1_size_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[size]	3
-Slice_3	sinkC/taskBuf_1_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]	4
+Slice_3	sinkC/taskBuf_1_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]	8
 Slice_3	sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]	0
 Slice_3	sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]	2
 Slice_3	sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]	0
+Slice_3	sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]	0
 Slice_3	sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]	0
 Slice_3	sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]	0
@@ -13908,27 +14078,34 @@ Slice_3	sinkC/taskBuf_1_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[use
 Slice_3	sinkC/taskBuf_1_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]	44
 Slice_3	sinkC/taskBuf_1_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]	8
 Slice_3	sinkC/taskBuf_1_way_reg	u_core/sinkC/u_core/taskBuf_reg[1]\[way]	3
+Slice_3	sinkC/taskBuf_2_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]	2
 Slice_3	sinkC/taskBuf_2_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]	0
 Slice_3	sinkC/taskBuf_2_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]	0
 Slice_3	sinkC/taskBuf_2_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]	2
 Slice_3	sinkC/taskBuf_2_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]	0
+Slice_3	sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]	0
 Slice_3	sinkC/taskBuf_2_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]	0
 Slice_3	sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]	0
 Slice_3	sinkC/taskBuf_2_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]	2
+Slice_3	sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]	0
+Slice_3	sinkC/taskBuf_2_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]	6
 Slice_3	sinkC/taskBuf_2_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]	3
 Slice_3	sinkC/taskBuf_2_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]	3
 Slice_3	sinkC/taskBuf_2_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]	7
 Slice_3	sinkC/taskBuf_2_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]	44
+Slice_3	sinkC/taskBuf_2_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]	0
 Slice_3	sinkC/taskBuf_2_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]	2
 Slice_3	sinkC/taskBuf_2_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]	0
 Slice_3	sinkC/taskBuf_2_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]	2
 Slice_3	sinkC/taskBuf_2_channel_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[channel]	3
 Slice_3	sinkC/taskBuf_2_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]	7
 Slice_3	sinkC/taskBuf_2_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]	0
+Slice_3	sinkC/taskBuf_2_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]	0
 Slice_3	sinkC/taskBuf_2_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]	0
 Slice_3	sinkC/taskBuf_2_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]	12
 Slice_3	sinkC/taskBuf_2_denied_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[denied]	0
+Slice_3	sinkC/taskBuf_2_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]	0
 Slice_3	sinkC/taskBuf_2_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]	0
 Slice_3	sinkC/taskBuf_2_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]	0
 Slice_3	sinkC/taskBuf_2_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]	0
@@ -13947,14 +14124,17 @@ Slice_3	sinkC/taskBuf_2_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[metaWen]
 Slice_3	sinkC/taskBuf_2_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]	0
 Slice_3	sinkC/taskBuf_2_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]	2
 Slice_3	sinkC/taskBuf_2_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]	0
+Slice_3	sinkC/taskBuf_2_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]	0
 Slice_3	sinkC/taskBuf_2_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]	0
 Slice_3	sinkC/taskBuf_2_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_2_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]	0
 Slice_3	sinkC/taskBuf_2_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]	2
 Slice_3	sinkC/taskBuf_2_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]	0
 Slice_3	sinkC/taskBuf_2_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]	8
+Slice_3	sinkC/taskBuf_2_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]	0
 Slice_3	sinkC/taskBuf_2_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]	0
 Slice_3	sinkC/taskBuf_2_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]	0
+Slice_3	sinkC/taskBuf_2_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]	0
 Slice_3	sinkC/taskBuf_2_off_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[off]	6
 Slice_3	sinkC/taskBuf_2_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]	4
 Slice_3	sinkC/taskBuf_2_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]	4
@@ -13966,10 +14146,11 @@ Slice_3	sinkC/taskBuf_2_resp_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[resp]	3
 Slice_3	sinkC/taskBuf_2_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]	0
 Slice_3	sinkC/taskBuf_2_set_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[set]	9
 Slice_3	sinkC/taskBuf_2_size_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[size]	3
-Slice_3	sinkC/taskBuf_2_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]	4
+Slice_3	sinkC/taskBuf_2_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]	8
 Slice_3	sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]	0
 Slice_3	sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]	2
 Slice_3	sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]	0
+Slice_3	sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]	0
 Slice_3	sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]	0
 Slice_3	sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]	0
@@ -13991,27 +14172,34 @@ Slice_3	sinkC/taskBuf_2_useProbeData_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[use
 Slice_3	sinkC/taskBuf_2_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]	44
 Slice_3	sinkC/taskBuf_2_wayMask_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]	8
 Slice_3	sinkC/taskBuf_2_way_reg	u_core/sinkC/u_core/taskBuf_reg[2]\[way]	3
+Slice_3	sinkC/taskBuf_3_aMergeTask_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]	2
 Slice_3	sinkC/taskBuf_3_aMergeTask_isKeyword_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]	0
 Slice_3	sinkC/taskBuf_3_aMergeTask_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]	0
 Slice_3	sinkC/taskBuf_3_aMergeTask_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]	2
 Slice_3	sinkC/taskBuf_3_aMergeTask_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]	0
+Slice_3	sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]	0
 Slice_3	sinkC/taskBuf_3_aMergeTask_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]	0
 Slice_3	sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]	0
 Slice_3	sinkC/taskBuf_3_aMergeTask_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]	2
+Slice_3	sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]	0
+Slice_3	sinkC/taskBuf_3_aMergeTask_off_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]	6
 Slice_3	sinkC/taskBuf_3_aMergeTask_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]	3
 Slice_3	sinkC/taskBuf_3_aMergeTask_param_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]	3
 Slice_3	sinkC/taskBuf_3_aMergeTask_sourceId_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]	7
 Slice_3	sinkC/taskBuf_3_aMergeTask_vaddr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]	44
+Slice_3	sinkC/taskBuf_3_aliasTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]	0
 Slice_3	sinkC/taskBuf_3_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]	2
 Slice_3	sinkC/taskBuf_3_allowRetry_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]	0
 Slice_3	sinkC/taskBuf_3_bufIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]	2
 Slice_3	sinkC/taskBuf_3_channel_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[channel]	3
 Slice_3	sinkC/taskBuf_3_chiOpcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]	7
 Slice_3	sinkC/taskBuf_3_cmoAll_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]	0
+Slice_3	sinkC/taskBuf_3_cmoTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]	0
 Slice_3	sinkC/taskBuf_3_corrupt_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]	0
 Slice_3	sinkC/taskBuf_3_dbID_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]	12
 Slice_3	sinkC/taskBuf_3_denied_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[denied]	0
+Slice_3	sinkC/taskBuf_3_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]	0
 Slice_3	sinkC/taskBuf_3_dsWen_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]	0
 Slice_3	sinkC/taskBuf_3_expCompAck_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]	0
 Slice_3	sinkC/taskBuf_3_fromL2pft_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]	0
@@ -14030,14 +14218,17 @@ Slice_3	sinkC/taskBuf_3_metaWen_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[metaWen]
 Slice_3	sinkC/taskBuf_3_meta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]	0
 Slice_3	sinkC/taskBuf_3_meta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]	2
 Slice_3	sinkC/taskBuf_3_meta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]	0
+Slice_3	sinkC/taskBuf_3_meta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]	0
 Slice_3	sinkC/taskBuf_3_meta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]	0
 Slice_3	sinkC/taskBuf_3_meta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_3_meta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]	0
 Slice_3	sinkC/taskBuf_3_meta_state_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]	2
 Slice_3	sinkC/taskBuf_3_meta_tagErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]	0
 Slice_3	sinkC/taskBuf_3_mshrId_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]	8
+Slice_3	sinkC/taskBuf_3_mshrRetry_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]	0
 Slice_3	sinkC/taskBuf_3_mshrTask_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]	0
 Slice_3	sinkC/taskBuf_3_needHint_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]	0
+Slice_3	sinkC/taskBuf_3_needProbeAckData_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]	0
 Slice_3	sinkC/taskBuf_3_off_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[off]	6
 Slice_3	sinkC/taskBuf_3_opcode_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]	4
 Slice_3	sinkC/taskBuf_3_pCrdType_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]	4
@@ -14049,10 +14240,11 @@ Slice_3	sinkC/taskBuf_3_resp_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[resp]	3
 Slice_3	sinkC/taskBuf_3_retToSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]	0
 Slice_3	sinkC/taskBuf_3_set_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[set]	9
 Slice_3	sinkC/taskBuf_3_size_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[size]	3
-Slice_3	sinkC/taskBuf_3_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]	4
+Slice_3	sinkC/taskBuf_3_snpHitReleaseIdx_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]	8
 Slice_3	sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]	0
 Slice_3	sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]	2
 Slice_3	sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]	0
+Slice_3	sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]	0
 Slice_3	sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]	0
 Slice_3	sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]	3
 Slice_3	sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg	u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]	0

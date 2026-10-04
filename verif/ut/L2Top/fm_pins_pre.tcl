@@ -2,7 +2,7 @@
 #
 # 内容 = 闭包里每个 child 单独签核时 FM 实际配上的寄存器配对（verif/ut/TL2CHICoupledL2/child_pairs.tsv，
 # 两侧相对路径不同的才收）加实例前缀，外加 TL2CHICoupledL2 本层与 golden 名字不同的寄存器（841 位）。
-# set_user_match 只声明两点对应，比较照比。fail-closed：逐条数返回值；拒一条或总数 != 291788 即 error。
+# set_user_match 只声明两点对应，比较照比。fail-closed：逐条数返回值；拒一条或总数 != 292228 即 error。
 set ::TL2_PIN_OK 0
 set ::TL2_PIN_BAD 0
 proc tl2_pin {r i} {
@@ -14,7 +14,7 @@ proc tl2_pin {r i} {
 proc tl2_pinw {r i w} {
   for {set b 0} {$b < $w} {incr b} { tl2_pin "${r}\[$b\]" "${i}\[$b\]" }
 }
-puts "TL2_PIN_BEGIN L2Top expect=291788"
+puts "TL2_PIN_BEGIN L2Top expect=292228"
 tl2_pin {inner_xbar/beatsLeft_1_reg} {inner_xbar/u_core/g_out_a[1].u_arb/beats_left_reg}
 tl2_pin {inner_xbar/beatsLeft_2_reg} {inner_xbar/u_core/g_out_a[2].u_arb/beats_left_reg}
 tl2_pin {inner_xbar/beatsLeft_3_reg} {inner_xbar/u_core/g_out_a[3].u_arb/beats_left_reg}
@@ -6767,7 +6767,7 @@ tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_0_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_0_task_set_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[0]} 9
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_0_task_tag_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[0]} 31
 tl2_pin {inner_l2cache/slices_0/mshrCtl/sourceB/probes_0_valid_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[0]}
-tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_0_waitG_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]} 4
+tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_0_waitG_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]} 7
 tl2_pin {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_rdy_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[1]}
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_task_alias_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[1]} 2
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_task_opcode_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[1]} 3
@@ -6775,7 +6775,7 @@ tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_task_set_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[1]} 9
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_task_tag_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[1]} 31
 tl2_pin {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_valid_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[1]}
-tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_waitG_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]} 4
+tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_1_waitG_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]} 7
 tl2_pin {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_rdy_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[2]}
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_task_alias_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[2]} 2
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_task_opcode_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[2]} 3
@@ -6783,7 +6783,7 @@ tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_task_set_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[2]} 9
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_task_tag_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[2]} 31
 tl2_pin {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_valid_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[2]}
-tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_waitG_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]} 4
+tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_2_waitG_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]} 7
 tl2_pin {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_rdy_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[3]}
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_task_alias_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[3]} 2
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_task_opcode_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[3]} 3
@@ -6791,7 +6791,7 @@ tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_task_set_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[3]} 9
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_task_tag_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[3]} 31
 tl2_pin {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_valid_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[3]}
-tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_waitG_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]} 4
+tl2_pinw {inner_l2cache/slices_0/mshrCtl/sourceB/probes_3_waitG_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]} 7
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/source_b_arb/pendingMask_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/source_b_arb/u_core/pendingMask_reg} 16
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/source_b_arb/rrGrantMask_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/source_b_arb/u_core/rrGrantMask_reg} 16
 tl2_pinw {inner_l2cache/slices_0/mshrCtl/timers_0_reg} {inner_l2cache/slices_0/u_core/mshrCtl/u_core/timers_reg[0]} 64
@@ -6886,10 +6886,12 @@ tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_re
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_off_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_param_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]} 3
@@ -6898,6 +6900,7 @@ tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg} 
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_aliasTask_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_alias_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]} 2
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_allowRetry_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]}
+tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_bufIdx_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_channel_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]} 3
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_chiOpcode_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_cmoAll_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]}
@@ -6934,6 +6937,7 @@ tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_mshrId_reg} {inner_l2c
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_mshrRetry_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_mshrTask_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]}
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_needHint_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]}
+tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_needProbeAckData_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_off_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]} 6
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_opcode_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_pCrdType_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]} 4
@@ -6944,8 +6948,7 @@ tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_reqSource_reg} {inner_
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_resp_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]} 3
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_retToSrc_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_set_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]} 9
-tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_size_reg[1]} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][1]}
-tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_size_reg[2]} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][2]}
+tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_size_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]} 3
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]} 2
@@ -6970,6 +6973,7 @@ tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_txChannel_reg} {inner_
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_txnID_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]} 12
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_useProbeData_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]}
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_vaddr_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]} 44
+tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_wayMask_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_0/reqArb/mshr_task_s1_bits_way_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]} 3
 tl2_pin {inner_l2cache/slices_0/reqArb/mshr_task_s1_valid_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/mshr_task_s1_valid_reg}
 tl2_pin {inner_l2cache/slices_0/reqArb/resetFinish_reg} {inner_l2cache/slices_0/u_core/reqArb/u_core/resetFinish_reg}
@@ -7248,27 +7252,34 @@ tl2_pinw {inner_l2cache/slices_0/sinkC/r_0_reg} {inner_l2cache/slices_0/u_core/s
 tl2_pinw {inner_l2cache/slices_0/sinkC/r_1_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/bufRespStage_reg[1]} 256
 tl2_pin {inner_l2cache/slices_0/sinkC/r_counter_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/r_counter_reg}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskArb/ctrl_validMask_grantMask_lastGrant_reg} {inner_l2cache/slices_0/u_core/sinkC/taskArb/u_core/last_grant_q_reg} 2
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_isKeyword_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_state_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_off_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_opcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_param_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_sourceId_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_aMergeTask_vaddr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_aliasTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_allowRetry_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_bufIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_channel_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_chiOpcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_cmoAll_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_cmoTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_corrupt_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_dbID_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_denied_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[denied]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_dsWen_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_expCompAck_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_fromL2pft_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]}
@@ -7287,14 +7298,17 @@ tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_state_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_mshrId_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_mshrRetry_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_mshrTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_needHint_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_needProbeAckData_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_off_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[off]} 6
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_opcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_pCrdType_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]} 4
@@ -7306,10 +7320,11 @@ tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_retToSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_set_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[set]} 9
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_size_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[size]} 3
-tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]}
@@ -7331,27 +7346,34 @@ tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_0_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_vaddr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_wayMask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_0_way_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[0]\[way]} 3
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_isKeyword_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_state_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_off_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_opcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_param_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_sourceId_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_aMergeTask_vaddr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_aliasTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_allowRetry_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_bufIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_channel_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_chiOpcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_cmoAll_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_cmoTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_corrupt_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_dbID_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_denied_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[denied]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_dsWen_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_expCompAck_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_fromL2pft_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]}
@@ -7370,14 +7392,17 @@ tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_state_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_mshrId_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_mshrRetry_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_mshrTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_needHint_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_needProbeAckData_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_off_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[off]} 6
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_opcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_pCrdType_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]} 4
@@ -7389,10 +7414,11 @@ tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_retToSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_set_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[set]} 9
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_size_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[size]} 3
-tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]}
@@ -7414,27 +7440,34 @@ tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_1_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_vaddr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_wayMask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_1_way_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[1]\[way]} 3
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_isKeyword_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_state_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_off_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_opcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_param_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_sourceId_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_aMergeTask_vaddr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_aliasTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_allowRetry_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_bufIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_channel_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_chiOpcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_cmoAll_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_cmoTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_corrupt_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_dbID_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_denied_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[denied]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_dsWen_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_expCompAck_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_fromL2pft_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]}
@@ -7453,14 +7486,17 @@ tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_state_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_mshrId_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_mshrRetry_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_mshrTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_needHint_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_needProbeAckData_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_off_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[off]} 6
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_opcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_pCrdType_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]} 4
@@ -7472,10 +7508,11 @@ tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_retToSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_set_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[set]} 9
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_size_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[size]} 3
-tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]}
@@ -7497,27 +7534,34 @@ tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_2_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_vaddr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_wayMask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_2_way_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[2]\[way]} 3
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_isKeyword_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_state_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_off_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_opcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_param_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_sourceId_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_aMergeTask_vaddr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_aliasTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_allowRetry_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_bufIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_channel_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_chiOpcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_cmoAll_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_cmoTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_corrupt_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_dbID_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_denied_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[denied]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_dsWen_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_expCompAck_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_fromL2pft_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]}
@@ -7536,14 +7580,17 @@ tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_state_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_meta_tagErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_mshrId_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_mshrRetry_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_mshrTask_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_needHint_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_needProbeAckData_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_off_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[off]} 6
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_opcode_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_pCrdType_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]} 4
@@ -7555,10 +7602,11 @@ tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_retToSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_set_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[set]} 9
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_size_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[size]} 3
-tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_0/sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_0/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]}
@@ -10307,7 +10355,7 @@ tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_0_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_0_task_set_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[0]} 9
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_0_task_tag_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[0]} 31
 tl2_pin {inner_l2cache/slices_1/mshrCtl/sourceB/probes_0_valid_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[0]}
-tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_0_waitG_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]} 4
+tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_0_waitG_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]} 7
 tl2_pin {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_rdy_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[1]}
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_task_alias_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[1]} 2
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_task_opcode_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[1]} 3
@@ -10315,7 +10363,7 @@ tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_task_set_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[1]} 9
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_task_tag_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[1]} 31
 tl2_pin {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_valid_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[1]}
-tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_waitG_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]} 4
+tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_1_waitG_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]} 7
 tl2_pin {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_rdy_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[2]}
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_task_alias_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[2]} 2
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_task_opcode_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[2]} 3
@@ -10323,7 +10371,7 @@ tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_task_set_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[2]} 9
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_task_tag_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[2]} 31
 tl2_pin {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_valid_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[2]}
-tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_waitG_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]} 4
+tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_2_waitG_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]} 7
 tl2_pin {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_rdy_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[3]}
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_task_alias_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[3]} 2
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_task_opcode_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[3]} 3
@@ -10331,7 +10379,7 @@ tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_task_set_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[3]} 9
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_task_tag_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[3]} 31
 tl2_pin {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_valid_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[3]}
-tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_waitG_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]} 4
+tl2_pinw {inner_l2cache/slices_1/mshrCtl/sourceB/probes_3_waitG_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]} 7
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/source_b_arb/pendingMask_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/source_b_arb/u_core/pendingMask_reg} 16
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/source_b_arb/rrGrantMask_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/source_b_arb/u_core/rrGrantMask_reg} 16
 tl2_pinw {inner_l2cache/slices_1/mshrCtl/timers_0_reg} {inner_l2cache/slices_1/u_core/mshrCtl/u_core/timers_reg[0]} 64
@@ -10426,10 +10474,12 @@ tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_re
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_off_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_param_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]} 3
@@ -10438,6 +10488,7 @@ tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg} 
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_aliasTask_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_alias_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]} 2
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_allowRetry_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]}
+tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_bufIdx_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_channel_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]} 3
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_chiOpcode_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_cmoAll_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]}
@@ -10474,6 +10525,7 @@ tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_mshrId_reg} {inner_l2c
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_mshrRetry_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_mshrTask_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]}
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_needHint_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]}
+tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_needProbeAckData_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_off_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]} 6
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_opcode_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_pCrdType_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]} 4
@@ -10484,8 +10536,7 @@ tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_reqSource_reg} {inner_
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_resp_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]} 3
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_retToSrc_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_set_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]} 9
-tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_size_reg[1]} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][1]}
-tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_size_reg[2]} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][2]}
+tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_size_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]} 3
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]} 2
@@ -10510,6 +10561,7 @@ tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_txChannel_reg} {inner_
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_txnID_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]} 12
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_useProbeData_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]}
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_vaddr_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]} 44
+tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_wayMask_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_1/reqArb/mshr_task_s1_bits_way_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]} 3
 tl2_pin {inner_l2cache/slices_1/reqArb/mshr_task_s1_valid_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/mshr_task_s1_valid_reg}
 tl2_pin {inner_l2cache/slices_1/reqArb/resetFinish_reg} {inner_l2cache/slices_1/u_core/reqArb/u_core/resetFinish_reg}
@@ -10788,27 +10840,34 @@ tl2_pinw {inner_l2cache/slices_1/sinkC/r_0_reg} {inner_l2cache/slices_1/u_core/s
 tl2_pinw {inner_l2cache/slices_1/sinkC/r_1_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/bufRespStage_reg[1]} 256
 tl2_pin {inner_l2cache/slices_1/sinkC/r_counter_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/r_counter_reg}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskArb/ctrl_validMask_grantMask_lastGrant_reg} {inner_l2cache/slices_1/u_core/sinkC/taskArb/u_core/last_grant_q_reg} 2
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_isKeyword_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_state_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_off_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_opcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_param_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_sourceId_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_aMergeTask_vaddr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_aliasTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_allowRetry_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_bufIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_channel_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_chiOpcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_cmoAll_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_cmoTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_corrupt_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_dbID_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_denied_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[denied]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_dsWen_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_expCompAck_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_fromL2pft_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]}
@@ -10827,14 +10886,17 @@ tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_state_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_mshrId_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_mshrRetry_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_mshrTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_needHint_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_needProbeAckData_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_off_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[off]} 6
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_opcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_pCrdType_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]} 4
@@ -10846,10 +10908,11 @@ tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_retToSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_set_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[set]} 9
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_size_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[size]} 3
-tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]}
@@ -10871,27 +10934,34 @@ tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_0_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_vaddr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_wayMask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_0_way_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[0]\[way]} 3
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_isKeyword_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_state_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_off_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_opcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_param_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_sourceId_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_aMergeTask_vaddr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_aliasTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_allowRetry_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_bufIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_channel_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_chiOpcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_cmoAll_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_cmoTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_corrupt_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_dbID_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_denied_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[denied]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_dsWen_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_expCompAck_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_fromL2pft_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]}
@@ -10910,14 +10980,17 @@ tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_state_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_mshrId_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_mshrRetry_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_mshrTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_needHint_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_needProbeAckData_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_off_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[off]} 6
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_opcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_pCrdType_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]} 4
@@ -10929,10 +11002,11 @@ tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_retToSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_set_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[set]} 9
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_size_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[size]} 3
-tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]}
@@ -10954,27 +11028,34 @@ tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_1_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_vaddr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_wayMask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_1_way_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[1]\[way]} 3
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_isKeyword_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_state_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_off_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_opcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_param_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_sourceId_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_aMergeTask_vaddr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_aliasTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_allowRetry_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_bufIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_channel_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_chiOpcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_cmoAll_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_cmoTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_corrupt_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_dbID_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_denied_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[denied]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_dsWen_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_expCompAck_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_fromL2pft_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]}
@@ -10993,14 +11074,17 @@ tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_state_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_mshrId_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_mshrRetry_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_mshrTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_needHint_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_needProbeAckData_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_off_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[off]} 6
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_opcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_pCrdType_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]} 4
@@ -11012,10 +11096,11 @@ tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_retToSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_set_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[set]} 9
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_size_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[size]} 3
-tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]}
@@ -11037,27 +11122,34 @@ tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_2_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_vaddr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_wayMask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_2_way_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[2]\[way]} 3
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_isKeyword_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_state_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_off_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_opcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_param_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_sourceId_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_aMergeTask_vaddr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_aliasTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_allowRetry_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_bufIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_channel_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_chiOpcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_cmoAll_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_cmoTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_corrupt_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_dbID_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_denied_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[denied]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_dsWen_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_expCompAck_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_fromL2pft_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]}
@@ -11076,14 +11168,17 @@ tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_state_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_meta_tagErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_mshrId_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_mshrRetry_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_mshrTask_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_needHint_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_needProbeAckData_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_off_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[off]} 6
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_opcode_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_pCrdType_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]} 4
@@ -11095,10 +11190,11 @@ tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_retToSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_set_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[set]} 9
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_size_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[size]} 3
-tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_1/sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_1/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]}
@@ -13847,7 +13943,7 @@ tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_0_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_0_task_set_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[0]} 9
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_0_task_tag_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[0]} 31
 tl2_pin {inner_l2cache/slices_2/mshrCtl/sourceB/probes_0_valid_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[0]}
-tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_0_waitG_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]} 4
+tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_0_waitG_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]} 7
 tl2_pin {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_rdy_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[1]}
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_task_alias_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[1]} 2
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_task_opcode_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[1]} 3
@@ -13855,7 +13951,7 @@ tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_task_set_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[1]} 9
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_task_tag_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[1]} 31
 tl2_pin {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_valid_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[1]}
-tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_waitG_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]} 4
+tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_1_waitG_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]} 7
 tl2_pin {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_rdy_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[2]}
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_task_alias_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[2]} 2
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_task_opcode_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[2]} 3
@@ -13863,7 +13959,7 @@ tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_task_set_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[2]} 9
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_task_tag_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[2]} 31
 tl2_pin {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_valid_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[2]}
-tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_waitG_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]} 4
+tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_2_waitG_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]} 7
 tl2_pin {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_rdy_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[3]}
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_task_alias_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[3]} 2
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_task_opcode_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[3]} 3
@@ -13871,7 +13967,7 @@ tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_task_set_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[3]} 9
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_task_tag_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[3]} 31
 tl2_pin {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_valid_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[3]}
-tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_waitG_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]} 4
+tl2_pinw {inner_l2cache/slices_2/mshrCtl/sourceB/probes_3_waitG_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]} 7
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/source_b_arb/pendingMask_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/source_b_arb/u_core/pendingMask_reg} 16
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/source_b_arb/rrGrantMask_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/source_b_arb/u_core/rrGrantMask_reg} 16
 tl2_pinw {inner_l2cache/slices_2/mshrCtl/timers_0_reg} {inner_l2cache/slices_2/u_core/mshrCtl/u_core/timers_reg[0]} 64
@@ -13966,10 +14062,12 @@ tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_re
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_off_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_param_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]} 3
@@ -13978,6 +14076,7 @@ tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg} 
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_aliasTask_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_alias_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]} 2
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_allowRetry_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]}
+tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_bufIdx_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_channel_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]} 3
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_chiOpcode_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_cmoAll_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]}
@@ -14014,6 +14113,7 @@ tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_mshrId_reg} {inner_l2c
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_mshrRetry_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_mshrTask_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]}
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_needHint_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]}
+tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_needProbeAckData_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_off_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]} 6
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_opcode_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_pCrdType_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]} 4
@@ -14024,8 +14124,7 @@ tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_reqSource_reg} {inner_
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_resp_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]} 3
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_retToSrc_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_set_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]} 9
-tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_size_reg[1]} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][1]}
-tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_size_reg[2]} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][2]}
+tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_size_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]} 3
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]} 2
@@ -14050,6 +14149,7 @@ tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_txChannel_reg} {inner_
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_txnID_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]} 12
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_useProbeData_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]}
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_vaddr_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]} 44
+tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_wayMask_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_2/reqArb/mshr_task_s1_bits_way_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]} 3
 tl2_pin {inner_l2cache/slices_2/reqArb/mshr_task_s1_valid_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/mshr_task_s1_valid_reg}
 tl2_pin {inner_l2cache/slices_2/reqArb/resetFinish_reg} {inner_l2cache/slices_2/u_core/reqArb/u_core/resetFinish_reg}
@@ -14328,27 +14428,34 @@ tl2_pinw {inner_l2cache/slices_2/sinkC/r_0_reg} {inner_l2cache/slices_2/u_core/s
 tl2_pinw {inner_l2cache/slices_2/sinkC/r_1_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/bufRespStage_reg[1]} 256
 tl2_pin {inner_l2cache/slices_2/sinkC/r_counter_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/r_counter_reg}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskArb/ctrl_validMask_grantMask_lastGrant_reg} {inner_l2cache/slices_2/u_core/sinkC/taskArb/u_core/last_grant_q_reg} 2
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_isKeyword_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_state_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_off_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_opcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_param_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_sourceId_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_aMergeTask_vaddr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_aliasTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_allowRetry_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_bufIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_channel_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_chiOpcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_cmoAll_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_cmoTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_corrupt_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_dbID_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_denied_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[denied]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_dsWen_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_expCompAck_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_fromL2pft_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]}
@@ -14367,14 +14474,17 @@ tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_state_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_mshrId_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_mshrRetry_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_mshrTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_needHint_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_needProbeAckData_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_off_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[off]} 6
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_opcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_pCrdType_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]} 4
@@ -14386,10 +14496,11 @@ tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_retToSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_set_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[set]} 9
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_size_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[size]} 3
-tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]}
@@ -14411,27 +14522,34 @@ tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_0_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_vaddr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_wayMask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_0_way_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[0]\[way]} 3
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_isKeyword_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_state_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_off_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_opcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_param_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_sourceId_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_aMergeTask_vaddr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_aliasTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_allowRetry_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_bufIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_channel_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_chiOpcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_cmoAll_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_cmoTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_corrupt_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_dbID_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_denied_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[denied]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_dsWen_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_expCompAck_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_fromL2pft_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]}
@@ -14450,14 +14568,17 @@ tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_state_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_mshrId_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_mshrRetry_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_mshrTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_needHint_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_needProbeAckData_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_off_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[off]} 6
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_opcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_pCrdType_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]} 4
@@ -14469,10 +14590,11 @@ tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_retToSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_set_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[set]} 9
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_size_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[size]} 3
-tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]}
@@ -14494,27 +14616,34 @@ tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_1_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_vaddr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_wayMask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_1_way_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[1]\[way]} 3
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_isKeyword_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_state_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_off_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_opcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_param_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_sourceId_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_aMergeTask_vaddr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_aliasTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_allowRetry_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_bufIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_channel_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_chiOpcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_cmoAll_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_cmoTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_corrupt_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_dbID_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_denied_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[denied]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_dsWen_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_expCompAck_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_fromL2pft_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]}
@@ -14533,14 +14662,17 @@ tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_state_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_mshrId_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_mshrRetry_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_mshrTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_needHint_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_needProbeAckData_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_off_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[off]} 6
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_opcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_pCrdType_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]} 4
@@ -14552,10 +14684,11 @@ tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_retToSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_set_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[set]} 9
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_size_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[size]} 3
-tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]}
@@ -14577,27 +14710,34 @@ tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_2_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_vaddr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_wayMask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_2_way_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[2]\[way]} 3
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_isKeyword_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_state_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_off_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_opcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_param_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_sourceId_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_aMergeTask_vaddr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_aliasTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_allowRetry_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_bufIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_channel_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_chiOpcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_cmoAll_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_cmoTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_corrupt_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_dbID_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_denied_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[denied]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_dsWen_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_expCompAck_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_fromL2pft_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]}
@@ -14616,14 +14756,17 @@ tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_state_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_meta_tagErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_mshrId_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_mshrRetry_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_mshrTask_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_needHint_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_needProbeAckData_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_off_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[off]} 6
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_opcode_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_pCrdType_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]} 4
@@ -14635,10 +14778,11 @@ tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_retToSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_set_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[set]} 9
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_size_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[size]} 3
-tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_2/sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_2/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]}
@@ -17387,7 +17531,7 @@ tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_0_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_0_task_set_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[0]} 9
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_0_task_tag_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[0]} 31
 tl2_pin {inner_l2cache/slices_3/mshrCtl/sourceB/probes_0_valid_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[0]}
-tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_0_waitG_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]} 4
+tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_0_waitG_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[0]} 7
 tl2_pin {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_rdy_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[1]}
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_task_alias_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[1]} 2
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_task_opcode_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[1]} 3
@@ -17395,7 +17539,7 @@ tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_task_set_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[1]} 9
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_task_tag_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[1]} 31
 tl2_pin {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_valid_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[1]}
-tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_waitG_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]} 4
+tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_1_waitG_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[1]} 7
 tl2_pin {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_rdy_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[2]}
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_task_alias_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[2]} 2
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_task_opcode_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[2]} 3
@@ -17403,7 +17547,7 @@ tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_task_set_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[2]} 9
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_task_tag_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[2]} 31
 tl2_pin {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_valid_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[2]}
-tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_waitG_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]} 4
+tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_2_waitG_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[2]} 7
 tl2_pin {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_rdy_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_rdy_reg[3]}
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_task_alias_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_alias_reg[3]} 2
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_task_opcode_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_opcode_reg[3]} 3
@@ -17411,7 +17555,7 @@ tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_task_param_reg} {inner
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_task_set_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_set_reg[3]} 9
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_task_tag_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_tag_reg[3]} 31
 tl2_pin {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_valid_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_valid_reg[3]}
-tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_waitG_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]} 4
+tl2_pinw {inner_l2cache/slices_3/mshrCtl/sourceB/probes_3_waitG_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/sourceB/u_core/probes_waitG_reg[3]} 7
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/source_b_arb/pendingMask_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/source_b_arb/u_core/pendingMask_reg} 16
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/source_b_arb/rrGrantMask_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/source_b_arb/u_core/rrGrantMask_reg} 16
 tl2_pinw {inner_l2cache/slices_3/mshrCtl/timers_0_reg} {inner_l2cache/slices_3/u_core/mshrCtl/u_core/timers_reg[0]} 64
@@ -17506,10 +17650,12 @@ tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_isKeyword_re
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_alias_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_clients_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_state_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_off_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_opcode_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_param_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aMergeTask_param]} 3
@@ -17518,6 +17664,7 @@ tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aMergeTask_vaddr_reg} 
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_aliasTask_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_alias_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[alias_]} 2
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_allowRetry_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[allowRetry]}
+tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_bufIdx_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_channel_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[channel]} 3
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_chiOpcode_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_cmoAll_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[cmoAll]}
@@ -17554,6 +17701,7 @@ tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_mshrId_reg} {inner_l2c
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_mshrRetry_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_mshrTask_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[mshrTask]}
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_needHint_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needHint]}
+tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_needProbeAckData_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_off_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[off]} 6
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_opcode_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_pCrdType_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[pCrdType]} 4
@@ -17564,8 +17712,7 @@ tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_reqSource_reg} {inner_
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_resp_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[resp]} 3
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_retToSrc_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_set_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[set]} 9
-tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_size_reg[1]} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][1]}
-tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_size_reg[2]} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size][2]}
+tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_size_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[size]} 3
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[snpHitReleaseMeta_alias]} 2
@@ -17590,6 +17737,7 @@ tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_txChannel_reg} {inner_
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_txnID_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[txnID]} 12
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_useProbeData_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[useProbeData]}
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_vaddr_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[vaddr]} 44
+tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_wayMask_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_3/reqArb/mshr_task_s1_bits_way_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_bits_reg\[way]} 3
 tl2_pin {inner_l2cache/slices_3/reqArb/mshr_task_s1_valid_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/mshr_task_s1_valid_reg}
 tl2_pin {inner_l2cache/slices_3/reqArb/resetFinish_reg} {inner_l2cache/slices_3/u_core/reqArb/u_core/resetFinish_reg}
@@ -17868,27 +18016,34 @@ tl2_pinw {inner_l2cache/slices_3/sinkC/r_0_reg} {inner_l2cache/slices_3/u_core/s
 tl2_pinw {inner_l2cache/slices_3/sinkC/r_1_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/bufRespStage_reg[1]} 256
 tl2_pin {inner_l2cache/slices_3/sinkC/r_counter_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/r_counter_reg}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskArb/ctrl_validMask_grantMask_lastGrant_reg} {inner_l2cache/slices_3/u_core/sinkC/taskArb/u_core/last_grant_q_reg} 2
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_isKeyword_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_state_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_off_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_opcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_param_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_sourceId_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_aMergeTask_vaddr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_aliasTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_allowRetry_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_bufIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_channel_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_chiOpcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_cmoAll_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_cmoTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_corrupt_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_dbID_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_denied_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[denied]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[dirty]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_dsWen_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[dsWen]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_expCompAck_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_fromL2pft_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[fromL2pft]}
@@ -17907,14 +18062,17 @@ tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_state_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_mshrId_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_mshrRetry_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_mshrTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_needHint_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[needHint]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_needProbeAckData_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_off_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[off]} 6
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_opcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_pCrdType_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[pCrdType]} 4
@@ -17926,10 +18084,11 @@ tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_retToSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_set_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[set]} 9
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_size_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[size]} 3
-tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[snpHitReleaseMeta_prefetch]}
@@ -17951,27 +18110,34 @@ tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_0_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_vaddr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_wayMask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_0_way_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[0]\[way]} 3
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_isKeyword_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_state_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_off_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_opcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_param_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_sourceId_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_aMergeTask_vaddr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_aliasTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_allowRetry_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_bufIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_channel_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_chiOpcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_cmoAll_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_cmoTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_corrupt_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_dbID_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_denied_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[denied]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[dirty]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_dsWen_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[dsWen]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_expCompAck_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_fromL2pft_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[fromL2pft]}
@@ -17990,14 +18156,17 @@ tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_state_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_mshrId_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_mshrRetry_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_mshrTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_needHint_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[needHint]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_needProbeAckData_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_off_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[off]} 6
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_opcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_pCrdType_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[pCrdType]} 4
@@ -18009,10 +18178,11 @@ tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_retToSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_set_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[set]} 9
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_size_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[size]} 3
-tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[snpHitReleaseMeta_prefetch]}
@@ -18034,27 +18204,34 @@ tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_1_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_vaddr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_wayMask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_1_way_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[1]\[way]} 3
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_isKeyword_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_state_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_off_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_opcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_param_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_sourceId_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_aMergeTask_vaddr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_aliasTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_allowRetry_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_bufIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_channel_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_chiOpcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_cmoAll_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_cmoTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_corrupt_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_dbID_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_denied_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[denied]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[dirty]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_dsWen_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[dsWen]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_expCompAck_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_fromL2pft_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[fromL2pft]}
@@ -18073,14 +18250,17 @@ tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_state_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_mshrId_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_mshrRetry_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_mshrTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_needHint_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[needHint]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_needProbeAckData_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_off_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[off]} 6
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_opcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_pCrdType_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[pCrdType]} 4
@@ -18092,10 +18272,11 @@ tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_retToSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_set_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[set]} 9
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_size_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[size]} 3
-tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[snpHitReleaseMeta_prefetch]}
@@ -18117,27 +18298,34 @@ tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_2_useProbeData_reg} {inner_l2cache
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_vaddr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[vaddr]} 44
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_wayMask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[wayMask]} 8
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_2_way_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[2]\[way]} 3
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_isKeyword_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_isKeyword]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_state_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_state]} 2
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_meta_tagErr]}
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_off_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_off]} 6
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_opcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_opcode]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_param_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_param]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_sourceId_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_sourceId]} 7
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_aMergeTask_vaddr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aMergeTask_vaddr]} 44
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_aliasTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[aliasTask]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[alias_]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_allowRetry_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[allowRetry]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_bufIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[bufIdx]} 2
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_channel_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[channel]} 3
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_chiOpcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[chiOpcode]} 7
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_cmoAll_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoAll]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_cmoTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[cmoTask]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_corrupt_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[corrupt]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_dbID_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[dbID]} 12
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_denied_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[denied]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[dirty]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_dsWen_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[dsWen]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_expCompAck_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[expCompAck]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_fromL2pft_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[fromL2pft]}
@@ -18156,14 +18344,17 @@ tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_metaWen_reg} {inner_l2cache/slic
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_prefetch]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_state_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_state]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_meta_tagErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[meta_tagErr]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_mshrId_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrId]} 8
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_mshrRetry_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrRetry]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_mshrTask_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[mshrTask]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_needHint_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[needHint]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_needProbeAckData_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[needProbeAckData]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_off_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[off]} 6
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_opcode_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[opcode]} 4
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_pCrdType_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[pCrdType]} 4
@@ -18175,10 +18366,11 @@ tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_resp_reg} {inner_l2cache/slices
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_retToSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[retToSrc]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_set_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[set]} 9
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_size_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[size]} 3
-tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 4
+tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseIdx_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseIdx]} 8
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseMeta_accessed_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_accessed]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseMeta_alias_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_alias]} 2
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseMeta_clients_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_clients]}
+tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseMeta_dataErr_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dataErr]}
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseMeta_dirty_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_dirty]}
 tl2_pinw {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseMeta_prefetchSrc_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetchSrc]} 3
 tl2_pin {inner_l2cache/slices_3/sinkC/taskBuf_3_snpHitReleaseMeta_prefetch_reg} {inner_l2cache/slices_3/u_core/sinkC/u_core/taskBuf_reg[3]\[snpHitReleaseMeta_prefetch]}
@@ -18569,6 +18761,6 @@ tl2_pinw {inner_resetDelayN/REG_reg} {inner_resetDelayN/u_core/g_chain.stage_reg
 tl2_pinw {inner_io_clintTime_toCore_pipMod/res_bits_reg} {inner_io_clintTime_toCore_pipMod/u_core/g_chain.data_q_reg[0]} 64
 tl2_pin {inner_io_clintTime_toCore_pipMod/valid_REG_reg} {inner_io_clintTime_toCore_pipMod/u_core/g_chain.g_valid.valid_reg_reg[0]}
 puts "TL2_PIN_END L2Top ok=$::TL2_PIN_OK bad=$::TL2_PIN_BAD"
-if {$::TL2_PIN_BAD != 0 || $::TL2_PIN_OK != 291788} {
-  error "TL2_PIN_MISMATCH ok=$::TL2_PIN_OK bad=$::TL2_PIN_BAD expect=291788"
+if {$::TL2_PIN_BAD != 0 || $::TL2_PIN_OK != 292228} {
+  error "TL2_PIN_MISMATCH ok=$::TL2_PIN_OK bad=$::TL2_PIN_BAD expect=292228"
 }

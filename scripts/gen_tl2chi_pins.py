@@ -11,7 +11,8 @@ scripts/fm_eq.tcl 的 auto_match_flattened_arrays（它只剥**顶层**的 u_cor
 三部分，全部 fail-closed：
   (1) child 配对表 verif/ut/TL2CHICoupledL2/child_pairs.tsv（`--harvest` 生成、入库）：
       对每个 child 模块（CHILDREN）读 verif/ut/<UT>/fm_work/<child>/matched.rpt（main 当前字节上的 diagnostic-full 跑，
-      不产 receipt；fm_work 不入库），取寄存器类配对（DFF* / LAT*），两侧相对路径不同的才收（相同的父级 FM 按名自配）。
+      不产 receipt；fm_work 不入库），取寄存器类配对（DFF* / LAT*），并上同一跑 fm.log 里 child 钉点的生效回显
+      （matched.rpt 不列无读者 / 常量点）；两侧相对路径不同的才收（相同的父级 FM 按名自配）。
       连续位 [0..W-1] 两侧一一对应的折叠成一行宽度 W。表头记每个 child 的 matched.rpt sha256 与配对位数。
   (2) 本层自己的寄存器（xs_TL2CHICoupledL2_core 里与 golden 名字不同的：§1 两条 RegNextN 链、§4 perf 两级）：OWN_RULES，
       golden 名从 golden 现读（寄存器存在、位宽相符）。
@@ -120,9 +121,24 @@ def harvest_child(child, ut):
             r, i = rp[len(rpre):], p[len(ipre):]
             if r != i:
                 pairs.append((r, i))
+    # 再并上 child 自己钉点生效的配对（fm.log 里 "Set a match between" 的回显）：matched.rpt 默认不列
+    # 无读者 / 常量的点，但它们进了父级照样要配（2026-10-04 实测：Slice 的 sourceB probes_*_waitG[6:4]）。
+    logp = os.path.join(os.path.dirname(path), 'fm.log')
+    lograw = open(logp, 'rb').read()
+    seen = set(pairs)
+    for m in re.finditer(r'^Set a match between the following objects:\n\t(r:/\S+)\n\s+\(\?\) (i:/\S+)$',
+                         lograw.decode(), re.M):
+        rp, ip = m.group(1), m.group(2)
+        rpre, ipre = 'r:/WORK/%s/' % child, 'i:/WORK/%s/' % child
+        if not rp.startswith(rpre) or not ip.startswith(ipre):
+            die('%s: 钉点回显路径不在顶层下: %s / %s' % (child, rp, ip))
+        pr = (rp[len(rpre):], ip[len(ipre):])
+        if pr[0] != pr[1] and pr not in seen:
+            seen.add(pr)
+            pairs.append(pr)
     if len({r for r, _ in pairs}) != len(pairs) or len({i for _, i in pairs}) != len(pairs):
         die('%s: 收割到的配对不单射' % child)
-    return pairs, hashlib.sha256(raw).hexdigest()
+    return pairs, hashlib.sha256(raw + lograw).hexdigest()
 
 
 def fold(pairs):
@@ -151,7 +167,7 @@ def harvest_all():
     body = []
     for child, ut in CHILDREN.items():
         pairs, sha = harvest_child(child, ut)
-        L.append('# %s\tut=%s\tmatched.rpt sha256=%s\tbits=%d' % (child, ut, sha, len(pairs)))
+        L.append('# %s\tut=%s\tmatched.rpt+fm.log sha256=%s\tbits=%d' % (child, ut, sha, len(pairs)))
         body += ['%s\t%s\t%s\t%d' % (child, r, i, w) for r, i, w in fold(pairs)]
     return '\n'.join(L + body) + '\n'
 
@@ -162,7 +178,7 @@ def load_pairs():
     tab, declared = {}, {}
     for ln in open(PAIRS_TSV):
         ln = ln.rstrip('\n')
-        m = re.match(r'^# (\w+)\tut=\S+\tmatched\.rpt sha256=[0-9a-f]{64}\tbits=(\d+)$', ln)
+        m = re.match(r'^# (\w+)\tut=\S+\tmatched\.rpt\+fm\.log sha256=[0-9a-f]{64}\tbits=(\d+)$', ln)
         if m:
             declared[m.group(1)] = int(m.group(2))
             continue
@@ -249,8 +265,8 @@ def build(top, tab):
 
 # 字面期望（位数）。child_pairs.tsv 重新收割后若变化，必须同时改这里——防止静默漂移。
 EXPECTED = {
-    'TL2CHICoupledL2': 282581,
-    'L2Top': 291788,
+    'TL2CHICoupledL2': 283021,
+    'L2Top': 292228,
 }
 
 
