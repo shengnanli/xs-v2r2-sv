@@ -94,3 +94,20 @@ golden 里带类型的 output 头只有 ClockGate.sv 与 3 个 DPI helper（Mem1
 都不是 FM 目标），所以这条修正只动 ClockGate 一份：`fm_predict.py recompute` 全仓 600 份登记中
 ClockGate 1 -> 2「修后逐位等于实测」；另 6 份变化（Rob、TLBuffer_6/8/9/20/22）与本修正无关
 （它们的 golden 头不含带类型 output），是基线上已存在的漂移，未动其登记。`--selftest` PASS。
+
+## 2. 集成：impl 侧改读 rtl/common/ClockGate.sv（步骤 4）
+
+- 机制：`scripts/ut_common.mk` 新增 `LOCAL_SHARED_PRIMITIVES = ClockGate.sv` 与 `localprim` 闸
+  （simv 与 fm-% 前置；impl 侧 RTL_GOLDEN_DEPS 若再读 golden ClockGate.sv 即 fail）；UT 中两实例共用
+  RTL_GOLDEN_DEPS 的本地件，GOLDEN_SRCS 里同名 golden 文件自动剔除。ref 侧 FM_REF_DEPS 一律不动（仍 golden）。
+- 31 个 UT 目录：29 个手写 Makefile 机械替换；SRAMTemplate 由 `scripts/gen_sram_wrappers.py`、
+  SRAMTemplateNewForm 由其 `gen.py` 改生成器后重生成（后者原先不支持 --check、带 --check 会直接覆写，已补）。
+  合 main@bd3b7081 后复查：impl 侧读 golden ClockGate 的 = 0。全仓 295 个带 --check 的生成器改前改后结果一致。
+- 冒烟（seed 1，各目录默认 initreg 档）：31/31 编译通过、errors=0；5000 拍一档里 19 个只因覆盖地板/激励量门槛
+  判 FAIL（无失配），改用默认拍数复跑 19/19 PASS。
+- 闭包对称闸（check_closure_symmetry --only 32 目录）：SYMMETRIC 92 / ERROR 12；12 个 ERROR 是 sv_elab
+  解析不了 NUM_BANK / payload_t 等标识符，在 main@bd3b7081 上原样复现（同 12 个），与本改动无关。
+- 受影响目标清单：`docs/lanes/clockgate_affected_targets.tsv`（103 个，impl 闭包从 golden ClockGate 换成本地件）。
+  ★注意★ `check_shared_impl_impact.py --file rtl/common/ClockGate.sv` 只报出 ClockGate 自己：旧 receipt
+  把 golden ClockGate 记成 kind=golden，不在 hash 反查范围内，所以这 103 个目标**不会被自动判 STALE**，
+  须按本清单人工安排重证。父级重证由 restale-sram lane 负责（集成者调整分工）。
