@@ -263,6 +263,48 @@ fold[2] 取错 vs2_fold 半字 ⇒ 448；F64 lane 折叠加宽源不选 fold 件
 没有做过任何 FM 试跑。可能出错处：两份同构 lane（F32Mixed ×2、F16 ×2）的内部寄存器在签名分析里互相混淆——若出现 unmatched，
 按 F64 lane 的办法补匹配前钉点（只消名差），不改 RTL。
 
+## 7. VIAlu（golden 202 行；重写 166 行）
+
+### 7.1 结构与子模块处置
+
+- yunsuan VIAlu（向量整数归约 / 掩码 / vmv.x.s，两拍）：`xs_VIAlu_core`（§1 两个子单元 / §2 vmv.x.s 符号扩展与两拍打拍 / §3 出口三选一）
+  + wrapper。本层 5 个寄存器名与 golden 同名、全无复位（validS1 = RegNext）。
+- child：Reduction（evidence/6038c4afbc60）及其闭包（CSA3to2_124/125/127/132、CSA4to2_15/16、compare_2to1(_2)、compare_3to1(_1/_2/_6)，
+  golden compare_* 内部的 Adder_xb* 仅 ref 侧）；VMask（evidence/afe9babc7a2e，叶子）。两侧白盒，无黑盒。
+- 钉点：`fm_pins_pre.tcl`（Reduction 自签核那套 817 位，前缀换成 vReduAlu）。vmucp：Reduction vdType_reg_s1[3:2] 2 位 + VMask
+  vs1_reg_s1[127:8] 120 位（各同其自签核），配置 `verif/fm_target_config/VIAlu.tcl`。
+
+### 7.2 UT（9 档 × 200k，commit fcbaac7f0 的字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED |
+| 7  | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED |
+| 42 | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED |
+
+oracle（归约照抄 verif/ut/Reduction 的整数语义参考 + vmv.x.s 符号扩展；VMask 类纯差分）每档 oracle_checks 约 109.7k，oracle_errors=0；
+覆盖：vmv.x.s 4 种 SEW 各约 8k，VMask 7 个 opcode 各约 7k，归约 8 种运算 × 4 种 vd SEW 各 >= 781，加宽 alu 3 种 SEW 各约 450。
+★更正一次无效读数★：第一遍 9 档里 seed 7 的 random / 7017 与 seed 42 的 random / 42017 跑在**同一 UT 目录正在跑变异体**的时段
+（变异 harness 改写 rtl/backend/VIAlu.sv 并重编 simv），seed 42 两档因此读到 errors=11793 / 25628 —— 那是变异体的读数，不是 RTL。
+已在变异结束、文件还原（git status 干净）后整轮 9 档重跑，上表是重跑读数。规矩：同一 UT 目录有后台回归时不跑变异。
+变异（scratchpad，20k 拍）：归约 opcode 上界 0x27→0x26 ⇒ errors=1150；vmv.x.s 的 16 位零扩展 ⇒ 443；opcodeS2 用 in_valid 而非 validS1 门控 ⇒ 2542。
+
+### 7.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VIAlu.json）
+
+模型 expected = 2106（寄存器 1978 = 本层 141（vs2Ext 64 + opcodeS1 6 + validS1 1 + opcodeS2 6 + vs2ExtS2 64）+ Reduction 817 + VMask 1020；输出 128）。预期 constant reg **1**
+（VMask 的 ele_cnt_reg_s1[0]，同其自签核；Reduction 自签核 constant 0）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **2105**（= 2106 − 1） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 1 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过任何 FM 试跑。
+
 ## 对账（跑完追加）
 
 ### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule

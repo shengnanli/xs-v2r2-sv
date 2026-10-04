@@ -1,0 +1,9 @@
+{
+  "target": "VIAlu",
+  "ut": "VIAlu",
+  "regs": 1978,
+  "outs": 128,
+  "expected": 2106,
+  "merge_dup": "false",
+  "model_applicable": true
+}
