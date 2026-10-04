@@ -16,7 +16,7 @@ TB_SRCS  = tb.sv
 GOLDEN_SRCS = $(GOLDEN_RTL)/Predictor.sv
 
 RTL_GOLDEN_DEPS = \
-  $(GOLDEN_RTL)/ClockGate.sv \
+  $(XSSV_HOME)/rtl/common/ClockGate.sv \
   $(GOLDEN_RTL)/Composer.sv \
   $(GOLDEN_RTL)/DelayN.sv \
   $(GOLDEN_RTL)/DelayNWithValid.sv \

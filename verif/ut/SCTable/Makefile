@@ -27,7 +27,7 @@ RTL_SRCS = $(RTL_DIR)/frontend/sctable_pkg.sv \
            $(RTL_DIR)/dft/MbistPipeSc_3.sv
 TB_SRCS  = tb.sv
 
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/MbistClockGateCell.sv \
                   $(GOLDEN_RTL)/sram_array_1p128x24m6s1h0l1b_bp_sc.sv \
                   $(GOLDEN_RTL)/array_5.sv

@@ -1,0 +1,9 @@
+{
+  "target": "ClockGate",
+  "ut": "ClockGate",
+  "regs": 1,
+  "outs": 0,
+  "expected": 1,
+  "merge_dup": "false",
+  "model_applicable": true
+}

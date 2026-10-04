@@ -16,7 +16,7 @@ RTL_SRCS = $(RTL_DIR)/common/xs_SRAMTemplate_core.sv \
 TB_SRCS  = tb.sv
 
 SRAM_DEPS = sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv array_8.sv MbistClockGateCell.sv ClockGate.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(SRAM_DEPS))
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(filter-out ClockGate.sv,$(SRAM_DEPS))) $(XSSV_HOME)/rtl/common/ClockGate.sv
 GOLDEN_SRCS = $(GOLDEN_RTL)/TagSRAMBank.sv $(GOLDEN_RTL)/TagArray.sv $(GOLDEN_RTL)/SRAMTemplate_116.sv \
               $(RTL_GOLDEN_DEPS) $(GOLDEN_RTL)/array_8_ext.v
 

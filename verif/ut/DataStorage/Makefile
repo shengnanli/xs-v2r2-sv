@@ -22,7 +22,7 @@ RTL_SRCS = $(RTL_DIR)/uncore/xs_DataStorage_core.sv \
            $(RTL_DIR)/common/xs_SRAMTemplate_core.sv \
            $(RTL_DIR)/common/SRAMTemplate_155.sv $(RTL_DIR)/common/SRAMTemplate_166.sv \
            $(RTL_DIR)/common/SRAMTemplate_178.sv
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
+RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv \
                   $(GOLDEN_RTL)/array_18.sv
 TB_SRCS  = tb.sv

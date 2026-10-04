@@ -23,7 +23,7 @@ RTL_GOLDEN_DEPS = \
   $(GOLDEN_RTL)/Arbiter8_bitmapCacheReqBundle.sv \
   $(GOLDEN_RTL)/Bitmap.sv \
   $(GOLDEN_RTL)/BitmapCache.sv \
-  $(GOLDEN_RTL)/ClockGate.sv \
+  $(XSSV_HOME)/rtl/common/ClockGate.sv \
   $(GOLDEN_RTL)/DelayN_13.sv \
   $(GOLDEN_RTL)/DelayN_220.sv \
   $(GOLDEN_RTL)/DelayN_221.sv \

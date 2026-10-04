@@ -24,7 +24,7 @@ RTL_SRCS = $(RTL_DIR)/common/xs_SRAMTemplate_core.sv \
 TB_SRCS  = tb.sv
 
 SRAM_DEPS = sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv array_7.sv MbistClockGateCell.sv ClockGate.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(SRAM_DEPS))
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(filter-out ClockGate.sv,$(SRAM_DEPS))) $(XSSV_HOME)/rtl/common/ClockGate.sv
 BDA_CHILDREN = DataSRAMBank.sv DataSRAMBank_1.sv DataSRAMBank_2.sv DataSRAMBank_4.sv \
                SRAMTemplate_84.sv SRAMTemplate_86.sv SRAMTemplate_88.sv SRAMTemplate_92.sv SRAMTemplate_100.sv \
                MbistPipeDCacheData.sv

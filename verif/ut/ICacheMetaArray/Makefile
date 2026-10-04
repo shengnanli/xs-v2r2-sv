@@ -22,7 +22,7 @@ ICACHEMETA_LEAVES = SplittedSRAMTemplate.sv SplittedSRAMTemplate_1.sv \
                     SRAMTemplate.sv SRAMTemplate_2.sv \
                     sram_array_1p128x74m37s1h0l1b_icsh_tag.sv array.sv \
                     MbistClockGateCell.sv ClockGate.sv MbistPipeIcacheTag.sv
-RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(ICACHEMETA_LEAVES))
+RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(filter-out ClockGate.sv,$(ICACHEMETA_LEAVES))) $(XSSV_HOME)/rtl/common/ClockGate.sv
 FM_REF_DEPS_ICacheMetaArray = $(ICACHEMETA_LEAVES)
 GOLDEN_SRCS = $(GOLDEN_RTL)/ICacheMetaArray.sv \
               $(GOLDEN_RTL)/SplittedSRAMTemplate.sv \
