@@ -447,3 +447,9 @@ merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageB
   重生成 `verif/ut/Composer/fm_pins_pre.tcl`（子实例区仍 23083 位）。FauFTB.tsv / ITTage.tsv 不含 ClockGate 内部名，未动。RTL 未改。
 - 跑前预测（★跑完不许改★）：Composer passing **42060**，PASS_DEAD_REF，unread 192（全 ref = verif/dead_ref/Composer.json），failing/unverified/aborted 0，
   unmatched 0，COMPOSER_PINS 601/601、BPU_CHILD_PINS 23083/23083，fm.log 行首 Error / Unknown name = 0 / 0，「Set a match」23684 行。
+
+# 对账（续 3）：§11（§11 未改一字）
+Composer：proof commit `be19d6a0`，证据 evidence/be19d6a02dba/Composer；预测 42060 → 实测 42060，PASS_DEAD_REF，unread 192（全 ref = dead_ref），
+failing/unverified/aborted/unmatched 0；COMPOSER_PINS 601/601、BPU_CHILD_PINS 23083/23083、fm.log「Set a match」23684 行；行首 Error / Unknown name = 0 / 0；
+fm_predict check 对上（差 856 = constant_reg 664 + unread 192）。receipt sha256 `0f746fd628d1a7c11db464c3dca2831272bacd06f9db9b068958716632e8d2a0`。取代 §10 的 Composer receipt（335a330a）。
+复跑：`PROOF_COMMIT=be19d6a02 bash scripts/run_proof.sh Composer Composer < /dev/null`。
