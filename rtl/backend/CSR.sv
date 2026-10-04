@@ -688,23 +688,25 @@ module CSR(
       trap_inst_info_ftq_offset_q <= io_csrin_trapInstInfo_bits_ftqOffset;
     end
 
-  // CSR 指令本身出错（EX_II/EX_VI）时，把这条 CSR uop 的信息交给 TrapInstMod（接收拍直通）
-  logic [8:0]  fault_fuoptype_q;
-  logic [63:0] fault_imm_q;
+  // CSR 指令本身出错（EX_II/EX_VI）时，把这条 CSR uop 的信息交给 TrapInstMod（接收拍直通）。
+  // TrapInstMod 只读 fuOpType[2:0]（CSR 操作类）与 imm[21:0]（rd/rs1/csr 地址），所以只锁这些位
+  // （golden 锁全宽，多出来的高位写了但没人读，见 verif/dead_ref/CSR.json）。
+  logic [2:0]  fault_fuoptype_q;
+  logic [21:0] fault_imm_q;
   logic        fault_ftq_flag_q;
   logic [5:0]  fault_ftq_value_q;
   logic [3:0]  fault_ftq_offset_q;
   always @(posedge clock)
     if (in_fire) begin
-      fault_fuoptype_q   <= io_in_bits_ctrl_fuOpType;
-      fault_imm_q        <= io_in_bits_data_imm;
+      fault_fuoptype_q   <= io_in_bits_ctrl_fuOpType[2:0];
+      fault_imm_q        <= io_in_bits_data_imm[21:0];
       fault_ftq_flag_q   <= io_in_bits_ctrl_ftqIdx_flag;
       fault_ftq_value_q  <= io_in_bits_ctrl_ftqIdx_value;
       fault_ftq_offset_q <= io_in_bits_ctrl_ftqOffset;
     end
   wire        fault_csr_uop_valid      = csrMod_io_out_valid & (csrMod_io_out_bits_EX_II | csrMod_io_out_bits_EX_VI);
-  wire [8:0]  fault_csr_uop_fuoptype   = in_fire ? io_in_bits_ctrl_fuOpType : fault_fuoptype_q;
-  wire [21:0] fault_csr_uop_imm        = in_fire ? io_in_bits_data_imm[21:0] : fault_imm_q[21:0];
+  wire [8:0]  fault_csr_uop_fuoptype   = in_fire ? io_in_bits_ctrl_fuOpType : {6'h0, fault_fuoptype_q};
+  wire [21:0] fault_csr_uop_imm        = in_fire ? io_in_bits_data_imm[21:0] : fault_imm_q;
   wire        fault_csr_uop_ftq_flag   = in_fire ? io_in_bits_ctrl_ftqIdx_flag  : fault_ftq_flag_q;
   wire [5:0]  fault_csr_uop_ftq_value  = in_fire ? io_in_bits_ctrl_ftqIdx_value : fault_ftq_value_q;
   wire [3:0]  fault_csr_uop_ftq_offset = in_fire ? io_in_bits_ctrl_ftqOffset    : fault_ftq_offset_q;

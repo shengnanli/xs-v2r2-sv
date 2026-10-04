@@ -104,3 +104,31 @@ golden 版本不同（G1 NewCSR 347 端口），不能复用。本 lane 从头�
 @a06f9dd0 给 NewCSR.sv 加了 GENERATED(newcsr-nav)（gen_newcsr.py 按分节注释算行号，两遍定稿，--check 幂等），
 只多了 26 行注释，逻辑不变；§2.3 的预测（expected 19847、passing 19278~19362、unread 142、PASS_DEAD_REF）原样沿用，
 docs/fm_predictions/NewCSR.json 不改（登记 commit 65370151 早于本次证明）。UT 9 档与变异在 a06f9dd0 字节上补跑。
+
+## 3. 第三批：CSR（★本节在 CSR 的 official FM 起跑之前提交★）
+
+- 重写件 `rtl/backend/CSR.sv`：手写外壳（uop 解码、读-改-写 wdata、ecall/ebreak 异常位与 xret 重定向的保持、
+  robIdx/flush 判断、TrapInstMod 输入）+ gen_newcsr.py 的 csr-ports/childnets/insts 三段连线。
+  子模块两侧白盒：NewCSR（本 lane）、TrapInstMod/TrapTvalMod/SatpFlushMod/IMSIC_WRAP（PROVEN_DIRECT）；
+  PrintCommitIDModule.v 与 AsyncResetSynchronizer* 两侧共读 golden（同 NewCSR / IMSIC_WRAP 先例）。
+- 诊断跑（未出 receipt）后的两处调整：TrapInstMod 的 faultCsrUop 保持寄存器只锁被读的 fuOpType[2:0]/imm[21:0]
+  （golden 多出的 48 位写而不读 → dead_ref）；verif/ut/CSR/fm_pins.tcl 钉四族名字差（iprios、difftest 溢出变化检测、
+  IntFile eidelivery 高位、delayedIntrVec/eies_0/raiseIGPF 保持位），fail-closed。
+- eies_0_reg[0]×9 不是 ref-only：impl 对应 `g_file[k].intFile/u_core/eies_reg[0][0]`，诊断跑第二次 match 后已配上；
+  官方跑里由族 4 显式钉。
+
+### 3.1 跑前预测（★跑完不许改本节★；docs/fm_predictions/CSR.json）
+
+| 项 | 预测 |
+|---|---|
+| 模型 expected | 28470（含模型误计的 PrintCommitIDModule 黑盒 47 点，见登记 note） |
+| passing / constant_reg / unread | ≈ 27176 / ≈ 1057 / 190（ref，逐条在 verif/dead_ref/CSR.json；impl 0） |
+| passing + constant_reg + unread | 28423（= 模型 - 47） |
+| failing / unverified / unmatched / 黑盒 / dont_verify | 0 / 0 / 0 / 0 / 无 |
+| verdict | PASS_DEAD_REF（native SUCCEEDED） |
+| fm_predict check | 预计报 UNEXPLAINED 47（模型的 .v 黑盒假设），已在登记 note 里事先写明 |
+
+### 3.2 NewCSR 预测的同一处偏差（补记，§2.3 不改）
+
+NewCSR 的模型 19847 同样含这 47 个 PrintCommitIDModule 黑盒点（14951 + 4849 = 19800）；
+预计 receipt 的 passing + constant_reg + unread = 19800，fm_predict check 会报余额 47 —— 原因同上，事先写明。
