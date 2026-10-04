@@ -254,3 +254,19 @@ aborted 0 / unread 0，unmatched 全 0，constant_reg **30**，黑盒 0，dont_v
 `fm_predict.py check FloatDivider`：751 − 721 = 30 = constant_reg 30，rc=0。vmucp 六条：(1) 精确绑定 = FloatDividerR64 的
 fp_format_onehot_q[2] 1 位（FM 按名配上，无钉点）；(2) 双射 1↔1；(3) 真比较：unread_notcompared 0，passing 含此点（751 − 30 恰好全比）；
 (4) 全零；(5) 无放宽、无黑盒；(6) `verif/fm_target_config/FloatDivider.tcl` 在 script_closure。
+
+### D. FloatAdderF64WidenPipeline —— evidence/fcbaac7f047f/FloatAdderF64WidenPipeline
+
+PROOF_COMMIT=fcbaac7f0，`bash scripts/run_proof.sh FloatAdderF64WidenPipeline FloatAdderF64WidenPipeline`：native SUCCEEDED，
+passing **945** / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，constant_reg **131**，黑盒 0，dont_verify 无；
+钉点 `F64W_PIN_PRE_END n=444 bad=0`、`FADD64W_PIN_END n=3`（925 s）。预测 945 / 131 —— 逐项相等；`fm_predict.py check`：
+1076 − 945 = 131 = constant_reg，rc=0。vmucp 六条同 §B（close 子树同一组 3 点；配置 verif/fm_target_config/FloatAdderF64WidenPipeline.tcl）。
+
+### E. FPCVT —— evidence/f18656085f00/FPCVT
+
+PROOF_COMMIT=f18656085，`bash scripts/run_proof.sh FPCVT FPCVT`：native SUCCEEDED，passing **545** / failing 0 / unverified 0 / aborted 0 /
+unread 0，unmatched 全 0，constant_reg **27**，黑盒 0，dont_verify 无。预测 545 / 27 —— 逐项相等；`fm_predict.py check FPCVT`：
+572 − 545 = 27 = constant_reg，rc=0。impl 闭包含 `golden-rtl/CVT64.sv`（两侧同源 golden，§5.1 已登记；exeunits 的 CVT64 重写件合入后需重证）。
+vmucp 六条：(1) FP_INCVT fcvtmodTrueExpReg[4:0] 5 位（FM 按名配上，无钉点）；(2) 5↔5；(3) unread_notcompared 0，572 − 27 = 545 全比；
+(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/FPCVT.tcl 在 script_closure。
+更正（不改 §5 原文）：§5 标题写的「重写 87 行」应为 **82 行**（`wc -l rtl/backend/FPCVT.sv`），是登记时笔误，与证明无关。
