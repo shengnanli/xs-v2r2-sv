@@ -65,11 +65,76 @@ def main():
             fails.append(name)
     fails += scope_cases()
     fails += ram40_cases()
+    fails += codex0210_cases()
     if fails:
         print(f'test_audit_ram_manual_review: ★{len(fails)} 条不过★ {fails}')
         return 1
-    print('test_audit_ram_manual_review: 全过（M3 复核 1 正 + 7 负；父级范围 2 正 + 10 负；ram_40x47 3 正 + 10 负）')
+    print('test_audit_ram_manual_review: 全过（M3 复核 1 正 + 7 负；父级范围 2 正 + 10 负；ram_40x47 3 正 + 10 负；'
+          'codex 0210 3 正 + 12 负）')
     return 0
+
+
+def codex0210_cases():
+    """codex 0210：R1 ram_78x15 单条审定（仅 Queue78_PCrdGranted，M3 impl 侧人工复核绑定共享核 sha）；
+    R2 ram_40x47 父级扩到 Queue40_L2TlbMQBundle。
+    T0 ram_78x15 真实复核绑定通过               T1 Queue78 真实 allow 声明通过   T2 Queue40 真实 allow 声明通过
+    T3 共享核 sha 变一位 → 红                   T4 复核消息号用 0202 → 红        T5 绑定不含 Queue78 薄文件 → 红
+    T6 ram_78x15 别的父级（Queue2_PCrdGranted）→ 红
+    T7 ram_78x15 套到 ram_10x89 的父级（Queue10_GrantBuffer_Anon）→ 红
+    T8 别的 ram（ram_10x89）套 Queue78 → 红     T9 别的 ram（ram_16x25）套 Queue40 → 红
+    T10 Queue78 两侧不对称（impl 缺）→ 红       T11 Queue78 一侧两实例 → 红
+    T12 Queue40 两侧不对称（ref 缺）→ 红        T13 Queue40 一侧两实例 → 红
+    T14 Queue40 授权路径外（io_out_q/ram_ext 套到 Queue40 自己）→ 红"""
+    import json
+    fails = []
+
+    def chk(name, got, want):
+        ok = (got is True) == want
+        print(f'  {name:28s} {"ok" if ok else "★FAIL★"}  {str(got)[:110]}')
+        if not ok:
+            fails.append(name)
+
+    def objs(t, design):
+        d = json.loads((REPO / 'verif' / 'allow' / f'{t}.json').read_text())
+        return [e for e in d['objects'] if e['design'] == design]
+
+    q78 = 'rtl/uncore/Queue78_PCrdGranted.sv'
+    good = f'codex_0210;{q78}={sha(q78)};{CORE}={sha(CORE)}'
+    chk('T0 78x15 复核绑定', A.check_manual_review('ram_78x15', good, str(REPO / q78))[0], True)
+    o78 = objs('Queue78_PCrdGranted', 'ram_78x15')
+    o40 = objs('Queue40_L2TlbMQBundle', 'ram_40x47')
+    r = A.check_parent_scope('ram_78x15', 'Queue78_PCrdGranted', o78)
+    chk('T1 Queue78 allow', r[0] or r[1], True)
+    r = A.check_parent_scope('ram_40x47', 'Queue40_L2TlbMQBundle', o40)
+    chk('T2 Queue40 allow', r[0] or r[1], True)
+    chk('T3 共享核 sha 变', A.check_manual_review(
+        'ram_78x15', good.replace(sha(CORE), flip(sha(CORE))), str(REPO / q78))[0] or 'red', False)
+    chk('T4 消息号 0202', A.check_manual_review(
+        'ram_78x15', good.replace('codex_0210', 'codex_0202'), str(REPO / q78))[0] or 'red', False)
+    chk('T5 绑定缺薄文件', A.check_manual_review(
+        'ram_78x15', f'codex_0210;{CORE}={sha(CORE)}', str(REPO / q78))[0] or 'red', False)
+    mv = lambda os_, a, b: [dict(e, path=e['path'].replace(a, b)) for e in os_]
+    chk('T6 78x15 别的父级', A.check_parent_scope(
+        'ram_78x15', 'Queue2_PCrdGranted',
+        mv(o78, '/WORK/Queue78_PCrdGranted/', '/WORK/Queue2_PCrdGranted/'))[0] or 'red', False)
+    chk('T7 78x15 套 0202 父级', A.check_parent_scope(
+        'ram_78x15', 'Queue10_GrantBuffer_Anon',
+        mv(o78, '/WORK/Queue78_PCrdGranted/', '/WORK/Queue10_GrantBuffer_Anon/'))[0] or 'red', False)
+    chk('T8 别的 ram 套 Queue78', A.check_parent_scope(
+        'ram_10x89', 'Queue78_PCrdGranted', o78)[0] or 'red', False)
+    chk('T9 别的 ram 套 Queue40', A.check_parent_scope(
+        'ram_16x25', 'Queue40_L2TlbMQBundle', o40)[0] or 'red', False)
+    chk('T10 Q78 两侧不对称', A.check_parent_scope(
+        'ram_78x15', 'Queue78_PCrdGranted', [e for e in o78 if e['side'] == 'r'])[0] or 'red', False)
+    chk('T11 Q78 一侧两实例', A.check_parent_scope(
+        'ram_78x15', 'Queue78_PCrdGranted', o78 + o78[:1])[0] or 'red', False)
+    chk('T12 Q40 两侧不对称', A.check_parent_scope(
+        'ram_40x47', 'Queue40_L2TlbMQBundle', [e for e in o40 if e['side'] == 'i'])[0] or 'red', False)
+    chk('T13 Q40 一侧两实例', A.check_parent_scope(
+        'ram_40x47', 'Queue40_L2TlbMQBundle', o40 + o40[1:])[0] or 'red', False)
+    chk('T14 Q40 授权路径外', A.check_parent_scope(
+        'ram_40x47', 'Queue40_L2TlbMQBundle', mv(o40, '/ram_ext', '/io_out_q/ram_ext'))[0] or 'red', False)
+    return fails
 
 
 def _objs(target):

@@ -8,9 +8,13 @@ MODULE = UncoreChiQueues
 #   Queue40_L2TlbMQBundle            L2TlbMissQueue 的 40 项带 flush 队列       —— 已签 xs_L2TlbMissQueue_core
 # 存储 ram_*：前四个深度 16/16/4/2 是 2 的幂，按 codex 0151 D60 两侧同源 inline（RTL_GOLDEN_DEPS + FM_REF_DEPS）。
 # ★Queue78_PCrdGranted（ram_78x15，7 位地址/78 深）与 Queue40_L2TlbMQBundle（ram_40x47，6 位地址/40 深）
-#   深度非 2 的幂：inline 必触发 FMR_ELAB-147，FM 只能两侧对称黑盒，而 ram_78x15 不在 vendor_boundary.tsv、
-#   ram_40x47 的已审定父级不含 Queue40_L2TlbMQBundle（codex 0209：逐父级扩展、不自动传递）——
-#   两者须 codex 新裁定，裁定前**不进 FM_VARIANTS**，只做 UT（VCS 读 golden ram 文件，两侧同源）。★
+#   深度非 2 的幂：inline 必触发 FMR_ELAB-147 -> FM-156，只能走 regimeA —— FM 两侧**对称黑盒**：
+#   两个 .sv 既不进 FM_REF_DEPS 也不进 RTL_GOLDEN_DEPS（后者进 FM impl 文件集），只进 GOLDEN_SRCS 供 VCS
+#   行为仿真（golden 与重写两侧例化同一份定义）。授权：codex 0210 R1（ram_78x15 单条审定，仅 Queue78_PCrdGranted）
+#   / R2（ram_40x47 父级扩到 Queue40_L2TlbMQBundle）；登记见 verif/vendor_boundary.tsv、verif/ram_model_parents.tsv、
+#   scripts/audit_ram_memory_model.py 的 MANUAL_REVIEW_*。黑盒对象逐条声明在 verif/allow/<target>.json
+#   （两侧各恰好 1 个 ram_ext），这两个目标单独走 assembly 模式 + allowlist。
+#   ★入表不等于转绿：绿灯只来自各自 clean native FM 结果本身★
 RTL_DIR  = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/common/xs_ChiselQueue_core.sv \
            $(RTL_DIR)/uncore/xs_ChiselQueuePipe_core.sv \
@@ -24,9 +28,7 @@ RTL_SRCS = $(RTL_DIR)/common/xs_ChiselQueue_core.sv \
 RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_16x137.sv \
                   $(GOLDEN_RTL)/ram_16x62.sv \
                   $(GOLDEN_RTL)/ram_4x115.sv \
-                  $(GOLDEN_RTL)/ram_2x15.sv \
-                  $(GOLDEN_RTL)/ram_78x15.sv \
-                  $(GOLDEN_RTL)/ram_40x47.sv
+                  $(GOLDEN_RTL)/ram_2x15.sv
 TB_SRCS  = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/Queue16_CHIREQ.sv \
@@ -34,13 +36,21 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Queue16_CHIREQ.sv \
               $(GOLDEN_RTL)/Queue4_CHISNP.sv \
               $(GOLDEN_RTL)/Queue2_PCrdGranted.sv \
               $(GOLDEN_RTL)/Queue78_PCrdGranted.sv \
-              $(GOLDEN_RTL)/Queue40_L2TlbMQBundle.sv
+              $(GOLDEN_RTL)/Queue40_L2TlbMQBundle.sv \
+              $(GOLDEN_RTL)/ram_78x15.sv \
+              $(GOLDEN_RTL)/ram_40x47.sv
 # FM_VARIANTS / FM_REF_DEPS 写字面名（fm_predict.py 静态解析本文件）。
-FM_VARIANTS = Queue16_CHIREQ Queue16_CHIRSP Queue4_CHISNP Queue2_PCrdGranted
+FM_VARIANTS = Queue16_CHIREQ Queue16_CHIRSP Queue4_CHISNP Queue2_PCrdGranted Queue78_PCrdGranted Queue40_L2TlbMQBundle
 FM_REF_DEPS_Queue16_CHIREQ = ram_16x137.sv
 FM_REF_DEPS_Queue16_CHIRSP = ram_16x62.sv
 FM_REF_DEPS_Queue4_CHISNP = ram_4x115.sv
 FM_REF_DEPS_Queue2_PCrdGranted = ram_2x15.sv
+# ram_78x15 / ram_40x47 故意不在 FM_REF_DEPS 里（两侧对称黑盒，见文件头）
+FM_REF_DEPS_Queue78_PCrdGranted =
+FM_REF_DEPS_Queue40_L2TlbMQBundle =
+# 只有这两个目标走 assembly + 逐对象声明（verif/allow/<T>.json：黑盒只许 ram_* 两侧各 1）；其余四个仍 signoff-strict
+fm-Queue78_PCrdGranted fm-Queue40_L2TlbMQBundle: FM_MODE = assembly
+fm-Queue78_PCrdGranted fm-Queue40_L2TlbMQBundle: FM_ALLOWLIST = 1
 # 不合并重复寄存器：比较点 = 寄存器位 + 输出位，fm_predict 模型精确适用；常量段 ram 位
 # 在 merge=true 下两侧合并不对称（TLBuffer_13 Makefile 实测），关掉是加强不是放宽。
 FM_MERGE_DUP = false

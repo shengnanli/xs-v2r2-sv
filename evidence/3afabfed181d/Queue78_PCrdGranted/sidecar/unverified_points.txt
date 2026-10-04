@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/Queue78_PCrdGranted
+Implementation : i:/WORK/Queue78_PCrdGranted
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 08:50:41 2026
+**************************************************
+
+No unverified compare points.
+
+1
