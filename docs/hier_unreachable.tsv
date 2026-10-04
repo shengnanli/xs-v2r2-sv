@@ -10,7 +10,7 @@ Adder_xb	SIGNED_OFF_TARGET	ABSORBED_DIRECT	compare_3to1	3	compare_3to1	rtl/backe
 Adder_xb_20	SIGNED_OFF_TARGET	ABSORBED_DIRECT	compare_2to1_2,compare_3to1_6	4	compare_2to1_2,compare_3to1_6	rtl/backend/Adder_xb_20.sv
 Adder_xb_3	SIGNED_OFF_TARGET	ABSORBED_DIRECT	compare_2to1,compare_3to1_1	4	compare_2to1,compare_3to1_1	rtl/backend/Adder_xb_3.sv
 Adder_xb_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	compare_3to1_2	3	compare_3to1_2	rtl/backend/Adder_xb_8.sv
-AluDataModule	GOLDEN_ONLY	ABSORBED_DIRECT	Alu	1	Alu	$(GOLDEN_RTL)/AluDataModule.sv
+AluDataModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Alu	1	Alu	rtl/backend/AluDataModule.sv
 AluResSel	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	AluDataModule	1	-	rtl/backend/AluResSel.sv
 C22	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ArrayMulDataModule	293	ArrayMulDataModule	rtl/backend/C22.sv
 C32	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ArrayMulDataModule	84	ArrayMulDataModule	rtl/backend/C32.sv
@@ -156,7 +156,7 @@ data_mem_0_4x2	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass_41,WrBypass_43	2	WrBypass_41
 data_mem_0_8x3	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass	1	WrBypass	$(GOLDEN_RTL)/data_mem_0_8x3.sv
 data_mem_16x12	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass_33	1	WrBypass_33	$(GOLDEN_RTL)/data_mem_16x12.sv
 data_mem_8x4	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass_32	1	WrBypass_32	$(GOLDEN_RTL)/data_mem_8x4.sv
-indexedLSNumOfUopTable	GOLDEN_ONLY	ABSORBED_DIRECT	UopInfoGen	1	UopInfoGen	$(GOLDEN_RTL)/indexedLSNumOfUopTable.sv
+indexedLSNumOfUopTable	SIGNED_OFF_TARGET	ABSORBED_DIRECT	UopInfoGen	1	UopInfoGen	rtl/backend/indexedLSNumOfUopTable.sv
 indexedLSUopTable_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_1.sv
 indexedLSUopTable_2	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_2.sv
 indexedLSUopTable_3	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_3.sv
@@ -165,4 +165,4 @@ indexedLSUopTable_5	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUni
 indexedLSUopTable_6	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_6.sv
 indexedLSUopTable_7	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_7.sv
 r4_qds_v2_spec	SIGNED_OFF_TARGET	ABSORBED_DIRECT	fpdiv_r64_block,fpdiv_r64_block_vector	13	fpdiv_r64_block,fpdiv_r64_block_vector	rtl/backend/r4_qds_v2_spec.sv
-strdiedLSNumOfUopTable	GOLDEN_ONLY	ABSORBED_DIRECT	UopInfoGen	1	UopInfoGen	$(GOLDEN_RTL)/strdiedLSNumOfUopTable.sv
+strdiedLSNumOfUopTable	SIGNED_OFF_TARGET	ABSORBED_DIRECT	UopInfoGen	1	UopInfoGen	rtl/backend/strdiedLSNumOfUopTable.sv

@@ -2081,6 +2081,10 @@ FP_INCVT	leadZerosNext_clz	CLZ_6	DEEPER	u_core.leadZerosNext_clz	CLZ_6		auto_dee
 FP_INCVT	rounder	RoundingUnit_3	DEEPER	u_core.rounder	RoundingUnit_3		auto_deeper	
 FP_INCVT	shiftRightJam	ShiftRightJam	DEEPER	u_core.shiftRightJam	ShiftRightJam		auto_deeper	
 FP_INCVT	subRounder	RoundingUnit_4	DEEPER	u_core.subRounder	RoundingUnit_4		auto_deeper	
+FTB	delay2_entry_pipMod	DelayNWithValid_1	SAME_PATH	delay2_entry_pipMod	DelayNWithValid_1		auto_same	
+FTB	delay2_pc_pipMod	DelayNWithValid	SAME_PATH	delay2_pc_pipMod	DelayNWithValid		auto_same	
+FTB	ftbBank	FTBBank	SAME_PATH	ftbBank	FTBBank		auto_same	
+FTB	write_valid_delay	DelayN_1	SAME_PATH	write_valid_delay	DelayN_1		auto_same	
 FTBBank	ftb	SplittedSRAMTemplate_2	SAME_PATH	ftb	SplittedSRAMTemplate_2		auto_same	
 FTBBank	mbistPl	MbistPipeFtb	SAME_PATH	mbistPl	MbistPipeFtb		auto_same	
 FarPathF16Pipeline	U_Efp_aSubEfp_b	Adder_18	DEEPER	u_core.U_Efp_aSubEfp_b	Adder_18		auto_deeper	
@@ -2095,6 +2099,38 @@ FarPathF32WidenF16MixedPipeline	U_FS0	FarPathF32WidenF16MixedAdderPipeline	DEEPE
 FarPathF32WidenF16MixedPipeline	U_FS1	FarPathF32WidenF16MixedAdderPipeline	DEEPER	u_core.U_FS1	FarPathF32WidenF16MixedAdderPipeline		auto_deeper	
 FarPathF32WidenF16MixedPipeline	U_far_rshift_1	FarShiftRightWithMuxInvFirst_2	DEEPER	u_core.U_far_rshift_1	FarShiftRightWithMuxInvFirst_2		auto_deeper	
 FarPathF32WidenF16MixedPipeline	U_far_rshift_2	FarShiftRightWithMuxInvFirst_2	DEEPER	u_core.U_far_rshift_2	FarShiftRightWithMuxInvFirst_2		auto_deeper	
+FauFTB	ways_0	FauFTBWay	GEN_SITE	u_core.g_way[0].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_1	FauFTBWay	GEN_SITE	u_core.g_way[1].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_10	FauFTBWay	GEN_SITE	u_core.g_way[10].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_11	FauFTBWay	GEN_SITE	u_core.g_way[11].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_12	FauFTBWay	GEN_SITE	u_core.g_way[12].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_13	FauFTBWay	GEN_SITE	u_core.g_way[13].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_14	FauFTBWay	GEN_SITE	u_core.g_way[14].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_15	FauFTBWay	GEN_SITE	u_core.g_way[15].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_16	FauFTBWay	GEN_SITE	u_core.g_way[16].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_17	FauFTBWay	GEN_SITE	u_core.g_way[17].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_18	FauFTBWay	GEN_SITE	u_core.g_way[18].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_19	FauFTBWay	GEN_SITE	u_core.g_way[19].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_2	FauFTBWay	GEN_SITE	u_core.g_way[2].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_20	FauFTBWay	GEN_SITE	u_core.g_way[20].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_21	FauFTBWay	GEN_SITE	u_core.g_way[21].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_22	FauFTBWay	GEN_SITE	u_core.g_way[22].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_23	FauFTBWay	GEN_SITE	u_core.g_way[23].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_24	FauFTBWay	GEN_SITE	u_core.g_way[24].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_25	FauFTBWay	GEN_SITE	u_core.g_way[25].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_26	FauFTBWay	GEN_SITE	u_core.g_way[26].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_27	FauFTBWay	GEN_SITE	u_core.g_way[27].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_28	FauFTBWay	GEN_SITE	u_core.g_way[28].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_29	FauFTBWay	GEN_SITE	u_core.g_way[29].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_3	FauFTBWay	GEN_SITE	u_core.g_way[3].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_30	FauFTBWay	GEN_SITE	u_core.g_way[30].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_31	FauFTBWay	GEN_SITE	u_core.g_way[31].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_4	FauFTBWay	GEN_SITE	u_core.g_way[4].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_5	FauFTBWay	GEN_SITE	u_core.g_way[5].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_6	FauFTBWay	GEN_SITE	u_core.g_way[6].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_7	FauFTBWay	GEN_SITE	u_core.g_way[7].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_8	FauFTBWay	GEN_SITE	u_core.g_way[8].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_9	FauFTBWay	GEN_SITE	u_core.g_way[9].u_way	FauFTBWay		auto_gen_site_suffix	
 FloatAdderF32F16MixedPipeline	U_close_path	ClosePathF32WidenF16MixedPipeline	DEEPER	u_core.U_close_path	ClosePathF32WidenF16MixedPipeline		auto_deeper	
 FloatAdderF32F16MixedPipeline	U_far_path	FarPathF32WidenF16MixedPipeline	DEEPER	u_core.U_far_path	FarPathF32WidenF16MixedPipeline		auto_deeper	
 FloatAdderF32WidenF16MixedPipeline	U_close_path	ClosePathF32WidenF16MixedPipeline	DEEPER	u_core.U_close_path	ClosePathF32WidenF16MixedPipeline		auto_deeper	
@@ -2272,6 +2308,13 @@ IMSIC_WRAP	imsic	IMSIC	SAME_PATH	imsic	IMSIC		auto_same
 INT2FP	leadZerosNext_clz	CLZ_6	DEEPER	u_core.leadZerosNext_clz	CLZ_6		auto_deeper	
 INT2FP	rounder	RoundingUnit_3	DEEPER	u_core.rounder	RoundingUnit_3		auto_deeper	
 IPrefetchPipe	toMSHRArbiter	Arbiter2_ICacheMissReq	DEEPER	u_core.toMSHRArbiter	Arbiter2_ICacheMissReq		auto_deeper	
+ITTage	rTable	RegionWays	SAME_PATH	rTable	RegionWays		auto_same	
+ITTage	s2_allocLFSR_prng	MaxPeriodFibonacciLFSR	SAME_PATH	s2_allocLFSR_prng	MaxPeriodFibonacciLFSR		auto_same	
+ITTage	tables_0	ITTageTable	SAME_PATH	tables_0	ITTageTable		auto_same	
+ITTage	tables_1	ITTageTable_1	SAME_PATH	tables_1	ITTageTable_1		auto_same	
+ITTage	tables_2	ITTageTable_2	SAME_PATH	tables_2	ITTageTable_2		auto_same	
+ITTage	tables_3	ITTageTable_3	SAME_PATH	tables_3	ITTageTable_3		auto_same	
+ITTage	tables_4	ITTageTable_4	SAME_PATH	tables_4	ITTageTable_4		auto_same	
 ITTageTable	mbistPl	MbistPipeIttage	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
 ITTageTable	table_0	FoldedSRAMTemplate_22	SAME_PATH	table_0	FoldedSRAMTemplate_22		auto_same	
 ITTageTable	wrbypass	WrBypass_41	SAME_PATH	wrbypass	WrBypass_41		auto_same	
@@ -2310,6 +2353,9 @@ IntRFWBCollideChecker	arbiters_6	WBArbiter_3	SAME_PATH	arbiters_6	WBArbiter_3		a
 IntRFWBCollideChecker	arbiters_7	WBArbiter_3	SAME_PATH	arbiters_7	WBArbiter_3		auto_same	
 IntToFP	post_norm	IntToFP_postnorm	DEEPER	u_core.post_norm	IntToFP_postnorm		auto_deeper	
 IntToFP	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
+IntToFPDataModule	i2fResults_i2f	IntToFP	DEEPER	u_core.i2fResults_i2f	IntToFP		auto_deeper	
+IntToFPDataModule	i2fResults_i2f_1	IntToFP_1	DEEPER	u_core.i2fResults_i2f_1	IntToFP_1		auto_deeper	
+IntToFPDataModule	i2fResults_i2f_2	IntToFP_2	DEEPER	u_core.i2fResults_i2f_2	IntToFP_2		auto_deeper	
 IntToFP_1	post_norm	IntToFP_postnorm_1	DEEPER	u_core.post_norm	IntToFP_postnorm_1		auto_deeper	
 IntToFP_1	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
 IntToFP_2	post_norm	IntToFP_postnorm_2	DEEPER	u_core.post_norm	IntToFP_postnorm_2		auto_deeper	
@@ -2454,6 +2500,11 @@ IssueQueueVlduVstuVseglduVsegstu	age_1	AgeDetector_12	SAME_PATH	age_1	AgeDetecto
 IssueQueueVlduVstuVseglduVsegstu	age_2	AgeDetector_21	SAME_PATH	age_2	AgeDetector_21		auto_same	
 IssueQueueVlduVstuVseglduVsegstu	entries	EntriesVlduVstuVseglduVsegstu	SAME_PATH	entries	EntriesVlduVstuVseglduVsegstu		auto_same	
 JumpUnit	jumpDataModule	JumpDataModule	DEEPER	u_core.jumpDataModule	JumpDataModule		auto_deeper	
+L1Prefetcher	pf_queue_filter	MutiLevelPrefetchFilter	SAME_PATH	pf_queue_filter	MutiLevelPrefetchFilter		auto_same	
+L1Prefetcher	stream_bit_vec_array	StreamBitVectorArray	SAME_PATH	stream_bit_vec_array	StreamBitVectorArray		auto_same	
+L1Prefetcher	stream_train_filter	TrainFilter_1	SAME_PATH	stream_train_filter	TrainFilter_1		auto_same	
+L1Prefetcher	stride_meta_array	StrideMetaArray	SAME_PATH	stride_meta_array	StrideMetaArray		auto_same	
+L1Prefetcher	stride_train_filter	TrainFilter	SAME_PATH	stride_train_filter	TrainFilter		auto_same	
 L2TLB	Arbiter1_L2TLBImp_Anon	Arbiter1_L2TLBImp_Anon	UNRESOLVED				none	
 L2TLB	Arbiter1_L2TLBImp_Anon_1	Arbiter1_L2TLBImp_Anon	UNRESOLVED				none	
 L2TLB	Arbiter3_L2TLBImp_Anon	Arbiter3_L2TLBImp_Anon	UNRESOLVED				none	
@@ -2953,6 +3004,7 @@ PTWRepeaterNB	delay	DelayN_1	DEEPER	u_core.delay	DelayN_1		auto_deeper
 Permutation	vslidednOffset	slidednVs2VdTable	DEEPER	u_core.vslidednOffset	slidednVs2VdTable		auto_deeper	
 Permutation	vslideupOffset	slideupVs2VdTable	DEEPER	u_core.vslideupOffset	slideupVs2VdTable		auto_deeper	
 Pipeline	stages_0	Queue1_L1PrefetchReq	ONE_SITE	u_core.prefetch_stage	Queue1_L1PrefetchReq		auto_one_site	
+Pipeline_1	stages_0	Queue1_PrefetchReq	SAME_PATH	stages_0	Queue1_PrefetchReq		auto_same	
 Pipeline_10	stages_0	Queue1_UInt32	SAME_PATH	stages_0	Queue1_UInt32		auto_same	
 Pipeline_10	stages_1	Queue1_UInt32	SAME_PATH	stages_1	Queue1_UInt32		auto_same	
 Pipeline_11	stages_0	Queue1_UInt32	SAME_PATH	stages_0	Queue1_UInt32		auto_same	
@@ -3257,6 +3309,7 @@ Queue16_HintQueueEntry	ram_ext	ram_16x11	SAME_PATH	ram_ext	ram_16x11		auto_same
 Queue16_TaskBundle	ram_ext	ram_16x67	SAME_PATH	ram_ext	ram_16x67		auto_same	
 Queue2_CHISNP	ram_ext	ram_2x98	SAME_PATH	ram_ext	ram_2x98		auto_same	
 Queue4_HintQueueEntry	ram_ext	ram_4x11	SAME_PATH	ram_ext	ram_4x11		auto_same	
+RAS	RASStack	RASStack	SAME_PATH	RASStack	RASStack		auto_same	
 RNXbar	rxdatArbs_0	FastArbiter_45	DEEPER	u_core.rxdatArbs_0	FastArbiter_45		auto_deeper	
 RNXbar	rxrspArbs_0	FastArbiter_26	DEEPER	u_core.rxrspArbs_0	FastArbiter_26		auto_deeper	
 RNXbar	rxsnpArbs_0	FastArbiter_43	DEEPER	u_core.rxsnpArbs_0	FastArbiter_43		auto_deeper	
@@ -3303,6 +3356,8 @@ RealWBCollideChecker_4	arbiters_0	RealWBArbiter_26	UNRESOLVED				none
 RealWBCollideChecker_4	arbiters_1	RealWBArbiter_26	UNRESOLVED				none	
 RealWBCollideChecker_4	arbiters_2	RealWBArbiter_26	UNRESOLVED				none	
 RealWBCollideChecker_4	arbiters_3	RealWBArbiter_26	UNRESOLVED				none	
+RecentRequestTable	rrTable	SRAMTemplate_146	DEEPER	u_core.rrTable	SRAMTemplate_146		auto_deeper	
+RecentRequestTable_1	rrTable	SRAMTemplate_146	DEEPER	u_core.rrTable	SRAMTemplate_146		auto_deeper	
 RegCache	IntRegCache	RegCacheDataModule	DEEPER	u_core.IntRegCache	RegCacheDataModule		auto_deeper	
 RegCache	IntRegCacheAgeTimer	RegCacheAgeTimer	ONE_SITE	u_core.IntRegCache_age_timer	RegCacheAgeTimer		auto_one_site	
 RegCache	IntRegCacheRepRCIdx_age	RegCacheAgeDetector	ONE_SITE	u_core.IntRegCache_rep	RegCacheAgeDetector		auto_one_site	
@@ -3338,6 +3393,26 @@ Rob	exceptionGen	ExceptionGen	SAME_PATH	exceptionGen	ExceptionGen		auto_same
 Rob	rab	RenameBuffer	SAME_PATH	rab	RenameBuffer		auto_same	
 Rob	snapshots_snapshotGen	SnapshotGenerator_3	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_3		auto_same	
 Rob	vtypeBuffer	VTypeBuffer	SAME_PATH	vtypeBuffer	VTypeBuffer		auto_same	
+SCTable	mbistPl	MbistPipeSc	SAME_PATH	mbistPl	MbistPipeSc		auto_same	
+SCTable	table_0	SRAMTemplate_68	GEN_SITE	u_core.g_bank[0].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable	table_1	SRAMTemplate_68	GEN_SITE	u_core.g_bank[1].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable	wrbypasses_0	WrBypass_33	GEN_SITE	u_core.g_wrbypass[0].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable	wrbypasses_1	WrBypass_33	GEN_SITE	u_core.g_wrbypass[1].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_1	mbistPl	MbistPipeSc_1	SAME_PATH	mbistPl	MbistPipeSc_1		auto_same	
+SCTable_1	table_0	SRAMTemplate_68	GEN_SITE	u_core.g_bank[0].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_1	table_1	SRAMTemplate_68	GEN_SITE	u_core.g_bank[1].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_1	wrbypasses_0	WrBypass_33	GEN_SITE	u_core.g_wrbypass[0].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_1	wrbypasses_1	WrBypass_33	GEN_SITE	u_core.g_wrbypass[1].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_2	mbistPl	MbistPipeSc_2	SAME_PATH	mbistPl	MbistPipeSc_2		auto_same	
+SCTable_2	table_0	SRAMTemplate_68	GEN_SITE	u_core.g_bank[0].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_2	table_1	SRAMTemplate_68	GEN_SITE	u_core.g_bank[1].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_2	wrbypasses_0	WrBypass_33	GEN_SITE	u_core.g_wrbypass[0].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_2	wrbypasses_1	WrBypass_33	GEN_SITE	u_core.g_wrbypass[1].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_3	mbistPl	MbistPipeSc_3	SAME_PATH	mbistPl	MbistPipeSc_3		auto_same	
+SCTable_3	table_0	SRAMTemplate_68	GEN_SITE	u_core.g_bank[0].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_3	table_1	SRAMTemplate_68	GEN_SITE	u_core.g_bank[1].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_3	wrbypasses_0	WrBypass_33	GEN_SITE	u_core.g_wrbypass[0].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_3	wrbypasses_1	WrBypass_33	GEN_SITE	u_core.g_wrbypass[1].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
 SNXbar	txdatArb	FastArbiter_45	DEEPER	u_core.txdatArb	FastArbiter_45		auto_deeper	
 SNXbar	txreqArb	FastArbiter_46	DEEPER	u_core.txreqArb	FastArbiter_46		auto_deeper	
 SQDataModule	data16_0	SQData8Module	SAME_PATH	data16_0	SQData8Module		auto_same	
@@ -3358,6 +3433,10 @@ SQDataModule	data16_8	SQData8Module	SAME_PATH	data16_8	SQData8Module		auto_same
 SQDataModule	data16_9	SQData8Module	SAME_PATH	data16_9	SQData8Module		auto_same	
 SRAMTemplate	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
 SRAMTemplate	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplateWithFixedWidth	srams_0	SRAMTemplate_4	SAME_PATH	srams_0	SRAMTemplate_4		auto_same	
+SRAMTemplateWithFixedWidth_12	srams_0	SRAMTemplate_16	SAME_PATH	srams_0	SRAMTemplate_16		auto_same	
+SRAMTemplateWithFixedWidth_28	srams_0	SRAMTemplate_32	SAME_PATH	srams_0	SRAMTemplate_32		auto_same	
+SRAMTemplateWithFixedWidth_4	srams_0	SRAMTemplate_8	SAME_PATH	srams_0	SRAMTemplate_8		auto_same	
 SRAMTemplate_100	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
 SRAMTemplate_100	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_116	array	sram_array_1p256x86m43s1h0l1b_dcsh_tag	SAME_PATH	array	sram_array_1p256x86m43s1h0l1b_dcsh_tag		auto_same	
@@ -3414,6 +3493,38 @@ SRAMTemplate_88	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sra
 SRAMTemplate_88	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_92	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
 SRAMTemplate_92	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
+SRT16DividerDataModule	csa_sel_wide_1	CSA3_2_3960	DEEPER	u_core.csa_sel_wide_1	CSA3_2_3960		auto_deeper	
+SRT16DividerDataModule	csa_sel_wide_2	CSA3_2_3960	DEEPER	u_core.csa_sel_wide_2	CSA3_2_3960		auto_deeper	
+SRT16DividerDataModule	csa_spec_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	csa_spec_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	csa_spec_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	csa_spec_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	csa_spec_4	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	rightShifter	RightShifter	DEEPER	u_core.rightShifter	RightShifter		auto_deeper	
+SRT16DividerDataModule	signs2_csa_spec_0_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_0_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_0_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_0_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_1_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_1_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_1_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_1_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_2_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_2_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_2_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_2_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_3_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_3_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_3_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_3_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_4_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_4_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_4_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_4_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs_csa_sel_0	CSA3_2_3956	GEN_SITE	u_core.g_sel[0].signs_csa_sel	CSA3_2_3956		auto_gen_site_suffix	
+SRT16DividerDataModule	signs_csa_sel_1	CSA3_2_3956	GEN_SITE	u_core.g_sel[1].signs_csa_sel	CSA3_2_3956		auto_gen_site_suffix	
+SRT16DividerDataModule	signs_csa_sel_2	CSA3_2_3956	GEN_SITE	u_core.g_sel[2].signs_csa_sel	CSA3_2_3956		auto_gen_site_suffix	
+SRT16DividerDataModule	signs_csa_sel_3	CSA3_2_3956	GEN_SITE	u_core.g_sel[3].signs_csa_sel	CSA3_2_3956		auto_gen_site_suffix	
 SSIT	data_array	SyncDataModuleTemplate__1024entry_1	DEEPER	u_core.data_array	SyncDataModuleTemplate__1024entry_1		auto_deeper	
 SSIT	valid_array	SyncDataModuleTemplate__1024entry	DEEPER	u_core.valid_array	SyncDataModuleTemplate__1024entry		auto_deeper	
 Sbuffer	dataModule	SbufferData	SAME_PATH	dataModule	SbufferData		auto_same	
@@ -3439,6 +3550,10 @@ Scheduler_3	IssueQueueVlduVstu	IssueQueueVlduVstu	SAME_PATH	IssueQueueVlduVstu	I
 Scheduler_3	IssueQueueVlduVstuVseglduVsegstu	IssueQueueVlduVstuVseglduVsegstu	SAME_PATH	IssueQueueVlduVstuVseglduVsegstu	IssueQueueVlduVstuVseglduVsegstu		auto_same	
 SinkC	taskArb	RRArbiterInit_16	SAME_PATH	taskArb	RRArbiterInit_16		auto_same	
 SourceB	issueArb	FastArbiter_5	SAME_PATH	issueArb	FastArbiter_5		auto_same	
+SplittedSRAM	array_0_0_0	SRAMTemplate_124	DEEPER	u_core.array_0_0_0	SRAMTemplate_124		auto_deeper	
+SplittedSRAM	array_0_0_1	SRAMTemplate_124	DEEPER	u_core.array_0_0_1	SRAMTemplate_124		auto_deeper	
+SplittedSRAM	array_0_1_0	SRAMTemplate_124	DEEPER	u_core.array_0_1_0	SRAMTemplate_124		auto_deeper	
+SplittedSRAM	array_0_1_1	SRAMTemplate_124	DEEPER	u_core.array_0_1_1	SRAMTemplate_124		auto_deeper	
 SplittedSRAMTemplate	array_0_0_0	SRAMTemplate	SAME_PATH	array_0_0_0	SRAMTemplate		auto_same	
 SplittedSRAMTemplate	array_0_1_0	SRAMTemplate	SAME_PATH	array_0_1_0	SRAMTemplate		auto_same	
 SplittedSRAMTemplate_1	array_0_0_0	SRAMTemplate_2	SAME_PATH	array_0_0_0	SRAMTemplate_2		auto_same	
@@ -3745,6 +3860,18 @@ TageTable_3	table_banks_1	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[1].table_b
 TageTable_3	table_banks_2	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[2].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
 TageTable_3	table_banks_3	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[3].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
 TageTable_3	us	FoldedSRAMTemplate	DEEPER	u_core.us	FoldedSRAMTemplate		auto_deeper	
+Tage_SC	allocLFSR_prng	MaxPeriodFibonacciLFSR	SAME_PATH	allocLFSR_prng	MaxPeriodFibonacciLFSR		auto_same	
+Tage_SC	allocLFSR_prng_1	MaxPeriodFibonacciLFSR	SAME_PATH	allocLFSR_prng_1	MaxPeriodFibonacciLFSR		auto_same	
+Tage_SC	bt	TageBTable	SAME_PATH	bt	TageBTable		auto_same	
+Tage_SC	mbistPl	MbistPipeTage	SAME_PATH	mbistPl	MbistPipeTage		auto_same	
+Tage_SC	scTables_0	SCTable	SAME_PATH	scTables_0	SCTable		auto_same	
+Tage_SC	scTables_1	SCTable_1	SAME_PATH	scTables_1	SCTable_1		auto_same	
+Tage_SC	scTables_2	SCTable_2	SAME_PATH	scTables_2	SCTable_2		auto_same	
+Tage_SC	scTables_3	SCTable_3	SAME_PATH	scTables_3	SCTable_3		auto_same	
+Tage_SC	tables_0	TageTable	SAME_PATH	tables_0	TageTable		auto_same	
+Tage_SC	tables_1	TageTable_1	SAME_PATH	tables_1	TageTable_1		auto_same	
+Tage_SC	tables_2	TageTable_2	SAME_PATH	tables_2	TageTable_2		auto_same	
+Tage_SC	tables_3	TageTable_3	SAME_PATH	tables_3	TageTable_3		auto_same	
 TlbStorageWrapper	page_itlb_storage_fa	TLBFA	SAME_PATH	page_itlb_storage_fa	TLBFA		auto_same	
 TlbStorageWrapper_1	page_ldtlb_storage_fa	TLBFA_1	SAME_PATH	page_ldtlb_storage_fa	TLBFA_1		auto_same	
 TlbStorageWrapper_2	page_sttlb_storage_fa	TLBFA_2	SAME_PATH	page_sttlb_storage_fa	TLBFA_2		auto_same	
@@ -3798,6 +3925,9 @@ VSegmentUnit	VSegmentUnitPipelineConnect	NewPipelineConnectPipe_33	DEEPER	u_core
 VSegmentUnit	segmentTrigger	VSegmentTrigger	DEEPER	u_core.segmentTrigger	VSegmentTrigger		auto_deeper	
 VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。
 VSetRvfWvf	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	同上
+VTypeBuffer	vtypeBuffer	SyncDataModuleTemplate__64entry_4	DEEPER	u_core.vtypeBuffer	SyncDataModuleTemplate__64entry_4		auto_deeper	
+VTypeBuffer	walkPtrSnapshots_snapshotGen	SnapshotGenerator_1	DEEPER	u_core.walkPtrSnapshots_snapshotGen	SnapshotGenerator_1		auto_deeper	
+VTypeBuffer	walkVTypeSnapshots_snapshotGen	SnapshotGenerator_2	DEEPER	u_core.walkVTypeSnapshots_snapshotGen	SnapshotGenerator_2		auto_deeper	
 VTypeGen	vsetModule	VsetModule	UNRESOLVED				none	
 VectorCvt	vcvtWraper	VCVT	DEEPER	u_core.vcvtWraper	VCVT		auto_deeper	
 VectorCvt	vcvtWraper_1	VCVT_1	DEEPER	u_core.vcvtWraper_1	VCVT_1		auto_deeper	
