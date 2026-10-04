@@ -157,3 +157,28 @@ DCache A 413 / D 846 / B 31、ICache D 409、PTW D 318、外部 MMIO A 106、tra
 变异（20k 拍）8 个抓 7：critical error 复位值 1、trap 不看 itype、priv 无条件锁存、hartIsInReset 复位 0、MSI bits 无条件锁存、
 iaddr/ilastsize 用第 0 组 valid、l3Miss 接错；未抓：BEU 的 L2 错误地址错位（只进 BEU 内部寄存器，经 TL 读口才外显）→ FM 覆盖。
 复跑：`cd verif/ut/L2Top && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+## 4. 配对缺口（路线 a：收割 child 实际配对，不改 scripts/fm_eq.tcl）—— 诊断跑结果（不出证、无 allow）
+
+1. 42 个 child（TL2CHICoupledL2 的 26 种 + L2Top 的 16 种）在 main 65668c7d 字节上各重跑一次 diagnostic-full：**全部 native SUCCEEDED、
+   failing 0、unmatched 0**（passing 与各自签核值一致，如 Slice/_1/_2/_3 68305/68308/68310/68311、Prefetcher 9301、MMIOBridge 7794、
+   TLBuffer_13 12912、TLXbar_5 4446）。不产 receipt，fm_work 不入库。
+2. `scripts/gen_tl2chi_pins.py --harvest`：从每个 child 的 matched.rpt 取寄存器配对，并上同一跑 fm.log 里 child 钉点的生效回显
+   （matched.rpt 不列无读者 / 常量点——第一版只收 matched.rpt，诊断跑剩 48 位 sourceB probes_*_waitG[6:4] 两侧 unmatched-unread，即此），
+   两侧相对路径不同的才收 → `verif/ut/TL2CHICoupledL2/child_pairs.tsv`（表头记每个 child 的 sha256 与位数）。加本层 841 位异名寄存器。
+   字面期望：TL2CHICoupledL2 **283021** 位、L2Top **292228** 位（含 inner_l2cache/ 前缀的 TL2 全套）。
+3. 第一次带收割钉点的诊断跑报 TL2_PIN_FAIL：TL2/L2Top 的 impl 闭包读的是 Queue16_CHIREQ/CHIRSP（及 L2Top 的 7 个 Queue2_TLBundle*）
+   的重写件，而 Slice / TLBuffer_20/22/6/8 签核时读的是 golden 共享件——层次不同，child 配对对不上。改为与 child 证明**逐模块一致**
+   （这些队列也走 SHARED_GOLDEN，commit 034979f7d）；UT 9 档 × 2 目标在新闭包上重跑，读数与 §2.2 / §3.2 逐档相同、errors=0。
+4. 诊断跑（commit 034979f7d 的 detached worktree，钉点为收割第一版：TL2 282581 / L2Top 291788，全部 `ok bad=0`）：
+
+| 目标 | native | passing | failing | unmatched compare | unread（matched_nc + unmatched） | constant reg | 黑盒 | 用时 |
+|---|---|---|---|---|---|---|---|---|
+| TL2CHICoupledL2 | SUCCEEDED | 244571 | 0 | 0(0) | 37783（37735 + 两侧各 48 waitG） | 9670 | 8 类对称（array_13..18_ext、ram_10x89、ram_78x15） | 1.61 h |
+| L2Top | SUCCEEDED | 257503 | 0 | 0(0) | 38541（含两侧各 48 waitG） | 9753 | 同上（多一层 inner_l2cache/） | 1.86 h |
+
+   matching：TL2 matched by user 235594 / name 8959 / signature 18 / topology 0，unmatched compare **0**（上一轮无收割钉点时 25051）。
+   failing 0 —— 不需要找反例。那 48 位 waitG 已由收割第二版（commit 7737b13f4，并入钉点回显）补上，**第二版钉点尚未在 FM 里跑过**。
+5. 离正式证明还差：codex 0214 对 ram_10x89 ×4 / ram_78x15 ×1 扩父级授权 → 落 allow；37735+ 对称 matched-unread 按 vmucp 六条写
+   verif/fm_target_config/<T>.tcl 并开 vmucp；constant_reg 9670 / 9753（`constant_reg_toggle_assumed=true`）按全仓既有口径登记；
+   fm_predict 跑前登记（模型 TL2 292072 / L2Top 305845）后再出正式 receipt。
