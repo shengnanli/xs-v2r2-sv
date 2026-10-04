@@ -1,4 +1,5 @@
 // VstartModule.sv — vector restart index CSR.
+// 设计意图：src/main/scala/xiangshan/backend/fu/NewCSR/Unprivileged.scala（vstart，父 NewCSR）。
 // A CSR write wins over commit metadata; dirty commits clear or replace the index.
 // The asynchronous reset value is zero, preserving restart behavior after reset.
 module VstartModule(
