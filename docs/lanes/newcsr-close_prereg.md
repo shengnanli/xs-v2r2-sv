@@ -97,3 +97,10 @@ golden 版本不同（G1 NewCSR 347 端口），不能复用。本 lane 从头�
 2. golden 的重复寄存器（每消费者一套的提交信息打拍、difftest 变化检测的两份 RegNext）与 impl 同构，靠签名区分；
    若签名配不上会表现为 unmatched，修法是改名或补钉点，不动逻辑。
 3. 规模：诊断跑 1h+（匹配阶段占大头，机器负载 18/32）；按 30 分钟采样，3 小时不收敛即停。
+
+### 2.5 重新起跑前的补记（★在 NewCSR official FM 之前提交；§2.3 的数字不变★）
+
+@65370151d 的 run_proof 被可读性闸拦下（E 类：15870 行无"本文件导航"），没有跑 FM。
+@a06f9dd0 给 NewCSR.sv 加了 GENERATED(newcsr-nav)（gen_newcsr.py 按分节注释算行号，两遍定稿，--check 幂等），
+只多了 26 行注释，逻辑不变；§2.3 的预测（expected 19847、passing 19278~19362、unread 142、PASS_DEAD_REF）原样沿用，
+docs/fm_predictions/NewCSR.json 不改（登记 commit 65370151 早于本次证明）。UT 9 档与变异在 a06f9dd0 字节上补跑。
