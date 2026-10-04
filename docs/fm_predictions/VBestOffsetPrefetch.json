@@ -1,0 +1,18 @@
+{
+  "target": "VBestOffsetPrefetch",
+  "ut": "VBestOffsetPrefetch",
+  "regs": 4415,
+  "outs": 165,
+  "expected": 4604,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 24,
+  "bbox": {
+    "array_13_ext": {
+      "insts": 1,
+      "in_bits": 24,
+      "points": 24
+    }
+  },
+  "note": "lane 内 diagnostic-full 诊断跑 passing 4067 + unmatched unread 531 对 + matched-unread 6；钉 531 + vmucp 后预期 = 模型 4604"
+}

@@ -1,0 +1,28 @@
+{
+  "target": "DCacheWrapper",
+  "ut": "DCacheWrapper",
+  "regs": 75901,
+  "outs": 3626,
+  "expected": 82977,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 3450,
+  "bbox": {
+    "StorePipe": {
+      "insts": 2,
+      "in_bits": 1,
+      "points": 2
+    },
+    "array_7_ext": {
+      "insts": 32,
+      "in_bits": 83,
+      "points": 2656
+    },
+    "array_8_ext": {
+      "insts": 8,
+      "in_bits": 99,
+      "points": 792
+    }
+  },
+  "note": "模型 82977 = DCache 模型 82497 + 本层 perf 两级寄存器 480；预测 passing 82566 = 82977 − constant_reg 411（与 DCache 签核 evidence/0dc9c4532cf5 的 constant_reg 411 同一批：外壳不改变 DCache 子树的常量寄存器）；unread 0；SUCCEEDED。未做诊断跑。"
+}

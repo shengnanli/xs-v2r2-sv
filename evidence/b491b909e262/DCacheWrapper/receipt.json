@@ -1,0 +1,998 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "DCacheWrapper",
+ "run_id": "DCacheWrapper-20261004T111551Z-b491b909e",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/DCacheWrapper.sv",
+   "kind": "golden",
+   "sha256": "b3d7c46976829a7c200a06481464abf8bff2216eb92e9e6677470f78dac46e6e"
+  },
+  {
+   "path": "golden-rtl/DCache.sv",
+   "kind": "golden",
+   "sha256": "ee6f730e2b0466b0dacf37ec8cababb1d89cfbf64098342f8086add71c600664"
+  },
+  {
+   "path": "golden-rtl/AMOALU.sv",
+   "kind": "golden",
+   "sha256": "356c6ab28227fa6e434081c6155f61e20f5f9cdc130f6500a5b461745072dafb"
+  },
+  {
+   "path": "golden-rtl/Arbiter16_MainPipeReq.sv",
+   "kind": "golden",
+   "sha256": "073ef9e5da50f7e6b2171ec72efb470488b3a50be2cc36f737d6fb8eac4dd74c"
+  },
+  {
+   "path": "golden-rtl/Arbiter1_L1BankedDataWriteReqCtrl.sv",
+   "kind": "golden",
+   "sha256": "a2f8e2b2c32d9f69e64fba07ed8f0c4e465f9b7b1e76d0c31bbe1141c7760bd5"
+  },
+  {
+   "path": "golden-rtl/Arbiter1_L1BankedDataWriteReq.sv",
+   "kind": "golden",
+   "sha256": "c81d5d8c6e625ed3510bfee14abde32bc2f16809f30c76ae0a1de344d2e3ff4c"
+  },
+  {
+   "path": "golden-rtl/Arbiter1_TagWriteReq.sv",
+   "kind": "golden",
+   "sha256": "06d140c21b7fb5af35520cdaff74605dbb47d73533b4847e55e6696c76723735"
+  },
+  {
+   "path": "golden-rtl/Arbiter4_MainPipeReq.sv",
+   "kind": "golden",
+   "sha256": "5af7f26d14a43f8fed5dbf0fe3842748b4daf46a045ae37a867142a2fae388d7"
+  },
+  {
+   "path": "golden-rtl/Arbiter8_MainPipeReq.sv",
+   "kind": "golden",
+   "sha256": "9e9acc0427f8b1b32a6f51d867dc4513fe08c9716dec38f52ec36ef312a05e9d"
+  },
+  {
+   "path": "golden-rtl/array_7.sv",
+   "kind": "golden",
+   "sha256": "7264fe6afd65dc735c4a8cd6a1b010e701d198f4b9496974fd30f4e2482ac569"
+  },
+  {
+   "path": "golden-rtl/array_8.sv",
+   "kind": "golden",
+   "sha256": "d70134cf6e0c6ce3394b1974952b45b7ebf7b51ed8e41a41768d807900f0a3f5"
+  },
+  {
+   "path": "golden-rtl/BankedDataArray.sv",
+   "kind": "golden",
+   "sha256": "cbeb85b510bed138ea9462b9416683fed8de0caf1f73b3db5b42cc4579390c2f"
+  },
+  {
+   "path": "golden-rtl/BloomFilter.sv",
+   "kind": "golden",
+   "sha256": "bf0c505d8fa9de4af6083caa22a06ac7efc4ea97433abf57666cf93e4e9d8494"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/CMOUnit.sv",
+   "kind": "golden",
+   "sha256": "745f639d8bee167b899cc1316f050bf0fb2b9074546332517782ed4adfa8edbf"
+  },
+  {
+   "path": "golden-rtl/CounterFilter.sv",
+   "kind": "golden",
+   "sha256": "6a60426eab880fdb3525c2f6f31442730bdd3ebc855070ba642df54eef31da57"
+  },
+  {
+   "path": "golden-rtl/CtrlUnit.sv",
+   "kind": "golden",
+   "sha256": "d9cd6c76710cb9f362d9008562fccddfed2cf6d1c3d788d7e420e92005fd525f"
+  },
+  {
+   "path": "golden-rtl/DataSRAMBank_1.sv",
+   "kind": "golden",
+   "sha256": "6976ad3952802a27a6bccddc504cebf0956f26410fddc623f1766a7eaf00fcc7"
+  },
+  {
+   "path": "golden-rtl/DataSRAMBank_2.sv",
+   "kind": "golden",
+   "sha256": "a8b0e22fff213a8b3fc821ef30b30ea596bf33714695da98ee732f2b455e2701"
+  },
+  {
+   "path": "golden-rtl/DataSRAMBank_4.sv",
+   "kind": "golden",
+   "sha256": "d16b0ba4df592938d21dbd37d449b3958b514184b8d5a65002fe94b7255389fa"
+  },
+  {
+   "path": "golden-rtl/DataSRAMBank.sv",
+   "kind": "golden",
+   "sha256": "866432de7b35de22d3fdbdee953234e371f69da7a2752886e54c5f4a24e6ca53"
+  },
+  {
+   "path": "golden-rtl/DuplicatedTagArray.sv",
+   "kind": "golden",
+   "sha256": "37d04fab8d2b76d6e1b0af11db45e33e92babd7004eafbdc12f7d6b192237ef5"
+  },
+  {
+   "path": "golden-rtl/FDPrefetcherMonitor.sv",
+   "kind": "golden",
+   "sha256": "a060772dcdbce37152c918088530aacb45edde23eb0a9670d581716021e085ea"
+  },
+  {
+   "path": "golden-rtl/L1CohMetaArray.sv",
+   "kind": "golden",
+   "sha256": "c67b6d8def71c427dc9473cd043cdeea2b108e1f4d0798e8f8f74291fd256d7b"
+  },
+  {
+   "path": "golden-rtl/L1ErrorMetaArray.sv",
+   "kind": "golden",
+   "sha256": "2a56257b6aa887f076846ca4ddd23914bda38ff892620646e709e065c595b662"
+  },
+  {
+   "path": "golden-rtl/L1FlagMetaArray.sv",
+   "kind": "golden",
+   "sha256": "31489ee5191abfe94cf34d0fcbe0e10bbc85e54658beee45d4b234718974d226"
+  },
+  {
+   "path": "golden-rtl/L1PrefetchSourceArray.sv",
+   "kind": "golden",
+   "sha256": "cff891ab590251db5defa813e3ebc21d9119a1e617b57bd2054e982d4073e5c5"
+  },
+  {
+   "path": "golden-rtl/LoadPipe.sv",
+   "kind": "golden",
+   "sha256": "fe9dc194e06f40b5e3ba0737708da6bbfce8d564748c73fd41541f9fc5b3625e"
+  },
+  {
+   "path": "golden-rtl/MainPipe.sv",
+   "kind": "golden",
+   "sha256": "4c7c1dcf406a167d7606ebf93647782887061320940fcfed8e381f2063560684"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/MbistPipeDCacheData.sv",
+   "kind": "golden",
+   "sha256": "4ed6948397ffb8c2d111afeb902973203684da51a2156b5f0beb56c4d345f56e"
+  },
+  {
+   "path": "golden-rtl/MbistPipeDcacheTag.sv",
+   "kind": "golden",
+   "sha256": "6d4af504840e7ac1e9550aa4a34c78be2ffe1a65fb5d921a85f93e716b5af322"
+  },
+  {
+   "path": "golden-rtl/MissEntry.sv",
+   "kind": "golden",
+   "sha256": "d267f31805f707a32a1da8f2e4b25827f9ccd279f698701e800505ada68bfad9"
+  },
+  {
+   "path": "golden-rtl/MissQueue.sv",
+   "kind": "golden",
+   "sha256": "a1fdb52b3b23944db3318d8390ffc869488bc1ef91dbe49733d2f700422eaeff"
+  },
+  {
+   "path": "golden-rtl/MissReadyGen.sv",
+   "kind": "golden",
+   "sha256": "96795fba55ca8f0edda2dc5d5103e574a704c7c8301c46f091fd913799336b59"
+  },
+  {
+   "path": "golden-rtl/NewPipelineConnectPipe_27.sv",
+   "kind": "golden",
+   "sha256": "1cc11bfb607cfe0413ba09bbbfd00c002396d66e62f523379dfe225130988969"
+  },
+  {
+   "path": "golden-rtl/PrefetcherMonitor.sv",
+   "kind": "golden",
+   "sha256": "c61c73e4f75fb4f31216697654ffb53e9e9af6dcf49256cd78b7b220b115c242"
+  },
+  {
+   "path": "golden-rtl/ProbeEntry.sv",
+   "kind": "golden",
+   "sha256": "002bb146524882908f59ecb81129a31caf3abe8dc9904de1ec8a4c303ec5b833"
+  },
+  {
+   "path": "golden-rtl/ProbeQueue.sv",
+   "kind": "golden",
+   "sha256": "6f7aa03cd2a84851abe37cc85d462b171cf9353013328ef69e54f5fe5ca3e87a"
+  },
+  {
+   "path": "golden-rtl/Queue1_RegMapperInput_6.sv",
+   "kind": "golden",
+   "sha256": "dfc03bf6d17a8bffd838c404844f7a33ce5a17f3ba84646409acf45901b3cd94"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv",
+   "kind": "golden",
+   "sha256": "b97f942f082b9fbaa9705be3ef0bdf9fe4b7545ab095d2c88b1afe01e0c1d7ae"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv",
+   "kind": "golden",
+   "sha256": "459728f1586dac6694517478cd9c6ab087cca5ee14997e95ae6e2a436799ee1b"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_100.sv",
+   "kind": "golden",
+   "sha256": "29bd173166ab49a2930e5bf69c19d2278c1d0e005028760afb767cb92791766a"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_116.sv",
+   "kind": "golden",
+   "sha256": "da8b3f59e8ce3a21bfb95aeabd5d6f6e3a8ed5d654315ede8eed1531d5ed6c96"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_84.sv",
+   "kind": "golden",
+   "sha256": "80efe114d9d99e2fad256c44f757adc2a6a7142fd8eaebd420290075a041afc8"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_86.sv",
+   "kind": "golden",
+   "sha256": "8cc1ee1184bc07c4002c1ff3f58f59d539e54b5f5c98c5e54566d003ca376272"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_88.sv",
+   "kind": "golden",
+   "sha256": "768273b652c53209fdd827f1f6db8cef49e54cf514c7fd3027791d9e1cfc469b"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_92.sv",
+   "kind": "golden",
+   "sha256": "22c2f5d66698a3f354472effc202d25a13d124ec22b061065c75c4870e735cca"
+  },
+  {
+   "path": "golden-rtl/StorePipe.sv",
+   "kind": "golden",
+   "sha256": "daf59d16df99faf0dc1a2aeb75e378e069fed773c229b333253a37eb5c1c8537"
+  },
+  {
+   "path": "golden-rtl/TagArray.sv",
+   "kind": "golden",
+   "sha256": "5d64d53fa8668bd2daf6a1d981bddcb2c33c08bd399c341d95cc312b7ad5da4a"
+  },
+  {
+   "path": "golden-rtl/TagSRAMBank.sv",
+   "kind": "golden",
+   "sha256": "81bfb7aadc2b32d1b61e29be81e5ed35a06784deb7fbc7a5fdc0dce057896e74"
+  },
+  {
+   "path": "golden-rtl/TreeArbiter.sv",
+   "kind": "golden",
+   "sha256": "eb42bd34d7a8eccff0c540f3a2b65db425d1b1903c2c62d57ca8ed8e9b507476"
+  },
+  {
+   "path": "golden-rtl/WritebackEntry_15.sv",
+   "kind": "golden",
+   "sha256": "ce6a6a892c8935e2bac7e59cd6e95d75f9f2329664b8fcb683c756d1a0668759"
+  },
+  {
+   "path": "golden-rtl/WritebackEntry.sv",
+   "kind": "golden",
+   "sha256": "a2cea801330b9794f889fb440ba83f9810001666e727bebcdafc74537dc85cc4"
+  },
+  {
+   "path": "golden-rtl/WritebackQueue.sv",
+   "kind": "golden",
+   "sha256": "a190d2aefb64be51134fb41c05e34905252abdeeed8ef9696fdcaefe9dac3e17"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/memblock/DCacheWrapper.sv",
+   "kind": "repo",
+   "sha256": "9fa4ebe89b9d9db91d6bed2dc3532cd95652f90340a76107f8c466690063903f"
+  },
+  {
+   "path": "rtl/memblock/DCache.sv",
+   "kind": "repo",
+   "sha256": "fcc90e3df77f10e47422d499e19ad538b37c29d30b5d3545805863ef7dd83f40"
+  },
+  {
+   "path": "rtl/frontend/ICacheCtrlUnit.sv",
+   "kind": "repo",
+   "sha256": "721aeaefa5965a027068a87e6a740626d1826286537426090d926a2e36fd31af"
+  },
+  {
+   "path": "rtl/memblock/Queue1_RegMapperInput_6.sv",
+   "kind": "repo",
+   "sha256": "f45d2b38b0643157465f63ee9a25c78f1000eea4c8b30f0e85542784589defff"
+  },
+  {
+   "path": "rtl/common/PipelineConnect.sv",
+   "kind": "repo",
+   "sha256": "34f2dc60598e7770fb1025291bc792befbeaaa27d5581d233e228c9f0c155c15"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_27.sv",
+   "kind": "repo",
+   "sha256": "5389f5850287af0b19b6a8db1c4c34990d421423233ea97c1758da85c9db252d"
+  },
+  {
+   "path": "rtl/memblock/CtrlUnit.sv",
+   "kind": "repo",
+   "sha256": "1cd2639a9c173f243a8fd5c0b5becb1ee0095df1b98f6f59440073c4c2b83cd6"
+  },
+  {
+   "path": "rtl/common/xs_SRAMTemplate_core.sv",
+   "kind": "repo",
+   "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_84.sv",
+   "kind": "repo",
+   "sha256": "d5276df2394abb464deaf027d32269c9bd8b7c5e94735e3548504c7c43bd56b6"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_86.sv",
+   "kind": "repo",
+   "sha256": "5f6a8031ef448f42965ebc22518c0f05ebbd913bee411d0c517f5030b0f5c873"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_88.sv",
+   "kind": "repo",
+   "sha256": "a01acb2fdd0c8fdb6d12f5bf4971b336985f903e638aee0391d8face7be5574e"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_92.sv",
+   "kind": "repo",
+   "sha256": "24c6e2b397db8afdb0713f249d55c99ab94f86b265c55b3cef68d9e6e405225c"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_100.sv",
+   "kind": "repo",
+   "sha256": "59dfa138293402352d702113281824b21126c413cc02c214d17f482d0cfc0339"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_116.sv",
+   "kind": "repo",
+   "sha256": "c27cb80182c6ff2d8fbbe6399eb0d37d690aed1a505e2e9260bfc21e0149ccac"
+  },
+  {
+   "path": "rtl/memblock/DataSRAMBank.sv",
+   "kind": "repo",
+   "sha256": "32ef7b163da69ba1b29f6aafb660705137801c610020ff6eac3e6ec213976884"
+  },
+  {
+   "path": "rtl/memblock/DataSRAMBank_1.sv",
+   "kind": "repo",
+   "sha256": "892342e6d8cc1c3b672f31ac148b79b99860d56f587e39bc098bc71354bd559f"
+  },
+  {
+   "path": "rtl/memblock/DataSRAMBank_2.sv",
+   "kind": "repo",
+   "sha256": "8f30f407a7aa95d3944dd3a46eccc46a75b8474205137e738f18edba90279733"
+  },
+  {
+   "path": "rtl/memblock/DataSRAMBank_4.sv",
+   "kind": "repo",
+   "sha256": "fc0c3f7356b95dc3d8910b5d8e98ba89f741d1418726a716504e627b6d95b1d5"
+  },
+  {
+   "path": "rtl/dft/xs_mbist_pipe_core.sv",
+   "kind": "repo",
+   "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+  },
+  {
+   "path": "rtl/dft/MbistPipeDCacheData.sv",
+   "kind": "repo",
+   "sha256": "3991bda1daacb2f8d4c590a823f300febce260ae6227ba782543ed44e188ad4c"
+  },
+  {
+   "path": "rtl/memblock/BankedDataArray.sv",
+   "kind": "repo",
+   "sha256": "a519533b0e0a14a1a58a5c54f058a6736db7009c400150551ac65e235ad49a6a"
+  },
+  {
+   "path": "rtl/memblock/L1CohMetaArray.sv",
+   "kind": "repo",
+   "sha256": "bffa3f11757f5d8fbd59e3daf53ab09ec3320676c9c6f47246c606c5a31ddac3"
+  },
+  {
+   "path": "rtl/memblock/xs_l1_meta_array_core.sv",
+   "kind": "repo",
+   "sha256": "9874420e3687fbf11df656b43c79055748a8380ed7913c9f952c998daa311982"
+  },
+  {
+   "path": "rtl/memblock/L1ErrorMetaArray.sv",
+   "kind": "repo",
+   "sha256": "045d1dd705fdd20ed9b8cdbc324cd203252998ac949da89729218b39cd8e6933"
+  },
+  {
+   "path": "rtl/memblock/L1PrefetchSourceArray.sv",
+   "kind": "repo",
+   "sha256": "e108fb70ccb822a07f45ae79906b024237cccc99dbf41ddc3baaa27bcfb995a5"
+  },
+  {
+   "path": "rtl/memblock/L1FlagMetaArray.sv",
+   "kind": "repo",
+   "sha256": "8ab22f235adf2900176825db5c4dfd0fa10d5268a643e81c848ce531053f9766"
+  },
+  {
+   "path": "rtl/memblock/TagSRAMBank.sv",
+   "kind": "repo",
+   "sha256": "b5fd7bb204000887f001dc6609cd60b8bb743f94e0885dcbcf77c810f8f50fa8"
+  },
+  {
+   "path": "rtl/memblock/TagArray.sv",
+   "kind": "repo",
+   "sha256": "9deb78d0f70828e41667890e533bd2f88128024367cc79825d0d7847c31bfffc"
+  },
+  {
+   "path": "rtl/dft/MbistPipeDcacheTag.sv",
+   "kind": "repo",
+   "sha256": "f28af702c9d18f7dd521403584f2705689365dd59670cb6ad778bfc138655062"
+  },
+  {
+   "path": "rtl/memblock/DuplicatedTagArray.sv",
+   "kind": "repo",
+   "sha256": "84127ce11f47b14b8ce74e0968cc97bc93c937fbd57cb0b47cd4b70e13498f3e"
+  },
+  {
+   "path": "rtl/memblock/BloomFilter.sv",
+   "kind": "repo",
+   "sha256": "fc96d9bccb31c9b1e779573c232e5a4117dd90046b3d581767c9cf4e36cc8764"
+  },
+  {
+   "path": "rtl/memblock/CounterFilter.sv",
+   "kind": "repo",
+   "sha256": "c3c0ffe0c08d2d4598a009d7b0873f30dc6fc6398fbce082019a30fa1e552ca4"
+  },
+  {
+   "path": "rtl/memblock/LoadPipe.sv",
+   "kind": "repo",
+   "sha256": "36b2123264f9f7ece8e6dcc4d921bac91e686e6c1e2f797fb7671b00acd23d3f"
+  },
+  {
+   "path": "rtl/memblock/StorePipe.sv",
+   "kind": "repo",
+   "sha256": "b9d7adb97d8556c78a3c872f7265151ad8828b4f6eb9d83cf93fbe5dd31b6f01"
+  },
+  {
+   "path": "rtl/memblock/MainPipe.sv",
+   "kind": "repo",
+   "sha256": "e0e6fc4d98b128d6bb8d11e6325abf0e21ede32f116790424539b586dfe2aecc"
+  },
+  {
+   "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+   "kind": "repo",
+   "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+  },
+  {
+   "path": "rtl/memblock/Arbiter4_MainPipeReq.sv",
+   "kind": "repo",
+   "sha256": "8a3c7ce1ce7d418bf72fb7402ef166672a76d5a4dd1a2cc549617acf72a85d88"
+  },
+  {
+   "path": "rtl/memblock/AMOALU.sv",
+   "kind": "repo",
+   "sha256": "ebb01df1f29f86ae31d0ea1b3b186d53a3eb66e3d614180a9ff9b4ac9750a51e"
+  },
+  {
+   "path": "rtl/common/xs_TLArbiterLowest.sv",
+   "kind": "repo",
+   "sha256": "8085498d3f078e687af79046a84714167dd052f23f696361eaef8354e67cd6f2"
+  },
+  {
+   "path": "rtl/memblock/MissQueue.sv",
+   "kind": "repo",
+   "sha256": "0ba98c0577eb14a16855557ff6a28046b8e990325c54fea2bdca4f616d98c271"
+  },
+  {
+   "path": "rtl/memblock/Arbiter16_MainPipeReq.sv",
+   "kind": "repo",
+   "sha256": "f7bf16c1abd39ee8d6839545a49e5d6fd6fd98500146b3f79835b5d819fd3ba3"
+  },
+  {
+   "path": "rtl/memblock/CMOUnit.sv",
+   "kind": "repo",
+   "sha256": "f42240ccf3b6956900de1a89a4e762a0589091dae0b36042b80546a401442b9a"
+  },
+  {
+   "path": "rtl/memblock/MissEntry.sv",
+   "kind": "repo",
+   "sha256": "f3443c48a0e8e5769a845ac0744e479bc0cb0dc67cb9ce6ac323baf16bda5a60"
+  },
+  {
+   "path": "rtl/memblock/ProbeQueue.sv",
+   "kind": "repo",
+   "sha256": "f591d5ae1002fa6bde8d89f377161eadda6807a2c149037c3d308a579230651e"
+  },
+  {
+   "path": "rtl/memblock/WritebackQueue.sv",
+   "kind": "repo",
+   "sha256": "3323eaffa7920e02b41d6b24073503955402892b6935b43eb2e35ec1cb8d3cdc"
+  },
+  {
+   "path": "rtl/memblock/Arbiter1_TagWriteReq.sv",
+   "kind": "repo",
+   "sha256": "ed0f4ec2b9cabd4dc3bcceb59407ffd07a540286c0c0d150dfeb786cd221fcc8"
+  },
+  {
+   "path": "rtl/memblock/Arbiter1_L1BankedDataWriteReq.sv",
+   "kind": "repo",
+   "sha256": "4a8b761ac2c536bf8233b35ae77eb9d9d443ef1cddbc3cbf712d4b6c04d83b00"
+  },
+  {
+   "path": "rtl/memblock/Arbiter1_L1BankedDataWriteReqCtrl.sv",
+   "kind": "repo",
+   "sha256": "35846726b8a12c0833bcec1e31b5221f0d0c0dce47acb737c6af2f8b42b07f30"
+  },
+  {
+   "path": "rtl/memblock/TreeArbiter.sv",
+   "kind": "repo",
+   "sha256": "5731d834746d6414c8a614ff3ddcb387da0dcae370f5c931dce6d3cc94778d25"
+  },
+  {
+   "path": "rtl/memblock/MissReadyGen.sv",
+   "kind": "repo",
+   "sha256": "6cec66718f1741f8f9e34c7dfe13cfa44e5f736e8cf1b2fd943da7a5c10cda71"
+  },
+  {
+   "path": "rtl/memblock/PrefetcherMonitor.sv",
+   "kind": "repo",
+   "sha256": "3ef6b2ce293ed2462636acc01f36952f011b16d5263b59cd707d78ded7d3a251"
+  },
+  {
+   "path": "rtl/memblock/FDPrefetcherMonitor.sv",
+   "kind": "repo",
+   "sha256": "8a144954837b7e4e3ac3eb9280753333bd9f3634a1735f75f421ed0a4302c015"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv",
+   "kind": "golden",
+   "sha256": "b97f942f082b9fbaa9705be3ef0bdf9fe4b7545ab095d2c88b1afe01e0c1d7ae"
+  },
+  {
+   "path": "golden-rtl/array_7.sv",
+   "kind": "golden",
+   "sha256": "7264fe6afd65dc735c4a8cd6a1b010e701d198f4b9496974fd30f4e2482ac569"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv",
+   "kind": "golden",
+   "sha256": "459728f1586dac6694517478cd9c6ab087cca5ee14997e95ae6e2a436799ee1b"
+  },
+  {
+   "path": "golden-rtl/array_8.sv",
+   "kind": "golden",
+   "sha256": "d70134cf6e0c6ce3394b1974952b45b7ebf7b51ed8e41a41768d807900f0a3f5"
+  },
+  {
+   "path": "golden-rtl/Arbiter8_MainPipeReq.sv",
+   "kind": "golden",
+   "sha256": "9e9acc0427f8b1b32a6f51d867dc4513fe08c9716dec38f52ec36ef312a05e9d"
+  },
+  {
+   "path": "golden-rtl/ProbeEntry.sv",
+   "kind": "golden",
+   "sha256": "002bb146524882908f59ecb81129a31caf3abe8dc9904de1ec8a4c303ec5b833"
+  },
+  {
+   "path": "golden-rtl/WritebackEntry.sv",
+   "kind": "golden",
+   "sha256": "a2cea801330b9794f889fb440ba83f9810001666e727bebcdafc74537dc85cc4"
+  },
+  {
+   "path": "golden-rtl/WritebackEntry_15.sv",
+   "kind": "golden",
+   "sha256": "ce6a6a892c8935e2bac7e59cd6e95d75f9f2329664b8fcb683c756d1a0668759"
+  },
+  {
+   "path": "rtl/common/ClockGate.sv",
+   "kind": "repo",
+   "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+  }
+ ],
+ "impl_commit": "b491b909e26292e08845a2f466cc116c66778eed",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "0f1156c0e59c36f5ba32f91d17fc036f773d9a924cf9969f4640d5547c985271"
+  },
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/DCacheWrapper.json",
+    "sha256": "a91687e1482a38233da6a747835bb07178d7d58406676863c2528d0d2b0f8120"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "DCacheWrapper-20261004T111551Z-b491b909e",
+  "top": "DCacheWrapper",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 82170,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_0/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_0/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_1/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_1/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_2/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_2/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_3/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_3/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_0/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_0/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_1/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_1/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_2/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_2/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_3/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_3/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_0/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_0/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_1/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_1/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_2/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_2/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_3/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_3/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_0/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_0/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_1/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_1/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_2/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_2/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_3/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_3/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_0/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_0/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_1/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_1/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_2/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_2/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_3/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_3/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_0/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_0/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_1/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_1/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_2/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_2/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_3/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_3/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_0/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_0/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_1/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_1/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_2/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_2/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_3/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_3/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_0/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_0/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_1/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_1/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_2/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_2/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_3/array/array/array_7_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_3/array/array/array_7_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/stu_0",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/stu_0"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/stu_1",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/stu_1"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/tagArray/array_0/tag_arrays_0/tag_array/array/array/array_8_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[0].array_k/tag_arrays_0/tag_array/array/array/array_8_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/tagArray/array_0/tag_arrays_1/tag_array/array/array/array_8_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[0].array_k/tag_arrays_1/tag_array/array/array/array_8_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/tagArray/array_1/tag_arrays_0/tag_array/array/array/array_8_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[1].array_k/tag_arrays_0/tag_array/array/array/array_8_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/tagArray/array_1/tag_arrays_1/tag_array/array/array/array_8_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[1].array_k/tag_arrays_1/tag_array/array/array/array_8_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/tagArray/array_2/tag_arrays_0/tag_array/array/array/array_8_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[2].array_k/tag_arrays_0/tag_array/array/array/array_8_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/tagArray/array_2/tag_arrays_1/tag_array/array/array/array_8_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[2].array_k/tag_arrays_1/tag_array/array/array/array_8_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/tagArray/array_3/tag_arrays_0/tag_array/array/array/array_8_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[3].array_k/tag_arrays_0/tag_array/array/array/array_8_ext"
+    },
+    {
+     "ref_path": "r:/WORK/DCacheWrapper/dcache/tagArray/array_3/tag_arrays_1/tag_array/array/array/array_8_ext",
+     "impl_path": "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[3].array_k/tag_arrays_1/tag_array/array/array/array_8_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_0/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_1/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_2/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_3/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_0/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_1/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_2/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_3/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_0/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_1/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_2/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_3/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_0/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_1/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_2/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_3/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_0/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_1/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_2/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_3/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_0/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_1/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_2/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_3/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_0/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_1/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_2/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_3/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_0/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_1/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_2/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_3/array/array/array_7_ext",
+    "r:/WORK/DCacheWrapper/dcache/tagArray/array_0/tag_arrays_0/tag_array/array/array/array_8_ext",
+    "r:/WORK/DCacheWrapper/dcache/tagArray/array_0/tag_arrays_1/tag_array/array/array/array_8_ext",
+    "r:/WORK/DCacheWrapper/dcache/tagArray/array_1/tag_arrays_0/tag_array/array/array/array_8_ext",
+    "r:/WORK/DCacheWrapper/dcache/tagArray/array_1/tag_arrays_1/tag_array/array/array/array_8_ext",
+    "r:/WORK/DCacheWrapper/dcache/tagArray/array_2/tag_arrays_0/tag_array/array/array/array_8_ext",
+    "r:/WORK/DCacheWrapper/dcache/tagArray/array_2/tag_arrays_1/tag_array/array/array/array_8_ext",
+    "r:/WORK/DCacheWrapper/dcache/tagArray/array_3/tag_arrays_0/tag_array/array/array/array_8_ext",
+    "r:/WORK/DCacheWrapper/dcache/tagArray/array_3/tag_arrays_1/tag_array/array/array/array_8_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_0/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_1/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_2/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_0/data_bank_3/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_0/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_1/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_2/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_1/data_bank_3/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_0/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_1/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_2/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_2/data_bank_3/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_0/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_1/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_2/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_3/data_bank_3/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_0/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_1/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_2/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_4/data_bank_3/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_0/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_1/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_2/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_5/data_bank_3/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_0/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_1/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_2/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_6/data_bank_3/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_0/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_1/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_2/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/bankedDataArray/data_banks_0_7/data_bank_3/array/array/array_7_ext",
+    "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[0].array_k/tag_arrays_0/tag_array/array/array/array_8_ext",
+    "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[0].array_k/tag_arrays_1/tag_array/array/array/array_8_ext",
+    "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[1].array_k/tag_arrays_0/tag_array/array/array/array_8_ext",
+    "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[1].array_k/tag_arrays_1/tag_array/array/array/array_8_ext",
+    "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[2].array_k/tag_arrays_0/tag_array/array/array/array_8_ext",
+    "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[2].array_k/tag_arrays_1/tag_array/array/array/array_8_ext",
+    "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[3].array_k/tag_arrays_0/tag_array/array/array/array_8_ext",
+    "i:/WORK/DCacheWrapper/dcache/tagArray/g_tarr[3].array_k/tag_arrays_1/tag_array/array/array/array_8_ext"
+   ],
+   "empty_blackbox_ref": [
+    "r:/WORK/DCacheWrapper/dcache/stu_0",
+    "r:/WORK/DCacheWrapper/dcache/stu_1"
+   ],
+   "empty_blackbox_impl": [
+    "i:/WORK/DCacheWrapper/dcache/stu_0",
+    "i:/WORK/DCacheWrapper/dcache/stu_1"
+   ],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "PARTIAL",
+ "verdict_detail": {
+  "passing": 82170,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "constant_reg": 807,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "DCacheWrapper",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": "assembly_disabled_empty_module_wrong_parent:StorePipe@DCacheWrapper",
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_aux_observed": 0,
+  "bbox_aux_declared": 0
+ }
+}

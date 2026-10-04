@@ -1,0 +1,9 @@
+{
+  "target": "MbistClockGateCell",
+  "ut": "MbistClockGateCell",
+  "regs": 1,
+  "outs": 1,
+  "expected": 2,
+  "merge_dup": "false",
+  "model_applicable": true
+}
