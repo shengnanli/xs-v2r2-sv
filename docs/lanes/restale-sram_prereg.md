@@ -157,6 +157,124 @@ impl 闭包含旧 xs_SRAMTemplate_core.sv ⇒ 失效，纳入 P2（UT Makefile �
 |---|---|---|---|---|---|---|---|---|
 | ICache | ICache | P2 | `a72794293f57/ICache/receipt.json` | SUCCEEDED | 21174 | 0 / 0 | 21174 | SUCCEEDED（全零） |
 
+## 5. 阶段 2 登记（证明前；main 2e56d8b6 ClockGate 合入后，本分支 merge 3081d84fd）
+
+清单 = 当前 `stale_impl_targets()`（67）∪ `docs/lanes/clockgate_affected_targets.tsv`（103）= **103 个**（stale 全含于 affected）。
+集成者说明：旧 receipt 把 golden ClockGate 记成 kind=golden，换本地件后 stale 判据看不出，故以 affected 清单为准。
+阶段 1 的 23 个目标所在 UT 目录（DCacheLeaves/Directory/RecentRequestTable/SRAMTemplateWithFixedWidth/SplittedSRAM/SplittedSRAMBitmap）
+**都不在** clockgate 改动的 31 个 UT 之列 ⇒ 不需再证。
+
+预测规则：passing_new = 基准 receipt（最新一份已跟踪绿 receipt）的 passing；verdict 不变；failing/unverified/aborted/unmatched=0；
+PASS_DEAD_REF 目标的 golden-only unread_ref 不变、unread_impl=0。ClockGate 换本地件（latch+与门，非寄存器比较点）预测对父级 passing 无影响。
+例外：SRAMTemplate_128 无已跟踪 receipt（fastlane_ledger 记 WORKING_PASS p2507，未出 receipt）⇒ 预测 2507（属首证）。
+Predictor 的 fm_predict 模型给 44750（标"模型适用"），与旧 receipt 528967 不符，模型对它不成立；本 lane 判据仍为"等于旧 receipt"。
+
+| target | ut | 基准 receipt | 旧 verdict | 旧 passing | 旧 unread_ref/impl | 预测 passing | 预测 verdict |
+|---|---|---|---|---|---|---|---|
+| BankedDataArray | BankedDataArray | `0b523bc0d2bb/BankedDataArray` | SUCCEEDED | 10342 | 0/0 | 10342 | SUCCEEDED |
+| BitmapCache | BitmapCache | `397a2bc9c8d3/BitmapCache` | SUCCEEDED | 13069 | 0/0 | 13069 | SUCCEEDED |
+| ClockMux | ClockGateCell93 | `6d68c5409244/ClockMux` | SUCCEEDED | 1 | 0/0 | 1 | SUCCEEDED |
+| Composer | Composer | `335a330a9baa/Composer` | PASS_DEAD_REF | 42060 | 192/0 | 42060 | PASS_DEAD_REF |
+| DCache | DCache | `0dc9c4532cf5/DCache` | SUCCEEDED | 82086 | 0/0 | 82086 | SUCCEEDED |
+| DataSRAMBank | DataSRAMBank | `754c1d99ea72/DataSRAMBank` | SUCCEEDED | 1205 | 0/0 | 1205 | SUCCEEDED |
+| DataSRAMBank_1 | DataSRAMBank | `754c1d99ea72/DataSRAMBank_1` | SUCCEEDED | 1205 | 0/0 | 1205 | SUCCEEDED |
+| DataSRAMBank_2 | DataSRAMBank | `754c1d99ea72/DataSRAMBank_2` | SUCCEEDED | 1205 | 0/0 | 1205 | SUCCEEDED |
+| DataSRAMBank_4 | DataSRAMBank | `754c1d99ea72/DataSRAMBank_4` | SUCCEEDED | 1205 | 0/0 | 1205 | SUCCEEDED |
+| DataStorage | DataStorage | `0dc9c4532cf5/DataStorage` | SUCCEEDED | 2532 | 0/0 | 2532 | SUCCEEDED |
+| DataStorage_1 | DataStorage | `0dc9c4532cf5/DataStorage_1` | SUCCEEDED | 2533 | 0/0 | 2533 | SUCCEEDED |
+| DataStorage_2 | DataStorage | `0dc9c4532cf5/DataStorage_2` | SUCCEEDED | 2534 | 0/0 | 2534 | SUCCEEDED |
+| DataStorage_3 | DataStorage | `0dc9c4532cf5/DataStorage_3` | SUCCEEDED | 2534 | 0/0 | 2534 | SUCCEEDED |
+| DuplicatedTagArray | DuplicatedTagArray | `b25ad3da9f18/DuplicatedTagArray` | SUCCEEDED | 2460 | 0/0 | 2460 | SUCCEEDED |
+| FTB | FTB | `397a2bc9c8d3/FTB` | PASS_DEAD_REF | 8605 | 50/0 | 8605 | PASS_DEAD_REF |
+| FTBBank | FTBBank | `f40deba9439d/FTBBank` | PASS_DEAD_REF | 3276 | 50/0 | 3276 | PASS_DEAD_REF |
+| FoldedSRAMTemplate | FoldedSRAMTemplate | `62fccb92c825/FoldedSRAMTemplate` | SUCCEEDED | 113 | 0/0 | 113 | SUCCEEDED |
+| FoldedSRAMTemplate_1 | FoldedSRAMTemplate | `62fccb92c825/FoldedSRAMTemplate_1` | SUCCEEDED | 148 | 0/0 | 148 | SUCCEEDED |
+| FoldedSRAMTemplate_20 | FoldedSRAMTemplate | `62fccb92c825/FoldedSRAMTemplate_20` | SUCCEEDED | 109 | 0/0 | 109 | SUCCEEDED |
+| FoldedSRAMTemplate_22 | FoldedSRAMTemplate | `62fccb92c825/FoldedSRAMTemplate_22` | SUCCEEDED | 443 | 0/0 | 443 | SUCCEEDED |
+| FoldedSRAMTemplate_24 | FoldedSRAMTemplate | `62fccb92c825/FoldedSRAMTemplate_24` | SUCCEEDED | 846 | 0/0 | 846 | SUCCEEDED |
+| GatedSplittedSRAM | DataStorage | `0dc9c4532cf5/GatedSplittedSRAM` | SUCCEEDED | 2272 | 0/0 | 2272 | SUCCEEDED |
+| GatedSplittedSRAM_1 | DataStorage | `0dc9c4532cf5/GatedSplittedSRAM_1` | SUCCEEDED | 2272 | 0/0 | 2272 | SUCCEEDED |
+| GatedSplittedSRAM_2 | DataStorage | `0dc9c4532cf5/GatedSplittedSRAM_2` | SUCCEEDED | 2272 | 0/0 | 2272 | SUCCEEDED |
+| GatedSplittedSRAM_3 | DataStorage | `0dc9c4532cf5/GatedSplittedSRAM_3` | SUCCEEDED | 2272 | 0/0 | 2272 | SUCCEEDED |
+| ICache | ICache | `a72794293f57/ICache` | SUCCEEDED | 21174 | 0/0 | 21174 | SUCCEEDED |
+| ICacheMetaArray | ICacheMetaArray | `76d345fc6c4f/ICacheMetaArray` | SUCCEEDED | 2500 | 0/0 | 2500 | SUCCEEDED |
+| ITTage | ITTage | `335a330a9baa/ITTage` | SUCCEEDED | 10426 | 0/0 | 10426 | SUCCEEDED |
+| ITTageTable | ITTageTable | `c6573076c5ba/ITTageTable` | SUCCEEDED | 682 | 0/0 | 682 | SUCCEEDED |
+| ITTageTable_1 | ITTageTable_1 | `c6573076c5ba/ITTageTable_1` | SUCCEEDED | 682 | 0/0 | 682 | SUCCEEDED |
+| ITTageTable_2 | ITTageTable_2 | `c6573076c5ba/ITTageTable_2` | SUCCEEDED | 1014 | 0/0 | 1014 | SUCCEEDED |
+| ITTageTable_3 | ITTageTable_3 | `c6573076c5ba/ITTageTable_3` | SUCCEEDED | 1014 | 0/0 | 1014 | SUCCEEDED |
+| ITTageTable_4 | ITTageTable_4 | `c6573076c5ba/ITTageTable_4` | SUCCEEDED | 1014 | 0/0 | 1014 | SUCCEEDED |
+| L2TLB | L2TLB | `6d4a2ff1e712/L2TLB` | SUCCEEDED | 180735 | 0/0 | 180735 | SUCCEEDED |
+| MbistClockGateCell_93 | ClockGateCell93 | `6d68c5409244/MbistClockGateCell_93` | SUCCEEDED | 2 | 0/0 | 2 | SUCCEEDED |
+| Predictor | Predictor | `bfd1afc7451e/Predictor` | SUCCEEDED | 528967 | 0/0 | 528967 | SUCCEEDED |
+| PtwCache | PtwCache | `22184c5297e2/PtwCache` | SUCCEEDED | 143797 | 0/0 | 143797 | SUCCEEDED |
+| SCTable | SCTable | `05394ca211f8/SCTable` | SUCCEEDED | 1123 | 0/0 | 1123 | SUCCEEDED |
+| SCTable_1 | SCTable | `05394ca211f8/SCTable_1` | SUCCEEDED | 1123 | 0/0 | 1123 | SUCCEEDED |
+| SCTable_2 | SCTable | `05394ca211f8/SCTable_2` | SUCCEEDED | 1123 | 0/0 | 1123 | SUCCEEDED |
+| SCTable_3 | SCTable | `05394ca211f8/SCTable_3` | SUCCEEDED | 1123 | 0/0 | 1123 | SUCCEEDED |
+| SRAMTemplate | SRAMTemplate | `62fccb92c825/SRAMTemplate` | SUCCEEDED | 394 | 0/0 | 394 | SUCCEEDED |
+| SRAMTemplate_100 | SRAMTemplate | `62fccb92c825/SRAMTemplate_100` | SUCCEEDED | 301 | 0/0 | 301 | SUCCEEDED |
+| SRAMTemplate_116 | SRAMTemplate | `62fccb92c825/SRAMTemplate_116` | SUCCEEDED | 359 | 0/0 | 359 | SUCCEEDED |
+| SRAMTemplate_124 | SRAMTemplate | `62fccb92c825/SRAMTemplate_124` | SUCCEEDED | 371 | 0/0 | 371 | SUCCEEDED |
+| SRAMTemplate_128 | SRAMTemplateNewForm | （无已跟踪 receipt） | — | (p2507 fastlane) | — | 2507 | SUCCEEDED |
+| SRAMTemplate_129 | SRAMTemplate | `62fccb92c825/SRAMTemplate_129` | SUCCEEDED | 468 | 0/0 | 468 | SUCCEEDED |
+| SRAMTemplate_143 | SRAMTemplate | `62fccb92c825/SRAMTemplate_143` | SUCCEEDED | 468 | 0/0 | 468 | SUCCEEDED |
+| SRAMTemplate_145 | SRAMTemplateNewForm | `170a4d608018/SRAMTemplate_145` | SUCCEEDED | 602 | 0/0 | 602 | SUCCEEDED |
+| SRAMTemplate_146 | SRAMTemplateNewForm | `170a4d608018/SRAMTemplate_146` | SUCCEEDED | 75 | 0/0 | 75 | SUCCEEDED |
+| SRAMTemplate_148 | SRAMTemplate | `62fccb92c825/SRAMTemplate_148` | SUCCEEDED | 322 | 0/0 | 322 | SUCCEEDED |
+| SRAMTemplate_150 | SRAMTemplate | `62fccb92c825/SRAMTemplate_150` | SUCCEEDED | 321 | 0/0 | 321 | SUCCEEDED |
+| SRAMTemplate_152 | SRAMTemplateNewForm | `170a4d608018/SRAMTemplate_152` | SUCCEEDED | 440 | 0/0 | 440 | SUCCEEDED |
+| SRAMTemplate_153 | SRAMTemplate | `62fccb92c825/SRAMTemplate_153` | SUCCEEDED | 87 | 0/0 | 87 | SUCCEEDED |
+| SRAMTemplate_154 | SRAMTemplate | `62fccb92c825/SRAMTemplate_154` | SUCCEEDED | 63 | 0/0 | 63 | SUCCEEDED |
+| SRAMTemplate_155 | SRAMTemplateNewForm | `170a4d608018/SRAMTemplate_155` | SUCCEEDED | 569 | 0/0 | 569 | SUCCEEDED |
+| SRAMTemplate_159 | SRAMTemplate | `62fccb92c825/SRAMTemplate_159` | SUCCEEDED | 322 | 0/0 | 322 | SUCCEEDED |
+| SRAMTemplate_16 | SRAMTemplate | `62fccb92c825/SRAMTemplate_16` | SUCCEEDED | 352 | 0/0 | 352 | SUCCEEDED |
+| SRAMTemplate_162 | SRAMTemplate | `62fccb92c825/SRAMTemplate_162` | SUCCEEDED | 322 | 0/0 | 322 | SUCCEEDED |
+| SRAMTemplate_163 | SRAMTemplateNewForm | `170a4d608018/SRAMTemplate_163` | SUCCEEDED | 440 | 0/0 | 440 | SUCCEEDED |
+| SRAMTemplate_164 | SRAMTemplate | `62fccb92c825/SRAMTemplate_164` | SUCCEEDED | 87 | 0/0 | 87 | SUCCEEDED |
+| SRAMTemplate_165 | SRAMTemplate | `62fccb92c825/SRAMTemplate_165` | SUCCEEDED | 63 | 0/0 | 63 | SUCCEEDED |
+| SRAMTemplate_166 | SRAMTemplateNewForm | `170a4d608018/SRAMTemplate_166` | SUCCEEDED | 569 | 0/0 | 569 | SUCCEEDED |
+| SRAMTemplate_178 | SRAMTemplateNewForm | `170a4d608018/SRAMTemplate_178` | SUCCEEDED | 569 | 0/0 | 569 | SUCCEEDED |
+| SRAMTemplate_181 | SRAMTemplate | `62fccb92c825/SRAMTemplate_181` | SUCCEEDED | 322 | 0/0 | 322 | SUCCEEDED |
+| SRAMTemplate_185 | SRAMTemplateNewForm | `170a4d608018/SRAMTemplate_185` | SUCCEEDED | 440 | 0/0 | 440 | SUCCEEDED |
+| SRAMTemplate_186 | SRAMTemplate | `62fccb92c825/SRAMTemplate_186` | SUCCEEDED | 87 | 0/0 | 87 | SUCCEEDED |
+| SRAMTemplate_187 | SRAMTemplate | `62fccb92c825/SRAMTemplate_187` | SUCCEEDED | 63 | 0/0 | 63 | SUCCEEDED |
+| SRAMTemplate_2 | SRAMTemplate | `62fccb92c825/SRAMTemplate_2` | SUCCEEDED | 394 | 0/0 | 394 | SUCCEEDED |
+| SRAMTemplate_32 | SRAMTemplate | `62fccb92c825/SRAMTemplate_32` | SUCCEEDED | 352 | 0/0 | 352 | SUCCEEDED |
+| SRAMTemplate_36 | SRAMTemplate | `62fccb92c825/SRAMTemplate_36` | SUCCEEDED | 189 | 0/0 | 189 | SUCCEEDED |
+| SRAMTemplate_4 | SRAMTemplate | `62fccb92c825/SRAMTemplate_4` | SUCCEEDED | 352 | 0/0 | 352 | SUCCEEDED |
+| SRAMTemplate_44 | SRAMTemplate | `62fccb92c825/SRAMTemplate_44` | SUCCEEDED | 120 | 0/0 | 120 | SUCCEEDED |
+| SRAMTemplate_45 | SRAMTemplate | `62fccb92c825/SRAMTemplate_45` | SUCCEEDED | 148 | 0/0 | 148 | SUCCEEDED |
+| SRAMTemplate_64 | SRAMTemplate | `62fccb92c825/SRAMTemplate_64` | SUCCEEDED | 58 | 0/0 | 58 | SUCCEEDED |
+| SRAMTemplate_68 | SRAMTemplate | `62fccb92c825/SRAMTemplate_68` | SUCCEEDED | 145 | 0/0 | 145 | SUCCEEDED |
+| SRAMTemplate_76 | SRAMTemplate | `62fccb92c825/SRAMTemplate_76` | SUCCEEDED | 478 | 0/0 | 478 | SUCCEEDED |
+| SRAMTemplate_78 | SRAMTemplate | `62fccb92c825/SRAMTemplate_78` | SUCCEEDED | 478 | 0/0 | 478 | SUCCEEDED |
+| SRAMTemplate_8 | SRAMTemplate | `62fccb92c825/SRAMTemplate_8` | SUCCEEDED | 352 | 0/0 | 352 | SUCCEEDED |
+| SRAMTemplate_84 | SRAMTemplate | `62fccb92c825/SRAMTemplate_84` | SUCCEEDED | 301 | 0/0 | 301 | SUCCEEDED |
+| SRAMTemplate_86 | SRAMTemplate | `62fccb92c825/SRAMTemplate_86` | SUCCEEDED | 301 | 0/0 | 301 | SUCCEEDED |
+| SRAMTemplate_88 | SRAMTemplate | `62fccb92c825/SRAMTemplate_88` | SUCCEEDED | 301 | 0/0 | 301 | SUCCEEDED |
+| SRAMTemplate_92 | SRAMTemplate | `62fccb92c825/SRAMTemplate_92` | SUCCEEDED | 301 | 0/0 | 301 | SUCCEEDED |
+| Slice | Slice | `0dc9c4532cf5/Slice` | SUCCEEDED | 68305 | 0/0 | 68305 | SUCCEEDED |
+| Slice_1 | Slice | `0dc9c4532cf5/Slice_1` | SUCCEEDED | 68308 | 0/0 | 68308 | SUCCEEDED |
+| Slice_2 | Slice | `0dc9c4532cf5/Slice_2` | SUCCEEDED | 68310 | 0/0 | 68310 | SUCCEEDED |
+| Slice_3 | Slice | `0dc9c4532cf5/Slice_3` | SUCCEEDED | 68311 | 0/0 | 68311 | SUCCEEDED |
+| SplittedSRAMTemplate | SplittedSRAMTemplate | `62fccb92c825/SplittedSRAMTemplate` | SUCCEEDED | 787 | 0/0 | 787 | SUCCEEDED |
+| SplittedSRAMTemplate_1 | SplittedSRAMTemplate | `62fccb92c825/SplittedSRAMTemplate_1` | SUCCEEDED | 787 | 0/0 | 787 | SUCCEEDED |
+| SplittedSRAMTemplate_2 | SplittedSRAMTemplate | `62fccb92c825/SplittedSRAMTemplate_2` | SUCCEEDED | 1505 | 0/0 | 1505 | SUCCEEDED |
+| SplittedSRAMTemplate_23 | SplittedSRAMTemplate | `62fccb92c825/SplittedSRAMTemplate_23` | SUCCEEDED | 110 | 0/0 | 110 | SUCCEEDED |
+| SplittedSRAMTemplate_25 | SplittedSRAMTemplate | `62fccb92c825/SplittedSRAMTemplate_25` | SUCCEEDED | 478 | 0/0 | 478 | SUCCEEDED |
+| SplittedSRAMTemplate_27 | SplittedSRAMTemplate | `62fccb92c825/SplittedSRAMTemplate_27` | SUCCEEDED | 955 | 0/0 | 955 | SUCCEEDED |
+| SplittedSRAMTemplate_3 | SplittedSRAMTemplate | `62fccb92c825/SplittedSRAMTemplate_3` | SUCCEEDED | 120 | 0/0 | 120 | SUCCEEDED |
+| SplittedSRAMTemplate_4 | SplittedSRAMTemplate | `62fccb92c825/SplittedSRAMTemplate_4` | SUCCEEDED | 148 | 0/0 | 148 | SUCCEEDED |
+| TagArray | TagArray | `b25ad3da9f18/TagArray` | SUCCEEDED | 737 | 0/0 | 737 | SUCCEEDED |
+| TagSRAMBank | TagArray | `b25ad3da9f18/TagSRAMBank` | SUCCEEDED | 369 | 0/0 | 369 | SUCCEEDED |
+| TageBTable | TageBTable | `c6573076c5ba/TageBTable` | SUCCEEDED | 396 | 0/0 | 396 | SUCCEEDED |
+| TageTable | TageTable | `e0bc44bf9a73/TageTable` | PASS_DEAD_REF | 1585 | 48/0 | 1585 | PASS_DEAD_REF |
+| TageTable_1 | TageTable | `e0bc44bf9a73/TageTable_1` | PASS_DEAD_REF | 1585 | 48/0 | 1585 | PASS_DEAD_REF |
+| TageTable_2 | TageTable | `e0bc44bf9a73/TageTable_2` | PASS_DEAD_REF | 1585 | 48/0 | 1585 | PASS_DEAD_REF |
+| TageTable_3 | TageTable | `e0bc44bf9a73/TageTable_3` | PASS_DEAD_REF | 1585 | 48/0 | 1585 | PASS_DEAD_REF |
+| Tage_SC | Tage_SC | `335a330a9baa/Tage_SC` | PASS_DEAD_REF | 16112 | 192/0 | 16112 | PASS_DEAD_REF |
+
 ## 4. 对账
 
 （跑完追加）
