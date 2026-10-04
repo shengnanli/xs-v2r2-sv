@@ -26,6 +26,10 @@ FM_REF_DEPS_FloatDivider = ShiftLeftPriorityWithLZDResult.sv CSA3to2_20.sv CSA3t
 # 关 merge_dup：fm_predict 的模型（寄存器位 + 输出位）严格适用。
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：FloatDividerR64 内 fp_format_onehot_q[2] 两侧对称死位（与它自签核同一点），
+# 依据见 verif/fm_target_config/FloatDivider.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk

@@ -95,6 +95,86 @@ vmucp（standing rule 六条，`verif/fm_target_config/FloatAdderF64Pipeline.tcl
 
 没有做过任何 FM 试跑；常量位数按 golden 源码逐个寄存器数出，若 FM 的常量折叠多/少于此，差额在对账节逐位指认。
 
+## 3. FloatAdderF64WidenPipeline（golden 364 行；重写 365 行）
+
+### 3.1 结构与子模块处置
+
+- 向量 f64 / f32→f64 加宽加法器（VectorFloatAdder 的 64 位 lane）：`xs_FloatAdderF64WidenPipeline_core`（§1 选操作数 /
+  §2 特殊值（f32 来源的 0x369 / 0x47F 指数）/ §3 far-close / §4 非加减类 22 个 op / §5 第 0 拍寄存器 / §6 第 1 拍选择）+ wrapper。
+- child 同 §2（far / close 及闭包全部已签核，两侧白盒）。寄存器逐个对应 golden 16 个 reg（两个 64 位常量特殊结果寄存器整宽照留）。
+- 钉点：`fm_pins_pre.tcl`（匹配前，字面 444 对：本体 16 寄存器 335 位语义名 + close 子树两对同源双份寄存器 109 位，
+  依据见 §2 首跑失败的对账 B）+ `fm_pins.tcl`（匹配后，close 死位 3 对，同 §2）。
+
+### 3.2 UT（9 档 × 200k，commit d939ecbb6 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+| 7  | checks=199998 errors=0 PASSED | checks=199998 errors=0 PASSED | checks=199998 errors=0 PASSED |
+| 42 | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+
+独立 IEEE oracle 全部 oracle_errors=0；覆盖（seed 1 / +0）：oracle 152288，far 59040 / close 13941，加宽加法 27630（其中
+加宽零操作数 3258、.wv 7087、vfwredosum 7036），NaN 结果 13659 / Inf 结果 3818，NV 8243 / OF 757 / NX 44263，22 个 op 各 >= 1000。
+变异（scratchpad，30k 拍）：f32 零指数 0x369→0x36A ⇒ errors=380；vfwredosum 的 b 也加宽 ⇒ 1057；fsum_ore 掩码位换 mask[1] ⇒ 135；
+比较符号改用选后操作数 ⇒ 382（oracle 0：向量单元不对加宽格式发比较，差分抓到）；f32 全 1 指数 0x47F→0x47E ⇒ 1613；
+★UT 抓不到★：「零操作数直通」去掉 res_widening 门控（200k 拍 errors=0）——非加宽时 a=0 走 far/close 也精确给出 ±b，
+推断为输出等价变异；FM 是最终裁判。
+
+### 3.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/FloatAdderF64WidenPipeline.json）
+
+模型 expected = 1076（寄存器 1007 = 本体 335 + far 361 + close 311；输出 69）。预期 constant reg **131**（同 §2：本体
+float_adder_result_r_1[62:0] 63 + float_adder_result_r_2[62:0] 63 + io_fflags_r_1[3:0] 4 + close CS4 op1[52] 1）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **945**（= 1076 − 131） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 131 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过 FM 试跑（同族 FloatAdderF64Pipeline 的第二个正式 run 在跑，本节登记早于本目标任何证明）。
+
+## 4. FloatDivider（golden 166 行；重写 128 行）
+
+### 4.1 结构与子模块处置
+
+- 标量除法 / 开方单元外壳：`xs_FloatDivider_core`（§1/§2 启动分派与开方器格式码减 1 / §3 握手与结果汇合）+ wrapper；本层无寄存器。
+- child：FloatDividerR64（evidence/6038c4afbc60）+ fpsqrt_r16（evidence/44292961f2c0）及其闭包全部已签核 → 两侧白盒，无黑盒。
+
+### 4.2 UT（9 档 × 200k，commit d939ecbb6 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=799990 errors=0 PASSED | checks=799990 errors=0 PASSED | checks=799990 errors=0 PASSED |
+| 7  | checks=799990 errors=0 PASSED | checks=799990 errors=0 PASSED | checks=799990 errors=0 PASSED |
+| 42 | checks=799998 errors=0 PASSED | checks=799998 errors=0 PASSED | checks=799998 errors=0 PASSED |
+
+（checks = 每拍 4 个输出 × 200k。）独立 IEEE oracle（除法照抄 FloatDividerR64 UT、开方照抄 fpsqrt_r16 UT）全部 oracle_errors=0；
+覆盖（seed 1 / +0）：除法 oracle 20595、开方 oracle 24585；除法结果类别 规格/非规格/上溢/NaN/∞/0 = 8627/3054/1647/4639/1270/1358；
+标志 NV/DZ/OF/UF/NX = 1568/588/1647/2801/10436；flush 打断 1044、finish 反压 17476、两子单元同时在忙 70442 拍。
+★UT 发现的 golden 行为★（照抄、写进 tb 头）：start 分派不看对外 start_ready，除法器在忙时开方器照样能接新运算（反之亦然）。
+变异（scratchpad，20k 拍）：开方格式码不减 1 ⇒ errors=15106；start_ready 与改或 ⇒ 10048；结果汇合改优先级 ⇒ 13247；
+b 的 canonical 标志接成 a 的 ⇒ 829。
+
+### 4.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/FloatDivider.json）
+
+模型 expected = 751（寄存器 680 = FloatDividerR64 366 + fpsqrt_r16 314；输出 71）。预期 constant reg **30**
+（= 两个子单元自签核的 constant_reg 27 + 3，本层不约束它们的任何输入）。vmucp：FloatDividerR64 的 fp_format_onehot_q[2] 1 位
+（`verif/fm_target_config/FloatDivider.tcl`，无钉点，预期 FM 按名配上）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **721**（= 751 − 30） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 30 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过任何 FM 试跑。
+
 ## 对账（跑完追加）
 
 ### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule
