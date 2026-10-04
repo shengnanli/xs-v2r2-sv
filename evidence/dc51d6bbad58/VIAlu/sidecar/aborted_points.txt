@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VIAlu
+Implementation : i:/WORK/VIAlu
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 10:30:16 2026
+**************************************************
+
+No aborted compare points.
+
+1

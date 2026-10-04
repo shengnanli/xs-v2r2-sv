@@ -358,3 +358,11 @@ unread 0，unmatched 全 0，constant_reg **27**，黑盒 0，dont_verify 无。
 vmucp 六条：(1) FP_INCVT fcvtmodTrueExpReg[4:0] 5 位（FM 按名配上，无钉点）；(2) 5↔5；(3) unread_notcompared 0，572 − 27 = 545 全比；
 (4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/FPCVT.tcl 在 script_closure。
 更正（不改 §5 原文）：§5 标题写的「重写 87 行」应为 **82 行**（`wc -l rtl/backend/FPCVT.sv`），是登记时笔误，与证明无关。
+
+### F. VIAlu —— evidence/dc51d6bbad58/VIAlu
+
+PROOF_COMMIT=dc51d6bba，`bash scripts/run_proof.sh VIAlu VIAlu`：native SUCCEEDED，passing **2105** / failing 0 / unverified 0 / aborted 0 /
+unread 0，unmatched 全 0，constant_reg **1**，黑盒 0，dont_verify 无；钉点 `VIALU_REDU_PIN_PRE_END regs=33 ok=817 bad=0`（91 s）。
+预测 2105 / 1 —— 逐项相等；`fm_predict.py check VIAlu`：2106 − 2105 = 1 = constant_reg，rc=0。
+vmucp 六条：(1) Reduction vdType_reg_s1[3:2] 2 位（钉配）+ VMask vs1_reg_s1[127:8] 120 位（按名配上）；(2) 122↔122；
+(3) unread_notcompared 0，2106 − 1 = 2105 全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VIAlu.tcl 在 script_closure。
