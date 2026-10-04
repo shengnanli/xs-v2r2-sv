@@ -36,8 +36,6 @@ import sys
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path(os.environ.get('G1_GOLDEN', '/home/eda/xs-env/G1-canonical/golden-rtl'))
-TARGET = REPO / 'rtl' / 'backend' / 'NewCSR.sv'
-REGIONS = ('newcsr-ports', 'newcsr-childnets', 'newcsr-regout', 'newcsr-insts')
 
 
 def die(msg):
@@ -471,6 +469,48 @@ def conn_rule(inst, port):
 
 
 # ---------------------------------------------------------------------------
+# CSR（NewCSR 的父：功能单元外壳）—— 胶合信号名与含运算符连接的映射
+# ---------------------------------------------------------------------------
+CSR_ID_MAP = {
+    'wdataReg': 'wdata_q',
+    'trapInstMod_io_fromDecode_trapInstInfo_next_valid_last_REG': 'trap_inst_info_valid_q',
+    'trapInstMod_io_fromDecode_trapInstInfo_next_bits_r_instr': 'trap_inst_info_instr_q',
+    'trapInstMod_io_fromDecode_trapInstInfo_next_bits_r_ftqPtr_flag': 'trap_inst_info_ftq_flag_q',
+    'trapInstMod_io_fromDecode_trapInstInfo_next_bits_r_ftqPtr_value': 'trap_inst_info_ftq_value_q',
+    'trapInstMod_io_fromDecode_trapInstInfo_next_bits_r_ftqOffset': 'trap_inst_info_ftq_offset_q',
+}
+
+
+def csr_conn_rule(inst, port):
+    return {
+        ('csrMod', 'io_in_bits_wen'): 'csr_wen',
+        ('csrMod', 'io_in_bits_ren'): 'csr_ren',
+        ('csrMod', 'io_in_bits_src'): 'csr_src',
+        ('csrMod', 'io_in_bits_mnret'): 'is_mnret',
+        ('csrMod', 'io_in_bits_mret'): 'is_mret',
+        ('csrMod', 'io_in_bits_sret'): 'is_sret',
+        ('csrMod', 'io_in_bits_dret'): 'is_dret',
+        ('csrMod', 'io_in_bits_redirectFlush'): 'redirect_flush',
+        ('trapInstMod', 'io_faultCsrUop_valid'): 'fault_csr_uop_valid',
+        ('trapInstMod', 'io_faultCsrUop_bits_fuOpType'): 'fault_csr_uop_fuoptype',
+        ('trapInstMod', 'io_faultCsrUop_bits_imm'): 'fault_csr_uop_imm',
+        ('trapInstMod', 'io_faultCsrUop_bits_ftqInfo_ftqPtr_flag'): 'fault_csr_uop_ftq_flag',
+        ('trapInstMod', 'io_faultCsrUop_bits_ftqInfo_ftqPtr_value'): 'fault_csr_uop_ftq_value',
+        ('trapInstMod', 'io_faultCsrUop_bits_ftqInfo_ftqOffset'): 'fault_csr_uop_ftq_offset',
+        ('trapInstMod', 'io_readClear'): 'trap_inst_read_clear',
+        ('trapTvalMod', 'io_clear'): 'trap_tval_clear',
+    }.get((inst, port))
+
+
+TARGETS = [
+    dict(top='NewCSR', path=REPO / 'rtl' / 'backend' / 'NewCSR.sv', prefix='newcsr',
+         id_map=ID_MAP, rule=conn_rule, regout=True),
+    dict(top='CSR', path=REPO / 'rtl' / 'backend' / 'CSR.sv', prefix='csr',
+         id_map=CSR_ID_MAP, rule=csr_conn_rule, regout=False),
+]
+
+
+# ---------------------------------------------------------------------------
 # regOut 打包视图：把 golden io_out_bits_regOut 拆成 "每个选择条件 -> 64 位字段视图"
 # ---------------------------------------------------------------------------
 REGOUT_TREE = re.compile(r'(_regOut_T_\d+|_GEN_(?:16|17|18|19|20)|rdata|_rdata_T_\d+)$')
@@ -561,8 +601,9 @@ CSR_NAME_OVERRIDE = {0x001: 'fflags', 0x002: 'frm', 0x009: 'vxsat', 0x00A: 'vxrm
                      0xC22: 'vlenb', 0xF11: 'mvendorid', 0xF12: 'marchid'}
 
 
-def build(golden):
-    top = golden_module('NewCSR')
+def build(T):
+    top = golden_module(T['top'])
+    id_map, rule = T['id_map'], T['rule']
     port_names = {n for _, _, n in top.ports}
     out_ports = {n for d, _, n in top.ports if d == 'output'}
 
@@ -605,10 +646,10 @@ def build(golden):
             return i
         if i in childnet:
             return childnet[i]
-        if i in ID_MAP:
+        if i in id_map:
             used.add(i)
-            return ID_MAP[i]
-        die('golden 胶合信号 %r 没有 ID_MAP 映射（不猜）' % i)
+            return id_map[i]
+        die('%s: golden 胶合信号 %r 没有 ID_MAP 映射（不猜）' % (T['top'], i))
 
     # ---- 实例 ----
     used_ids, used_rules = set(), set()
@@ -632,15 +673,17 @@ def build(golden):
             if operator_free(x):
                 rows.append((p, rename(x, lambda i: map_id(i, used_ids))))
             else:
-                r = conn_rule(inst, p)
+                r = rule(inst, p)
                 if r is None:
-                    die('%s.%s: 含运算符的连接没有 CONN 规则: %s' % (inst, p, e[:120]))
+                    die('%s: %s.%s: 含运算符的连接没有 CONN 规则: %s' % (T['top'], inst, p, e[:120]))
                 used_rules.add((inst, p))
                 rows.append((p, r))
         inst_blocks.append((typ, inst, rows))
-    unused = sorted(set(ID_MAP) - used_ids)
+    unused = sorted(set(id_map) - used_ids)
     if unused:
-        die('ID_MAP 里有没被用到的条目: %s' % unused[:10])
+        die('%s: ID_MAP 里有没被用到的条目: %s' % (T['top'], unused[:10]))
+    if not T['regout']:
+        return top, child_decls, inst_blocks, []
 
     # ---- regOut 视图 ----
     cache = {}
@@ -708,9 +751,10 @@ def pack(bits):
     return segs
 
 
-def render(top, child_decls, inst_blocks, views, childnet_w):
+def render(T, top, child_decls, inst_blocks, views, childnet_w):
     R = {}
-    R['newcsr-ports'] = '\n'.join(top.port_lines)
+    pre = T['prefix']
+    R[pre + '-ports'] = '\n'.join(top.port_lines)
     out = []
     for inst, decl in child_decls:
         if not decl:
@@ -718,7 +762,7 @@ def render(top, child_decls, inst_blocks, views, childnet_w):
         out.append('  // %s' % inst)
         for w, n in decl:
             out.append('  wire %-9s %s;' % ('[%d:0]' % (w - 1) if w > 1 else '', n))
-    R['newcsr-childnets'] = '\n'.join(out)
+    R[pre + '-childnets'] = '\n'.join(out)
     out = []
     for addr, name, bits in sorted(views):
         segs = pack(bits)
@@ -740,7 +784,8 @@ def render(top, child_decls, inst_blocks, views, childnet_w):
             for k, p in enumerate(parts):
                 out.append('    %s%s' % (p, ',' if k < len(parts) - 1 else ''))
             out.append('  };')
-    R['newcsr-regout'] = '\n'.join(out)
+    if T['regout']:
+        R[pre + '-regout'] = '\n'.join(out)
     out = []
     for typ, inst, rows in inst_blocks:
         out.append('  %s %s (' % (typ, inst))
@@ -748,15 +793,12 @@ def render(top, child_decls, inst_blocks, views, childnet_w):
         for k, (p, c) in enumerate(rows):
             out.append('    .%s (%s)%s' % (p.ljust(wp), c, ',' if k < len(rows) - 1 else ''))
         out.append('  );')
-    R['newcsr-insts'] = '\n'.join(out)
+    R[pre + '-insts'] = '\n'.join(out)
     return R
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument('--check', action='store_true')
-    args = ap.parse_args()
-    top, child_decls, inst_blocks, views = build(GOLDEN)
+def run_target(T, check):
+    top, child_decls, inst_blocks, views = build(T)
     # golden 子模块输出线名 -> impl 名 / 位宽（regOut 视图打印用）
     cw = {}
     for typ, inst, conns in top.insts:
@@ -767,31 +809,40 @@ def main():
             if sdir[p] == 'output' and re.fullmatch(r'_\w+', e or ''):
                 cw[e] = '%s_%s' % (inst, p)
                 cw['#' + e] = swid[p]
-    R = render(top, child_decls, inst_blocks, views, cw)
-    if not TARGET.exists():
-        die('%s 不存在：手写部分要先写好（本脚本只替换 GENERATED 区）' % TARGET)
-    txt = TARGET.read_text()
+    R = render(T, top, child_decls, inst_blocks, views, cw)
+    path = T['path']
+    if not path.exists():
+        die('%s 不存在：手写部分要先写好（本脚本只替换 GENERATED 区）' % path)
+    txt = path.read_text()
     new = txt
-    for r in REGIONS:
+    for r in R:
         b = '// BEGIN GENERATED(%s) —— 由 scripts/gen_newcsr.py 从 golden 机械产出，勿手改' % r
         e = '// END GENERATED(%s)' % r
         if new.count(b) != 1 or new.count(e) != 1:
-            die('%s: GENERATED(%s) 标记必须各恰好一个' % (TARGET.name, r))
+            die('%s: GENERATED(%s) 标记必须各恰好一个' % (path.name, r))
         head, rest = new.split(b, 1)
         _, tail = rest.split(e, 1)
         new = head + b + '\n' + R[r] + '\n' + e + tail
-    nviews = len(views)
-    ninst = len(inst_blocks)
+    what = '%d 实例%s' % (len(inst_blocks), '，%d 个 regOut 视图' % len(views) if T['regout'] else '')
     if new != txt:
-        if args.check:
-            print('gen_newcsr --check: DRIFT %s' % TARGET.relative_to(REPO))
+        if check:
+            print('gen_newcsr --check: DRIFT %s' % path.relative_to(REPO))
             return 1
-        TARGET.write_text(new)
-        print('wrote %s（%d 实例，%d 个 regOut 视图）' % (TARGET.relative_to(REPO), ninst, nviews))
+        path.write_text(new)
+        print('wrote %s（%s）' % (path.relative_to(REPO), what))
     else:
-        print('gen_newcsr%s: OK（%d 实例，%d 个 regOut 视图，无漂移）' %
-              (' --check' if args.check else '', ninst, nviews))
+        print('gen_newcsr%s: %s OK（%s，无漂移）' % (' --check' if check else '', path.name, what))
     return 0
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--check', action='store_true')
+    args = ap.parse_args()
+    rc = 0
+    for T in TARGETS:
+        rc |= run_target(T, args.check)
+    return rc
 
 
 if __name__ == '__main__':

@@ -12,8 +12,8 @@
 // 激励偏置：
 //   * 访问请求：valid 60%，wen 40%，ren 50%；地址 4/5 取合法 CSR 地址表、1/5 全随机；
 //     写数据 1/8 全 0、1/8 全 1、其余随机；xRET 各 2%；redirectFlush 3%；out.ready 70%。
-//   * trap：3%，trapVec 4/5 单热，isInterrupt 30%，singleStep/isFetchBkpt/satpFlush 各 5%。
-//   * 中断线：平台中断线每拍 5% 概率翻转；NMI 各 1%；AIA 回数 15%（其中 illegal 20%）。
+//   * trap：3%，trapVec 4/5 单热（异常号 0..23），isInterrupt 30%，singleStep 1%，isFetchBkpt/satpFlush 各 5%。
+//   * 中断线：平台中断线每拍 5% 概率翻转；NMI、调试中断各 1/2000；AIA 回数 15%（其中 illegal 20%）。
 //   * criticalErrorState 输入每拍 1/50000（一旦置位粘住，所以要很稀）。
 // 覆盖闸（golden 内部信号计数，下限 = NCYCLES/2000，事件稀的另设）：trap 进入 M/HS/VS/MN、
 //   mret/sret 合法、进 debug、IMSIC 等待态、合法写、EX_II/EX_VI、flushPipe、targetPcUpdate；
@@ -1142,7 +1142,7 @@ module tb;
     in_vec[OFF_io_in_bits_redirectFlush]   = pct(3);
     in_vec[OFF_io_fromRob_trap_valid]      = pct(3);
     in_vec[OFF_io_fromRob_trap_bits_trapVec +: 64] =
-      pct(80) ? (64'h1 << $urandom_range(63)) : (pct(50) ? 64'h0 : {$urandom, $urandom});
+      pct(80) ? (64'h1 << $urandom_range(23)) : (pct(50) ? 64'h0 : {$urandom, $urandom});   // 异常号 0..23
     in_vec[OFF_io_fromRob_trap_bits_isInterrupt]  = pct(30);
     in_vec[OFF_io_fromRob_trap_bits_singleStep]   = pct(1);
     in_vec[OFF_io_fromRob_trap_bits_isFetchBkpt]  = pct(5);
@@ -1190,6 +1190,24 @@ module tb;
         @(posedge clock); #1;
       end
     end
+    // 4 组触发器的 tdata2 不复位：逐个 tselect 写一遍 tdata2（tdata1 写 0 使其可写）
+    for (int t = 0; t < 4; t++) begin
+      for (int w = 0; w < 3; w++) begin
+        for (int r = 0; r < 2; r++) begin
+          drive_random();
+          in_vec[OFF_io_in_valid] = 1'b1;
+          in_vec[OFF_io_in_bits_wen] = 1'b1;
+          in_vec[OFF_io_in_bits_addr +: 12] = w == 0 ? 12'h7A0 : (w == 1 ? 12'h7A1 : 12'h7A2);
+          in_vec[OFF_io_in_bits_wdata +: 64] = w == 0 ? 64'(t) : (w == 1 ? 64'h0 : {$urandom, $urandom});
+          {in_vec[OFF_io_in_bits_mnret], in_vec[OFF_io_in_bits_mret],
+           in_vec[OFF_io_in_bits_sret], in_vec[OFF_io_in_bits_dret]} = 4'h0;
+          in_vec[OFF_io_in_bits_redirectFlush] = 1'b0;
+          in_vec[OFF_io_fromRob_trap_valid] = 1'b0;
+          in_vec[OFF_io_out_ready] = 1'b1;
+          @(posedge clock); #1;
+        end
+      end
+    end
     // debug CSR（dpc/dscratch0/dscratch1）只有 debug 模式能写：拉调试中断进 debug，写完 dret
     // （调试中断经 InterruptFilter 要好几拍才锁进 debug，trap 放在第 12 拍）
     for (int r = 0; r < 14; r++) begin
@@ -1202,6 +1220,17 @@ module tb;
     end
     if (!u_g.debugMode) $display("WARMUP: did not enter debug (intrVec=%h debug=%b ivv=%b dbgIE=%b NMIE=%b crit=%b)",
       u_g.intrVec, u_g.debug, u_g._intrMod_io_out_interruptVec_valid, u_g.debugIntrEnable, u_g._mnstatus_regOut_NMIE, u_g.criticalErrorState);
+    // dcsr 不复位：上电 STEP=1 且 STEPIE=0 时调试中断被屏蔽，改走单步异常进 debug
+    for (int r = 0; r < 4 && !u_g.debugMode; r++) begin
+      drive_random();
+      in_vec[OFF_io_in_valid] = 1'b0;
+      in_vec[OFF_platformIRP_debugIP] = 1'b0;
+      in_vec[OFF_io_fromRob_trap_valid] = (r == 0);
+      in_vec[OFF_io_fromRob_trap_bits_isInterrupt] = 1'b0;
+      in_vec[OFF_io_fromRob_trap_bits_singleStep] = 1'b1;
+      @(posedge clock); #1;
+    end
+    if (!u_g.debugMode) $display("WARMUP: debug not entered");
     for (int k = 0; k < 3; k++) begin
       for (int r = 0; r < 2; r++) begin
         drive_random();
@@ -1367,7 +1396,8 @@ module tb;
              $countones(csr_written & legal_mask), NLEGAL);
     if (checks == 0) begin $display("TEST FAILED (no checks)"); $fatal(1); end
     if (errors != 0) begin $display("TEST FAILED (mismatch)"); $fatal(1); end
-    if (f_trap_m < minf || f_trap_hs < minf / 4 || f_trap_vs < minf / 8 || f_trap_mn < 1
+    // trap 进 VS 要同时 V=1 且 medeleg/hedeleg 双重委托，随机激励下很稀（200k 拍十几次），只要求出现过
+    if (f_trap_m < minf || f_trap_hs < minf / 4 || f_trap_vs < 1 || f_trap_mn < 1
         || f_mret < minf || f_sret < minf / 4 || f_wait < minf || f_wen < minf
         || f_ex_ii < minf || f_ex_vi < minf / 8 || f_flush < minf || f_target < minf) begin
       $display("TEST FAILED (coverage)"); $fatal(1);
