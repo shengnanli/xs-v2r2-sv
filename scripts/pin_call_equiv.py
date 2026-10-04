@@ -82,6 +82,7 @@ NO_FIXTURE = {
 COVERED_DYNAMIC = {
     'verif/ut/ArithVecLeaves5/fm_pins.tcl',
     'verif/ut/Bitmap/fm_pins.tcl',
+    'verif/ut/CSR/fm_pins.tcl',
     'verif/ut/DataPathArb/fm_pins.tcl',
     'verif/ut/DecodeStage/fm_pins.tcl',
     'verif/ut/FusionDecoder/fm_pins.tcl',
@@ -90,6 +91,7 @@ COVERED_DYNAMIC = {
     'verif/ut/InterruptFilter/fm_pins.tcl',
     'verif/ut/MEFreeList/fm_pins.tcl',
     'verif/ut/MemCtrl/fm_pins.tcl',
+    'verif/ut/NewCSR/fm_pins.tcl',
     'verif/ut/NCBTransactionQueue/fm_pins.tcl',
     'verif/ut/PtwCache/fm_pins.tcl',
     'verif/ut/Rename/fm_pins.tcl',
