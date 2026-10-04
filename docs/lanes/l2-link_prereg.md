@@ -201,3 +201,7 @@ UT 9 档重跑见下）。不加 fm_pins / set_user_match。
 两跑都要求 failing / unverified / aborted / unmatched 全 0、无黑盒、无 dont_verify。若 1b 的 matched 对数不是 192，停下。
 
 改名后 UT 9 档重跑（同一 tb、同一 seed 集）：读数与 §4.2 逐档相同（checks 14198651 / 14198580 / 14198296，errors=0，cov_fail=0）。
+
+1b 跑结果（追加）：`evidence/d0c5e050a61c/LinkMonitor` passing 2465 / unread_notcompared 192 / unmatched_unread 0(0) /
+matched_unread_notcompared_pairs 192 对、逐对同名同下标（0 例外）/ 其余全 0 → strict PARTIAL，与本节登记逐项相等。
+据此写 `verif/fm_target_config/LinkMonitor.tcl` 六条证据并开 vmucp，第二跑预测不变（passing 2657 / unread 0 / SUCCEEDED）。

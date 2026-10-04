@@ -32,9 +32,9 @@ FM_VARIANTS = LinkMonitor
 # 不合并重复寄存器：比较点 = 寄存器位 + 输出位，fm_predict 模型精确适用。golden 里本就有同次态的
 # 寄存器对（tx.linkactivereq / txsactive；syscoreq / RegNext(true)），两侧逐个保留、逐个配对。
 FM_MERGE_DUP = false
-# vmucp：3 个 64 位性能计数器 dontTouch 但无扇出，预期是两侧对称的 matched-unread 点（192 位）。
-# 第一跑先关（量出 unread 集合与 passing 基线），第二跑再开，见 docs/lanes/l2-link_prereg.md §4。
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = false
+# vmucp：3 个 64 位性能计数器 dontTouch 但无扇出，是两侧对称的 matched-unread 点（192 位，按名双射）。
+# 加强证明（FM 实比），依据与六条证据见 verif/fm_target_config/LinkMonitor.tcl；基线跑见 prereg §4.4。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail
 
