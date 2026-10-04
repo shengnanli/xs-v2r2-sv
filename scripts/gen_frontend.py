@@ -1111,6 +1111,52 @@ def render_harvest_pins(already):
     return '\n'.join(L) + '\n'
 
 
+# ---------------------------------------------------------------------------
+# 四、恒等副本寄存器组
+#   golden 有"同一个值存好几份"的寄存器（firtool 保留的 dup 副本，如 Ftq 的 pc_mem_ifu_*_rdata_REG_1..4、
+#   SyncDataModule 每 bank 一份的写数据/写地址寄存器、FTBBank 的 req_pc_reg_1..3），重写件常只存一份
+#   （或份数不同）。这些目标自己签核时用的是 FM_MERGE_DUP=true（FM 先把恒等副本并成一个再配对）；
+#   Frontend 层不能整体打开 merge（Predictor 实测打开后到达 Matching 慢 7 倍，见 docs/predictor_fm_scaling_wall.md），
+#   改为：在诊断跑里让 FM 自己做结构识别（identify_duplicate_registers -by_structure），把它给出的、且包含
+#   未配对点的副本组原样写成 set_user_match（同侧对象成组 = 声明它们是恒等副本，效果与 merge 相同、范围只到这些组）。
+#   数据 verif/ut/Frontend/dup_groups.tsv（FM 输出原样转写，见文件头）。
+# ---------------------------------------------------------------------------
+DUP_GROUPS = REPO / 'verif' / 'ut' / 'Frontend' / 'dup_groups.tsv'
+
+
+def render_dup_groups():
+    groups = []
+    if DUP_GROUPS.exists():
+        for ln in DUP_GROUPS.read_text().splitlines():
+            if ln.startswith('#') or not ln.strip():
+                continue
+            objs = ln.split('\t')
+            if len(objs) < 2 or len({o[0] for o in objs}) != 1:
+                fail('dup_groups.tsv 行形状不对（须同侧 >=2 个对象）: %r' % ln[:120])
+            groups.append(objs)
+    L = []
+    A = L.append
+    A('# ---- 四、恒等副本寄存器组（%d 组 / %d 个对象；数据 verif/ut/Frontend/dup_groups.tsv）----'
+      % (len(groups), sum(len(g) for g in groups)))
+    A('set ::FE_DUP_EXPECT %d' % len(groups))
+    A('set ::FE_DUP_OK 0')
+    A('set ::FE_DUP_BAD 0')
+    A('proc fe_dup_grp {args} {')
+    A('  if {[set_user_match -type cell {*}$args]} { incr ::FE_DUP_OK } else {')
+    A('    incr ::FE_DUP_BAD')
+    A('    if {$::FE_DUP_BAD <= 10} { puts "FE_DUP_FAIL: $args" }')
+    A('  }')
+    A('}')
+    A('puts "FE_DUP_BEGIN expect=$::FE_DUP_EXPECT"')
+    for g in groups:
+        A('fe_dup_grp %s' % ' '.join('{%s}' % o for o in g))
+    A('puts "FE_DUP_END ok=$::FE_DUP_OK bad=$::FE_DUP_BAD expect=$::FE_DUP_EXPECT"')
+    A('if {$::FE_DUP_BAD != 0 || $::FE_DUP_OK != $::FE_DUP_EXPECT} {')
+    A('  error "FE_DUP: ok=$::FE_DUP_OK bad=$::FE_DUP_BAD expect=$::FE_DUP_EXPECT"')
+    A('}')
+    return '\n'.join(L) + '\n'
+
+
 def splice(text, gen):
     if BEGIN in text:
         i = text.index(BEGIN)
@@ -1133,7 +1179,8 @@ def main():
     already = set(seen) | core_refs
     outs = [(OUT, text, splice(text, render())),
             (PINS, PINS.read_text() if PINS.exists() else '',
-             render_pins() + render_child_pins(seen, per_src) + render_harvest_pins(already))]
+             render_pins() + render_child_pins(seen, per_src) + render_harvest_pins(already) +
+             render_dup_groups())]
     rc = 0
     for path, old, new in outs:
         if a.check:
