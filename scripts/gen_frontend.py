@@ -25,10 +25,16 @@ module Frontend：端口表（与 golden 逐位同名同序）、子模块之间
   5. 分组注释：实例之间每一对"谁连谁"都必须在 PAIR_DESC 里有一句说明（新出现的连接对 = 报错，逼着写清楚）；
      顶层端口按 TOP_GROUPS 前缀归组，未归组的端口 = 报错。
 
+另产出：verif/ut/Frontend/fm_pins_pre.tcl 的「顶层胶合寄存器」一节——golden Frontend 本层的全部寄存器
+（firtool 展平名 inner_*）逐位 set_user_match 到 u_core 里的对应寄存器位。映射表 CORE_REGS 必须覆盖 golden
+本层**每一个** reg 声明（漏一个即报错），对端寄存器必须在 xs_Frontend_core 里以同宽声明；钉点总数写成字面常数，
+运行时逐条数返回值，拒一条或总数不符即 error。
+
 用法：python3 scripts/gen_frontend.py [--check]
 """
 import argparse
 import collections
+import json
 import pathlib
 import re
 import sys
@@ -170,6 +176,38 @@ PAIR_DESC = {
     ('perfHpm', 'core'): '8 路性能计数增量（再打两拍送出）',
     ('mbistIntf', 'mbistPl'): 'MBIST 接口 ↔ 分发流水',
 }
+
+
+# 顶层胶合寄存器：golden 本层寄存器名（去掉 inner_ 前缀前的全名）→ (u_core 里的寄存器名, 数组维)
+#   维为 None：标量/向量寄存器；为 (n, 'idx')：golden 是 n 个展平名 <...>_<i>_<...>，impl 是非打包数组 name[i]
+CORE_REGS = collections.OrderedDict([
+    ('inner_needFlush', 'redirect_flush'),
+    ('inner_FlushControlRedirect', 'redirect_from_ctrl'),
+    ('inner_FlushMemVioRedirect', 'redirect_from_memvio'),
+] + [('inner_sfence_REG_valid', 'sfence_s1_valid')]
+  + [('inner_sfence_REG_bits_%s' % f, 'sfence_s1_%s' % f) for f in ('rs1', 'rs2', 'addr', 'id', 'flushPipe', 'hv', 'hg')]
+  + [('inner_sfence_valid', 'sfence_dly_valid')]
+  + [('inner_sfence_bits_%s' % f, 'sfence_dly_bits_%s' % f) for f in ('rs1', 'rs2', 'addr', 'id', 'flushPipe', 'hv', 'hg')]
+  + [('inner_icache_io_csr_pf_enable_REG', 'icache_pf_enable'),
+     ('inner_icache_io_fencei_REG', 'icache_fencei')]
+  + [('inner_checkPcMem_%d_startAddr' % i, 'check_pc_mem[%d]' % i) for i in range(64)]
+  + [('inner_prevTakenValid', 'taken_ptr_valid_q'),
+     ('inner_prevTakenFtqPtr_flag', 'taken_ptr_flag_q'),
+     ('inner_prevTakenFtqPtr_value', 'taken_ptr_value_q'),
+     ('inner_prevTakenFtqPtr_1_flag', 'taken_tgt_ptr_flag_q'),
+     ('inner_prevTakenFtqPtr_1_value', 'taken_tgt_ptr_value_q'),
+     ('inner_prevTakenValid_1', 'taken_tgt_valid_q'),
+     ('inner_prevNotTakenPC', 'not_taken_pc_q'),
+     ('inner_prevIsRVC', 'not_taken_is_rvc_q'),
+     ('inner_prevNotTakenValid', 'not_taken_valid_q'),
+     ('inner_errorReg_valid', 'err_valid_q'),
+     ('inner_errorReg_bits_paddr', 'err_paddr_q'),
+     ('inner_errorReg_bits_report_to_beu', 'err_report_q'),
+     ('inner_io_error_REG_ecc_error_valid', 'io_error_ecc_error_valid'),
+     ('inner_io_error_REG_ecc_error_bits', 'io_error_ecc_error_bits')]
+  + [('inner_io_perf_%d_value_REG' % k, 'perf_s1[%d]' % k) for k in range(8)]
+  + [('inner_io_perf_%d_value_REG_1' % k, 'perf_s2[%d]' % k) for k in range(8)])
+PINS = REPO / 'verif' / 'ut' / 'Frontend' / 'fm_pins_pre.tcl'
 
 PORT_RE = re.compile(r'\s*(input|output)\s+(?:\[(\d+):0\]\s+)?(\w+),?$')
 
@@ -529,6 +567,456 @@ def render():
     return '\n'.join(L) + '\n'
 
 
+def golden_top_regs():
+    t = (G1 / 'Frontend.sv').read_text(errors='replace')
+    start = re.search(r'^module Frontend\(', t, re.M).start()
+    body = t[start:]
+    body = body[:body.index('\nendmodule')]
+    body = re.sub(r'`ifdef ENABLE_INITIAL_REG_.*?`endif // ENABLE_INITIAL_REG_', '', body, flags=re.S)
+    regs = collections.OrderedDict()
+    for m in re.finditer(r'^  reg\s+(?:\[(\d+):0\]\s+)?(\w+);', body, re.M):
+        regs[m.group(2)] = int(m.group(1) or 0) + 1
+    return regs
+
+
+def core_regs():
+    t = OUT.read_text()
+    m = re.search(r'^module xs_Frontend_core \((.*?)^endmodule', t, re.M | re.S)
+    body = m.group(1)
+    # 核里用到的宽度 / 维度参数（与核内 localparam 一致；对不上时下面的宽度核对会报错）
+    for k, v in (('VADDR_W-1', '49'),):
+        body = body.replace('[%s:0]' % k, '[%s:0]' % v)
+    out = {}
+    for mm in re.finditer(r'^\s*(?:output\s+)?logic\s+(?:\[(\d+):0\]\s+)?(\w+)(?:\s*\[(\w+)\])?\s*[;,]', body, re.M):
+        w = int(mm.group(1) or 0) + 1
+        n = mm.group(3)
+        if n is not None and not n.isdigit():
+            n = {'NUM_PERF': '8', 'FTQ_SIZE': '64', 'DECODE_WIDTH': '6'}.get(n)
+        out[mm.group(2)] = (w, int(n) if n else None)
+    return out
+
+
+def render_pins():
+    g = golden_top_regs()
+    c = core_regs()
+    miss = [r for r in g if r not in CORE_REGS]
+    extra = [r for r in CORE_REGS if r not in g]
+    if miss or extra:
+        fail('CORE_REGS 与 golden 本层寄存器不对应：缺 %s 多 %s' % (miss[:5], extra[:5]))
+    pairs = []
+    for gr, ir in CORE_REGS.items():
+        w = g[gr]
+        mm = re.fullmatch(r'(\w+)(?:\[(\d+)\])?', ir)
+        base, idx = mm.group(1), mm.group(2)
+        if base not in c:
+            fail('u_core 里找不到寄存器 %s' % base)
+        cw, cn = c[base]
+        if cw != w or (idx is None) != (cn is None) or (idx is not None and int(idx) >= cn):
+            fail('寄存器 %s(宽 %d) 与 u_core.%s(宽 %d, 维 %s) 不符' % (gr, w, ir, cw, cn))
+        ipre = 'u_core/%s_reg%s' % (base, '' if idx is None else '[%s]' % idx)
+        for b in range(w):
+            rb = '' if w == 1 else '[%d]' % b
+            pairs.append(('r:/WORK/Frontend/%s_reg%s' % (gr, rb), 'i:/WORK/Frontend/%s%s' % (ipre, rb)))
+    L = []
+    A = L.append
+    A('# Frontend FM 「匹配前」钉点 —— 自动生成：scripts/gen_frontend.py（勿手改；规则与理由见生成器文件头）')
+    A('# 只 set_user_match 消名差：不约束 ref、不改 appvar、不加黑盒。逐条数返回值，拒一条或总数不等于字面常数即 error。')
+    A('# 跑在 sidecar 的 safe child interp 里：只用 set_user_match / puts / error。进 fm.log 的输出一律 ASCII。')
+    A('if {$top ne "Frontend"} { error "FRONTEND_PRE_PIN_UNKNOWN_TOP=$top" }')
+    A('# ---- 一、顶层胶合寄存器（golden 本层 %d 个寄存器 / %d 位 -> u_core）----' % (len(g), len(pairs)))
+    A('set ::FE_CORE_EXPECT %d' % len(pairs))
+    A('set ::FE_CORE_OK 0')
+    A('set ::FE_CORE_BAD 0')
+    A('proc fe_core_pin {r i} {')
+    A('  if {[set_user_match $r $i]} { incr ::FE_CORE_OK } else {')
+    A('    incr ::FE_CORE_BAD')
+    A('    if {$::FE_CORE_BAD <= 10} { puts "FE_CORE_PIN_FAIL: $r <-> $i" }')
+    A('  }')
+    A('}')
+    A('puts "FE_CORE_PIN_BEGIN expect=$::FE_CORE_EXPECT"')
+    for r, i in pairs:
+        A('fe_core_pin {%s} {%s}' % (r, i))
+    A('puts "FE_CORE_PIN_END ok=$::FE_CORE_OK bad=$::FE_CORE_BAD expect=$::FE_CORE_EXPECT"')
+    A('if {$::FE_CORE_BAD != 0 || $::FE_CORE_OK != $::FE_CORE_EXPECT} {')
+    A('  error "FE_CORE_PIN: ok=$::FE_CORE_OK bad=$::FE_CORE_BAD expect=$::FE_CORE_EXPECT"')
+    A('}')
+    return '\n'.join(L) + '\n'
+
+
+# ---------------------------------------------------------------------------
+# 二、子树钉点重定位
+#   子树里每个已签核目标 X 自己证明时用的钉点文件（verif/ut/<ut>/fm_pins*.tcl）写的是**以 X 为顶**的路径
+#   r:/WORK/X/<a>  <->  i:/WORK/X/<b>。在 Frontend 里 X 是某处的一个实例，所以要把它改写成
+#   r:/WORK/Frontend/<golden 实例路径>/<a>  <->  i:/WORK/Frontend/<重写侧实例路径>/<b>。
+#   ★不能直接用设计作用域路径★：2026-10-04 实测（scratchpad/frontend-asm/fmexp）——设计 X 被例化两次时，
+#   对 r:/WORK/X/... 的 set_user_match **返回 1 却不生效**（错配的钉点被静默忽略，FM 自己配对后照样 SUCCEEDED），
+#   只有唯一例化时才生效。所以一律改写成从 Frontend 顶起的实例路径。
+#   取钉点：用 tclsh 执行子目标的钉点脚本（set_user_match 打桩成"记录 + 返回 1"），得到字面钉点对；
+#   脚本里若调用 find_cells / report_unmatched_points 这类查询动词（运行期发现式），这里取不到，列在
+#   CHILD_PIN_DYNAMIC 里单独处理。
+#   实例对应表 verif/ut/Frontend/fe_inst_map.tsv：每个有钉点的设计 X 的 golden 实例路径 -> 重写侧实例路径，
+#   由 `--refresh-inst-map <UCLI 层次清单>` 从 UT 双例化 simv 的实际层次机械生成（verif/ut/Frontend/Makefile
+#   的 hiermap 目标），对不上（golden 实例在重写侧找不到唯一对应）即报错。
+# ---------------------------------------------------------------------------
+CHILD_PIN_SRC = [
+    # (设计 X, 钉点脚本)
+    ('Composer', 'verif/ut/Composer/fm_pins_pre.tcl'),
+    ('FauFTB', 'verif/ut/FauFTB/fm_pins_pre.tcl'),
+    ('FTB', 'verif/ut/FTB/fm_pins_pre.tcl'),
+    ('ITTage', 'verif/ut/ITTage/fm_pins_pre.tcl'),
+    ('ITTageTable', 'verif/ut/ITTageTable/fm_pins.tcl'),
+    ('ITTageTable_1', 'verif/ut/ITTageTable_1/fm_pins.tcl'),
+    ('ITTageTable_2', 'verif/ut/ITTageTable_2/fm_pins.tcl'),
+    ('ITTageTable_3', 'verif/ut/ITTageTable_3/fm_pins.tcl'),
+    ('ITTageTable_4', 'verif/ut/ITTageTable_4/fm_pins.tcl'),
+    ('RAS', 'verif/ut/RASTop/fm_pins_pre.tcl'),
+    ('Tage_SC', 'verif/ut/Tage_SC/fm_pins_pre.tcl'),
+    ('Ftq', 'verif/ut/Ftq/fm_pins_pre.tcl'),
+    ('SyncDataModuleTemplate__64entry', 'verif/ut/SyncDataModule/fm_pins_pre.tcl'),
+    ('SyncDataModuleTemplate__64entry_1', 'verif/ut/SyncDataModule/fm_pins_pre.tcl'),
+    ('SyncDataModuleTemplate__64entry_2', 'verif/ut/SyncDataModule/fm_pins_pre.tcl'),
+    ('SyncDataModuleTemplate__64entry_3', 'verif/ut/SyncDataModule/fm_pins_pre.tcl'),
+    ('SyncDataModuleTemplate_FtqPC_64entry', 'verif/ut/SyncDataModule/fm_pins_pre.tcl'),
+    ('NewIFU', 'verif/ut/NewIFU/fm_pins_pre.tcl'),
+    ('ICache', 'verif/ut/ICache/fm_pins_pre.tcl'),
+    ('ICache', 'verif/ut/ICache/fm_pins.tcl'),
+    ('ICacheMissUnit', 'verif/ut/ICacheMissUnit/fm_pins.tcl'),
+    ('ICacheCtrlUnit', 'verif/ut/ICacheCtrlUnit/fm_pins.tcl'),
+    ('SRAMTemplateWithFixedWidth', 'verif/ut/SRAMTemplateWithFixedWidth/fm_pins.tcl'),
+    ('SRAMTemplateWithFixedWidth_4', 'verif/ut/SRAMTemplateWithFixedWidth/fm_pins.tcl'),
+    ('SRAMTemplateWithFixedWidth_12', 'verif/ut/SRAMTemplateWithFixedWidth/fm_pins.tcl'),
+    ('SRAMTemplateWithFixedWidth_28', 'verif/ut/SRAMTemplateWithFixedWidth/fm_pins.tcl'),
+    ('InstrUncache', 'verif/ut/InstrUncache/fm_pins_pre.tcl'),
+    ('PTWFilter', 'verif/ut/PTWFilter/fm_pins_pre.tcl'),
+    ('PTWRepeaterNB', 'verif/ut/PTWRepeaterNB/fm_pins_pre.tcl'),
+    ('PMP', 'verif/ut/PMP/fm_pins_pre.tcl'),
+    ('TLB', 'verif/ut/TLB/fm_pins.tcl'),
+]
+# FM_FIELD_MAP 式的打包载荷映射（fm_eq.tcl 的 match_packed_payload 只对顶层目标生效，这里展开成字面钉点）
+CHILD_FIELD_MAP = [('FauFTBWay', 'verif/ut/FauFTBWay/fm_map/FauFTBWay.txt')]
+# 不重复取的钉点源：它们覆盖的对象已由上层目标的钉点覆盖（重写侧没有独立的 X 实例）
+CHILD_PIN_COVERED = {
+    'PredChecker': 'NewIFU 的钉点已含 predChecker/* 1799 条（重写侧 NewIFU 直接例化 xs_PredChecker_core）',
+    'FrontendTrigger': 'NewIFU 的钉点已含 frontendTrigger/* 296 条（重写侧 NewIFU 直接例化 xs_FrontendTrigger_core）',
+}
+# 运行期发现式钉点脚本（find_cells / report_unmatched_points），tclsh 取不到字面对，逐个处置：
+CHILD_PIN_COVERED.update({
+    'InstrMMIOEntry': 'InstrUncache 的钉点已含 entries_0/req_addr[0] 那 1 条（同一个死位）',
+    'TLBFA': 'TLB 的钉点已含 entries/page_itlb_storage_fa/reqVpn 33 条死位（同一族）',
+    'TlbStorageWrapper': 'TLB 的钉点已含 entries/page_itlb_storage_fa/reqVpn 33 条死位（同一族）',
+})
+# IBuffer：脚本按 report_unmatched_points 现查，但它自己写明并断言了双射是固定的
+#   deqInBankPtr_<b>_flag_reg <-> u_core/deq_inbank_flag_q_reg[<b>]，b = 0..5（下标就是 bank 号，无自由度），
+#   这里直接写成字面钉点。
+CHILD_PIN_LITERAL = [('IBuffer', 'r:/WORK/IBuffer/deqInBankPtr_%d_flag_reg' % b,
+                      'i:/WORK/IBuffer/u_core/deq_inbank_flag_q_reg[%d]' % b) for b in range(6)]
+# Predictor：脚本靠 find_cells 现场发现 2711 对（u_core 里 ghv / folded_hist / afhob / ghist_ptr … 11 族），
+#   tclsh 取不到。做法：在 Frontend 诊断 FM 会话里以 top=Predictor 原样执行该脚本、把每次 set_user_match 的参数
+#   录成 verif/ut/Frontend/predictor_pins.tsv（脚本自己的 2711 条双射断言当场通过）；这里核对脚本 sha 未变后照常重定位。
+PREDICTOR_PINS = REPO / 'verif' / 'ut' / 'Frontend' / 'predictor_pins.tsv'
+CHILD_PIN_DYNAMIC = []
+
+
+def recorded_predictor_pins():
+    import hashlib
+    src = 'verif/ut/Predictor/fm_pins_pre.tcl'
+    rows = []
+    sha = None
+    for ln in PREDICTOR_PINS.read_text().splitlines():
+        if ln.startswith('# source_sha256\t'):
+            sha = ln.split('\t')[1]
+        elif ln.strip() and not ln.startswith('#'):
+            rows.append(ln.split('\t'))
+    cur = hashlib.sha256((REPO / src).read_bytes()).hexdigest()
+    if sha != cur:
+        fail('Predictor 钉点脚本已改（录制时 %s，现在 %s）—— 须重录 predictor_pins.tsv' % (sha, cur))
+    if len(rows) != 2711:
+        fail('predictor_pins.tsv 条数 %d != 2711' % len(rows))
+    return rows
+INST_MAP = REPO / 'verif' / 'ut' / 'Frontend' / 'fe_inst_map.tsv'
+IMPL_HIER = REPO / 'verif' / 'ut' / 'Frontend' / 'fe_impl_hier.tsv'
+# 两侧同读 golden 的叶子（不算"impl 侧读 golden"）。ClockGate **不在此列**：codex 0208 起 impl 侧读本地重写件
+# rtl/common/ClockGate.sv，钉点源若当年读的是 golden ClockGate，伸进 CG 内部（EN 锁存器）的钉点即过期。
+VENDOR_LEAF = re.compile(r'^(array(_\d+)?(_ext)?|sram_array_\w+|data_mem_\w+|MbistClockGateCell)$')
+
+
+def source_receipt(design, pinfile):
+    """钉点源 X 用当前这份钉点脚本（sha 相等）出证的绿 receipt，取最新一份（按 run_id）。
+    只用来回答"那次证明里 impl 侧哪些子模块直接读 golden"，以剔除伸进这些子模块内部的过期钉点；
+    X 本身的签核新鲜度不在这里判（见 docs/lanes/frontend-asm_prereg.md 的子树清单）。
+    返回 (evidence 目录, X 证明时 impl 侧直接读 golden 的模块集合)。"""
+    import glob
+    import hashlib
+    want = hashlib.sha256((REPO / pinfile).read_bytes()).hexdigest() if pinfile.endswith('.tcl') else None
+    best = None
+    newest = None
+    for rp in glob.glob(str(REPO / 'evidence' / '*' / design / 'receipt.json')):
+        d = json.loads(pathlib.Path(rp).read_text())
+        if d.get('verdict') not in ('SUCCEEDED', 'PASS_DEAD_REF'):
+            continue
+        if newest is None or d['run_id'] > newest[1]['run_id']:
+            newest = (rp, d)
+        if want is not None and d['proof_config'].get('pin_scripts', {}).get(pathlib.Path(pinfile).name) != want:
+            continue
+        if best is None or d['run_id'] > best[1]['run_id']:
+            best = (rp, d)
+    tag = ''
+    if best is None:
+        # 当前钉点脚本出证后又改过（只加注释或补钉点）：退用该目标最新一份绿 receipt 的 golden 集合，
+        # 并在头注释里标出。集合取错的后果只有两种，都是响的：留下过期钉点 -> set_user_match 返回 0 -> 计数 error；
+        # 误删有效钉点 -> 未配对点 -> 判决 PARTIAL。
+        best = newest
+        tag = '*'
+    if best is None:
+        fail('钉点源 %s（%s）没有任何绿 receipt' % (design, pinfile))
+    gold = {pathlib.Path(e['path']).name[:-3] for e in best[1]['impl_closure'] if e['kind'] == 'golden'}
+    gold = {m for m in gold if not VENDOR_LEAF.match(m)}
+    return pathlib.Path(best[0]).parent.parent.name + tag, gold
+
+
+def load_impl_hier():
+    if not IMPL_HIER.exists():
+        fail('缺 %s（先 `--refresh-inst-map <层次清单>`）' % IMPL_HIER.relative_to(REPO))
+    h = {}
+    for ln in IMPL_HIER.read_text().splitlines():
+        if ln.startswith('#') or not ln.strip():
+            continue
+        pth, mod = ln.split('\t')
+        h[pth] = mod
+    return h
+
+_EXTRACT_TCL = r"""
+lassign $argv pinfile top outfile
+set ::OUT [open $outfile w]
+proc set_user_match {args} {
+  set objs {}
+  foreach a $args { if {[string index $a 0] ne "-"} { lappend objs $a } }
+  puts $::OUT [join $objs "\t"]
+  return 1
+}
+rename puts _puts
+proc puts {args} { if {[llength $args] >= 2 && [lindex $args 0] eq $::OUT} { _puts {*}$args } }
+proc find_cells {args} { error "DYNAMIC find_cells" }
+proc report_unmatched_points {args} { error "DYNAMIC report_unmatched_points" }
+proc report_matched_points {args} { error "DYNAMIC report_matched_points" }
+proc match {args} { return 1 }
+if {[catch {source $pinfile} msg]} { _puts stderr "ERR: $msg"; close $::OUT; exit 2 }
+close $::OUT
+exit 0
+"""
+
+
+def extract_pins(design, pinfile):
+    import subprocess
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        tcl = pathlib.Path(d) / 'x.tcl'
+        tcl.write_text(_EXTRACT_TCL)
+        out = pathlib.Path(d) / 'o.tsv'
+        p = subprocess.run(['tclsh', str(tcl), str(REPO / pinfile), design, str(out)],
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        if p.returncode != 0:
+            fail('取 %s 的钉点（%s）失败: %s' % (design, pinfile, p.stderr.strip()[:200]))
+        rows = [ln.split('\t') for ln in out.read_text().splitlines() if ln.strip()]
+    if not rows:
+        fail('%s 的钉点脚本 %s 一条钉点都没取到' % (design, pinfile))
+    return rows
+
+
+def field_map_pins(design, mapfile):
+    rows = []
+    for ln in (REPO / mapfile).read_text().splitlines():
+        m = re.match(r'^(\S+)\s+(\d+)\s+(\d+)$', ln)
+        if not m:
+            continue
+        suf, lo, w = m.group(1), int(m.group(2)), int(m.group(3))
+        for b in range(w):
+            r = 'r:/WORK/%s/data_%s_reg' % (design, suf) + ('' if w == 1 else '[%d]' % b)
+            rows.append([r, 'i:/WORK/%s/u_core/data_reg[%d]' % (design, lo + b)])
+    if not rows:
+        fail('%s 的 field map %s 为空' % (design, mapfile))
+    return rows
+
+
+def load_inst_map():
+    m = collections.defaultdict(list)
+    if not INST_MAP.exists():
+        fail('缺 %s（先 `--refresh-inst-map <层次清单>`）' % INST_MAP.relative_to(REPO))
+    for ln in INST_MAP.read_text().splitlines():
+        if ln.startswith('#') or not ln.strip():
+            continue
+        d, gp, ip, root = ln.split('\t')
+        m[d].append((gp, ip, root))
+    return m
+
+
+def _through_gold(ipath, ihier, gold):
+    """impl 对象路径（i:/WORK/Frontend/...）是否穿过某个 gold 模块实例的内部。"""
+    parts = ipath[len('i:/WORK/Frontend/'):].split('/')
+    for k in range(1, len(parts)):
+        m = ihier.get('/'.join(parts[:k]))
+        if m in gold:
+            return True
+    return False
+
+
+def rebase_child_pins():
+    imap = load_inst_map()
+    srcs = [(d, f, extract_pins(d, f)) for d, f in CHILD_PIN_SRC] + \
+           [(d, f, field_map_pins(d, f)) for d, f in CHILD_FIELD_MAP] + \
+           [(d, 'CHILD_PIN_LITERAL', [[r, i] for dd, r, i in CHILD_PIN_LITERAL if dd == d])
+            for d in sorted(set(x[0] for x in CHILD_PIN_LITERAL))] + \
+           [('Predictor', 'verif/ut/Frontend/predictor_pins.tsv', recorded_predictor_pins())]
+    ihier = load_impl_hier()
+    seen = collections.OrderedDict()
+    seen_src = {}
+    cross = []
+    per_src = []
+    for d, f, rows in srcs:
+        if d not in imap:
+            fail('fe_inst_map.tsv 里没有设计 %s 的实例对应' % d)
+        # 过期钉点：X 证明时 impl 侧直接读 golden 的子模块（gold），在 Frontend 里换成了重写件，
+        # 钉点里伸进这些子模块内部的 impl 名字（golden 的寄存器名）在重写件里不存在 —— 丢弃，
+        # 这些子模块内部由它们各自的签核（及本节其它钉点源）负责配对。
+        if f == 'CHILD_PIN_LITERAL':
+            evd, gold = '-', set()
+        elif d == 'Predictor':
+            evd, gold = source_receipt(d, 'verif/ut/Predictor/fm_pins_pre.tcl')
+        else:
+            evd, gold = source_receipt(d, f)
+        n = 0
+        n_stale = 0
+        for row in rows:
+            r, imps = row[0], row[1:]
+            rp = 'r:/WORK/%s/' % d
+            if not r.startswith(rp) or not imps:
+                fail('%s 的钉点 %r 不以 %s 开头' % (f, row, rp))
+            for gp, ip, root in imap[d]:
+                nr = 'r:/WORK/Frontend/%s/%s' % (gp, r[len(rp):])
+                nis = []
+                for i in imps:
+                    pre = 'i:/WORK/%s/%s' % (d, '' if root == '.' else root + '/')
+                    if not i.startswith(pre):
+                        fail('%s 的钉点 impl 端 %r 不以 %s 开头' % (f, i, pre))
+                    nis.append('i:/WORK/Frontend/%s/%s' % (ip, i[len(pre):]))
+                if gold and any(_through_gold(x, ihier, gold) for x in nis):
+                    n_stale += 1
+                    continue
+                # 同一 ref 对多个 impl（一对多）是 FM 的合法钉法（子目标自己就这么钉过，如 ICache 的
+                # blkPaddr -> blk_paddr_q + vset_idx_q）；这里按 ref 归并成一条 set_user_match r i1 i2 ...。
+                # 不同钉点源给同一 ref 不同 impl 的，记进 cross 计数单列在文件头，供复核。
+                if nr in seen:
+                    old = seen[nr]
+                    add = tuple(x for x in nis if x not in old)
+                    if add:
+                        if seen_src[nr] != f:
+                            cross.append((nr, f))
+                        seen[nr] = old + add
+                    continue
+                seen[nr] = tuple(nis)
+                seen_src[nr] = f
+                n += 1
+        per_src.append((d, f, len(rows), n, n_stale, evd))
+    if cross:
+        fail('不同钉点源对同一 ref 给了不同 impl（%d 条，例 %s）' % (len(cross), cross[:3]))
+    return seen, per_src
+
+
+def refresh_inst_map(dump):
+    """从 UCLI 层次清单（verif/ut/Frontend/Makefile 的 hiermap 目标产出）生成实例对应表。"""
+    rows = []
+    for ln in pathlib.Path(dump).read_text().splitlines():
+        path, t = ln.split('\t')
+        mod = re.search(r'\{INSTANCE (\S+) module\}', t).group(1)
+        rows.append((path, mod))
+    known = {'tb.u_g_Frontend': [], 'tb.u_i_Frontend': []}
+    G = collections.defaultdict(list)
+    I = collections.defaultdict(list)
+    for path, mod in rows:
+        par = max((k for k in known if path.startswith(k + '.')), key=len)
+        known[path] = known[par] + [path[len(par) + 1:]]
+        fm = '/'.join(known[path])
+        if path.startswith('tb.u_g_'):
+            G[mod].append(fm)
+        else:
+            I[re.sub(r'_xs$', '', mod)].append(fm)
+    need = sorted(set(d for d, _ in CHILD_PIN_SRC) | set(d for d, _ in CHILD_FIELD_MAP) |
+                  set(x[0] for x in CHILD_PIN_LITERAL) | {'Predictor'})
+
+    def norm(p):
+        return '/'.join(t for t in p.split('/') if t != 'u_core')
+    out = ['# 自动生成：scripts/gen_frontend.py --refresh-inst-map <UCLI 层次清单>（勿手改）',
+           '# 设计\tgolden 实例路径\t重写侧实例路径\t钉点 impl 端对应的根（. = 设计本身）']
+    for d in need:
+        gps = G.get(d, [])
+        if not gps:
+            fail('golden 里没有设计 %s 的实例' % d)
+        if d in SPECIAL_INST:
+            for gp in gps:
+                ip, root = SPECIAL_INST[d](gp)
+                out.append('%s\t%s\t%s\t%s' % (d, gp, ip, root))
+            continue
+        byn = collections.defaultdict(list)
+        for q in I.get(d, []):
+            byn[norm(q)].append(q)
+        for gp in gps:
+            c = byn.get(gp, [])
+            if len(c) != 1:
+                fail('设计 %s 的 golden 实例 %s 在重写侧对应 %d 个（%s）' % (d, gp, len(c), I.get(d, [])[:3]))
+            out.append('%s\t%s\t%s\t.' % (d, gp, c[0]))
+    INST_MAP.write_text('\n'.join(out) + '\n')
+    print('wrote %s (%d 行)' % (INST_MAP.relative_to(REPO), len(out) - 2))
+    hh = ['# 自动生成：scripts/gen_frontend.py --refresh-inst-map <UCLI 层次清单>（勿手改）',
+          '# 重写侧实例路径（FM 风格，相对 i:/WORK/Frontend）\t模块（golden 同名，去掉 UT 派生的 _xs）']
+    for path, mod in rows:
+        if path.startswith('tb.u_i_'):
+            hh.append('%s\t%s' % ('/'.join(known[path]), re.sub(r'_xs$', '', mod)))
+    IMPL_HIER.write_text('\n'.join(hh) + '\n')
+    print('wrote %s (%d 行)' % (IMPL_HIER.relative_to(REPO), len(hh) - 2))
+
+
+# 重写侧层次与 golden 不是"删掉 u_core 就相等"的两处（逐条说明）
+SPECIAL_INST = {
+    # FauFTB 重写把 32 路 way 放进 generate：golden ways_<n> <-> u_core/g_way[<n>].u_way
+    'FauFTBWay': lambda gp: (re.sub(r'/ways_(\d+)$', r'/u_core/g_way[\1].u_way', gp), '.'),
+    # FtqPcMemWrapper 重写直接例化共享核 xs_SyncDataModule（u_mem），没有 SyncDataModuleTemplate_FtqPC_64entry
+    # 这层 wrapper：golden ftq_pc_mem/mem 的钉点 impl 端写的是 <X>/u_core/...，对应 ftq_pc_mem/u_core/u_mem/...
+    'SyncDataModuleTemplate_FtqPC_64entry':
+        lambda gp: ('inner_ftq/u_core/ftq_pc_mem/u_core/u_mem', 'u_core') if gp == 'inner_ftq/ftq_pc_mem/mem'
+        else fail('FtqPC 实例 %s 未预期' % gp),
+}
+
+
+def render_child_pins():
+    seen, per_src = rebase_child_pins()
+    L = []
+    A = L.append
+    A('# ---- 二、子树钉点重定位（%d 个钉点源 -> %d 条，去重后；规则见 scripts/gen_frontend.py）----'
+      % (len(per_src), len(seen)))
+    A('#   钉点源 / 脚本 / 出证 evidence（* = 该脚本出证后又改过，用该目标最新绿 receipt）/ 原条数 / 过期丢弃（伸进其证明时读 golden 的子模块）/ 去重后新增')
+    for d, f, n0, n, ns, evd in per_src:
+        A('#   %-36s %-50s %-12s 原 %6d 丢 %6d 增 %6d' % (d, f, evd, n0, ns, n))
+    for d, why in sorted(CHILD_PIN_COVERED.items()):
+        A('#   不取 %s：%s' % (d, why))
+    A('set ::FE_CHILD_EXPECT %d' % len(seen))
+    A('set ::FE_CHILD_OK 0')
+    A('set ::FE_CHILD_BAD 0')
+    A('proc fe_child_pin {r args} {')
+    A('  if {[set_user_match $r {*}$args]} { incr ::FE_CHILD_OK } else {')
+    A('    incr ::FE_CHILD_BAD')
+    A('    if {$::FE_CHILD_BAD <= 10} { puts "FE_CHILD_PIN_FAIL: $r <-> $args" }')
+    A('  }')
+    A('}')
+    A('puts "FE_CHILD_PIN_BEGIN expect=$::FE_CHILD_EXPECT"')
+    for r, nis in seen.items():
+        A('fe_child_pin {%s} %s' % (r, ' '.join('{%s}' % x for x in nis)))
+    A('puts "FE_CHILD_PIN_END ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_EXPECT"')
+    A('if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {')
+    A('  error "FE_CHILD_PIN: ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_EXPECT"')
+    A('}')
+    return '\n'.join(L) + '\n'
+
+
 def splice(text, gen):
     if BEGIN in text:
         i = text.index(BEGIN)
@@ -540,21 +1028,28 @@ def splice(text, gen):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true')
+    ap.add_argument('--refresh-inst-map', metavar='UCLI_DUMP')
     a = ap.parse_args()
-    text = OUT.read_text()
-    new = splice(text, render())
-    if a.check:
-        if new != text:
-            print('DRIFT: %s 与生成器输出不一致' % OUT.relative_to(REPO))
-            return 1
-        print('OK: %s' % OUT.relative_to(REPO))
+    if a.refresh_inst_map:
+        refresh_inst_map(a.refresh_inst_map)
         return 0
-    if new != text:
-        OUT.write_text(new)
-        print('wrote %s' % OUT.relative_to(REPO))
-    else:
-        print('unchanged %s' % OUT.relative_to(REPO))
-    return 0
+    text = OUT.read_text()
+    outs = [(OUT, text, splice(text, render())),
+            (PINS, PINS.read_text() if PINS.exists() else '', render_pins() + render_child_pins())]
+    rc = 0
+    for path, old, new in outs:
+        if a.check:
+            if new != old:
+                print('DRIFT: %s 与生成器输出不一致' % path.relative_to(REPO))
+                rc = 1
+            else:
+                print('OK: %s' % path.relative_to(REPO))
+        elif new != old:
+            path.write_text(new)
+            print('wrote %s' % path.relative_to(REPO))
+        else:
+            print('unchanged %s' % path.relative_to(REPO))
+    return rc
 
 
 if __name__ == '__main__':

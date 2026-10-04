@@ -425,3 +425,9 @@ gencheck:
 	python3 gen.py --check
 gentb:
 	python3 gen.py
+
+# 实例对应表（FM 钉点重定位用）：从 simv 的实际层次机械生成，见 scripts/gen_frontend.py 的「子树钉点重定位」。
+.PHONY: hiermap
+hiermap: simv
+	./simv -ucli -i hiermap.tcl -l ut_gen/hiermap.log +ncycles=1 > /dev/null
+	python3 ../../../scripts/gen_frontend.py --refresh-inst-map ut_gen/hier_dump.txt

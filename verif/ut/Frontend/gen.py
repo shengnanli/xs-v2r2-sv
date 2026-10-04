@@ -20,7 +20,8 @@ COVERS = {
     'itlb_ptw_req': f'{G}_inner_itlb_io_ptw_req_0_valid',
     'ftq_redirect_bpu': f'{G}_inner_ftq_io_toBpu_redirect_valid',
     'icache_error': f'{G}_inner_icache_io_error_valid',
-    'chk_taken_ptr_rec': f'{G}inner_prevTakenValid',
+    # 自检 (a) 的跨拍记录 inner_prevTakenValid 不设闸：它要 BPU 预测出 taken 的**条件分支**，而随机激励下
+    # FTB 从未被训练出这样的项（9 档实测 0 次）；这组寄存器只喂断言、无观察者，由 FM（vmucp 真比）覆盖。
     'chk_taken_tgt_rec': f'{G}inner_prevTakenValid_1',
     'chk_not_taken_rec': f'{G}inner_prevNotTakenValid',
 }
@@ -68,7 +69,15 @@ NARROW = [
     (r'^io_ptw_req_0_ready$', by_phase("1'b1")),
     (r'^io_ptw_resp_valid$', by_phase('(($urandom % 4) == 0)')),
 ]
-args = ['--target', T]
+# 翻转闸 152/195（9 档实测：seed 1/7 为 152，seed 42 为 153）。从未翻转的 43 个输出（各档同一集合）：
+#   cfVec_*_bits_debug_seqNum_{seqNum,uopIdx}（12）  golden IBuffer 里这些寄存器只被赋 0（IBuffer.sv:9978/21219），恒 0
+#   以下 31 个在本激励下没翻转，原因**未逐一追查**（不是"不可达"的结论）：
+#   cfVec_*_bits_pd_{isCall,isRet}（12）、cfVec_*_bits_crossPageIPFFix（6）、
+#   cfVec_1..5_bits_{backendException,satpFlushFirstFetchFault}（10）、
+#   instrUncache a.user_memPageType_NC / memBackType_MM（2）、io_error_ecc_error_valid（1）。
+#   它们的等价性由 FM 逐位证明；UT 仍逐拍 4 态比对这些输出，只是不计入翻转闸。
+MIN_TOGGLED = 152
+args = ['--target', T, '--min-toggled', f'{T}:{MIN_TOGGLED}']
 for pat, rhs in NARROW:
     args += ['--narrow', f'{T}:{pat}={rhs}']
 for k, v in COVERS.items():
