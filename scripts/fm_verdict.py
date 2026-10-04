@@ -414,7 +414,7 @@ def _failure_reason(q, stats_err):
 #                     入表只是允许把同一个精确边界在两侧对称黑盒，证明仍要自己跑过。
 #   disabled_empty_module  当前配置下被 firtool 裁成空壳的禁用功能模块（codex 0206 D2）——
 #                     ★不是"凡空模块皆放行"★：只认下面 DISABLED_EMPTY_MODULES 里**精确 design 名 +
-#                     golden 文件 sha256 + 唯一父级 + 逐项实例路径**；FM 报告属性必须恰为 `e`
+#                     golden 文件 sha256 + 逐 top 精确绝对路径表（codex 0213）**；FM 报告属性必须恰为 `e`
 #                     （FM 自动产生的 empty 黑盒，不吞 u/i/s 等其它 unresolved/interface-only）；
 #                     两侧模块源码无 output、无寄存器/always/例化；本次 FM 无黑盒输出比较点，
 #                     且父级 native SUCCEEDED、0 failing/unverified/aborted/unmatched、无 dont_verify。
@@ -423,12 +423,23 @@ ALLOWED_BBOX_CLASSES = {'vendor_macro', 'green_child', 'APPROVED_MEMORY_MACRO_MO
 
 # codex 0206 D2：KunminghuV2Config 下 StorePrefetchL1Enabled=false，DCacheWrapper 只钉 miss_req.ready，
 # golden StorePipe.sv 被 DCE 成 1 个输入、0 输出、0 寄存器（仓内结论 StorePipe=EXPLICITLY_UNPROVABLE）。
+# codex 0213：允许向**有限、逐个点名**的祖先传播 —— 表按 top 写死 r/i 两侧每个对象的**完整绝对路径**，
+# 判定只做集合精确相等（不用 basename / suffix / glob / "路径里含 dcache/stu" 之类的包含判断）。
+# 新增 top（如 MemBlock）须按 0213 五条条件：路径取自真实 FM-184 报告、逐条写死、并补正/负测。
 DISABLED_EMPTY_MODULES = {
     'StorePipe': {
         'golden_sha256': 'daf59d16df99faf0dc1a2aeb75e378e069fed773c229b333253a37eb5c1c8537',
-        'parent': 'DCache',
-        'insts': ('stu_0', 'stu_1'),
         'impl_file': 'rtl/memblock/StorePipe.sv',
+        'paths_by_top': {
+            'DCache': frozenset({
+                'r:/WORK/DCache/stu_0', 'r:/WORK/DCache/stu_1',
+                'i:/WORK/DCache/stu_0', 'i:/WORK/DCache/stu_1',
+            }),
+            'DCacheWrapper': frozenset({                     # codex 0213：DCacheWrapper GO
+                'r:/WORK/DCacheWrapper/dcache/stu_0', 'r:/WORK/DCacheWrapper/dcache/stu_1',
+                'i:/WORK/DCacheWrapper/dcache/stu_0', 'i:/WORK/DCacheWrapper/dcache/stu_1',
+            }),
+        },
     },
 }
 
@@ -484,9 +495,11 @@ def _disabled_empty_module_check(declared, attrs, top, q, expect_impl_commit,
         spec = DISABLED_EMPTY_MODULES.get(design)
         if spec is None:
             return f'disabled_empty_module_not_approved:{design}'
-        if top != spec['parent']:
+        paths = spec['paths_by_top'].get(top)
+        if paths is None:
             return f'disabled_empty_module_wrong_parent:{design}@{top}'
-        want = {(sd, design, f'{sd}:/WORK/{top}/{inst}') for sd in ('r', 'i') for inst in spec['insts']}
+        # 逐对象精确：side 取路径的 r:/i: 前缀，集合与表逐项相等（任一侧多/少/改名都不等）
+        want = {(pth[0], design, pth) for pth in paths}
         if keys != want:
             extra, missing = keys - want, want - keys
             return (f'disabled_empty_module_inst_set_mismatch:{design}:extra={len(extra)},missing={len(missing)}')
