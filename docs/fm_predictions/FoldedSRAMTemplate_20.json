@@ -1,0 +1,18 @@
+{
+  "target": "FoldedSRAMTemplate_20",
+  "ut": "FoldedSRAMTemplate",
+  "regs": 45,
+  "outs": 20,
+  "expected": 111,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 46,
+  "bbox": {
+    "array_4_ext": {
+      "insts": 2,
+      "in_bits": 23,
+      "points": 46
+    }
+  },
+  "note": "restale-sram: codex 0206 D1 只删 impl 独有死位 rdata_last_REG；预期实测 passing 与旧 receipt 一致（见 docs/lanes/restale-sram_prereg.md）"
+}

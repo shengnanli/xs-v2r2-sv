@@ -1,0 +1,284 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "ITTageTable_4",
+ "run_id": "ITTageTable_4-20261004T085848Z-68d1a0932",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/ITTageTable_4.sv",
+   "kind": "golden",
+   "sha256": "1b0f4a3da11eb26230254c65d5f4ecb8f7c99039df2d803482ad5fceb0b82f26"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+   "kind": "golden",
+   "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+  },
+  {
+   "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+   "kind": "golden",
+   "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIttage_4.sv",
+   "kind": "golden",
+   "sha256": "de2ccb252f34de08b10e455b877204ac5891a01fde56fb0e1f77bc46bdfb9f22"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_78.sv",
+   "kind": "golden",
+   "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+   "kind": "golden",
+   "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+  },
+  {
+   "path": "golden-rtl/WrBypass_43.sv",
+   "kind": "golden",
+   "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+  },
+  {
+   "path": "golden-rtl/array_6.sv",
+   "kind": "golden",
+   "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+  },
+  {
+   "path": "golden-rtl/data_mem_0_4x2.sv",
+   "kind": "golden",
+   "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+   "kind": "golden",
+   "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/ITTageTable_4.sv",
+   "kind": "repo",
+   "sha256": "00c9d9835845a1d92c88c6cb9d953f5a21795d0f975b41b46142d5cfa14583b6"
+  },
+  {
+   "path": "rtl/frontend/ITTageTable.sv",
+   "kind": "repo",
+   "sha256": "e30de252f6a5ed8d576c85c97eb8c537d913ac21ad7a879cb3473b0df5162975"
+  },
+  {
+   "path": "rtl/common/ClockGate.sv",
+   "kind": "repo",
+   "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+  },
+  {
+   "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+   "kind": "golden",
+   "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+  },
+  {
+   "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+   "kind": "golden",
+   "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_78.sv",
+   "kind": "golden",
+   "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+   "kind": "golden",
+   "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+  },
+  {
+   "path": "golden-rtl/WrBypass_43.sv",
+   "kind": "golden",
+   "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+  },
+  {
+   "path": "golden-rtl/array_6.sv",
+   "kind": "golden",
+   "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+  },
+  {
+   "path": "golden-rtl/data_mem_0_4x2.sv",
+   "kind": "golden",
+   "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+   "kind": "golden",
+   "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+  }
+ ],
+ "impl_commit": "68d1a0932a124484b4dc40ec90d309526ee16f83",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins.tcl": "eb4c3ee5290a19de7f71439bb2d2ad1a247846af7d7ba84d67d3e0c8d3743ba9"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ITTageTable_4-20261004T085848Z-68d1a0932",
+  "top": "ITTageTable_4",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 1014,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/ITTageTable_4/table_0/array/array_0_0_0/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTageTable_4/table_0/array/array_0_0_0/array/array/array_6_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ITTageTable_4/table_0/array/array_0_0_1/array/array/array_6_ext",
+     "impl_path": "i:/WORK/ITTageTable_4/table_0/array/array_0_0_1/array/array/array_6_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/ITTageTable_4/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "r:/WORK/ITTageTable_4/table_0/array/array_0_0_1/array/array/array_6_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/ITTageTable_4/table_0/array/array_0_0_0/array/array/array_6_ext",
+    "i:/WORK/ITTageTable_4/table_0/array/array_0_0_1/array/array/array_6_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 1014,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "ITTageTable_4",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

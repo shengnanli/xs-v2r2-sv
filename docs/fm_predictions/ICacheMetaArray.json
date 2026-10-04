@@ -1,0 +1,18 @@
+{
+  "target": "ICacheMetaArray",
+  "ut": "ICacheMetaArray",
+  "regs": 1776,
+  "outs": 380,
+  "expected": 2500,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 344,
+  "bbox": {
+    "array_ext": {
+      "insts": 4,
+      "in_bits": 86,
+      "points": 344
+    }
+  },
+  "note": "restale-sram P2: ClockGate 改读 rtl/common/ClockGate.sv + D1；预期 passing 与旧 receipt 一致（SRAMTemplate_128 无已跟踪 receipt，参照 fastlane p2507；见 docs/lanes/restale-sram_prereg.md §5）"
+}

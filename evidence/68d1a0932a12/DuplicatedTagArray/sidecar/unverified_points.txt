@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/DuplicatedTagArray
+Implementation : i:/WORK/DuplicatedTagArray
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 04:56:00 2026
+**************************************************
+
+No unverified compare points.
+
+1

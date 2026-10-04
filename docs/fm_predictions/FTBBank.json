@@ -1,0 +1,18 @@
+{
+  "target": "FTBBank",
+  "ut": "FTBBank",
+  "regs": 2860,
+  "outs": 171,
+  "expected": 3479,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 448,
+  "bbox": {
+    "array_1_ext": {
+      "insts": 8,
+      "in_bits": 56,
+      "points": 448
+    }
+  },
+  "note": "restale-sram P2: ClockGate 改读 rtl/common/ClockGate.sv + D1；预期 passing 与旧 receipt 一致（SRAMTemplate_128 无已跟踪 receipt，参照 fastlane p2507；见 docs/lanes/restale-sram_prereg.md §5）"
+}
