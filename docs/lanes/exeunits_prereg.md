@@ -183,3 +183,23 @@ UT 抓不到：s2 只从 s1 取值、s1 只在 fire 后变，恒开使能在可�
 |---|---|---|---|---|
 | ExeUnit | 7839（7050 + 789） | 7325 / 487 / 27 | **7352**（+27） | 是（verif/fm_target_config/ExeUnit.tcl） |
 | ExeUnit_8 | 8894（7584 + 1310） | 8585 / 299 / 10 | **8595**（+10） | 是（verif/fm_target_config/ExeUnit_8.tcl） |
+
+## 3. 对账（跑后追加；上面各节数字未改）
+
+| 目标 | 证明 commit | 预测 passing | 实测 passing | constant_reg | failing / unverified / unmatched / unread | 黑盒 / dont_verify | 判决 | fm_predict check |
+|---|---|---|---|---|---|---|---|---|
+| VSetRiWvf | e858f1db696d | 736 | 736 | 0 | 0 / 0 / 0 / 0 | 0 / 否 | SUCCEEDED | 逐位相等 |
+| IntFPToVec | e858f1db696d | 791 | 791 | 0 | 0 / 0 / 0 / 0 | 0 / 否 | SUCCEEDED | 逐位相等 |
+| CVT64 | e858f1db696d | 545 | 545 | 27 | 0 / 0 / 0 / 0（vmucp 5 点计入比较） | 0 / 否 | SUCCEEDED | 差额 27 = constant_reg 27 |
+| IntToFP_3 | e858f1db696d | 2158 | 2158 | 0 | 0 / 0 / 0 / 0 | 0 / 否 | SUCCEEDED | 逐位相等 |
+| ExeUnit_1 | 41366b7e2f9c | 1373 | 1373 | 0 | 0 / 0 / 0 / 0 | 0 / 否 | SUCCEEDED | 逐位相等 |
+| ExeUnit_4 | 41366b7e2f9c | 789 | 789 | 0 | 0 / 0 / 0 / 0 | 0 / 否 | SUCCEEDED | 逐位相等 |
+| ExeUnit_9 | 41366b7e2f9c | 2128 | 2128 | 30 | 0 / 0 / 0 / 0（vmucp 1 点，+1） | 0 / 否 | SUCCEEDED | 差额 30 = constant_reg 30 |
+| ExeUnit_5 | f5b39c39e043 | 3505 | 3505 | 0 | 0 / 0 / 0 / 0 | 0 / 否 | SUCCEEDED | 逐位相等 |
+| ExeUnit_10 | 21fcdf533a90 | 6229 | 6229 | 272 | 0 / 0 / 0 / 0（vmucp 5 点，+5） | 0 / 否 | SUCCEEDED | 差额 272 = constant_reg 272 |
+| ExeUnit | bbd73158a339 | 7352 | 7352 | 487 | 0 / 0 / 0 / 0（vmucp 27 点，+27） | 0 / 否 | SUCCEEDED | 差额 487 = constant_reg 487 |
+| ExeUnit_8 | bbd73158a339 | 8595 | 8595 | 299 | 0 / 0 / 0 / 0（vmucp 10 点，+10） | 0 / 否 | SUCCEEDED | 差额 299 = constant_reg 299 |
+
+vmucp 六条：精确绑定（unread 集合与 verif/fm_target_config/<T>.tcl 所列逐点一致，均来自诊断跑）/ 双射（全部 matched_nc，
+ref = impl 点数）/ 真比较（passing 恰好 + 点数）/ 全零 / 无 dont_verify、无黑盒、无放宽 appvar / 配置文件进 receipt script_closure。
+11 个目标全部 SUCCEEDED，预测与实测零偏差。
