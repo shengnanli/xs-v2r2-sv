@@ -7,7 +7,8 @@ tb 骨架（双例化、逐拍全输出比对、CHI 链路 / 信用模型、RXRS
   * 顶层名 L2Top、TL2CHICoupledL2 的实例路径前缀 inner_l2cache.；
   * 输入激励（drive_expr）：L2Top 的口是核那一侧的 TileLink（DCache 的 TL-C 经 inner_logger_in_0、ICache / PTW / MMIO
     的 TL-UL），地址经 inner_xbar 按 [7:6] 分到 4 个 bank；A/C/E 偏置仍用 Slice tb 的规则；核 ↔ Tile 的边带信号随机；
-  * 额外的初值同步：L2Top 这一层 TLBuffer 里每个队列的存储体（两侧都是同一份 golden ram 模型，实例名相同；
+  * 额外的初值同步：本层只在使能时锁存的寄存器（MSI bits、trace 的 trap / priv / iaddr / ilastsize、clintTime 延迟）；
+    L2Top 这一层 TLBuffer 里每个队列的存储体（两侧都是同一份 golden ram 模型，实例名相同；
     TLBuffer_13 重写件把 4 个 bank 包进 u_bank_<b>）、两个 TLXbar 仲裁器状态（从 verif/ut/TLXbar_5 / _6 的 tb 收割）。
 
 用法: python3 gen_tb.py [--check]
@@ -139,6 +140,18 @@ def extra_syncs():
                 mm = re.match(r'(\w+_q)(?:_(\d))?$', q)
                 ipath = 'u_bank_%s.%s' % (mm.group(2) or '0', mm.group(1))
             out.append(('%s.%s.%s.Memory' % (inst, q, ram), '%s.%s.%s.Memory' % (inst, ipath, ram), False))
+    # 本层只在使能时锁存、不复位的寄存器（golden 名 -> 重写核 / child 路径）：上电值两侧不同，同步一次
+    T = 'inner_io_traceCoreInterface_toTile_toEncoder_'
+    out += [
+        ('inner_io_msiInfo_toCore_bits_r', 'u_core.msiToCore_bits', True),
+        (T + 'trap_r_cause', 'u_core.traceOut_trapCause', True),
+        (T + 'trap_r_tval', 'u_core.traceOut_trapTval', True),
+        (T + 'priv_r', 'u_core.traceOut_priv', True),
+        ('inner_io_clintTime_toCore_pipMod.res_bits', 'inner_io_clintTime_toCore_pipMod.u_core.g_chain.data_q[0]', True),
+    ]
+    for g in range(3):
+        out += [(T + 'groups_%d_bits_ilastsize_r' % g, 'u_core.traceOut_ilastsize[%d]' % g, True),
+                (T + 'groups_%d_bits_iaddr_r' % g, 'u_core.traceOut_iaddr[%d]' % g, True)]
     # 两个 TLXbar 的仲裁器状态：从各自 UT 的 tb 收割 force 行（x_u_impl / x_u_gold 换成本层实例）
     for ut, inst in (('TLXbar_5', 'inner_xbar'), ('TLXbar_6', 'inner_xbar_1')):
         n = 0

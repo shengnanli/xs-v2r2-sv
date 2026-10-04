@@ -73,3 +73,44 @@ pftQueue valids_0..30 31、mbistPl beReg 1）。8325 + 900 + 76 = 9301 = 模型�
 
 `python3 scripts/fm_predict.py check Prefetcher` rc=0（逐位相等）。
 复跑：`bash scripts/run_proof.sh Prefetcher Prefetcher < /dev/null`（PROOF_COMMIT=16617425b）。
+
+## 2. TL2CHICoupledL2（golden 7663 行 / 324 端口；L2Top.inner_l2cache）—— FM 待 codex 扩授权
+
+### 2.1 结构
+
+- `rtl/uncore/TL2CHICoupledL2.sv`（7310 行）：手写胶合核 `xs_TL2CHICoupledL2_core`（约 380 行：§1 hint 引导 D 放行、§2 预取
+  bank 分发与训练地址补 bank、§3 B/ECC 地址补 bank、§4 perf/l2Miss、§5 TXREQ 一致性门控与 txnID 编码、§6 RXSNP 分发、
+  §7 RXRSP/RXDAT 分发与 txnID 还原、§8 P-Credit）+ golden 同名 wrapper（32 个 child，实例名同 golden；
+  `scripts/gen_tl2chi.py` 生成，规则实现 `scripts/parent_wrapper_lib.py`，fail-closed，带 `--check`）。`_GEN_` / `_T_` = 0。
+- child：32 个实例（含 Slice×4、MMIOBridge、Prefetcher、LinkMonitor、L2Cache、MbistIntfL2、Queue78/Queue2_PCrdGranted、
+  Pipeline_2/3/10/11/12/13、FastArbiter/_1/_26/_27/_28、RRArbiterInit_20、Arbiter4_*、TopDownMonitor），闭包 176 个 golden 模块，
+  全部 PROVEN_DIRECT，两侧白盒（impl 167 个 rtl 文件）。
+- 两侧共读 golden 的只有行为级存储模型（ram_* / sram_array_* / array_N，22 个文件）与本地 ClockGate。
+- FM 两侧对称黑盒：厂商叶子 array_13..18_ext（vendor_boundary 已审定）+ **ram_10x89 ×4（slices_<k>/grantBuf/pftRespQueue/ram_ext）
+  + ram_78x15 ×1（pCrdQueue_s2/ram_ext）——这两个 APPROVED_MEMORY_MACRO_MODEL 的授权父级不含本目标，需 codex 逐父级扩授权，
+  本 lane 未声明 allow、未跑正式 FM。**
+- 钉点：`scripts/gen_tl2chi_pins.py` → `verif/ut/TL2CHICoupledL2/fm_pins_pre.tcl`（4 个 Slice 变体各 29381 + Prefetcher 960 =
+  118484 位，全部是已签件钉点只换层次前缀）。
+
+### 2.2 UT（verif/ut/TL2CHICoupledL2，gen_tb.py 生成 tb；200k 拍，每拍比全部 324 端口里的输出）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=33198224 errors=0 | 同左 | 同左 |
+| 7  | checks=33198242 errors=0 | 同左 | 同左 |
+| 42 | checks=33198356 errors=0 | 同左 | 同左 |
+
+9 档 cover_zero=0（必需覆盖项全非 0；必需 arm 组 CHI TX req/rsp/dat flit 全 arm）。seed 1 initreg 0 覆盖：hint 457、
+slice0/3 D 放行 3979/3914、D 被 hint 挡住 22、A 收下 979、B 发出 70、TXREQ 可缓存 1480 / MMIO 355 / 被一致性挡住 53、
+TXDAT 610、TXRSP 2149、RXRSP 到 slice 1875 / 到 MMIO 855、RXDAT 到 slice 2419 / 到 MMIO 103、PCrdGrant 入队 5026、
+P-Credit 授出 64、MMIO D 184、预取请求到 slice 322、预取 train 432、ECC error 1404、topDown MissMatch 11246。
+只打印不计入：releaseSourceD 0、L2 TLB 请求 0（vbop 学不出偏移；TLB req bits 组不比，由 Prefetcher UT 与 FM 覆盖）。
+初值同步表从 Slice / MMIOBridge / L2Cache 的 UT tb 机械收割 + 本层 3 个队列存储体。
+跑法：`make compile` 产出的同一个 simv，3 个 seed 各拷一份并行（与 `make run SEED=<s> INITREG=<x>` 同参数）。
+复跑：`cd verif/ut/TL2CHICoupledL2 && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+变异（20k 拍，seed 1 initreg 0）14 个抓 9：allCanFire 链深度 345、D ready 不门控 325、预取 slice 选择位 267110、ECC 地址不补 bank 19991、
+P-Credit 不比 srcID 320704、perf 少一拍 14164、coEnable 不看 syscoack 3922、hint ready 恒 1 40、l2Miss 或改与 18618。
+未抓 5：hint 不查 DCache source（tb 的 source 都 < 36）、训练 set 不补 bank（只改 BOP 内部学习，20k 拍不外显）、
+txnID 的 MMIO 位改按 chosen==4（与 mmioFire 在 out.valid 时可能等价）、RXRSP ready 去掉 PCrdGrant 项（slice / MMIO 的 rsp ready
+在本配置恒 1，功能等价）、txnID 还原保留 slice 号（slice 只用低位）——由 FM 判定（等价则无害、不等价必报）。
