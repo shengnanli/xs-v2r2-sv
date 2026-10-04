@@ -76,3 +76,11 @@ DataStorage_2 位宽修正前后 passing 均为 2534：补回的 bit5 不可观�
 
 UT（200k 拍，errors 全 0）：DCache 9/9（checks=199977/档，cov_fail=0）；Slice 9/9（checks=267200000/档，cover_zero=0）；
 DataStorage 9/9（checks=3200000/档，rd/wr/err 覆盖各变体约 5 万/5 万/3 万）。D1 前的 SRAMTemplate（holdRead=1 变体）20k 冒烟也 PASS。
+
+### 7b. 合 main（18359395）后在 tip 0dc9c4532 上重证（只追加）
+
+main 改了 scripts/fm_eq.tcl（match_packed_payload，28c7c3b90），上节 14 份 receipt 的 script 闭包随之过期，GrantBuffer 证书同理
+（D3 判据当场判红：certificate_script_closure_stale:scripts/fm_eq.tcl —— 判据按设计生效）。故：
+GrantBuffer 先在 403937053 上重证（SUCCEEDED passing 11752 = 登记 11756 − constant_reg 4）并重出证书，再在 0dc9c4532 上重证 13 个目标：
+全部 SUCCEEDED，passing 与 §7 逐个相同（DCache 82086 / Slice 68305·68308·68310·68311 / DataStorage 2532·2533·2534·2534 / GatedSplittedSRAM 2272×4），
+failing/unverified/aborted/unmatched/unread 0，无 dont_verify；`fm_predict.py check` 14 目标 rc=0「全部对上」。正式 evidence：evidence/0dc9c4532cf5/*。
