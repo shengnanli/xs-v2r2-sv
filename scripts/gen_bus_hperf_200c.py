@@ -80,6 +80,7 @@ def hperf_map(module: str):
 def emit_hperf_core() -> str:
     return """// xs_HPerfCounter_core.sv — shared four-stage event reduction pipeline.
 // Each wrapper supplies its explicit table, retaining reserved-slot behavior.
+// Registered reduction stages preserve one-cycle event accumulation and explicit slot priority.
 module xs_HPerfCounter_core #(
   parameter int unsigned EVENT_INDEX_BITS = 6,
   parameter int unsigned TABLE_SIZE = 64

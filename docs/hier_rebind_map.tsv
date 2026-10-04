@@ -1600,6 +1600,24 @@ CVT32	zero_minus_lzc_f32_clz	CLZ_29	DEEPER	u_core.zero_minus_lzc_f32_clz	CLZ_29	
 CVT64_1	estmate7	Estimate7	DEEPER	u_core.estmate7	Estimate7		auto_deeper	
 CVT64_1	fpcvt	FP_INCVT	DEEPER	u_core.fpcvt	FP_INCVT		auto_deeper	
 CVT64_1	int2fp	INT2FP	DEEPER	u_core.int2fp	INT2FP		auto_deeper	
+ClosePathF16Pipeline	U_CS0	ClosePathAdderF16Pipeline	DEEPER	u_core.U_CS0	ClosePathAdderF16Pipeline		auto_deeper	
+ClosePathF16Pipeline	U_CS1	ClosePathAdderF16Pipeline	DEEPER	u_core.U_CS1	ClosePathAdderF16Pipeline		auto_deeper	
+ClosePathF16Pipeline	U_CS2	ClosePathAdderF16Pipeline_2	DEEPER	u_core.U_CS2	ClosePathAdderF16Pipeline_2		auto_deeper	
+ClosePathF16Pipeline	U_CS3	ClosePathAdderF16Pipeline_2	DEEPER	u_core.U_CS3	ClosePathAdderF16Pipeline_2		auto_deeper	
+ClosePathF16Pipeline	U_CS4	ClosePathAdderF16Pipeline	DEEPER	u_core.U_CS4	ClosePathAdderF16Pipeline		auto_deeper	
+ClosePathF16Pipeline	U_Lshift	CloseShiftLeftWithMux_9	DEEPER	u_core.U_Lshift	CloseShiftLeftWithMux_9		auto_deeper	
+ClosePathF32WidenF16MixedPipeline	U_CS0	ClosePathF32WidenF16MixedPipelineAdder	DEEPER	u_core.U_CS0	ClosePathF32WidenF16MixedPipelineAdder		auto_deeper	
+ClosePathF32WidenF16MixedPipeline	U_CS1	ClosePathF32WidenF16MixedPipelineAdder	DEEPER	u_core.U_CS1	ClosePathF32WidenF16MixedPipelineAdder		auto_deeper	
+ClosePathF32WidenF16MixedPipeline	U_CS2	ClosePathF32WidenF16MixedPipelineAdder_2	DEEPER	u_core.U_CS2	ClosePathF32WidenF16MixedPipelineAdder_2		auto_deeper	
+ClosePathF32WidenF16MixedPipeline	U_CS3	ClosePathF32WidenF16MixedPipelineAdder_2	DEEPER	u_core.U_CS3	ClosePathF32WidenF16MixedPipelineAdder_2		auto_deeper	
+ClosePathF32WidenF16MixedPipeline	U_CS4	ClosePathF32WidenF16MixedPipelineAdder	DEEPER	u_core.U_CS4	ClosePathF32WidenF16MixedPipelineAdder		auto_deeper	
+ClosePathF32WidenF16MixedPipeline	U_Lshift	CloseShiftLeftWithMux_1	DEEPER	u_core.U_Lshift	CloseShiftLeftWithMux_1		auto_deeper	
+ClosePathFloatAdderF64WidenPipeline	U_CS0	ClosePathAdder	DEEPER	u_core.U_CS0	ClosePathAdder		auto_deeper	
+ClosePathFloatAdderF64WidenPipeline	U_CS1	ClosePathAdder	DEEPER	u_core.U_CS1	ClosePathAdder		auto_deeper	
+ClosePathFloatAdderF64WidenPipeline	U_CS2	ClosePathAdder_2	DEEPER	u_core.U_CS2	ClosePathAdder_2		auto_deeper	
+ClosePathFloatAdderF64WidenPipeline	U_CS3	ClosePathAdder_2	DEEPER	u_core.U_CS3	ClosePathAdder_2		auto_deeper	
+ClosePathFloatAdderF64WidenPipeline	U_CS4	ClosePathAdder	DEEPER	u_core.U_CS4	ClosePathAdder		auto_deeper	
+ClosePathFloatAdderF64WidenPipeline	U_Lshift	CloseShiftLeftWithMux	DEEPER	u_core.U_Lshift	CloseShiftLeftWithMux		auto_deeper	
 CommitIDModule	printCommitIDMod	PrintCommitIDModule	SAME_PATH	printCommitIDMod	PrintCommitIDModule		auto_same	
 Composer	ftb	FTB	SAME_PATH	ftb	FTB		auto_same	
 Composer	ftb_io_ctrl_delay	DelayN	SAME_PATH	ftb_io_ctrl_delay	DelayN		auto_same	
@@ -2059,10 +2077,76 @@ FAlu	falu	FloatAdder	DEEPER	u_core.falu	FloatAdder		auto_deeper
 FCVT	fcvt	FPCVT	DEEPER	u_core.fcvt	FPCVT		auto_deeper	
 FDivSqrt	fdiv	FloatDivider	ONE_SITE	u_core.u_fdiv	FloatDivider		auto_one_site	
 FMA	fma	FloatFMA	DEEPER	u_core.fma	FloatFMA		auto_deeper	
+FP_INCVT	leadZerosNext_clz	CLZ_6	DEEPER	u_core.leadZerosNext_clz	CLZ_6		auto_deeper	
+FP_INCVT	rounder	RoundingUnit_3	DEEPER	u_core.rounder	RoundingUnit_3		auto_deeper	
+FP_INCVT	shiftRightJam	ShiftRightJam	DEEPER	u_core.shiftRightJam	ShiftRightJam		auto_deeper	
+FP_INCVT	subRounder	RoundingUnit_4	DEEPER	u_core.subRounder	RoundingUnit_4		auto_deeper	
+FTB	delay2_entry_pipMod	DelayNWithValid_1	SAME_PATH	delay2_entry_pipMod	DelayNWithValid_1		auto_same	
+FTB	delay2_pc_pipMod	DelayNWithValid	SAME_PATH	delay2_pc_pipMod	DelayNWithValid		auto_same	
+FTB	ftbBank	FTBBank	SAME_PATH	ftbBank	FTBBank		auto_same	
+FTB	write_valid_delay	DelayN_1	SAME_PATH	write_valid_delay	DelayN_1		auto_same	
 FTBBank	ftb	SplittedSRAMTemplate_2	SAME_PATH	ftb	SplittedSRAMTemplate_2		auto_same	
 FTBBank	mbistPl	MbistPipeFtb	SAME_PATH	mbistPl	MbistPipeFtb		auto_same	
+FarPathF16Pipeline	U_Efp_aSubEfp_b	Adder_18	DEEPER	u_core.U_Efp_aSubEfp_b	Adder_18		auto_deeper	
+FarPathF16Pipeline	U_Efp_bSubEfp_a	Adder_18	DEEPER	u_core.U_Efp_bSubEfp_a	Adder_18		auto_deeper	
+FarPathF16Pipeline	U_FS0	FarPathAdderF16Pipeline	DEEPER	u_core.U_FS0	FarPathAdderF16Pipeline		auto_deeper	
+FarPathF16Pipeline	U_FS1	FarPathAdderF16Pipeline	DEEPER	u_core.U_FS1	FarPathAdderF16Pipeline		auto_deeper	
+FarPathF16Pipeline	U_far_rshift_1	FarShiftRightWithMuxInvFirst_18	DEEPER	u_core.U_far_rshift_1	FarShiftRightWithMuxInvFirst_18		auto_deeper	
+FarPathF16Pipeline	U_far_rshift_2	FarShiftRightWithMuxInvFirst_18	DEEPER	u_core.U_far_rshift_2	FarShiftRightWithMuxInvFirst_18		auto_deeper	
+FarPathF32WidenF16MixedPipeline	U_Efp_aSubEfp_b	Adder_2	DEEPER	u_core.U_Efp_aSubEfp_b	Adder_2		auto_deeper	
+FarPathF32WidenF16MixedPipeline	U_Efp_bSubEfp_a	Adder_2	DEEPER	u_core.U_Efp_bSubEfp_a	Adder_2		auto_deeper	
+FarPathF32WidenF16MixedPipeline	U_FS0	FarPathF32WidenF16MixedAdderPipeline	DEEPER	u_core.U_FS0	FarPathF32WidenF16MixedAdderPipeline		auto_deeper	
+FarPathF32WidenF16MixedPipeline	U_FS1	FarPathF32WidenF16MixedAdderPipeline	DEEPER	u_core.U_FS1	FarPathF32WidenF16MixedAdderPipeline		auto_deeper	
+FarPathF32WidenF16MixedPipeline	U_far_rshift_1	FarShiftRightWithMuxInvFirst_2	DEEPER	u_core.U_far_rshift_1	FarShiftRightWithMuxInvFirst_2		auto_deeper	
+FarPathF32WidenF16MixedPipeline	U_far_rshift_2	FarShiftRightWithMuxInvFirst_2	DEEPER	u_core.U_far_rshift_2	FarShiftRightWithMuxInvFirst_2		auto_deeper	
+FauFTB	ways_0	FauFTBWay	GEN_SITE	u_core.g_way[0].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_1	FauFTBWay	GEN_SITE	u_core.g_way[1].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_10	FauFTBWay	GEN_SITE	u_core.g_way[10].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_11	FauFTBWay	GEN_SITE	u_core.g_way[11].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_12	FauFTBWay	GEN_SITE	u_core.g_way[12].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_13	FauFTBWay	GEN_SITE	u_core.g_way[13].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_14	FauFTBWay	GEN_SITE	u_core.g_way[14].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_15	FauFTBWay	GEN_SITE	u_core.g_way[15].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_16	FauFTBWay	GEN_SITE	u_core.g_way[16].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_17	FauFTBWay	GEN_SITE	u_core.g_way[17].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_18	FauFTBWay	GEN_SITE	u_core.g_way[18].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_19	FauFTBWay	GEN_SITE	u_core.g_way[19].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_2	FauFTBWay	GEN_SITE	u_core.g_way[2].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_20	FauFTBWay	GEN_SITE	u_core.g_way[20].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_21	FauFTBWay	GEN_SITE	u_core.g_way[21].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_22	FauFTBWay	GEN_SITE	u_core.g_way[22].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_23	FauFTBWay	GEN_SITE	u_core.g_way[23].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_24	FauFTBWay	GEN_SITE	u_core.g_way[24].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_25	FauFTBWay	GEN_SITE	u_core.g_way[25].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_26	FauFTBWay	GEN_SITE	u_core.g_way[26].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_27	FauFTBWay	GEN_SITE	u_core.g_way[27].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_28	FauFTBWay	GEN_SITE	u_core.g_way[28].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_29	FauFTBWay	GEN_SITE	u_core.g_way[29].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_3	FauFTBWay	GEN_SITE	u_core.g_way[3].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_30	FauFTBWay	GEN_SITE	u_core.g_way[30].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_31	FauFTBWay	GEN_SITE	u_core.g_way[31].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_4	FauFTBWay	GEN_SITE	u_core.g_way[4].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_5	FauFTBWay	GEN_SITE	u_core.g_way[5].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_6	FauFTBWay	GEN_SITE	u_core.g_way[6].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_7	FauFTBWay	GEN_SITE	u_core.g_way[7].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_8	FauFTBWay	GEN_SITE	u_core.g_way[8].u_way	FauFTBWay		auto_gen_site_suffix	
+FauFTB	ways_9	FauFTBWay	GEN_SITE	u_core.g_way[9].u_way	FauFTBWay		auto_gen_site_suffix	
+FloatAdderF32F16MixedPipeline	U_close_path	ClosePathF32WidenF16MixedPipeline	DEEPER	u_core.U_close_path	ClosePathF32WidenF16MixedPipeline		auto_deeper	
+FloatAdderF32F16MixedPipeline	U_far_path	FarPathF32WidenF16MixedPipeline	DEEPER	u_core.U_far_path	FarPathF32WidenF16MixedPipeline		auto_deeper	
 FloatAdderF32WidenF16MixedPipeline	U_close_path	ClosePathF32WidenF16MixedPipeline	DEEPER	u_core.U_close_path	ClosePathF32WidenF16MixedPipeline		auto_deeper	
 FloatAdderF32WidenF16MixedPipeline	U_far_path	FarPathF32WidenF16MixedPipeline	DEEPER	u_core.U_far_path	FarPathF32WidenF16MixedPipeline		auto_deeper	
+FloatAdderWidenFormat	io_widen_a_f32_0_U_fp_a_is_denormal_to_widen	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_a_f32_0_U_fp_a_is_denormal_to_widen_1	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_a_f32_1_U_fp_a_is_denormal_to_widen	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_a_f32_1_U_fp_a_is_denormal_to_widen_1	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_a_f64_U_fp_a_is_denormal_to_widen	ShiftLeftPriorityWithF64EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_a_f64_U_fp_a_is_denormal_to_widen_1	ShiftLeftPriorityWithF64EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_b_f32_0_U_fp_a_is_denormal_to_widen_1	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_b_f32_0_U_fp_a_is_denormal_to_widen_2	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_b_f32_1_U_fp_a_is_denormal_to_widen_1	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_b_f32_1_U_fp_a_is_denormal_to_widen_2	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_b_f64_U_fp_a_is_denormal_to_widen_1	ShiftLeftPriorityWithF64EXPResult	UNRESOLVED				none	
+FloatAdderWidenFormat	io_widen_b_f64_U_fp_a_is_denormal_to_widen_2	ShiftLeftPriorityWithF64EXPResult	UNRESOLVED				none	
 FoldedSRAMTemplate	array	SplittedSRAMTemplate_3	SAME_PATH	array	SplittedSRAMTemplate_3		auto_same	
 FoldedSRAMTemplate_1	array	SplittedSRAMTemplate_4	SAME_PATH	array	SplittedSRAMTemplate_4		auto_same	
 FoldedSRAMTemplate_20	array	SplittedSRAMTemplate_23	SAME_PATH	array	SplittedSRAMTemplate_23		auto_same	
@@ -2141,7 +2225,6 @@ HPerfMonitor_3	perfEvents_hpc_4	HPerfCounter_21	GEN_SITE	u_core.g_cnt[4].perfEve
 HPerfMonitor_3	perfEvents_hpc_5	HPerfCounter_21	GEN_SITE	u_core.g_cnt[5].perfEvents_hpc	HPerfCounter_21		auto_gen_site_suffix	
 HPerfMonitor_3	perfEvents_hpc_6	HPerfCounter_21	GEN_SITE	u_core.g_cnt[6].perfEvents_hpc	HPerfCounter_21		auto_gen_site_suffix	
 HPerfMonitor_3	perfEvents_hpc_7	HPerfCounter_21	GEN_SITE	u_core.g_cnt[7].perfEvents_hpc	HPerfCounter_21		auto_gen_site_suffix	
-I8DivNr4	iter_b	IterBlockI8Nr4	ONE_SITE	u_core.u_iter	IterBlockI8Nr4		auto_one_site	
 ICache	ctrlUnitOpt	ICacheCtrlUnit	DEEPER	u_core.ctrlUnitOpt	ICacheCtrlUnit		auto_deeper	
 ICache	dataArray	ICacheDataArray	DEEPER	u_core.dataArray	ICacheDataArray		auto_deeper	
 ICache	mainPipe	ICacheMainPipe	DEEPER	u_core.mainPipe	ICacheMainPipe		auto_deeper	
@@ -2221,9 +2304,17 @@ IMSIC	intFile_6	IntFile	GEN_SITE	u_core.g_file[6].intFile	IntFile		auto_gen_site
 IMSIC	intFile_7	IntFile	GEN_SITE	u_core.g_file[7].intFile	IntFile		auto_gen_site_suffix	
 IMSIC	intFile_8	IntFile	GEN_SITE	u_core.g_file[8].intFile	IntFile		auto_gen_site_suffix	
 IMSICGateWay	msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0	DEEPER	u_core.msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0		auto_deeper	
+IMSIC_WRAP	imsic	IMSIC	SAME_PATH	imsic	IMSIC		auto_same	
 INT2FP	leadZerosNext_clz	CLZ_6	DEEPER	u_core.leadZerosNext_clz	CLZ_6		auto_deeper	
 INT2FP	rounder	RoundingUnit_3	DEEPER	u_core.rounder	RoundingUnit_3		auto_deeper	
 IPrefetchPipe	toMSHRArbiter	Arbiter2_ICacheMissReq	DEEPER	u_core.toMSHRArbiter	Arbiter2_ICacheMissReq		auto_deeper	
+ITTage	rTable	RegionWays	SAME_PATH	rTable	RegionWays		auto_same	
+ITTage	s2_allocLFSR_prng	MaxPeriodFibonacciLFSR	SAME_PATH	s2_allocLFSR_prng	MaxPeriodFibonacciLFSR		auto_same	
+ITTage	tables_0	ITTageTable	SAME_PATH	tables_0	ITTageTable		auto_same	
+ITTage	tables_1	ITTageTable_1	SAME_PATH	tables_1	ITTageTable_1		auto_same	
+ITTage	tables_2	ITTageTable_2	SAME_PATH	tables_2	ITTageTable_2		auto_same	
+ITTage	tables_3	ITTageTable_3	SAME_PATH	tables_3	ITTageTable_3		auto_same	
+ITTage	tables_4	ITTageTable_4	SAME_PATH	tables_4	ITTageTable_4		auto_same	
 ITTageTable	mbistPl	MbistPipeIttage	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
 ITTageTable	table_0	FoldedSRAMTemplate_22	SAME_PATH	table_0	FoldedSRAMTemplate_22		auto_same	
 ITTageTable	wrbypass	WrBypass_41	SAME_PATH	wrbypass	WrBypass_41		auto_same	
@@ -2262,6 +2353,9 @@ IntRFWBCollideChecker	arbiters_6	WBArbiter_3	SAME_PATH	arbiters_6	WBArbiter_3		a
 IntRFWBCollideChecker	arbiters_7	WBArbiter_3	SAME_PATH	arbiters_7	WBArbiter_3		auto_same	
 IntToFP	post_norm	IntToFP_postnorm	DEEPER	u_core.post_norm	IntToFP_postnorm		auto_deeper	
 IntToFP	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
+IntToFPDataModule	i2fResults_i2f	IntToFP	DEEPER	u_core.i2fResults_i2f	IntToFP		auto_deeper	
+IntToFPDataModule	i2fResults_i2f_1	IntToFP_1	DEEPER	u_core.i2fResults_i2f_1	IntToFP_1		auto_deeper	
+IntToFPDataModule	i2fResults_i2f_2	IntToFP_2	DEEPER	u_core.i2fResults_i2f_2	IntToFP_2		auto_deeper	
 IntToFP_1	post_norm	IntToFP_postnorm_1	DEEPER	u_core.post_norm	IntToFP_postnorm_1		auto_deeper	
 IntToFP_1	pre_norm	IntToFP_prenorm	DEEPER	u_core.pre_norm	IntToFP_prenorm		auto_deeper	
 IntToFP_2	post_norm	IntToFP_postnorm_2	DEEPER	u_core.post_norm	IntToFP_postnorm_2		auto_deeper	
@@ -2405,28 +2499,12 @@ IssueQueueVlduVstuVseglduVsegstu	age	NewAgeDetector_6	SAME_PATH	age	NewAgeDetect
 IssueQueueVlduVstuVseglduVsegstu	age_1	AgeDetector_12	SAME_PATH	age_1	AgeDetector_12		auto_same	
 IssueQueueVlduVstuVseglduVsegstu	age_2	AgeDetector_21	SAME_PATH	age_2	AgeDetector_21		auto_same	
 IssueQueueVlduVstuVseglduVsegstu	entries	EntriesVlduVstuVseglduVsegstu	SAME_PATH	entries	EntriesVlduVstuVseglduVsegstu		auto_same	
-IterBlock_v4	csa_3	CSA3_2_4017	ONE_SITE	u_core.u_csa_est	CSA3_2_4017		auto_one_site	
-IterBlock_v4	csa_iter_1	CSA3_2_3987	UNRESOLVED				none	
-IterBlock_v4	csa_iter_2	CSA3_2_3987	UNRESOLVED				none	
-IterBlock_v4	iter_conv	Conversion	UNRESOLVED				none	
-IterBlock_v4	iter_conv_2	Conversion	UNRESOLVED				none	
-IterBlock_v4	selB	SelBlock_v4	ONE_SITE	u_core.u_sel	SelBlock_v4		auto_one_site	
-IterBlock_v4	specB	SpecBlock_v4	ONE_SITE	u_core.u_spec	SpecBlock_v4		auto_one_site	
-IterBlock_v4_4	csa_3	CSA3_2_4017	ONE_SITE	u_core.u_csa_est	CSA3_2_4017		auto_one_site	
-IterBlock_v4_4	csa_iter_1	CSA3_2_4111	UNRESOLVED				none	
-IterBlock_v4_4	csa_iter_2	CSA3_2_4111	UNRESOLVED				none	
-IterBlock_v4_4	iter_conv	Conversion_8	UNRESOLVED				none	
-IterBlock_v4_4	iter_conv_2	Conversion_8	UNRESOLVED				none	
-IterBlock_v4_4	selB	SelBlock_v4	ONE_SITE	u_core.u_sel	SelBlock_v4		auto_one_site	
-IterBlock_v4_4	specB	SpecBlock_v4	ONE_SITE	u_core.u_spec	SpecBlock_v4		auto_one_site	
-IterBlock_v4_6	csa_3	CSA3_2_4017	ONE_SITE	u_core.u_csa_est	CSA3_2_4017		auto_one_site	
-IterBlock_v4_6	csa_iter_1	CSA3_2_4173	UNRESOLVED				none	
-IterBlock_v4_6	csa_iter_2	CSA3_2_4173	UNRESOLVED				none	
-IterBlock_v4_6	iter_conv	Conversion_12	UNRESOLVED				none	
-IterBlock_v4_6	iter_conv_2	Conversion_12	UNRESOLVED				none	
-IterBlock_v4_6	selB	SelBlock_v4	ONE_SITE	u_core.u_sel	SelBlock_v4		auto_one_site	
-IterBlock_v4_6	specB	SpecBlock_v4	ONE_SITE	u_core.u_spec	SpecBlock_v4		auto_one_site	
 JumpUnit	jumpDataModule	JumpDataModule	DEEPER	u_core.jumpDataModule	JumpDataModule		auto_deeper	
+L1Prefetcher	pf_queue_filter	MutiLevelPrefetchFilter	SAME_PATH	pf_queue_filter	MutiLevelPrefetchFilter		auto_same	
+L1Prefetcher	stream_bit_vec_array	StreamBitVectorArray	SAME_PATH	stream_bit_vec_array	StreamBitVectorArray		auto_same	
+L1Prefetcher	stream_train_filter	TrainFilter_1	SAME_PATH	stream_train_filter	TrainFilter_1		auto_same	
+L1Prefetcher	stride_meta_array	StrideMetaArray	SAME_PATH	stride_meta_array	StrideMetaArray		auto_same	
+L1Prefetcher	stride_train_filter	TrainFilter	SAME_PATH	stride_train_filter	TrainFilter		auto_same	
 L2TLB	Arbiter1_L2TLBImp_Anon	Arbiter1_L2TLBImp_Anon	UNRESOLVED				none	
 L2TLB	Arbiter1_L2TLBImp_Anon_1	Arbiter1_L2TLBImp_Anon	UNRESOLVED				none	
 L2TLB	Arbiter3_L2TLBImp_Anon	Arbiter3_L2TLBImp_Anon	UNRESOLVED				none	
@@ -2926,6 +3004,12 @@ PTWRepeaterNB	delay	DelayN_1	DEEPER	u_core.delay	DelayN_1		auto_deeper
 Permutation	vslidednOffset	slidednVs2VdTable	DEEPER	u_core.vslidednOffset	slidednVs2VdTable		auto_deeper	
 Permutation	vslideupOffset	slideupVs2VdTable	DEEPER	u_core.vslideupOffset	slideupVs2VdTable		auto_deeper	
 Pipeline	stages_0	Queue1_L1PrefetchReq	ONE_SITE	u_core.prefetch_stage	Queue1_L1PrefetchReq		auto_one_site	
+Pipeline_1	stages_0	Queue1_PrefetchReq	SAME_PATH	stages_0	Queue1_PrefetchReq		auto_same	
+Pipeline_10	stages_0	Queue1_UInt32	SAME_PATH	stages_0	Queue1_UInt32		auto_same	
+Pipeline_10	stages_1	Queue1_UInt32	SAME_PATH	stages_1	Queue1_UInt32		auto_same	
+Pipeline_11	stages_0	Queue1_UInt32	SAME_PATH	stages_0	Queue1_UInt32		auto_same	
+Pipeline_2	stages_0	Queue1_PrefetchTrain	SAME_PATH	stages_0	Queue1_PrefetchTrain		auto_same	
+Pipeline_3	stages_0	Queue1_PrefetchResp	SAME_PATH	stages_0	Queue1_PrefetchResp		auto_same	
 Predictor	ctrl_delay	DelayN	SAME_PATH	ctrl_delay	DelayN		auto_same	
 Predictor	ghv_write_datas_0_ppm	PriorityMuxModule_20	INLINE	u_core	-	ghv_wdata,ghv_wen	declared	★本次重写的核心★ golden 给 256 位全局历史的**每一位**配一个写数据优先选择器(256 个实例, 纯组合 0 寄存器)；impl rtl/frontend/Predictor.sv 的 GHV_ 节把 ghv 收成一个 256 位向量 + 一个 generate 循环，256 个实例塌缩成 4 行优先级链 ghv_wdata[n]/ghv_wen[n]。
 Predictor	ghv_write_datas_100_ppm	PriorityMuxModule_20	INLINE	u_core	-	ghv_wdata,ghv_wen	declared	★本次重写的核心★ golden 给 256 位全局历史的**每一位**配一个写数据优先选择器(256 个实例, 纯组合 0 寄存器)；impl rtl/frontend/Predictor.sv 的 GHV_ 节把 ghv 收成一个 256 位向量 + 一个 generate 循环，256 个实例塌缩成 4 行优先级链 ghv_wdata[n]/ghv_wen[n]。
@@ -3225,6 +3309,7 @@ Queue16_HintQueueEntry	ram_ext	ram_16x11	SAME_PATH	ram_ext	ram_16x11		auto_same
 Queue16_TaskBundle	ram_ext	ram_16x67	SAME_PATH	ram_ext	ram_16x67		auto_same	
 Queue2_CHISNP	ram_ext	ram_2x98	SAME_PATH	ram_ext	ram_2x98		auto_same	
 Queue4_HintQueueEntry	ram_ext	ram_4x11	SAME_PATH	ram_ext	ram_4x11		auto_same	
+RAS	RASStack	RASStack	SAME_PATH	RASStack	RASStack		auto_same	
 RNXbar	rxdatArbs_0	FastArbiter_45	DEEPER	u_core.rxdatArbs_0	FastArbiter_45		auto_deeper	
 RNXbar	rxrspArbs_0	FastArbiter_26	DEEPER	u_core.rxrspArbs_0	FastArbiter_26		auto_deeper	
 RNXbar	rxsnpArbs_0	FastArbiter_43	DEEPER	u_core.rxsnpArbs_0	FastArbiter_43		auto_deeper	
@@ -3271,6 +3356,8 @@ RealWBCollideChecker_4	arbiters_0	RealWBArbiter_26	UNRESOLVED				none
 RealWBCollideChecker_4	arbiters_1	RealWBArbiter_26	UNRESOLVED				none	
 RealWBCollideChecker_4	arbiters_2	RealWBArbiter_26	UNRESOLVED				none	
 RealWBCollideChecker_4	arbiters_3	RealWBArbiter_26	UNRESOLVED				none	
+RecentRequestTable	rrTable	SRAMTemplate_146	DEEPER	u_core.rrTable	SRAMTemplate_146		auto_deeper	
+RecentRequestTable_1	rrTable	SRAMTemplate_146	DEEPER	u_core.rrTable	SRAMTemplate_146		auto_deeper	
 RegCache	IntRegCache	RegCacheDataModule	DEEPER	u_core.IntRegCache	RegCacheDataModule		auto_deeper	
 RegCache	IntRegCacheAgeTimer	RegCacheAgeTimer	ONE_SITE	u_core.IntRegCache_age_timer	RegCacheAgeTimer		auto_one_site	
 RegCache	IntRegCacheRepRCIdx_age	RegCacheAgeDetector	ONE_SITE	u_core.IntRegCache_rep	RegCacheAgeDetector		auto_one_site	
@@ -3306,6 +3393,26 @@ Rob	exceptionGen	ExceptionGen	SAME_PATH	exceptionGen	ExceptionGen		auto_same
 Rob	rab	RenameBuffer	SAME_PATH	rab	RenameBuffer		auto_same	
 Rob	snapshots_snapshotGen	SnapshotGenerator_3	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_3		auto_same	
 Rob	vtypeBuffer	VTypeBuffer	SAME_PATH	vtypeBuffer	VTypeBuffer		auto_same	
+SCTable	mbistPl	MbistPipeSc	SAME_PATH	mbistPl	MbistPipeSc		auto_same	
+SCTable	table_0	SRAMTemplate_68	GEN_SITE	u_core.g_bank[0].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable	table_1	SRAMTemplate_68	GEN_SITE	u_core.g_bank[1].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable	wrbypasses_0	WrBypass_33	GEN_SITE	u_core.g_wrbypass[0].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable	wrbypasses_1	WrBypass_33	GEN_SITE	u_core.g_wrbypass[1].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_1	mbistPl	MbistPipeSc_1	SAME_PATH	mbistPl	MbistPipeSc_1		auto_same	
+SCTable_1	table_0	SRAMTemplate_68	GEN_SITE	u_core.g_bank[0].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_1	table_1	SRAMTemplate_68	GEN_SITE	u_core.g_bank[1].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_1	wrbypasses_0	WrBypass_33	GEN_SITE	u_core.g_wrbypass[0].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_1	wrbypasses_1	WrBypass_33	GEN_SITE	u_core.g_wrbypass[1].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_2	mbistPl	MbistPipeSc_2	SAME_PATH	mbistPl	MbistPipeSc_2		auto_same	
+SCTable_2	table_0	SRAMTemplate_68	GEN_SITE	u_core.g_bank[0].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_2	table_1	SRAMTemplate_68	GEN_SITE	u_core.g_bank[1].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_2	wrbypasses_0	WrBypass_33	GEN_SITE	u_core.g_wrbypass[0].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_2	wrbypasses_1	WrBypass_33	GEN_SITE	u_core.g_wrbypass[1].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_3	mbistPl	MbistPipeSc_3	SAME_PATH	mbistPl	MbistPipeSc_3		auto_same	
+SCTable_3	table_0	SRAMTemplate_68	GEN_SITE	u_core.g_bank[0].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_3	table_1	SRAMTemplate_68	GEN_SITE	u_core.g_bank[1].u_table	SRAMTemplate_68		auto_gen_site_suffix	
+SCTable_3	wrbypasses_0	WrBypass_33	GEN_SITE	u_core.g_wrbypass[0].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
+SCTable_3	wrbypasses_1	WrBypass_33	GEN_SITE	u_core.g_wrbypass[1].u_wrbypass	WrBypass_33		auto_gen_site_suffix	
 SNXbar	txdatArb	FastArbiter_45	DEEPER	u_core.txdatArb	FastArbiter_45		auto_deeper	
 SNXbar	txreqArb	FastArbiter_46	DEEPER	u_core.txreqArb	FastArbiter_46		auto_deeper	
 SQDataModule	data16_0	SQData8Module	SAME_PATH	data16_0	SQData8Module		auto_same	
@@ -3326,6 +3433,10 @@ SQDataModule	data16_8	SQData8Module	SAME_PATH	data16_8	SQData8Module		auto_same
 SQDataModule	data16_9	SQData8Module	SAME_PATH	data16_9	SQData8Module		auto_same	
 SRAMTemplate	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
 SRAMTemplate	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplateWithFixedWidth	srams_0	SRAMTemplate_4	SAME_PATH	srams_0	SRAMTemplate_4		auto_same	
+SRAMTemplateWithFixedWidth_12	srams_0	SRAMTemplate_16	SAME_PATH	srams_0	SRAMTemplate_16		auto_same	
+SRAMTemplateWithFixedWidth_28	srams_0	SRAMTemplate_32	SAME_PATH	srams_0	SRAMTemplate_32		auto_same	
+SRAMTemplateWithFixedWidth_4	srams_0	SRAMTemplate_8	SAME_PATH	srams_0	SRAMTemplate_8		auto_same	
 SRAMTemplate_100	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
 SRAMTemplate_100	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_116	array	sram_array_1p256x86m43s1h0l1b_dcsh_tag	SAME_PATH	array	sram_array_1p256x86m43s1h0l1b_dcsh_tag		auto_same	
@@ -3382,6 +3493,38 @@ SRAMTemplate_88	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sra
 SRAMTemplate_88	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_92	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
 SRAMTemplate_92	rcg	MbistClockGateCell	DEEPER	u_core.g_cg.rcg	MbistClockGateCell		auto_deeper	
+SRT16DividerDataModule	csa_sel_wide_1	CSA3_2_3960	DEEPER	u_core.csa_sel_wide_1	CSA3_2_3960		auto_deeper	
+SRT16DividerDataModule	csa_sel_wide_2	CSA3_2_3960	DEEPER	u_core.csa_sel_wide_2	CSA3_2_3960		auto_deeper	
+SRT16DividerDataModule	csa_spec_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	csa_spec_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	csa_spec_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	csa_spec_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	csa_spec_4	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	rightShifter	RightShifter	DEEPER	u_core.rightShifter	RightShifter		auto_deeper	
+SRT16DividerDataModule	signs2_csa_spec_0_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_0_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_0_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_0_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_1_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_1_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_1_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_1_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_2_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_2_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_2_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_2_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_3_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_3_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_3_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_3_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_4_0	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_4_1	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_4_2	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs2_csa_spec_4_3	CSA3_2_3962	UNRESOLVED				none	
+SRT16DividerDataModule	signs_csa_sel_0	CSA3_2_3956	GEN_SITE	u_core.g_sel[0].signs_csa_sel	CSA3_2_3956		auto_gen_site_suffix	
+SRT16DividerDataModule	signs_csa_sel_1	CSA3_2_3956	GEN_SITE	u_core.g_sel[1].signs_csa_sel	CSA3_2_3956		auto_gen_site_suffix	
+SRT16DividerDataModule	signs_csa_sel_2	CSA3_2_3956	GEN_SITE	u_core.g_sel[2].signs_csa_sel	CSA3_2_3956		auto_gen_site_suffix	
+SRT16DividerDataModule	signs_csa_sel_3	CSA3_2_3956	GEN_SITE	u_core.g_sel[3].signs_csa_sel	CSA3_2_3956		auto_gen_site_suffix	
 SSIT	data_array	SyncDataModuleTemplate__1024entry_1	DEEPER	u_core.data_array	SyncDataModuleTemplate__1024entry_1		auto_deeper	
 SSIT	valid_array	SyncDataModuleTemplate__1024entry	DEEPER	u_core.valid_array	SyncDataModuleTemplate__1024entry		auto_deeper	
 Sbuffer	dataModule	SbufferData	SAME_PATH	dataModule	SbufferData		auto_same	
@@ -3405,42 +3548,12 @@ Scheduler_3	IssueQueueStdMoud	IssueQueueStdMoud	SAME_PATH	IssueQueueStdMoud	Issu
 Scheduler_3	IssueQueueStdMoud_1	IssueQueueStdMoud	SAME_PATH	IssueQueueStdMoud_1	IssueQueueStdMoud		auto_same	
 Scheduler_3	IssueQueueVlduVstu	IssueQueueVlduVstu	SAME_PATH	IssueQueueVlduVstu	IssueQueueVlduVstu		auto_same	
 Scheduler_3	IssueQueueVlduVstuVseglduVsegstu	IssueQueueVlduVstuVseglduVsegstu	SAME_PATH	IssueQueueVlduVstuVseglduVsegstu	IssueQueueVlduVstuVseglduVsegstu		auto_same	
-SelBlock_v4	SD_sel	SignDec	ONE_SITE	u_core.u_sign_dec	SignDec		auto_one_site	
-SelBlock_v4	csa_sel_0	CSA3_2_3988	GEN_SITE	u_core.g_thresh[0].u_csa	CSA3_2_3988		auto_gen_site_suffix	
-SelBlock_v4	csa_sel_1	CSA3_2_3988	GEN_SITE	u_core.g_thresh[1].u_csa	CSA3_2_3988		auto_gen_site_suffix	
-SelBlock_v4	csa_sel_2	CSA3_2_3988	GEN_SITE	u_core.g_thresh[2].u_csa	CSA3_2_3988		auto_gen_site_suffix	
-SelBlock_v4	csa_sel_3	CSA3_2_3988	GEN_SITE	u_core.g_thresh[3].u_csa	CSA3_2_3988		auto_gen_site_suffix	
 SinkC	taskArb	RRArbiterInit_16	SAME_PATH	taskArb	RRArbiterInit_16		auto_same	
 SourceB	issueArb	FastArbiter_5	SAME_PATH	issueArb	FastArbiter_5		auto_same	
-SpecBlock_v4	SD_sel	SignDec	GEN_SITE	u_core.g_dec[0].u_sign_dec	SignDec		auto_gen_site_suffix	
-SpecBlock_v4	SD_sel_1	SignDec	GEN_SITE	u_core.g_dec[1].u_sign_dec	SignDec		auto_gen_site_suffix	
-SpecBlock_v4	SD_sel_2	SignDec	GEN_SITE	u_core.g_dec[2].u_sign_dec	SignDec		auto_gen_site_suffix	
-SpecBlock_v4	SD_sel_3	SignDec	GEN_SITE	u_core.g_dec[3].u_sign_dec	SignDec		auto_gen_site_suffix	
-SpecBlock_v4	SD_sel_4	SignDec	GEN_SITE	u_core.g_dec[4].u_sign_dec	SignDec		auto_gen_site_suffix	
-SpecBlock_v4	csa_sel_spec_0	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_0_1	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_0_2	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_0_3	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_0_4	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_1	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_1_1	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_1_2	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_1_3	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_1_4	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_2	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_2_1	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_2_2	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_2_3	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_2_4	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_3	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_3_1	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_3_2	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_3_3	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_sel_spec_3_4	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_spec_1_0	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_spec_1_1	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_spec_1_2	CSA3_2_3992	UNRESOLVED				none	
-SpecBlock_v4	csa_spec_1_3	CSA3_2_3992	UNRESOLVED				none	
+SplittedSRAM	array_0_0_0	SRAMTemplate_124	DEEPER	u_core.array_0_0_0	SRAMTemplate_124		auto_deeper	
+SplittedSRAM	array_0_0_1	SRAMTemplate_124	DEEPER	u_core.array_0_0_1	SRAMTemplate_124		auto_deeper	
+SplittedSRAM	array_0_1_0	SRAMTemplate_124	DEEPER	u_core.array_0_1_0	SRAMTemplate_124		auto_deeper	
+SplittedSRAM	array_0_1_1	SRAMTemplate_124	DEEPER	u_core.array_0_1_1	SRAMTemplate_124		auto_deeper	
 SplittedSRAMTemplate	array_0_0_0	SRAMTemplate	SAME_PATH	array_0_0_0	SRAMTemplate		auto_same	
 SplittedSRAMTemplate	array_0_1_0	SRAMTemplate	SAME_PATH	array_0_1_0	SRAMTemplate		auto_same	
 SplittedSRAMTemplate_1	array_0_0_0	SRAMTemplate_2	SAME_PATH	array_0_0_0	SRAMTemplate_2		auto_same	
@@ -3747,6 +3860,18 @@ TageTable_3	table_banks_1	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[1].table_b
 TageTable_3	table_banks_2	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[2].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
 TageTable_3	table_banks_3	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[3].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
 TageTable_3	us	FoldedSRAMTemplate	DEEPER	u_core.us	FoldedSRAMTemplate		auto_deeper	
+Tage_SC	allocLFSR_prng	MaxPeriodFibonacciLFSR	SAME_PATH	allocLFSR_prng	MaxPeriodFibonacciLFSR		auto_same	
+Tage_SC	allocLFSR_prng_1	MaxPeriodFibonacciLFSR	SAME_PATH	allocLFSR_prng_1	MaxPeriodFibonacciLFSR		auto_same	
+Tage_SC	bt	TageBTable	SAME_PATH	bt	TageBTable		auto_same	
+Tage_SC	mbistPl	MbistPipeTage	SAME_PATH	mbistPl	MbistPipeTage		auto_same	
+Tage_SC	scTables_0	SCTable	SAME_PATH	scTables_0	SCTable		auto_same	
+Tage_SC	scTables_1	SCTable_1	SAME_PATH	scTables_1	SCTable_1		auto_same	
+Tage_SC	scTables_2	SCTable_2	SAME_PATH	scTables_2	SCTable_2		auto_same	
+Tage_SC	scTables_3	SCTable_3	SAME_PATH	scTables_3	SCTable_3		auto_same	
+Tage_SC	tables_0	TageTable	SAME_PATH	tables_0	TageTable		auto_same	
+Tage_SC	tables_1	TageTable_1	SAME_PATH	tables_1	TageTable_1		auto_same	
+Tage_SC	tables_2	TageTable_2	SAME_PATH	tables_2	TageTable_2		auto_same	
+Tage_SC	tables_3	TageTable_3	SAME_PATH	tables_3	TageTable_3		auto_same	
 TlbStorageWrapper	page_itlb_storage_fa	TLBFA	SAME_PATH	page_itlb_storage_fa	TLBFA		auto_same	
 TlbStorageWrapper_1	page_ldtlb_storage_fa	TLBFA_1	SAME_PATH	page_ldtlb_storage_fa	TLBFA_1		auto_same	
 TlbStorageWrapper_2	page_sttlb_storage_fa	TLBFA_2	SAME_PATH	page_sttlb_storage_fa	TLBFA_2		auto_same	
@@ -3770,6 +3895,8 @@ VCVT_2	vcvtImpl	CVT16	SAME_PATH	vcvtImpl	CVT16		auto_same
 VCVT_8	mgu	Mgu	DEEPER	u_core.mgu	Mgu		auto_deeper	
 VCVT_8	vfcvt	VectorCvtTop	DEEPER	u_core.vfcvt	VectorCvtTop		auto_deeper	
 VFixPoint64b	adder_chain_rnd	Adder_chain_rnd	DEEPER	u_core.adder_chain_rnd	Adder_chain_rnd		auto_deeper	
+VIDiv	mgu	Mgu	DEEPER	u_core.mgu	Mgu		auto_deeper	
+VIDiv	vidiv	VectorIdiv	DEEPER	u_core.vidiv	VectorIdiv		auto_deeper	
 VIntFixpAlu64b	vFixPoint64b	VFixPoint64b	DEEPER	u_core.vFixPoint64b	VFixPoint64b		auto_deeper	
 VIntFixpAlu64b	vIntAdder64b	VIntAdder64b	DEEPER	u_core.vIntAdder64b	VIntAdder64b		auto_deeper	
 VIntFixpAlu64b	vIntMisc64b	VIntMisc64b	DEEPER	u_core.vIntMisc64b	VIntMisc64b		auto_deeper	
@@ -3787,6 +3914,8 @@ VLMergeBufferImp	freeCount_freeList	FreeList	ONE_SITE	u_core.g_freelist_vl.freeC
 VLSplitImp	VSSplitSkidBuffer	skidBufferConnect	SAME_PATH	VSSplitSkidBuffer	skidBufferConnect		auto_same	
 VLSplitImp	splitBuffer	VLSplitBufferImp	SAME_PATH	splitBuffer	VLSplitBufferImp		auto_same	
 VLSplitImp	splitPipeline	VLSplitPipelineImp	SAME_PATH	splitPipeline	VLSplitPipelineImp		auto_same	
+VPPU	typeMod	VPermSrcTypeModule	ONE_SITE	u_core.u_typeMod	VPermSrcTypeModule		auto_one_site	
+VPPU	vperms	Permutation	ONE_SITE	u_core.u_vperms	Permutation		auto_one_site	
 VSMergeBufferImp	VMergebufferPipelineConnect0	NewPipelineConnectPipe_29	GEN_SITE_UNINDEXED	u_core.g_deq_pipe[d].VMergebufferPipelineConnect	NewPipelineConnectPipe_29		auto_gen_site	
 VSMergeBufferImp	freeCount_freeList	FreeList_1	ONE_SITE	u_core.g_freelist_vs.freeCount_freeList	FreeList_1		auto_one_site	
 VSSplitImp	VSSplitSkidBuffer	skidBufferConnect	SAME_PATH	VSSplitSkidBuffer	skidBufferConnect		auto_same	
@@ -3796,6 +3925,9 @@ VSegmentUnit	VSegmentUnitPipelineConnect	NewPipelineConnectPipe_33	DEEPER	u_core
 VSegmentUnit	segmentTrigger	VSegmentTrigger	DEEPER	u_core.segmentTrigger	VSegmentTrigger		auto_deeper	
 VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。
 VSetRvfWvf	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	同上
+VTypeBuffer	vtypeBuffer	SyncDataModuleTemplate__64entry_4	DEEPER	u_core.vtypeBuffer	SyncDataModuleTemplate__64entry_4		auto_deeper	
+VTypeBuffer	walkPtrSnapshots_snapshotGen	SnapshotGenerator_1	DEEPER	u_core.walkPtrSnapshots_snapshotGen	SnapshotGenerator_1		auto_deeper	
+VTypeBuffer	walkVTypeSnapshots_snapshotGen	SnapshotGenerator_2	DEEPER	u_core.walkVTypeSnapshots_snapshotGen	SnapshotGenerator_2		auto_deeper	
 VTypeGen	vsetModule	VsetModule	UNRESOLVED				none	
 VectorCvt	vcvtWraper	VCVT	DEEPER	u_core.vcvtWraper	VCVT		auto_deeper	
 VectorCvt	vcvtWraper_1	VCVT_1	DEEPER	u_core.vcvtWraper_1	VCVT_1		auto_deeper	
@@ -3803,9 +3935,34 @@ VectorCvt	vcvtWraper_2	VCVT_2	DEEPER	u_core.vcvtWraper_2	VCVT_2		auto_deeper
 VectorCvt	vcvtWraper_3	VCVT_2	DEEPER	u_core.vcvtWraper_3	VCVT_2		auto_deeper	
 VectorCvtTop	vectorCvt0	VectorCvt	DEEPER	u_core.vectorCvt0	VectorCvt		auto_deeper	
 VectorCvtTop	vectorCvt1	VectorCvt	DEEPER	u_core.vectorCvt1	VectorCvt		auto_deeper	
+VectorFloatDividerR64	U_Left_Shift_opa_f16_2	ShiftLeftPriorityWithLZDResult_8	UNRESOLVED				none	
+VectorFloatDividerR64	U_Left_Shift_opa_f16_3	ShiftLeftPriorityWithLZDResult_8	UNRESOLVED				none	
+VectorFloatDividerR64	U_Left_Shift_opa_f32_1	ShiftLeftPriorityWithLZDResult_6	UNRESOLVED				none	
+VectorFloatDividerR64	U_Left_Shift_opa_f64_0	ShiftLeftPriorityWithLZDResult	UNRESOLVED				none	
+VectorFloatDividerR64	U_Left_Shift_opb_f16_2	ShiftLeftPriorityWithLZDResult_8	UNRESOLVED				none	
+VectorFloatDividerR64	U_Left_Shift_opb_f16_3	ShiftLeftPriorityWithLZDResult_8	UNRESOLVED				none	
+VectorFloatDividerR64	U_Left_Shift_opb_f32_1	ShiftLeftPriorityWithLZDResult_6	UNRESOLVED				none	
+VectorFloatDividerR64	U_Left_Shift_opb_f64_0	ShiftLeftPriorityWithLZDResult	UNRESOLVED				none	
+VectorFloatDividerR64	u_r64_block_vector	fpdiv_r64_block_vector	DEEPER	u_core.u_r64_block_vector	fpdiv_r64_block_vector		auto_deeper	
 VectorFloatFMA	U_BoothEncoder	BoothEncoderF64F32F16_3	DEEPER	u_core.U_BoothEncoder	BoothEncoderF64F32F16_3		auto_deeper	
 VectorFloatFMA	U_CSA3to2	CSA3to2	DEEPER	u_core.U_CSA3to2	CSA3to2		auto_deeper	
 VectorFloatFMA	U_CSAnto2	CSA_Nto2With3to2MainPipeline	DEEPER	u_core.U_CSAnto2	CSA_Nto2With3to2MainPipeline		auto_deeper	
+VectorIdiv	_16bit_divide_0	SRT16Divint	UNRESOLVED				none	
+VectorIdiv	_16bit_divide_1	SRT16Divint	UNRESOLVED				none	
+VectorIdiv	_16bit_divide_2	SRT16Divint	UNRESOLVED				none	
+VectorIdiv	_16bit_divide_3	SRT16Divint	UNRESOLVED				none	
+VectorIdiv	_32bit_divide_0	SRT16Divint_4	UNRESOLVED				none	
+VectorIdiv	_32bit_divide_1	SRT16Divint_4	UNRESOLVED				none	
+VectorIdiv	_64bit_divide_0	SRT16Divint_6	UNRESOLVED				none	
+VectorIdiv	_64bit_divide_1	SRT16Divint_6	UNRESOLVED				none	
+VectorIdiv	_8bit_divide_0	I8DivNr4	UNRESOLVED				none	
+VectorIdiv	_8bit_divide_1	I8DivNr4	UNRESOLVED				none	
+VectorIdiv	_8bit_divide_2	I8DivNr4	UNRESOLVED				none	
+VectorIdiv	_8bit_divide_3	I8DivNr4	UNRESOLVED				none	
+VectorIdiv	_8bit_divide_4	I8DivNr4	UNRESOLVED				none	
+VectorIdiv	_8bit_divide_5	I8DivNr4	UNRESOLVED				none	
+VectorIdiv	_8bit_divide_6	I8DivNr4	UNRESOLVED				none	
+VectorIdiv	_8bit_divide_7	I8DivNr4	UNRESOLVED				none	
 VfRFReadArbiter	arbiters_0	WBArbiter_52	SAME_PATH	arbiters_0	WBArbiter_52		auto_same	
 VfRFReadArbiter	arbiters_1	WBArbiter_52	SAME_PATH	arbiters_1	WBArbiter_52		auto_same	
 VfRFReadArbiter	arbiters_10	WBArbiter_58	SAME_PATH	arbiters_10	WBArbiter_58		auto_same	
@@ -3883,6 +4040,21 @@ compare_3to1_2	adder_xb_2	Adder_xb_8	UNRESOLVED				none
 compare_3to1_6	adder_xb	Adder_xb_20	UNRESOLVED				none	
 compare_3to1_6	adder_xb_1	Adder_xb_20	UNRESOLVED				none	
 compare_3to1_6	adder_xb_2	Adder_xb_20	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_0_0	CSA3to2_20	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_0_1	CSA3to2_20	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_0_3	CSA3to2_20	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_0_4	CSA3to2_20	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_1_0	CSA3to2_24	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_1_1	CSA3to2_24	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_1_3	CSA3to2_24	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_1_4	CSA3to2_24	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_2_0	CSA3to2_24	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_2_1	CSA3to2_24	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_2_3	CSA3to2_24	UNRESOLVED				none	
+fpdiv_r64_block	U_CSA_2_4	CSA3to2_24	UNRESOLVED				none	
+fpdiv_r64_block	u_r4_qds_s0_0	r4_qds_v2	DEEPER	u_core.u_r4_qds_s0_0	r4_qds_v2		auto_deeper	
+fpdiv_r64_block	u_r4_qds_s1_6	r4_qds_v2_spec	UNRESOLVED				none	
+fpdiv_r64_block	u_r4_qds_s2_0	r4_qds_v2_spec	UNRESOLVED				none	
 fpdiv_r64_block_vector	U_CSA_0_0	CSA3to2_20	UNRESOLVED				none	
 fpdiv_r64_block_vector	U_CSA_0_1	CSA3to2_20	UNRESOLVED				none	
 fpdiv_r64_block_vector	U_CSA_0_3	CSA3to2_20	UNRESOLVED				none	
@@ -3910,6 +4082,57 @@ fpdiv_r64_block_vector	u_r4_qds_s2_0	r4_qds_v2_spec	UNRESOLVED				none
 fpdiv_r64_block_vector	u_r4_qds_s2_1	r4_qds_v2_spec	UNRESOLVED				none	
 fpdiv_r64_block_vector	u_r4_qds_s2_2	r4_qds_v2_spec	UNRESOLVED				none	
 fpdiv_r64_block_vector	u_r4_qds_s2_3	r4_qds_v2_spec	UNRESOLVED				none	
+fpsqrt_r16	u_fpsqrt_r16_block	fpsqrt_r16_block	DEEPER	u_core.u_fpsqrt_r16_block	fpsqrt_r16_block		auto_deeper	
+fpsqrt_r16	u_lzc_0	lzc	DEEPER	u_core.u_lzc_0	lzc		auto_deeper	
+fpsqrt_r16	u_r4_qds_cg_iter_init_0	r4_qds_cg	DEEPER	u_core.u_r4_qds_cg_iter_init_0	r4_qds_cg		auto_deeper	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_0_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_0_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_0_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_0_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_1_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_1_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_1_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_1_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_2_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_2_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_2_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_neg_2_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_pos_1_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_pos_1_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_pos_1_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_pos_1_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_pos_2_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_pos_2_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_pos_2_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s0_pos_2_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_0_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_0_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_0_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_0_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_1_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_1_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_1_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_1_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_2_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_2_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_2_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_neg_2_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_pos_1_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_pos_1_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_pos_1_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_pos_1_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_pos_2_0	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_pos_2_1	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_pos_2_2	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_cg_spec_s1_pos_2_3	r4_qds_cg	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_s0_0	r4_qds	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_s0_1	r4_qds	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_s0_2	r4_qds	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_s0_3	r4_qds	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_s1_0	r4_qds_spec	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_s1_1	r4_qds_spec	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_s1_2	r4_qds_spec	UNRESOLVED				none	
+fpsqrt_r16_block	u_r4_qds_s1_3	r4_qds_spec	UNRESOLVED				none	
 fpsqrt_vector_r16	u_fpsqrt_r16_block	fpsqrt_r16_block	DEEPER	u_core.u_fpsqrt_r16_block	fpsqrt_r16_block		auto_deeper	
 fpsqrt_vector_r16	u_lzc_0	lzc	DEEPER	u_core.u_lzc_0	lzc		auto_deeper	
 fpsqrt_vector_r16	u_lzc_1	lzc_3	DEEPER	u_core.u_lzc_1	lzc_3		auto_deeper	

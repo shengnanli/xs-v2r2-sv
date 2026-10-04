@@ -51,12 +51,14 @@ module xs_Pmacfg_core #(
 
   always @(posedge clock or posedge reset) begin
     if (reset) begin
-      reg_R      <= 1'b0;
-      reg_W      <= 1'b0;
-      reg_X      <= 1'b0;
-      reg_A      <= 2'b0;
-      reg_ATOMIC <= 1'b0;
-      reg_C      <= 1'b0;
+      // Golden PMA reset is architectural per-entry state, not a uniform default.
+      reg_R      <= (PMA_INDEX >= 19 && PMA_INDEX <= 27) || PMA_INDEX == 29 || PMA_INDEX == 30;
+      reg_W      <= (PMA_INDEX >= 19 && PMA_INDEX <= 27) || PMA_INDEX == 29 || PMA_INDEX == 30;
+      reg_X      <= PMA_INDEX == 20 || PMA_INDEX == 24 || PMA_INDEX == 30;
+      reg_A      <= (PMA_INDEX <= 18) ? 2'b00 :
+                    (PMA_INDEX <= 30) ? 2'b01 : 2'b11;
+      reg_ATOMIC <= PMA_INDEX == 30;
+      reg_C      <= PMA_INDEX == 30;
       reg_L      <= 1'b0;
     end else begin
       if (w_wen) begin

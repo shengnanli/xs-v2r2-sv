@@ -6,5 +6,5 @@
   "expected": 74,
   "merge_dup": "false",
   "model_applicable": true,
-  "note": "寄存器全无复位；模型=闭包寄存器位+输出位"
+  "note": "gatefix3 重证：内嵌核改名 xs_HPerfCounter_idx8_core，模型不变"
 }
