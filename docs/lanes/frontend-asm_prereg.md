@@ -24,7 +24,7 @@ backend-misc lane，已合入 main 并已签（evidence/6038c4afbc60）。
   （= `Queue(2, pipe=false, flow=false)`），首尾相接。InstrUncacheBuffer 在缓冲之后把 opcode/size/source/mask/data
   重新钉成常量（端口被 firtool 删掉）；ICacheBuffer / InstrUncacheBuffer 的 D 口恒接收（第二级 deq_ready=1）。
 - 重写件：`rtl/memblock/{ICacheBuffer,InstrUncacheBuffer,ICacheCtrlBuffer}.sv`（手写，无核：本层只有 4 个队列的首尾连接
-  与入口常量；入口常量用具名 localparam 讲清含义）。golden 行数 257 / 245 / 243，impl 220 / 205 / 222，`_GEN_`/`_T_` 均 0。
+  与入口常量；入口常量用具名 localparam 讲清含义）。golden 行数 257 / 245 / 243，impl 204 / 188 / 181，`_GEN_`/`_T_` 均 0。
 - child：Queue2_TLBundleA_8/D_7、A_12/D_13、A_10/D_11 —— 全部已签（evidence/1fda02fae0f1，receipt impl 闭包与当前字节一致）。
   处置 = **两侧白盒**：ref golden Queue2_*，impl 重写件 `rtl/uncore/Queue2_*.sv` + 共享核 `rtl/common/xs_ChiselQueue_core.sv`；
   `ram_2xN` 是 golden 行为级叶子，两侧同源 inline（同 verif/ut/UncoreTLQueues，codex 0151 D60）。无黑盒。
@@ -104,7 +104,7 @@ unread 全是 Queue2 ram 里"写入但出口无人读"的字段位（D 的 param
 ## 3. FDPrefetcherMonitor（NO_OUTPUT，按 dcache_prereg §1.4 先例，不跑 FM）
 
 - golden（111 行）在本配置 0 输出 0 寄存器（`io.pf_ctrl := DontCare`，计数器只供 XSPerf，firtool 全删），体内只剩 3 条无人读的
-  PopCount。重写件 `rtl/memblock/FDPrefetcherMonitor.sv`（52 行）：逐位一致的 10 个输入端口 + 同形 3 条无观察者加法
+  PopCount。重写件 `rtl/memblock/FDPrefetcherMonitor.sv`（46 行）：逐位一致的 10 个输入端口 + 同形 3 条无观察者加法
   （1998a657b dcachebody 补上，理由：空模块会被 FM 当黑盒，父级 DCache 多出 impl 侧黑盒）。代码区 `_GEN_`/`_T_` 0。
 - 现状核对（本 lane）：当前字节 sha256 `8a144954837b7e4e3ac3eb9280753333bd9f3634a1735f75f421ed0a4302c015`；
   绑定它的 receipt：DCache（evidence/0dc9c4532cf5、68d1a0932a12、ce9d0692bc8e、f009d7b3c6d1，SUCCEEDED）与 DCacheLeaves 四件
