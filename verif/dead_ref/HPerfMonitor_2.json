@@ -1,0 +1,265 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "HPerfMonitor_2",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "HPerfMonitor_2 instantiates 8 copies of HPerfCounter_13 (perfEvents_hpc, perfEvents_hpc_1..7). Inside each, G1 golden stores event_op_0, event_op_1, event_op_2 and the delayed event_op_2_reg as five-bit registers, but combineEvents reads only operation bits [2:0]. Bits [4:3] are golden-only cone-dead storage; the signed child rewrite (xs_HPerfCounter_core, child dead_ref verif/dead_ref/HPerfCounter_13.json, 8 points each) stores only [2:0], so these points correctly have no impl counterparts. Expected exactly 8 x 4 registers x 2 bits = 64 ref unread points with impl unread=0 (lane trial run for HPerfMonitor observed exactly this set: 64 ref / 0 impl, native SUCCEEDED, failing 0, unmatched 0).",
+ "observed_points": 64,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_1/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_1/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_1/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_1/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_1/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_1/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_1/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_1/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_2/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_2/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_2/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_2/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_2/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_2/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_2/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_2/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_3/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_3/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_3/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_3/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_3/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_3/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_3/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_3/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_4/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_4/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_4/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_4/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_4/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_4/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_4/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_4/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_5/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_5/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_5/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_5/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_5/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_5/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_5/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_5/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_6/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_6/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_6/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_6/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_6/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_6/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_6/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_6/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_7/event_op_0_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_7/event_op_0_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_7/event_op_1_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_7/event_op_1_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_7/event_op_2_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_7/event_op_2_reg[4]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_7/event_op_2_reg_reg[3]",
+   "class": "golden_wide_operation_bits"
+  },
+  {
+   "ref_path": "r:/WORK/HPerfMonitor_2/perfEvents_hpc_7/event_op_2_reg_reg[4]",
+   "class": "golden_wide_operation_bits"
+  }
+ ]
+}

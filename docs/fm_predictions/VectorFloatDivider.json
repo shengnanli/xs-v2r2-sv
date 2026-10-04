@@ -1,0 +1,10 @@
+{
+  "target": "VectorFloatDivider",
+  "ut": "VectorFloatDivider",
+  "regs": 1004,
+  "outs": 86,
+  "expected": 1090,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing 1089 = 模型 1090 − constant_reg 1（child 内既有常量位，试跑实测 1089+1）"
+}

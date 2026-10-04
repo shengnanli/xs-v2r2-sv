@@ -1,0 +1,10 @@
+{
+  "target": "PFEvent",
+  "ut": "PFEvent",
+  "regs": 1464,
+  "outs": 1536,
+  "expected": 3000,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测 passing = 模型 3000（试跑 3000，constant 0）"
+}

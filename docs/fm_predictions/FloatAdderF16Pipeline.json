@@ -1,0 +1,10 @@
+{
+  "target": "FloatAdderF16Pipeline",
+  "ut": "FloatAdderF16Pipeline",
+  "regs": 209,
+  "outs": 21,
+  "expected": 230,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "vmucp 开 + fm_pins.tcl 3 对；预测 passing 225 = 模型 230 − constant_reg 5"
+}

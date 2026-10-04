@@ -1,0 +1,10 @@
+{
+  "target": "CryptoModule",
+  "ut": "CryptoModule",
+  "regs": 639,
+  "outs": 64,
+  "expected": 703,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "vmucp 开：funcReg 8 个对称死位进比较；预测 passing = 模型 703，constant 0，unread 0（试跑 703 SUCCEEDED）"
+}

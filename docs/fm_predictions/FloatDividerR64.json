@@ -1,0 +1,10 @@
+{
+  "target": "FloatDividerR64",
+  "ut": "FloatDividerR64",
+  "regs": 366,
+  "outs": 71,
+  "expected": 437,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "vmucp 开（fp_format_onehot_q[2]）；预测 passing 410 = 模型 437 − constant_reg 27（frac_divisor_q_60bit[2:0] + f_r_s/f_r_c 低 12 位）"
+}

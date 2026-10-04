@@ -1,0 +1,10 @@
+{
+  "target": "VecExcpDataMergeModule",
+  "ut": "VecExcpDataMergeModule",
+  "regs": 751,
+  "outs": 612,
+  "expected": 1363,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "fm_pins_pre.tcl 钉 750 位；预测 passing = 模型 1363，unread 0（修 int 临时量伪影后试跑 1363 SUCCEEDED）"
+}

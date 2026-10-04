@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/VecExcpDataMergeModule
+Implementation : i:/WORK/VecExcpDataMergeModule
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 07:02:05 2026
+**************************************************
+
+No failing compare points.
+
+1
