@@ -1,4 +1,5 @@
 // VtypeModule.sv — committed vector type state.
+// 设计意图：src/main/scala/xiangshan/backend/fu/NewCSR/Unprivileged.scala（vtype，父 NewCSR）。
 // vtype starts illegal (VILL=1) and changes only on a valid ROB commit.
 // The packed rdata layout is the architectural VILL/VMA/VTA/VSEW/VLMUL layout.
 module VtypeModule(

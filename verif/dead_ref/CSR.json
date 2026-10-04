@@ -1,0 +1,769 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "CSR",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "CSR 的 190 个 golden-only 死存储位，impl 侧 unread=0。(1) 142 点继承自子模块 csrMod（NewCSR），逐条与 verif/dead_ref/NewCSR.json 相同（路径前缀 CSR/csrMod/），依据见该文件；(2) CSR 自身 48 点：TrapInstMod 的 faultCsrUop 保持寄存器 golden 锁存全宽 fuOpType(9) 与 imm(64)，但 TrapInstMod 只读 fuOpType[2:0] 与 imm[21:0]（golden TrapInstMod.sv 只引用 io_faultCsrUop_bits_fuOpType[2:0]，CSR 本层把 imm 截成 [21:0] 再送出），fuOpType_r[8:3] 6 位与 imm_r[63:22] 42 位写入但永不被读；重写件只锁有效位（rtl/backend/CSR.sv §4）。lane 诊断跑（tmp 快照，未出 receipt）观测：native SUCCEEDED、passing 27176、failing 0、unmatched 0（钉点后）、unread ref 190 / impl 0，集合与下列逐条精确相等。",
+ "observed_points": 190,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[32]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[33]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[34]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[35]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[36]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[37]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[38]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[39]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[40]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[41]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[42]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[43]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[44]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[45]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[46]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[47]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[48]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[49]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[50]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[51]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[52]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[53]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[54]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[55]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[56]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[57]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[58]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[59]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[60]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[61]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_exception_r_reg[62]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[32]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[33]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[34]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[35]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[36]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[37]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[38]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[39]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[40]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[41]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[42]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[43]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[44]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[45]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[46]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[47]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[48]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[49]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[50]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[51]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[52]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[53]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[54]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[55]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[56]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[57]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[58]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[59]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[60]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[61]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/diffArchEvent_interrupt_r_reg[62]",
+   "class": "inherited_child_dead_ref:NewCSR(difftest_trapno_upper_bits)"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc/event_op_0_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc/event_op_0_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc/event_op_1_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc/event_op_1_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc/event_op_2_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc/event_op_2_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc/event_op_2_reg_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc/event_op_2_reg_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_1/event_op_0_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_1/event_op_0_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_1/event_op_1_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_1/event_op_1_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_1/event_op_2_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_1/event_op_2_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_1/event_op_2_reg_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_1/event_op_2_reg_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_2/event_op_0_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_2/event_op_0_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_2/event_op_1_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_2/event_op_1_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_2/event_op_2_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_2/event_op_2_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_2/event_op_2_reg_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_2/event_op_2_reg_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_3/event_op_0_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_3/event_op_0_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_3/event_op_1_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_3/event_op_1_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_3/event_op_2_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_3/event_op_2_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_3/event_op_2_reg_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_3/event_op_2_reg_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_4/event_op_0_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_4/event_op_0_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_4/event_op_1_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_4/event_op_1_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_4/event_op_2_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_4/event_op_2_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_4/event_op_2_reg_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/hpmHc/perfEvents_hpc_4/event_op_2_reg_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-HPerfMonitor_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio14_reg[0]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio14_reg[1]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio14_reg[2]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio14_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio14_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio14_reg[5]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio14_reg[6]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio14_reg[7]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio15_reg[0]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio15_reg[1]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio15_reg[2]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio15_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio15_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio15_reg[5]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio15_reg[6]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/miprio2/reg_Prio15_reg[7]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMSI_reg[0]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMSI_reg[1]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMSI_reg[2]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMSI_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMSI_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMSI_reg[5]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMSI_reg[6]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMSI_reg[7]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMTI_reg[0]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMTI_reg[1]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMTI_reg[2]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMTI_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMTI_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMTI_reg[5]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMTI_reg[6]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio0/reg_PrioMTI_reg[7]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio0Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio2/reg_PrioMEI_reg[0]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio2/reg_PrioMEI_reg[1]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio2/reg_PrioMEI_reg[2]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio2/reg_PrioMEI_reg[3]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio2/reg_PrioMEI_reg[4]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio2/reg_PrioMEI_reg[5]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio2/reg_PrioMEI_reg[6]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/csrMod/siprio2/reg_PrioMEI_reg[7]",
+   "class": "inherited_child_dead_ref:NewCSR<-Iprio2Module_1"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[3]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[4]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[5]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[6]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[7]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[8]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[22]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[23]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[24]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[25]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[26]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[27]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[28]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[29]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[30]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[31]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[32]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[33]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[34]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[35]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[36]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[37]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[38]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[39]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[40]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[41]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[42]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[43]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[44]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[45]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[46]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[47]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[48]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[49]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[50]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[51]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[52]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[53]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[54]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[55]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[56]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[57]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[58]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[59]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[60]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[61]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[62]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  },
+  {
+   "ref_path": "r:/WORK/CSR/trapInstMod_io_faultCsrUop_bits_imm_r_reg[63]",
+   "class": "golden_only_cone_dead_faultCsrUop_hold_upper_bits"
+  }
+ ]
+}

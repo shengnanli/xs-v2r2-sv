@@ -1,4 +1,5 @@
 // VSstatusModule.sv — virtual-supervisor status state and trap/return updates.
+// 设计意图：src/main/scala/xiangshan/backend/fu/NewCSR/VirtualSupervisorLevel.scala（vsstatus，父 NewCSR）。
 // FS/VS dirty transitions, SDT visibility, trap entry, sret, and CSR writes are retained.
 // Reset and field priority follow the G1 status CSR semantics exactly.
 // Explicit state names below separate CSR writes from trap/return priority and dirty-state updates.

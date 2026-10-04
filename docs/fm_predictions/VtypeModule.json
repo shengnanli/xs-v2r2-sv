@@ -1,0 +1,9 @@
+{
+  "target": "VtypeModule",
+  "ut": "NewcsrLeaves6",
+  "regs": 9,
+  "outs": 64,
+  "expected": 73,
+  "merge_dup": "false",
+  "model_applicable": true
+}

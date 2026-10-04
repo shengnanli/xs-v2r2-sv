@@ -1,0 +1,9 @@
+{
+  "target": "VSiselectModule",
+  "ut": "NewcsrLeaves6",
+  "regs": 13,
+  "outs": 78,
+  "expected": 91,
+  "merge_dup": "false",
+  "model_applicable": true
+}

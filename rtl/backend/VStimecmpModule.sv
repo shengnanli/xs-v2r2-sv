@@ -1,4 +1,5 @@
 // VStimecmpModule.sv — virtual-supervisor timer compare register.
+// 设计意图：src/main/scala/xiangshan/backend/fu/NewCSR/VirtualSupervisorLevel.scala（vstimecmp，父 NewCSR）。
 // It resets to all ones so the timer cannot interrupt before software programs it.
 // A write updates the full 64-bit compare value and the mirror output.
 module VStimecmpModule(
