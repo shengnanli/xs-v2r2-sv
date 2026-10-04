@@ -53,6 +53,43 @@ CHILD_PIN_FILES = {
 
 ATT_BITS = ['bare', 'sv39', 'sv39x4', 'sv48', 'sv48x4']
 
+def _bits(ref, impl, bits):
+    return [(f'{ref}[{b}]', f'{impl}[{b}]') for b in bits]
+
+
+# 子 FU 在外壳里**额外**需要的钉点（子 FU 自己签核时不需要：那时这些寄存器靠扇出签名就能配上，
+# 进了外壳后写回经 Mux1H 合流，签名变对称 / 变成无扇出死位，FM 就分不清了）。
+# 每一组都是**按语义整组写定**的双射，不是照诊断跑的 unmatched 名单抄的：
+EXTRA_CHILD_PINS = {
+    # FAlu（fudian 浮点加法器，impl 读重写件）：三组「同一个值存两份」的寄存器 ——
+    #   F32 加法器 fadd0_result1_r / _r_1（a 为零时的 ±b，f32 / f16 两种拼法）低 15 位两份逐位同值
+    #     （[14:0] 在两种拼法里都是 b 的同一段；FAlu 自己的钉点已钉了其中 6/7/9/11/12）；
+    #   F32 加法器 fadd0_result0_r / fadd0_result0_r_1[16]（两零相加的符号，f32 / f16 各一份）；
+    #   F64 close path 的 close_exponent_result_r / EA_sub_value_r_1（都是 EA 的副本：被减数 / 备用减数）。
+    'FAlu': (
+        _bits('falu/F32Adder/fadd0_result1_r_reg', 'u_core/falu/F32Adder/u_core/b_signed_f32_q_reg',
+              [0, 1, 2, 3, 4, 5, 8, 10, 13, 14])
+        + _bits('falu/F32Adder/fadd0_result1_r_1_reg', 'u_core/falu/F32Adder/u_core/b_signed_f16_q_reg',
+                [0, 1, 2, 3, 4, 5, 8, 10, 13, 14])
+        + [('falu/F32Adder/fadd0_result0_r_reg', 'u_core/falu/F32Adder/u_core/zero_sign_f32_q_reg')]
+        + _bits('falu/F32Adder/fadd0_result0_r_1_reg', 'u_core/falu/F32Adder/u_core/zero_sign_f16_q_reg', [16])
+        + _bits('falu/F64Adder/U_close_path/close_exponent_result_r_reg',
+                'u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg', range(11))
+        + _bits('falu/F64Adder/U_close_path/EA_sub_value_r_1_reg',
+                'u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg', range(11))
+    ),
+    # MulUnit：外壳里 ArrayMulDataModule 改读重写件（MulUnit 自己签核时两侧同读 golden）。
+    #   golden 把部分积 / 中间级寄存器展平成 r_0..r_2306（= 重写件 pp_reg[0..2306]）与
+    #   r_2307..r_2561（= mid_reg[0..254]）。其中 r_2303..r_2306 / r_2558..r_2561 两侧都无读者（死位，
+    #   无扇出签名）FM 配不上，按这条下标规则钉；其余位靠签名能配上。
+    'MulUnit': (
+        [(f'mulDataModule/r_{k}_reg', f'u_core/mulDataModule/u_core/pp_reg_reg[{k}]') for k in (2303, 2304, 2305, 2306)]
+        + [(f'mulDataModule/r_{2307 + j}_reg', f'u_core/mulDataModule/u_core/mid_reg_reg[{j}]')
+           for j in (251, 252, 253, 254)]
+    ),
+}
+
+
 
 def die(msg):
     sys.exit('gen_exeunit: ERROR: ' + msg)
@@ -793,6 +830,8 @@ def gen_pins(v):
             for rp, ip in child_pin_pairs(typ):
                 child.append((name, typ, tcl_esc(rp[len(f'r:/WORK/{typ}/'):]),
                               tcl_esc(ip[len(f'i:/WORK/{typ}/'):])))
+        for rp, ip in EXTRA_CHILD_PINS.get(typ, []):
+            child.append((name, typ + ' 外壳附加', tcl_esc(rp), tcl_esc(ip)))
     total = shell_n + len(child)
     tag = re.sub(r'\W', '_', v.top).upper()
     L = []
@@ -818,9 +857,12 @@ def gen_pins(v):
         L.append(f'{tag.lower()}_pin {r} {i}')
     cur = None
     for name, typ, rp, ip in child:
-        if cur != name:
-            L.append(f'# ---- (b) {name}（{typ}）：verif/ut/{CHILD_PIN_FILES[typ]} 的调用序列 ----')
-            cur = name
+        if cur != (name, typ):
+            if typ.endswith(' 外壳附加'):
+                L.append(f'# ---- (c) {name}（{typ}）：gen_exeunit.py EXTRA_CHILD_PINS（依据见该表注释）----')
+            else:
+                L.append(f'# ---- (b) {name}（{typ}）：verif/ut/{CHILD_PIN_FILES[typ]} 的调用序列 ----')
+            cur = (name, typ)
         L.append(f'{tag.lower()}_pin {name}/{rp} {name}/{ip}')
     L.append(f'puts "{tag}_PIN_END ok=$::{tag}_PIN_OK bad=$::{tag}_PIN_BAD expect={total}"')
     L.append(f'if {{$::{tag}_PIN_BAD != 0}} {{ error "{tag}_PIN_REFUSED=$::{tag}_PIN_BAD" }}')

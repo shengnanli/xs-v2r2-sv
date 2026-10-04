@@ -88,12 +88,19 @@ module xs_ExeUnit_core #(
 
   // Redirect.needFlush：flush 有效，且（level=flushItself 时同一条也冲，或本条比 flush 那条更年轻）。
   // isAfter(a, b) = a.flag ^ b.flag ^ (a.value > b.value)：环形 ROB 指针的「更年轻」。
-  function automatic logic need_flush(input logic [8:0] rob);
+  // （flush 作为参数传入：函数里不许读模块级信号，FM 会判 FMR_VLOG-091 并拒绝建模）
+  function automatic logic need_flush(input logic [8:0] rob,
+                                      input logic       f_valid,
+                                      input logic [8:0] f_rob,
+                                      input logic       f_level);
     logic same, after;
-    same  = (rob == {flush_rob_flag, flush_rob_value});
-    after = rob[8] ^ flush_rob_flag ^ (rob[7:0] > flush_rob_value);
-    return flush_valid & ((flush_level & same) | after);
+    same  = (rob == f_rob);
+    after = rob[8] ^ f_rob[8] ^ (rob[7:0] > f_rob[7:0]);
+    return f_valid & ((f_level & same) | after);
   endfunction
+
+  logic [8:0] flush_rob;
+  assign flush_rob = {flush_rob_flag, flush_rob_value};
 
   // ===========================================================================
   // §1 发射口握手与 busy
@@ -110,6 +117,9 @@ module xs_ExeUnit_core #(
     if (HAS_BUSY) begin : g_busy
       logic [8:0] rob_q;          // 在途那条的 robIdx（in.fire 时快照）
       logic       busy_q;
+      logic       in_flushed, rob_flushed;
+      assign in_flushed  = need_flush(in_payload[8:0], flush_valid, flush_rob, flush_level);
+      assign rob_flushed = need_flush(rob_q,           flush_valid, flush_rob, flush_level);
 
       always_ff @(posedge clock) begin
         if (in_fire) rob_q <= in_payload[8:0];
@@ -118,10 +128,10 @@ module xs_ExeUnit_core #(
       always_ff @(posedge clock or posedge reset) begin
         if (reset)
           busy_q <= 1'b0;
-        else if (in_fire & need_flush(in_payload[8:0]))  busy_q <= 1'b0;  // 刚收下就被冲
-        else if (busy_q & need_flush(rob_q))             busy_q <= 1'b0;  // 在途时被冲
-        else if (out_ready & out_valid)                  busy_q <= 1'b0;  // 写回完成
-        else if (in_fire)                                busy_q <= 1'b1;  // 收下新指令
+        else if (in_fire & in_flushed)   busy_q <= 1'b0;   // 刚收下就被冲
+        else if (busy_q & rob_flushed)   busy_q <= 1'b0;   // 在途时被冲
+        else if (out_ready & out_valid)  busy_q <= 1'b0;   // 写回完成
+        else if (in_fire)                busy_q <= 1'b1;   // 收下新指令
       end
       assign busy = busy_q;
     end else begin : g_nobusy
@@ -146,7 +156,8 @@ module xs_ExeUnit_core #(
           stage_valid_q <= '0;
         else
           for (int s = 1; s <= LAT_MAX; s++)
-            stage_valid_q[s] <= pipe_valid[s-1] & ~need_flush(pipe_data[s-1][8:0]);
+            stage_valid_q[s] <= pipe_valid[s-1]
+                              & ~need_flush(pipe_data[s-1][8:0], flush_valid, flush_rob, flush_level);
       end
 
       for (genvar s = 1; s <= LAT_MAX; s++) begin : g_stage_valid

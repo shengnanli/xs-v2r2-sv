@@ -2,7 +2,7 @@
 #
 # 只消命名差：set_user_match 只声明两点对应，比较照比；不约束 ref、不改 appvar、不加黑盒。
 # (a) 外壳寄存器 44 位：golden 扁平名 <-> xs_ExeUnit_core 的数组 / generate 名；
-# (b) 子 FU 签核时用过的钉点 18 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。
+# (b) 子 FU 签核时用过的钉点 26 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。
 # fail-closed：逐条数返回值；拒一条或总数 != 字面整数即 error。输出一律 ASCII。
 set ::EXEUNIT_PIN_OK 0
 set ::EXEUNIT_PIN_BAD 0
@@ -14,7 +14,7 @@ proc exeunit_pin {r i} {
     if {$::EXEUNIT_PIN_BAD <= 10} { puts "EXEUNIT_PIN_FAIL: $rr <-> $ii" }
   }
 }
-puts "EXEUNIT_PIN_BEGIN ExeUnit expect=62"
+puts "EXEUNIT_PIN_BEGIN ExeUnit expect=70"
 # ---- (a) 外壳寄存器 ----
 exeunit_pin fuVldVec_1_reg u_core/g_fu\[1\].g_lat.vld_q_reg\[1\]
 exeunit_pin fuVldVec_1_1_reg u_core/g_fu\[2\].g_lat.vld_q_reg\[1\]
@@ -60,6 +60,15 @@ exeunit_pin inPipe_1_2_robIdx_value_reg\[6\] u_core/g_pipe.g_fld\[0\].g_reg.q_re
 exeunit_pin inPipe_1_2_robIdx_value_reg\[7\] u_core/g_pipe.g_fld\[0\].g_reg.q_reg\[2\]\[7\]
 exeunit_pin inPipe_2_1_reg u_core/g_pipe.stage_valid_q_reg\[1\]
 exeunit_pin inPipe_2_2_reg u_core/g_pipe.stage_valid_q_reg\[2\]
+# ---- (c) Mul（MulUnit 外壳附加）：gen_exeunit.py EXTRA_CHILD_PINS（依据见该表注释）----
+exeunit_pin Mul/mulDataModule/r_2303_reg Mul/u_core/mulDataModule/u_core/pp_reg_reg\[2303\]
+exeunit_pin Mul/mulDataModule/r_2304_reg Mul/u_core/mulDataModule/u_core/pp_reg_reg\[2304\]
+exeunit_pin Mul/mulDataModule/r_2305_reg Mul/u_core/mulDataModule/u_core/pp_reg_reg\[2305\]
+exeunit_pin Mul/mulDataModule/r_2306_reg Mul/u_core/mulDataModule/u_core/pp_reg_reg\[2306\]
+exeunit_pin Mul/mulDataModule/r_2558_reg Mul/u_core/mulDataModule/u_core/mid_reg_reg\[251\]
+exeunit_pin Mul/mulDataModule/r_2559_reg Mul/u_core/mulDataModule/u_core/mid_reg_reg\[252\]
+exeunit_pin Mul/mulDataModule/r_2560_reg Mul/u_core/mulDataModule/u_core/mid_reg_reg\[253\]
+exeunit_pin Mul/mulDataModule/r_2561_reg Mul/u_core/mulDataModule/u_core/mid_reg_reg\[254\]
 # ---- (b) Bku（Bku）：verif/ut/Bku/fm_pins_pre.tcl 的调用序列 ----
 exeunit_pin Bku/funcReg_reg\[0\] Bku/u_core/func_s1_reg\[0\]
 exeunit_pin Bku/funcReg_reg\[1\] Bku/u_core/func_s1_reg\[1\]
@@ -79,6 +88,6 @@ exeunit_pin Bku/countModule/funcReg_reg\[5\] Bku/u_core/countModule/u_core/funcR
 exeunit_pin Bku/countModule/funcReg_reg\[6\] Bku/u_core/countModule/u_core/funcReg_reg\[6\]
 exeunit_pin Bku/countModule/funcReg_reg\[7\] Bku/u_core/countModule/u_core/funcReg_reg\[7\]
 exeunit_pin Bku/countModule/funcReg_reg\[8\] Bku/u_core/countModule/u_core/funcReg_reg\[8\]
-puts "EXEUNIT_PIN_END ok=$::EXEUNIT_PIN_OK bad=$::EXEUNIT_PIN_BAD expect=62"
+puts "EXEUNIT_PIN_END ok=$::EXEUNIT_PIN_OK bad=$::EXEUNIT_PIN_BAD expect=70"
 if {$::EXEUNIT_PIN_BAD != 0} { error "EXEUNIT_PIN_REFUSED=$::EXEUNIT_PIN_BAD" }
-if {$::EXEUNIT_PIN_OK != 62} { error "EXEUNIT_PIN_COUNT=$::EXEUNIT_PIN_OK expected 62" }
+if {$::EXEUNIT_PIN_OK != 70} { error "EXEUNIT_PIN_COUNT=$::EXEUNIT_PIN_OK expected 70" }

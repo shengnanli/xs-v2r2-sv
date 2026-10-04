@@ -2,7 +2,7 @@
 #
 # 只消命名差：set_user_match 只声明两点对应，比较照比；不约束 ref、不改 appvar、不加黑盒。
 # (a) 外壳寄存器 67 位：golden 扁平名 <-> xs_ExeUnit_core 的数组 / generate 名；
-# (b) 子 FU 签核时用过的钉点 1659 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。
+# (b) 子 FU 签核时用过的钉点 1703 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。
 # fail-closed：逐条数返回值；拒一条或总数 != 字面整数即 error。输出一律 ASCII。
 set ::EXEUNIT_10_PIN_OK 0
 set ::EXEUNIT_10_PIN_BAD 0
@@ -14,7 +14,7 @@ proc exeunit_10_pin {r i} {
     if {$::EXEUNIT_10_PIN_BAD <= 10} { puts "EXEUNIT_10_PIN_FAIL: $rr <-> $ii" }
   }
 }
-puts "EXEUNIT_10_PIN_BEGIN ExeUnit_10 expect=1726"
+puts "EXEUNIT_10_PIN_BEGIN ExeUnit_10 expect=1770"
 # ---- (a) 外壳寄存器 ----
 exeunit_10_pin fuVldVec_1_reg u_core/g_fu\[0\].g_lat.vld_q_reg\[1\]
 exeunit_10_pin fuVldVec_1_1_reg u_core/g_fu\[1\].g_lat.vld_q_reg\[1\]
@@ -107,6 +107,51 @@ exeunit_10_pin Falu/falu/F64Adder/U_close_path/lshift_result_head_is_one_r_1_reg
 exeunit_10_pin Falu/falu/F64Adder/U_close_path/lshift_result_head_is_one_r_1_reg\[1\] Falu/u_core/falu/F64Adder/U_close_path/u_core/cs_selected_chk_q_reg\[1\]
 exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_fraction_result_r_reg Falu/u_core/falu/F64Adder/U_close_path/u_core/frac_from_cs4_q_reg
 exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_reg Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_from_cs4_q_reg
+# ---- (c) Falu（FAlu 外壳附加）：gen_exeunit.py EXTRA_CHILD_PINS（依据见该表注释）----
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[0\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[0\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[1\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[1\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[2\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[2\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[3\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[3\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[4\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[4\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[5\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[5\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[8\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[8\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[10\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[10\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[13\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[13\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_reg\[14\] Falu/u_core/falu/F32Adder/u_core/b_signed_f32_q_reg\[14\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[0\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[0\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[1\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[1\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[2\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[2\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[3\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[3\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[4\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[4\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[5\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[5\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[8\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[8\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[10\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[10\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[13\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[13\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result1_r_1_reg\[14\] Falu/u_core/falu/F32Adder/u_core/b_signed_f16_q_reg\[14\]
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result0_r_reg Falu/u_core/falu/F32Adder/u_core/zero_sign_f32_q_reg
+exeunit_10_pin Falu/falu/F32Adder/fadd0_result0_r_1_reg\[16\] Falu/u_core/falu/F32Adder/u_core/zero_sign_f16_q_reg\[16\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[0\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[0\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[1\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[1\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[2\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[2\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[3\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[3\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[4\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[4\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[5\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[5\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[6\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[6\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[7\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[7\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[8\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[8\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[9\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[9\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/close_exponent_result_r_reg\[10\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_q_reg\[10\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[0\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[0\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[1\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[1\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[2\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[2\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[3\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[3\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[4\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[4\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[5\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[5\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[6\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[6\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[7\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[7\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[8\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[8\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[9\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[9\]
+exeunit_10_pin Falu/falu/F64Adder/U_close_path/EA_sub_value_r_1_reg\[10\] Falu/u_core/falu/F64Adder/U_close_path/u_core/exp_big_alt_q_reg\[10\]
 # ---- (b) Fmac（FMA）：verif/ut/FMA/fm_pins_pre.tcl 的调用序列 ----
 exeunit_10_pin Fmac/fma/fire_reg0_last_r_reg Fmac/u_core/fma/u_core/fire_s1_reg
 exeunit_10_pin Fmac/fma/fire_reg1_last_r_reg Fmac/u_core/fma/u_core/fire_s2_reg
@@ -1744,6 +1789,6 @@ exeunit_10_pin Fmac/fma/U_CSAnto2/U_CSA4to2_io_in_d_r_reg\[103\] Fmac/u_core/fma
 exeunit_10_pin Fmac/fma/U_CSAnto2/U_CSA4to2_io_in_d_r_reg\[104\] Fmac/u_core/fma/u_core/U_CSAnto2/u_core/level4_q_reg\[3\]\[104\]
 exeunit_10_pin Fmac/fma/U_CSAnto2/U_CSA4to2_io_in_d_r_reg\[105\] Fmac/u_core/fma/u_core/U_CSAnto2/u_core/level4_q_reg\[3\]\[105\]
 exeunit_10_pin Fmac/fma/U_CSAnto2/U_CSA4to2_io_in_d_r_reg\[106\] Fmac/u_core/fma/u_core/U_CSAnto2/u_core/level4_q_reg\[3\]\[106\]
-puts "EXEUNIT_10_PIN_END ok=$::EXEUNIT_10_PIN_OK bad=$::EXEUNIT_10_PIN_BAD expect=1726"
+puts "EXEUNIT_10_PIN_END ok=$::EXEUNIT_10_PIN_OK bad=$::EXEUNIT_10_PIN_BAD expect=1770"
 if {$::EXEUNIT_10_PIN_BAD != 0} { error "EXEUNIT_10_PIN_REFUSED=$::EXEUNIT_10_PIN_BAD" }
-if {$::EXEUNIT_10_PIN_OK != 1726} { error "EXEUNIT_10_PIN_COUNT=$::EXEUNIT_10_PIN_OK expected 1726" }
+if {$::EXEUNIT_10_PIN_OK != 1770} { error "EXEUNIT_10_PIN_COUNT=$::EXEUNIT_10_PIN_OK expected 1770" }
