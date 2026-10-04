@@ -73,6 +73,58 @@ vmucp 依据与六条证据：`verif/fm_target_config/SMSPrefetcher.tcl`。
 可能出错的地方：(1) 若 passing = 8719 − 799，说明第 (c) 节钉点没生效（FM 拒钉会 error，不会静默）；(2) vendor_macro 声明路径与
 实测不等 ⇒ verdict PARTIAL，不改 RTL，修声明。
 
+## 2. ExuBlock_1（golden 823 行）
+
+### 2.1 结构与子模块处置
+
+- 本层只有一样时序逻辑：每个 ExeUnit 一份 `RegNext(io_frm)`（5 × 3 位，不复位）。手写核 `rtl/backend/xs_ExuBlock_core.sv`（37 行，
+  参数 N_FRM，§1 frm 打拍；文件头写明本层**没有**握手仲裁 / 唤醒 / og0·og1 取消 / perf —— 前两者直连 ExeUnit、取消在 IQ/DataPath、
+  perf 计数在综合口径被删，golden 只剩无读者的 `_GEN*` fire 线）。
+- golden 同名 wrapper `rtl/backend/ExuBlock_1.sv`（636 行，`_GEN_`/`_T_` = 0）由新生成器 `scripts/gen_exublock.py`（沿用 gen_exeunit.py
+  风格，带 `--check`）生成，按 §1 发射口→ExeUnit 分发 / §2 本层核 / §3 ExeUnit 例化 / §4 唤醒·取消·perf（本层无）分节；
+  fail-closed：寄存器必须全是 frm 打拍、`_GEN*` 必须是无读者的 fire、连线只能是端口 / child 输出 / frm 寄存器 / 1'h1。
+  未改已签共享核 xs_ExeUnit_core 与 gen_exeunit.py（只 import 其 golden 解析）。
+- 5 个直接 child 两侧白盒：exus = ExeUnit_8、exus_1/exus_3 = ExeUnit_9、exus_2/exus_4 = ExeUnit_10；闭包 = 三者 UT Makefile 的
+  RTL_SRCS / RTL_GOLDEN_DEPS / FM_REF_DEPS 并集，原样继承其处置。无黑盒。
+- FM「匹配前」钉点 `verif/ut/ExuBlock_1/fm_pins_pre.tcl`（字面 5497）：(a) frm 寄存器 15 位；(b) 三种 ExeUnit 签核钉点
+  1920 + 2×11 + 2×1770 = 5482 条（tclsh 桩取调用序列、加实例前缀，条数与 pin_call_seq.tsv 核对）。
+
+### 2.2 UT（verif/ut/ExuBlock_1，tb 由 gen.py 生成；在 commit 729e16270 的 RTL 字节上跑，每拍逐位比全部输出口）
+
+激励按各口所接 ExeUnit 的结构自动推出（fuType 85% 取 Dispatcher acceptVec 编码、valid 60%、ExeUnit_9 口 10% 反压、robIdx 3/4 窄范围、
+冲刷 10%、FDivSqrt 1/8 除数为 0、frm 每拍随机、cg_bore 1/20）；复位后 48 拍暖机轮流灌每个 FU。恒值输出位（无 busy 外壳的 in.ready、
+无 FDivSqrt 的 fflags[3]、golden 写成 {64'h0,..} 的数据高 64 位）不要求见 0/1，照比。
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=23993280 errors=0 | checks=23993280 errors=0 | checks=23993280 errors=0 |
+| 7  | checks=23993280 errors=0 | checks=23993280 errors=0 | checks=23993280 errors=0 |
+| 42 | checks=23993280 errors=0 | checks=23993280 errors=0 | checks=23993280 errors=0 |
+
+覆盖（seed 1 × initreg 0，全部 >= 1000，另每个非豁免输出位都见过 0 和 1）：冲刷 20079；fire exus 119701 / exus_1 31242 / exus_2 120384 /
+exus_3 31054 / exus_4 120348；FU 写回 exus{Falu 23962, Fcvt 23096, f2v 25427, Fmac 21702}、exus_1 Fdiv 25670、exus_2{Falu 48298, Fmac 43814}、
+exus_3 Fdiv 25475、exus_4{Falu 48677, Fmac 43524}；反压 exus_1 2565 / exus_3 2506；busy exus_1 147978 / exus_3 148310。
+（seed 42 × 42017 一档因后台作业 2 小时上限被截断，单独重跑一遍得上表读数。）
+
+变异自检（seed 7 × random × 20k 拍，改完 `git checkout` 恢复）：E1 核里第 3 份 frm 恒 0 ⇒ errors=185；E2 io_in_0_1_ready 接成 exus_3 的 ready ⇒ 6812；
+E3 exus 的 io_frm 不打拍直连 io_frm ⇒ 115。（把 5 份 frm 互换接口是等价变换 —— 5 份值恒相同 —— UT 与 FM 都不该也不会区分。）
+
+复跑：`cd verif/ut/ExuBlock_1 && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 2.3 诊断跑（如实记；diagnostic-full，关 vmucp，未出证，钉点 5497 条全部生效）
+
+native SUCCEEDED、passing 25302、failing 0、unmatched compare 0、unmatched unread 0、constant_reg 903，unread 22 全部 matched：
+恰为 5 个 ExeUnit 各自签核时的 vmucp 集合（exus 10 / exus_1 1 / exus_2 5 / exus_3 1 / exus_4 5），本层无新增。
+constant_reg 903 = 299 + 2×30 + 2×272（与三者单独签核一致）。vmucp 依据：`verif/fm_target_config/ExuBlock_1.tcl`。
+
+### 2.4 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/ExuBlock_1.json）
+
+| 目标 | 模型 expected | 诊断 passing / constant / unread | 预测 passing | 其余 |
+|---|---|---|---|---|
+| ExuBlock_1 | 26227（regs 21607 + outs 4620） | 25302 / 903 / 22 | **25324**（+22；差 903 = constant_reg） | failing 0 / unverified 0 / unmatched 全 0 / unread 0 / 无黑盒 / 无 dont_verify / SUCCEEDED（signoff-strict） |
+
+可能出错的地方：5 份 frm 寄存器值恒相同，merge_dup 关故不合并；若 passing 少 12，是被合并成 1 份（配置问题，不是 RTL 问题）。
+
 ## 3. 对账（跑后追加；上面各节数字未改）
 
 | 目标 | 证明 commit | 预测 passing | 实测 passing | constant_reg | failing / unverified / aborted / unmatched / unread | 黑盒 / dont_verify | 判决 | fm_predict check |
