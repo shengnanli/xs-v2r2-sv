@@ -366,3 +366,17 @@ unread 0，unmatched 全 0，constant_reg **1**，黑盒 0，dont_verify 无；�
 预测 2105 / 1 —— 逐项相等；`fm_predict.py check VIAlu`：2106 − 2105 = 1 = constant_reg，rc=0。
 vmucp 六条：(1) Reduction vdType_reg_s1[3:2] 2 位（钉配）+ VMask vs1_reg_s1[127:8] 120 位（按名配上）；(2) 122↔122；
 (3) unread_notcompared 0，2106 − 1 = 2105 全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VIAlu.tcl 在 script_closure。
+
+### G. VectorFloatAdder —— 首跑 FAILED（未收录）→ 补钉点后 evidence/7cd754e7e025/VectorFloatAdder
+
+**首跑（PROOF_COMMIT=38d3a4051，evidence/38d3a405182a，FAILED，不 add）**：native FAILED，passing 1835 / failing 20（截断，至少 20）/
+unverified 43 / unmatched 52+52，constant_reg 181。unmatched.rpt 逐类：全是 close 子树「同一 D 输入两份拷贝」的寄存器——
+U_F64_Widen_0 的 close_exponent_result_r / EA_sub_value_r_1（11+11）、U_F16_1 与 U_F16_3 的 close_exponent_result_r / EA_sub_value_r_1 /
+U_Lshift_io_src_r[1:0] / lshift_result_head_is_one_r_1[1:0] / close_fraction_result_r / EA_sub_value_r（各 15 或 13 位）。子树自签核时
+签名分析分得清，换到本层分不清。**根因是配对，不是 RTL**：修法 = fm_pins_pre.tcl 在 F64 lane 那 444 对之外按读者补 92 对
+（commit 7cd754e7e，共 536），RTL 一字未改。§6.3 预测登记在首跑之前，未改。
+
+**第二跑（PROOF_COMMIT=7cd754e7e）**：native SUCCEEDED，passing **1950** / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，
+constant_reg **181**，黑盒 0，dont_verify 无；钉点 `VFAP_PIN_PRE_END n=536 bad=0`、`VFADD_PIN_END n=17`（613 s）。预测 1950 / 181 ——
+逐项相等；`fm_predict.py check VectorFloatAdder`：2131 − 1950 = 181 = constant_reg，rc=0。vmucp 六条：(1) 五条 lane 17 点（字面钉）；
+(2) 17↔17；(3) unread_notcompared 0，2131 − 181 = 1950 全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VectorFloatAdder.tcl 在 script_closure。
