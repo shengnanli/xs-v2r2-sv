@@ -9,19 +9,19 @@
 //
 //   train_filter（SMSTrainFilter）  3 路 load 训练口去重，每拍至多吐一条训练请求
 //        │  vaddr / paddr / pc
-//        ▼
+//        ▼ （训练请求）
 //   §1 s0 训练寄存器（本核）        把训练请求按区域切好：区域 tag（带 vaddr 哈希）、前/后相邻区域的 tag、
 //        │                         能否跨到相邻区域、区域内块偏移、PHT 的 index/tag（取自 PC）、区域虚/实地址
-//        ▼
+//        ▼ （s0 查表请求）
 //   active_gen_table（AGT）         活跃区域表：累积位图；区域被逐出时交给 PHT 学习，未命中时查 PHT
 //        │  s2_evict / s2_pht_lookup
-//        ▼
+//        ▼ （逐出学习 / 未命中查询）
 //   pht（PatternHistoryTable）      按 PC 哈希记"模式"，命中就产生一个区域预取请求（region + 位图）
 //        │  pf_gen_req（§2：受 io_pht_en 门控）
-//        ▼
+//        ▼ （区域预取请求）
 //   pf_filter（PrefetchFilter）     预取去重 + 走 TLB 翻译（io_tlb_req / io_pmp_resp）→ 逐块吐出物理地址
 //        │  l2_pf_addr
-//        ▼
+//        ▼ （逐块物理地址）
 //   §3 L2 请求门控（本核）           io_enable 打开且地址落在物理内存范围内才真正发给 L2
 //
 //   stride（StridePF）              步长预取器。本配置下 stride_en 被接 0、它的预取输出没人接，firtool
