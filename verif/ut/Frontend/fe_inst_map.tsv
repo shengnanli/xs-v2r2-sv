@@ -1,9 +1,15 @@
 # 自动生成：scripts/gen_frontend.py --refresh-inst-map <UCLI 层次清单>（勿手改）
 # 设计	golden 实例路径	重写侧实例路径	钉点 impl 端对应的根（. = 设计本身）
 Composer	inner_bpu/predictors	inner_bpu/predictors	.
+DelayN	inner_bpu/ctrl_delay	inner_bpu/ctrl_delay	.
+DelayN	inner_bpu/predictors/uftb_io_ctrl_delay	inner_bpu/predictors/uftb_io_ctrl_delay	.
+DelayN	inner_bpu/predictors/tage_io_ctrl_delay	inner_bpu/predictors/tage_io_ctrl_delay	.
+DelayN	inner_bpu/predictors/ftb_io_ctrl_delay	inner_bpu/predictors/ftb_io_ctrl_delay	.
+DelayN	inner_bpu/predictors/ras_io_ctrl_delay	inner_bpu/predictors/ras_io_ctrl_delay	.
 DelayN_1	inner_bpu/predictors/ftb/write_valid_delay	inner_bpu/predictors/ftb/write_valid_delay	.
 DelayN_1	inner_itlbRepeater1/flush_delay	inner_itlbRepeater1/u_core/flush_delay	.
 DelayN_1	inner_itlbRepeater2/delay	inner_itlbRepeater2/u_core/delay	.
+DelayN_8	inner_csrCtrl_delay	inner_csrCtrl_delay	.
 FIFOReg	inner_icache/missUnit/priorityFIFO	inner_icache/u_core/missUnit/u_core/priorityFIFO	.
 FTB	inner_bpu/predictors/ftb	inner_bpu/predictors/ftb	.
 FTBBank	inner_bpu/predictors/ftb/ftbBank	inner_bpu/predictors/ftb/ftbBank	.
@@ -84,7 +90,9 @@ ITTageTable_3	inner_bpu/predictors/ittage/tables_3	inner_bpu/predictors/ittage/t
 ITTageTable_4	inner_bpu/predictors/ittage/tables_4	inner_bpu/predictors/ittage/tables_4	.
 InstrMMIOEntry	inner_instrUncache/entries_0	inner_instrUncache/entries_0	.
 InstrUncache	inner_instrUncache	inner_instrUncache	.
+MbistPipeFrontend	inner_mbistPl	inner_mbistPl	.
 NewIFU	inner_ifu	inner_ifu	.
+PFEvent	inner_pfevent	inner_pfevent	.
 PMP	inner_pmp	inner_pmp	.
 PTWFilter	inner_itlbRepeater1	inner_itlbRepeater1	.
 PTWRepeaterNB	inner_itlbRepeater2	inner_itlbRepeater2	.
