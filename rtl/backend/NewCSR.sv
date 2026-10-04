@@ -7841,19 +7841,24 @@ module NewCSR(
   assign gatewayIn_packed_38_bore = {diff_overflow_valid, {35'h0, mhpmevent_of}, diff_coreid};
 
   // ---- SyncAIA：*topei / VGEIN / hgeip 有变化 ----
-  logic [21:0] mtopei_q, stopei_q;     // {IID, IPRIO}
+  // *topei 按 CSR 格式（{IID 在 [26:16], IPRIO 在 [10:0]}）存 64 位，其余位恒 0。
+  // 恒 0 位照 golden 留着、并沿用 golden 寄存器名：只存有效位的话，golden 那 84 个
+  // 常零寄存器位在等价检查里找不到对象（unmatched），而常零寄存器又无法靠签名配对。
+  wire  [63:0] mtopei_now = {37'h0, fromAIA_mtopei_IID, 5'h0, fromAIA_mtopei_IPRIO};
+  wire  [63:0] stopei_now = {37'h0, fromAIA_stopei_IID, 5'h0, fromAIA_stopei_IPRIO};
+  logic [63:0] mtopeiChange_REG, stopeiChange_REG;
   logic [5:0]  vgein_q;
   logic [6:0]  vseip_q;
   logic        l2_flush_done_q;
   always @(posedge clock) begin
-    mtopei_q        <= {fromAIA_mtopei_IID, fromAIA_mtopei_IPRIO};
-    stopei_q        <= {fromAIA_stopei_IID, fromAIA_stopei_IPRIO};
+    mtopeiChange_REG <= mtopei_now;
+    stopeiChange_REG <= stopei_now;
     vgein_q         <= hstatus_regOut_VGEIN;
     vseip_q         <= fromAIA_vseip;
     l2_flush_done_q <= io_fromTop_l2FlushDone;
   end
-  wire diff_sync_aia_valid = mtopei_q != {fromAIA_mtopei_IID, fromAIA_mtopei_IPRIO}
-                           | stopei_q != {fromAIA_stopei_IID, fromAIA_stopei_IPRIO}
+  wire diff_sync_aia_valid = mtopeiChange_REG != mtopei_now
+                           | stopeiChange_REG != stopei_now
                            | vgein_q != hstatus_regOut_VGEIN | vseip_q != fromAIA_vseip;
   assign gatewayIn_packed_39_bore = {
     diff_sync_aia_valid, mtopei_rdata, stopei_rdata, vstopei_rdata, hgeip_rdata, diff_coreid};

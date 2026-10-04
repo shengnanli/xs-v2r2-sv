@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""gen_newcsr.py —— rtl/backend/NewCSR.sv 的 GENERATED 区生成器（只生成"连线"，不生成逻辑）。
+"""gen_newcsr.py —— rtl/backend/NewCSR.sv 与其父 rtl/backend/CSR.sv 的 GENERATED 区生成器
+（只生成"连线"，不生成逻辑）。
 
 NewCSR（golden 15945 行）= 410 个子模块实例 + 约 4000 行父级胶合逻辑。胶合逻辑（地址译码、
 写使能、读数据 Mux、特权态机、trap/xRET 事件、状态机、各类状态输出）在 NewCSR.sv 里**手写**；
@@ -23,6 +24,9 @@ fail-closed：
   * ID_MAP / CONN_RULES 里有没被用到的条目 -> 退出（防"映射写了但名字对不上"）；
   * regOut 打包视图的每一位必须是 (选择条件 & 子模块输出位) 或 (选择条件 & 常数 1)，
     每个选择条件必须能对应到唯一一个 CSR 地址名 -> 否则退出。
+
+CSR（功能单元外壳，5 个子模块实例）同一套做法，只有 csr-ports / csr-childnets / csr-insts 三段，
+映射表是 CSR_ID_MAP / csr_conn_rule（见 TARGETS）。
 
 用法: python3 scripts/gen_newcsr.py [--check]
       --check 只比对、不写盘，有漂移即非零退出（gate_all.sh 自动扫描进闸）。
