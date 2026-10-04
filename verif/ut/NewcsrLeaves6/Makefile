@@ -8,7 +8,10 @@ G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL ?= $(G1_CANONICAL)/golden-rtl
 GOLDEN_SRCS = $(addprefix $(GOLDEN_RTL)/,$(addsuffix .sv,$(LEAVES)))
 # 6 个叶在 golden 里都是自包含（0 个子模块例化），无 FM_REF_DEPS_*。
-FM_VARIANTS = $(LEAVES)
+# FM_VARIANTS 必须写字面名：fm_predict.py / fm_passing_model.py 静态解析本文件，不展开变量。
+FM_VARIANTS = VSstatusModule VSiselectModule VstartModule VStimecmpModule VtypeModule \
+              VirtualLevelPermitModule
+FM_MERGE_DUP = false
 PORTLINT_ORDER = fail
 include ../../../scripts/ut_common.mk
 

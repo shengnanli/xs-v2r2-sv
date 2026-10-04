@@ -1,0 +1,9 @@
+{
+  "target": "VstartModule",
+  "ut": "NewcsrLeaves6",
+  "regs": 7,
+  "outs": 71,
+  "expected": 78,
+  "merge_dup": "false",
+  "model_applicable": true
+}
