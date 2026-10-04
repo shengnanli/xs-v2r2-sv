@@ -1,0 +1,10 @@
+{
+  "target": "ExceptionGen",
+  "ut": "ExceptionGen",
+  "regs": 580,
+  "outs": 138,
+  "expected": 718,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "misc-core 登记：预测 passing 718 = 模型（580 寄存器位 + 138 输出位），constant 0，unread 0。非正式试跑同。"
+}

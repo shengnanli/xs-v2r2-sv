@@ -1,0 +1,10 @@
+{
+  "target": "BlockCipherModule",
+  "ut": "BlockCipherModule",
+  "regs": 566,
+  "outs": 64,
+  "expected": 630,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "misc-core 登记：预测 passing 630 = 模型（566 寄存器位 + 64 输出位），constant 0，unread 0。非正式试跑同。"
+}

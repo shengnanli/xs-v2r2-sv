@@ -1,0 +1,10 @@
+{
+  "target": "Bku",
+  "ut": "Bku",
+  "regs": 3154,
+  "outs": 725,
+  "expected": 3879,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "misc-core 第 2 轮（合 main 183593954 后，CSA4to2 / Bku 四叶子改 impl 重写件）：预测与第 1 轮同（见 docs/lanes/misc-core_prereg.md §5）。"
+}

@@ -2,7 +2,8 @@
 MODULE = BoothEncoderF64F32F16_3
 
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/BoothEncoderF64F32F16_3.sv
+RTL_SRCS = $(RTL_DIR)/backend/BoothEncoderF64F32F16_3.sv \
+           $(RTL_DIR)/backend/BoothEncoderF64F32F16.sv
 TB_SRCS  = tb.sv
 GOLDEN_SRCS = $(GOLDEN_RTL)/BoothEncoderF64F32F16_3.sv
 
