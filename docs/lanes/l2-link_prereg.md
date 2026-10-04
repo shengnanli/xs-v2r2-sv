@@ -133,3 +133,47 @@ E 入口 ready（E 出口 ready 恒 1，2 项队列满不了）——各 ×4 ban
 
 依据：B_1 / D_20 单独签核 receipt 里 constant_reg 分别为 43 / 3（golden 写 ram 的常量位）；12912 也与旧 Makefile 注释里
 上一轮 merge=false 的实测数一致。若 constant_reg 不是 184，差额按 bank×队列逐项指认。没有做过任何 FM 试跑。
+
+## 4. LinkMonitor（golden 535 行 / 155 端口；TL2CHICoupledL2 的 CHI 链路层）
+
+### 4.1 结构与子模块处置
+
+- `rtl/uncore/LinkMonitor.sv` 重写（commit `4350cc21c`）：旧件 889 行（core 复述全部端口、6 个 child 在 core 里、
+  把 golden 的 exitcoDone 化简成常 1 并少一个寄存器——只在 merge_dup=true 下才证得过）→ 新件 546 行：
+  package（链路态枚举 + 译码函数）+ 小核 `xs_LinkMonitor_core`（§1 态机、§2 握手线、§5 计数器，逐寄存器照 Scala，
+  不化简）+ golden 同名顶层（核 + 6 个 child，例化名同 golden）。`_GEN_`/`_T_` = 0。
+- child 全部两侧白盒（ref golden、impl 本仓重写件），全部已签：Decoupled2LCredit{,_1,_2}、LCredit2Decoupled
+  （evidence/40ec7fc36bb8）、Queue4_CHISNP（evidence/1fda02fae0f1）、LCredit2Decoupled_2（evidence/2f9bb8a2b814）、
+  LCredit2Decoupled_1（本 lane，evidence/f012648e1c86）。ram_4x115 两侧同源 inline（4 项 / 2 位地址）。无黑盒。
+
+### 4.2 UT（verif/ut/LinkMonitor，gen.py 生成；200k 拍，每拍比全部输出；reset_period=1000）
+
+arm：3 个 TX 子模块的 out_flit_r（不复位）各写过一次、rxsnp 队列 ram_4x115 的 4 项各写过一次（armed_at≈19）。
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=14198651 errors=0 | checks=14198651 errors=0 | checks=14198651 errors=0 |
+| 7  | checks=14198580 errors=0 | checks=14198580 errors=0 | checks=14198580 errors=0 |
+| 42 | checks=14198296 errors=0 | checks=14198296 errors=0 | checks=14198296 errors=0 |
+
+全部 cov_fail=0（每个输出位见过 0/1，无豁免）。seed 1 覆盖：tx RUN 129339、rx RUN 96871、rx 去激活等 reclaim 33739、
+复位后第一拍 194、RetryAck 3460、PCrdGrant 3421、allowRetry=0 请求 30903、tx dat flit 61228、rx snp 出 53153、rx dat 出 22423。
+变异（20k 拍）：rxDeact 漏 rxdat errors=15361 ✔；txreq srcID 接 0 errors=19977 ✔；
+txsactive 写常 1 errors=0、rx 态译码 req/ack 互换 errors=0 —— 两者在可达输入下输出不可分
+（exitcoDone 恒 0；RX 子模块只看 RUN，ACTIVATE/DEACTIVATE 互换不外显），UT 按构造看不见，
+由 FM 覆盖：merge_dup=false 下 txsactive / rxState 是逐寄存器比较点。
+
+复跑：`cd verif/ut/LinkMonitor && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 4.3 跑前预测（★跑完不许改本节★）
+
+模型 expected = **2657**（寄存器 1371 + 输出 1286）。寄存器拆分与 child 单独签核实测逐项相符：
+Decoupled2LCredit 168 / _1 79 / _2 428 / LCredit2Decoupled 472（含 Queue4_CHISNP 465）/ _1 11 / _2 11，合计 1169；
+LinkMonitor 自身 202（txState 2 + rxState 2 + exitcoDone_REG + tx.linkactivereq + rx.linkactiveack 两级 + syscoreq + txsactive + 3×64 计数器）。
+
+| 跑次 | 配置 | passing | unread | 其余 | 判决 |
+|---|---|---|---|---|---|
+| 第一跑 | vmucp **关**（本 commit） | **2465** = 2657 − 192 | **192** = retryAckCnt / pCrdGrantCnt / noAllowRetryCnt 各 64 位，两侧对称 matched_nc | failing 0 / unverified 0 / unmatched 全 0 / 无黑盒 | native SUCCEEDED，strict 判 **PARTIAL**（strict_unread≠0） |
+| 第二跑 | vmucp **开**（第一跑后另起 commit，补 verif/fm_target_config/LinkMonitor.tcl 六条证据） | **2657**（正好 +192） | 0 | 全 0 | **SUCCEEDED** |
+
+若第一跑 unread 不是正好这 192 位（或不能两侧双射），停下诊断，不开 vmucp。没有做过任何 FM 试跑。
