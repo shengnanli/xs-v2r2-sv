@@ -1,0 +1,70 @@
+# ClockGate lane（agent/clockgate）—— 跑前登记
+
+本文件在 FM 起跑之前提交；跑完在文末「对账」追加，★不修改已提交分节的任何数字★。
+
+## 0. 输入
+
+| 项 | 值 |
+|---|---|
+| 基线 commit | `cdb0e122`（main） |
+| 工作树 | `/home/eda/xs-env/wt-clockgate`，分支 `agent/clockgate` |
+| 裁定 | codex 0208 选项 B：ClockGate 作为自包含 RTL 重写并独立签核（不做 vendor boundary） |
+| golden | `/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv`（14 行，只读） |
+| 目标 | `ClockGate`（standalone），随后 impl 闭包含 ClockGate 的父级批量重证 |
+| 口径 | `signoff-strict`，`FM_MERGE_DUP=false`，allowlist 空，无 dont_verify，无 fm_pins |
+
+## 1. ClockGate
+
+### 1.1 结构
+
+- 唯一状态元件 = 1 个低电平透明锁存器（golden 名 `EN`，重写名 `enableLatched`），
+  加一个与门 `Q = CK & latched`。0 子模块、0 黑盒。
+- 重写件 `rtl/common/ClockGate.sv` 37 行，`_GEN_`/`_T_` = 0。
+
+### 1.2 UT（verif/ut/ClockGate，seed 1/7/42 × initreg 0/random/<seed>017 × 200k 周期）
+
+每周期 4 段（低相改 E/TE 1–3 次 / 上升沿 / 高相翻 0–3 次 / 下降沿），E/TE 变化与 CK 沿错开 ≥1ns；
+每个检查点比 Q 4 态全等 + 锁存器内部值全等 + 两者都等于 tb 参考模型。先跑定向四场景
+（低相更新、拉高后保持、高相 E/TE 翻转不穿透（开/关两方向）、TE 强制开门）。
+
+```
+seed=1 initreg=0 rc=0 INFO power-up (before first low phase): Q g=0 i=0 latch g=0 i=0 cover: lowUpdate=93078 holdHigh=140781 blockOn=48315 blockOff=57264 teForce=25034 pulse=125419 gated=74587 checks=1100184 errors=0 
+seed=1 initreg=random rc=0 INFO power-up (before first low phase): Q g=1 i=1 latch g=1 i=1 cover: lowUpdate=93078 holdHigh=140781 blockOn=48315 blockOff=57264 teForce=25034 pulse=125419 gated=74587 checks=1100184 errors=0 
+seed=1 initreg=1017 rc=0 INFO power-up (before first low phase): Q g=0 i=0 latch g=0 i=0 cover: lowUpdate=93078 holdHigh=140781 blockOn=48315 blockOff=57264 teForce=25034 pulse=125419 gated=74587 checks=1100184 errors=0 
+seed=7 initreg=0 rc=0 INFO power-up (before first low phase): Q g=0 i=0 latch g=0 i=0 cover: lowUpdate=94020 holdHigh=141003 blockOn=48353 blockOff=57377 teForce=25091 pulse=124888 gated=75118 checks=1099588 errors=0 
+seed=7 initreg=random rc=0 INFO power-up (before first low phase): Q g=0 i=0 latch g=0 i=0 cover: lowUpdate=94020 holdHigh=141003 blockOn=48353 blockOff=57377 teForce=25091 pulse=124888 gated=75118 checks=1099588 errors=0 
+seed=7 initreg=7017 rc=0 INFO power-up (before first low phase): Q g=1 i=1 latch g=1 i=1 cover: lowUpdate=94020 holdHigh=141003 blockOn=48353 blockOff=57377 teForce=25091 pulse=124888 gated=75118 checks=1099588 errors=0 
+seed=42 initreg=0 rc=0 INFO power-up (before first low phase): Q g=0 i=0 latch g=0 i=0 cover: lowUpdate=94012 holdHigh=141191 blockOn=48780 blockOff=57115 teForce=24789 pulse=124464 gated=75542 checks=1099933 errors=0 
+seed=42 initreg=random rc=0 INFO power-up (before first low phase): Q g=1 i=0 latch g=1 i=0 cover: lowUpdate=94012 holdHigh=141191 blockOn=48780 blockOff=57115 teForce=24789 pulse=124464 gated=75542 checks=1099933 errors=0 
+seed=42 initreg=42017 rc=0 INFO power-up (before first low phase): Q g=0 i=1 latch g=0 i=1 cover: lowUpdate=94012 holdHigh=141191 blockOn=48780 blockOff=57115 teForce=24789 pulse=124464 gated=75542 checks=1099933 errors=0
+```
+
+上电初值（第一个低相之前）只打印不计错：random 与 <seed>017 档两个实例各摇各的初值
+（seed 42 实测 g=1 i=0 / g=0 i=1），是双例化 initreg 伪影；库 ICG 同样无初值。
+
+变异自检（scratchpad，不进库，seed 1 × 20k 周期）：
+M1 锁存极性反（`if (CK)`）errors=46735；M2 丢 TE errors=19589；M3 锁存器改透明组合 errors=28074；
+M4 Q 不经锁存（`CK & (TE|E)`）errors=14037；M5 锁存内阻塞改非阻塞 errors=0 ——
+M5 是等价变异（单条赋值，阻塞/非阻塞在锁存器里行为相同），FM 同样不区分；保留 golden 的阻塞写法。
+
+复跑：`cd verif/ut/ClockGate && make run SEED=<1|7|42> SIM_ARGS="+ncycles=200000 +vcs+initreg+<0|random|<seed>017>"`
+
+### 1.3 跑前预测（★跑完不许改本节★）
+
+| 目标 | passing 预测 | 其余 |
+|---|---|---|
+| ClockGate | `fm_predict.py model` = **1**（regs 1 + outs 0） | failing 0 / unverified 0 / aborted 0 / unread 0 / unmatched 0 / 无黑盒 / SUCCEEDED |
+
+### 1.4 明写可能出错的地方
+
+1. Formality 对锁存器的处理：可能把 `EN` 当作 latch 比较点（预测按 1 个寄存器点算），
+   也可能识别为 cut point / 时钟门控结构把 Q 当作组合输出比。若 passing ≠ 1，先看
+   `report_compare_points` 里比较点的类型，照实记录；只要 Q 与锁存器都在比较覆盖内即可。
+2. Q 是"时钟"输出：FM 可能把它视为 clock net 而不建 output 比较点（模型 outs=0 的来历），
+   那样锁存器那一点就是唯一比较点。
+3. 名字不同（`EN` vs `enableLatched`）：单锁存器靠签名分析应能配上；若 unmatched，
+   不用 set_user_match，改走 fm_pins_pre 或对齐命名。
+
+## 2. 父级批量重证
+
+见本文件后续分节（公共 filelist / 生成器改为 impl 读 rtl/common/ClockGate.sv 之后登记）。
