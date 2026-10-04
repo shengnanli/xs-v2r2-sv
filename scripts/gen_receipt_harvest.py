@@ -139,6 +139,19 @@ OK_VERDICTS = ('SUCCEEDED', 'PASS', 'PASS_DEAD_REF', 'SIGNOFF_PASS')
 MODULE_RE = re.compile(r'^module\s+([A-Za-z_]\w*)', re.M)
 TMP_PREFIX_RE = re.compile(r'^/tmp/xsv2-proof-[^/]+/')
 PACKED_RE = re.compile(r'^PACKED_MATCH: \d+ points pinned', re.M)
+# ★钉点静默落空★：与 scripts/fm_verdict.py 现行判据**同一个正则对象**（import，不抄写），
+# 只认行首 `Error: Unknown name`，注释/缩进回显不算。两处口径若分叉，同一份日志会在
+# fm_verdict 里降为 PARTIAL、在本表里却被收成 COLLECTED —— ITTage@68bffe7f2938 就是这样：
+# 250 行 FM-036，receipt 早于该判据落地仍记 SUCCEEDED，本表 chk_facts 只看 native_facts 于是放行。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from fm_verdict import _UNKNOWN_NAME as UNKNOWN_NAME_RE  # noqa: E402
+
+
+def unknown_name_count(txt):
+    """fm.log 里行首 `Error: Unknown name` 的行数；日志读不到返回 None（缺失 ≠ 0）。"""
+    if txt is None:
+        return None
+    return len(UNKNOWN_NAME_RE.findall(txt))
 
 COLUMNS = ['target', 'golden_lines', 'impl_in_main', 'in_vcs', 'merge_dup',
            'mdup_band', 'chk_golden', 'chk_impl', 'chk_fm_eq', 'chk_pins',
@@ -493,6 +506,7 @@ def collect(only=None):
                                 closure.append({'src': p[0], 'arch': p[1], 'sha': p[2]})
                 ver, packed, logged = None, False, False
                 txt = read_fm_log(d)
+                unknown_name = unknown_name_count(txt)
                 if txt is not None:
                     logged = True
                     m = re.search(r'Version (\S+) for linux64', txt)
@@ -520,6 +534,7 @@ def collect(only=None):
                     'interface_only': str(av.get('hdlin_interface_only') or ''),
                     'script_closure': closure,
                     'fm_ver': ver, 'packed': packed, 'logged': logged,
+                    'unknown_name': unknown_name,
                     'stats': nf.get('stats') or {},
                     'unmatched': nf.get('unmatched') or {},
                     'quals': nf.get('qualifications') or {},
@@ -600,6 +615,13 @@ def chk_facts(r):
         bad.append('dont_verify=%d' % len(q['dont_verify_objects']))
     if q.get('relaxed_appvars'):
         bad.append('relaxed_appvars=%s' % q['relaxed_appvars'])
+    # ★native_facts 数干净也不够★：钉点落在不存在的名字上时 FM 只写一行行首
+    # `Error: Unknown name ... (FM-036)`、不抛异常，native 照样 SUCCEEDED。
+    # 与 fm_verdict 同口径：>0 即不得收。日志缺失（None）不在这里判 —— chk_tool 已对
+    # "没有日志"判 UNKNOWN（同样落 NEEDS_RERUN），缺失与否定不长成一个样。
+    if r.get('unknown_name'):
+        bad.append('fm.log 行首 Error: Unknown name=%d（钉点/命令落在不存在的对象上，静默未生效）'
+                   % r['unknown_name'])
     if bad:
         return 'DIFFER', 'native_facts 不干净: %s' % ', '.join(bad[:4])
     return 'same', ''
