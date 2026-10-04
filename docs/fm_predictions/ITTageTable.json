@@ -1,0 +1,17 @@
+{
+  "target": "ITTageTable",
+  "ut": "ITTageTable",
+  "regs": 413,
+  "outs": 107,
+  "expected": 682,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 162,
+  "bbox": {
+    "array_6_ext": {
+      "insts": 1,
+      "in_bits": 162,
+      "points": 162
+    }
+  }
+}

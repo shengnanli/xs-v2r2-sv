@@ -1,0 +1,6 @@
+ref	r:/WORK/RegCache/delayToWakeupQueueRCIdx_0_reg[4]
+ref	r:/WORK/RegCache/delayToWakeupQueueRCIdx_4_reg[4]
+ref	r:/WORK/RegCache/delayToWakeupQueueRCIdx_REG_0_reg[4]
+ref	r:/WORK/RegCache/delayToWakeupQueueRCIdx_REG_1_0_reg[4]
+ref	r:/WORK/RegCache/delayToWakeupQueueRCIdx_REG_1_4_reg[4]
+ref	r:/WORK/RegCache/delayToWakeupQueueRCIdx_REG_4_reg[4]

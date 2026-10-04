@@ -1,0 +1,10 @@
+{
+  "target": "RegCacheDataModule_1",
+  "ut": "RegCacheLeaves",
+  "regs": 780,
+  "outs": 1484,
+  "expected": 2264,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "regs+outs 模型；预测差额 0"
+}

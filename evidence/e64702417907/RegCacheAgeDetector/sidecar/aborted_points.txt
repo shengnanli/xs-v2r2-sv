@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/RegCacheAgeDetector
+Implementation : i:/WORK/RegCacheAgeDetector
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 12:11:55 2026
+**************************************************
+
+No aborted compare points.
+
+1

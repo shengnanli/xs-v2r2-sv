@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/SRAMTemplateWithFixedWidth_12
+Implementation : i:/WORK/SRAMTemplateWithFixedWidth_12
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 20:13:47 2026
+**************************************************
+
+No failing compare points.
+
+1

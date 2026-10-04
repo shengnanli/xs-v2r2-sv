@@ -1,0 +1,307 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "SCTable_2",
+ "run_id": "SCTable-20261003T124942Z-1b420e203",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/SCTable_2.sv",
+   "kind": "golden",
+   "sha256": "13bc061bfa899752f3ee4ca56958f4b672f621544d9fc4b02ea1b6e2f05a6dec"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_68.sv",
+   "kind": "golden",
+   "sha256": "3459d557dc6c198e3f228fbb8c788932c10cbd3ddde00cd34b9cdea487fd536d"
+  },
+  {
+   "path": "golden-rtl/WrBypass_33.sv",
+   "kind": "golden",
+   "sha256": "72ae6263c313dbb17151e812fe8fc50d5fe50172003c05fc9b5ed2a1aa550676"
+  },
+  {
+   "path": "golden-rtl/IndexableCAMTemplate_33.sv",
+   "kind": "golden",
+   "sha256": "f6a063bf079a58fb7305dd51f9c889261c15a7686f9bf08b618c38b325cc88e5"
+  },
+  {
+   "path": "golden-rtl/data_mem_16x12.sv",
+   "kind": "golden",
+   "sha256": "15028dbf010167820b6a2762d3ba6880c17949a10b0154624fde3844f77cb476"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
+   "kind": "golden",
+   "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
+  },
+  {
+   "path": "golden-rtl/array_5.sv",
+   "kind": "golden",
+   "sha256": "75f44affa1722d3787eda926dc82ad85da225c9cfad1e8dcb054b11f3c165dc0"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/MbistPipeSc_2.sv",
+   "kind": "golden",
+   "sha256": "0d4b1fefc4629cb0203dac5ac90760559eda236a4ed9075f966467b69a0946cb"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/SCTable.sv",
+   "kind": "repo",
+   "sha256": "b83905061bf7ffbd53e6da0c43f084c67d66c2aa44fc7ac46810fd420c1d0a4a"
+  },
+  {
+   "path": "rtl/frontend/SCTable_1.sv",
+   "kind": "repo",
+   "sha256": "d0f83f65b9386c82088f0c366c6b4c85e050ba77640d4cda99800e561b4b95dd"
+  },
+  {
+   "path": "rtl/frontend/SCTable_2.sv",
+   "kind": "repo",
+   "sha256": "9b00c9c4a8175c64c7890c01834cf0766a959ef27ce1c9687df4f72605870cfd"
+  },
+  {
+   "path": "rtl/frontend/SCTable_3.sv",
+   "kind": "repo",
+   "sha256": "4429871de0e298700da056e23a8360d9db874a0a68befc2ed0a60b5dd0c619b9"
+  },
+  {
+   "path": "rtl/common/xs_SRAMTemplate_core.sv",
+   "kind": "repo",
+   "sha256": "55b51e13e6f58d98385d6fff52b16956e81da22d75b7cbda50279e8efe48d97e"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_68.sv",
+   "kind": "repo",
+   "sha256": "8713e8f6983e988f8ce8c6fa2463ff39cd0d9941961537258bc2ec003e249336"
+  },
+  {
+   "path": "rtl/common/xs_PlruReplacer.sv",
+   "kind": "repo",
+   "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+  },
+  {
+   "path": "rtl/common/IndexableCAMTemplate.sv",
+   "kind": "repo",
+   "sha256": "3e9279529e9d69b83df73d199c4c5fac81205b0040967fffa168cbea54107198"
+  },
+  {
+   "path": "rtl/frontend/WrBypass.sv",
+   "kind": "repo",
+   "sha256": "96a5a297ddfec217bfb29a0c8fe01b8a64d89681561bbc12de4800160f50a916"
+  },
+  {
+   "path": "rtl/frontend/WrBypass_33.sv",
+   "kind": "repo",
+   "sha256": "7f1abbd3534afe5a38bc29da3c2eb60802c1fe304b1776fc5eb589d00c194189"
+  },
+  {
+   "path": "rtl/dft/xs_mbist_pipe_core.sv",
+   "kind": "repo",
+   "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSc.sv",
+   "kind": "repo",
+   "sha256": "462b45d44fc9ec5b5b2b02fcad0592affba31fd5896eadf6ccfe3a1300612c8c"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSc_1.sv",
+   "kind": "repo",
+   "sha256": "a8995e7c42ecc818ff4d51ca1fed21de1d79665bb60e52d339465e6057279486"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSc_2.sv",
+   "kind": "repo",
+   "sha256": "894a2fc46b2b56a86add2303a1d8977bd9e54b4f30345f020742477c10fb9919"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSc_3.sv",
+   "kind": "repo",
+   "sha256": "9c2b0a3e9e1773e3a9c0f0d53bf119e1819b00c24e1fdbb4934fe6a4873f444f"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
+   "kind": "golden",
+   "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
+  },
+  {
+   "path": "golden-rtl/array_5.sv",
+   "kind": "golden",
+   "sha256": "75f44affa1722d3787eda926dc82ad85da225c9cfad1e8dcb054b11f3c165dc0"
+  }
+ ],
+ "impl_commit": "1b420e2033a9d118d4f224cb01f89988f4ae7e2a",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "SCTable-20261003T124942Z-1b420e203",
+  "top": "SCTable_2",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 1123,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/SCTable_2/table_0/array/array/array_5_ext",
+     "impl_path": "i:/WORK/SCTable_2/u_core/g_bank[0].u_table/array/array/array_5_ext"
+    },
+    {
+     "ref_path": "r:/WORK/SCTable_2/table_1/array/array/array_5_ext",
+     "impl_path": "i:/WORK/SCTable_2/u_core/g_bank[1].u_table/array/array/array_5_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/SCTable_2/table_0/array/array/array_5_ext",
+    "r:/WORK/SCTable_2/table_1/array/array/array_5_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/SCTable_2/u_core/g_bank[0].u_table/array/array/array_5_ext",
+    "i:/WORK/SCTable_2/u_core/g_bank[1].u_table/array/array/array_5_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 1123,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "SCTable_2",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

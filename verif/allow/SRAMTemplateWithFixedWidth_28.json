@@ -1,0 +1,21 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "SRAMTemplateWithFixedWidth_28",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "objects": [
+  {
+   "side": "i",
+   "design": "array_0_ext",
+   "path": "i:/WORK/SRAMTemplateWithFixedWidth_28/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_ext",
+   "path": "r:/WORK/SRAMTemplateWithFixedWidth_28/srams_0/array/array/array_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  }
+ ]
+}

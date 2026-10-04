@@ -1,0 +1,265 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "L1Prefetcher",
+ "run_id": "L1Prefetcher-20261004T001523Z-397a2bc9c",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/L1Prefetcher.sv",
+   "kind": "golden",
+   "sha256": "da968e8cd774da230edeaec816bf79e54bb097377edbfc1dd7cfb42c9590a3fd"
+  },
+  {
+   "path": "golden-rtl/TrainFilter.sv",
+   "kind": "golden",
+   "sha256": "07509a266059595acb0546d55a0e7356756525c16837a90881968f2ceaea685b"
+  },
+  {
+   "path": "golden-rtl/TrainFilter_1.sv",
+   "kind": "golden",
+   "sha256": "1589dfc634544f8377f653ddae7268223a89aaec7ce69fe82c4f95a0254cb55d"
+  },
+  {
+   "path": "golden-rtl/StrideMetaArray.sv",
+   "kind": "golden",
+   "sha256": "afb785276cfcb4e342b99ab0669759caccaf7f4e3f469bd7194bee12ece46be5"
+  },
+  {
+   "path": "golden-rtl/StreamBitVectorArray.sv",
+   "kind": "golden",
+   "sha256": "90ac01763188fef892216a7ef2aa9489691c9bf301a8b082134e9a7f116c7cc0"
+  },
+  {
+   "path": "golden-rtl/MutiLevelPrefetchFilter.sv",
+   "kind": "golden",
+   "sha256": "e654484bee648b75343842567f7597224e5017ca95d5dd25247f673e97da7d5b"
+  },
+  {
+   "path": "golden-rtl/RRArbiterInit_6.sv",
+   "kind": "golden",
+   "sha256": "423789902d5788e5b5bd9bd8e8dd24177cb5ccce70d4752158a9e9cc713503b0"
+  },
+  {
+   "path": "golden-rtl/RRArbiterInit_7.sv",
+   "kind": "golden",
+   "sha256": "2e53ce5a8d29d58d913b25470fb4691b566c46adef3400143b981d4aab4d45fc"
+  },
+  {
+   "path": "golden-rtl/RRArbiterInit_8.sv",
+   "kind": "golden",
+   "sha256": "55045c3901637688530f1effa2c355eeb86716c8018afb9591294e6116656fb6"
+  },
+  {
+   "path": "golden-rtl/RRArbiterInit_9.sv",
+   "kind": "golden",
+   "sha256": "e2ec51c236a8e4be44bb6806009cb2f942f3f48ad679a7c090e206dba1d5ef88"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/memblock/xs_TrainFilter_core.sv",
+   "kind": "repo",
+   "sha256": "6871821324107fad9f9b66320d83aeb570a3ed8917763766b06677add449bdee"
+  },
+  {
+   "path": "rtl/memblock/TrainFilter.sv",
+   "kind": "repo",
+   "sha256": "5b82b5bea59c020a01dd456c707d3f42fddcd6c0fb2d38fa55d17e0c87a9d6aa"
+  },
+  {
+   "path": "rtl/memblock/TrainFilter_1.sv",
+   "kind": "repo",
+   "sha256": "f7da3413e7aa33c9140e83c4d3085a8039f74ae8f824afdd14de8abbab91bc54"
+  },
+  {
+   "path": "rtl/memblock/StrideMetaArray.sv",
+   "kind": "repo",
+   "sha256": "b0b329537968472a5048dcc4f63e4ad8b3d4d987ba3697a90a725a7cb86f69a9"
+  },
+  {
+   "path": "rtl/common/xs_PlruReplacer.sv",
+   "kind": "repo",
+   "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+  },
+  {
+   "path": "rtl/memblock/StreamBitVectorArray.sv",
+   "kind": "repo",
+   "sha256": "f0385ceef9363894e22fc2b45a0cbdb9b02eec7af8594fcb74da219f8b04bcca"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit.sv",
+   "kind": "repo",
+   "sha256": "b6a3406112df63bc1ec77562e11b7fcabaf9ee6ae3e5d90a0edc89034b964bac"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit_6.sv",
+   "kind": "repo",
+   "sha256": "137d77feba2263488ed8d356b18fc73572e84c4406f54fe61e2f10eedd8f5035"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit_7.sv",
+   "kind": "repo",
+   "sha256": "c181dceb0c41ac3449df02398ade33b4eefac3b4c5250603ea4bd9d5acd61ca5"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit_8.sv",
+   "kind": "repo",
+   "sha256": "fd81262f60d9d9d8c9132e52774104d4f048b50fe6d7f800ffb56f2f43e28509"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit_9.sv",
+   "kind": "repo",
+   "sha256": "adb1ebd6988333c60cd9f95b07f623a2ea8b5c8e572462625faec7a47c8ab7c6"
+  },
+  {
+   "path": "rtl/memblock/MutiLevelPrefetchFilter.sv",
+   "kind": "repo",
+   "sha256": "381e14390c1dec928aa9b10fe8dcc7860369f4cf2b34b7480b84280487dd980a"
+  },
+  {
+   "path": "rtl/memblock/L1Prefetcher.sv",
+   "kind": "repo",
+   "sha256": "be897431f6430f60a5b9e0ebecb907afc3a1c66af55a83c0ecdd0cb7fbf00009"
+  }
+ ],
+ "impl_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins.tcl": "60f17dfbabe8b8f4d0e253d205114c3d7cc1581ca76cd5962e8fb422da7b2882",
+   "fm_pins_pre.tcl": "2b0b719eb8b4ab44f45615cd4718ec009f6b786fa687c436c6b577c16b498f3b"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "L1Prefetcher-20261004T001523Z-397a2bc9c",
+  "top": "L1Prefetcher",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 9089,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 9089,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 60,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "L1Prefetcher",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

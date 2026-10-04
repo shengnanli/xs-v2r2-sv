@@ -1,0 +1,9 @@
+{
+  "target": "MbistBitmapCache",
+  "ut": "MbistBitmapCache",
+  "regs": 114,
+  "outs": 547,
+  "expected": 661,
+  "merge_dup": "false",
+  "model_applicable": true
+}

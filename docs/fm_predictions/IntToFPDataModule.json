@@ -1,0 +1,10 @@
+{
+  "target": "IntToFPDataModule",
+  "ut": "BeDataLeaves",
+  "regs": 143,
+  "outs": 69,
+  "expected": 212,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "regs+outs 模型；8 个流水寄存器全部有读者，预测差额 0"
+}

@@ -1,0 +1,10 @@
+{
+  "target": "SRT16DividerDataModule",
+  "ut": "SRT16DividerDataModule",
+  "regs": 1737,
+  "outs": 66,
+  "expected": 1803,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预测差额 = constant_reg(>=7: rCarryReg[0], udNegReg_0[1:0], udNegReg_1[0], udNegReg_3[0], udNegReg_4[1:0], 另有查表常数位) + unread 6(aLZCReg[6], dLZCReg[6], udNegReg_{0,1,3,4}[67], 拟 vmucp 归零)"
+}

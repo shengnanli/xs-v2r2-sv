@@ -1,0 +1,9 @@
+{
+  "target": "RegionWays",
+  "ut": "RegionWays",
+  "regs": 511,
+  "outs": 169,
+  "expected": 680,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "WritebackQueue",
+  "ut": "WritebackQueue",
+  "regs": 12696,
+  "outs": 357,
+  "expected": 13053,
+  "merge_dup": "false",
+  "model_applicable": true
+}

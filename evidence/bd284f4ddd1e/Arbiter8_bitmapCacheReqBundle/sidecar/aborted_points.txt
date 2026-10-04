@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Arbiter8_bitmapCacheReqBundle
+Implementation : i:/WORK/Arbiter8_bitmapCacheReqBundle
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 12:00:18 2026
+**************************************************
+
+No aborted compare points.
+
+1
