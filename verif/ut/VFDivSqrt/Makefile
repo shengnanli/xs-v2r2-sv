@@ -34,6 +34,10 @@ FM_REF_DEPS_VFDivSqrt = ShiftLeftPriorityWithLZDResult.sv ShiftLeftPriorityWithL
 # 关 merge_dup：外壳有同源双份寄存器（robIdx 锁存两份），重写件逐份照抄；fm_predict 的模型严格适用。
 FM_MERGE_DUP = false
 
+# vmucp（加强不是放宽）：外壳 outCtrl_r_vpu_vuopIdx[6:3] 4 位两侧对称死位（Mgu / fflags 只读低 3 位；与 VIDiv 外壳同一类），
+# 依据见 verif/fm_target_config/VFDivSqrt.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
