@@ -1,0 +1,10 @@
+{
+  "target": "TLBuffer_13",
+  "ut": "TLBuffer_13",
+  "regs": 8724,
+  "outs": 4372,
+  "expected": 13096,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "预期 constant_reg=184 = 4 bank x (Queue2_TLBundleB_1 的 43 + Queue2_TLBundleD_20 的 3)，取自两个 child 单独签核的 receipt（evidence/1fda02fae0f1）；故预期实测 passing = 13096 - 184 = 12912"
+}

@@ -1,0 +1,9 @@
+{
+  "target": "LCredit2Decoupled_1",
+  "ut": "LCredit2Decoupled_1",
+  "regs": 11,
+  "outs": 76,
+  "expected": 87,
+  "merge_dup": "false",
+  "model_applicable": true
+}
