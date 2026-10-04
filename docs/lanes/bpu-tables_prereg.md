@@ -425,3 +425,14 @@ merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageB
 | Tage_SC | 16112（unread 192 ref = dead_ref） | PASS_DEAD_REF | BPU_PINS 2843 / 2843 | 0 / 0 |
 | Composer | 42060（unread 192 ref = dead_ref） | PASS_DEAD_REF | COMPOSER_PINS 601 / 601，BPU_CHILD_PINS 23083 / 23083 | 0 / 0 |
 其余项同 §4.4 / §5.4 / §6.4 / §9.4（failing/unverified/aborted 0、unmatched 0、黑盒仅厂商叶子、merge_dup false、vmucp true）。
+
+# 对账（续 2）：§10 重证（proof commit `335a330a`，证据 evidence/335a330a9baa/；§10.3 未改一字）
+| 目标 | 预测 → 实测 passing | verdict | 钉点（打印 / fm.log「Set a match」行数） | fm.log 行首 Error / Unknown name | receipt sha256 |
+|---|---|---|---|---|---|
+| FauFTB | 5660 → 5660 | SUCCEEDED | 400/400 / 400 | 0 / 0 | `f2416cb8551aec4dfa0f907c052e15c4d900e4f102b7ea4b4d19dd69e0316a4e` |
+| ITTage | 10426 → 10426 | SUCCEEDED | 3301/3301 / 3301 | 0 / 0 | `4463d24bc528d595b794f51a0b9ea565b1e46349cc239303672841bcf5eeba13` |
+| Tage_SC | 16112 → 16112（unread 192 = dead_ref） | PASS_DEAD_REF | 2843/2843 / 2843 | 0 / 0 | `732fcc36226c529285dc4fc41ac5c41a1434cef43a4b34e1f9c5fbeb32533200` |
+| Composer | 42060 → 42060（unread 192 = dead_ref） | PASS_DEAD_REF | 601/601 + 23083/23083 / 23684 | 0 / 0 | `87976b3ac62d3f362bf39a560d9aa4e77d680ce51c11aa03db3ab3c248f9490d` |
+
+本表取代此前 cee28122 / 68bffe7f / 05394ca2(Tage_SC) / 9cc9c9c7 四份 receipt（钉点脚本字节变化，按规则 STALE）。fm_predict check 全部对上。
+复跑：`PROOF_COMMIT=335a330a9 bash scripts/run_proof.sh <FauFTB|ITTage|Tage_SC|Composer> <同名> < /dev/null`。
