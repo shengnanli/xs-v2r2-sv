@@ -385,6 +385,50 @@ native SUCCEEDED passing 2147 / failing 0 / unverified 0 / unmatched 0 / unread 
 | constant_reg | 0 |
 | 黑盒 / dont_verify / vmucp | 无 / 无 / 不开 |
 
+## 10. VFAlu（golden 1202 行；重写 707 行）
+
+### 10.1 结构与子模块处置
+
+- VecPipedFuncUnit（LAT=1）外壳：`xs_VFAlu_core`（§1 valid / 反压 / §2 第 0 级掩码：vfmerge 选择位、归约掩码 genMaskForReduction /
+  §3 两个 VectorFloatAdder / §4 第 0 级寄存器 existMaskReg / vs1Reg / outWiden / outVlFix / allVmZero / Mgu eew、vdIdx /
+  §5 第 1 级写回：结果选择、比较位、有序归约旧 vd 移位、Mgu ta/ma、fflags 选择、vl=0 不改 vd）+ wrapper。
+- ★本件抓到并照抄的 golden 细节★：f64 的折叠掩码在 Scala 里是**单项 Mux1H**——Chisel 单项 Mux1H 直接返回该项、不按选择位门控
+  （golden `isFold ? 8'h11 : 8'hFF` 即此）；照 Scala 字面写成门控会错（变异 m2 实测 errors=128）。
+- child 全部两侧白盒：VectorFloatAdder ×2（本 lane §6/§G）+ 全闭包、VecDataSplitModule ×2、Mgu + 闭包、Mgtu；共享辅助件 xs_VecFflagsElemMask。
+- 钉点：fm_pins_pre.tcl 1104 对（VectorFloatAdder 那 536 对 × 2 实例 + 4 条 lane 的 io_fflags_r_1[3:0] 常量寄存器 32 对）；fm_pins.tcl 34 对
+  （VectorFloatAdder 的 17 对死位 × 2）。vmucp：这 34 点 + 外壳 mgu_io_in_info_vdIdx_r[6:3] 4 位，配置 verif/fm_target_config/VFAlu.tcl。
+
+### 10.2 UT（9 档 × 200k，commit d7139c2dd 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+按元素 IEEE oracle（vfadd / vfsub / vfmin / vfmax / vfmerge 与加宽加减 .vv/.wv；含 vl=0、mask / tail / vstart / vstart>=vl 与 fflags 元素选择；
+只对第 0 级真正握手的 uop——被反压时第 0 级寄存器不更新，golden 行为只做差分）全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 61998
+（op0..4 = 8361/8202/8208/8327/8194，加宽 .vv/.wv = 10326/10380，SEW16/32/64 结果 = 13771/24001/24226），掩码关 17004、尾部 43838/43610、
+vstart 前部 8124、vstart>=vl 12752、vl=0 15691；差分覆盖：比较类 16859、vfmv.f.s / vfmv.s.f = 3811/3765、5 种归约 × {折叠, 不折叠} 各 >= 300。
+变异（scratchpad，20k 拍）：无序归约全掩码时不看 existMaskReg ⇒ errors=526；f64 折叠掩码按选择位门控 ⇒ 128；vfmv.s.f 的 vl 不改 ⇒ 179；
+vl=0 时对 vfmv.f.s 也不改 vd ⇒ 114；ta 修正去掉 ⇒ 165；★UT 抓不到★：outEew_s0 的加宽位改取 ctrlPipe_0（tb 里 ctrl 与 ctrlPipe_0 恒同值，
+结构上看不见），归 FM。
+
+### 10.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VFAlu.json）
+
+模型 expected = 5681（寄存器 4884 = 外壳 790 + VectorFloatAdder 2047×2；输出 797）。预期 constant reg **362**（= VectorFloatAdder 181×2）。
+依据：lane 内非正式试跑（commit 7cd754e7e 的钉点 1072 对版本，`make fm-VFAlu FM_MODE=diagnostic-full`，不出 receipt）：native SUCCEEDED，
+passing 5319 / failing 0 / unverified 0 / unread 0，constant_reg 360，unmatched 2+2（两对 lane 常量寄存器 io_fflags_r_1[0] 被签名匹配交叉配到
+兄弟 lane）—— 360 + 2 = 362；补 32 对常量钉点后预期 unmatched 0、constant 362。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **5319**（= 5681 − 362） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 362 |
+| 黑盒 / dont_verify | 无 / 无 |
+
 ## 对账（跑完追加）
 
 ### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule

@@ -1,0 +1,9 @@
+{
+  "target": "VFAlu",
+  "ut": "VFAlu",
+  "regs": 4884,
+  "outs": 797,
+  "expected": 5681,
+  "merge_dup": "false",
+  "model_applicable": true
+}
