@@ -422,3 +422,11 @@ U_Lshift_io_src_r[1:0] / lshift_result_head_is_one_r_1[1:0] / close_fraction_res
 constant_reg **181**，黑盒 0，dont_verify 无；钉点 `VFAP_PIN_PRE_END n=536 bad=0`、`VFADD_PIN_END n=17`（613 s）。预测 1950 / 181 ——
 逐项相等；`fm_predict.py check VectorFloatAdder`：2131 − 1950 = 181 = constant_reg，rc=0。vmucp 六条：(1) 五条 lane 17 点（字面钉）；
 (2) 17↔17；(3) unread_notcompared 0，2131 − 181 = 1950 全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VectorFloatAdder.tcl 在 script_closure。
+
+### H. VFDivSqrt —— evidence/462112cae72a/VFDivSqrt
+
+PROOF_COMMIT=462112cae，`bash scripts/run_proof.sh VFDivSqrt VFDivSqrt`：native SUCCEEDED，passing **3770** / failing 0 / unverified 0 / aborted 0 /
+unread 0，unmatched 全 0，constant_reg **2**，黑盒 0，dont_verify 无（332 s，无钉点）。预测 3770 / 2 —— 逐项相等；`fm_predict.py check`：
+3772 − 3770 = 2，rc=0。vmucp 六条：(1) outCtrl_r_vpu_vuopIdx[6:3] 4 位（按名配上）；(2) 4↔4；(3) unread_notcompared 0、全比；(4) 全零；
+(5) 无放宽、无黑盒；(6) verif/fm_target_config/VFDivSqrt.tcl 在 script_closure。
+更正（不改 §8 原文）：§8 标题的行数应为重写 **444** 行、xs_VecFflagsElemMask **54** 行（登记时笔误）。
