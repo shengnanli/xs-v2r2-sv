@@ -67,3 +67,20 @@ merge 掉的恒等寄存器（MainPipe RegNext 副本、取指 MSHR vSetIdx[5:0]
 ## 4. UT
 
 无 RTL 改动，沿用 fe-mem-misc 读数（verif/ut/ICache 9 档全绿，每档 checks=196999）；本 lane 复跑见对账。
+
+## 对账（official 跑后追加，上面各节未改）
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| verdict | SUCCEEDED | **SUCCEEDED**（native SUCCEEDED，assembly，`scripts/run_proof.sh ICache ICache`，证明 commit `a72794293`） |
+| passing | 21174 | **21174**（差额 0；构成 bbin 2808 + 输出 3380 + DFF 14982 + 其它 4） |
+| failing / unverified / aborted / unmatched | 0 | 0 / 0 / 0 / 0（ref 0、impl 0） |
+| unread | 0 | 0（`unread_points.txt` 空；钉前 53↔53 unmatched unread 由 53 条 post 钉点配上后 vmucp 真比较） |
+| 钉点 | 740 / 53 | `ICACHE_PRE_PIN_END ok=740 bad=0`、`ICACHE_POST_PIN_END ok=53 bad=0`，无 "Ignoring user match" |
+| 黑盒 | 72 | 72（array_ext ×4 + array_0_ext ×32，两侧），全部 allow 声明；dont_verify / elab147 / relaxed_appvars 空 |
+
+receipt：`evidence/a72794293f57/ICache/receipt.json`
+sha256 `9c448aed8a6da58bba6b77bace1aeb5aceb6e03377467edf8f1ebe001cc47b6c`（impl_worktree_dirty=false）。
+
+UT 复跑（verif/ut/ICache，RTL 未改）：seed 1/7/42 × `+vcs+initreg+0` / `random` / `<seed>017` 9 档全部
+checks=196999 errors=0 TEST PASSED。复跑：`cd verif/ut/ICache && make run SEED=<s> INITREG=<0|random|<s>017>`。
