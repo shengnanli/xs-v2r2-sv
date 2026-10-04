@@ -47,3 +47,12 @@ oracle_errors=0（独立逐元素取位）；覆盖：全部 30 个输出的每�
 | verdict | SUCCEEDED（signoff-strict） |
 
 没有做过任何 FM 试跑。
+
+## 对账（跑完追加）
+
+### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule
+
+`bash scripts/run_proof.sh VecDataSplitModule VecDataSplitModule < /dev/null`（commit a29f86c7a）：
+native SUCCEEDED，passing 512 / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，黑盒 0，dont_verify 无。
+impl_closure `rtl/backend/VecDataSplitModule.sv` sha256 4c5691e6…（= 提交字节）。
+预测 512 vs 实测 512，差 0（`fm_predict.py check VecDataSplitModule` rc=0）。
