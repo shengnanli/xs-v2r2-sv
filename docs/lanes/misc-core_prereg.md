@@ -129,3 +129,38 @@ MiscModule / HashModule（evidence/f696c5c84a6d）有了已签重写件。按集
 CtrlBlock / ExceptionGen / BlockCipherModule / Booth 两个变体不受这次合并影响（闭包不含被改文件），不重跑。
 
 ## 对账（跑完追加，不改上文任何数字）
+
+### A. FM（signoff-strict；CtrlBlock 沿用它的 assembly 口径）——预测 vs 实测逐项相等，`fm_predict check` rc=0
+
+| 目标 | proof commit / evidence | 实测 passing | constant_reg | unread | 判决 | 差额 |
+|---|---|---|---|---|---|---|
+| BoothEncoderF64F32F16 | a757ff84032a | 2889 | 0 | 0 | SUCCEEDED | +0 |
+| BoothEncoderF64F32F16_3 | a757ff84032a | 2889 | 0 | 0 | SUCCEEDED | +0 |
+| BlockCipherModule | a757ff84032a | 630 | 0 | 0 | SUCCEEDED | +0 |
+| ExceptionGen | a757ff84032a | 718 | 0 | 0 | SUCCEEDED | +0 |
+| CtrlBlock | a757ff84032a（36035 s，10.0 h） | 324714 | 3244 | ref 16（dead_ref） | PASS_DEAD_REF | +0 |
+| CSA_Nto2With3to2MainPipeline | 6a3028fdc3f3（第 2 轮） | 638 | 4 | 0 | SUCCEEDED | +0 |
+| FloatFMA | 6a3028fdc3f3 | 1600 | 105 | 0 | SUCCEEDED | +0 |
+| FMA | 6a3028fdc3f3 | 4188 | 105 | 0 | SUCCEEDED | +0 |
+| VectorFloatFMA | 6a3028fdc3f3 | 1735 | 103 | 0 | SUCCEEDED | +0 |
+| Bku | 6a3028fdc3f3 | 3423 | 456 | 0（vmucp 开） | SUCCEEDED | +0 |
+
+全部 failing / unmatched 0，dont_verify / elab147 皆假，黑盒输出 0（CtrlBlock 沿用既有 3 种存储叶子接口黑盒）。
+第 1 轮的 CSA/FloatFMA/FMA/VectorFloatFMA（a757ff84032a）同数 SUCCEEDED，被第 2 轮取代；
+Bku 第 1 轮（a757ff84032a）因 Makefile 没开 vmucp 判 PARTIAL（native SUCCEEDED、unread 20），
+开 vmucp 后 7ada6dcce967 = 3423（正好 +20），第 2 轮 6a3028fdc3f3 同数。均留作记录。
+CtrlBlock 的 impl 闭包在 a757ff840..HEAD 之间无改动（合 main 未触及），receipt 现行。
+
+### B. UT（scratchpad ut9/*/summary.txt；第 2 轮在 6a3028fdc 字节上复跑）
+
+| UT | 档位 | 结果 |
+|---|---|---|
+| BoothEncoderF64F32F16 / _3 | 3 seed × {0, random, <seed>017} | 9/9 + 9/9 PASSED，各 5,399,784 checks，errors 0 |
+| CSA_Nto2With3to2MainPipeline | 同上 | 9/9 PASSED，399,984 checks，errors 0 |
+| FloatFMA | 同上 | 9/9 PASSED，399,976 checks；oracle 每档约 14 万次判 golden、errors 0 |
+| BlockCipherModule | 同上 | 9/9 PASSED，199,992 checks；oracle 约 12 万次、标准向量 8/8、S 盒自检 768/768 |
+| ExceptionGen | 同上 | 9/9 PASSED，1,019,235 checks |
+| VectorFloatFMA | 同上 | 9/9 PASSED |
+| FMA | 3 seed × initreg {0, 1} | 6/6 PASSED（initreg 机制本 lane 新接，理由见 verif/ut/FMA/Makefile） |
+| Bku | 3 seed（既有口径） | 3/3 PASSED |
+| CtrlBlock | 3 seed × {+vcs+initreg+0, +1} | 6/6 PASSED，1,345,793,271 checks/档 |
