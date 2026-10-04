@@ -1,0 +1,9 @@
+{
+  "target": "VFDivSqrt",
+  "ut": "VFDivSqrt",
+  "regs": 2976,
+  "outs": 796,
+  "expected": 3772,
+  "merge_dup": "false",
+  "model_applicable": true
+}

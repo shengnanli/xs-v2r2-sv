@@ -305,6 +305,48 @@ oracle（归约照抄 verif/ut/Reduction 的整数语义参考 + vmv.x.s 符号�
 
 没有做过任何 FM 试跑。
 
+## 8. VFDivSqrt（golden 553 行；重写 452 行 + 共享辅助件 xs_VecFflagsElemMask 59 行）
+
+### 8.1 结构与子模块处置
+
+- VecNonPipedFuncUnit 外壳（同 VIDiv 一类）：`xs_VFDivSqrt_core`（§1 保持旁路 / §2 冲刷 / §3 两个 VectorFloatDivider / §4 Mgu 与 fflags 合并 /
+  §5 出口锁存）+ wrapper。保持旁路寄存器名与 golden 同名（outCtrl_r_* / outData_r_*）。
+- 新建共享辅助件 `rtl/common/xs_VecFflagsElemMask.sv`（VFDivSqrt / VFMA / VFAlu 共用；golden 里由 VecFuncUnit 内联、无对应模块）：
+  按 eew / vlmul / uop / vl / 掩码算出 8 组 fflags 里哪些计入。纯组合。
+- child 全部两侧白盒：VectorFloatDivider ×2（evidence/6038c4afbc60）+ 闭包、VecDataSplitModule ×2（本 lane §A）、Mgu（evidence/d09e1997840f）+ 闭包。
+- vmucp：outCtrl_r_vpu_vuopIdx[6:3] 4 位（只读 [2:0]），配置 verif/fm_target_config/VFDivSqrt.tcl。
+
+### 8.2 UT（9 档 × 200k，commit 54eaace12 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+按元素 IEEE oracle（除法 / 开方照抄 VectorFloatDivider UT；Mgu 的 mask / tail / vstart / vstart>=vl 与 fflags 元素选择按 RVV 语义独立建模；
+只对合法 RVV 配置——Mgu 的字节计数 vl<<SEW 截 8 位，非法 vl 无 RVV 语义）全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 10529
+（除 5368 / 开方 5161；SEW16/32/64 = 3914/3516/3099），掩码关 5372、尾部 ta0/1 = 10296/9902、vstart 前部 1793、vstart>=vl 9780、分数 LMUL 2658、
+flush 打断 840、反压 6361、违规发起 2902。
+变异（scratchpad，20k 拍）：去掉 Mgu 前的清掩码 ⇒ errors=364；out_valid 与改或 ⇒ 132；fflags 摊位 e32 错 ⇒ 104；掩码窗口用 vlMaxThisUop ⇒ 9；
+★UT 抓不到★：冲刷的「level=1 且就是这条」分支去掉（20k 拍 errors=0）——需要冲刷 robIdx 与在途 uop 完全相等且 level=1，随机激励
+命中率约 1/(150·512·2)，归 FM。
+
+### 8.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VFDivSqrt.json）
+
+模型 expected = 3772（寄存器 2976 = 外壳 968 + VectorFloatDivider 1004×2；输出 796）。预期 constant reg **2**（两个 VectorFloatDivider
+各 1，同其自签核）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **3770** |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 2 |
+| 黑盒 / dont_verify | 无 / 无 |
+
+没有做过任何 FM 试跑。可能出错处：两个同构 VectorFloatDivider 子实例在签名分析里混淆（同 §G 的现象）——若 unmatched，补匹配前钉点，不改 RTL。
+
 ## 对账（跑完追加）
 
 ### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule
