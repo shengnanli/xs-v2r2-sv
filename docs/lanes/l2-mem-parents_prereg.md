@@ -166,3 +166,14 @@
   按规范（共享脚本不许 lane 改）停在这里：需集成者让该条目接受「DCache 实例在上层父级里」的路径（MemBlock 将同样踩到），
   之后原样重跑 `TMPDIR=/home/eda/xs-env/tmp-l2memparents PROOF_COMMIT=b491b909e262 bash scripts/run_proof.sh DCacheWrapper DCacheWrapper < /dev/null` 即可。
 - receipt：evidence/b491b909e262/DCacheWrapper/receipt.json sha256 16f2764697b8ddab866e4c691c1e86bef1d39c2c179e2f9fddff49fe627c96e8（verdict PARTIAL，留档）。
+
+### DCacheWrapper 重跑（codex 0213 后，证明 commit 844a80f26d1e）—— SUCCEEDED
+
+- 改动：scripts/fm_verdict.py 的 DISABLED_EMPTY_MODULES 改为逐 top 精确绝对路径表（DCache 原 4 对象 + DCacheWrapper/dcache/stu_{0,1} 两侧 4 对象），
+  0206 D2 其余条件不变；scripts/test_disabled_empty_module.py 2 正样本 + 28 负测全过（原 P0/N1–N14 不变）。
+- FM：native SUCCEEDED，validator SUCCEEDED；passing 82170、failing 0、unverified 0、unmatched 0、unread 0、constant_reg 807、
+  黑盒对象 84（同 DCache），无 dont_verify；钉点 13157/13157。
+- 守恒：模型 82977 = passing 82170 + constant_reg 807，`fm_predict.py check DCacheWrapper` rc=0。登记时手算的 82566 预测错（−396 常量寄存器），
+  按 codex 0213 不要求逐项核实。
+- receipt：evidence/844a80f26d1e/DCacheWrapper/receipt.json
+  sha256 eee24f52f05c0e94b345cc45d9191349b3c6a5c9367ff2556ddc9d5d4357d7ec
