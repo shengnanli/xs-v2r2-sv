@@ -68,3 +68,19 @@ M5 是等价变异（单条赋值，阻塞/非阻塞在锁存器里行为相同�
 ## 2. 父级批量重证
 
 见本文件后续分节（公共 filelist / 生成器改为 impl 读 rtl/common/ClockGate.sv 之后登记）。
+
+## 对账（ClockGate standalone，run `bef96c62cc68`）
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| verdict | SUCCEEDED | **SUCCEEDED**（signoff-strict，native SUCCEEDED） |
+| passing | 1 | **2** = LAT 1 + Port 1（DFF 0 / Cut 0 / Loop 0 / BBPin 0） |
+| failing / unverified / aborted / unread / unmatched | 0 | 0 / 0 / 0 / 0（unread_points.txt 空）/ 0(0) |
+| 黑盒 / dont_verify | 无 | 无 / 无 |
+
+差额 +1 逐项指认：模型的 outs=0 把输出 Q 当成时钟网不建比较点（§1.4 第 2 条的猜测），
+实际 Formality **为 Q 建了 Port 比较点**（按名配上）；锁存器 EN↔enableLatched 是
+**LAT 类比较点**（签名分析配上），未被识别为 cut point。即 Q 与锁存器两者都在比较覆盖内。
+3 个输入 TE/E/CK 全部配上。11 秒跑完。
+
+复跑：`bash scripts/run_proof.sh ClockGate ClockGate < /dev/null`
