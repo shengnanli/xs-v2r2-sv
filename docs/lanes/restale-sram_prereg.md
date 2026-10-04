@@ -410,7 +410,7 @@ Predictor 的 fm_predict 模型给 44750（标"模型适用"），与旧 receipt
 
 ### 4.2 结论与异常
 
-- 124 份 receipt（P1 23 + P2 101；P2 含 Predictor）全部**等于预测**：passing 差 0、verdict 不变、failing/unverified/aborted/unmatched=0、unread_impl=0；PASS_DEAD_REF 目标 golden-only unread_ref 不变（FTB/FTBBank 50、TageTable×4 48、Tage_SC 192）。
+- 125 份 receipt（P1 23 + P2 102；P2 含 Predictor 与首证 SRAMTemplate_128）全部**等于预测**：passing 差 0、verdict 不变、failing/unverified/aborted/unmatched=0、unread_impl=0；PASS_DEAD_REF 目标 golden-only unread_ref 不变（FTB/FTBBank 50、TageTable×4 48、Tage_SC 192）。
 - D1（删 rdata_last_REG）与 ClockGate 换本地件，对父级 passing 均**无影响**。
 - ★Composer 未出证（make_rc=1，非 FM 判定）★：`verif/ut/Composer/fm_pins_pre.tcl` 32 条钉点（来源 `child_pairs/Tage_SC.tsv`，c3c9307d6 从旧 Tage_SC 自证收割）的 impl 侧写死 golden ClockGate 的内部名 `.../rcg/CG/EN_reg`；重写件 `rtl/common/ClockGate.sv` 的锁存器叫 `enableLatched` ⇒ FM-036 Unknown name ×32 ⇒ BPU_CHILD_PIN_FAIL ⇒ 没有 sidecar、没有 receipt。首个最小反例：`r:/WORK/Composer/tage/bt/bt_0/array/array_0_0_0/rcg/CG/EN_reg <-> i:/WORK/Composer/tage/bt/u_core/g_bank[0].bt/array/array_0_0_0/rcg/CG/EN_reg`。本 lane 不改钉点（属 bpu-tables 生成物），Composer 仍 STALE。
 - SRAMTemplate_128 是首证（之前没有已跟踪 receipt），实测 2507 = fastlane 记录。
