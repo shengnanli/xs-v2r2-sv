@@ -125,3 +125,12 @@ unread 0（每个 ram 位都有出队端口读，生成器现算 0 个未读位�
 其余预期：native SUCCEEDED，failing/unverified/aborted/unread/unmatched 全 0，黑盒恰为声明的两侧各 1 个 ram_ext。
 可能出错：Queue40 的 W0_data 常量段（4 位恒 0）作黑盒输入引脚，FM 可能判常量不计点——若 passing 少，先核对
 constant_reg（L2TlbMissQueue 先例同结构 125==模型，预计无差）。
+
+### 5.1 对账（证明 commit `3afabfed1`，evidence/3afabfed181d，追加于跑后）
+
+| 目标 | 预测 | 实测 | 其余 |
+|---|---|---|---|
+| Queue78_PCrdGranted | 65 | 65 | native SUCCEEDED；failing/unverified/aborted/unread_notcompared 0；unmatched 全 0；matched 黑盒恰 1 对 ram_ext；无 dont_verify/ELAB-147/放宽 appvar |
+| Queue40_L2TlbMQBundle | 125 | 125 | 同上（黑盒对 r:/…/ram_ext ↔ i:/…/u_core/ram_ext） |
+
+`fm_predict.py check` 全部对上；§5「可能出错」的 constant_reg 担心未发生。
