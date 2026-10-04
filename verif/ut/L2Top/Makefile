@@ -3,7 +3,9 @@ MODULE = L2Top
 # L2Top：香山 Tile 里 L2 那一层的装配壳（src/main/scala/xiangshan/L2Top.scala）。
 # impl = rtl/l2/L2Top.sv（手写核 xs_L2Top_core + scripts/gen_l2top.py 生成的 golden 同名 wrapper，21 个 child 实例名同 golden）。
 # child 全部 PROVEN_DIRECT，两侧白盒：ref 读 golden，impl 读本仓重写件（含 TL2CHICoupledL2 的整个闭包）。
-# 两侧共读同一份 golden 的只有行为级存储模型（SHARED_GOLDEN）与本地重写的 ClockGate（codex 0208）。
+# 两侧共读同一份 golden 的：行为级存储模型、本地重写的 ClockGate（codex 0208），以及与已签 child 证明同配置的几个队列
+# （Slice 签核时 TXREQ/TXRSP 内的 Queue16_CHIREQ/CHIRSP、TLBuffer_20/22/6/8 签核时的 Queue2_TLBundle*）——两侧闭包必须与
+# child 证明逐模块一致，child 的 FM 配对（verif/ut/TL2CHICoupledL2/child_pairs.tsv）才对得上。全在 SHARED_GOLDEN。
 # FM 两侧都不给（= 对称黑盒）的：厂商 SRAM 叶子 array_13..18_ext（vendor_boundary 已审定），以及
 #   ram_10x89（inner_l2cache 的 4 个 Slice 的 GrantBuffer.pftRespQueue）/ ram_78x15（inner_l2cache.pCrdQueue_s2）——
 #   这两个 APPROVED_MEMORY_MACRO_MODEL 的授权父级目前不含 L2Top（codex 0202/0206/0210），**本目标的正式 FM 待 codex 扩授权后再跑**。
@@ -11,11 +13,11 @@ RTL_DIR  = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/uncore/uncore_common_pkg.sv $(RTL_DIR)/l2/L2Top.sv \
            $(RTL_DIR)/common/DelayNWithValid_203.sv $(RTL_DIR)/common/xs_DelayNWithValid_core.sv \
            $(RTL_DIR)/common/DelayN_334.sv $(RTL_DIR)/common/xs_DelayN_core.sv \
-           $(RTL_DIR)/memblock/TLBuffer_22.sv $(RTL_DIR)/uncore/Queue2_TLBundleD_11.sv \
-           $(RTL_DIR)/common/xs_ChiselQueue_core.sv $(RTL_DIR)/uncore/Queue2_TLBundleA_31.sv \
+           $(RTL_DIR)/memblock/TLBuffer_22.sv \
+           $(RTL_DIR)/common/xs_ChiselQueue_core.sv \
            $(RTL_DIR)/memblock/xs_TLBuffer_ad_core.sv $(RTL_DIR)/memblock/TLBuffer_20.sv \
-           $(RTL_DIR)/uncore/Queue2_TLBundleA_10.sv $(RTL_DIR)/memblock/TLBuffer_8.sv \
-           $(RTL_DIR)/uncore/Queue2_TLBundleD_15.sv $(RTL_DIR)/uncore/Queue2_TLBundleA_14.sv \
+           $(RTL_DIR)/memblock/TLBuffer_8.sv \
+           \
            $(RTL_DIR)/memblock/TLBuffer_15.sv $(RTL_DIR)/uncore/Queue2_TLBundleD_13.sv \
            $(RTL_DIR)/uncore/Queue2_TLBundleA_12.sv $(RTL_DIR)/uncore/TL2CHICoupledL2.sv \
            $(RTL_DIR)/uncore/Pipeline_13.sv $(RTL_DIR)/uncore/Queue1_CHIRSP.sv \
@@ -56,9 +58,9 @@ RTL_SRCS = $(RTL_DIR)/uncore/uncore_common_pkg.sv $(RTL_DIR)/l2/L2Top.sv \
            $(RTL_DIR)/uncore/Queue16_HintQueueEntry.sv $(RTL_DIR)/uncore/RequestArb.sv \
            $(RTL_DIR)/uncore/MSHRBuffer_1.sv $(RTL_DIR)/uncore/MSHRBuffer.sv $(RTL_DIR)/uncore/RXRSP.sv \
            $(RTL_DIR)/uncore/RXDAT.sv $(RTL_DIR)/uncore/RXSNP.sv $(RTL_DIR)/uncore/Queue2_CHISNP.sv \
-           $(RTL_DIR)/uncore/TXRSP.sv $(RTL_DIR)/uncore/Queue16_CHIRSP.sv $(RTL_DIR)/uncore/TXDAT.sv \
+           $(RTL_DIR)/uncore/TXRSP.sv $(RTL_DIR)/uncore/TXDAT.sv \
            $(RTL_DIR)/uncore/Queue16_DSBeat.sv $(RTL_DIR)/uncore/Queue16_TaskBundle.sv \
-           $(RTL_DIR)/uncore/TXREQ.sv $(RTL_DIR)/uncore/Queue16_CHIREQ.sv $(RTL_DIR)/uncore/GrantBuffer.sv \
+           $(RTL_DIR)/uncore/TXREQ.sv $(RTL_DIR)/uncore/GrantBuffer.sv \
            $(RTL_DIR)/uncore/Queue10_GrantBuffer_Anon.sv $(RTL_DIR)/uncore/Queue16_GrantQueueData.sv \
            $(RTL_DIR)/uncore/Queue16_GrantQueueTask.sv $(RTL_DIR)/uncore/SinkC.sv \
            $(RTL_DIR)/common/RRArbiterInit_16.sv $(RTL_DIR)/uncore/SinkA.sv $(RTL_DIR)/uncore/Slice_2.sv \
@@ -93,8 +95,8 @@ RTL_SRCS = $(RTL_DIR)/uncore/uncore_common_pkg.sv $(RTL_DIR)/l2/L2Top.sv \
            $(RTL_DIR)/uncore/MMIOBridgeEntry_8.sv $(RTL_DIR)/uncore/xs_MMIOBridgeEntry_core.sv \
            $(RTL_DIR)/uncore/MMIOBridgeEntry_4.sv $(RTL_DIR)/uncore/MMIOBridgeEntry_2.sv \
            $(RTL_DIR)/uncore/MMIOBridgeEntry.sv $(RTL_DIR)/backend/IntBuffer.sv \
-           $(RTL_DIR)/memblock/TLBuffer_6.sv $(RTL_DIR)/uncore/Queue2_TLBundleD_7.sv \
-           $(RTL_DIR)/uncore/Queue2_TLBundleA_6.sv $(RTL_DIR)/uncore/TLLogger_2.sv \
+           $(RTL_DIR)/memblock/TLBuffer_6.sv \
+           $(RTL_DIR)/uncore/TLLogger_2.sv \
            $(RTL_DIR)/uncore/TLLogger_1.sv $(RTL_DIR)/uncore/TLLogger.sv $(RTL_DIR)/memblock/TLBuffer_13.sv \
            $(RTL_DIR)/uncore/Queue2_TLBundleE_1.sv $(RTL_DIR)/uncore/Queue2_TLBundleC_1.sv \
            $(RTL_DIR)/uncore/Queue2_TLBundleB_1.sv $(RTL_DIR)/uncore/Queue2_TLBundleD_20.sv \
@@ -102,7 +104,8 @@ RTL_SRCS = $(RTL_DIR)/uncore/uncore_common_pkg.sv $(RTL_DIR)/l2/L2Top.sv \
            $(RTL_DIR)/l2/BusErrorUnit.sv $(RTL_DIR)/uncore/TLXbar_6.sv \
            $(RTL_DIR)/common/xs_TLArbiterRoundRobin.sv $(RTL_DIR)/uncore/TLXbar_5.sv
 
-SHARED_GOLDEN = array_13.sv array_14.sv array_15.sv array_16.sv array_17.sv array_18.sv ram_16x11.sv \
+SHARED_GOLDEN = Queue16_CHIREQ.sv Queue16_CHIRSP.sv Queue2_TLBundleA_10.sv Queue2_TLBundleD_11.sv Queue2_TLBundleA_31.sv Queue2_TLBundleA_6.sv Queue2_TLBundleD_7.sv Queue2_TLBundleA_14.sv Queue2_TLBundleD_15.sv \
+                array_13.sv array_14.sv array_15.sv array_16.sv array_17.sv array_18.sv ram_16x11.sv \
                 ram_16x137.sv ram_16x25.sv ram_16x62.sv ram_16x67.sv ram_2x117.sv ram_2x119.sv ram_2x133.sv \
                 ram_2x136.sv ram_2x137.sv ram_2x15.sv ram_2x281.sv ram_2x283.sv ram_2x321.sv ram_2x352.sv \
                 ram_2x356.sv ram_2x76.sv ram_2x79.sv ram_2x80.sv ram_2x98.sv ram_4x11.sv ram_4x115.sv \
