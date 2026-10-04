@@ -161,3 +161,13 @@ UT 抓不到：s2 只从 s1 取值、s1 只在 fire 后变，恒开使能在可�
 | 目标 | 模型 expected | 诊断 passing / constant / unread | 预测 passing | vmucp |
 |---|---|---|---|---|
 | ExeUnit_5 | 3505（1481 + 2024） | 3505 / 0 / 0 | **3505** | 否 |
+
+2.3.C / 2.4.C（第三批：ExeUnit_10）
+
+| 目标 | 9 档 errors | 每档 checks | 覆盖（seed 1） |
+|---|---|---|---|
+| ExeUnit_10 | 全 0 | 4,799,496 | in {49297, 51250} / out {48014, 43831} / 反压 8086 / 冲刷 16513 / 未命中 18071 / 门控开 275261 关 124713 |
+
+| 目标 | 模型 expected | 诊断 passing / constant / unread | 预测 passing | vmucp |
+|---|---|---|---|---|
+| ExeUnit_10 | 6501（5641 + 860） | 6224 / 272 / 5 | **6229**（+5） | 是（verif/fm_target_config/ExeUnit_10.tcl） |
