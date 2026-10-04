@@ -399,3 +399,40 @@ merge_dup=false：ITTageTable 682 / _1 682 / _2 1014 / _3 1014 / _4 1014 / TageB
 
 上表 SCTable×4 / Tage_SC 取代前一张对账表里 `1b420e20` / `312a5d35` 那几份（sctable_pkg 搬文件后 STALE）。
 复跑：`PROOF_COMMIT=9cc9c9c74 bash scripts/run_proof.sh Composer Composer < /dev/null`。
+
+## 10. 钉点静默落空修正与重证（2026-10-04，集成者报；merge main `cdb0e122` 之后）
+
+### 10.1 问题（集成者发现，lane 自查确认）
+- ITTage receipt（evidence/68bffe7f2938/ITTage）的 fm.log 有 250 行行首 `Error: Unknown name`：钉点里
+  `u_core/upd_tgt_off_q_reg[i][5+位]` / `upd_old_off_q_reg[i][5+位]`（ittage_offset_t 结构体字段按打平位号写）FM 不认，
+  FM 实际名是 `upd_tgt_off_q_reg[i]\[offset][位]` / `\[pointer][位]` / `\[usePCRegion]`。
+- 钉点模板用 `catch` 计数，而 set_user_match 遇坏名不抛异常只返回 0（CONVENTIONS 已有此条，我写生成器时没照做），于是 3301 次里实生效 3051、
+  脚本照样打印 3301/3301。FM 靠签名自己把这 250 位配上了，结论仍 SUCCEEDED，但钉点自证失效。
+- 自查其余三份同源钉点（FauFTB / Tage_SC / Composer 的 receipt）：fm.log 行首 Error 均为 0（Composer 子实例区用的是 FM 报告里的原名）。
+  但三份模板同样是 catch 计数（Composer 本层 601 位那段手写区也是），一并改。
+
+### 10.2 修法
+- `scripts/gen_bpu_stagepc_pins.py`：结构体字段寄存器按 FM 实际名生成；运行期按 set_user_match **返回值**计数（`catch` 只兜底真异常），
+  成功数必须等于字面总数否则 error。重新生成四份钉点文件（ITTage 250 行名字变化 + 四份计数模板）。
+- `verif/ut/Composer/fm_pins_pre.tcl` 手写区（本层 601 位）同样改为返回值计数；`check_pin_bijection.py` 601↔601 双射不变。
+- RTL 未改一字节；UT 不受影响（钉点只进 FM）。
+
+### 10.3 跑前预测（★跑完不许改本节★）
+| 目标 | passing | verdict | 钉点打印 | fm.log 行首 Error / Unknown name |
+|---|---|---|---|---|
+| FauFTB | 5660 | SUCCEEDED | BPU_PINS 400 / 400 | 0 / 0 |
+| ITTage | 10426 | SUCCEEDED | BPU_PINS 3301 / 3301 | 0 / 0 |
+| Tage_SC | 16112（unread 192 ref = dead_ref） | PASS_DEAD_REF | BPU_PINS 2843 / 2843 | 0 / 0 |
+| Composer | 42060（unread 192 ref = dead_ref） | PASS_DEAD_REF | COMPOSER_PINS 601 / 601，BPU_CHILD_PINS 23083 / 23083 | 0 / 0 |
+其余项同 §4.4 / §5.4 / §6.4 / §9.4（failing/unverified/aborted 0、unmatched 0、黑盒仅厂商叶子、merge_dup false、vmucp true）。
+
+# 对账（续 2）：§10 重证（proof commit `335a330a`，证据 evidence/335a330a9baa/；§10.3 未改一字）
+| 目标 | 预测 → 实测 passing | verdict | 钉点（打印 / fm.log「Set a match」行数） | fm.log 行首 Error / Unknown name | receipt sha256 |
+|---|---|---|---|---|---|
+| FauFTB | 5660 → 5660 | SUCCEEDED | 400/400 / 400 | 0 / 0 | `f2416cb8551aec4dfa0f907c052e15c4d900e4f102b7ea4b4d19dd69e0316a4e` |
+| ITTage | 10426 → 10426 | SUCCEEDED | 3301/3301 / 3301 | 0 / 0 | `4463d24bc528d595b794f51a0b9ea565b1e46349cc239303672841bcf5eeba13` |
+| Tage_SC | 16112 → 16112（unread 192 = dead_ref） | PASS_DEAD_REF | 2843/2843 / 2843 | 0 / 0 | `732fcc36226c529285dc4fc41ac5c41a1434cef43a4b34e1f9c5fbeb32533200` |
+| Composer | 42060 → 42060（unread 192 = dead_ref） | PASS_DEAD_REF | 601/601 + 23083/23083 / 23684 | 0 / 0 | `87976b3ac62d3f362bf39a560d9aa4e77d680ce51c11aa03db3ab3c248f9490d` |
+
+本表取代此前 cee28122 / 68bffe7f / 05394ca2(Tage_SC) / 9cc9c9c7 四份 receipt（钉点脚本字节变化，按规则 STALE）。fm_predict check 全部对上。
+复跑：`PROOF_COMMIT=335a330a9 bash scripts/run_proof.sh <FauFTB|ITTage|Tage_SC|Composer> <同名> < /dev/null`。

@@ -2851,9 +2851,10 @@ if {$top eq "Tage_SC"} {
   foreach _p $_pairs {
     set _r "r:/WORK/$top/[lindex $_p 0]"
     set _i "i:/WORK/$top/[lindex $_p 1]"
-    if {[catch {set_user_match $_r $_i} _msg]} {
+    # set_user_match 遇坏名不抛异常、返回 0（CONVENTIONS）：按返回值计数，catch 只兜底真异常
+    if {[catch {set_user_match $_r $_i} _rv] || $_rv != 1} {
       incr _miss
-      if {$_miss <= 10} { puts "BPU_PIN_FAIL: $_r <-> $_i ($_msg)" }
+      if {$_miss <= 10} { puts "BPU_PIN_FAIL: $_r <-> $_i ($_rv)" }
     } else {
       incr _n
     }
