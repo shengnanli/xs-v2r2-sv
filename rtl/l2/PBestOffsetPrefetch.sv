@@ -24,7 +24,7 @@
 //   * Scala 还有 delayQueue.io.in.ready 一项，DelayQueue 恒 ready，firtool 已折掉。
 //   * io_resp（预取回填响应）只用到 ready：io_resp_ready = rrTable.io_w_ready；io_resp_valid 仅进
 //     perf 计数，综合视图零扇出。
-//   * golden 里大量 _GEN_n（prefetchOffset == 常数）是被删掉的 perf 计数器残骸，零扇出，不照抄。
+//   * golden 里大量"prefetchOffset == 常数"的比较线是被删掉的 perf 计数器残骸，零扇出，不照抄。
 //
 // child（实例名与 golden 一致，均已签核，两侧白盒）：
 //   delayQueue = DelayQueue（rtl/l2/DelayQueue.sv）

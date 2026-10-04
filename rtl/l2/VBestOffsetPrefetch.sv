@@ -21,7 +21,7 @@
 //     而 reqFilter.io_in_req 没有 ready，s1 一旦 s1_ready 就当作已交付。
 //   * Scala 的 s0_fire 还与 io.pbopCrossPage 相与，golden 里该输入已被常量折掉（恒 1），本层不出现。
 //   * s0_ready / io.train.ready 与 io.tlb_req.resp.ready 在 golden 里无端口（父级未用，firtool 已删）。
-//   * golden 里大量 _GEN_n（prefetchOffset == 常数）是被删掉的 perf 计数器残骸，零扇出，不照抄；
+//   * golden 里大量"prefetchOffset == 常数"的比较线是被删掉的 perf 计数器残骸，零扇出，不照抄；
 //     io_resp_valid 同理只进 perf，零扇出。
 //
 // child（实例名与 golden 一致，均已签核，两侧白盒）：

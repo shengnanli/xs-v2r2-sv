@@ -1,0 +1,18 @@
+{
+  "target": "PBestOffsetPrefetch",
+  "ut": "PBestOffsetPrefetch",
+  "regs": 1176,
+  "outs": 110,
+  "expected": 1310,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 24,
+  "bbox": {
+    "array_13_ext": {
+      "insts": 1,
+      "in_bits": 24,
+      "points": 24
+    }
+  },
+  "note": "lane 内 diagnostic-full 诊断跑（关 vmucp、无钉点）passing 957 + unmatched unread 353 对；钉 353 + vmucp 后预期 = 模型 1310"
+}
