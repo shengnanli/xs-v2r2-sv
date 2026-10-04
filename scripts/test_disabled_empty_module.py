@@ -9,6 +9,10 @@
   N11 父级 unmatched≠0             N12 父级 native 不是 SUCCEEDED  N13 父级有 dont_verify
   N14 golden 侧有 output 口（直接测模块正文判据，sha 闸之外的第二道）
 正样本 P0：真实 golden 文件 + 本仓 HEAD 的 rtl/memblock/StorePipe.sv 必须通过。
+codex 0213（逐 top 精确路径表）：P1 DCacheWrapper/dcache/stu_{0,1} 必须通过；
+  N15 缺 dcache 中间层  N16 插入额外层  N17/N18 错误实例名  N19/N20 MemBlock 冒充 DCacheWrapper / MemBlock 真实形状未入表
+  N21/N22 任一侧少对象  N23 多一个后缀冒充对象  N24 side 与路径前缀不符  N25 属性 u
+  N26 父级 unverified≠0  N27 golden sha 不符  N28 DCache 顶层用 DCW 式中间层 —— 全部判红。
 用法: python3 scripts/test_disabled_empty_module.py
 """
 import os
@@ -25,9 +29,14 @@ GOLD = open(os.path.join(G1, 'golden-rtl', 'StorePipe.sv'), 'rb').read().decode(
 IMPL = subprocess.check_output(['git', '-C', REPO, 'show', 'HEAD:rtl/memblock/StorePipe.sv']).decode()
 
 
-def ents(top='DCache', design='StorePipe', insts=('stu_0', 'stu_1'), attr='e'):
-    keys = {(sd, design, f'{sd}:/WORK/{top}/{i}') for sd in ('r', 'i') for i in insts}
+def ents(top='DCache', design='StorePipe', insts=('stu_0', 'stu_1'), attr='e', mid=''):
+    keys = {(sd, design, f'{sd}:/WORK/{top}/{mid}{i}') for sd in ('r', 'i') for i in insts}
     return keys, {k: attr for k in keys}
+
+
+def drop(keys, attrs, side, inst):
+    k = {x for x in keys if not (x[0] == side and x[2].endswith('/' + inst))}
+    return k, {x: attrs[x] for x in k}
 
 
 def decl_of(keys, cls='disabled_empty_module'):
@@ -91,6 +100,39 @@ def main():
         GOLD.replace('  input io_lsu_req_valid\n);', '  input io_lsu_req_valid,\n  output o\n);'),
         'StorePipe'))
     cases.append(('N14 golden 正文有 output', gout or True, False))
+    # ---- codex 0213：DCacheWrapper 祖先（逐 top 精确绝对路径表）----
+    kw, aw = ents(top='DCacheWrapper', mid='dcache/')
+    cases.append(('P1 DCacheWrapper/dcache/stu_*', run(kw, aw, top='DCacheWrapper'), True))
+    k, a = ents(top='DCacheWrapper')
+    cases.append(('N15 DCW 缺 dcache 中间层', run(k, a, top='DCacheWrapper'), False))
+    k, a = ents(top='DCacheWrapper', mid='dcache/x/')
+    cases.append(('N16 DCW 插入额外层', run(k, a, top='DCacheWrapper'), False))
+    k, a = ents(top='DCacheWrapper', mid='dcache2/')
+    cases.append(('N17 DCW 错误实例名 dcache2', run(k, a, top='DCacheWrapper'), False))
+    k, a = ents(top='DCacheWrapper', mid='dcache/', insts=('stu_0', 'stu_2'))
+    cases.append(('N18 DCW 错误 stu 实例名', run(k, a, top='DCacheWrapper'), False))
+    k, a = ents(top='MemBlock', mid='dcache/')
+    cases.append(('N19 MemBlock 冒充（同相对路径）', run(k, a, top='MemBlock'), False))
+    k, a = ents(top='MemBlock', mid='dcacheWrapper/dcache/')
+    cases.append(('N20 MemBlock 真实形状但未入表', run(k, a, top='MemBlock'), False))
+    k, a = drop(kw, aw, 'r', 'stu_1')
+    cases.append(('N21 DCW ref 侧少 stu_1', run(k, a, top='DCacheWrapper'), False))
+    k, a = drop(kw, aw, 'i', 'stu_0')
+    cases.append(('N22 DCW impl 侧少 stu_0', run(k, a, top='DCacheWrapper'), False))
+    k = kw | {('i', 'StorePipe', 'i:/WORK/DCacheWrapper/dcache/stu_0/x')}
+    a = {x: 'e' for x in k}
+    cases.append(('N23 DCW 多一个对象（后缀冒充）', run(k, a, top='DCacheWrapper'), False))
+    swapped = {(('i' if sd == 'r' else 'r'), d, pth) for sd, d, pth in kw}
+    cases.append(('N24 DCW 声明 side 与路径前缀不符', F._assembly_bbox_check(
+        set(kw), aw, decl_of(swapped), top='DCacheWrapper', q=clean_q(),
+        _inject={'golden_text': {'StorePipe': GOLD}, 'impl_text': {'StorePipe': IMPL}}), False))
+    k, a = ents(top='DCacheWrapper', mid='dcache/', attr='u')
+    cases.append(('N25 DCW 属性 u 非 empty', run(k, a, top='DCacheWrapper'), False))
+    q = clean_q(); q['unverified'] = 3
+    cases.append(('N26 DCW 父级 unverified=3', run(kw, aw, top='DCacheWrapper', q=q), False))
+    cases.append(('N27 DCW golden sha 不符', run(kw, aw, top='DCacheWrapper', gold=GOLD + ' '), False))
+    k, a = ents(top='DCache', mid='dcache/')
+    cases.append(('N28 DCache 拿 DCW 式中间层', run(k, a), False))
     fails = []
     for name, r, want in cases:
         ok = (r is True) == want
@@ -100,7 +142,7 @@ def main():
     if fails:
         print(f'test_disabled_empty_module: ★{len(fails)} 条不过★ {fails}')
         return 1
-    print(f'test_disabled_empty_module: 全过（1 正样本 + {len(cases) - 1} 负测）')
+    print(f'test_disabled_empty_module: 全过（{sum(1 for c in cases if c[2])} 正样本 + {sum(1 for c in cases if not c[2])} 负测）')
     return 0
 
 
