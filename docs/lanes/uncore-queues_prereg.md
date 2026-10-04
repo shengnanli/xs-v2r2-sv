@@ -104,3 +104,24 @@ unread 0（每个 ram 位都有出队端口读，生成器现算 0 个未读位�
 - `scripts/check_lane_receipts.py /home/eda/xs-env/wt-uncore-queues` rc=0。
 
 未跑 FM：Queue78_PCrdGranted、Queue40_L2TlbMQBundle（ram 边界待 codex 裁定，见 §1）。
+
+## 5. 第 2 轮：Queue78_PCrdGranted / Queue40_L2TlbMQBundle（codex 0210 后；本节在 FM 之前提交，★跑完不改本节数字★）
+
+- 授权：codex 0210 R1（ram_78x15 单条审定，仅 Queue78_PCrdGranted，M3 impl 侧人工复核绑定共享核
+  `rtl/common/xs_ChiselQueue_core.sv` sha256 dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689，
+  已核实当前字节即此 sha）；R2（ram_40x47 父级扩到 Queue40_L2TlbMQBundle）。登记：commit `71c77c156`
+  （vendor_boundary.tsv 新行、ram_model_parents.tsv 第 5 列、audit_ram_memory_model.py MANUAL_REVIEW_*、
+  test_audit_ram_manual_review.py 3 正 12 负，`audit_ram_memory_model.py --check` 全部 AUDIT_PASS）。
+- FM 处置：regimeA 两侧对称黑盒（ram .sv 只进 GOLDEN_SRCS 供 VCS），`FM_MODE=assembly`、`FM_ALLOWLIST=1`，
+  verif/allow/<T>.json 只列两侧各 1 个 ram_ext（Queue78：r:/WORK/Queue78_PCrdGranted/ram_ext、i:/WORK/Queue78_PCrdGranted/ram_ext；
+  Queue40：r:/WORK/Queue40_L2TlbMQBundle/ram_ext、i:/WORK/Queue40_L2TlbMQBundle/u_core/ram_ext）。无 dont_verify / vmucp / pins。
+- UT：Makefile 改动后 UncoreChiQueues 9 档重跑全部 `checks=15000000 errors=0 TEST PASSED`（与 §2 同）。
+
+| 目标 | passing 预测 | 构成 |
+|---|---|---|
+| Queue78_PCrdGranted | **65** | regs 15（enq/deq 指针 7+7 + maybe_full）+ outs 17 + 黑盒输入引脚 33 |
+| Queue40_L2TlbMQBundle | **125** | regs 13（6+6+1）+ outs 49 + 黑盒输入引脚 63 |
+
+其余预期：native SUCCEEDED，failing/unverified/aborted/unread/unmatched 全 0，黑盒恰为声明的两侧各 1 个 ram_ext。
+可能出错：Queue40 的 W0_data 常量段（4 位恒 0）作黑盒输入引脚，FM 可能判常量不计点——若 passing 少，先核对
+constant_reg（L2TlbMissQueue 先例同结构 125==模型，预计无差）。
