@@ -112,3 +112,21 @@ unread 全是 Queue2 ram 里"写入但出口无人读"的字段位（D 的 param
   端口契约 `make -C verif/ut/DCacheLeaves portlint-fdp`。
 - 处置：照先例**不列 FM_VARIANTS、不出 receipt**；形式上无比较点（与 StorePipe 同类），正确性由端口契约 + 父级 DCache 闭包证明承担。
   本 lane 不需要新裁定。
+
+## 对账
+
+### 第一批：三个 FrontendBridge 缓冲 + MuxBundle（run_proof @ 3390b6ba，evidence/3390b6ba80a9/<目标>/）
+
+| 目标 | 预测 passing | 实测 passing | 差 | failing / unverified / unmatched / unread / 黑盒 / dont_verify | constant_reg | receipt.json sha256 |
+|---|---|---|---|---|---|---|
+| ICacheBuffer       | 2896 | **2896** | 0 | 0 / 0 / 0(0) / 0 / 无 / 无 | 307 | `b1572189e526bbc173a4aa6b24ff4ac5d1b58581c6a6b9da4c290fae5128e496` |
+| InstrUncacheBuffer | 889  | **889**  | 0 | 0 / 0 / 0(0) / 0 / 无 / 无 | 83  | `46bd4087f0e771fa62f0557fb7d4542d66b3df18834ed2041caff075f9553494` |
+| ICacheCtrlBuffer   | 992  | **992**  | 0 | 0 / 0 / 0(0) / 0 / 无 / 无 | 5   | `403b03056450c8cecb157dd516ef98243634ea467147751fa3b2bf870561961b` |
+| MuxBundle          | 71   | **71**   | 0 | 0 / 0 / 0(0) / 0 / 无 / 无 | 0   | `00d150bcaafdc9c86926fc1f61a7d5c80d78e94cd0953f020dcff63f67e006b8` |
+
+全部 native SUCCEEDED、signoff-strict 判 SUCCEEDED。vmucp 第 3 条：passing 2844→2896（+52）、612→889（+277）、976→992（+16），
+正好等于试跑 unread 数；unread 归 0。`python3 scripts/fm_predict.py check ICacheBuffer InstrUncacheBuffer ICacheCtrlBuffer MuxBundle`
+rc=0（模型 − 实测 = constant_reg，逐项指认）。
+
+复跑：`bash scripts/run_proof.sh FrontendBridgeBuffers ICacheBuffer InstrUncacheBuffer ICacheCtrlBuffer < /dev/null`；
+`bash scripts/run_proof.sh MuxBundle MuxBundle < /dev/null`。
