@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/SRAMTemplateWithFixedWidth
+Implementation : i:/WORK/SRAMTemplateWithFixedWidth
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 01:42:12 2026
+**************************************************
+
+No unverified compare points.
+
+1
