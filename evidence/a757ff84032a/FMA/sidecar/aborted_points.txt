@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FMA
+Implementation : i:/WORK/FMA
+Version        : V-2023.12-SP3
+Date           : Sat Oct  3 09:43:26 2026
+**************************************************
+
+No aborted compare points.
+
+1

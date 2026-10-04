@@ -1,0 +1,7 @@
+impl	i:/WORK/Slice_1/directory/metaArray/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Slice_1/directory/origin_bit_opt/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Slice_1/directory/replacer_sram_opt/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Slice_1/directory/tagArray/array_0_0_0/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Slice_1/directory/tagArray/array_0_0_1/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Slice_1/directory/tagArray/array_0_1_0/u_core/g_nomcp.rdata_last_REG_reg
+impl	i:/WORK/Slice_1/directory/tagArray/array_0_1_1/u_core/g_nomcp.rdata_last_REG_reg

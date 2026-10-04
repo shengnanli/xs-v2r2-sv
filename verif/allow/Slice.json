@@ -1,0 +1,175 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "Slice",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "objects": [
+  {
+   "side": "i",
+   "design": "array_14_ext",
+   "path": "i:/WORK/Slice/directory/tagArray/array_0_0_0/array/array/array_14_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_14_ext",
+   "path": "i:/WORK/Slice/directory/tagArray/array_0_0_1/array/array/array_14_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_14_ext",
+   "path": "i:/WORK/Slice/directory/tagArray/array_0_1_0/array/array/array_14_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_14_ext",
+   "path": "i:/WORK/Slice/directory/tagArray/array_0_1_1/array/array/array_14_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_15_ext",
+   "path": "i:/WORK/Slice/directory/metaArray/array/array/array_15_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_16_ext",
+   "path": "i:/WORK/Slice/directory/replacer_sram_opt/array/array/array_16_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_17_ext",
+   "path": "i:/WORK/Slice/directory/origin_bit_opt/array/array/array_17_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_18_ext",
+   "path": "i:/WORK/Slice/dataStorage/array/array_0_0_0/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_18_ext",
+   "path": "i:/WORK/Slice/dataStorage/array/array_0_0_1/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_18_ext",
+   "path": "i:/WORK/Slice/dataStorage/array/array_0_0_2/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_18_ext",
+   "path": "i:/WORK/Slice/dataStorage/array/array_0_0_3/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "ram_10x89",
+   "path": "i:/WORK/Slice/u_core/grantBuf/pftRespQueue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "array_14_ext",
+   "path": "r:/WORK/Slice/directory/tagArray/array_0_0_0/array/array/array_14_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_14_ext",
+   "path": "r:/WORK/Slice/directory/tagArray/array_0_0_1/array/array/array_14_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_14_ext",
+   "path": "r:/WORK/Slice/directory/tagArray/array_0_1_0/array/array/array_14_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_14_ext",
+   "path": "r:/WORK/Slice/directory/tagArray/array_0_1_1/array/array/array_14_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_15_ext",
+   "path": "r:/WORK/Slice/directory/metaArray/array/array/array_15_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_16_ext",
+   "path": "r:/WORK/Slice/directory/replacer_sram_opt/array/array/array_16_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_17_ext",
+   "path": "r:/WORK/Slice/directory/origin_bit_opt/array/array/array_17_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_18_ext",
+   "path": "r:/WORK/Slice/dataStorage/array/array_0_0_0/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_18_ext",
+   "path": "r:/WORK/Slice/dataStorage/array/array_0_0_1/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_18_ext",
+   "path": "r:/WORK/Slice/dataStorage/array/array_0_0_2/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_18_ext",
+   "path": "r:/WORK/Slice/dataStorage/array/array_0_0_3/array/array/array_18_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "ram_10x89",
+   "path": "r:/WORK/Slice/grantBuf/pftRespQueue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}

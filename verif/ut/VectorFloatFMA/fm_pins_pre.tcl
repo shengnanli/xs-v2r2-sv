@@ -4,8 +4,8 @@
 # set_user_match 只声明两点对应，比较照比：不约束 ref、不改 appvar、不加黑盒。
 # fail-closed：set_user_match 不抛异常（返回 0 = 没配上），所以逐条数返回值；
 # 拒一条或总数不等于字面整数（= golden 顶层 301 个寄存器的位数）就 error。
-# U_CSAnto2 内部的寄存器两侧同名，不钉。进 fm.log 的输出一律 ASCII。
-set ::VFMA_PIN_EXPECT 1326
+# 末尾 4 条是子模块 U_CSAnto2（重写件）的流水线寄存器。进 fm.log 的输出一律 ASCII。
+set ::VFMA_PIN_EXPECT 1754
 set ::VFMA_PIN_OK 0
 set ::VFMA_PIN_BAD 0
 proc vfma_pin {g i w} {
@@ -326,6 +326,10 @@ vfma_pin has_inf_f16_3_result_inf_sign_reg2 g_lane\[6\].u_lane/inf_sign_s2_q_reg
 vfma_pin fp_a_or_b_is_zero_f16_3_reg2_r g_lane\[6\].u_lane/ab_zero_s0_q_reg 1
 vfma_pin fp_a_or_b_is_zero_f16_3_reg2_r_1 g_lane\[6\].u_lane/ab_zero_s1_q_reg 1
 vfma_pin fp_a_or_b_is_zero_f16_3_reg2 g_lane\[6\].u_lane/ab_zero_s2_q_reg 1
+vfma_pin U_CSAnto2/U_CSA4to2_io_in_a_r U_CSAnto2/u_core/level4_q_reg\[0\] 107
+vfma_pin U_CSAnto2/U_CSA4to2_io_in_b_r U_CSAnto2/u_core/level4_q_reg\[1\] 107
+vfma_pin U_CSAnto2/U_CSA4to2_io_in_c_r U_CSAnto2/u_core/level4_q_reg\[2\] 107
+vfma_pin U_CSAnto2/U_CSA4to2_io_in_d_r U_CSAnto2/u_core/level4_q_reg\[3\] 107
 puts "VFMA_PIN_END VectorFloatFMA ok=$::VFMA_PIN_OK bad=$::VFMA_PIN_BAD"
 if {$::VFMA_PIN_BAD != 0} { error "VFMA_PIN_MISS=$::VFMA_PIN_BAD" }
-if {$::VFMA_PIN_OK != 1326} { error "VFMA_PIN_COUNT=$::VFMA_PIN_OK expect=1326" }
+if {$::VFMA_PIN_OK != 1754} { error "VFMA_PIN_COUNT=$::VFMA_PIN_OK expect=1754" }

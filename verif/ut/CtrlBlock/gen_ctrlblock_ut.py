@@ -27,8 +27,9 @@ TOP = 'CtrlBlock'
 # （SnapshotGenerator_14 的重写件依赖 rtl/backend/SnapshotGenerator.sv 里的共享核，而那个文件同时定义
 #   golden 同名的 SnapshotGenerator wrapper，会与本闭包里同源的 golden SnapshotGenerator.sv 撞名；
 #   它在 FM 里本就是对称接口黑盒，UT/FM 的 impl 侧一律用 golden 体。）
+# ExceptionGen（Rob 的 child）2026-10-03 起有重写件（agent/misc-core 签核），impl 侧换成重写件。
 REPLACED = ['Rob', 'SyncDataModuleTemplate_BackendPC_64entry', 'DelayN_15', 'DelayN_17',
-            'PipelineConnectPipe', 'PipeGroupConnect']
+            'PipelineConnectPipe', 'PipeGroupConnect', 'ExceptionGen']
 
 INST_RE = re.compile(r'^  ([A-Za-z_][A-Za-z0-9_]*) ([A-Za-z_][A-Za-z0-9_]*) \($', re.M)
 

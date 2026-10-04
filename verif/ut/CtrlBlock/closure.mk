@@ -1,7 +1,7 @@
 # 自动生成：verif/ut/CtrlBlock/gen_ctrlblock_ut.py —— 勿手改。golden CtrlBlock 的子模块闭包（83 个模块）。
 # GOLDEN_CLOSURE_REPLACED：impl 侧用 rtl/ 重写件替换的 child（只进 golden 侧）；
 # GOLDEN_CLOSURE_SHARED：其余 child，UT 两侧共用同一份定义，FM 两侧同源 elaborate（UNCHANGED_GOLDEN_DEP）。
-GOLDEN_CLOSURE_REPLACED = Rob.sv SyncDataModuleTemplate_BackendPC_64entry.sv DelayN_15.sv PipelineConnectPipe.sv PipeGroupConnect.sv DelayN_17.sv
+GOLDEN_CLOSURE_REPLACED = Rob.sv ExceptionGen.sv SyncDataModuleTemplate_BackendPC_64entry.sv DelayN_15.sv PipelineConnectPipe.sv PipeGroupConnect.sv DelayN_17.sv
 GOLDEN_CLOSURE_SHARED = \
   RenameBuffer.sv \
   SnapshotGenerator.sv \
@@ -11,7 +11,6 @@ GOLDEN_CLOSURE_SHARED = \
   SnapshotGenerator_1.sv \
   SnapshotGenerator_2.sv \
   SnapshotGenerator_3.sv \
-  ExceptionGen.sv \
   NewRobDeqPtrWrapper.sv \
   RobEnqPtrWrapper.sv \
   dt_pcTransType_160x2.sv \

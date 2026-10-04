@@ -25,14 +25,17 @@ RTL_SRCS = $(RTL_DIR)/backend/CtrlBlock.sv \
            $(RTL_DIR)/common/DelayN_15.sv \
            $(RTL_DIR)/common/DelayN_17.sv \
            $(RTL_DIR)/backend/PipelineConnectPipe.sv \
-           $(RTL_DIR)/backend/PipeGroupConnect.sv
+           $(RTL_DIR)/backend/PipeGroupConnect.sv \
+           $(RTL_DIR)/backend/ExceptionGen.sv
 
 # 两侧同源的 golden child（UNCHANGED_GOLDEN_DEP）：DecodeStage/FusionDecoder/Rename/RenameTableWrapper/
 # RedirectGenerator/Trace/MemCtrl/GPAMem/NewDispatch。★它们的重写件已合入 main（920d24f1 带进本分支）
 # 且各自 PROVEN_DIRECT（docs/coverage_three_axis.tsv）★，但在本目标的证明里仍两侧同用 golden 体：
 # 换成「ref golden / impl 重写件」要把 9 个 child（及其孙级 RenameTable×4/DiffRatStateBuffer/
 # DecodeUnit/VTypeGen/…）各自签核用的钉点/fixture 逐一下移进 CtrlBlock 层次、并解 UT 派生撞名，
-# 属下一步；本轮先在这条边界上出绿。Rob 的 8 个 child 亦同源（其中 VTypeBuffer/ExceptionGen 尚无重写件）。
+# 属下一步；本轮先在这条边界上出绿。Rob 的 8 个 child 除 ExceptionGen 外亦同源（VTypeBuffer 尚无重写件）。
+#   ExceptionGen（2026-10-03，agent/misc-core）：两侧白盒，ref golden / impl rtl/backend/ExceptionGen.sv
+#   （RTL_SRCS 末行；closure.mk 里它已移入 GOLDEN_CLOSURE_REPLACED）。
 RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(GOLDEN_CLOSURE_SHARED))
 GOLDEN_SRCS     = $(GOLDEN_RTL)/CtrlBlock.sv $(addprefix $(GOLDEN_RTL)/,$(GOLDEN_CLOSURE_REPLACED)) $(RTL_GOLDEN_DEPS)
 
