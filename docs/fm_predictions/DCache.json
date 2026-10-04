@@ -1,0 +1,28 @@
+{
+  "target": "DCache",
+  "ut": "DCache",
+  "regs": 75421,
+  "outs": 3626,
+  "expected": 82497,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 3450,
+  "bbox": {
+    "StorePipe": {
+      "insts": 2,
+      "in_bits": 1,
+      "points": 2
+    },
+    "array_7_ext": {
+      "insts": 32,
+      "in_bits": 83,
+      "points": 2656
+    },
+    "array_8_ext": {
+      "insts": 8,
+      "in_bits": 99,
+      "points": 792
+    }
+  },
+  "note": "sramcore-d1d2d3 二次登记（模型修正后重证）：fm_passing_model 把 fm_verdict.DISABLED_EMPTY_MODULES 里的 StorePipe 计为 FM 自动 empty 黑盒（2 实例 × 1 位输入 = BBPin +2），模型 82497 = regs 75421 + outs 3626 + bbin 3450。预测 passing 82086 = 82497 − constant_reg 411；unread 0；verdict SUCCEEDED。上一跑（evidence/ce9d0692bc8e/DCache）实测 82086 / BBPin 3450 与此一致，fm_predict check 当时因旧登记 82495 余额 −2 判红，重证只为让登记早于证明。"
+}

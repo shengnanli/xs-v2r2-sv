@@ -134,6 +134,13 @@ def bbox_in_bits(mod):
     return None
 
 
+try:
+    from fm_verdict import DISABLED_EMPTY_MODULES as _DEM   # noqa: E402
+    DISABLED_EMPTY = set(_DEM)
+except Exception:                                           # noqa: BLE001
+    DISABLED_EMPTY = set()
+
+
 def bbox_counts(top, deps):
     """FM ref 闭包内被例化、但定义文件不在闭包里的模块 -> 实例总数。"""
     closure = {top} | set(deps)
@@ -150,7 +157,12 @@ def bbox_counts(top, deps):
         for child, inst in BBOX_INST_RE.findall(f.read_text(errors='replace')):
             if child in _INST_KW or inst in _INST_KW:
                 continue
-            if child in closure and (GOLDEN / (child + '.sv')).is_file():
+            if child in DISABLED_EMPTY and child in closure:
+                # codex 0206 D2：golden 被裁成空壳的禁用模块在闭包里也会被 FM 自动当
+                # empty 黑盒（属性 e），它的输入口成 BBPin 比较点（DCache 的 StorePipe×2：+2）。
+                # 只认 fm_verdict.DISABLED_EMPTY_MODULES 这张审定表，不按"看起来空"推断。
+                cnt[child] += 1
+            elif child in closure and (GOLDEN / (child + '.sv')).is_file():
                 stack.append(child)
             else:
                 cnt[child] += 1

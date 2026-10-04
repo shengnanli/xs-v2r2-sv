@@ -56,6 +56,20 @@ def sfx(k):
 
 BORE_FIELDS = ['addr', 'addr_rd', 'wdata', 'wmask', 're', 'we', 'rdata', 'ack', 'selectedOH', 'array']
 
+# 当前正在生成的变体里，每个 bore 字段逐 bank 的位宽（BANK_W[f][k]，取自 golden childBd[_k]_<f> 线声明）。
+# 同一字段各 bank 位宽可以不同：DataStorage_2 的 childBd_array 是 5 位、childBd_1/2/3_array 是 6 位
+# （L2DataStorage_2 的 toSRAM_0_array 5 位、toSRAM_1..3_array 6 位）。sramBore_<f> 按最宽的 bank 声明，
+# 窄的 bank 在连接处取 [w-1:0]，两端口逐位与 golden 一致，多出的高位两边都不接。
+BANK_W = {}
+
+
+def bore_ref(f, k):
+    k = int(k)
+    ref = 'sramBore_%s[%d]' % (f, k)
+    if BANK_W and BANK_W[f][k] < max(BANK_W[f]):
+        ref += '[%d:0]' % (BANK_W[f][k] - 1)
+    return ref
+
 
 def array_rule(p):
     """array 实例端口 -> 本仓表达式。"""
@@ -69,7 +83,7 @@ def array_rule(p):
         return p
     m = re.fullmatch(r'boreChildrenBd_bore(?:_(\d))?_(\w+)', p)
     assert m and m.group(2) in BORE_FIELDS, p
-    return 'sramBore_%s[%s]' % (m.group(2), m.group(1) or '0')
+    return bore_ref(m.group(2), m.group(1) or '0')
 
 
 def mbist_rule(p):
@@ -81,13 +95,13 @@ def mbist_rule(p):
         return p
     m = re.fullmatch(r'toSRAM_(\d)_(\w+)', p)
     assert m and m.group(2) in BORE_FIELDS, p
-    return 'sramBore_%s[%s]' % (m.group(2), m.group(1))
+    return bore_ref(m.group(2), m.group(1))
 
 
 def golden_to_mine(e):
     m = re.fullmatch(r'childBd(?:_(\d))?_(\w+)', e)
     if m:
-        return 'sramBore_%s[%s]' % (m.group(2), m.group(1) or '0')
+        return bore_ref(m.group(2), m.group(1) or '0')
     m = re.fullmatch(r'bd_(\w+)', e)
     if m:
         return {'ack': 'boreChildrenBd_bore_ack', 'outdata': 'boreChildrenBd_bore_outdata'}.get(
@@ -105,6 +119,15 @@ def parse(mod):
     assert set(inst) == {'array', 'mbistPl'}, (mod, list(inst))
     amod, aconn = inst['array']
     mmod, mconn = inst['mbistPl']
+    # 每个 bore 字段逐 bank 的位宽（从 golden 的 childBd[_k]_<f> 线声明取，逐 bank 各读各的）
+    BANK_W.clear()
+    for f in BORE_FIELDS:
+        BANK_W[f] = []
+        for k in range(NBANK):
+            m = re.search(r'wire\s+(?:\[(\d+):0\]\s+)?childBd%s_%s;' % (sfx(k), f), body)
+            assert m, (mod, f, k)
+            BANK_W[f].append(1 if m.group(1) is None else int(m.group(1)) + 1)
+    W = {f: max(ws) for f, ws in BANK_W.items()}
     for p, e in aconn.items():
         if p == 'io_w_req_bits_data_0_data':
             assert 'io_wdata_data' in e and 'syndromeUInt' in e, '%s: 写数据口不是编码表达式' % mod
@@ -114,12 +137,6 @@ def parse(mod):
         assert golden_to_mine(e) == mbist_rule(p), '%s mbistPl.%s: golden %s != 规则 %s' % (mod, p, e, mbist_rule(p))
     for a in ('boreChildrenBd_bore_ack = bd_ack', 'boreChildrenBd_bore_outdata = bd_outdata'):
         assert ('assign ' + a + ';') in body, (mod, a)
-    # array 实例里每个 bore 字段的位宽（从 golden 的 childBd 线声明取）
-    W = {}
-    for f in BORE_FIELDS:
-        m = re.search(r'wire\s+(?:\[(\d+):0\]\s+)?childBd_%s;' % f, body)
-        assert m, (mod, f)
-        W[f] = 1 if m.group(1) is None else int(m.group(1)) + 1
     return dict(mod=mod, P=P, amod=amod, mmod=mmod, aports=list(aconn), mports=list(mconn), W=W,
                 lines=len(txt.splitlines()))
 
@@ -149,6 +166,9 @@ def emit(R):
     A('  // mbistPl.toSRAM_k <-> array 的第 k 个 bank 的 MBIST bore 口')
     for f in BORE_FIELDS:
         w = R['W'][f]
+        if len(set(BANK_W[f])) > 1:
+            A('  // sramBore_%s 各 bank 位宽不同（golden: %s 位），按最宽声明，窄的 bank 在连接处取低位'
+              % (f, '/'.join(str(x) for x in BANK_W[f])))
         A('  logic %-8s sramBore_%-10s [%d];' % ('' if w == 1 else '[%d:0]' % (w - 1), f, NBANK))
     A('')
     A('  xs_DataStorage_core u_core (')

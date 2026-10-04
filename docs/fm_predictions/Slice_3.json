@@ -1,0 +1,43 @@
+{
+  "target": "Slice_3",
+  "ut": "Slice",
+  "regs": 65777,
+  "outs": 2817,
+  "expected": 69851,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 1257,
+  "bbox": {
+    "array_14_ext": {
+      "insts": 4,
+      "in_bits": 92,
+      "points": 368
+    },
+    "array_15_ext": {
+      "insts": 1,
+      "in_bits": 124,
+      "points": 124
+    },
+    "array_16_ext": {
+      "insts": 1,
+      "in_bits": 28,
+      "points": 28
+    },
+    "array_17_ext": {
+      "insts": 1,
+      "in_bits": 28,
+      "points": 28
+    },
+    "array_18_ext": {
+      "insts": 4,
+      "in_bits": 152,
+      "points": 608
+    },
+    "ram_10x89": {
+      "insts": 1,
+      "in_bits": 101,
+      "points": 101
+    }
+  },
+  "note": "sramcore-d1d2d3 跑前登记（codex 0206 D1+D3）：merge_dup=false 模型适用。预测 passing = 68311（= 上一跑实测，即 expected - constant_reg）；D1 删掉的 Directory 7 个 rdata_last_REG 是 impl 独有 unread（无 golden 对家、不计 passing），故 passing 不变、unread 7→0；DataStorage_2 bore_array 位宽修正只动 MBIST 的 array 号线（golden SRAMTemplate 内仅 mbistBd_array 探针 wire，无扇出），预期不产生新比较点；ram_10x89 按 codex_0206 父级授权 → verdict 预期 SUCCEEDED；failing/unverified/aborted/unmatched 0。"
+}
