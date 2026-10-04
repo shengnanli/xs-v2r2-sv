@@ -1,0 +1,9 @@
+{
+  "target": "Pipeline_13",
+  "ut": "ChiRxPipelines",
+  "regs": 74,
+  "outs": 75,
+  "expected": 149,
+  "merge_dup": "false",
+  "model_applicable": true
+}

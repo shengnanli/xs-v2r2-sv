@@ -1,0 +1,9 @@
+{
+  "target": "Queue4_CHISNP",
+  "ut": "UncoreChiQueues",
+  "regs": 465,
+  "outs": 120,
+  "expected": 585,
+  "merge_dup": "false",
+  "model_applicable": true
+}

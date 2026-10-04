@@ -1,0 +1,9 @@
+{
+  "target": "Queue2_PCrdGranted",
+  "ut": "UncoreChiQueues",
+  "regs": 33,
+  "outs": 17,
+  "expected": 50,
+  "merge_dup": "false",
+  "model_applicable": true
+}
