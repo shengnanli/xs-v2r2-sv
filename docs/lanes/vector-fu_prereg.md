@@ -468,3 +468,9 @@ unread 0，unmatched 全 0，constant_reg **2**，黑盒 0，dont_verify 无（3
 3772 − 3770 = 2，rc=0。vmucp 六条：(1) outCtrl_r_vpu_vuopIdx[6:3] 4 位（按名配上）；(2) 4↔4；(3) unread_notcompared 0、全比；(4) 全零；
 (5) 无放宽、无黑盒；(6) verif/fm_target_config/VFDivSqrt.tcl 在 script_closure。
 更正（不改 §8 原文）：§8 标题的行数应为重写 **444** 行、xs_VecFflagsElemMask **54** 行（登记时笔误）。
+
+### I. VIAluFix —— evidence/65d1243f7a9c/VIAluFix
+
+PROOF_COMMIT=65d1243f7，`bash scripts/run_proof.sh VIAluFix VIAluFix`：native SUCCEEDED，passing **2147** / failing 0 / unverified 0 / aborted 0 /
+unread 0，unmatched 全 0，constant_reg 0，黑盒 0，dont_verify 无，vmucp 不开、无钉点（227 s）。预测 2147 / 0 —— 逐项相等；
+`fm_predict.py check VIAluFix` rc=0。
