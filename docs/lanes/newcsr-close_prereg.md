@@ -132,3 +132,27 @@ docs/fm_predictions/NewCSR.json 不改（登记 commit 65370151 早于本次证�
 
 NewCSR 的模型 19847 同样含这 47 个 PrintCommitIDModule 黑盒点（14951 + 4849 = 19800）；
 预计 receipt 的 passing + constant_reg + unread = 19800，fm_predict check 会报余额 47 —— 原因同上，事先写明。
+
+## 4. 对账（跑后追加；上文各节未改）
+
+### 4.1 第一批（evidence/383bb8897f14）
+7/7 signoff-strict SUCCEEDED，passing 与 §1.3 预测逐项相等（84/91/78/192/73/2/9），`fm_predict check` 全部对上。
+
+### 4.2 NewCSR（evidence/814fe410e15a，@814fe410）
+- verdict PASS_DEAD_REF：native SUCCEEDED，passing 19193，failing 0，unmatched 0，unread(ref) 142 = dead_ref 声明逐条相等，
+  constant_reg 465，无黑盒，无 dont_verify。fm_pins.tcl 钉 85 对。
+- 与 §2.3 的差：passing 19193 低于预测区间 19278~19362 —— 钉上的 intrMod 85 对与 *topeiChange 的 84 位常零位
+  全部归入 constant_reg（296 → 465），没有进 passing（预测时以为钉上后会当比较点算）。
+- `fm_predict check`：passing + constant_reg + unread = 19800，比模型 19847 少 47，判"余额 47 指认不了"。
+  这 47 点是模型把 PrintCommitIDModule.v 当黑盒、计了 47 个黑盒输入点（fm_predict 不读 .v）；FM 实际两侧都
+  elaborate 了这个文件，没有黑盒。原因已在 §3.2 写明，但 check 的判据只认 constant_reg + unread，所以报 fail。
+- UT 9 档（@814fe410 字节，seed 1/7/42 × 0/random/<seed>017）各 200k 拍 errors=0。
+- 变异：13 个里抓到 11 个（含 1 个 sanity 变异）。N2（rdata 去掉 mtvec）跑 200k 拍才抓到。
+  N4（async_access 里 sireg 不分 V）、N8（diff 复位拍）没抓到：前者要 VS 态读 sireg 且 siselect 和 vsiselect
+  恰好落在不同窗口，激励到不了；后者只在复位后第一拍可见，而 tb 在复位/预热期间不比对。这两处都由 FM 覆盖。
+
+### 4.3 CSR（evidence/86c70db32986，@86c70db3）
+- verdict PASS_DEAD_REF：passing 27176，failing 0，unmatched 0（fm_pins.tcl 钉 770 对），unread(ref) 190 = dead_ref 逐条相等，
+  constant_reg 1057，无黑盒，无 dont_verify。与 §3.1 预测逐项一致。
+- `fm_predict check`：余额 47，原因同 §4.2，登记 note 里已事先写明。
+- UT 9 档各 200k 拍 errors=0；变异 6/6 抓到（rd=0 时 ren、mret 编码、csrrc、ecall 位直通、flush 指针比较、virt_changed）。
