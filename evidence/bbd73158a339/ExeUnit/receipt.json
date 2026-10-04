@@ -1,0 +1,389 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "ExeUnit",
+ "run_id": "ExeUnit-20261004T122724Z-bbd73158a",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/ExeUnit.sv",
+   "kind": "golden",
+   "sha256": "8841e81aeb373e8357c48d54f0fd31d39c128caba5d62f7219aba06e93a21b91"
+  },
+  {
+   "path": "golden-rtl/Alu.sv",
+   "kind": "golden",
+   "sha256": "692d83e1faa8e413e3d37d002efa8fd0b2bb147dad302ce6a6e520c23e10f64c"
+  },
+  {
+   "path": "golden-rtl/AluDataModule.sv",
+   "kind": "golden",
+   "sha256": "f638af971e05c1cc66c0982bee3d0493aad241a3e32261bce7931381077738f3"
+  },
+  {
+   "path": "golden-rtl/LeftShiftModule.sv",
+   "kind": "golden",
+   "sha256": "38b639d18dcbebdf6e040919419c4e682a36482f970bef685379508e2eceb5fd"
+  },
+  {
+   "path": "golden-rtl/RightShiftModule.sv",
+   "kind": "golden",
+   "sha256": "e0cdf79db318f11d334b7e701c1493c7c3a36e67fbde1f7dafe9eb8b0b982b3b"
+  },
+  {
+   "path": "golden-rtl/AddModule.sv",
+   "kind": "golden",
+   "sha256": "9cf3ca368f68ff5f3ca6b00e2ab46862ddf5288cb7289748375712b77d8f4e5d"
+  },
+  {
+   "path": "golden-rtl/SubModule.sv",
+   "kind": "golden",
+   "sha256": "fa307eef9a5b4ea88cd29064c58fa3c0f9d9debaa1e282fe5f7f7a22059cc39c"
+  },
+  {
+   "path": "golden-rtl/LeftShiftWordModule.sv",
+   "kind": "golden",
+   "sha256": "913fb41e609856ce7754796925bf12429abd39e6bec5745a9fe6956f98868a46"
+  },
+  {
+   "path": "golden-rtl/RightShiftWordModule.sv",
+   "kind": "golden",
+   "sha256": "bd5cdbdbd96f49249a64cf821c15a55bb7f6fb13100e9a0a8ab36469ed12a623"
+  },
+  {
+   "path": "golden-rtl/ShiftResultSelect.sv",
+   "kind": "golden",
+   "sha256": "cbe96493e8967d484b44f8165d7fd7fb499451016f48e6dcda2db59190752965"
+  },
+  {
+   "path": "golden-rtl/MiscResultSelect.sv",
+   "kind": "golden",
+   "sha256": "6a74bbf7ac514c67f7c1eb36e2c2182c74bc28a8f1f425cacf6b5a0da369dfc6"
+  },
+  {
+   "path": "golden-rtl/ConditionalZeroModule.sv",
+   "kind": "golden",
+   "sha256": "e5779abd8d1d473e4906af959d139ef04ecfc5806b7c1b7a5a93117e17ae3c1e"
+  },
+  {
+   "path": "golden-rtl/WordResultSelect.sv",
+   "kind": "golden",
+   "sha256": "85a7543f5bb97f60548af64d4a136e212e9fa526b92b1f205a602eed97a03a90"
+  },
+  {
+   "path": "golden-rtl/AluResSel.sv",
+   "kind": "golden",
+   "sha256": "012a0c6bce7c55912d6e0691f22dfde7da6ddc460834f3a89b54219a579ddeed"
+  },
+  {
+   "path": "golden-rtl/MulUnit.sv",
+   "kind": "golden",
+   "sha256": "65212909cc06e88877e5b69d14cce9f1eee98b78dfc959e9b1c38f2293babddb"
+  },
+  {
+   "path": "golden-rtl/ArrayMulDataModule.sv",
+   "kind": "golden",
+   "sha256": "0a77831be1b0039bf5bfef7cd82cab3b95b932700a6f92f8f056268528b41650"
+  },
+  {
+   "path": "golden-rtl/C22.sv",
+   "kind": "golden",
+   "sha256": "71e815b093a14992cfe022b10869ae10b3cbb2dc264b7f18b0462f53e2bf042f"
+  },
+  {
+   "path": "golden-rtl/C32.sv",
+   "kind": "golden",
+   "sha256": "f6076b9673b0ddb4637021bffa4690a9c63b61674b06982650c86bfd88771afd"
+  },
+  {
+   "path": "golden-rtl/C53.sv",
+   "kind": "golden",
+   "sha256": "a166c32a30988b18e391b699ff8089a986b04a2233c49324abe0b6bac750b67b"
+  },
+  {
+   "path": "golden-rtl/CSA3_2.sv",
+   "kind": "golden",
+   "sha256": "4dcbda763f416c74e30e74d0fbbfde84041eb727b7973b5c2dab27b8dccc200b"
+  },
+  {
+   "path": "golden-rtl/Bku.sv",
+   "kind": "golden",
+   "sha256": "89132747cb14eb7c6ac0d1b13d9fc2c1abb2bf3cad5e76111adf81ee85c03fae"
+  },
+  {
+   "path": "golden-rtl/CountModule.sv",
+   "kind": "golden",
+   "sha256": "1f1a3facbd7dfc7173085c3d33699e1976e58ea7ea57bc5eece6e246d79b0ead"
+  },
+  {
+   "path": "golden-rtl/ClmulModule.sv",
+   "kind": "golden",
+   "sha256": "24093a50f5302a830bf9984fc2fd3f482cfaafe0dacf38a3a717dedbf5f61350"
+  },
+  {
+   "path": "golden-rtl/MiscModule.sv",
+   "kind": "golden",
+   "sha256": "caa8d9bda66c638794e4f4c023de9c796c4b11bab7331f2cc2eacc9209956820"
+  },
+  {
+   "path": "golden-rtl/CryptoModule.sv",
+   "kind": "golden",
+   "sha256": "bc1edd0b016444e02d0b725798e41b11812e7556daa8ec48ce35663d2aa9ef4e"
+  },
+  {
+   "path": "golden-rtl/HashModule.sv",
+   "kind": "golden",
+   "sha256": "645a6a52f3dd867e371557852937a17ea8845be8da86b8206b9cf7616f558136"
+  },
+  {
+   "path": "golden-rtl/BlockCipherModule.sv",
+   "kind": "golden",
+   "sha256": "9902a6e81714b331f6bb83f772df5c0559fb0728edb1a25bf4736cd669b01709"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/Dispatcher.sv",
+   "kind": "golden",
+   "sha256": "1d7ba06d8a928b9317ce2f860b0259529cbf35c253c8d4f6f0ad7f173cfe29a0"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/alu_pkg.sv",
+   "kind": "repo",
+   "sha256": "a96bc0038f0fd54e14032e146fb3775e15ae102e0b5b02666b82f2ef1aea5011"
+  },
+  {
+   "path": "rtl/backend/ExeUnit.sv",
+   "kind": "repo",
+   "sha256": "6901c2dd797a482759b7a6deeba05b5acada7dbdf4a9cdcce27a3c7f85bb1428"
+  },
+  {
+   "path": "rtl/backend/xs_ExeUnit_core.sv",
+   "kind": "repo",
+   "sha256": "d828af2f8da07bf32d54f964ef87cf54325b87a8e9f1f5e67b56c2653cf23524"
+  },
+  {
+   "path": "rtl/backend/Dispatcher.sv",
+   "kind": "repo",
+   "sha256": "35cadd5d32426bef668005caf4eec44c54c3a1e8c6026cc5f58773bf226e8533"
+  },
+  {
+   "path": "rtl/backend/xs_Dispatcher_core.sv",
+   "kind": "repo",
+   "sha256": "a257f47c6d616f0c8a9d0be29cb9b54c3f55adadecae46c39ce8317d5d8d8829"
+  },
+  {
+   "path": "rtl/backend/Alu.sv",
+   "kind": "repo",
+   "sha256": "bc754c0415285e79e4489ba94967f1cfdabd602ff73b846fd07c10c65cd1ba7b"
+  },
+  {
+   "path": "rtl/backend/MulUnit.sv",
+   "kind": "repo",
+   "sha256": "076df91050278252b566020cfff5a32f8144e09699709fb03e3724715be40f04"
+  },
+  {
+   "path": "rtl/backend/ArrayMulDataModule.sv",
+   "kind": "repo",
+   "sha256": "4b6ee5722dff79f2af49f6a6824efc9300db8de5fab038f814c8bf917d1728b8"
+  },
+  {
+   "path": "rtl/backend/C53.sv",
+   "kind": "repo",
+   "sha256": "1023b2ae97c6638fa038fdfe2b2f13571fe57effd3a92463ff26b7d84310159d"
+  },
+  {
+   "path": "rtl/backend/CSA3_2.sv",
+   "kind": "repo",
+   "sha256": "03b99b8950697145c3f6b6434860331d5117b7784cfafc8e7bd40f2ee9d0253b"
+  },
+  {
+   "path": "rtl/backend/C22.sv",
+   "kind": "repo",
+   "sha256": "7746b9762297a418fa120599c17530ba5d9c02b1eb456af98d3d13c10c715d4c"
+  },
+  {
+   "path": "rtl/backend/Bku.sv",
+   "kind": "repo",
+   "sha256": "d0e3e81f8a4e709a94023e358b4e974115833bf6db1c55abaefa88c7fc8f5941"
+  },
+  {
+   "path": "rtl/backend/CountModule.sv",
+   "kind": "repo",
+   "sha256": "beb8c095c7dc2965a20a116c0881314fb653213d7feedd2d05a529211938719b"
+  },
+  {
+   "path": "rtl/backend/ClmulModule.sv",
+   "kind": "repo",
+   "sha256": "812f78bb4e29a6c201f5d0b0ef94d8abdf60d8a9fe8b8f28fab627888ece82d3"
+  },
+  {
+   "path": "rtl/backend/MiscModule.sv",
+   "kind": "repo",
+   "sha256": "2ca620866cb49479c1c86e378ca1f486fc5ccd304d7d9239f9c76815d87fa88a"
+  },
+  {
+   "path": "rtl/backend/HashModule.sv",
+   "kind": "repo",
+   "sha256": "ddeaa3e68223759f4fed9f14495333b2c31ff2a97c1e4902e90c0da8df5418ad"
+  },
+  {
+   "path": "rtl/backend/BlockCipherModule.sv",
+   "kind": "repo",
+   "sha256": "959553df3d8df9d77b72c767cefcfaa9b8d9eb0a0048c92edef11e5b3b14acb5"
+  },
+  {
+   "path": "rtl/common/ClockGate.sv",
+   "kind": "repo",
+   "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+  },
+  {
+   "path": "golden-rtl/CryptoModule.sv",
+   "kind": "golden",
+   "sha256": "bc1edd0b016444e02d0b725798e41b11812e7556daa8ec48ce35663d2aa9ef4e"
+  }
+ ],
+ "impl_commit": "bbd73158a339216e284c7aad3d95af535c48e967",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "fc23923a9ae26bad4d231339ca4ddb742b5b4cde8287ba2b82043d05d19d3e67"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ExeUnit-20261004T122724Z-bbd73158a",
+  "top": "ExeUnit",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 7352,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 7352,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 487,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "ExeUnit",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
