@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Queue2_TLBundleA_14
+Implementation : i:/WORK/Queue2_TLBundleA_14
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 06:50:54 2026
+**************************************************
+
+No failing compare points.
+
+1
