@@ -1,0 +1,7 @@
+# run	2026-10-04T17:49:12Z	ut_dir=NewCSR
+commit	814fe410e15a2b63501f7b03d94aa7772a6552cd
+head_before	814fe410e15a2b63501f7b03d94aa7772a6552cd
+head_after	814fe410e15a2b63501f7b03d94aa7772a6552cd
+worktree_digest_before	0ecd3bb7c4f88166990da120cbd418fd3e25944cb4dd5536456ff572fbbcaf4d
+worktree_digest_after	0ecd3bb7c4f88166990da120cbd418fd3e25944cb4dd5536456ff572fbbcaf4d
+targets	NewCSR

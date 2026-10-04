@@ -1,0 +1,9 @@
+{
+  "target": "VSstatusModule",
+  "ut": "NewcsrLeaves6",
+  "regs": 10,
+  "outs": 74,
+  "expected": 84,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,4 +1,5 @@
 // VSiselectModule.sv — virtual-supervisor indirect CSR selector and IMSIC-range decode.
+// 设计意图：src/main/scala/xiangshan/backend/fu/NewCSR/CSRAIA.scala（vsiselect，父 NewCSR）。
 // Writes with bit 12 set are ignored; reset clears the selector.
 // The range output is a combinational decode used by the virtual interrupt path.
 module VSiselectModule(

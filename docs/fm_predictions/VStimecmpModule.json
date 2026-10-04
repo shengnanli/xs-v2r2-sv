@@ -1,0 +1,9 @@
+{
+  "target": "VStimecmpModule",
+  "ut": "NewcsrLeaves6",
+  "regs": 64,
+  "outs": 128,
+  "expected": 192,
+  "merge_dup": "false",
+  "model_applicable": true
+}
