@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VectorFloatDivider
+Implementation : i:/WORK/VectorFloatDivider
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 07:11:12 2026
+**************************************************
+
+No aborted compare points.
+
+1

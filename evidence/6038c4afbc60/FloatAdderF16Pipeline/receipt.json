@@ -1,0 +1,239 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "FloatAdderF16Pipeline",
+ "run_id": "FloatAdderF16Pipeline-20261004T110140Z-6038c4afb",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/FloatAdderF16Pipeline.sv",
+   "kind": "golden",
+   "sha256": "37d2cf7beb2aa84fa46b06d557605ac54417e4ccdf5754243e9241cafd8d1bf7"
+  },
+  {
+   "path": "golden-rtl/Adder_18.sv",
+   "kind": "golden",
+   "sha256": "913f05725ee09baf5b242fec2cd433b7ebe738b0a2a6c7c324d4d34cb8edf8a7"
+  },
+  {
+   "path": "golden-rtl/FarShiftRightWithMuxInvFirst_18.sv",
+   "kind": "golden",
+   "sha256": "0267a2c1ad533ac0678e475f2dae918900865856e5004509dd4df464f28bca46"
+  },
+  {
+   "path": "golden-rtl/FarPathAdderF16Pipeline.sv",
+   "kind": "golden",
+   "sha256": "1fa114c40872adb127d3e618686768f27334ed081948e48923d47dd2fd8e686a"
+  },
+  {
+   "path": "golden-rtl/FarPathF16Pipeline.sv",
+   "kind": "golden",
+   "sha256": "b7530396b844cfaff9da12e562c5131170dbf04a040de3e4c28fcbdd4490c245"
+  },
+  {
+   "path": "golden-rtl/ClosePathAdderF16Pipeline.sv",
+   "kind": "golden",
+   "sha256": "f9493b224454806cf5761ff54faad11c509a3a924ade943fdf262afa8189310b"
+  },
+  {
+   "path": "golden-rtl/ClosePathAdderF16Pipeline_2.sv",
+   "kind": "golden",
+   "sha256": "d3f2277bbd354bd50a1f545ea313a7686ecc30c4243ca2a60e119fdb6876c413"
+  },
+  {
+   "path": "golden-rtl/CloseShiftLeftWithMux_9.sv",
+   "kind": "golden",
+   "sha256": "00013c8bfb75383c4a2bacbd1dcf53c2326c6ee6788ae623f91764d68796e7c5"
+  },
+  {
+   "path": "golden-rtl/ClosePathF16Pipeline.sv",
+   "kind": "golden",
+   "sha256": "e3e6c17134ce6e28b67462029cef846194701c1f786853a15e1150203a818c71"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Adder_18.sv",
+   "kind": "repo",
+   "sha256": "fbc4d495bf279d1696dbb1d2483eaa7ae72d929a45a0f5b127e89a2f1a241b8d"
+  },
+  {
+   "path": "rtl/backend/FarShiftRightWithMuxInvFirst_18.sv",
+   "kind": "repo",
+   "sha256": "94db2c9c0ff580761fa8dc9ca0d9e20111e4757217dc77d20c16ab12fe1ce81d"
+  },
+  {
+   "path": "rtl/backend/FarPathAdderF16Pipeline.sv",
+   "kind": "repo",
+   "sha256": "ba4877d747ecb37f5337a9f8c7a9b6b05295e9c32df236f4104d012b24d68eb4"
+  },
+  {
+   "path": "rtl/backend/FarPathF16Pipeline.sv",
+   "kind": "repo",
+   "sha256": "65dc8436e59e324e6fab33723e909fc213f4bc91d1bda4ba1c086622347547f8"
+  },
+  {
+   "path": "rtl/backend/ClosePathAdderF16Pipeline.sv",
+   "kind": "repo",
+   "sha256": "f00c07d7455b80d3bf985fbad2a6a88dd929f7080f99d481a3e0badb4a9de015"
+  },
+  {
+   "path": "rtl/backend/ClosePathAdderF16Pipeline_2.sv",
+   "kind": "repo",
+   "sha256": "bb191cf434c88ae51518e1a9094d7c011f2b0c6883c91a63863f410511e620f4"
+  },
+  {
+   "path": "rtl/backend/CloseShiftLeftWithMux_9.sv",
+   "kind": "repo",
+   "sha256": "a00401a3ccdd4526147817800ea2382daf5ad01b9b69f86696b22917188e4f83"
+  },
+  {
+   "path": "rtl/backend/ClosePathF16Pipeline.sv",
+   "kind": "repo",
+   "sha256": "549b808af640c2e831e116f7a90fe72ba75643af68f8feefb6d944b86e184b68"
+  },
+  {
+   "path": "rtl/backend/FloatAdderF16Pipeline.sv",
+   "kind": "repo",
+   "sha256": "78b438485797644bf69858b1cc6ae3cae4e3ff8f12bceafff216ac3d7c644ebe"
+  }
+ ],
+ "impl_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins.tcl": "50007c509a51de392a6e63b1a97bd6d8144af3b5a9afbb0a7f34aa642d7b815c"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "FloatAdderF16Pipeline-20261004T110140Z-6038c4afb",
+  "top": "FloatAdderF16Pipeline",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 225,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 225,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 5,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "FloatAdderF16Pipeline",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

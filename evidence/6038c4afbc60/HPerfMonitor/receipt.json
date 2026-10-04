@@ -1,0 +1,263 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "HPerfMonitor",
+ "run_id": "HPerfMonitor-20261004T105640Z-6038c4afb",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/HPerfMonitor.sv",
+   "kind": "golden",
+   "sha256": "7fbec716d385e68b655693d824bc90fe26a184ff26be4283dfd4682f519b94b1"
+  },
+  {
+   "path": "golden-rtl/HPerfCounter.sv",
+   "kind": "golden",
+   "sha256": "9480f692cfa256d4bcd9168861b19f13aa631e6acd255100f5a4893f0681e817"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/xs_HPerfCounter_core.sv",
+   "kind": "repo",
+   "sha256": "1e64a61c65e6b45878e700697f06018baaf397a65559fdd6f388b66ebc65c75b"
+  },
+  {
+   "path": "rtl/backend/HPerfCounter.sv",
+   "kind": "repo",
+   "sha256": "ecd9589ae0f4e0dae7b9b55cd4b2f1c2960ca632b052cb582356b3e28c3264f7"
+  },
+  {
+   "path": "rtl/backend/HPerfCounter_8.sv",
+   "kind": "repo",
+   "sha256": "157252b291b61e88363827f472377efff78ba7b58b4d8af506ebcf41bffbd791"
+  },
+  {
+   "path": "rtl/backend/HPerfCounter_13.sv",
+   "kind": "repo",
+   "sha256": "a56525f0a125a3b0ef84947167599e733e6c2bc4d6620604026ef4c7aeaba790"
+  },
+  {
+   "path": "rtl/common/HPerfMonitor.sv",
+   "kind": "repo",
+   "sha256": "7d8aecd6083dcf73dcf7c789dd1381b4dbb55a7b001c677b2b443b4a1cb37d85"
+  },
+  {
+   "path": "rtl/common/HPerfMonitor_1.sv",
+   "kind": "repo",
+   "sha256": "2580eda16849a6f2204d4715b423a959e6384d8bf71cb334fd947df1c70bd9a3"
+  },
+  {
+   "path": "rtl/common/HPerfMonitor_2.sv",
+   "kind": "repo",
+   "sha256": "80172e2f8057faefc283709980eec01a451a289bc4c4341714fd9546ee7b5f17"
+  }
+ ],
+ "impl_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/HPerfMonitor.json",
+    "sha256": "719d5bee447564e4caca1e4ba776e3724440d35dc480333acca24378d69fcfcd"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "HPerfMonitor-20261004T105640Z-6038c4afb",
+  "top": "HPerfMonitor",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 624,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 64,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [
+    "r:/WORK/HPerfMonitor/perfEvents_hpc/event_op_0_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc/event_op_0_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc/event_op_1_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc/event_op_1_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc/event_op_2_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc/event_op_2_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc/event_op_2_reg_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc/event_op_2_reg_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_1/event_op_0_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_1/event_op_0_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_1/event_op_1_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_1/event_op_1_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_1/event_op_2_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_1/event_op_2_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_1/event_op_2_reg_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_1/event_op_2_reg_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_2/event_op_0_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_2/event_op_0_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_2/event_op_1_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_2/event_op_1_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_2/event_op_2_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_2/event_op_2_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_2/event_op_2_reg_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_2/event_op_2_reg_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_3/event_op_0_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_3/event_op_0_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_3/event_op_1_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_3/event_op_1_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_3/event_op_2_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_3/event_op_2_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_3/event_op_2_reg_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_3/event_op_2_reg_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_4/event_op_0_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_4/event_op_0_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_4/event_op_1_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_4/event_op_1_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_4/event_op_2_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_4/event_op_2_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_4/event_op_2_reg_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_4/event_op_2_reg_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_5/event_op_0_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_5/event_op_0_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_5/event_op_1_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_5/event_op_1_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_5/event_op_2_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_5/event_op_2_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_5/event_op_2_reg_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_5/event_op_2_reg_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_6/event_op_0_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_6/event_op_0_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_6/event_op_1_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_6/event_op_1_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_6/event_op_2_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_6/event_op_2_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_6/event_op_2_reg_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_6/event_op_2_reg_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_7/event_op_0_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_7/event_op_0_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_7/event_op_1_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_7/event_op_1_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_7/event_op_2_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_7/event_op_2_reg[4]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_7/event_op_2_reg_reg[3]",
+    "r:/WORK/HPerfMonitor/perfEvents_hpc_7/event_op_2_reg_reg[4]"
+   ],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "PASS_DEAD_REF",
+ "verdict_detail": {
+  "passing": 624,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": 64,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "HPerfMonitor",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "dead_ref_points": 64
+ }
+}
