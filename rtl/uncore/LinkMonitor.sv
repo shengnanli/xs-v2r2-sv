@@ -1,371 +1,359 @@
 // =============================================================================
-//  linkmonitor_pkg —— LinkMonitor (CHI 链路层监视器) 常量与类型
-// -----------------------------------------------------------------------------
-//  对应 OpenLLC 的 LinkMonitor (chi/LinkLayer.scala): CHI 链路层的「激活/去激活
-//  握手 + L-Credit 流控」管理层。它把上层 Decoupled(ready/valid) 接口与下层
-//  CHI 物理链路的 flit + L-Credit 协议互转 (互转由 6 个子模块黑盒完成), 自身负责:
+// LinkMonitor —— L2 的 CHI 链路层（RN-F 侧）：链路激活握手 + L-Credit 流控 + flit 打包/解包
 //
-//    1. LINKACTIVE 状态机 (txState / rxState): 由对端 {linkactivereq, linkactiveack}
-//       两根握手线译码出 4 态 STOP→ACTIVATE→RUN→DEACTIVATE→STOP, 下发给各
-//       flit 转换子模块 (子模块据此决定能否发/收 flit 及何时回收 L-Credit)。
-//    2. L-Credit 回收 (reclaim): 去激活时必须等三个 RX 子模块把欠对端的 L-Credit
-//       全部归还 (reclaimLCredit 全 1), 才允许撤下 rx.linkactiveack。
-//    3. 系统一致性握手 (syscoreq / syscoack) 与 txsactive 指示。
-//    4. 性能计数器 (RetryAck / PCrdGrant / no-allowRetry 请求计数, 仅监测无输出)。
-//    5. 给上行 flit 注入本节点 srcID (= nodeID)。
+// Scala：coupledL2/src/main/scala/coupledL2/tl2chi/chi/LinkLayer.scala，class LinkMonitor
+//   （本配置 enableL2Flush=false ⇒ 没有 exitco 端口；txSourceReady=false ⇒ TX 走 Decoupled2LCredit）。
+// 位置：TL2CHICoupledL2 里 L2 与 CHI 互联之间的最后一层。上面 io_in_* 是 L2 内部的
+//   Decoupled(ready/valid) 通道（tx: req/rsp/dat 发出，rx: rsp/dat/snp 收进），下面 io_out_* 是
+//   CHI 物理链路：每通道 flitpend/flitv/flit + 反向 lcrdv（L-Credit），外加 linkactive 握手线、
+//   syscoreq/syscoack 系统一致性握手、txsactive。
 //
-//  L-Credit 协议要点 (子模块内部, 本层只摆链路态): 发送方每收到对端一个
-//  lcrdv 脉冲即获得 1 个信用, 有信用才可拉 flitv 发一个 flit; 链路去激活流程要求
-//  把未用信用如数 "归还" (发 NULL flit / 撤信用), 即此处的 reclaim 条件。
+// 机制：
+//   §1 链路态机（tx_state / rx_state）：每个方向由 {linkactivereq, linkactiveack} 两根线直接
+//      译码成 STOP / ACTIVATE / RUN / DEACTIVATE，打一拍后下发给该方向的 3 个 flit 转换子模块
+//      （只有 RUN 才发 flit / 发信用；DEACTIVATE 时要把信用收回）。
+//   §2 本端驱动的握手线：
+//      tx.linkactivereq = RegNext(!exitcoDone)          本端总想激活 TX 链路
+//      rx.linkactiveack = RegNext(RegNext(rx.linkactivereq) || !rxDeact)
+//                         对端撤 linkactivereq 后，要等 3 个 RX 子模块都 reclaim 完（不再欠
+//                         对端信用）才撤 ack —— 这就是 CHI 去激活要求的"把 L-Credit 收回来"。
+//      syscoreq   = RegNext(!exitco) = 复位后恒 1（本配置 exitco 恒 0）
+//      txsactive  = RegNext(!exitcoDone)
+//      exitcoDone = !syscoreq && !syscoack && RegNext(true.B)
+//   §3/§4 6 个 flit 转换子模块（本仓已签重写件，两侧白盒）：见各自文件。
+//   §5 3 个 64 位性能计数器（RetryAck / PCrdGrant 响应数、allowRetry=0 的请求数）：Scala 里
+//      dontTouch 保住、但没有任何输出 —— golden 里同样存在且无扇出（FM 的 matched-unread 点，
+//      由 vmucp 实比，见 verif/fm_target_config/LinkMonitor.tcl）。
+//
+// 怪癖（照 golden 原样，不"修"）：
+//   · exitcoDone 在本配置下恒 0：syscoreq 寄存器与 RegNext(true.B) 是两个"复位 0、之后恒 1"的
+//     寄存器，永远同值，所以 !syscoreq && RegNext(true) ≡ 0。golden 照样留着这两个寄存器和
+//     syscoack 这条输入，本文件也逐个保留（不化简成常量），于是 FM 可以逐寄存器配对。
+//   · tx.linkactivereq 与 txsactive 是两个同次态的寄存器（golden 也是两个），不合并。
+//   · RegNext(rx.linkactivereq)（rx_linkactivereq_q）没有复位，golden 同。
 // =============================================================================
 package linkmonitor_pkg;
-
-  // ---------------------------------------------------------------------------
-  //  LINKACTIVE 链路态 (CHI-B 链路层 4 态)。编码同 OpenLLC LinkStates。
-  // ---------------------------------------------------------------------------
+  // LINKACTIVE 链路态（LinkLayer.scala LinkStates）
   typedef enum logic [1:0] {
-    STOP       = 2'd0,  // 链路停止 (req=0, ack=0)
-    ACTIVATE   = 2'd1,  // 激活中   (req=1, ack=0): 已请求, 待对端确认
-    RUN        = 2'd2,  // 运行     (req=1, ack=1): 可正常收发 flit
-    DEACTIVATE = 2'd3   // 去激活中 (req=0, ack=1): 已撤请求, 待对端撤确认
+    LINK_STOP       = 2'd0,  // req=0 ack=0
+    LINK_ACTIVATE   = 2'd1,  // req=1 ack=0：已请求，待对端确认
+    LINK_RUN        = 2'd2,  // req=1 ack=1：正常收发 flit
+    LINK_DEACTIVATE = 2'd3   // req=0 ack=1：已撤请求，待对端撤确认
   } link_state_e;
 
-  // 链路方向 (TX=发送侧 / RX=接收侧), 用于把两个对称的状态机折叠成数组循环。
-  typedef enum int unsigned {
-    DIR_TX = 0,
-    DIR_RX = 1
-  } link_dir_e;
-
-  // ---------------------------------------------------------------------------
-  //  LINKACTIVE 状态译码: 由对端的 {linkactivereq, linkactiveack} 直接映射链路态。
-  //  (OpenLLC: MuxLookup(Cat(req, ack)) → ACTIVATE/RUN/DEACTIVATE/STOP)
-  //    {1,0}=ACTIVATE  {1,1}=RUN  {0,1}=DEACTIVATE  {0,0}=STOP
-  // ---------------------------------------------------------------------------
-  function automatic link_state_e link_state(input logic req, input logic ack);
+  // MuxLookup(Cat(linkactivereq, linkactiveack), STOP)
+  function automatic link_state_e decode_link_state(input logic req, input logic ack);
     unique case ({req, ack})
-      2'b10:   link_state = ACTIVATE;
-      2'b11:   link_state = RUN;
-      2'b01:   link_state = DEACTIVATE;
-      default: link_state = STOP;     // 2'b00
+      2'b10:   decode_link_state = LINK_ACTIVATE;
+      2'b11:   decode_link_state = LINK_RUN;
+      2'b01:   decode_link_state = LINK_DEACTIVATE;
+      default: decode_link_state = LINK_STOP;
     endcase
   endfunction
 
-  // ---------------------------------------------------------------------------
-  //  RX RSP 通道关注的 CHI 响应 opcode (供性能计数器识别)。
-  // ---------------------------------------------------------------------------
-  localparam logic [4:0] RSP_OP_RETRYACK  = 5'h3;  // RetryAck: 目标忙, 需重试
-  localparam logic [4:0] RSP_OP_PCRDGRANT = 5'h7;  // PCrdGrant: 协议层信用授予
-
+  // 性能计数器关心的 CHI RSP opcode（HasCHIOpcodes）
+  localparam logic [4:0] RSP_RETRY_ACK  = 5'h03;
+  localparam logic [4:0] RSP_PCRD_GRANT = 5'h07;
 endpackage
 
 // =============================================================================
-//  LinkMonitor —— 香山 V2R2 CHI 链路层监视器 (可读重写核 xs_LinkMonitor_core)
-// -----------------------------------------------------------------------------
-//  源自 OpenLLC 的 LinkMonitor (chi/LinkLayer.scala 的 RN 侧链路监视器): 把上层
-//  Decoupled(ready/valid) 接口 (io_in_*) 与下层 CHI 物理链路的 flit + L-Credit
-//  协议 (io_out_*) 互转, 并管理链路激活/去激活握手。从设计意图重写 (非照抄 firtool
-//  的 _GEN/_T 展平命名)。
-//
-//  本核自身逻辑 (除黑盒子模块外):
-//    · LINKACTIVE 状态机 txState/rxState: 由对端 {linkactivereq, linkactiveack}
-//      译码 4 态 (STOP/ACTIVATE/RUN/DEACTIVATE), 下发给各 flit 转换子模块;
-//      两个方向逻辑对称, 折叠成 link_st[DIR_TX/DIR_RX] 数组循环。
-//    · 链路握手: tx.linkactivereq 复位后恒拉高 (本端总想激活链路);
-//      rx.linkactiveack = RegNext(rx.linkactivereq) | ~rxDeact —— 即对端撤请求后,
-//      仍要把三个 RX 子模块欠的 L-Credit 全部回收 (reclaim 全 1) 才允许撤确认。
-//    · 系统一致性: syscoreq 复位后恒高 (本端总请求进入一致性域); syscoack 是对端
-//      输入。txsactive 与 tx.linkactivereq 一样, 复位后恒高 —— 见下面 txsactive_q
-//      处对 golden exitcoDone 的推导 (该退出路径在本配置下是死逻辑)。
-//    · 性能计数器: RetryAck / PCrdGrant 响应数、不可重试请求数 (仅监测, 无端口)。
-//    · 给上行 (TX) flit 注入本节点 srcID = io_nodeID。
-//
-//  黑盒子模块 (flit ↔ Decoupled + L-Credit 流控主体, 不在本核重写):
-//    Decoupled2LCredit      txreq  : 上层请求 → REQ flit (带 L-Credit 发送);
-//    Decoupled2LCredit_1    txrsp  : 上层响应 → RSP flit;
-//    Decoupled2LCredit_2    txdat  : 上层写数据 → DAT flit;
-//    LCredit2Decoupled      rxsnp  : SNP flit → 上层 (带 L-Credit 接收);
-//    LCredit2Decoupled_1    rxrsp  : RSP flit → 上层;
-//    LCredit2Decoupled_2    rxdat  : DAT flit → 上层。
-//  六者在 golden 与本核同名同端口例化 (io_state_state 取本核的 link 态), UT 两侧
-//  共用、FM 两侧黑盒, 故验证聚焦本核的链路态机/握手/计数逻辑。
-//
-//  验证: golden 同名 LinkMonitor 例化本核; UT 双例化逐拍比对全部输出; FM 签名分析。
+// xs_LinkMonitor_core —— LinkMonitor 自己的逻辑（§1 态机、§2 握手线、§5 计数器）
+//   flit 转换全在 6 个子模块里；本核只看握手线、3 个 reclaim 和两处 fire。
 // =============================================================================
-
 module xs_LinkMonitor_core
   import linkmonitor_pkg::*;
 (
-  input          clock,
-  input          reset,
-
-  // ====== 上层 TX REQ (Decoupled 请求输入) ======
-  output         io_in_tx_req_ready,
-  input          io_in_tx_req_valid,
-  input  [3:0]   io_in_tx_req_bits_qos,
-  input  [10:0]  io_in_tx_req_bits_tgtID,
-  input  [11:0]  io_in_tx_req_bits_txnID,
-  input  [10:0]  io_in_tx_req_bits_returnNID,
-  input          io_in_tx_req_bits_stashNIDValid,
-  input  [11:0]  io_in_tx_req_bits_returnTxnID,
-  input  [6:0]   io_in_tx_req_bits_opcode,
-  input  [2:0]   io_in_tx_req_bits_size,
-  input  [47:0]  io_in_tx_req_bits_addr,
-  input          io_in_tx_req_bits_ns,
-  input          io_in_tx_req_bits_likelyshared,
-  input          io_in_tx_req_bits_allowRetry,
-  input  [1:0]   io_in_tx_req_bits_order,
-  input  [3:0]   io_in_tx_req_bits_pCrdType,
-  input          io_in_tx_req_bits_memAttr_allocate,
-  input          io_in_tx_req_bits_memAttr_cacheable,
-  input          io_in_tx_req_bits_memAttr_device,
-  input          io_in_tx_req_bits_memAttr_ewa,
-  input          io_in_tx_req_bits_snpAttr,
-  input  [7:0]   io_in_tx_req_bits_lpIDWithPadding,
-  input          io_in_tx_req_bits_snoopMe,
-  input          io_in_tx_req_bits_expCompAck,
-  input  [1:0]   io_in_tx_req_bits_tagOp,
-  input          io_in_tx_req_bits_traceTag,
-  input          io_in_tx_req_bits_mpam_perfMonGroup,
-  input  [8:0]   io_in_tx_req_bits_mpam_partID,
-  input          io_in_tx_req_bits_mpam_mpamNS,
-  input  [3:0]   io_in_tx_req_bits_rsvdc,
-
-  // ====== 上层 TX RSP ======
-  output         io_in_tx_rsp_ready,
-  input          io_in_tx_rsp_valid,
-  input  [3:0]   io_in_tx_rsp_bits_qos,
-  input  [10:0]  io_in_tx_rsp_bits_tgtID,
-  input  [11:0]  io_in_tx_rsp_bits_txnID,
-  input  [4:0]   io_in_tx_rsp_bits_opcode,
-  input  [1:0]   io_in_tx_rsp_bits_respErr,
-  input  [2:0]   io_in_tx_rsp_bits_resp,
-  input  [2:0]   io_in_tx_rsp_bits_fwdState,
-  input  [2:0]   io_in_tx_rsp_bits_cBusy,
-  input  [11:0]  io_in_tx_rsp_bits_dbID,
-  input  [3:0]   io_in_tx_rsp_bits_pCrdType,
-  input  [1:0]   io_in_tx_rsp_bits_tagOp,
-  input          io_in_tx_rsp_bits_traceTag,
-
-  // ====== 上层 TX DAT ======
-  output         io_in_tx_dat_ready,
-  input          io_in_tx_dat_valid,
-  input  [3:0]   io_in_tx_dat_bits_qos,
-  input  [10:0]  io_in_tx_dat_bits_tgtID,
-  input  [11:0]  io_in_tx_dat_bits_txnID,
-  input  [10:0]  io_in_tx_dat_bits_homeNID,
-  input  [3:0]   io_in_tx_dat_bits_opcode,
-  input  [1:0]   io_in_tx_dat_bits_respErr,
-  input  [2:0]   io_in_tx_dat_bits_resp,
-  input  [3:0]   io_in_tx_dat_bits_dataSource,
-  input  [2:0]   io_in_tx_dat_bits_cBusy,
-  input  [11:0]  io_in_tx_dat_bits_dbID,
-  input  [1:0]   io_in_tx_dat_bits_ccID,
-  input  [1:0]   io_in_tx_dat_bits_dataID,
-  input  [1:0]   io_in_tx_dat_bits_tagOp,
-  input  [7:0]   io_in_tx_dat_bits_tag,
-  input  [1:0]   io_in_tx_dat_bits_tu,
-  input          io_in_tx_dat_bits_traceTag,
-  input  [3:0]   io_in_tx_dat_bits_rsvdc,
-  input  [31:0]  io_in_tx_dat_bits_be,
-  input  [255:0] io_in_tx_dat_bits_data,
-  input  [31:0]  io_in_tx_dat_bits_dataCheck,
-  input  [3:0]   io_in_tx_dat_bits_poison,
-
-  // ====== 上层 RX RSP (Decoupled 响应输出) ======
-  input          io_in_rx_rsp_ready,
-  output         io_in_rx_rsp_valid,
-  output [3:0]   io_in_rx_rsp_bits_qos,
-  output [10:0]  io_in_rx_rsp_bits_tgtID,
-  output [10:0]  io_in_rx_rsp_bits_srcID,
-  output [11:0]  io_in_rx_rsp_bits_txnID,
-  output [4:0]   io_in_rx_rsp_bits_opcode,
-  output [1:0]   io_in_rx_rsp_bits_respErr,
-  output [2:0]   io_in_rx_rsp_bits_resp,
-  output [2:0]   io_in_rx_rsp_bits_fwdState,
-  output [2:0]   io_in_rx_rsp_bits_cBusy,
-  output [11:0]  io_in_rx_rsp_bits_dbID,
-  output [3:0]   io_in_rx_rsp_bits_pCrdType,
-  output [1:0]   io_in_rx_rsp_bits_tagOp,
-  output         io_in_rx_rsp_bits_traceTag,
-
-  // ====== 上层 RX DAT ======
-  input          io_in_rx_dat_ready,
-  output         io_in_rx_dat_valid,
-  output [3:0]   io_in_rx_dat_bits_qos,
-  output [10:0]  io_in_rx_dat_bits_tgtID,
-  output [10:0]  io_in_rx_dat_bits_srcID,
-  output [11:0]  io_in_rx_dat_bits_txnID,
-  output [10:0]  io_in_rx_dat_bits_homeNID,
-  output [3:0]   io_in_rx_dat_bits_opcode,
-  output [1:0]   io_in_rx_dat_bits_respErr,
-  output [2:0]   io_in_rx_dat_bits_resp,
-  output [3:0]   io_in_rx_dat_bits_dataSource,
-  output [2:0]   io_in_rx_dat_bits_cBusy,
-  output [11:0]  io_in_rx_dat_bits_dbID,
-  output [1:0]   io_in_rx_dat_bits_ccID,
-  output [1:0]   io_in_rx_dat_bits_dataID,
-  output [1:0]   io_in_rx_dat_bits_tagOp,
-  output [7:0]   io_in_rx_dat_bits_tag,
-  output [1:0]   io_in_rx_dat_bits_tu,
-  output         io_in_rx_dat_bits_traceTag,
-  output [3:0]   io_in_rx_dat_bits_rsvdc,
-  output [31:0]  io_in_rx_dat_bits_be,
-  output [255:0] io_in_rx_dat_bits_data,
-  output [31:0]  io_in_rx_dat_bits_dataCheck,
-  output [3:0]   io_in_rx_dat_bits_poison,
-
-  // ====== 上层 RX SNP ======
-  input          io_in_rx_snp_ready,
-  output         io_in_rx_snp_valid,
-  output [3:0]   io_in_rx_snp_bits_qos,
-  output [10:0]  io_in_rx_snp_bits_srcID,
-  output [11:0]  io_in_rx_snp_bits_txnID,
-  output [10:0]  io_in_rx_snp_bits_fwdNID,
-  output [11:0]  io_in_rx_snp_bits_fwdTxnID,
-  output [4:0]   io_in_rx_snp_bits_opcode,
-  output [44:0]  io_in_rx_snp_bits_addr,
-  output         io_in_rx_snp_bits_ns,
-  output         io_in_rx_snp_bits_doNotGoToSD,
-  output         io_in_rx_snp_bits_retToSrc,
-  output         io_in_rx_snp_bits_traceTag,
-  output         io_in_rx_snp_bits_mpam_perfMonGroup,
-  output [8:0]   io_in_rx_snp_bits_mpam_partID,
-  output         io_in_rx_snp_bits_mpam_mpamNS,
-
-  // ====== 下层 CHI 物理链路 (flit + L-Credit + linkactive 握手) ======
-  output         io_out_txsactive,
-  input          io_out_rxsactive,
-  output         io_out_syscoreq,
-  input          io_out_syscoack,
-  output         io_out_tx_linkactivereq,
-  input          io_out_tx_linkactiveack,
-  output         io_out_tx_req_flitpend,
-  output         io_out_tx_req_flitv,
-  output [161:0] io_out_tx_req_flit,
-  input          io_out_tx_req_lcrdv,
-  output         io_out_tx_rsp_flitpend,
-  output         io_out_tx_rsp_flitv,
-  output [72:0]  io_out_tx_rsp_flit,
-  input          io_out_tx_rsp_lcrdv,
-  output         io_out_tx_dat_flitpend,
-  output         io_out_tx_dat_flitv,
-  output [421:0] io_out_tx_dat_flit,
-  input          io_out_tx_dat_lcrdv,
-  input          io_out_rx_linkactivereq,
-  output         io_out_rx_linkactiveack,
-  input          io_out_rx_rsp_flitpend,
-  input          io_out_rx_rsp_flitv,
-  input  [72:0]  io_out_rx_rsp_flit,
-  output         io_out_rx_rsp_lcrdv,
-  input          io_out_rx_dat_flitpend,
-  input          io_out_rx_dat_flitv,
-  input  [421:0] io_out_rx_dat_flit,
-  output         io_out_rx_dat_lcrdv,
-  input          io_out_rx_snp_flitpend,
-  input          io_out_rx_snp_flitv,
-  input  [114:0] io_out_rx_snp_flit,
-  output         io_out_rx_snp_lcrdv,
-
-  input  [10:0]  io_nodeID
+  input  logic       clock,
+  input  logic       reset,
+  // CHI 握手线
+  input  logic       tx_linkactiveack,     // 对端对本端 TX 激活请求的确认
+  input  logic       rx_linkactivereq,     // 对端请求激活本端 RX
+  input  logic       syscoack,             // 对端系统一致性确认
+  output logic       tx_linkactivereq,
+  output logic       rx_linkactiveack,
+  output logic       syscoreq,
+  output logic       txsactive,
+  // 下发给 flit 转换子模块的链路态
+  output logic [1:0] tx_state,
+  output logic [1:0] rx_state,
+  // 3 个 RX 子模块：已不欠对端 L-Credit
+  input  logic       rxsnp_reclaim,
+  input  logic       rxrsp_reclaim,
+  input  logic       rxdat_reclaim,
+  // 计数器的事件源
+  input  logic       rxrsp_fire,           // io_in.rx.rsp.fire
+  input  logic [4:0] rxrsp_opcode,
+  input  logic       txreq_fire,           // io_in.tx.req.fire
+  input  logic       txreq_allow_retry
 );
+  // ---------------------------------------------------------------------------
+  // §2 握手线的寄存器（全部 RegNext，init=false 的那些异步复位）
+  // ---------------------------------------------------------------------------
+  logic tx_linkactivereq_q;   // RegNext(!exitcoDone, false)
+  logic txsactive_q;          // RegNext(!exitcoDone, false)
+  logic syscoreq_q;           // RegNext(!exitco, false)，exitco 恒 0
+  logic out_of_reset_q;       // RegNext(true.B, false)：复位后第一拍起为 1
+  logic rx_linkactivereq_q;   // RegNext(rx.linkactivereq)，无复位
+  logic rx_linkactiveack_q;   // RegNext(rx_linkactivereq_q || !rxDeact, false)
+  logic exitco_done;
+  logic rx_deact;
 
-  // ===========================================================================
-  //  子模块对外暴露的内部信号 (用于本核的握手/计数逻辑)
-  // ===========================================================================
-  wire        txreq_in_ready;     // Decoupled2LCredit txreq 的 io_in_ready
-  wire        rxrsp_out_valid;    // LCredit2Decoupled rxrsp 的 io_out_valid
-  wire [4:0]  rxrsp_out_opcode;   // LCredit2Decoupled rxrsp 的 io_out_bits_opcode
-  wire        rxsnp_reclaim;      // 三个 RX 子模块的 L-Credit 回收完成标志
-  wire        rxrsp_reclaim;
-  wire        rxdat_reclaim;
+  // 退出一致性域完成：syscoreq 已撤且对端已确认（本配置恒 0，见文件头）
+  assign exitco_done = ~syscoreq_q & ~syscoack & out_of_reset_q;
+  // 3 个 RX 子模块都不欠信用，RX 才算去激活完成
+  assign rx_deact    = rxsnp_reclaim & rxrsp_reclaim & rxdat_reclaim;
 
-  // ===========================================================================
-  //  LINKACTIVE 状态机 (TX / RX 两方向对称, 折叠成数组)
-  //    DIR_TX 由 {tx.linkactivereq(本端寄存器), tx.linkactiveack(对端)} 译码;
-  //    DIR_RX 由 {rx.linkactivereq(对端), rx.linkactiveack(本端寄存器)} 译码。
-  // ===========================================================================
-  link_state_e link_st [2];        // 链路态寄存器 (RegInit STOP)
-  reg          tx_linkactivereq_q; // 本端 tx.linkactivereq (复位后恒 1)
-  reg          rx_linkactiveack_d; // RegNext(rx.linkactivereq), 仅时钟无复位
-  reg          rx_linkactiveack_q; // 本端 rx.linkactiveack (含 L-Credit 回收保持)
-  reg          syscoreq_q;         // 系统一致性请求 (复位后恒 1)
-  reg          txsactive_q;        // txsactive 指示 (复位后恒 1, 见下)
+  // ---------------------------------------------------------------------------
+  // §1 链路态机：每个方向按 {req, ack} 译码，打一拍
+  // ---------------------------------------------------------------------------
+  link_state_e tx_state_q, rx_state_q;
 
-  // 各方向送入译码器的 {req, ack} (读当前寄存器值, 非阻塞更新 ⇒ 用上一拍值)。
-  wire [1:0]   reqack_tx = {tx_linkactivereq_q, io_out_tx_linkactiveack};
-  wire [1:0]   reqack_rx = {io_out_rx_linkactivereq, rx_linkactiveack_q};
+  // §5 性能计数器（无输出，见文件头）
+  logic [63:0] retry_ack_cnt;
+  logic [63:0] pcrd_grant_cnt;
+  logic [63:0] no_allow_retry_cnt;
 
-  // 去激活条件: 三个 RX 子模块的 L-Credit 全部回收完毕。
-  wire         rx_deact = rxsnp_reclaim & rxrsp_reclaim & rxdat_reclaim;
-
-  // RX RSP 实际握手成功 (上层 ready & 子模块 valid), 供性能计数。
-  wire         rxrsp_fire = io_in_rx_rsp_ready & rxrsp_out_valid;
-
-  // ===========================================================================
-  //  时序: 链路态机 / 握手寄存器 / 性能计数器 (异步复位)
-  // ===========================================================================
-  reg [63:0] retryAckCnt;     // 收到的 RetryAck 响应计数 (仅监测, 无输出端口)
-  reg [63:0] pCrdGrantCnt;    // 收到的 PCrdGrant 响应计数
-  reg [63:0] noAllowRetryCnt; // 发出的不可重试 (allowRetry=0) 请求计数
-
-  integer d;
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      for (d = 0; d < 2; d = d + 1) link_st[d] <= STOP;
+      tx_state_q         <= LINK_STOP;
+      rx_state_q         <= LINK_STOP;
       tx_linkactivereq_q <= 1'b0;
-      rx_linkactiveack_q <= 1'b0;
-      syscoreq_q         <= 1'b0;
       txsactive_q        <= 1'b0;
-      retryAckCnt        <= 64'h0;
-      pCrdGrantCnt       <= 64'h0;
-      noAllowRetryCnt    <= 64'h0;
+      syscoreq_q         <= 1'b0;
+      out_of_reset_q     <= 1'b0;
+      rx_linkactiveack_q <= 1'b0;
+      retry_ack_cnt      <= '0;
+      pcrd_grant_cnt     <= '0;
+      no_allow_retry_cnt <= '0;
     end else begin
-      // 链路态机 (两方向同一译码函数)。
-      link_st[DIR_TX] <= link_state(reqack_tx[1], reqack_tx[0]);
-      link_st[DIR_RX] <= link_state(reqack_rx[1], reqack_rx[0]);
-      // 本端 TX 链路始终请求激活; 系统一致性始终请求。
-      tx_linkactivereq_q <= 1'b1;
+      tx_state_q         <= decode_link_state(tx_linkactivereq_q, tx_linkactiveack);
+      rx_state_q         <= decode_link_state(rx_linkactivereq, rx_linkactiveack_q);
+      tx_linkactivereq_q <= ~exitco_done;
+      txsactive_q        <= ~exitco_done;
       syscoreq_q         <= 1'b1;
-      // RX 确认: 对端请求的延迟值, 或仍有 L-Credit 未回收 (去激活未完成) 时保持高。
-      rx_linkactiveack_q <= rx_linkactiveack_d | ~rx_deact;
-      // txsactive 与 tx.linkactivereq 同源, 复位后恒 1。
-      //
-      // golden 里它写成 `io_out_txsactive_REG <= ~exitcoDone`
-      // (LinkMonitor.sv:294), 其中
-      //   exitcoDone = ~io_out_syscoreq_REG & ~io_out_syscoack & exitcoDone_REG
-      // (LinkMonitor.sv:266)。Chisel 源 LinkLayer.scala:403 是
-      //   !io.out.syscoreq && !io.out.syscoack && RegNext(true.B, init=false.B)
-      // —— 而 io.out.syscoreq 本身就是 RegNext(!exitco, init=false.B) 且本配置
-      // 没有 exitco 端口 (exitco = false.B), 即 io_out_syscoreq_REG 与
-      // exitcoDone_REG 是**同一个** RegNext(1'b1, init=0), 两者永远同值。
-      // 于是 ~syscoreq_REG & exitcoDone_REG ≡ 0 ⇒ exitcoDone ≡ 0 ⇒ ~exitcoDone ≡ 1,
-      // 与 syscoack 无关: 「L2 flush 完成后退出一致性域」这条路径在本配置下
-      // 根本不会触发, 是 golden 里的死逻辑。故本核直接写常量 1
-      // (与上面 tx_linkactivereq_q 完全一致), 不复制那个恒 0 的 exitcoDone。
-      //
-      // 注意: 不能化简成 `syscoreq_q | io_out_syscoack` —— 那等于把 exitcoDone_REG
-      // 当成常 1, 在复位释放后的第一拍 (syscoreq_q 还是 0、syscoack=0) 会给出 0
-      // 而 golden 给 1。verif/ut/LinkMonitor 的 directed_txsactive_after_reset()
-      // 就是钉这一拍的。
-      txsactive_q        <= 1'b1;
-      // 性能计数器。
-      if (rxrsp_fire & (rxrsp_out_opcode == RSP_OP_RETRYACK))
-        retryAckCnt  <= retryAckCnt + 64'h1;
-      if (rxrsp_fire & (rxrsp_out_opcode == RSP_OP_PCRDGRANT))
-        pCrdGrantCnt <= pCrdGrantCnt + 64'h1;
-      if (txreq_in_ready & io_in_tx_req_valid & ~io_in_tx_req_bits_allowRetry)
-        noAllowRetryCnt <= noAllowRetryCnt + 64'h1;
+      out_of_reset_q     <= 1'b1;
+      rx_linkactiveack_q <= rx_linkactivereq_q | ~rx_deact;
+      if (rxrsp_fire && rxrsp_opcode == RSP_RETRY_ACK)
+        retry_ack_cnt <= retry_ack_cnt + 64'd1;
+      if (rxrsp_fire && rxrsp_opcode == RSP_PCRD_GRANT)
+        pcrd_grant_cnt <= pcrd_grant_cnt + 64'd1;
+      if (txreq_fire && !txreq_allow_retry)
+        no_allow_retry_cnt <= no_allow_retry_cnt + 64'd1;
     end
   end
 
-  // rx.linkactiveack 的一拍延迟版 (无复位, 与 golden 的 RegNext 一致)。
   always_ff @(posedge clock)
-    rx_linkactiveack_d <= io_out_rx_linkactivereq;
+    rx_linkactivereq_q <= rx_linkactivereq;
 
-  // ===========================================================================
-  //  上行 TX flit 转换子模块 (Decoupled → flit), srcID 注入本节点 io_nodeID。
-  // ===========================================================================
-  Decoupled2LCredit Decoupled2LCredit_txreq (
+  assign tx_state         = tx_state_q;
+  assign rx_state         = rx_state_q;
+  assign tx_linkactivereq = tx_linkactivereq_q;
+  assign rx_linkactiveack = rx_linkactiveack_q;
+  assign syscoreq         = syscoreq_q;
+  assign txsactive        = txsactive_q;
+endmodule
+
+// =============================================================================
+// LinkMonitor —— golden 同名顶层：本核 + 6 个 flit 转换子模块（例化名与 golden 相同）
+// =============================================================================
+module LinkMonitor (
+  input  logic          clock,
+  input  logic          reset,
+  output logic          io_in_tx_req_ready,
+  input  logic          io_in_tx_req_valid,
+  input  logic [3:0]    io_in_tx_req_bits_qos,
+  input  logic [10:0]   io_in_tx_req_bits_tgtID,
+  input  logic [11:0]   io_in_tx_req_bits_txnID,
+  input  logic [10:0]   io_in_tx_req_bits_returnNID,
+  input  logic          io_in_tx_req_bits_stashNIDValid,
+  input  logic [11:0]   io_in_tx_req_bits_returnTxnID,
+  input  logic [6:0]    io_in_tx_req_bits_opcode,
+  input  logic [2:0]    io_in_tx_req_bits_size,
+  input  logic [47:0]   io_in_tx_req_bits_addr,
+  input  logic          io_in_tx_req_bits_ns,
+  input  logic          io_in_tx_req_bits_likelyshared,
+  input  logic          io_in_tx_req_bits_allowRetry,
+  input  logic [1:0]    io_in_tx_req_bits_order,
+  input  logic [3:0]    io_in_tx_req_bits_pCrdType,
+  input  logic          io_in_tx_req_bits_memAttr_allocate,
+  input  logic          io_in_tx_req_bits_memAttr_cacheable,
+  input  logic          io_in_tx_req_bits_memAttr_device,
+  input  logic          io_in_tx_req_bits_memAttr_ewa,
+  input  logic          io_in_tx_req_bits_snpAttr,
+  input  logic [7:0]    io_in_tx_req_bits_lpIDWithPadding,
+  input  logic          io_in_tx_req_bits_snoopMe,
+  input  logic          io_in_tx_req_bits_expCompAck,
+  input  logic [1:0]    io_in_tx_req_bits_tagOp,
+  input  logic          io_in_tx_req_bits_traceTag,
+  input  logic          io_in_tx_req_bits_mpam_perfMonGroup,
+  input  logic [8:0]    io_in_tx_req_bits_mpam_partID,
+  input  logic          io_in_tx_req_bits_mpam_mpamNS,
+  input  logic [3:0]    io_in_tx_req_bits_rsvdc,
+  output logic          io_in_tx_rsp_ready,
+  input  logic          io_in_tx_rsp_valid,
+  input  logic [3:0]    io_in_tx_rsp_bits_qos,
+  input  logic [10:0]   io_in_tx_rsp_bits_tgtID,
+  input  logic [11:0]   io_in_tx_rsp_bits_txnID,
+  input  logic [4:0]    io_in_tx_rsp_bits_opcode,
+  input  logic [1:0]    io_in_tx_rsp_bits_respErr,
+  input  logic [2:0]    io_in_tx_rsp_bits_resp,
+  input  logic [2:0]    io_in_tx_rsp_bits_fwdState,
+  input  logic [2:0]    io_in_tx_rsp_bits_cBusy,
+  input  logic [11:0]   io_in_tx_rsp_bits_dbID,
+  input  logic [3:0]    io_in_tx_rsp_bits_pCrdType,
+  input  logic [1:0]    io_in_tx_rsp_bits_tagOp,
+  input  logic          io_in_tx_rsp_bits_traceTag,
+  output logic          io_in_tx_dat_ready,
+  input  logic          io_in_tx_dat_valid,
+  input  logic [3:0]    io_in_tx_dat_bits_qos,
+  input  logic [10:0]   io_in_tx_dat_bits_tgtID,
+  input  logic [11:0]   io_in_tx_dat_bits_txnID,
+  input  logic [10:0]   io_in_tx_dat_bits_homeNID,
+  input  logic [3:0]    io_in_tx_dat_bits_opcode,
+  input  logic [1:0]    io_in_tx_dat_bits_respErr,
+  input  logic [2:0]    io_in_tx_dat_bits_resp,
+  input  logic [3:0]    io_in_tx_dat_bits_dataSource,
+  input  logic [2:0]    io_in_tx_dat_bits_cBusy,
+  input  logic [11:0]   io_in_tx_dat_bits_dbID,
+  input  logic [1:0]    io_in_tx_dat_bits_ccID,
+  input  logic [1:0]    io_in_tx_dat_bits_dataID,
+  input  logic [1:0]    io_in_tx_dat_bits_tagOp,
+  input  logic [7:0]    io_in_tx_dat_bits_tag,
+  input  logic [1:0]    io_in_tx_dat_bits_tu,
+  input  logic          io_in_tx_dat_bits_traceTag,
+  input  logic [3:0]    io_in_tx_dat_bits_rsvdc,
+  input  logic [31:0]   io_in_tx_dat_bits_be,
+  input  logic [255:0]  io_in_tx_dat_bits_data,
+  input  logic [31:0]   io_in_tx_dat_bits_dataCheck,
+  input  logic [3:0]    io_in_tx_dat_bits_poison,
+  input  logic          io_in_rx_rsp_ready,
+  output logic          io_in_rx_rsp_valid,
+  output logic [3:0]    io_in_rx_rsp_bits_qos,
+  output logic [10:0]   io_in_rx_rsp_bits_tgtID,
+  output logic [10:0]   io_in_rx_rsp_bits_srcID,
+  output logic [11:0]   io_in_rx_rsp_bits_txnID,
+  output logic [4:0]    io_in_rx_rsp_bits_opcode,
+  output logic [1:0]    io_in_rx_rsp_bits_respErr,
+  output logic [2:0]    io_in_rx_rsp_bits_resp,
+  output logic [2:0]    io_in_rx_rsp_bits_fwdState,
+  output logic [2:0]    io_in_rx_rsp_bits_cBusy,
+  output logic [11:0]   io_in_rx_rsp_bits_dbID,
+  output logic [3:0]    io_in_rx_rsp_bits_pCrdType,
+  output logic [1:0]    io_in_rx_rsp_bits_tagOp,
+  output logic          io_in_rx_rsp_bits_traceTag,
+  input  logic          io_in_rx_dat_ready,
+  output logic          io_in_rx_dat_valid,
+  output logic [3:0]    io_in_rx_dat_bits_qos,
+  output logic [10:0]   io_in_rx_dat_bits_tgtID,
+  output logic [10:0]   io_in_rx_dat_bits_srcID,
+  output logic [11:0]   io_in_rx_dat_bits_txnID,
+  output logic [10:0]   io_in_rx_dat_bits_homeNID,
+  output logic [3:0]    io_in_rx_dat_bits_opcode,
+  output logic [1:0]    io_in_rx_dat_bits_respErr,
+  output logic [2:0]    io_in_rx_dat_bits_resp,
+  output logic [3:0]    io_in_rx_dat_bits_dataSource,
+  output logic [2:0]    io_in_rx_dat_bits_cBusy,
+  output logic [11:0]   io_in_rx_dat_bits_dbID,
+  output logic [1:0]    io_in_rx_dat_bits_ccID,
+  output logic [1:0]    io_in_rx_dat_bits_dataID,
+  output logic [1:0]    io_in_rx_dat_bits_tagOp,
+  output logic [7:0]    io_in_rx_dat_bits_tag,
+  output logic [1:0]    io_in_rx_dat_bits_tu,
+  output logic          io_in_rx_dat_bits_traceTag,
+  output logic [3:0]    io_in_rx_dat_bits_rsvdc,
+  output logic [31:0]   io_in_rx_dat_bits_be,
+  output logic [255:0]  io_in_rx_dat_bits_data,
+  output logic [31:0]   io_in_rx_dat_bits_dataCheck,
+  output logic [3:0]    io_in_rx_dat_bits_poison,
+  input  logic          io_in_rx_snp_ready,
+  output logic          io_in_rx_snp_valid,
+  output logic [3:0]    io_in_rx_snp_bits_qos,
+  output logic [10:0]   io_in_rx_snp_bits_srcID,
+  output logic [11:0]   io_in_rx_snp_bits_txnID,
+  output logic [10:0]   io_in_rx_snp_bits_fwdNID,
+  output logic [11:0]   io_in_rx_snp_bits_fwdTxnID,
+  output logic [4:0]    io_in_rx_snp_bits_opcode,
+  output logic [44:0]   io_in_rx_snp_bits_addr,
+  output logic          io_in_rx_snp_bits_ns,
+  output logic          io_in_rx_snp_bits_doNotGoToSD,
+  output logic          io_in_rx_snp_bits_retToSrc,
+  output logic          io_in_rx_snp_bits_traceTag,
+  output logic          io_in_rx_snp_bits_mpam_perfMonGroup,
+  output logic [8:0]    io_in_rx_snp_bits_mpam_partID,
+  output logic          io_in_rx_snp_bits_mpam_mpamNS,
+  output logic          io_out_txsactive,
+  input  logic          io_out_rxsactive,
+  output logic          io_out_syscoreq,
+  input  logic          io_out_syscoack,
+  output logic          io_out_tx_linkactivereq,
+  input  logic          io_out_tx_linkactiveack,
+  output logic          io_out_tx_req_flitpend,
+  output logic          io_out_tx_req_flitv,
+  output logic [161:0]  io_out_tx_req_flit,
+  input  logic          io_out_tx_req_lcrdv,
+  output logic          io_out_tx_rsp_flitpend,
+  output logic          io_out_tx_rsp_flitv,
+  output logic [72:0]   io_out_tx_rsp_flit,
+  input  logic          io_out_tx_rsp_lcrdv,
+  output logic          io_out_tx_dat_flitpend,
+  output logic          io_out_tx_dat_flitv,
+  output logic [421:0]  io_out_tx_dat_flit,
+  input  logic          io_out_tx_dat_lcrdv,
+  input  logic          io_out_rx_linkactivereq,
+  output logic          io_out_rx_linkactiveack,
+  input  logic          io_out_rx_rsp_flitpend,
+  input  logic          io_out_rx_rsp_flitv,
+  input  logic [72:0]   io_out_rx_rsp_flit,
+  output logic          io_out_rx_rsp_lcrdv,
+  input  logic          io_out_rx_dat_flitpend,
+  input  logic          io_out_rx_dat_flitv,
+  input  logic [421:0]  io_out_rx_dat_flit,
+  output logic          io_out_rx_dat_lcrdv,
+  input  logic          io_out_rx_snp_flitpend,
+  input  logic          io_out_rx_snp_flitv,
+  input  logic [114:0]  io_out_rx_snp_flit,
+  output logic          io_out_rx_snp_lcrdv,
+  input  logic [10:0]   io_nodeID
+);
+  logic [1:0] tx_state;
+  logic [1:0] rx_state;
+  logic       txreq_in_ready;
+  logic       rxrsp_valid;
+  logic [4:0] rxrsp_opcode;
+  logic       rxsnp_reclaim;
+  logic       rxrsp_reclaim;
+  logic       rxdat_reclaim;
+
+  // ---------------------------------------------------------------------------
+  // §1/§2/§5 链路态机、握手线、计数器
+  // ---------------------------------------------------------------------------
+  xs_LinkMonitor_core u_core (
+    .clock             (clock),
+    .reset             (reset),
+    .tx_linkactiveack  (io_out_tx_linkactiveack),
+    .rx_linkactivereq  (io_out_rx_linkactivereq),
+    .syscoack          (io_out_syscoack),
+    .tx_linkactivereq  (io_out_tx_linkactivereq),
+    .rx_linkactiveack  (io_out_rx_linkactiveack),
+    .syscoreq          (io_out_syscoreq),
+    .txsactive         (io_out_txsactive),
+    .tx_state          (tx_state),
+    .rx_state          (rx_state),
+    .rxsnp_reclaim     (rxsnp_reclaim),
+    .rxrsp_reclaim     (rxrsp_reclaim),
+    .rxdat_reclaim     (rxdat_reclaim),
+    .rxrsp_fire        (io_in_rx_rsp_ready & rxrsp_valid),
+    .rxrsp_opcode      (rxrsp_opcode),
+    .txreq_fire        (txreq_in_ready & io_in_tx_req_valid),
+    .txreq_allow_retry (io_in_tx_req_bits_allowRetry)
+  );
+
+  // ---------------------------------------------------------------------------
+  // §3 TX：上层 Decoupled -> CHI flit（Decoupled2LCredit，带 L-Credit 发送）
+  //   三个发送端都按 tx_state 决定能否发 flit / 何时把手里的信用还掉；srcID 统一注入 io_nodeID
+  //   （Scala setSrcID）。txreq 的 in_ready 还要回来给 noAllowRetry 计数用。
+  // ---------------------------------------------------------------------------
+  Decoupled2LCredit Decoupled2LCredit_txreqLink (
     .clock                        (clock),
     .reset                        (reset),
     .io_in_ready                  (txreq_in_ready),
@@ -403,9 +391,9 @@ module xs_LinkMonitor_core
     .io_out_flitv                 (io_out_tx_req_flitv),
     .io_out_flit                  (io_out_tx_req_flit),
     .io_out_lcrdv                 (io_out_tx_req_lcrdv),
-    .io_state_state               (link_st[DIR_TX])
+    .io_state_state               (tx_state)
   );
-  Decoupled2LCredit_1 Decoupled2LCredit_txrsp (
+  Decoupled2LCredit_1 Decoupled2LCredit_txrspLink (
     .clock               (clock),
     .reset               (reset),
     .io_in_ready         (io_in_tx_rsp_ready),
@@ -427,9 +415,9 @@ module xs_LinkMonitor_core
     .io_out_flitv        (io_out_tx_rsp_flitv),
     .io_out_flit         (io_out_tx_rsp_flit),
     .io_out_lcrdv        (io_out_tx_rsp_lcrdv),
-    .io_state_state      (link_st[DIR_TX])
+    .io_state_state      (tx_state)
   );
-  Decoupled2LCredit_2 Decoupled2LCredit_txdat (
+  Decoupled2LCredit_2 Decoupled2LCredit_txdatLink (
     .clock                 (clock),
     .reset                 (reset),
     .io_in_ready           (io_in_tx_dat_ready),
@@ -460,12 +448,15 @@ module xs_LinkMonitor_core
     .io_out_flitv          (io_out_tx_dat_flitv),
     .io_out_flit           (io_out_tx_dat_flit),
     .io_out_lcrdv          (io_out_tx_dat_lcrdv),
-    .io_state_state        (link_st[DIR_TX])
+    .io_state_state        (tx_state)
   );
 
-  // ===========================================================================
-  //  下行 RX flit 转换子模块 (flit → Decoupled), 各自回报 L-Credit 回收完成。
-  // ===========================================================================
+  // ---------------------------------------------------------------------------
+  // §4 RX：CHI flit -> 上层 Decoupled（LCredit2Decoupled，带 L-Credit 接收）
+  //   rxsnp 是阻塞型（4 信用 + 4 项队列 Queue4_CHISNP），rxrsp / rxdat 是非阻塞型（15 信用、
+  //   无队列）。三者各报 reclaimLCredit（手里没有欠对端的信用），合起来决定 rx 能否去激活。
+  //   rxrsp 的 valid/opcode 还要回来给 RetryAck / PCrdGrant 计数用。
+  // ---------------------------------------------------------------------------
   LCredit2Decoupled LCredit2Decoupled_rxsnp (
     .clock                         (clock),
     .reset                         (reset),
@@ -488,7 +479,7 @@ module xs_LinkMonitor_core
     .io_out_bits_mpam_perfMonGroup (io_in_rx_snp_bits_mpam_perfMonGroup),
     .io_out_bits_mpam_partID       (io_in_rx_snp_bits_mpam_partID),
     .io_out_bits_mpam_mpamNS       (io_in_rx_snp_bits_mpam_mpamNS),
-    .io_state_state                (link_st[DIR_RX]),
+    .io_state_state                (rx_state),
     .io_reclaimLCredit             (rxsnp_reclaim)
   );
   LCredit2Decoupled_1 LCredit2Decoupled_rxrsp (
@@ -498,12 +489,12 @@ module xs_LinkMonitor_core
     .io_in_flit           (io_out_rx_rsp_flit),
     .io_in_lcrdv          (io_out_rx_rsp_lcrdv),
     .io_out_ready         (io_in_rx_rsp_ready),
-    .io_out_valid         (rxrsp_out_valid),
+    .io_out_valid         (rxrsp_valid),
     .io_out_bits_qos      (io_in_rx_rsp_bits_qos),
     .io_out_bits_tgtID    (io_in_rx_rsp_bits_tgtID),
     .io_out_bits_srcID    (io_in_rx_rsp_bits_srcID),
     .io_out_bits_txnID    (io_in_rx_rsp_bits_txnID),
-    .io_out_bits_opcode   (rxrsp_out_opcode),
+    .io_out_bits_opcode   (rxrsp_opcode),
     .io_out_bits_respErr  (io_in_rx_rsp_bits_respErr),
     .io_out_bits_resp     (io_in_rx_rsp_bits_resp),
     .io_out_bits_fwdState (io_in_rx_rsp_bits_fwdState),
@@ -512,7 +503,7 @@ module xs_LinkMonitor_core
     .io_out_bits_pCrdType (io_in_rx_rsp_bits_pCrdType),
     .io_out_bits_tagOp    (io_in_rx_rsp_bits_tagOp),
     .io_out_bits_traceTag (io_in_rx_rsp_bits_traceTag),
-    .io_state_state       (link_st[DIR_RX]),
+    .io_state_state       (rx_state),
     .io_reclaimLCredit    (rxrsp_reclaim)
   );
   LCredit2Decoupled_2 LCredit2Decoupled_rxdat (
@@ -545,345 +536,11 @@ module xs_LinkMonitor_core
     .io_out_bits_data       (io_in_rx_dat_bits_data),
     .io_out_bits_dataCheck  (io_in_rx_dat_bits_dataCheck),
     .io_out_bits_poison     (io_in_rx_dat_bits_poison),
-    .io_state_state         (link_st[DIR_RX]),
+    .io_state_state         (rx_state),
     .io_reclaimLCredit      (rxdat_reclaim)
   );
 
-  // ===========================================================================
-  //  本核直接驱动的输出 (其余输出由上面子模块直接连出)
-  // ===========================================================================
   assign io_in_tx_req_ready       = txreq_in_ready;
-  assign io_in_rx_rsp_valid       = rxrsp_out_valid;
-  assign io_in_rx_rsp_bits_opcode = rxrsp_out_opcode;
-  assign io_out_txsactive         = txsactive_q;
-  assign io_out_syscoreq          = syscoreq_q;
-  assign io_out_tx_linkactivereq  = tx_linkactivereq_q;
-  assign io_out_rx_linkactiveack  = rx_linkactiveack_q;
-
-endmodule
-
-// 自动生成：xs-v2r2-sv/scripts/gen_linkmonitor.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
-
-// ---------------------------------------------------------------------------
-// golden 同名 wrapper
-// ---------------------------------------------------------------------------
-
-module LinkMonitor(
-  input clock,
-  input reset,
-  output io_in_tx_req_ready,
-  input io_in_tx_req_valid,
-  input [3:0] io_in_tx_req_bits_qos,
-  input [10:0] io_in_tx_req_bits_tgtID,
-  input [11:0] io_in_tx_req_bits_txnID,
-  input [10:0] io_in_tx_req_bits_returnNID,
-  input io_in_tx_req_bits_stashNIDValid,
-  input [11:0] io_in_tx_req_bits_returnTxnID,
-  input [6:0] io_in_tx_req_bits_opcode,
-  input [2:0] io_in_tx_req_bits_size,
-  input [47:0] io_in_tx_req_bits_addr,
-  input io_in_tx_req_bits_ns,
-  input io_in_tx_req_bits_likelyshared,
-  input io_in_tx_req_bits_allowRetry,
-  input [1:0] io_in_tx_req_bits_order,
-  input [3:0] io_in_tx_req_bits_pCrdType,
-  input io_in_tx_req_bits_memAttr_allocate,
-  input io_in_tx_req_bits_memAttr_cacheable,
-  input io_in_tx_req_bits_memAttr_device,
-  input io_in_tx_req_bits_memAttr_ewa,
-  input io_in_tx_req_bits_snpAttr,
-  input [7:0] io_in_tx_req_bits_lpIDWithPadding,
-  input io_in_tx_req_bits_snoopMe,
-  input io_in_tx_req_bits_expCompAck,
-  input [1:0] io_in_tx_req_bits_tagOp,
-  input io_in_tx_req_bits_traceTag,
-  input io_in_tx_req_bits_mpam_perfMonGroup,
-  input [8:0] io_in_tx_req_bits_mpam_partID,
-  input io_in_tx_req_bits_mpam_mpamNS,
-  input [3:0] io_in_tx_req_bits_rsvdc,
-  output io_in_tx_rsp_ready,
-  input io_in_tx_rsp_valid,
-  input [3:0] io_in_tx_rsp_bits_qos,
-  input [10:0] io_in_tx_rsp_bits_tgtID,
-  input [11:0] io_in_tx_rsp_bits_txnID,
-  input [4:0] io_in_tx_rsp_bits_opcode,
-  input [1:0] io_in_tx_rsp_bits_respErr,
-  input [2:0] io_in_tx_rsp_bits_resp,
-  input [2:0] io_in_tx_rsp_bits_fwdState,
-  input [2:0] io_in_tx_rsp_bits_cBusy,
-  input [11:0] io_in_tx_rsp_bits_dbID,
-  input [3:0] io_in_tx_rsp_bits_pCrdType,
-  input [1:0] io_in_tx_rsp_bits_tagOp,
-  input io_in_tx_rsp_bits_traceTag,
-  output io_in_tx_dat_ready,
-  input io_in_tx_dat_valid,
-  input [3:0] io_in_tx_dat_bits_qos,
-  input [10:0] io_in_tx_dat_bits_tgtID,
-  input [11:0] io_in_tx_dat_bits_txnID,
-  input [10:0] io_in_tx_dat_bits_homeNID,
-  input [3:0] io_in_tx_dat_bits_opcode,
-  input [1:0] io_in_tx_dat_bits_respErr,
-  input [2:0] io_in_tx_dat_bits_resp,
-  input [3:0] io_in_tx_dat_bits_dataSource,
-  input [2:0] io_in_tx_dat_bits_cBusy,
-  input [11:0] io_in_tx_dat_bits_dbID,
-  input [1:0] io_in_tx_dat_bits_ccID,
-  input [1:0] io_in_tx_dat_bits_dataID,
-  input [1:0] io_in_tx_dat_bits_tagOp,
-  input [7:0] io_in_tx_dat_bits_tag,
-  input [1:0] io_in_tx_dat_bits_tu,
-  input io_in_tx_dat_bits_traceTag,
-  input [3:0] io_in_tx_dat_bits_rsvdc,
-  input [31:0] io_in_tx_dat_bits_be,
-  input [255:0] io_in_tx_dat_bits_data,
-  input [31:0] io_in_tx_dat_bits_dataCheck,
-  input [3:0] io_in_tx_dat_bits_poison,
-  input io_in_rx_rsp_ready,
-  output io_in_rx_rsp_valid,
-  output [3:0] io_in_rx_rsp_bits_qos,
-  output [10:0] io_in_rx_rsp_bits_tgtID,
-  output [10:0] io_in_rx_rsp_bits_srcID,
-  output [11:0] io_in_rx_rsp_bits_txnID,
-  output [4:0] io_in_rx_rsp_bits_opcode,
-  output [1:0] io_in_rx_rsp_bits_respErr,
-  output [2:0] io_in_rx_rsp_bits_resp,
-  output [2:0] io_in_rx_rsp_bits_fwdState,
-  output [2:0] io_in_rx_rsp_bits_cBusy,
-  output [11:0] io_in_rx_rsp_bits_dbID,
-  output [3:0] io_in_rx_rsp_bits_pCrdType,
-  output [1:0] io_in_rx_rsp_bits_tagOp,
-  output io_in_rx_rsp_bits_traceTag,
-  input io_in_rx_dat_ready,
-  output io_in_rx_dat_valid,
-  output [3:0] io_in_rx_dat_bits_qos,
-  output [10:0] io_in_rx_dat_bits_tgtID,
-  output [10:0] io_in_rx_dat_bits_srcID,
-  output [11:0] io_in_rx_dat_bits_txnID,
-  output [10:0] io_in_rx_dat_bits_homeNID,
-  output [3:0] io_in_rx_dat_bits_opcode,
-  output [1:0] io_in_rx_dat_bits_respErr,
-  output [2:0] io_in_rx_dat_bits_resp,
-  output [3:0] io_in_rx_dat_bits_dataSource,
-  output [2:0] io_in_rx_dat_bits_cBusy,
-  output [11:0] io_in_rx_dat_bits_dbID,
-  output [1:0] io_in_rx_dat_bits_ccID,
-  output [1:0] io_in_rx_dat_bits_dataID,
-  output [1:0] io_in_rx_dat_bits_tagOp,
-  output [7:0] io_in_rx_dat_bits_tag,
-  output [1:0] io_in_rx_dat_bits_tu,
-  output io_in_rx_dat_bits_traceTag,
-  output [3:0] io_in_rx_dat_bits_rsvdc,
-  output [31:0] io_in_rx_dat_bits_be,
-  output [255:0] io_in_rx_dat_bits_data,
-  output [31:0] io_in_rx_dat_bits_dataCheck,
-  output [3:0] io_in_rx_dat_bits_poison,
-  input io_in_rx_snp_ready,
-  output io_in_rx_snp_valid,
-  output [3:0] io_in_rx_snp_bits_qos,
-  output [10:0] io_in_rx_snp_bits_srcID,
-  output [11:0] io_in_rx_snp_bits_txnID,
-  output [10:0] io_in_rx_snp_bits_fwdNID,
-  output [11:0] io_in_rx_snp_bits_fwdTxnID,
-  output [4:0] io_in_rx_snp_bits_opcode,
-  output [44:0] io_in_rx_snp_bits_addr,
-  output io_in_rx_snp_bits_ns,
-  output io_in_rx_snp_bits_doNotGoToSD,
-  output io_in_rx_snp_bits_retToSrc,
-  output io_in_rx_snp_bits_traceTag,
-  output io_in_rx_snp_bits_mpam_perfMonGroup,
-  output [8:0] io_in_rx_snp_bits_mpam_partID,
-  output io_in_rx_snp_bits_mpam_mpamNS,
-  output io_out_txsactive,
-  input io_out_rxsactive,
-  output io_out_syscoreq,
-  input io_out_syscoack,
-  output io_out_tx_linkactivereq,
-  input io_out_tx_linkactiveack,
-  output io_out_tx_req_flitpend,
-  output io_out_tx_req_flitv,
-  output [161:0] io_out_tx_req_flit,
-  input io_out_tx_req_lcrdv,
-  output io_out_tx_rsp_flitpend,
-  output io_out_tx_rsp_flitv,
-  output [72:0] io_out_tx_rsp_flit,
-  input io_out_tx_rsp_lcrdv,
-  output io_out_tx_dat_flitpend,
-  output io_out_tx_dat_flitv,
-  output [421:0] io_out_tx_dat_flit,
-  input io_out_tx_dat_lcrdv,
-  input io_out_rx_linkactivereq,
-  output io_out_rx_linkactiveack,
-  input io_out_rx_rsp_flitpend,
-  input io_out_rx_rsp_flitv,
-  input [72:0] io_out_rx_rsp_flit,
-  output io_out_rx_rsp_lcrdv,
-  input io_out_rx_dat_flitpend,
-  input io_out_rx_dat_flitv,
-  input [421:0] io_out_rx_dat_flit,
-  output io_out_rx_dat_lcrdv,
-  input io_out_rx_snp_flitpend,
-  input io_out_rx_snp_flitv,
-  input [114:0] io_out_rx_snp_flit,
-  output io_out_rx_snp_lcrdv,
-  input [10:0] io_nodeID
-);
-  xs_LinkMonitor_core u_core (
-    .clock(clock),
-    .reset(reset),
-    .io_in_tx_req_ready(io_in_tx_req_ready),
-    .io_in_tx_req_valid(io_in_tx_req_valid),
-    .io_in_tx_req_bits_qos(io_in_tx_req_bits_qos),
-    .io_in_tx_req_bits_tgtID(io_in_tx_req_bits_tgtID),
-    .io_in_tx_req_bits_txnID(io_in_tx_req_bits_txnID),
-    .io_in_tx_req_bits_returnNID(io_in_tx_req_bits_returnNID),
-    .io_in_tx_req_bits_stashNIDValid(io_in_tx_req_bits_stashNIDValid),
-    .io_in_tx_req_bits_returnTxnID(io_in_tx_req_bits_returnTxnID),
-    .io_in_tx_req_bits_opcode(io_in_tx_req_bits_opcode),
-    .io_in_tx_req_bits_size(io_in_tx_req_bits_size),
-    .io_in_tx_req_bits_addr(io_in_tx_req_bits_addr),
-    .io_in_tx_req_bits_ns(io_in_tx_req_bits_ns),
-    .io_in_tx_req_bits_likelyshared(io_in_tx_req_bits_likelyshared),
-    .io_in_tx_req_bits_allowRetry(io_in_tx_req_bits_allowRetry),
-    .io_in_tx_req_bits_order(io_in_tx_req_bits_order),
-    .io_in_tx_req_bits_pCrdType(io_in_tx_req_bits_pCrdType),
-    .io_in_tx_req_bits_memAttr_allocate(io_in_tx_req_bits_memAttr_allocate),
-    .io_in_tx_req_bits_memAttr_cacheable(io_in_tx_req_bits_memAttr_cacheable),
-    .io_in_tx_req_bits_memAttr_device(io_in_tx_req_bits_memAttr_device),
-    .io_in_tx_req_bits_memAttr_ewa(io_in_tx_req_bits_memAttr_ewa),
-    .io_in_tx_req_bits_snpAttr(io_in_tx_req_bits_snpAttr),
-    .io_in_tx_req_bits_lpIDWithPadding(io_in_tx_req_bits_lpIDWithPadding),
-    .io_in_tx_req_bits_snoopMe(io_in_tx_req_bits_snoopMe),
-    .io_in_tx_req_bits_expCompAck(io_in_tx_req_bits_expCompAck),
-    .io_in_tx_req_bits_tagOp(io_in_tx_req_bits_tagOp),
-    .io_in_tx_req_bits_traceTag(io_in_tx_req_bits_traceTag),
-    .io_in_tx_req_bits_mpam_perfMonGroup(io_in_tx_req_bits_mpam_perfMonGroup),
-    .io_in_tx_req_bits_mpam_partID(io_in_tx_req_bits_mpam_partID),
-    .io_in_tx_req_bits_mpam_mpamNS(io_in_tx_req_bits_mpam_mpamNS),
-    .io_in_tx_req_bits_rsvdc(io_in_tx_req_bits_rsvdc),
-    .io_in_tx_rsp_ready(io_in_tx_rsp_ready),
-    .io_in_tx_rsp_valid(io_in_tx_rsp_valid),
-    .io_in_tx_rsp_bits_qos(io_in_tx_rsp_bits_qos),
-    .io_in_tx_rsp_bits_tgtID(io_in_tx_rsp_bits_tgtID),
-    .io_in_tx_rsp_bits_txnID(io_in_tx_rsp_bits_txnID),
-    .io_in_tx_rsp_bits_opcode(io_in_tx_rsp_bits_opcode),
-    .io_in_tx_rsp_bits_respErr(io_in_tx_rsp_bits_respErr),
-    .io_in_tx_rsp_bits_resp(io_in_tx_rsp_bits_resp),
-    .io_in_tx_rsp_bits_fwdState(io_in_tx_rsp_bits_fwdState),
-    .io_in_tx_rsp_bits_cBusy(io_in_tx_rsp_bits_cBusy),
-    .io_in_tx_rsp_bits_dbID(io_in_tx_rsp_bits_dbID),
-    .io_in_tx_rsp_bits_pCrdType(io_in_tx_rsp_bits_pCrdType),
-    .io_in_tx_rsp_bits_tagOp(io_in_tx_rsp_bits_tagOp),
-    .io_in_tx_rsp_bits_traceTag(io_in_tx_rsp_bits_traceTag),
-    .io_in_tx_dat_ready(io_in_tx_dat_ready),
-    .io_in_tx_dat_valid(io_in_tx_dat_valid),
-    .io_in_tx_dat_bits_qos(io_in_tx_dat_bits_qos),
-    .io_in_tx_dat_bits_tgtID(io_in_tx_dat_bits_tgtID),
-    .io_in_tx_dat_bits_txnID(io_in_tx_dat_bits_txnID),
-    .io_in_tx_dat_bits_homeNID(io_in_tx_dat_bits_homeNID),
-    .io_in_tx_dat_bits_opcode(io_in_tx_dat_bits_opcode),
-    .io_in_tx_dat_bits_respErr(io_in_tx_dat_bits_respErr),
-    .io_in_tx_dat_bits_resp(io_in_tx_dat_bits_resp),
-    .io_in_tx_dat_bits_dataSource(io_in_tx_dat_bits_dataSource),
-    .io_in_tx_dat_bits_cBusy(io_in_tx_dat_bits_cBusy),
-    .io_in_tx_dat_bits_dbID(io_in_tx_dat_bits_dbID),
-    .io_in_tx_dat_bits_ccID(io_in_tx_dat_bits_ccID),
-    .io_in_tx_dat_bits_dataID(io_in_tx_dat_bits_dataID),
-    .io_in_tx_dat_bits_tagOp(io_in_tx_dat_bits_tagOp),
-    .io_in_tx_dat_bits_tag(io_in_tx_dat_bits_tag),
-    .io_in_tx_dat_bits_tu(io_in_tx_dat_bits_tu),
-    .io_in_tx_dat_bits_traceTag(io_in_tx_dat_bits_traceTag),
-    .io_in_tx_dat_bits_rsvdc(io_in_tx_dat_bits_rsvdc),
-    .io_in_tx_dat_bits_be(io_in_tx_dat_bits_be),
-    .io_in_tx_dat_bits_data(io_in_tx_dat_bits_data),
-    .io_in_tx_dat_bits_dataCheck(io_in_tx_dat_bits_dataCheck),
-    .io_in_tx_dat_bits_poison(io_in_tx_dat_bits_poison),
-    .io_in_rx_rsp_ready(io_in_rx_rsp_ready),
-    .io_in_rx_rsp_valid(io_in_rx_rsp_valid),
-    .io_in_rx_rsp_bits_qos(io_in_rx_rsp_bits_qos),
-    .io_in_rx_rsp_bits_tgtID(io_in_rx_rsp_bits_tgtID),
-    .io_in_rx_rsp_bits_srcID(io_in_rx_rsp_bits_srcID),
-    .io_in_rx_rsp_bits_txnID(io_in_rx_rsp_bits_txnID),
-    .io_in_rx_rsp_bits_opcode(io_in_rx_rsp_bits_opcode),
-    .io_in_rx_rsp_bits_respErr(io_in_rx_rsp_bits_respErr),
-    .io_in_rx_rsp_bits_resp(io_in_rx_rsp_bits_resp),
-    .io_in_rx_rsp_bits_fwdState(io_in_rx_rsp_bits_fwdState),
-    .io_in_rx_rsp_bits_cBusy(io_in_rx_rsp_bits_cBusy),
-    .io_in_rx_rsp_bits_dbID(io_in_rx_rsp_bits_dbID),
-    .io_in_rx_rsp_bits_pCrdType(io_in_rx_rsp_bits_pCrdType),
-    .io_in_rx_rsp_bits_tagOp(io_in_rx_rsp_bits_tagOp),
-    .io_in_rx_rsp_bits_traceTag(io_in_rx_rsp_bits_traceTag),
-    .io_in_rx_dat_ready(io_in_rx_dat_ready),
-    .io_in_rx_dat_valid(io_in_rx_dat_valid),
-    .io_in_rx_dat_bits_qos(io_in_rx_dat_bits_qos),
-    .io_in_rx_dat_bits_tgtID(io_in_rx_dat_bits_tgtID),
-    .io_in_rx_dat_bits_srcID(io_in_rx_dat_bits_srcID),
-    .io_in_rx_dat_bits_txnID(io_in_rx_dat_bits_txnID),
-    .io_in_rx_dat_bits_homeNID(io_in_rx_dat_bits_homeNID),
-    .io_in_rx_dat_bits_opcode(io_in_rx_dat_bits_opcode),
-    .io_in_rx_dat_bits_respErr(io_in_rx_dat_bits_respErr),
-    .io_in_rx_dat_bits_resp(io_in_rx_dat_bits_resp),
-    .io_in_rx_dat_bits_dataSource(io_in_rx_dat_bits_dataSource),
-    .io_in_rx_dat_bits_cBusy(io_in_rx_dat_bits_cBusy),
-    .io_in_rx_dat_bits_dbID(io_in_rx_dat_bits_dbID),
-    .io_in_rx_dat_bits_ccID(io_in_rx_dat_bits_ccID),
-    .io_in_rx_dat_bits_dataID(io_in_rx_dat_bits_dataID),
-    .io_in_rx_dat_bits_tagOp(io_in_rx_dat_bits_tagOp),
-    .io_in_rx_dat_bits_tag(io_in_rx_dat_bits_tag),
-    .io_in_rx_dat_bits_tu(io_in_rx_dat_bits_tu),
-    .io_in_rx_dat_bits_traceTag(io_in_rx_dat_bits_traceTag),
-    .io_in_rx_dat_bits_rsvdc(io_in_rx_dat_bits_rsvdc),
-    .io_in_rx_dat_bits_be(io_in_rx_dat_bits_be),
-    .io_in_rx_dat_bits_data(io_in_rx_dat_bits_data),
-    .io_in_rx_dat_bits_dataCheck(io_in_rx_dat_bits_dataCheck),
-    .io_in_rx_dat_bits_poison(io_in_rx_dat_bits_poison),
-    .io_in_rx_snp_ready(io_in_rx_snp_ready),
-    .io_in_rx_snp_valid(io_in_rx_snp_valid),
-    .io_in_rx_snp_bits_qos(io_in_rx_snp_bits_qos),
-    .io_in_rx_snp_bits_srcID(io_in_rx_snp_bits_srcID),
-    .io_in_rx_snp_bits_txnID(io_in_rx_snp_bits_txnID),
-    .io_in_rx_snp_bits_fwdNID(io_in_rx_snp_bits_fwdNID),
-    .io_in_rx_snp_bits_fwdTxnID(io_in_rx_snp_bits_fwdTxnID),
-    .io_in_rx_snp_bits_opcode(io_in_rx_snp_bits_opcode),
-    .io_in_rx_snp_bits_addr(io_in_rx_snp_bits_addr),
-    .io_in_rx_snp_bits_ns(io_in_rx_snp_bits_ns),
-    .io_in_rx_snp_bits_doNotGoToSD(io_in_rx_snp_bits_doNotGoToSD),
-    .io_in_rx_snp_bits_retToSrc(io_in_rx_snp_bits_retToSrc),
-    .io_in_rx_snp_bits_traceTag(io_in_rx_snp_bits_traceTag),
-    .io_in_rx_snp_bits_mpam_perfMonGroup(io_in_rx_snp_bits_mpam_perfMonGroup),
-    .io_in_rx_snp_bits_mpam_partID(io_in_rx_snp_bits_mpam_partID),
-    .io_in_rx_snp_bits_mpam_mpamNS(io_in_rx_snp_bits_mpam_mpamNS),
-    .io_out_txsactive(io_out_txsactive),
-    .io_out_rxsactive(io_out_rxsactive),
-    .io_out_syscoreq(io_out_syscoreq),
-    .io_out_syscoack(io_out_syscoack),
-    .io_out_tx_linkactivereq(io_out_tx_linkactivereq),
-    .io_out_tx_linkactiveack(io_out_tx_linkactiveack),
-    .io_out_tx_req_flitpend(io_out_tx_req_flitpend),
-    .io_out_tx_req_flitv(io_out_tx_req_flitv),
-    .io_out_tx_req_flit(io_out_tx_req_flit),
-    .io_out_tx_req_lcrdv(io_out_tx_req_lcrdv),
-    .io_out_tx_rsp_flitpend(io_out_tx_rsp_flitpend),
-    .io_out_tx_rsp_flitv(io_out_tx_rsp_flitv),
-    .io_out_tx_rsp_flit(io_out_tx_rsp_flit),
-    .io_out_tx_rsp_lcrdv(io_out_tx_rsp_lcrdv),
-    .io_out_tx_dat_flitpend(io_out_tx_dat_flitpend),
-    .io_out_tx_dat_flitv(io_out_tx_dat_flitv),
-    .io_out_tx_dat_flit(io_out_tx_dat_flit),
-    .io_out_tx_dat_lcrdv(io_out_tx_dat_lcrdv),
-    .io_out_rx_linkactivereq(io_out_rx_linkactivereq),
-    .io_out_rx_linkactiveack(io_out_rx_linkactiveack),
-    .io_out_rx_rsp_flitpend(io_out_rx_rsp_flitpend),
-    .io_out_rx_rsp_flitv(io_out_rx_rsp_flitv),
-    .io_out_rx_rsp_flit(io_out_rx_rsp_flit),
-    .io_out_rx_rsp_lcrdv(io_out_rx_rsp_lcrdv),
-    .io_out_rx_dat_flitpend(io_out_rx_dat_flitpend),
-    .io_out_rx_dat_flitv(io_out_rx_dat_flitv),
-    .io_out_rx_dat_flit(io_out_rx_dat_flit),
-    .io_out_rx_dat_lcrdv(io_out_rx_dat_lcrdv),
-    .io_out_rx_snp_flitpend(io_out_rx_snp_flitpend),
-    .io_out_rx_snp_flitv(io_out_rx_snp_flitv),
-    .io_out_rx_snp_flit(io_out_rx_snp_flit),
-    .io_out_rx_snp_lcrdv(io_out_rx_snp_lcrdv),
-    .io_nodeID(io_nodeID)
-  );
+  assign io_in_rx_rsp_valid       = rxrsp_valid;
+  assign io_in_rx_rsp_bits_opcode = rxrsp_opcode;
 endmodule
