@@ -8,10 +8,17 @@ TB_SRCS = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/MuxBundle.sv
 FM_VARIANTS = MuxBundle
+# 纯组合、0 寄存器：关 merge 不改变任何比较点（比较点 = 71 个输出位），只让 fm_predict 模型严格适用。
+FM_MERGE_DUP = false
+PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
 
-VCS += +define+SYNTHESIS
+# initreg：编译期开机制、运行期选取值（两处都要给，见 CONVENTIONS）。本模块无寄存器，
+# 三档（0 / random / <seed>017）只为与全仓 UT 口径一致，不期望结果随档变化。
+INITREG  ?= random
+VCS      += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+$(INITREG)
 
 # 负测：核的 source 空间等式必须拦下"source 基址抄错"。
 .PHONY: negtest

@@ -1,0 +1,10 @@
+{
+  "target": "MuxBundle",
+  "ut": "MuxBundle",
+  "regs": 0,
+  "outs": 71,
+  "expected": 71,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "纯组合 0 寄存器；比较点 = 71 个输出位；预期差额 0（无 vmucp、无钉点）"
+}

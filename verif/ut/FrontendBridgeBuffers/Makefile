@@ -55,3 +55,9 @@ gentb:
 	python3 gen.py
 gencheck:
 	python3 gen.py --check
+
+# 对称死位（各级 Queue2 里写入却无人读的 ram 字段位，两侧同路径 matched_nc）开 vmucp 让 FM 真去比；
+# 依据与六条判据见 verif/fm_target_config/<T>.tcl。
+fm-ICacheBuffer: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+fm-InstrUncacheBuffer: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+fm-ICacheCtrlBuffer: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
