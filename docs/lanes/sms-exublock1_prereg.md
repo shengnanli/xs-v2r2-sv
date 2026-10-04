@@ -130,6 +130,11 @@ constant_reg 903 = 299 + 2×30 + 2×272（与三者单独签核一致）。vmucp
 | 目标 | 证明 commit | 预测 passing | 实测 passing | constant_reg | failing / unverified / aborted / unmatched / unread | 黑盒 / dont_verify | 判决 | fm_predict check |
 |---|---|---|---|---|---|---|---|---|
 | SMSPrefetcher | 77ecedcaa49c | 8719 | 8719 | 0 | 0 / 0 / 0 / 0 / 0（vmucp 1107 点，+1107；钉点 ok=3987 bad=0） | array_12_ext 两侧各 1（vendor_macro，声明精确相等）/ 否 | SUCCEEDED（assembly，145 s） | 差 0，逐位相等 |
+| ExuBlock_1 | 1e7fbcc94d3c | 25324 | 25324 | 903 | 0 / 0 / 0 / 0 / 0（vmucp 22 点，+22；钉点 ok=5497 bad=0） | 无 / 否 | SUCCEEDED（signoff-strict，769 s） | 差 903 = constant_reg 903，全部指认 |
 
 receipt：`evidence/77ecedcaa49c/SMSPrefetcher/receipt.json`，sha256 `673afd4d0c2bef12e0a63895c7f147860ad799b2ff2f5eed3bc442fd69e10e9e`。
 复跑：`PROOF_COMMIT=77ecedcaa bash scripts/run_proof.sh SMSPrefetcher SMSPrefetcher < /dev/null`；`python3 scripts/fm_predict.py check SMSPrefetcher`。
+
+receipt：`evidence/1e7fbcc94d3c/ExuBlock_1/receipt.json`，sha256 `5d70330ff19a9d01d81b1ddc5faa986bee815bec0da3ec5bdc11c1b02a371cf2`。
+复跑：`bash scripts/run_proof.sh ExuBlock_1 ExuBlock_1 < /dev/null`（或 `PROOF_COMMIT=1e7fbcc94 ...`）；`python3 scripts/fm_predict.py check ExuBlock_1`。
+两个目标预测与实测均零偏差。
