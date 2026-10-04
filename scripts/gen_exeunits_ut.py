@@ -295,6 +295,91 @@ TARGETS['IntToFP_3'] = dict(
 
 
 # =============================================================================
+#  ExeUnit 家族：激励 / 覆盖由 golden 结构自动推出（FU 名单、fuType 编码、门控、inPipe、busy）
+# =============================================================================
+def exeunit_cfg(top):
+    sys.path.insert(0, str(REPO / 'scripts'))
+    import gen_exeunit
+    v = gen_exeunit.Variant(top)
+    g = v.g
+    disp_txt = (GOLDEN / f'{v.disp[0]}.sv').read_text()
+    codes = []
+    for k in range(len(v.fus)):
+        m = re.search(r'wire\s+(?:acceptVec_%d|data_0_probe) = io_in_bits_fuType == 35\'h([0-9A-F]+);' % k, disp_txt)
+        if not m:
+            sys.exit(f'ERROR: {top}: 找不到 Dispatcher 出口 {k} 的 fuType 编码')
+        codes.append(m.group(1))
+    n = len(v.fus)
+    has_flush = 'io_flush_valid' in g.port_w
+    decl = [
+        f"  localparam int NFU = {n};",
+        "  logic [34:0] fu_code [NFU] = '{" + ', '.join(f"35'h{c}" for c in codes) + "};",
+        "  longint c_in [NFU];",
+        "  longint c_out [NFU];",
+        "  longint c_stall = 0, c_flush = 0, c_nofu = 0, c_cg_on = 0, c_cg_off = 0, c_busy = 0;",
+    ]
+    stim = [
+        "    // fuType：85% 取本外壳某个 FU 的编码（与 Dispatcher 的 acceptVec 一致），其余全随机",
+        "    //   （多数不命中任何 FU：Dispatcher 不派发，指令被吞 —— 这条路两侧也必须一致）",
+        "    if ($urandom_range(0, 99) < 85) io_in_bits_fuType = fu_code[$urandom_range(0, NFU - 1)];",
+        "    io_in_valid  = ($urandom_range(0, 9) < 6);",
+        "    io_out_ready = ($urandom_range(0, 9) != 0);           // 10% 反压",
+    ]
+    if 'io_in_bits_robIdx_value' in g.port_w:
+        stim.append("    io_in_bits_robIdx_value = 8'($urandom_range(0, 15));  // 窄范围：冲刷比较两种结果都常见")
+    if has_flush:
+        stim += [
+            "    io_flush_valid = ($urandom_range(0, 9) == 0);",
+            "    io_flush_bits_robIdx_value = 8'($urandom_range(0, 15));",
+        ]
+    for _, w, nm in g.ports:
+        if re.fullmatch(r'cg_bore(_\d+)?_cgen', nm):
+            stim.append(f"    {nm} = ($urandom_range(0, 19) == 0);   // DFT 强开时钟，偶发")
+    stim += [
+        "    // 暖机：复位撤销后轮流给每个 FU 发有效指令、不反压不冲刷，把各级不复位的寄存器写成确定值",
+        "    if (cyc < WARM) begin",
+        "      io_in_valid = 1; io_out_ready = 1;",
+        "      io_in_bits_fuType = fu_code[cyc % NFU];",
+    ]
+    if has_flush:
+        stim.append("      io_flush_valid = 0;")
+    stim.append("    end")
+    cov = []
+    for k, (t, nm, _) in enumerate(v.fus):
+        cov.append(f"    if (u_g._in1ToN_io_out_{k}_valid && u_g._{nm}_io_in_ready) c_in[{k}]++;")
+        cov.append(f"    if (u_g._{nm}_io_out_valid) c_out[{k}]++;")
+    cov.append("    if (io_in_valid && !(io_in_bits_fuType inside {" + ', '.join(f"35'h{c}" for c in codes) + "})) c_nofu++;")
+    cov.append("    if (g_io_out_valid && !io_out_ready) c_stall++;")
+    if v.lat_max:
+        cov.append("    if (io_flush_valid && (u_g.inPipe_2_1 || io_in_valid)) c_flush++;")
+    elif has_flush:
+        cov.append("    if (io_flush_valid && io_in_valid) c_flush++;")
+    for cg in v.cgs:
+        cov.append(f"    if (u_g.{cg[1]}.E) c_cg_on++; else c_cg_off++;")
+    if v.has_busy:
+        cov.append("    if (u_g.busy) c_busy++;")
+    rep = ('"cov in=%p out=%p stall=%0d flush=%0d nofu=%0d cg_on=%0d cg_off=%0d busy=%0d", '
+           'c_in, c_out, c_stall, c_flush, c_nofu, c_cg_on, c_cg_off, c_busy')
+    req = []
+    for k in range(n):
+        req += [f'c_in[{k}] > 1000', f'c_out[{k}] > 1000']
+    req += ['c_stall > 1000', 'c_nofu > 1000']
+    if has_flush:
+        req.append('c_flush > 1000')
+    if v.cgs:
+        req += ['c_cg_on > 1000', 'c_cg_off > 1000']
+    if v.has_busy:
+        req.append('c_busy > 1000')
+    return dict(ut=top, top=top, warm=5 + 8 * n, decl='\n'.join(decl) + '\n',
+                stim='\n'.join(stim) + '\n', cov='\n'.join(cov) + '\n', report=rep, req=req,
+                init="    foreach (c_in[k]) begin c_in[k] = 0; c_out[k] = 0; end")
+
+
+for _t in ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10']:
+    TARGETS[_t] = ('lazy', _t)
+
+
+# =============================================================================
 #  生成
 # =============================================================================
 def gen_tb(name, cfg):
@@ -361,6 +446,8 @@ def gen_tb(name, cfg):
     L.append('  initial begin')
     L.append('    bit ok;')
     L.append('    if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;')
+    if cfg.get('init'):
+        L.append(cfg['init'])
     L.append('    reset = 1;')
     L.append('    drive();')
     L.append('    for (cyc = 0; cyc < NCYCLES; cyc++) begin')
@@ -394,6 +481,8 @@ def main():
     drift = 0
     for name in names:
         cfg = TARGETS[name]
+        if isinstance(cfg, tuple):
+            cfg = exeunit_cfg(cfg[1])
         out = REPO / 'verif' / 'ut' / cfg['ut'] / 'tb.sv'
         text = gen_tb(name, cfg)
         cur = out.read_text() if out.exists() else None

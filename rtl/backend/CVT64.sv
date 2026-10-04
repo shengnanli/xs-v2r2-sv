@@ -17,7 +17,8 @@
 //   s1 = fire 打一拍：目的格式标志、NaN-box 判定（不复位）；isFroundReg 带复位；
 //   s2 = 再打一拍（fireReg 使能 = GatedValidRegNext(fire)，带复位）：选择位与规范值（不复位）。
 //   firtool 把只在向量实例用到的 isFpWiden / isFpNarrow / s1_isInt2Fp 等寄存器全部消掉了，
-//   这里也只写标量实例真正读到的那几个。
+//   这里也只写标量实例真正读到的那几个。寄存器名与 Scala / golden 同名（便于对照，也让
+//   FM 在上层（FCVT / ExeUnit_8）按名字直接配上）。
 // 子模块：FP_INCVT（已签核重写件，两侧白盒）。
 // golden 对照：G1-canonical/golden-rtl/CVT64.sv
 // =============================================================================
@@ -45,75 +46,75 @@ module xs_CVT64_core (
   assign out_signed = op_type[0];
 
   // 浮点源（标量）的 f16 / f32 不是合法 NaN-box ⇒ 当作规范 NaN 处理
-  logic s0_canonical_nan;
-  assign s0_canonical_nan = op_type[7]
+  logic s0_fpCanonicalNAN;
+  assign s0_fpCanonicalNAN = op_type[7]
                           & ((in_width_1h[1] & (src[63:16] != 48'hFFFF_FFFF_FFFF))
                            | (in_width_1h[2] & (src[63:32] != 32'hFFFF_FFFF)));
 
   // ===========================================================================
   // §1 s1：fire 打一拍
   // ===========================================================================
-  logic fire_q;          // GatedValidRegNext(fire)：第 2 级的使能
-  logic s1_is_fround;    // fround / froundnx（带复位）
+  logic fireReg_last_r;   // GatedValidRegNext(fire)：第 2 级的使能
+  logic isFroundReg;      // fround / froundnx（带复位）
 
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      fire_q       <= 1'b0;
-      s1_is_fround <= 1'b0;
+      fireReg_last_r <= 1'b0;
+      isFroundReg    <= 1'b0;
     end else begin
-      if (fire | fire_q)
-        fire_q <= fire;
+      if (fire | fireReg_last_r)
+        fireReg_last_r <= fire;
       if (fire)
-        s1_is_fround <= |is_fround;
+        isFroundReg <= |is_fround;
     end
   end
 
   // 目的格式标志（不复位）
-  logic s1_out_is_fp;
-  logic s1_out_f64, s1_out_f32, s1_out_f16;
-  logic s1_out_u32, s1_out_s32, s1_out_u64, s1_out_s64;
-  logic s1_canonical_nan;
+  logic s1_outIsFP;
+  logic s1_outIsF64, s1_outIsF32, s1_outIsF16;
+  logic s1_outIsU32, s1_outIsS32, s1_outIsU64, s1_outIsS64;
+  logic s1_fpCanonicalNAN;
 
   always_ff @(posedge clock) begin
     if (fire) begin
-      s1_out_is_fp     <= out_is_fp;
-      s1_out_f64       <=  out_is_fp & out_width_1h[3];
-      s1_out_f32       <=  out_is_fp & out_width_1h[2];
-      s1_out_f16       <=  out_is_fp & out_width_1h[1];
-      s1_out_u32       <= ~out_is_fp & out_width_1h[2] & ~out_signed;
-      s1_out_s32       <= ~out_is_fp & out_width_1h[2] &  out_signed;
-      s1_out_u64       <= ~out_is_fp & out_width_1h[3] & ~out_signed;
-      s1_out_s64       <= ~out_is_fp & out_width_1h[3] &  out_signed;
-      s1_canonical_nan <= s0_canonical_nan;
+      s1_outIsFP        <= out_is_fp;
+      s1_outIsF64       <= out_is_fp & out_width_1h[3];
+      s1_outIsF32       <= out_is_fp & out_width_1h[2];
+      s1_outIsF16       <= out_is_fp & out_width_1h[1];
+      s1_outIsU32       <= ~out_is_fp & out_width_1h[2] & ~out_signed;
+      s1_outIsS32       <= ~out_is_fp & out_width_1h[2] &  out_signed;
+      s1_outIsU64       <= ~out_is_fp & out_width_1h[3] & ~out_signed;
+      s1_outIsS64       <= ~out_is_fp & out_width_1h[3] &  out_signed;
+      s1_fpCanonicalNAN <= s0_fpCanonicalNAN;
     end
   end
 
   // 「源是规范 NaN」时的结果：按目的格式取规范值（Mux1H = 各项按位或）
-  logic [63:0] s1_nan_result;
+  logic [63:0] s1_resultForfpCanonicalNAN;
   always_comb begin
-    s1_nan_result = '0;
-    if (s1_out_f64)               s1_nan_result |= 64'h7FF8_0000_0000_0000;
-    if (s1_out_f32)               s1_nan_result |= 64'h0000_0000_7FC0_0000;
-    if (s1_out_f16)               s1_nan_result |= 64'h0000_0000_0000_7E00;
-    if (s1_out_u32 | s1_out_u64)  s1_nan_result |= 64'hFFFF_FFFF_FFFF_FFFF;
-    if (s1_out_s32)               s1_nan_result |= 64'h0000_0000_7FFF_FFFF;
-    if (s1_out_s64)               s1_nan_result |= 64'h7FFF_FFFF_FFFF_FFFF;
+    s1_resultForfpCanonicalNAN = '0;
+    if (s1_outIsF64)               s1_resultForfpCanonicalNAN |= 64'h7FF8_0000_0000_0000;
+    if (s1_outIsF32)               s1_resultForfpCanonicalNAN |= 64'h0000_0000_7FC0_0000;
+    if (s1_outIsF16)               s1_resultForfpCanonicalNAN |= 64'h0000_0000_0000_7E00;
+    if (s1_outIsU32 | s1_outIsU64) s1_resultForfpCanonicalNAN |= 64'hFFFF_FFFF_FFFF_FFFF;
+    if (s1_outIsS32)               s1_resultForfpCanonicalNAN |= 64'h0000_0000_7FFF_FFFF;
+    if (s1_outIsS64)               s1_resultForfpCanonicalNAN |= 64'h7FFF_FFFF_FFFF_FFFF;
   end
 
   // ===========================================================================
-  // §2 s2：fire_q 打一拍，与 FP_INCVT 的结果同拍
+  // §2 s2：fireReg_last_r 打一拍，与 FP_INCVT 的结果同拍
   // ===========================================================================
-  logic        s2_out_is_fp;
-  logic        s2_canonical_nan;
-  logic        s2_is_fround;
-  logic [63:0] s2_nan_result;
+  logic        s2_outIsFP;
+  logic        s2_fpCanonicalNAN;
+  logic        s2_isFround;
+  logic [63:0] s2_resultForfpCanonicalNAN;
 
   always_ff @(posedge clock) begin
-    if (fire_q) begin
-      s2_out_is_fp     <= s1_out_is_fp;
-      s2_canonical_nan <= s1_canonical_nan;
-      s2_is_fround     <= s1_is_fround;
-      s2_nan_result    <= s1_nan_result;
+    if (fireReg_last_r) begin
+      s2_outIsFP                 <= s1_outIsFP;
+      s2_fpCanonicalNAN          <= s1_fpCanonicalNAN;
+      s2_isFround                <= isFroundReg;
+      s2_resultForfpCanonicalNAN <= s1_resultForfpCanonicalNAN;
     end
   end
 
@@ -139,9 +140,9 @@ module xs_CVT64_core (
     .io_fflags        (fpcvt_fflags)
   );
 
-  assign result_out = s2_canonical_nan ? s2_nan_result : fpcvt_result;
-  assign fflags_out = (s2_canonical_nan & ~s2_out_is_fp) ? 5'b10000      // 整数目的：NV
-                    : (s2_canonical_nan &  s2_is_fround) ? 5'b00000      // fround：不报异常
+  assign result_out = s2_fpCanonicalNAN ? s2_resultForfpCanonicalNAN : fpcvt_result;
+  assign fflags_out = (s2_fpCanonicalNAN & ~s2_outIsFP) ? 5'b10000      // 整数目的：NV
+                    : (s2_fpCanonicalNAN &  s2_isFround) ? 5'b00000      // fround：不报异常
                     :                                      fpcvt_fflags;
 
 endmodule
