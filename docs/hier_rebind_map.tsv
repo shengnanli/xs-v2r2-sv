@@ -1573,6 +1573,28 @@ ByteMaskTailGen	bodyEn_uintToContTail1sMod128Bits	UIntToContLow1s	ONE_SITE	u_cor
 ByteMaskTailGen	maskEn_maskExtractor	MaskExtractor	ONE_SITE	u_core.u_mask	MaskExtractor		auto_one_site	
 ByteMaskTailGen	prestartEn_uintToContTail1sMod128Bits	UIntToContLow1s	ONE_SITE	u_core.u_body_hi	UIntToContLow1s		auto_one_site	
 ByteMaskTailGen	tailEn_uintToContTail0sMod128Bits	UIntToContLow0s	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_1	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_10	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_11	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_12	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_13	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_14	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_15	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_16	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_17	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_18	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_2	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_3	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_4	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_5	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_6	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_7	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_8	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA3to2_9	CSA3to2	UNRESOLVED				none	
+CSA_Nto2With3to2MainPipeline	U_CSA4to2	CSA4to2	GEN_SITE	u_core.g_level4[0].u_csa	CSA4to2		auto_gen_site_suffix	
+CSA_Nto2With3to2MainPipeline	U_CSA4to2_1	CSA4to2	GEN_SITE	u_core.g_level4[1].u_csa	CSA4to2		auto_gen_site_suffix	
+CSA_Nto2With3to2MainPipeline	U_CSA4to2_2	CSA4to2	GEN_SITE	u_core.g_level4[2].u_csa	CSA4to2		auto_gen_site_suffix	
 CVT16	clz_sig_clz	CLZ_30	DEEPER	u_core.clz_sig_clz	CLZ_30		auto_deeper	
 CVT16	int2fp_clz_clz	CLZ_7	DEEPER	u_core.int2fp_clz_clz	CLZ_7		auto_deeper	
 CVT16	out_exp_clz	CLZ_28	DEEPER	u_core.out_exp_clz	CLZ_28		auto_deeper	
@@ -1655,6 +1677,38 @@ CtrlUnit	CtrlUnitPseudoErrorPipelineConnect1	NewPipelineConnectPipe_27	SAME_PATH
 CtrlUnit	out_back_q	Queue1_RegMapperInput_6	SAME_PATH	out_back_q	Queue1_RegMapperInput_6		auto_same	
 CustomL1Hint	hintQueue	Queue16_HintQueueEntry	SAME_PATH	hintQueue	Queue16_HintQueueEntry		auto_same	
 CustomL1Hint	hint_s1Queue	Queue4_HintQueueEntry	SAME_PATH	hint_s1Queue	Queue4_HintQueueEntry		auto_same	
+DCache	accessArray	L1FlagMetaArray	SAME_PATH	accessArray	L1FlagMetaArray		auto_same	
+DCache	bankedDataArray	BankedDataArray	SAME_PATH	bankedDataArray	BankedDataArray		auto_same	
+DCache	bloomFilter	BloomFilter	SAME_PATH	bloomFilter	BloomFilter		auto_same	
+DCache	cacheCtrlOpt	CtrlUnit	SAME_PATH	cacheCtrlOpt	CtrlUnit		auto_same	
+DCache	counterFilter	CounterFilter	SAME_PATH	counterFilter	CounterFilter		auto_same	
+DCache	dataWriteArb	Arbiter1_L1BankedDataWriteReq	SAME_PATH	dataWriteArb	Arbiter1_L1BankedDataWriteReq		auto_same	
+DCache	dataWriteArb_dup	Arbiter1_L1BankedDataWriteReqCtrl	SAME_PATH	dataWriteArb_dup	Arbiter1_L1BankedDataWriteReqCtrl		auto_same	
+DCache	dataWriteArb_dup_1	Arbiter1_L1BankedDataWriteReqCtrl	SAME_PATH	dataWriteArb_dup_1	Arbiter1_L1BankedDataWriteReqCtrl		auto_same	
+DCache	dataWriteArb_dup_2	Arbiter1_L1BankedDataWriteReqCtrl	SAME_PATH	dataWriteArb_dup_2	Arbiter1_L1BankedDataWriteReqCtrl		auto_same	
+DCache	dataWriteArb_dup_3	Arbiter1_L1BankedDataWriteReqCtrl	SAME_PATH	dataWriteArb_dup_3	Arbiter1_L1BankedDataWriteReqCtrl		auto_same	
+DCache	dataWriteArb_dup_4	Arbiter1_L1BankedDataWriteReqCtrl	SAME_PATH	dataWriteArb_dup_4	Arbiter1_L1BankedDataWriteReqCtrl		auto_same	
+DCache	dataWriteArb_dup_5	Arbiter1_L1BankedDataWriteReqCtrl	SAME_PATH	dataWriteArb_dup_5	Arbiter1_L1BankedDataWriteReqCtrl		auto_same	
+DCache	dataWriteArb_dup_6	Arbiter1_L1BankedDataWriteReqCtrl	SAME_PATH	dataWriteArb_dup_6	Arbiter1_L1BankedDataWriteReqCtrl		auto_same	
+DCache	dataWriteArb_dup_7	Arbiter1_L1BankedDataWriteReqCtrl	SAME_PATH	dataWriteArb_dup_7	Arbiter1_L1BankedDataWriteReqCtrl		auto_same	
+DCache	errorArray	L1ErrorMetaArray	SAME_PATH	errorArray	L1ErrorMetaArray		auto_same	
+DCache	fdpMonitor	FDPrefetcherMonitor	SAME_PATH	fdpMonitor	FDPrefetcherMonitor		auto_same	
+DCache	ldu_0	LoadPipe	SAME_PATH	ldu_0	LoadPipe		auto_same	
+DCache	ldu_1	LoadPipe	SAME_PATH	ldu_1	LoadPipe		auto_same	
+DCache	ldu_2	LoadPipe	SAME_PATH	ldu_2	LoadPipe		auto_same	
+DCache	mainPipe	MainPipe	SAME_PATH	mainPipe	MainPipe		auto_same	
+DCache	metaArray	L1CohMetaArray	SAME_PATH	metaArray	L1CohMetaArray		auto_same	
+DCache	missQueue	MissQueue	SAME_PATH	missQueue	MissQueue		auto_same	
+DCache	missReadyGen	MissReadyGen	SAME_PATH	missReadyGen	MissReadyGen		auto_same	
+DCache	missReqArb	TreeArbiter	SAME_PATH	missReqArb	TreeArbiter		auto_same	
+DCache	prefetchArray	L1PrefetchSourceArray	SAME_PATH	prefetchArray	L1PrefetchSourceArray		auto_same	
+DCache	prefetcherMonitor	PrefetcherMonitor	SAME_PATH	prefetcherMonitor	PrefetcherMonitor		auto_same	
+DCache	probeQueue	ProbeQueue	SAME_PATH	probeQueue	ProbeQueue		auto_same	
+DCache	stu_0	StorePipe	SAME_PATH	stu_0	StorePipe		auto_same	
+DCache	stu_1	StorePipe	SAME_PATH	stu_1	StorePipe		auto_same	
+DCache	tagArray	DuplicatedTagArray	SAME_PATH	tagArray	DuplicatedTagArray		auto_same	
+DCache	tag_write_arb	Arbiter1_TagWriteReq	SAME_PATH	tag_write_arb	Arbiter1_TagWriteReq		auto_same	
+DCache	wb	WritebackQueue	SAME_PATH	wb	WritebackQueue		auto_same	
 DataPath	exuOHNoLoad_ext	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext	UIntExtractor_27_000011100000000000001010101		auto_same	
 DataPath	exuOHNoLoad_ext_1	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext_1	UIntExtractor_27_000011100000000000001010101		auto_same	
 DataPath	exuOHNoLoad_ext_10	UIntExtractor_27_000011100000000000001010101	SAME_PATH	exuOHNoLoad_ext_10	UIntExtractor_27_000011100000000000001010101		auto_same	
@@ -2147,6 +2201,9 @@ FloatAdderWidenFormat	io_widen_b_f32_1_U_fp_a_is_denormal_to_widen_1	ShiftLeftPr
 FloatAdderWidenFormat	io_widen_b_f32_1_U_fp_a_is_denormal_to_widen_2	ShiftLeftPriorityWithF32EXPResult	UNRESOLVED				none	
 FloatAdderWidenFormat	io_widen_b_f64_U_fp_a_is_denormal_to_widen_1	ShiftLeftPriorityWithF64EXPResult	UNRESOLVED				none	
 FloatAdderWidenFormat	io_widen_b_f64_U_fp_a_is_denormal_to_widen_2	ShiftLeftPriorityWithF64EXPResult	UNRESOLVED				none	
+FloatFMA	U_BoothEncoder	BoothEncoderF64F32F16	DEEPER	u_core.U_BoothEncoder	BoothEncoderF64F32F16		auto_deeper	
+FloatFMA	U_CSA3to2	CSA3to2	DEEPER	u_core.U_CSA3to2	CSA3to2		auto_deeper	
+FloatFMA	U_CSAnto2	CSA_Nto2With3to2MainPipeline	DEEPER	u_core.U_CSAnto2	CSA_Nto2With3to2MainPipeline		auto_deeper	
 FoldedSRAMTemplate	array	SplittedSRAMTemplate_3	SAME_PATH	array	SplittedSRAMTemplate_3		auto_same	
 FoldedSRAMTemplate_1	array	SplittedSRAMTemplate_4	SAME_PATH	array	SplittedSRAMTemplate_4		auto_same	
 FoldedSRAMTemplate_20	array	SplittedSRAMTemplate_23	SAME_PATH	array	SplittedSRAMTemplate_23		auto_same	
@@ -3549,6 +3606,78 @@ Scheduler_3	IssueQueueStdMoud_1	IssueQueueStdMoud	SAME_PATH	IssueQueueStdMoud_1	
 Scheduler_3	IssueQueueVlduVstu	IssueQueueVlduVstu	SAME_PATH	IssueQueueVlduVstu	IssueQueueVlduVstu		auto_same	
 Scheduler_3	IssueQueueVlduVstuVseglduVsegstu	IssueQueueVlduVstuVseglduVsegstu	SAME_PATH	IssueQueueVlduVstuVseglduVsegstu	IssueQueueVlduVstuVseglduVsegstu		auto_same	
 SinkC	taskArb	RRArbiterInit_16	SAME_PATH	taskArb	RRArbiterInit_16		auto_same	
+Slice	dataStorage	DataStorage	SAME_PATH	dataStorage	DataStorage		auto_same	
+Slice	directory	Directory	SAME_PATH	directory	Directory		auto_same	
+Slice	grantBuf	GrantBuffer	DEEPER	u_core.grantBuf	GrantBuffer		auto_deeper	
+Slice	mainPipe	MainPipe_1	DEEPER	u_core.mainPipe	MainPipe_1		auto_deeper	
+Slice	mbistPl	L2Slice	SAME_PATH	mbistPl	L2Slice		auto_same	
+Slice	mshrCtl	MSHRCtl	DEEPER	u_core.mshrCtl	MSHRCtl		auto_deeper	
+Slice	refillBuf	MSHRBuffer	DEEPER	u_core.refillBuf	MSHRBuffer		auto_deeper	
+Slice	releaseBuf	MSHRBuffer_1	DEEPER	u_core.releaseBuf	MSHRBuffer_1		auto_deeper	
+Slice	reqArb	RequestArb	DEEPER	u_core.reqArb	RequestArb		auto_deeper	
+Slice	reqBuf	RequestBuffer	DEEPER	u_core.reqBuf	RequestBuffer		auto_deeper	
+Slice	rxdat	RXDAT	DEEPER	u_core.rxdat	RXDAT		auto_deeper	
+Slice	rxrsp	RXRSP	DEEPER	u_core.rxrsp	RXRSP		auto_deeper	
+Slice	rxsnp	RXSNP	DEEPER	u_core.rxsnp	RXSNP		auto_deeper	
+Slice	sinkA	SinkA	DEEPER	u_core.sinkA	SinkA		auto_deeper	
+Slice	sinkC	SinkC	DEEPER	u_core.sinkC	SinkC		auto_deeper	
+Slice	txdat	TXDAT	DEEPER	u_core.txdat	TXDAT		auto_deeper	
+Slice	txreq	TXREQ	DEEPER	u_core.txreq	TXREQ		auto_deeper	
+Slice	txrsp	TXRSP	DEEPER	u_core.txrsp	TXRSP		auto_deeper	
+Slice_1	dataStorage	DataStorage_1	SAME_PATH	dataStorage	DataStorage_1		auto_same	
+Slice_1	directory	Directory_1	SAME_PATH	directory	Directory_1		auto_same	
+Slice_1	grantBuf	GrantBuffer	DEEPER	u_core.grantBuf	GrantBuffer		auto_deeper	
+Slice_1	mainPipe	MainPipe_1	DEEPER	u_core.mainPipe	MainPipe_1		auto_deeper	
+Slice_1	mbistPl	L2Slice_1	SAME_PATH	mbistPl	L2Slice_1		auto_same	
+Slice_1	mshrCtl	MSHRCtl	DEEPER	u_core.mshrCtl	MSHRCtl		auto_deeper	
+Slice_1	refillBuf	MSHRBuffer	DEEPER	u_core.refillBuf	MSHRBuffer		auto_deeper	
+Slice_1	releaseBuf	MSHRBuffer_1	DEEPER	u_core.releaseBuf	MSHRBuffer_1		auto_deeper	
+Slice_1	reqArb	RequestArb	DEEPER	u_core.reqArb	RequestArb		auto_deeper	
+Slice_1	reqBuf	RequestBuffer	DEEPER	u_core.reqBuf	RequestBuffer		auto_deeper	
+Slice_1	rxdat	RXDAT	DEEPER	u_core.rxdat	RXDAT		auto_deeper	
+Slice_1	rxrsp	RXRSP	DEEPER	u_core.rxrsp	RXRSP		auto_deeper	
+Slice_1	rxsnp	RXSNP	DEEPER	u_core.rxsnp	RXSNP		auto_deeper	
+Slice_1	sinkA	SinkA	DEEPER	u_core.sinkA	SinkA		auto_deeper	
+Slice_1	sinkC	SinkC	DEEPER	u_core.sinkC	SinkC		auto_deeper	
+Slice_1	txdat	TXDAT	DEEPER	u_core.txdat	TXDAT		auto_deeper	
+Slice_1	txreq	TXREQ	DEEPER	u_core.txreq	TXREQ		auto_deeper	
+Slice_1	txrsp	TXRSP	DEEPER	u_core.txrsp	TXRSP		auto_deeper	
+Slice_2	dataStorage	DataStorage_2	SAME_PATH	dataStorage	DataStorage_2		auto_same	
+Slice_2	directory	Directory_2	SAME_PATH	directory	Directory_2		auto_same	
+Slice_2	grantBuf	GrantBuffer	DEEPER	u_core.grantBuf	GrantBuffer		auto_deeper	
+Slice_2	mainPipe	MainPipe_1	DEEPER	u_core.mainPipe	MainPipe_1		auto_deeper	
+Slice_2	mbistPl	L2Slice_2	SAME_PATH	mbistPl	L2Slice_2		auto_same	
+Slice_2	mshrCtl	MSHRCtl	DEEPER	u_core.mshrCtl	MSHRCtl		auto_deeper	
+Slice_2	refillBuf	MSHRBuffer	DEEPER	u_core.refillBuf	MSHRBuffer		auto_deeper	
+Slice_2	releaseBuf	MSHRBuffer_1	DEEPER	u_core.releaseBuf	MSHRBuffer_1		auto_deeper	
+Slice_2	reqArb	RequestArb	DEEPER	u_core.reqArb	RequestArb		auto_deeper	
+Slice_2	reqBuf	RequestBuffer	DEEPER	u_core.reqBuf	RequestBuffer		auto_deeper	
+Slice_2	rxdat	RXDAT	DEEPER	u_core.rxdat	RXDAT		auto_deeper	
+Slice_2	rxrsp	RXRSP	DEEPER	u_core.rxrsp	RXRSP		auto_deeper	
+Slice_2	rxsnp	RXSNP	DEEPER	u_core.rxsnp	RXSNP		auto_deeper	
+Slice_2	sinkA	SinkA	DEEPER	u_core.sinkA	SinkA		auto_deeper	
+Slice_2	sinkC	SinkC	DEEPER	u_core.sinkC	SinkC		auto_deeper	
+Slice_2	txdat	TXDAT	DEEPER	u_core.txdat	TXDAT		auto_deeper	
+Slice_2	txreq	TXREQ	DEEPER	u_core.txreq	TXREQ		auto_deeper	
+Slice_2	txrsp	TXRSP	DEEPER	u_core.txrsp	TXRSP		auto_deeper	
+Slice_3	dataStorage	DataStorage_3	SAME_PATH	dataStorage	DataStorage_3		auto_same	
+Slice_3	directory	Directory_3	SAME_PATH	directory	Directory_3		auto_same	
+Slice_3	grantBuf	GrantBuffer	DEEPER	u_core.grantBuf	GrantBuffer		auto_deeper	
+Slice_3	mainPipe	MainPipe_1	DEEPER	u_core.mainPipe	MainPipe_1		auto_deeper	
+Slice_3	mbistPl	L2Slice_3	SAME_PATH	mbistPl	L2Slice_3		auto_same	
+Slice_3	mshrCtl	MSHRCtl	DEEPER	u_core.mshrCtl	MSHRCtl		auto_deeper	
+Slice_3	refillBuf	MSHRBuffer	DEEPER	u_core.refillBuf	MSHRBuffer		auto_deeper	
+Slice_3	releaseBuf	MSHRBuffer_1	DEEPER	u_core.releaseBuf	MSHRBuffer_1		auto_deeper	
+Slice_3	reqArb	RequestArb	DEEPER	u_core.reqArb	RequestArb		auto_deeper	
+Slice_3	reqBuf	RequestBuffer	DEEPER	u_core.reqBuf	RequestBuffer		auto_deeper	
+Slice_3	rxdat	RXDAT	DEEPER	u_core.rxdat	RXDAT		auto_deeper	
+Slice_3	rxrsp	RXRSP	DEEPER	u_core.rxrsp	RXRSP		auto_deeper	
+Slice_3	rxsnp	RXSNP	DEEPER	u_core.rxsnp	RXSNP		auto_deeper	
+Slice_3	sinkA	SinkA	DEEPER	u_core.sinkA	SinkA		auto_deeper	
+Slice_3	sinkC	SinkC	DEEPER	u_core.sinkC	SinkC		auto_deeper	
+Slice_3	txdat	TXDAT	DEEPER	u_core.txdat	TXDAT		auto_deeper	
+Slice_3	txreq	TXREQ	DEEPER	u_core.txreq	TXREQ		auto_deeper	
+Slice_3	txrsp	TXRSP	DEEPER	u_core.txrsp	TXRSP		auto_deeper	
 SourceB	issueArb	FastArbiter_5	SAME_PATH	issueArb	FastArbiter_5		auto_same	
 SplittedSRAM	array_0_0_0	SRAMTemplate_124	DEEPER	u_core.array_0_0_0	SRAMTemplate_124		auto_deeper	
 SplittedSRAM	array_0_0_1	SRAMTemplate_124	DEEPER	u_core.array_0_0_1	SRAMTemplate_124		auto_deeper	
