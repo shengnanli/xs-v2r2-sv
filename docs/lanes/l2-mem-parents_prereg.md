@@ -111,4 +111,22 @@
   （verif/fm_target_config/PatternHistoryTable.tcl 六条），不需额外钉点。
 - 预测：passing **2185**（= 模型 regs 1809 + outs 218 + 黑盒输入；= 2166 + 19），其余全 0，黑盒仅 array_12_ext 两侧各 1，SUCCEEDED。
 
+## 7. DCacheWrapper（golden 1985 行 / 627 端口 / 本层 80 个寄存器 480 位；重写 rtl/memblock/DCacheWrapper.sv 1328 行，整份生成）
+
+- 结构：`io <> dcache.module.io` + uncacheNode↔cacheCtrlOpt 端口换名直连 + 40 个 perf 计数各打两拍（不复位）。
+  与已签的 L2TLBWrapper 同型：整份由 `scripts/gen_dcachewrapper.py`（`--check`）从 golden 端口表生成：wrapper 端口表与
+  DCache 端口表换名后逐名逐宽相同、perf 口恰 40 个 6 位、dcache 实例连线与 golden 逐项比对。`_GEN_`/`_T_` = 0。
+- child DCache（PROVEN_DIRECT，rtl/memblock/DCache.sv 当前字节；restale-sram lane 正在重证 DCache，本证明白盒读当前字节），
+  其子树文件表与 verif/ut/DCache 完全相同（Makefile 照抄）。黑盒 = verif/allow/DCache.json 换根（生成器逐项换、不增不减）：
+  厂商叶子 array_7_ext ×32 / array_8_ext ×8（两侧各一份）+ golden 侧被消空的 StorePipe ⇒ `assembly`。
+- 钉点 `verif/ut/DCacheWrapper/fm_pins_pre.tcl`：本层 480 位 perf 寄存器 + **原样收割** verif/ut/DCache/fm_pins_pre.tcl
+  全部点对（根换成 /WORK/DCacheWrapper/dcache），字面计数 fail-closed。vmucp：verif/fm_target_config/DCacheWrapper.tcl
+  （本层无死位，matched-unread 全部来自 DCache 子树、与 DCache 签核同一批）。
+- UT `verif/ut/DCacheWrapper`：tb 由 gen.py 从 DCache tb 机械改写（实例换成外壳、端口换名、层次引用多一层 dcache）；
+  初值档沿用 DCache 的 0 / glue / glue017（cfg 多两层作用域 tb.u_gold / tb.u_impl）。**本节提交时 9 档正在跑**
+  （单档约数十分钟），读数补在文末对账节；FM 与 UT 并行（同一 commit 字节）。
+- **未做诊断跑。**
+- 预测：passing **82566**（模型 82977 = DCache 模型 82497 + 本层 480；减 constant_reg 411 —— 与 DCache 签核同一批常量寄存器），
+  failing / unverified / unmatched / unread 全 0，黑盒对象 84（同 DCache），无 dont_verify，SUCCEEDED。
+
 ## 对账（跑完追加）
