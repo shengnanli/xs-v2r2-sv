@@ -62,8 +62,12 @@ FORBIDDEN = [
 # 遗留 fail-open 台账（ratchet：只许缩不许长；新文件一律不得进表）。
 FAIL_OPEN_LEDGER = {
     # 路径（相对仓根）: 形态记录 —— 期望数量只写在 puts 字符串里，无人校验
-    'verif/ut/Bku/fm_pins_pre.tcl':
-        'funcReg<->func_s1 9 位；"expect 9 / 0" 只在 puts 里',
+    # ★2026-10-04 出表 1 条（agent/ptwcache-gates），但★不是因为它全修好了★：
+    #   Bku/fm_pins_pre.tcl 新增的 countModule 段（misc-core）是 `if {$_bku_cm_n != 9} { error }`
+    #   字面期望数 fail-closed，于是文件级 P2/P3 判据认为整份文件已 fail-closed（G2 要求摘表）。
+    #   ★原 funcReg<->func_s1 那 9 位仍是 catch 计数 + 期望数只在 puts 里★——本闸是文件级的，
+    #   看不出"前一段 fail-open、后一段 fail-closed"。这笔债仍由 CATCH_COUNT_LEDGER 里的 Bku 条目
+    #   记着（G2b 复核它确实还在用 catch），修法：funcReg 段改返回值 + `!= 9` error，再重证 Bku。
     # ★2026-10-03 缩表 1 条（agent/gatefix2，codex_0207 E1）★：SyncDataModule/fm_pins_pre.tcl
     #   由 scripts/gen_dm_wrappers.py --pins-only 重出：返回值判成败 + 字面期望数 fail-closed；
     #   旧版 1 位字段/整宽载荷点名错、catch 回退走不到，8 变体共 5248 点实际没钉上（已重证）。
@@ -121,7 +125,9 @@ FAIL_OPEN_LEDGER = {
 # 每个文件的修法只有一行（catch 形 -> 返回值形）。
 CATCH_COUNT_LEDGER = {
     'verif/ut/Bku/fm_pins_pre.tcl',
-    'verif/ut/Composer/fm_pins_pre.tcl',
+    # Composer/fm_pins_pre.tcl：2026-10-04 出表（agent/ptwcache-gates）—— bpu-tables 重生成后每处
+    #   都是 `[catch {set_user_match ..} _rv] || $_rv != 1` 放行形态（catch 只兜真异常、看返回值），
+    #   P4 已能认出；receipt 9cc9c9c74aac 的 pin sha 与现文件一致。
     'verif/ut/IBuffer/fm_pins.tcl',
     'verif/ut/ICacheMissUnit/fm_pins.tcl',
     'verif/ut/ITTageTable/fm_pins.tcl',
@@ -238,10 +244,19 @@ def strip_comments(text):
     return '\n'.join(out)
 
 
+CATCH_RV_OK = re.compile(
+    r'\[\s*catch\s*\{\s*set_user_match\b(?:[^{}]|\$\{\w+\})*\}\s+(\w+)\s*\]\s*\|\|\s*'
+    r'(?:\$\1\s*!=\s*1\b|!\s*\$\1\b|\$\1\s*==\s*0\b)')
+
+
 def declared_ints(code):
-    """`set <var> <整数>` 声明出来的常量表。"""
+    """`set <var> <整数>` 声明出来的常量表。
+
+    ★全局限定名 `::VAR` 也算★（ICache / L1Prefetcher 的生成器写 `set ::ICACHE_PRE_EXPECT 740`、
+    校验 `$::ICACHE_PRE_OK != $::ICACHE_PRE_EXPECT`，字面 fail-closed，旧正则认不出 `::` 而误报 P3）。
+    键保留 `::` 前缀：`::X` 与 `X` 在 proc 里是两个变量，不许互相顶替。"""
     return {m.group(1): int(m.group(2))
-            for m in re.finditer(r'\bset\s+(\w+)\s+(\d+)\b', code)}
+            for m in re.finditer(r'\bset\s+((?:::)?\w+)\s+(\d+)\b', code)}
 
 
 def check(text):
@@ -272,7 +287,15 @@ def check(text):
         probs.append('P2 有中止路径但没有任何一条由**计数比较**守卫')
 
     # --- P4 不许用 catch 的返回码数钉点（set_user_match 不抛，见文件头）-------
-    if re.search(r'catch\s*\{\s*set_user_match\b', code):
+    # ★唯一放行的 catch 形态★（bpu-tables 生成器 gen_bpu_stagepc_pins.py 的写法）：
+    #     if {[catch {set_user_match $r $i} V] || $V != 1} { 记 miss } else { 记成功 }
+    # catch 只兜**真异常**，成败看的仍是**返回值** V（`$V != 1` / `!$V` / `$V == 0`），
+    # 两者用 `||` 合成"失败"条件 —— 等价于返回值形，且多拦一类异常，不是 fail-open。
+    # 判据逐处核对：文件里**每一处** `catch {set_user_match` 都必须是上面这个形态，
+    # 少一处就判 P4。只捕不看（`[catch {...} V] == 0`）、`&&` 合成、看错变量，一律仍红。
+    n_catch = len(re.findall(r'catch\s*\{\s*set_user_match\b', code))
+    n_rv_ok = len(CATCH_RV_OK.findall(code))
+    if n_catch > n_rv_ok:
         probs.append('P4 用 `catch {set_user_match ...}` 数钉点 —— '
                      'set_user_match 不抛异常，这个计数恒等于总数（改用返回值）')
 
@@ -286,7 +309,7 @@ def check(text):
         # 只认**正数**：`set _n 0` 那种计数器初值不是期望数量，
         # 否则 `$_n != $_随便什么` 都会被当成"声明过了"（M8 实测踩到）。
         has_expect = any(int(d) > 0 for d in re.findall(r'\b\d+\b', cond)) or any(
-            ints.get(v, 0) > 0 for v in re.findall(r'\$(\w+)', cond))
+            ints.get(v, 0) > 0 for v in re.findall(r'\$((?:::)?\w+)', cond))
         if has_expect and pos > last_pin:
             ok_p3 = True
             break
@@ -394,6 +417,15 @@ print()
 print('=== 负测（种病必须变红，撤掉必须变绿）===')
 ck('M0 干净样本不报任何问题', not check(GOOD), str(check(GOOD)))
 
+_PIN_IF = 'if {[set_user_match "r:/WORK/$top/a_${_i}_reg" "i:/WORK/$top/u_core/a_reg\\[$_i\\]"]} {\n      incr _n\n    } else {\n      incr _miss\n    }'
+assert _PIN_IF in GOOD, 'GOOD 样本的钉点 if 形态变了，P4 正反例要跟着改'
+_CATCH_CALL = '[catch {set_user_match "r:/WORK/$top/a_${_i}_reg" "i:/WORK/$top/u_core/a_reg\\[$_i\\]"} _rv]'
+
+
+def _catch_variant(cond):
+    return GOOD.replace(_PIN_IF, 'if {' + cond + '} {\n      incr _miss\n    } else {\n      incr _n\n    }')
+
+
 cases = [
     ('放宽比较（dont_verify）',
      GOOD.replace('  puts "DEMO_PINS', '  set_dont_verify_points -all\n  puts "DEMO_PINS')),
@@ -424,6 +456,21 @@ cases = [
     ('用 catch 数钉点',
      GOOD.replace('if {[set_user_match ', 'if {[catch {set_user_match ')
          .replace('u_core/a_reg\\[$_i\\]"]} {', 'u_core/a_reg\\[$_i\\]"}] == 0} {')),
+    # ★P4 放行形态的近邻★：外形像、语义不对的都必须仍红
+    ('catch 捕了返回值却不看（只看 catch 码）',
+     _catch_variant(_CATCH_CALL + ' != 0')),
+    ('catch 与返回值用 && 合成（异常或返回 0 都漏）',
+     _catch_variant(_CATCH_CALL + ' && $_rv != 1')),
+    ('catch 捕进 _rv 却去看别的变量',
+     _catch_variant(_CATCH_CALL + ' || $_other != 1')),
+    ('两处 catch 只有一处是放行形态',
+     _catch_variant(_CATCH_CALL + ' || $_rv != 1').replace(
+         '  puts "DEMO_PINS', '  catch {set_user_match r:/WORK/Demo/b i:/WORK/Demo/b}\n  puts "DEMO_PINS')),
+    ('`$::E` 只有局部 `set E 4`，全局名没声明',
+     GOOD.replace('if {$_miss != 0 || $_n != $_expect}', 'if {$_miss != 0 || $_n != $::_expect}')),
+    ('`set ::E 0`（非正）当期望数',
+     GOOD.replace('set _expect 4', 'set ::DEMO_EXPECT 0')
+         .replace('if {$_miss != 0 || $_n != $_expect}', 'if {$_miss != 0 || $_n != $::DEMO_EXPECT}')),
     ('exit 非零但校验发生在钉点之前',
      GOOD.replace('if {$_miss != 0 || $_n != $_expect} { error "DEMO_PIN_MISS=$_miss" }', '')
          .replace('  set _n 0', '  set _n 0\n  if {$_n != $_expect} { exit 3 }')),
@@ -434,6 +481,20 @@ _GOOD_EXIT = GOOD.replace('{ error "DEMO_PIN_MISS=$_miss" }',
                           '{ puts "DEMO_PIN_MISS=$_miss"; exit 3 }')
 ck('M0b 正向：`exit 3` 形态的样本也必须干净', not check(_GOOD_EXIT),
    str(check(_GOOD_EXIT)) if check(_GOOD_EXIT) else 'exit 非零被认作 fail-closed')
+
+# ★P4 的正反例★：catch 只兜真异常、成败看返回值的写法（FauFTB/ITTage/Tage_SC 实际形态）
+# 必须干净；同一外形下"只捕不看 / && 合成 / 看错变量"必须仍红。
+# ★P3 的全局限定名正反例★：`set ::E 4` + `$::E` 必须算声明；`::E` 与局部 `E` 不许互相顶替；
+# `set ::E 0`（非正）不算期望数。
+_GOOD_GLOBAL = GOOD.replace('set _expect 4', 'set ::DEMO_EXPECT 4').replace('$_expect', '$::DEMO_EXPECT')
+assert _GOOD_GLOBAL != GOOD and '$_expect' not in _GOOD_GLOBAL, 'GOOD 样本的 _expect 写法变了'
+ck('M0d 正向：`set ::E N` + `$::E` 的期望数声明必须干净', not check(_GOOD_GLOBAL), str(check(_GOOD_GLOBAL)))
+
+for _lab, _cond in (('`|| $_rv != 1`', _CATCH_CALL + ' || $_rv != 1'),
+                    ('`|| !$_rv`', _CATCH_CALL + ' || !$_rv'),
+                    ('`|| $_rv == 0`', _CATCH_CALL + ' || $_rv == 0')):
+    _g = _catch_variant(_cond)
+    ck(f'M0c 正向：catch 兜异常 + 看返回值 {_lab} 必须干净', not check(_g), str(check(_g)))
 
 for i, (label, bad_txt) in enumerate(cases, start=1):
     got = check(bad_txt)
