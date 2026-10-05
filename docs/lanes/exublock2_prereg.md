@@ -92,3 +92,11 @@ ExeUnit 家族通用配置生成；复跑 `cd verif/ut/<T> && make run SEED=<1|7
   按重写件源码逐行注明的 golden 对应名整寄存器钉；与 VFAlu 自签核 FM matched.rpt 的配对逐位一致）。
 - ExeUnit_17 诊断跑（vmucp=true，白名单 verif/fm_target_config/ExeUnit_17.tcl）：passing 17123 / constant 12 / unread_notcompared 0，
   17123 + 12 = 17135。vmucp=false 时 passing 17019、unread 106（104 matched_nc + 2 unmatched 的 pdest_r[7]，已钉）。
+
+### 2.3 补登（ExeUnit_16 重证前提交；2.2 节数字不改）
+
+ExeUnit_16 首次 official 跑（commit `0bff177c2`，evidence/0bff177c2290/ExeUnit_16，SUCCEEDED passing 6150 / constant 362，
+与预测逐位一致）的 fm.log 里 `Set a match` 只有 3246 条，钉点文件自报接受 3250：外壳附加的 VFAlu `_VFALU_F32` 表
+（U_FS1 io_result_r_2 ↔ lo_sum_q 全 18 位）与 VFAlu 匹配后钉点里的 4 对（各实例 U_FS1 io_result_r_2[0]）重复，FM 对重复
+的 set_user_match 返回 1 但不打印。生成器改为跳过与子 FU 原钉点重复的外壳附加对，钉点文件 3250 → **3246**（期望 = 真实
+Set a match 数），其余不变；用新钉点重证，预测不变（passing 6150 / constant 362）。旧 receipt 不入库。

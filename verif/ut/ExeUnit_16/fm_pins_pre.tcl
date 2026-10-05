@@ -2,7 +2,7 @@
 #
 # 只消命名差：set_user_match 只声明两点对应，比较照比；不约束 ref、不改 appvar、不加黑盒。
 # (a) 外壳寄存器 446 位：golden 扁平名 <-> xs_ExeUnit_core 的数组 / generate 名；
-# (b) 子 FU 签核时用过的钉点 2804 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。
+# (b) 子 FU 签核时用过的钉点 2800 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。
 # fail-closed：逐条数返回值；拒一条或总数 != 字面整数即 error。输出一律 ASCII。
 set ::EXEUNIT_16_PIN_OK 0
 set ::EXEUNIT_16_PIN_BAD 0
@@ -22,7 +22,7 @@ proc exeunit_16_pinc {r i} {
     if {$::EXEUNIT_16_PIN_BAD <= 10} { puts "EXEUNIT_16_PIN_FAIL: $rr <-> $ii" }
   }
 }
-puts "EXEUNIT_16_PIN_BEGIN ExeUnit_16 expect=3250"
+puts "EXEUNIT_16_PIN_BEGIN ExeUnit_16 expect=3246"
 # ---- (a) 外壳寄存器 ----
 exeunit_16_pin fuVldVec_1_reg u_core/g_fu\[0\].g_lat.vld_q_reg\[1\]
 exeunit_16_pin fuVld_en_reg_reg u_core/g_fu\[0\].g_lat.en_q_reg
@@ -2253,7 +2253,6 @@ exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_1_reg\[
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_1_reg\[4\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[4\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_1_reg\[5\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[5\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_1_reg\[6\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[6\]
-exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_2_reg\[0\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[0\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_2_reg\[1\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[1\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_2_reg\[2\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[2\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_2_reg\[3\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[3\]
@@ -2414,7 +2413,6 @@ exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_1_reg\[
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_1_reg\[4\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[4\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_1_reg\[5\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[5\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_1_reg\[6\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[6\]
-exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_2_reg\[0\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[0\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_2_reg\[1\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[1\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_2_reg\[2\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[2\]
 exeunit_16_pin Vfalu/vfalus_0/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_2_reg\[3\] Vfalu/u_core/vfalus_0/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[3\]
@@ -3086,7 +3084,6 @@ exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_1_reg\[
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_1_reg\[4\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[4\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_1_reg\[5\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[5\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_1_reg\[6\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[6\]
-exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_2_reg\[0\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[0\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_2_reg\[1\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[1\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_2_reg\[2\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[2\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_0/U_far_path/U_FS1/io_result_r_2_reg\[3\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_0/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[3\]
@@ -3247,7 +3244,6 @@ exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_1_reg\[
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_1_reg\[4\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[4\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_1_reg\[5\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[5\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_1_reg\[6\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_carry_q_reg\[6\]
-exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_2_reg\[0\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[0\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_2_reg\[1\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[1\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_2_reg\[2\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[2\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_far_path/U_FS1/io_result_r_2_reg\[3\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_far_path/u_core/U_FS1/u_core/lo_sum_q_reg\[3\]
@@ -3276,6 +3272,6 @@ exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_close_path/EA_sub_value_reg_r_1_re
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_close_path/EA_sub_value_reg_r_1_reg\[7\] Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_close_path/u_core/exp_sub_lzd_q_reg\[7\]
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_close_path/lshift_result_head_is_one_reg_r_reg Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_close_path/u_core/cs_selected_nz_q_reg
 exeunit_16_pin Vfalu/vfalus_1/U_F32_Mixed_1/U_close_path/lshift_result_head_is_one_reg_r_1_reg Vfalu/u_core/vfalus_1/u_core/U_F32_Mixed_1/u_core/U_close_path/u_core/floor_hit_q_reg
-puts "EXEUNIT_16_PIN_END ok=$::EXEUNIT_16_PIN_OK bad=$::EXEUNIT_16_PIN_BAD expect=3250"
+puts "EXEUNIT_16_PIN_END ok=$::EXEUNIT_16_PIN_OK bad=$::EXEUNIT_16_PIN_BAD expect=3246"
 if {$::EXEUNIT_16_PIN_BAD != 0} { error "EXEUNIT_16_PIN_REFUSED=$::EXEUNIT_16_PIN_BAD" }
-if {$::EXEUNIT_16_PIN_OK != 3250} { error "EXEUNIT_16_PIN_COUNT=$::EXEUNIT_16_PIN_OK expected 3250" }
+if {$::EXEUNIT_16_PIN_OK != 3246} { error "EXEUNIT_16_PIN_COUNT=$::EXEUNIT_16_PIN_OK expected 3246" }
