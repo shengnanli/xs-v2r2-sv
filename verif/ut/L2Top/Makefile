@@ -2,7 +2,7 @@ MODULE = L2Top
 
 # L2Top：香山 Tile 里 L2 那一层的装配壳（src/main/scala/xiangshan/L2Top.scala）。
 # impl = rtl/l2/L2Top.sv（手写核 xs_L2Top_core + scripts/gen_l2top.py 生成的 golden 同名 wrapper，21 个 child 实例名同 golden）。
-# FM（codex 0217 层次化组合）：inner_l2cache（TL2CHICoupledL2）是 green_child —— 两侧都不给源，allow 绑定其 tracked 证书 sha；
+# FM（codex 0217 层次化组合）：inner_l2cache（TL2CHICoupledL2）是 green_child —— 两侧以 -interface_only 读入，allow 绑定其 tracked 证书 sha；
 # L2Top 本层 glue 与其余 child 两侧白盒受验（ref 读 G1，impl 读本仓重写件，见 FM_IMPL_RTL）。两侧共读同一份 G1 的只有
 # Queue2_TLBundle* 里的 MC 存储模型 ram_2x*/ram_sink_2x8（verif/mc_memory_registry.tsv 已逐条登记 MC_MEMORY_MODEL）。
 # UT（VCS）仍跑整棵树：RTL_SRCS / GOLDEN_SRCS 是全集，SHARED_GOLDEN 是 UT 两侧共用的行为模型。
@@ -120,7 +120,8 @@ TB_SRCS  = tb.sv
 
 # golden 闭包（FM ref 侧，字面文件名；不含 BB_RAM 与 VENDOR_EXT）
 # golden 闭包（FM ref 侧，字面文件名）—— codex 0217 层次化组合：inner_l2cache（TL2CHICoupledL2）是 green_child，
-# 两侧都不给源（对称未解析黑盒，verif/allow/L2Top.json 绑定 TL2CHICoupledL2 证书 sha）；这里只剩 L2Top 本层 glue 例化到的模块。
+# 两侧以 -interface_only 读入（对称黑盒，verif/allow/L2Top.json 绑定 TL2CHICoupledL2 证书 sha）；这里只剩 L2Top 本层 glue 例化到的模块
+# 与 TL2CHICoupledL2 的端口定义。
 FM_REF_DEPS_L2Top = BusErrorUnit.sv BusPerfMonitor.sv DelayNWithValid_203.sv DelayN_334.sv IntBuffer.sv \
                     Queue2_TLBundleA_10.sv Queue2_TLBundleA_12.sv Queue2_TLBundleA_14.sv \
                     Queue2_TLBundleA_19.sv Queue2_TLBundleA_31.sv Queue2_TLBundleA_6.sv Queue2_TLBundleB_1.sv \
@@ -129,7 +130,7 @@ FM_REF_DEPS_L2Top = BusErrorUnit.sv BusPerfMonitor.sv DelayNWithValid_203.sv Del
                     TLBuffer_15.sv TLBuffer_20.sv TLBuffer_22.sv TLBuffer_6.sv TLBuffer_8.sv TLLogger.sv \
                     TLLogger_1.sv TLLogger_2.sv TLXbar_5.sv TLXbar_6.sv ram_2x117.sv ram_2x119.sv ram_2x133.sv \
                     ram_2x136.sv ram_2x137.sv ram_2x281.sv ram_2x283.sv ram_2x321.sv ram_2x352.sv ram_2x356.sv \
-                    ram_2x76.sv ram_2x79.sv ram_2x80.sv ram_sink_2x8.sv
+                    ram_2x76.sv ram_2x79.sv ram_2x80.sv ram_sink_2x8.sv TL2CHICoupledL2.sv
 # UT（VCS）仍要整棵树：green_child 子树的 golden 文件只进仿真，不进 FM。
 UT_GOLDEN_CHILD_DEPS = Arbiter16_CHIDAT.sv Arbiter16_TLBundleD.sv Arbiter3_CHIREQ.sv Arbiter3_TaskBundle.sv \
                        Arbiter3_TaskWithData.sv Arbiter4_L2CacheErrorInfo.sv Arbiter4_L2ToL1Hint.sv \
@@ -164,10 +165,10 @@ UT_GOLDEN_CHILD_DEPS = Arbiter16_CHIDAT.sv Arbiter16_TLBundleD.sv Arbiter3_CHIRE
                        SRAMTemplate_166.sv SRAMTemplate_178.sv SRAMTemplate_181.sv SRAMTemplate_185.sv \
                        SRAMTemplate_186.sv SRAMTemplate_187.sv SinkA.sv SinkC.sv Slice.sv Slice_1.sv \
                        Slice_2.sv Slice_3.sv SourceB.sv SplittedSRAM_3.sv SplittedSRAM_4.sv SplittedSRAM_5.sv \
-                       SplittedSRAM_6.sv TL2CHICoupledL2.sv TXDAT.sv TXREQ.sv TXRSP.sv TopDownMonitor.sv \
-                       VBestOffsetPrefetch.sv array_13.sv array_14.sv array_15.sv array_16.sv array_17.sv \
-                       array_18.sv ram_16x11.sv ram_16x137.sv ram_16x25.sv ram_16x62.sv ram_16x67.sv \
-                       ram_2x15.sv ram_2x98.sv ram_4x11.sv ram_4x115.sv ram_data_16x256.sv \
+                       SplittedSRAM_6.sv TXDAT.sv TXREQ.sv TXRSP.sv TopDownMonitor.sv VBestOffsetPrefetch.sv \
+                       array_13.sv array_14.sv array_15.sv array_16.sv array_17.sv array_18.sv ram_16x11.sv \
+                       ram_16x137.sv ram_16x25.sv ram_16x62.sv ram_16x67.sv ram_2x15.sv ram_2x98.sv \
+                       ram_4x11.sv ram_4x115.sv ram_data_16x256.sv \
                        sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
                        sram_array_1p4096x137m137s1h1l2b_l2_dat.sv sram_array_1p512x104m13s1h0l1b_l2_meta.sv \
                        sram_array_1p512x16m16s1h0l1b_l2_repl.sv sram_array_1p512x76m19s1h0l1b_l2_tag.sv \
@@ -195,8 +196,12 @@ FM_IMPL_RTL = $(RTL_DIR)/l2/L2Top.sv $(RTL_DIR)/common/DelayNWithValid_203.sv \
               $(RTL_DIR)/uncore/Queue2_TLBundleC_1.sv $(RTL_DIR)/uncore/Queue2_TLBundleB_1.sv \
               $(RTL_DIR)/uncore/Queue2_TLBundleD_20.sv $(RTL_DIR)/uncore/Queue2_TLBundleA_19.sv \
               $(RTL_DIR)/uncore/BusPerfMonitor.sv $(RTL_DIR)/l2/BusErrorUnit.sv $(RTL_DIR)/uncore/TLXbar_6.sv \
-              $(RTL_DIR)/common/xs_TLArbiterRoundRobin.sv $(RTL_DIR)/uncore/TLXbar_5.sv
+              $(RTL_DIR)/common/xs_TLArbiterRoundRobin.sv $(RTL_DIR)/uncore/TLXbar_5.sv \
+              $(RTL_DIR)/uncore/TL2CHICoupledL2.sv
 fm-L2Top: RTL_SRCS = $(FM_IMPL_RTL)
+# inner_l2cache 以 -interface_only 读入（两侧各读自己那份），只取端口方向/位宽（TL2 canary2 的教训：未解析黑盒的
+# 端口方向靠连线推断，两侧用法不同会推出不同方向）。
+FM_INTERFACE_ONLY = TL2CHICoupledL2
 fm-L2Top: RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,ram_2x117.sv ram_2x119.sv ram_2x133.sv ram_2x136.sv ram_2x137.sv ram_2x281.sv ram_2x283.sv ram_2x321.sv ram_2x352.sv ram_2x356.sv ram_2x76.sv ram_2x79.sv ram_2x80.sv ram_sink_2x8.sv)
 
 PORTLINT_ORDER = fail
