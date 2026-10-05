@@ -1,0 +1,9 @@
+{
+  "target": "FPCVT",
+  "ut": "FPCVT",
+  "regs": 503,
+  "outs": 69,
+  "expected": 572,
+  "merge_dup": "false",
+  "model_applicable": true
+}

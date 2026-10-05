@@ -1,0 +1,9 @@
+{
+  "target": "VFMA",
+  "ut": "VFMA",
+  "regs": 5434,
+  "outs": 796,
+  "expected": 6230,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "FloatAdderF64Pipeline",
+  "ut": "FloatAdderF64Pipeline",
+  "regs": 1006,
+  "outs": 69,
+  "expected": 1075,
+  "merge_dup": "false",
+  "model_applicable": true
+}
