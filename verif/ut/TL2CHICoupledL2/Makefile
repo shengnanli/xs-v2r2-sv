@@ -158,6 +158,8 @@ FM_VARIANTS = TL2CHICoupledL2
 FM_MERGE_DUP = false
 FM_MODE = assembly
 FM_ALLOWLIST ?= 0
+# vmucp（加强不是放宽）：979 个对称 matched-unread 点，依据与六条证据见 verif/fm_target_config/TL2CHICoupledL2.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 # FM impl 侧（codex 0217）：只给本层 glue 真正例化到的重写件；green_child 的 impl 子树不给（= 对称黑盒）。
 # UT 的 RTL_SRCS 仍是全集（derive / VCS 用），这里只对 fm-TL2CHICoupledL2 做 target-specific 覆盖。
 FM_IMPL_RTL = $(RTL_DIR)/uncore/TL2CHICoupledL2.sv $(RTL_DIR)/uncore/Pipeline_13.sv \

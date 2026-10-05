@@ -40,9 +40,19 @@ OWN_EXPECT = 5 + 20 + 68 * 2 * 6       # 841
 # 本层直接子实例里、FM 在父级上下文按名配不上的同名寄存器（只差 impl wrapper 的固定实例层），逐位写死。
 # txdat_arb = FastArbiter_28：impl 把 xs_FastArbiter_core 例化为 u_arbiter；canary（ad7290123）实测只有 [0] 未配上
 # （ref 侧被读、impl 侧因 rrGrantMask[0] 常 0 而 unread，按名配对失败），其余 79 位 FM 自配。
-CHILD_STRUCT_PINS = [('txdat_arb/pendingMask_reg[0]', 'txdat_arb/u_arbiter/pendingMask_reg[0]')]
+# canary3（a49da1872，green child 以 -interface_only 读入）：另有 3 组两侧同名、只差 impl 可读核固定实例层的
+# 无读者寄存器（unmatched unread 243+243，逐位下标集合两侧相同）——MBIST 分发流水的返回数据寄存器（137/137 位）、
+# rxdat / rxrsp 1 级流水的存储（422 位中 83 位、73 位中 23 位没配上，其余 FM 自配）。按寄存器**全宽**逐位钉
+# （不按 canary 的下标子集挑位：已自配的位再钉一遍是同一对，set_user_match 照样返回成功），宽度对 golden 声明核对。
+CHILD_STRUCT_PINS = [('txdat_arb/pendingMask_reg[0]', 'txdat_arb/u_arbiter/pendingMask_reg[0]', 0),
+                     ('mbistPl/pipelineDataOutReg_reg', 'mbistPl/u_core/g_node_return.pipelineDataOutReg_reg', 137),
+                     ('rxdatPipe_pipeline/stages_0/ram_reg', 'rxdatPipe_pipeline/stages_0/u_core/queue/ram_reg', 422),
+                     ('rxrspPipe_pipeline/stages_0/ram_reg', 'rxrspPipe_pipeline/stages_0/u_core/queue/ram_reg', 73)]
+# golden 声明位宽核对（模块, 寄存器, 宽度）：钉的位数必须等于 golden 里那个寄存器的全宽
+CHILD_STRUCT_WIDTH_CHECK = [('L2Cache', 'pipelineDataOutReg', 137), ('Queue1_CHIDAT', 'ram', 422),
+                            ('Queue1_CHIRSP', 'ram', 73)]
 TARGETS = {'TL2CHICoupledL2': ''}
-EXPECT = OWN_EXPECT + len(CHILD_STRUCT_PINS)              # 842（codex 0217 green_child 组合）
+EXPECT = OWN_EXPECT + sum(max(w, 1) for _, _, w in CHILD_STRUCT_PINS)   # 841 + 1 + 137 + 422 + 73 = 1474
 
 
 def die(msg):
@@ -86,8 +96,11 @@ def static_pairs(top, pfx):
         n += w
     if n != OWN_EXPECT:
         die('本层钉点 %d 位，字面期望 %d' % (n, OWN_EXPECT))
-    for r, i in CHILD_STRUCT_PINS:
-        pairs.append((pfx + r, pfx + i, 0))
+    for mod, reg, w in CHILD_STRUCT_WIDTH_CHECK:
+        if golden_regs(mod).get(reg) != w:
+            die('golden %s.%s 宽 %s，钉点写 %d' % (mod, reg, golden_regs(mod).get(reg), w))
+    for r, i, w in CHILD_STRUCT_PINS:
+        pairs.append((pfx + r, pfx + i, w))
     if len({p[0] for p in pairs}) != len(pairs) or len({p[1] for p in pairs}) != len(pairs):
         die('%s：语义钉点映射不单射' % top)
     total = sum(w or 1 for _, _, w in pairs)
