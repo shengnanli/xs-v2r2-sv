@@ -17,8 +17,8 @@ proc slice_pinw {r i w} {
   for {set b 0} {$b < $w} {incr b} { slice_pin "${r}\[$b\]" "${i}\[$b\]" }
 }
 if {$top eq "Slice"} {
-  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory 412, DataStorage 546, L2Slice 137
-  puts "SLICE_PIN_BEGIN Slice expect=29381"
+  # MSHRCtl 1408, MainPipe_1 1202, GrantBuffer 2026, RequestBuffer 788, RequestArb 766, SinkC 4628, RXSNP 34, TXDAT 26, TXREQ 0, TXRSP 0, MSHRBuffer 8704, MSHRBuffer_1 8704, Directory 412, DataStorage 546, L2Slice 137, EXTRA_PINS 11
+  puts "SLICE_PIN_BEGIN Slice expect=29392"
   slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_0_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[0]} 10
   slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_10_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[10]} 10
   slice_pinw {r:/WORK/Slice/mshrCtl/hpm_timers_11_reg} {i:/WORK/Slice/u_core/mshrCtl/u_core/hpm_timers_reg[11]} 10
@@ -1459,9 +1459,11 @@ if {$top eq "Slice"} {
   slice_pin {r:/WORK/Slice/dataStorage/array/array_0_0_3/wckEnReg_reg} {i:/WORK/Slice/dataStorage/array/array_0_0_3/u_core/g_mcp.wckEnReg_reg}
   slice_pin {r:/WORK/Slice/dataStorage/mbistPl/beReg_reg} {i:/WORK/Slice/dataStorage/mbistPl/u_core/beReg_reg[0]}
   slice_pinw {r:/WORK/Slice/mbistPl/pipelineDataOutReg_reg} {i:/WORK/Slice/mbistPl/u_core/g_node_return.pipelineDataOutReg_reg} 137
+  slice_pinw {r:/WORK/Slice/directory/mbistPl/addrReg_reg} {i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrReg_reg} 10
+  slice_pin {r:/WORK/Slice/directory/mbistPl/addrRdReg_reg[9]} {i:/WORK/Slice/directory/mbistPl/u_core/u_ctrl/addrRdReg_reg[9]}
   puts "SLICE_PIN_END Slice ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD"
-  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29381} {
-    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29381"
+  if {$::SLICE_PIN_BAD != 0 || $::SLICE_PIN_OK != 29392} {
+    error "SLICE_PIN_MISMATCH ok=$::SLICE_PIN_OK bad=$::SLICE_PIN_BAD expect=29392"
   }
 }
 if {$top eq "Slice_1"} {

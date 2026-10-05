@@ -39,5 +39,5 @@
       "points": 101
     }
   },
-  "note": "impl 侧 TXREQ/TXRSP 内 Queue16_CHIREQ/CHIRSP 改读本仓已签重写件（evidence/1fda02fae0f1，ref 仍读 G1；内部 ram_16x137/ram_16x62 存储模型照旧两侧同源）。预测 passing = 68305（不变：队列控制寄存器两侧一一对应，点数同 e051dab3a 实测），其余计数全 0，verdict SUCCEEDED。"
+  "note": "Slice（variant 0）在 1e99538b1 上 PARTIAL：directory.mbistPl 的 addrReg[0..9]+addrRdReg[9] 共 11 位两侧同名、只差 impl u_core/u_ctrl 层，FM 这次按名没配上（unmatched unread 11+11；e051dab3a 那次自配并计入 passing）。scripts/gen_l2_slice.py EXTRA_PINS 逐位写死这 11 对（fail-closed，Slice expect 29381->29392）。预测 passing = 68305（= e051dab3a 实测；11 位回到比较），unread 0，其余计数全 0，verdict SUCCEEDED。若配上后是对称 unread（matched_nc），按 standing rule 走 vmucp。"
 }
