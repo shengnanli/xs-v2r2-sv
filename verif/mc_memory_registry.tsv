@@ -10,7 +10,7 @@
 # 非 2 次幂 RAM（ram_10x89 / ram_78x15 / ram_40x47）仍走既有 APPROVED_MEMORY_MACRO_MODEL 授权链
 # （codex 0202/0209/0210/0215），本表暂不重复登记。
 #
-# 首批 = TL2CHICoupledL2 / L2Top 证明链实际可达集合（GrantBuffer、Slice×4、Prefetcher）；其余按模块到达时增量逐条登记。
+# 首批 = TL2CHICoupledL2 / L2Top 证明链实际可达集合（GrantBuffer、Slice×4、Prefetcher、TL2 本层 Queue2/Queue4）；其余按模块到达时增量逐条登记。
 # 语义列词汇：ports 1R1W/1RW；read async(组合读)/sync(读地址寄存)/child(由子层决定)；read_latency 拍数；
 # enable_semantics 写使能与掩码的精确组合；collision 同拍读写语义；mbist MBIST/DFT 端口连接；audit = 依据;首个使用者。
 #design	class	g1_file	g1_sha256	port_signature	depth	width	mask_gran	ports	read	read_latency	write_edge	enable_semantics	collision	mbist	children	audit
@@ -40,3 +40,5 @@ array_15_ext	MC_MEMORY_BLACKBOX	array_15_ext.v	e8d753254f0931e29c0becb1c9e765d05
 array_16_ext	MC_MEMORY_BLACKBOX	array_16_ext.v	ef88c4b6fdc9211ca14c2930491da59319ca2d2bc2df2127b8b9c3b801d96773	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wdata;output [15:0] RW0_rdata	512	16	-	1RW	sync	1	posedge RW0_clk	write=en&&wmode;ren=en&&!wmode	write_cycle_no_read;rdata=ram[last_read_addr]	-	-	codex_0222;array_16 (vendor leaf; verif/vendor_boundary.tsv)
 array_17_ext	MC_MEMORY_BLACKBOX	array_17_ext.v	1597f3fb2a7553b9f4b7794dc411700cb137aec4fd6cc44cdaac4238a5c23161	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [7:0] RW0_wmask;input [7:0] RW0_wdata;output [7:0] RW0_rdata	512	8	1	1RW	sync	1	posedge RW0_clk	write=en&&wmode&&wmask[i];ren=en&&!wmode	write_cycle_no_read;rdata=ram[last_read_addr]	-	-	codex_0222;array_17 (vendor leaf; verif/vendor_boundary.tsv)
 array_18_ext	MC_MEMORY_BLACKBOX	array_18_ext.v	322efdbd7cc4c24511b9e6c533323d3e573922ea76d5c23ac6231bcdf52ccc08	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [136:0] RW0_wdata;output [136:0] RW0_rdata	4096	137	-	1RW	sync	1	posedge RW0_clk	write=en&&wmode;ren=en&&!wmode	write_cycle_no_read;rdata=ram[last_read_addr]	-	-	codex_0222;array_18 (vendor leaf; verif/vendor_boundary.tsv)
+ram_2x15	MC_MEMORY_MODEL	ram_2x15.sv	3ea24366708cc431f053f57e3435a1978af209f8860b66423a02a095c22a6861	input R0_addr;input R0_en;input R0_clk;output [14:0] R0_data;input W0_addr;input W0_en;input W0_clk;input [14:0] W0_data	2	15	-	1R1W	async	0	posedge W0_clk	write=W0_en;R0_en=0->rdata=X	same_cycle_read_returns_old_data	-	-	codex_0222;TL2CHICoupledL2(pCrdQueue_s3=Queue2_PCrdGranted)
+ram_4x115	MC_MEMORY_MODEL	ram_4x115.sv	d87ff7eaa723614e8ea98e10d87b923352cadb348f13704f55bc39ec1f2164de	input [1:0] R0_addr;input R0_en;input R0_clk;output [114:0] R0_data;input [1:0] W0_addr;input W0_en;input W0_clk;input [114:0] W0_data	4	115	-	1R1W	async	0	posedge W0_clk	write=W0_en;R0_en=0->rdata=X	same_cycle_read_returns_old_data	-	-	codex_0222;TL2CHICoupledL2(linkMonitor.LCredit2Decoupled*.Queue4_CHISNP)

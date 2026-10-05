@@ -639,12 +639,12 @@ def test_mc_memory_contract():
     """★codex 0222 §2：3d 的 MC 存储契约分支★（真实登记表 + 真实 G1 存储模型字节）。
     M0 impl 挂登记的 MC_MEMORY_MODEL（两侧同一份）+ external_dependency → 通过
     M1 同上但证书没记 external_dependency → 红        M2 MODEL 只在 impl 侧、ref 闭包里没有 → 红
-    M3 名字像 RAM 但未登记（ram_2x15）→ 按普通功能 RTL 规则红（不是 FM target）
+    M3 名字像 RAM 但未登记（ram_2x117）→ 按普通功能 RTL 规则红（不是 FM target）
     M4 MC_MEMORY_BLACKBOX（厂商叶子）被 impl 侧读进来 → 红
     M5 登记表不在父 commit 里 → 同一条目按普通功能 RTL 规则红
     M6 证书写了 external_dependency 但闭包里没有 MC 对象 → 红"""
     G = pathlib.Path(os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical') / 'golden-rtl'
-    names = {'ram_16x25.sv': None, 'ram_2x15.sv': None, 'array_13_ext.v': None}
+    names = {'ram_16x25.sv': None, 'ram_2x117.sv': None, 'array_13_ext.v': None}
     extra = {n: (G / n).read_bytes() for n in names}
 
     def add(doc, n, impl=True, ref=True, ed=PC.EXTERNAL_DEPENDENCY_MC):
@@ -670,7 +670,7 @@ def test_mc_memory_contract():
         'green_child_impl_golden_mc_not_shared')
     expect_reason('M3:ram_named_but_unregistered', Fixture(
         policy_mutate=roll, extra_golden=extra, mc_repo=True,
-        cert_mutate=lambda d: add(d, 'ram_2x15.sv', ed=None)).judge(),
+        cert_mutate=lambda d: add(d, 'ram_2x117.sv', ed=None)).judge(),
         'green_child_impl_golden_not_fm_target')
     expect_reason('M4:mc_blackbox_read_by_impl', Fixture(
         policy_mutate=roll, extra_golden=extra, mc_repo=True,

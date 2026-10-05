@@ -4,11 +4,11 @@
 依据 codex 0215 Q2：不改共享 scripts/fm_eq.tcl，也不把 child matched.rpt 收割成几万条静态钉点；
 改为「语义改名钉点（静态，复用已签 child generator 的产物）」+「目标局部的 nested-u_core 结构匹配器（动态）」。
 
-一、fm_pins_pre.tcl（匹配前，静态，fail-closed 字面计数）——只放**语义改名**：
-  * 4 个 Slice 变体：verif/ut/Slice/fm_pins_pre.tcl（scripts/gen_l2_slice.py 生成，每变体 29381 位）；
-  * Prefetcher：verif/ut/Prefetcher/fm_pins_pre.tcl（scripts/gen_prefetcher_pins.py 生成，960 位）；
-  * TL2CHICoupledL2 本层（xs_TL2CHICoupledL2_core）与 golden 异名的寄存器：OWN_RULES，841 位。
-  child 钉点逐行读、只换层次前缀（slices_<k>/、prefetcher/；L2Top 再加 inner_l2cache/），条数逐块对账。
+一、fm_pins_pre.tcl（匹配前，静态，fail-closed 字面计数）——codex 0217 起 TL2CHICoupledL2 走**已证 child 的
+层次化组合**：slices_0..3 / prefetcher / pCrdQueue_s2 两侧都是 green_child 黑盒（verif/allow/TL2CHICoupledL2.json
+逐实例绑定证书 sha），FM 看不到 child 内部，所以这里**只剩本层**（xs_TL2CHICoupledL2_core）与 golden 异名的
+寄存器：OWN_RULES，841 位。不再复用 Slice / Prefetcher 的钉点（那些点在黑盒里面）。
+L2Top 把 inner_l2cache 整个当作 TL2CHICoupledL2 的 green_child，本层无异名寄存器 ⇒ 不生成钉点文件。
 
 二、（codex 0217：已从 TL2/L2Top 正式 pin closure 移除——生产 canary matched=0。MATCHER_TCL 与
 build_post/build_fixture 只作辅助保留，由 scripts/test_tl2chi_ucore_matcher.py 测；本脚本不再写出
@@ -26,7 +26,7 @@ verif/ut/<T>/fm_pins.tcl / fm_pins_fixture.tcl。）原设计：fm_pins.tcl（�
   scripts/test_tl2chi_ucore_matcher.py（多 slice 正例 / 重复 key / 跨 slice / 非 u_core 子串 / set_user_match 失败）。
   pin_call_equiv 的夹具：verif/ut/<T>/fm_pins_fixture.tcl（由本脚本一并生成）。
 
-用法：python3 scripts/gen_tl2chi_pins.py          # 生成两个目标的 fm_pins_pre.tcl
+用法：python3 scripts/gen_tl2chi_pins.py          # 生成 verif/ut/TL2CHICoupledL2/fm_pins_pre.tcl
       python3 scripts/gen_tl2chi_pins.py --check  # 与仓库里的文件逐字节比较，不一致 rc=1
 """
 import os
@@ -36,14 +36,9 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 G = os.environ.get('GOLDEN_RTL', '/home/eda/xs-env/G1-canonical/golden-rtl')
-SLICE_PINS = os.path.join(REPO, 'verif', 'ut', 'Slice', 'fm_pins_pre.tcl')
-PFT_PINS = os.path.join(REPO, 'verif', 'ut', 'Prefetcher', 'fm_pins_pre.tcl')
-VARIANTS = ['Slice', 'Slice_1', 'Slice_2', 'Slice_3']      # slices_0..3 的模块名（golden TL2CHICoupledL2 同）
-SLICE_EXPECT = 29381
-PFT_EXPECT = 960
 OWN_EXPECT = 5 + 20 + 68 * 2 * 6       # 841
-TARGETS = {'TL2CHICoupledL2': '', 'L2Top': 'inner_l2cache/'}
-EXPECT = 4 * SLICE_EXPECT + PFT_EXPECT + OWN_EXPECT      # 119325（两个目标相同）
+TARGETS = {'TL2CHICoupledL2': ''}
+EXPECT = OWN_EXPECT                                        # 841（codex 0217 green_child 组合）
 
 
 def die(msg):
@@ -53,43 +48,6 @@ def die(msg):
 # ---------------------------------------------------------------------------
 # 一、语义改名（静态）
 # ---------------------------------------------------------------------------
-def slice_blocks():
-    t = open(SLICE_PINS).read()
-    out = {}
-    for v in VARIANTS:
-        m = re.search(r'^if \{\$top eq "%s"\} \{\n(.*?)^\}\n' % re.escape(v), t, re.S | re.M)
-        if not m:
-            die('Slice 钉点文件里找不到变体 %s 的块' % v)
-        body = m.group(1)
-        exp = re.search(r'SLICE_PIN_BEGIN %s expect=(\d+)' % re.escape(v), body)
-        items, n = [], 0
-        for ln in body.splitlines():
-            ln = ln.strip()
-            mm = re.match(r'slice_pin \{(\S+)\} \{(\S+)\}$', ln)
-            mw = re.match(r'slice_pinw \{(\S+)\} \{(\S+)\} (\d+)$', ln)
-            if mm:
-                items.append((mm.group(1), mm.group(2), 0))
-                n += 1
-            elif mw:
-                items.append((mw.group(1), mw.group(2), int(mw.group(3))))
-                n += int(mw.group(3))
-            elif ln.startswith('slice_pin'):
-                die('认不出的钉点行: %r' % ln)
-        if not exp or n != int(exp.group(1)) or n != SLICE_EXPECT:
-            die('%s：收到 %d 位，块自报 %s，字面期望 %d' % (v, n, exp and exp.group(1), SLICE_EXPECT))
-        out[v] = items
-    return out
-
-
-def pft_items():
-    t = open(PFT_PINS).read()
-    exp = re.search(r'^set ::PFT_PIN_EXPECT (\d+)$', t, re.M)
-    items = re.findall(r'^pft_pin \{(\S+)\} \{(\S+)\}$', t, re.M)
-    if not exp or len(items) != int(exp.group(1)) or len(items) != PFT_EXPECT:
-        die('Prefetcher 钉点 %d 条，文件自报 %s，字面期望 %d' % (len(items), exp and exp.group(1), PFT_EXPECT))
-    return items
-
-
 def own_rules():
     r = [('allCanFire_REG', 'u_core/noHint2_d1_reg', 1), ('allCanFire_REG_1', 'u_core/noHint2_d2_reg', 1),
          ('allCanFire_REG_2', 'u_core/noHint3_d1_reg', 1), ('allCanFire_REG_3', 'u_core/noHint3_d2_reg', 1),
@@ -113,17 +71,8 @@ def golden_regs(mod):
 
 
 def static_pairs(top, pfx):
-    """[(ref 相对 top, impl 相对 top, 宽度 0=单点)]"""
+    """[(ref 相对 top, impl 相对 top, 宽度 0=单点)] —— 只有本层异名寄存器（child 是 green_child 黑盒）。"""
     pairs = []
-    for k, v in enumerate(VARIANTS):
-        for r, i, w in slice_blocks()[v]:
-            for p, side in ((r, 'r'), (i, 'i')):
-                if not p.startswith('%s:/WORK/%s/' % (side, v)):
-                    die('%s 的钉点路径 %s 不以 %s:/WORK/%s/ 开头' % (v, p, side, v))
-            pairs.append(('%sslices_%d/%s' % (pfx, k, r[len('r:/WORK/%s/' % v):]),
-                          '%sslices_%d/%s' % (pfx, k, i[len('i:/WORK/%s/' % v):]), w))
-    for r, i in pft_items():
-        pairs.append(('%sprefetcher/%s' % (pfx, r), '%sprefetcher/%s' % (pfx, i), 0))
     regs = golden_regs('TL2CHICoupledL2')
     n = 0
     for g, i, w in own_rules():
@@ -137,17 +86,16 @@ def static_pairs(top, pfx):
         die('%s：语义钉点映射不单射' % top)
     total = sum(w or 1 for _, _, w in pairs)
     if total != EXPECT:
-        die('%s：语义钉点 %d 位，字面期望 %d' % (top, total, EXPECT))
+        die('%s：本层钉点 %d 位，字面期望 %d' % (top, total, EXPECT))
     return pairs
 
 
 def build_pre(top, pfx):
     pairs = static_pairs(top, pfx)
-    o = ['# %s FM「匹配前」钉点（语义改名，静态）—— 自动生成：scripts/gen_tl2chi_pins.py（勿手改）' % top,
+    o = ['# %s FM「匹配前」钉点（本层异名寄存器，静态）—— 自动生成：scripts/gen_tl2chi_pins.py（勿手改）' % top,
          '#',
-         '# 内容 = 4 个 Slice 变体（verif/ut/Slice/fm_pins_pre.tcl，各 %d 位）+ Prefetcher（verif/ut/Prefetcher/'
-         'fm_pins_pre.tcl，%d 位）' % (SLICE_EXPECT, PFT_EXPECT),
-         '# 只换层次前缀 + TL2CHICoupledL2 本层异名寄存器 %d 位。结构性 u_core 层差异由 fm_pins.tcl 的局部匹配器处理。' % OWN_EXPECT,
+         '# 内容 = TL2CHICoupledL2 本层（xs_TL2CHICoupledL2_core）与 golden 异名的寄存器 %d 位；child（slices_0..3 /'
+         ' prefetcher / pCrdQueue_s2）是 green_child 黑盒（codex 0217），内部不配对。' % OWN_EXPECT,
          '# set_user_match 只声明两点对应，比较照比。fail-closed：逐条数返回值；拒一条或总数 != %d 即 error。' % EXPECT,
          'set ::TL2_PIN_OK 0',
          'set ::TL2_PIN_BAD 0',
