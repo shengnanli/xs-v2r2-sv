@@ -4,7 +4,7 @@ MODULE = TL2CHICoupledL2
 # impl = rtl/uncore/TL2CHICoupledL2.sv（手写胶合核 xs_TL2CHICoupledL2_core + scripts/gen_tl2chi.py 生成的 golden 同名
 #        wrapper，32 个 child 实例名同 golden）。
 # FM（codex 0217 层次化组合）：直接子实例 slices_0..3 / prefetcher / pCrdQueue_s2 是 green_child —— 已独立 official
-# 证明的 child（Slice/_1/_2/_3、Prefetcher、Queue78_PCrdGranted），两侧都不给源（对称未解析黑盒），allow 逐实例
+# 证明的 child（Slice/_1/_2/_3、Prefetcher、Queue78_PCrdGranted），两侧都以 -interface_only 读入（对称黑盒），allow 逐实例
 # 绑定 child 的 tracked 证书 sha；本层 glue 与其余 child 两侧白盒受验（ref 读 G1，impl 读本仓重写件，见 FM_IMPL_RTL）。
 # 两侧共读同一份 G1 的只有 MC 存储模型 ram_2x15 / ram_4x115（verif/mc_memory_registry.tsv 已登记 MC_MEMORY_MODEL）。
 # UT（VCS）仍跑整棵树：RTL_SRCS / GOLDEN_SRCS 是全集，SHARED_GOLDEN 是 UT 两侧共用的行为模型。
@@ -105,7 +105,8 @@ TB_SRCS  = tb.sv
 # golden 闭包（FM ref 侧，字面文件名；不含 BB_RAM 与 VENDOR_EXT）
 # golden 闭包（FM ref 侧，字面文件名）—— codex 0217 层次化组合：slices_0..3（Slice/_1/_2/_3）、prefetcher（Prefetcher）、
 # pCrdQueue_s2（Queue78_PCrdGranted）是 green_child，两侧都**不给**源（FM 未解析 = 对称黑盒，verif/allow/TL2CHICoupledL2.json
-# 逐实例绑定 child 证书 sha），所以这里只剩 TL2 本层 glue 真正例化到的模块（含 Queue2/Queue4 里的 MC 存储模型）。
+# 逐实例绑定 child 证书 sha），所以这里只剩 TL2 本层 glue 真正例化到的模块（含 Queue2/Queue4 里的 MC 存储模型）
+# 与 6 个 green_child 的端口定义（FM_INTERFACE_ONLY）。
 FM_REF_DEPS_TL2CHICoupledL2 = Arbiter16_CHIDAT.sv Arbiter16_TLBundleD.sv Arbiter4_L2CacheErrorInfo.sv \
                               Arbiter4_L2ToL1Hint.sv Decoupled2LCredit.sv Decoupled2LCredit_1.sv \
                               Decoupled2LCredit_2.sv FastArbiter.sv FastArbiter_1.sv FastArbiter_26.sv \
@@ -116,7 +117,8 @@ FM_REF_DEPS_TL2CHICoupledL2 = Arbiter16_CHIDAT.sv Arbiter16_TLBundleD.sv Arbiter
                               Pipeline_13.sv Pipeline_2.sv Pipeline_3.sv Queue1_CHIDAT.sv Queue1_CHIRSP.sv \
                               Queue1_PrefetchResp.sv Queue1_PrefetchTrain.sv Queue1_UInt32.sv \
                               Queue2_PCrdGranted.sv Queue4_CHISNP.sv RRArbiterInit_13.sv RRArbiterInit_20.sv \
-                              TopDownMonitor.sv ram_2x15.sv ram_4x115.sv
+                              TopDownMonitor.sv ram_2x15.sv ram_4x115.sv Slice.sv Slice_1.sv Slice_2.sv \
+                              Slice_3.sv Prefetcher.sv Queue78_PCrdGranted.sv
 # UT（VCS）仍要整棵树的行为：green_child 子树的 golden 文件只进仿真，不进 FM。
 UT_GOLDEN_CHILD_DEPS = Arbiter3_CHIREQ.sv Arbiter3_TaskBundle.sv Arbiter3_TaskWithData.sv \
                        Arbiter4_PrefetchReq.sv ClockGate.sv ClockMux.sv CustomL1Hint.sv DataStorage.sv \
@@ -130,22 +132,22 @@ UT_GOLDEN_CHILD_DEPS = Arbiter3_CHIREQ.sv Arbiter3_TaskBundle.sv Arbiter3_TaskWi
                        MSHRBuffer.sv MSHRBuffer_1.sv MSHRCtl.sv MSHRSelector.sv MainPipe_1.sv \
                        MbistClockGateCell_93.sv MbistPipeL2Prefetcher.sv OffsetScoreTable.sv \
                        OffsetScoreTable_1.sv PBestOffsetPrefetch.sv Pipeline_1.sv PrefetchQueue.sv \
-                       PrefetchReceiver.sv PrefetchReqBuffer.sv Prefetcher.sv Queue10_GrantBuffer_Anon.sv \
-                       Queue16_CHIREQ.sv Queue16_CHIRSP.sv Queue16_DSBeat.sv Queue16_GrantQueueData.sv \
-                       Queue16_GrantQueueTask.sv Queue16_HintQueueEntry.sv Queue16_TaskBundle.sv \
-                       Queue1_ChosenQBundle.sv Queue1_PrefetchReq.sv Queue2_CHISNP.sv Queue4_HintQueueEntry.sv \
-                       Queue78_PCrdGranted.sv RRArbiterInit_14.sv RRArbiterInit_15.sv RRArbiterInit_16.sv \
-                       RXDAT.sv RXRSP.sv RXSNP.sv RecentRequestTable.sv RecentRequestTable_1.sv RequestArb.sv \
-                       RequestBuffer.sv SRAMTemplate_146.sv SRAMTemplate_148.sv SRAMTemplate_150.sv \
-                       SRAMTemplate_152.sv SRAMTemplate_153.sv SRAMTemplate_154.sv SRAMTemplate_155.sv \
-                       SRAMTemplate_159.sv SRAMTemplate_162.sv SRAMTemplate_163.sv SRAMTemplate_164.sv \
-                       SRAMTemplate_165.sv SRAMTemplate_166.sv SRAMTemplate_178.sv SRAMTemplate_181.sv \
-                       SRAMTemplate_185.sv SRAMTemplate_186.sv SRAMTemplate_187.sv SinkA.sv SinkC.sv Slice.sv \
-                       Slice_1.sv Slice_2.sv Slice_3.sv SourceB.sv SplittedSRAM_3.sv SplittedSRAM_4.sv \
-                       SplittedSRAM_5.sv SplittedSRAM_6.sv TXDAT.sv TXREQ.sv TXRSP.sv VBestOffsetPrefetch.sv \
-                       array_13.sv array_14.sv array_15.sv array_16.sv array_17.sv array_18.sv ram_16x11.sv \
-                       ram_16x137.sv ram_16x25.sv ram_16x62.sv ram_16x67.sv ram_2x98.sv ram_4x11.sv \
-                       ram_data_16x256.sv sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+                       PrefetchReceiver.sv PrefetchReqBuffer.sv Queue10_GrantBuffer_Anon.sv Queue16_CHIREQ.sv \
+                       Queue16_CHIRSP.sv Queue16_DSBeat.sv Queue16_GrantQueueData.sv Queue16_GrantQueueTask.sv \
+                       Queue16_HintQueueEntry.sv Queue16_TaskBundle.sv Queue1_ChosenQBundle.sv \
+                       Queue1_PrefetchReq.sv Queue2_CHISNP.sv Queue4_HintQueueEntry.sv RRArbiterInit_14.sv \
+                       RRArbiterInit_15.sv RRArbiterInit_16.sv RXDAT.sv RXRSP.sv RXSNP.sv \
+                       RecentRequestTable.sv RecentRequestTable_1.sv RequestArb.sv RequestBuffer.sv \
+                       SRAMTemplate_146.sv SRAMTemplate_148.sv SRAMTemplate_150.sv SRAMTemplate_152.sv \
+                       SRAMTemplate_153.sv SRAMTemplate_154.sv SRAMTemplate_155.sv SRAMTemplate_159.sv \
+                       SRAMTemplate_162.sv SRAMTemplate_163.sv SRAMTemplate_164.sv SRAMTemplate_165.sv \
+                       SRAMTemplate_166.sv SRAMTemplate_178.sv SRAMTemplate_181.sv SRAMTemplate_185.sv \
+                       SRAMTemplate_186.sv SRAMTemplate_187.sv SinkA.sv SinkC.sv SourceB.sv SplittedSRAM_3.sv \
+                       SplittedSRAM_4.sv SplittedSRAM_5.sv SplittedSRAM_6.sv TXDAT.sv TXREQ.sv TXRSP.sv \
+                       VBestOffsetPrefetch.sv array_13.sv array_14.sv array_15.sv array_16.sv array_17.sv \
+                       array_18.sv ram_16x11.sv ram_16x137.sv ram_16x25.sv ram_16x62.sv ram_16x67.sv \
+                       ram_2x98.sv ram_4x11.sv ram_data_16x256.sv \
+                       sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
                        sram_array_1p4096x137m137s1h1l2b_l2_dat.sv sram_array_1p512x104m13s1h0l1b_l2_meta.sv \
                        sram_array_1p512x16m16s1h0l1b_l2_repl.sv sram_array_1p512x76m19s1h0l1b_l2_tag.sv \
                        sram_array_1p512x8m1s1h0l1b_l2_orgb.sv
@@ -181,8 +183,13 @@ FM_IMPL_RTL = $(RTL_DIR)/uncore/TL2CHICoupledL2.sv $(RTL_DIR)/uncore/Pipeline_13
               $(RTL_DIR)/uncore/Arbiter16_CHIDAT.sv $(RTL_DIR)/common/RRArbiterInit_13.sv \
               $(RTL_DIR)/uncore/MMIOBridgeEntry_8.sv $(RTL_DIR)/uncore/xs_MMIOBridgeEntry_core.sv \
               $(RTL_DIR)/uncore/MMIOBridgeEntry_4.sv $(RTL_DIR)/uncore/MMIOBridgeEntry_2.sv \
-              $(RTL_DIR)/uncore/MMIOBridgeEntry.sv
+              $(RTL_DIR)/uncore/MMIOBridgeEntry.sv $(RTL_DIR)/uncore/Slice.sv $(RTL_DIR)/uncore/Slice_1.sv \
+              $(RTL_DIR)/uncore/Slice_2.sv $(RTL_DIR)/uncore/Slice_3.sv $(RTL_DIR)/l2/Prefetcher.sv \
+              $(RTL_DIR)/uncore/Queue78_PCrdGranted.sv
 fm-TL2CHICoupledL2: RTL_SRCS = $(FM_IMPL_RTL)
+# green_child 以 -interface_only 读入（两侧各读自己那份：ref = G1 原件，impl = 本仓 wrapper），只取端口方向/位宽，
+# 不展开内部 —— 否则未解析黑盒的端口方向要靠连线推断，两侧连线用法不同就会推出不同方向（canary 实测 16 个假 failing）。
+FM_INTERFACE_ONLY = Slice Slice_1 Slice_2 Slice_3 Prefetcher Queue78_PCrdGranted
 fm-TL2CHICoupledL2: RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,ram_2x15.sv ram_4x115.sv)
 
 PORTLINT_ORDER = fail

@@ -1,7 +1,7 @@
 # TL2CHICoupledL2 FM「匹配前」钉点（本层异名寄存器，静态）—— 自动生成：scripts/gen_tl2chi_pins.py（勿手改）
 #
 # 内容 = TL2CHICoupledL2 本层（xs_TL2CHICoupledL2_core）与 golden 异名的寄存器 841 位；child（slices_0..3 / prefetcher / pCrdQueue_s2）是 green_child 黑盒（codex 0217），内部不配对。
-# set_user_match 只声明两点对应，比较照比。fail-closed：逐条数返回值；拒一条或总数 != 841 即 error。
+# set_user_match 只声明两点对应，比较照比。fail-closed：逐条数返回值；拒一条或总数 != 842 即 error。
 set ::TL2_PIN_OK 0
 set ::TL2_PIN_BAD 0
 proc tl2_pin {r i} {
@@ -13,7 +13,7 @@ proc tl2_pin {r i} {
 proc tl2_pinw {r i w} {
   for {set b 0} {$b < $w} {incr b} { tl2_pin "${r}\[$b\]" "${i}\[$b\]" }
 }
-puts "TL2_PIN_BEGIN TL2CHICoupledL2 expect=841"
+puts "TL2_PIN_BEGIN TL2CHICoupledL2 expect=842"
 tl2_pin {allCanFire_REG_reg} {u_core/noHint2_d1_reg}
 tl2_pin {allCanFire_REG_1_reg} {u_core/noHint2_d2_reg}
 tl2_pin {allCanFire_REG_2_reg} {u_core/noHint3_d1_reg}
@@ -175,7 +175,8 @@ tl2_pinw {io_perf_67_value_REG_reg} {u_core/perf_d1_reg[66]} 6
 tl2_pinw {io_perf_67_value_REG_1_reg} {u_core/perf_d2_reg[66]} 6
 tl2_pinw {io_perf_68_value_REG_reg} {u_core/perf_d1_reg[67]} 6
 tl2_pinw {io_perf_68_value_REG_1_reg} {u_core/perf_d2_reg[67]} 6
+tl2_pin {txdat_arb/pendingMask_reg[0]} {txdat_arb/u_arbiter/pendingMask_reg[0]}
 puts "TL2_PIN_END TL2CHICoupledL2 ok=$::TL2_PIN_OK bad=$::TL2_PIN_BAD"
-if {$::TL2_PIN_BAD != 0 || $::TL2_PIN_OK != 841} {
-  error "TL2_PIN_MISMATCH ok=$::TL2_PIN_OK bad=$::TL2_PIN_BAD expect=841"
+if {$::TL2_PIN_BAD != 0 || $::TL2_PIN_OK != 842} {
+  error "TL2_PIN_MISMATCH ok=$::TL2_PIN_OK bad=$::TL2_PIN_BAD expect=842"
 }

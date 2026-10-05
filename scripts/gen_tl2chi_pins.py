@@ -37,8 +37,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 G = os.environ.get('GOLDEN_RTL', '/home/eda/xs-env/G1-canonical/golden-rtl')
 OWN_EXPECT = 5 + 20 + 68 * 2 * 6       # 841
+# 本层直接子实例里、FM 在父级上下文按名配不上的同名寄存器（只差 impl wrapper 的固定实例层），逐位写死。
+# txdat_arb = FastArbiter_28：impl 把 xs_FastArbiter_core 例化为 u_arbiter；canary（ad7290123）实测只有 [0] 未配上
+# （ref 侧被读、impl 侧因 rrGrantMask[0] 常 0 而 unread，按名配对失败），其余 79 位 FM 自配。
+CHILD_STRUCT_PINS = [('txdat_arb/pendingMask_reg[0]', 'txdat_arb/u_arbiter/pendingMask_reg[0]')]
 TARGETS = {'TL2CHICoupledL2': ''}
-EXPECT = OWN_EXPECT                                        # 841（codex 0217 green_child 组合）
+EXPECT = OWN_EXPECT + len(CHILD_STRUCT_PINS)              # 842（codex 0217 green_child 组合）
 
 
 def die(msg):
@@ -82,6 +86,8 @@ def static_pairs(top, pfx):
         n += w
     if n != OWN_EXPECT:
         die('本层钉点 %d 位，字面期望 %d' % (n, OWN_EXPECT))
+    for r, i in CHILD_STRUCT_PINS:
+        pairs.append((pfx + r, pfx + i, 0))
     if len({p[0] for p in pairs}) != len(pairs) or len({p[1] for p in pairs}) != len(pairs):
         die('%s：语义钉点映射不单射' % top)
     total = sum(w or 1 for _, _, w in pairs)
