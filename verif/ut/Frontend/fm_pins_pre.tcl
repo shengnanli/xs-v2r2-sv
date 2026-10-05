@@ -106338,7 +106338,7 @@ puts "FE_CHILD_PIN_END ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_
 if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
   error "FE_CHILD_PIN: ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_EXPECT"
 }
-# ---- 三、子树自配对录制钉点（66 个设计 -> 46398 条；另 1372 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----
+# ---- 三、子树自配对录制钉点（66 个设计 -> 46395 条；另 1375 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----
 #   Composer                             录     93 对 x   1 个实例 -> 新增     93 条
 #   DelayN                               录      5 对 x   5 个实例 -> 新增     25 条
 #   DelayN_1                             录      2 对 x   3 个实例 -> 新增      6 条
@@ -106405,7 +106405,7 @@ if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
 #   WrBypass_32                          录    151 对 x   1 个实例 -> 新增      0 条
 #   WrBypass_41                          录     47 对 x   2 个实例 -> 新增     94 条
 #   WrBypass_43                          录     51 对 x   3 个实例 -> 新增    153 条
-set ::FE_HV_EXPECT 46398
+set ::FE_HV_EXPECT 46395
 set ::FE_HV_OK 0
 set ::FE_HV_BAD 0
 proc fe_hv_pin {r i} {
@@ -111954,7 +111954,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_meta_mem} {i:/WORK/Frontend/inner_ftq/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pd_mem} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pd_mem}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_redirect_mem} {i:/WORK/Frontend/inner_ftq/u_core/ftq_redirect_mem}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/copied_ifu_ptr_to_send_REG_1_reg} {i:/WORK/Frontend/inner_ftq/u_core/entry_send_b_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_fallThruError_reg} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][100]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][50]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][60]}
@@ -148104,8 +148103,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_0/array/array_0_0_0/
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_0/array/array_1_0_0/array/array/array_4_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/bt/u_core/g_bank[0].bt/array/array_1_0_0/array/array/array_4_ext}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_1/array/array_0_0_0/array/array/array_4_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/bt/u_core/g_bank[1].bt/array/array_0_0_0/array/array/array_4_ext}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_1/array/array_1_0_0/array/array/array_4_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/bt/u_core/g_bank[1].bt/array/array_1_0_0/array/array/array_4_ext}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_0/holdRidx_hold_data_1_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/bt/u_core/g_bank[0].bt/hold_data_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_1/holdRidx_hold_data_1_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/bt/u_core/g_bank[1].bt/hold_data_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/tables_0/table_banks_0/array/array_0_0_0/_resetSet_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/tables_0/u_core/g_bank[0].table_bank/array/array_0_0_0/u_core/resetSet_reg[0]}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/tables_0/table_banks_0/array/array_0_0_0/_resetSet_reg[1]} {i:/WORK/Frontend/inner_bpu/predictors/tage/tables_0/u_core/g_bank[0].table_bank/array/array_0_0_0/u_core/resetSet_reg[1]}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/tables_0/table_banks_0/array/array_0_0_0/_resetSet_reg[2]} {i:/WORK/Frontend/inner_bpu/predictors/tage/tables_0/u_core/g_bank[0].table_bank/array/array_0_0_0/u_core/resetSet_reg[2]}
@@ -152817,11 +152814,11 @@ puts "FE_HV_PIN_END ok=$::FE_HV_OK bad=$::FE_HV_BAD expect=$::FE_HV_EXPECT"
 if {$::FE_HV_BAD != 0 || $::FE_HV_OK != $::FE_HV_EXPECT} {
   error "FE_HV_PIN: ok=$::FE_HV_OK bad=$::FE_HV_BAD expect=$::FE_HV_EXPECT"
 }
-# ---- 四、恒等副本 / 多源配对类（1810 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 1396 条钉点 -> 795 个配对类 -> 3358 次一对多 set_user_match；数据 verif/ut/Frontend/dup_groups.tsv）----
+# ---- 四、恒等副本 / 多源配对类（1814 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 1399 条钉点 -> 798 个配对类 -> 3361 次一对多 set_user_match；数据 verif/ut/Frontend/dup_groups.tsv）----
 #   FM 对"同一个对象被多次 set_user_match"会忽略后来的（实测 Warning: Ignoring user match: implementation object
 #   matched more than once），所以凡与副本组相连的钉点都并成配对类一次给出；类内 ref / impl 都多于 1 个时，
 #   按排序把较少一侧逐个对上较多一侧的一段（恒等副本之间任意配对都等价），每段一次一对多。
-set ::FE_DUP_EXPECT 3358
+set ::FE_DUP_EXPECT 3361
 set ::FE_DUP_OK 0
 set ::FE_DUP_BAD 0
 proc fe_dup_grp {args} {
@@ -156140,6 +156137,10 @@ fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/toIfuPc_p1_nextLineAddr_reg[11]} {
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/toIfuPc_p1_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_1_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_2_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_3_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_4_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/toIfuPcBundle_REG_nextLineAddr_reg[10]}
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/toIfuPc_p1_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_1_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_2_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_3_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_4_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/toIfuPcBundle_REG_nextLineAddr_reg[9]}
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/toIfuPc_p1_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_1_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_2_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_3_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_4_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/toIfuPcBundle_REG_nextLineAddr_reg[8]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/entry_send_b_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_ptr_to_send_REG_1_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_ptr_to_send_REG_3_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_ptr_to_send_REG_5_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_ptr_to_send_REG_7_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_ptr_to_send_REG_9_reg} {r:/WORK/Frontend/inner_ftq/entry_is_to_send_REG_3_reg}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/entry_send_p1_b_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_plus1_to_send_REG_1_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_plus1_to_send_REG_3_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_plus1_to_send_REG_5_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_plus1_to_send_REG_7_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_plus1_to_send_REG_9_reg} {r:/WORK/Frontend/inner_ftq/entry_is_to_send_REG_1_reg}
+fe_dup_grp {i:/WORK/Frontend/inner_bpu/predictors/tage/bt/u_core/g_bank[0].bt/hold_data_reg} {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_0/holdRidx_hold_data_1_reg} {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_0/holdRidx_hold_data_reg}
+fe_dup_grp {i:/WORK/Frontend/inner_bpu/predictors/tage/bt/u_core/g_bank[1].bt/hold_data_reg} {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_1/holdRidx_hold_data_1_reg} {r:/WORK/Frontend/inner_bpu/predictors/tage/bt/bt_1/holdRidx_hold_data_reg}
 fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[0]}
 fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[0]}
 fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[1]}
@@ -156188,7 +156189,6 @@ fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[4]}
 fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[4]}
 fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[5]}
 fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[5]}
-fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/entry_send_p1_b_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_plus1_to_send_REG_1_reg} {r:/WORK/Frontend/inner_ftq/entry_is_to_send_REG_1_reg}
 puts "FE_DUP_END ok=$::FE_DUP_OK bad=$::FE_DUP_BAD expect=$::FE_DUP_EXPECT"
 if {$::FE_DUP_BAD != 0 || $::FE_DUP_OK != $::FE_DUP_EXPECT} {
   error "FE_DUP: ok=$::FE_DUP_OK bad=$::FE_DUP_BAD expect=$::FE_DUP_EXPECT"

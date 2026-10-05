@@ -1137,6 +1137,13 @@ def _render_hv(out, per, nfold):
 #   取组内任一成员**已配上的对侧对象**作锚点，写成一对多的 set_user_match <锚> <组内全部成员>
 #   （FM 不接受同侧对象直接成组，FM-012；一对多可以，且多次一对多会把两侧的副本组并成一个配对类 —— 效果与 merge
 #   相同、范围只到这些组）。数据 verif/ut/Frontend/dup_groups.tsv（由诊断跑的 FM 输出与配对表机械转写，见文件头）。
+# ★前提：FM 须开 user_match_enable_many_to_many_matching（2026-10-05 实测）★
+#   不开时 FM 把"多个 ref 对一个 impl"的 set_user_match 返回 1 却在 match 时丢弃（Warning: Ignoring user match:
+#   more than one reference object，match14 丢 292 条、剩 828 个比较点未配对）；开了以后同一套钉点 0 条被丢、
+#   剩 11 个（第三次补录后应为 0）。这个开关只放宽"配对的形状"，不放宽比较：类里每个 ref 副本仍各自是一个比较点，
+#   逐个与 impl 那一份做等价证明（玩具实测：3 个 ref 副本对 1 个 impl，16 点全 passing）。
+#   ★它不在 sidecar appvar 注册表里（scripts/sidecar/fm_native_emit.tcl / fm_eq.tcl FM_TARGET_APPVAR_ALLOWED /
+#   SIDECAR_SCHEMA.md APPVAR_SPEC）—— 正式证明要等集成者裁定是否收进注册表，本 lane 不改共享脚本★。
 # ---------------------------------------------------------------------------
 DUP_GROUPS = REPO / 'verif' / 'ut' / 'Frontend' / 'dup_groups.tsv'
 
