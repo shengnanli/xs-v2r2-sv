@@ -1003,9 +1003,12 @@ SPECIAL_INST = {
 }
 
 
-def render_child_pins(seen=None, per_src=None):
+def render_child_pins(seen=None, per_src=None, exclude=frozenset()):
     if seen is None:
         seen, per_src = rebase_child_pins()
+    if exclude:
+        seen = collections.OrderedDict((r, i) for r, i in seen.items()
+                                       if r not in exclude and not (set(i) & exclude))
     L = []
     A = L.append
     A('# ---- 二、子树钉点重定位（%d 个钉点源 -> %d 条，去重后；规则见 scripts/gen_frontend.py）----'
@@ -1059,7 +1062,16 @@ def load_harvest():
     return rows
 
 
-def render_harvest_pins(already):
+def render_harvest_pins(already, exclude=frozenset(), precomputed=None):
+    if precomputed is not None:
+        out, per = precomputed
+        out = collections.OrderedDict((r, i) for r, i in out.items() if r not in exclude and i not in exclude)
+        return _render_hv(out, per, len(precomputed[0]) - len(out))
+    out, per = harvest_pairs(already)
+    return _render_hv(out, per, 0)
+
+
+def harvest_pairs(already):
     hv = load_harvest()
     imap = load_inst_map()
     out = collections.OrderedDict()
@@ -1083,10 +1095,14 @@ def render_harvest_pins(already):
                 out[nr] = ni
                 n += 1
         per.append((d, len(pairs), len(imap[d]), n))
+    return out, per
+
+
+def _render_hv(out, per, nfold):
     L = []
     A = L.append
-    A('# ---- 三、子树自配对录制钉点（%d 个设计 -> %d 条；数据 verif/ut/Frontend/harvest_pins.tsv，规则见生成器）----'
-      % (len(per), len(out)))
+    A('# ---- 三、子树自配对录制钉点（%d 个设计 -> %d 条；另 %d 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----'
+      % (len(per), len(out), nfold))
     for d, n0, ninst, n in per:
         A('#   %-36s 录 %6d 对 x %3d 个实例 -> 新增 %6d 条' % (d, n0, ninst, n))
     A('set ::FE_HV_EXPECT %d' % len(out))
@@ -1125,7 +1141,7 @@ def render_harvest_pins(already):
 DUP_GROUPS = REPO / 'verif' / 'ut' / 'Frontend' / 'dup_groups.tsv'
 
 
-def render_dup_groups():
+def load_dup_lines():
     groups = []
     if DUP_GROUPS.exists():
         for ln in DUP_GROUPS.read_text().splitlines():
@@ -1136,10 +1152,63 @@ def render_dup_groups():
             if len(objs) < 2 or objs[0][0] == objs[1][0] or len({o[0] for o in objs[1:]}) != 1:
                 fail('dup_groups.tsv 行形状不对（须"对侧锚点 + 同侧 >=1 个对象"）: %r' % ln[:120])
             groups.append(objs)
+    return groups
+
+
+def dup_classes(groups, fold):
+    """把副本组行与 fold（第二/三节里与之相连的 (r, [i...]) 钉点）并查集合并成配对类，返回 set_user_match 调用列表。"""
+    par = {}
+
+    def find(x):
+        par.setdefault(x, x)
+        while par[x] != x:
+            par[x] = par[par[x]]
+            x = par[x]
+        return x
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            par[ra] = rb
+    for g in groups:
+        for o in g[1:]:
+            union(g[0], o)
+    for r, imps in fold:
+        for i in imps:
+            union(r, i)
+    cls = collections.defaultdict(list)
+    for x in list(par):
+        cls[find(x)].append(x)
+    calls = []
+    for members in cls.values():
+        refs = sorted(m for m in members if m.startswith('r:'))
+        imps = sorted(m for m in members if m.startswith('i:'))
+        if not refs or not imps:
+            fail('副本配对类只有一侧: %s' % members[:4])
+        few, many = (refs, imps) if len(refs) <= len(imps) else (imps, refs)
+        k = len(few)
+        for j, f in enumerate(few):
+            seg = many[j * len(many) // k:(j + 1) * len(many) // k]
+            calls.append([f] + seg)
+    ncls[0] = len(cls)
+    return calls
+
+
+ncls = [0]
+
+
+def render_dup_groups(groups=None, fold=()):
+    if groups is None:
+        groups = load_dup_lines()
+    calls = dup_classes(groups, fold)
     L = []
     A = L.append
-    A('# ---- 四、恒等副本寄存器组（%d 组 / %d 个副本；数据 verif/ut/Frontend/dup_groups.tsv）----'
-      % (len(groups), sum(len(g) - 1 for g in groups)))
+    A('# ---- 四、恒等副本配对类（%d 行副本组 + 第二/三节里与之相连的 %d 条钉点 -> %d 个配对类 -> %d 次一对多 set_user_match；'
+      '数据 verif/ut/Frontend/dup_groups.tsv）----' % (len(groups), len(fold), ncls[0], len(calls)))
+    A('#   FM 对"同一个对象被多次 set_user_match"会忽略后来的（实测 Warning: Ignoring user match: implementation object')
+    A('#   matched more than once），所以凡与副本组相连的钉点都并成配对类一次给出；类内 ref / impl 都多于 1 个时，')
+    A('#   按排序把较少一侧逐个对上较多一侧的一段（恒等副本之间任意配对都等价），每段一次一对多。')
+    groups = calls
     A('set ::FE_DUP_EXPECT %d' % len(groups))
     A('set ::FE_DUP_OK 0')
     A('set ::FE_DUP_BAD 0')
@@ -1179,10 +1248,32 @@ def main():
     seen, per_src = rebase_child_pins()
     core_refs = set(re.findall(r'^fe_core_pin \{(\S+)\}', render_pins(), re.M))
     already = set(seen) | core_refs
+    hv_out, hv_per = harvest_pairs(already)
+    dups = load_dup_lines()
+    # 与副本组相连的第二/三节钉点并入第四节（不动点：并入的钉点又可能连出新的钉点）
+    touched = set(o for g in dups for o in g)
+    pool = [(r, list(i)) for r, i in seen.items()] + [(r, [i]) for r, i in hv_out.items()]
+    fold = []
+    changed = True
+    while changed:
+        changed = False
+        rest = []
+        for r, imps in pool:
+            if r in touched or any(i in touched for i in imps):
+                fold.append((r, imps))
+                touched.add(r)
+                touched.update(imps)
+                changed = True
+            else:
+                rest.append((r, imps))
+        pool = rest
+    if set(core_refs) & touched:
+        fail('副本配对类碰到了第一节（顶层胶合寄存器）的钉点')
     outs = [(OUT, text, splice(text, render())),
             (PINS, PINS.read_text() if PINS.exists() else '',
-             render_pins() + render_child_pins(seen, per_src) + render_harvest_pins(already) +
-             render_dup_groups())]
+             render_pins() + render_child_pins(seen, per_src, frozenset(touched)) +
+             render_harvest_pins(already, frozenset(touched), (hv_out, hv_per)) +
+             render_dup_groups(dups, fold))]
     rc = 0
     for path, old, new in outs:
         if a.check:
