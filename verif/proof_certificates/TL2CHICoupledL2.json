@@ -2,9 +2,16 @@
  "evidence_archive": null,
  "evidence_retention": "attestation_only",
  "external_dependency": "MC_MEMORY_CONTRACT",
+ "external_dependency_via_children": [
+  "Prefetcher",
+  "Slice",
+  "Slice_1",
+  "Slice_2",
+  "Slice_3"
+ ],
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-05T10:25:24Z",
+ "generated_at": "2026-10-05T14:32:56Z",
  "generator": {
   "run_context_worktree_digest": "6206ba9f4dbe5587df3de33b666cec408a52dccb456b2652dfe4686c905f3611",
   "script": "scripts/make_proof_certificate.py",
