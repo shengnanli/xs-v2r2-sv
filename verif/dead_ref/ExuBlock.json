@@ -1,0 +1,1041 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "ExuBlock",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "golden-only cone-dead，全部继承自 exus_7（ExeUnit_7）的 PASS_DEAD_REF 声明 verif/dead_ref/ExeUnit_7.json 逐条（前缀 r:/WORK/ExeUnit_7/ -> r:/WORK/ExuBlock/exus_7/），即 CSR 190 位（verif/dead_ref/CSR.json）+ Fence 68 位（verif/dead_ref/Fence.json），无本层新增：本层把 exus_7 的输出口全部直连到顶层口（含 csrio、redirect、gatewayIn），frm / io_error 打拍不涉及这些寄存器，不会让它们复活或新增死位；其余 7 个 ExeUnit（ExeUnit/_1/_4/_5）单独签核均为 SUCCEEDED、无 golden-only 死位。诊断跑（diagnostic-full，@28d32f0d1）观测 ref-only unread 266 = 本声明 258 + exus_7 内 DelayN_214 第 2 级 gpaddr[63:56] 8 位（两侧同死，由继承的 ExeUnit_7 钉点钉对、交 vmucp，不属本声明）。",
+ "observed_points": 258,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[50]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[51]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[52]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[53]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[54]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[55]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[56]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[57]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[58]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[59]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[60]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[61]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[62]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/io_fenceio_sfence_bits_addr_r_reg[63]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[10]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[11]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[12]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[13]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[14]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[15]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[16]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[17]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[18]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[19]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[20]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[21]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[22]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[23]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[24]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[25]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[26]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[27]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[28]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[29]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[30]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[31]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[32]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[33]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[34]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[35]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[36]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[37]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[38]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[39]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[40]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[41]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[42]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[43]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[44]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[45]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[46]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[47]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[48]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[49]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[50]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[51]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[52]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[53]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[54]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[55]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[56]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[57]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[58]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[59]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[60]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[61]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[62]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/Fence/uop_data_imm_reg[63]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[32]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[33]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[34]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[35]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[36]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[37]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[38]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[39]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[40]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[41]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[42]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[43]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[44]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[45]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[46]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[47]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[48]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[49]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[50]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[51]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[52]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[53]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[54]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[55]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[56]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[57]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[58]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[59]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[60]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[61]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_exception_r_reg[62]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[32]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[33]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[34]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[35]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[36]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[37]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[38]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[39]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[40]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[41]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[42]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[43]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[44]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[45]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[46]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[47]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[48]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[49]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[50]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[51]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[52]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[53]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[54]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[55]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[56]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[57]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[58]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[59]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[60]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[61]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/diffArchEvent_interrupt_r_reg[62]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc/event_op_0_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc/event_op_0_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc/event_op_1_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc/event_op_1_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc/event_op_2_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc/event_op_2_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc/event_op_2_reg_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc/event_op_2_reg_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_1/event_op_0_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_1/event_op_0_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_1/event_op_1_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_1/event_op_1_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_1/event_op_2_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_1/event_op_2_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_1/event_op_2_reg_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_1/event_op_2_reg_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_2/event_op_0_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_2/event_op_0_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_2/event_op_1_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_2/event_op_1_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_2/event_op_2_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_2/event_op_2_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_2/event_op_2_reg_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_2/event_op_2_reg_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_3/event_op_0_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_3/event_op_0_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_3/event_op_1_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_3/event_op_1_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_3/event_op_2_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_3/event_op_2_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_3/event_op_2_reg_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_3/event_op_2_reg_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_4/event_op_0_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_4/event_op_0_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_4/event_op_1_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_4/event_op_1_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_4/event_op_2_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_4/event_op_2_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_4/event_op_2_reg_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/hpmHc/perfEvents_hpc_4/event_op_2_reg_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio14_reg[0]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio14_reg[1]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio14_reg[2]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio14_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio14_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio14_reg[5]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio14_reg[6]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio14_reg[7]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio15_reg[0]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio15_reg[1]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio15_reg[2]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio15_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio15_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio15_reg[5]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio15_reg[6]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/miprio2/reg_Prio15_reg[7]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMSI_reg[0]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMSI_reg[1]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMSI_reg[2]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMSI_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMSI_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMSI_reg[5]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMSI_reg[6]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMSI_reg[7]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMTI_reg[0]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMTI_reg[1]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMTI_reg[2]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMTI_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMTI_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMTI_reg[5]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMTI_reg[6]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio0/reg_PrioMTI_reg[7]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio2/reg_PrioMEI_reg[0]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio2/reg_PrioMEI_reg[1]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio2/reg_PrioMEI_reg[2]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio2/reg_PrioMEI_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio2/reg_PrioMEI_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio2/reg_PrioMEI_reg[5]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio2/reg_PrioMEI_reg[6]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/csrMod/siprio2/reg_PrioMEI_reg[7]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[3]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[4]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[5]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[6]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[7]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_fuOpType_r_reg[8]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[22]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[23]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[24]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[25]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[26]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[27]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[28]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[29]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[30]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[31]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[32]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[33]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[34]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[35]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[36]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[37]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[38]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[39]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[40]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[41]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[42]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[43]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[44]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[45]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[46]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[47]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[48]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[49]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[50]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[51]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[52]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[53]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[54]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[55]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[56]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[57]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[58]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[59]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[60]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[61]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[62]",
+   "class": "golden_only_cone_dead_inherited"
+  },
+  {
+   "ref_path": "r:/WORK/ExuBlock/exus_7/csr/trapInstMod_io_faultCsrUop_bits_imm_r_reg[63]",
+   "class": "golden_only_cone_dead_inherited"
+  }
+ ]
+}

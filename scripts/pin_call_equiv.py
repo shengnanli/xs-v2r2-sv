@@ -80,6 +80,8 @@ NO_FIXTURE = {
 # 这张表是闸的**覆盖面棘轮**：已经被夹具覆盖过的动态文件，不许悄悄退回 NO_FIXTURE。
 # （与 NO_FIXTURE 一起构成双向约束：缺口只能缩，覆盖只能涨。）
 COVERED_DYNAMIC = {
+    'verif/ut/ExeUnit_7/fm_pins.tcl',
+    'verif/ut/ExuBlock/fm_pins.tcl',
     'verif/ut/ArithVecLeaves5/fm_pins.tcl',
     'verif/ut/Bitmap/fm_pins.tcl',
     'verif/ut/CSR/fm_pins.tcl',
