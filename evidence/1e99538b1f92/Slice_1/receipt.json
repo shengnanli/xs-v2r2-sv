@@ -1,0 +1,1212 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Slice_1",
+ "run_id": "Slice-20261005T084343Z-1e99538b1",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Slice_1.sv",
+   "kind": "golden",
+   "sha256": "0730f51a2b519369e5ca4e9a1c508b5f6d76c320dd80713b43b93b7ec105086f"
+  },
+  {
+   "path": "golden-rtl/DataStorage_1.sv",
+   "kind": "golden",
+   "sha256": "f57d4ee6ff2f1222a9a8490be7e06d33c73defd04cc614ecb7d506c433a1ca87"
+  },
+  {
+   "path": "golden-rtl/GatedSplittedSRAM_1.sv",
+   "kind": "golden",
+   "sha256": "ad95c3aa3dfefcf2153d1b16b30ec276821280e8132c289dc90701fbd8ad6137"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_166.sv",
+   "kind": "golden",
+   "sha256": "e851d5b1fa03ef6c1b7a1b1e7f95ed5bd895b1a3de8978cdb9b8ed0db05d21c3"
+  },
+  {
+   "path": "golden-rtl/L2DataStorage_1.sv",
+   "kind": "golden",
+   "sha256": "5162bdac97bed9c4ed05f4c13f959d41aa3dfb952640d16f58cbd2a5436564d2"
+  },
+  {
+   "path": "golden-rtl/Directory_1.sv",
+   "kind": "golden",
+   "sha256": "4f1c12089a69a3f48da5207062ec586274ab488a23b486c4a4c0ab1fbe671f25"
+  },
+  {
+   "path": "golden-rtl/L2Directory_1.sv",
+   "kind": "golden",
+   "sha256": "ae91b4f3bbe6f34726a224a59627a66ce6d780a6f7dfd67db8dd4c18a1d829f8"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_163.sv",
+   "kind": "golden",
+   "sha256": "4d8af2e3d1755470939ac64fb23a8cda6586c49fb7238ecd00578713aa88152f"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_164.sv",
+   "kind": "golden",
+   "sha256": "e3b1fea105bd33e332de3d8a494f8b73d2eb5badfd2a5e2883635d08060c4439"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_165.sv",
+   "kind": "golden",
+   "sha256": "720713c6a223a0054be05e7d8c8d83cebaa4d7222d0b0d3fc5da845ea704c229"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAM_4.sv",
+   "kind": "golden",
+   "sha256": "90e21cbc2bec4f652a01acf89529e89722636e74d5a95615d2fbbfc8aa4b0ab1"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_159.sv",
+   "kind": "golden",
+   "sha256": "a38776dda8484a167a7e9dea0d340962633e7c4d53ef10e21490b985b9ba09be"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_162.sv",
+   "kind": "golden",
+   "sha256": "1ac89fba9e4988d467eab99bbc8098339362f13b3ad0feb9094423b966c6a12f"
+  },
+  {
+   "path": "golden-rtl/L2Slice_1.sv",
+   "kind": "golden",
+   "sha256": "7a3f999f8fe9349e9b1944605341b62eedab7197dbf17dd0250a7734404c1aed"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell_93.sv",
+   "kind": "golden",
+   "sha256": "553bfa5a34f0addf4bfc45ca97adf58ca36c436155bccbc99d15d7f174bf6a13"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/ClockMux.sv",
+   "kind": "golden",
+   "sha256": "b0ee47becdcc32c1bbba124fc6d080da25750cbf86d266969bbbe30eb41a65e5"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "kind": "golden",
+   "sha256": "f0f2e53a82ae880e5cc7bf6b0c8b835ad06dd0422c0ee7c328ff97b6a3e1b5a2"
+  },
+  {
+   "path": "golden-rtl/array_18.sv",
+   "kind": "golden",
+   "sha256": "038df97bd3611ed4e1d8b1762a8a54bf7bdcbd9d5de6e4db83f3edaf2bc52f62"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv",
+   "kind": "golden",
+   "sha256": "1c050746cdebd341ae0435533278751c468661b6de081e726483887629a83dc2"
+  },
+  {
+   "path": "golden-rtl/array_15.sv",
+   "kind": "golden",
+   "sha256": "f6dce4d1f4942e6b27160b1ae09679b07c21d8704b60f17319d473cf7caf2c67"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv",
+   "kind": "golden",
+   "sha256": "f22e033e284c23005ef660050149d716024193826625d92d7c0f6e5fb0c04317"
+  },
+  {
+   "path": "golden-rtl/array_16.sv",
+   "kind": "golden",
+   "sha256": "0eb0c03c56b40b61e3ea7b1e5be20c4def9ba15ee52299571cd1b5fc933b135b"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv",
+   "kind": "golden",
+   "sha256": "c1148b3f1e9f82de90a2d24624b1ab9d72a8cc383caffe5b628f064800a7fcdb"
+  },
+  {
+   "path": "golden-rtl/array_17.sv",
+   "kind": "golden",
+   "sha256": "4627c91343d441ad0e554225ba8ac92d7e8f0ae8c49006fbb4da23cead7ec057"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv",
+   "kind": "golden",
+   "sha256": "db452077988544dc4ac5422e9dbec4fa358af33c9ccd98d8d616f4dd92ecc355"
+  },
+  {
+   "path": "golden-rtl/array_14.sv",
+   "kind": "golden",
+   "sha256": "f677f855c44fe28c8bd2de442d891e1280911b22ce5def9bc52b8f92672ee74d"
+  },
+  {
+   "path": "golden-rtl/GrantBuffer.sv",
+   "kind": "golden",
+   "sha256": "dd6b2299a77d1edd9964bdb5db395587546541027bfd5aa89cbe9ead8e5e8b76"
+  },
+  {
+   "path": "golden-rtl/Queue10_GrantBuffer_Anon.sv",
+   "kind": "golden",
+   "sha256": "5433d97238aa4ce78e34a34f47a49f5170f8d9253440329264d1db366fd06716"
+  },
+  {
+   "path": "golden-rtl/Queue16_GrantQueueData.sv",
+   "kind": "golden",
+   "sha256": "64768bc55308c6db27290e892bc8f76ab98963ce6bd72fe60f70473a42cb0592"
+  },
+  {
+   "path": "golden-rtl/ram_data_16x256.sv",
+   "kind": "golden",
+   "sha256": "fbaf26b94de42cedbe31ccf5d8795b481c1bcdb5c9095eac776fc5b28e479cf0"
+  },
+  {
+   "path": "golden-rtl/Queue16_GrantQueueTask.sv",
+   "kind": "golden",
+   "sha256": "87b1cc1a57524db285fe3eafb3bf388cc9937220e8b0a78796df71d873fdf8db"
+  },
+  {
+   "path": "golden-rtl/ram_16x25.sv",
+   "kind": "golden",
+   "sha256": "8b8d39c2fc1a2a7568c6e97593b4c0b4059f510471a5eb1d786b4f67277a645c"
+  },
+  {
+   "path": "golden-rtl/MSHRBuffer.sv",
+   "kind": "golden",
+   "sha256": "949a742c47b783927d90ed3692001103d5ea9b79624488d886426fa8c3866c9d"
+  },
+  {
+   "path": "golden-rtl/MSHRBuffer_1.sv",
+   "kind": "golden",
+   "sha256": "bf96d09e610016c25c10a91baef06dae8cafcf953e58e46c27fc7a1ba5d5694d"
+  },
+  {
+   "path": "golden-rtl/MSHRCtl.sv",
+   "kind": "golden",
+   "sha256": "e068f59b00f24aa91e68c05a8b1b1c20b4de593f4d48a9897be51a6ed3501c4c"
+  },
+  {
+   "path": "golden-rtl/FastArbiter_3.sv",
+   "kind": "golden",
+   "sha256": "cb7fed8d1f017b0326e0801d41d720baa753e336d1cc3f498b09be83501934b7"
+  },
+  {
+   "path": "golden-rtl/FastArbiter_4.sv",
+   "kind": "golden",
+   "sha256": "35a8777a15bc4a5c15cfa50cf1777a8d82ca87c737a3feaa3191169c5b18e2eb"
+  },
+  {
+   "path": "golden-rtl/FastArbiter_6.sv",
+   "kind": "golden",
+   "sha256": "2724707a2c3b40635f92899374602a749f99eaaa6b58a003ebc44735153dca44"
+  },
+  {
+   "path": "golden-rtl/FastArbiter_7.sv",
+   "kind": "golden",
+   "sha256": "7610fa41dd7d48e1a2c7474ad701ae8ffa4390209d3fc139261ae22512b814ec"
+  },
+  {
+   "path": "golden-rtl/MSHR.sv",
+   "kind": "golden",
+   "sha256": "fcae22d81c79f9b192927020e44356e1391f378f9707e192e27f35ed8c654f5b"
+  },
+  {
+   "path": "golden-rtl/MSHRSelector.sv",
+   "kind": "golden",
+   "sha256": "11f73587c17f76adea0ec4e7af3fa3c859cdbbc681f5323ac125f932c0460692"
+  },
+  {
+   "path": "golden-rtl/SourceB.sv",
+   "kind": "golden",
+   "sha256": "b46d50183ca62c3df79b637ddc68272bee82a7e4337408594d03eb5bc1c14cf1"
+  },
+  {
+   "path": "golden-rtl/FastArbiter_5.sv",
+   "kind": "golden",
+   "sha256": "bdc0d23f1ee9aa5bcf3dc6bd40f29eff3c49312cf3aeb7fe42603761fc9c0655"
+  },
+  {
+   "path": "golden-rtl/MainPipe_1.sv",
+   "kind": "golden",
+   "sha256": "5d06c3d0032668d008013a18afadf6608849ea456cd66a4f12a2570c80141776"
+  },
+  {
+   "path": "golden-rtl/Arbiter3_CHIREQ.sv",
+   "kind": "golden",
+   "sha256": "767a759f2398b371e59b31ebaedf32b07ad0507c904c46c2d41975c9018c7c37"
+  },
+  {
+   "path": "golden-rtl/Arbiter3_TaskBundle.sv",
+   "kind": "golden",
+   "sha256": "8bd9e92f9d6e8d91da7f1f1793a68ba3c286e5f1b344385db82c910a3e858a16"
+  },
+  {
+   "path": "golden-rtl/Arbiter3_TaskWithData.sv",
+   "kind": "golden",
+   "sha256": "51fe95097d3c93d59232e4364f430e01d5848a6139c3049d0f3163c86f0fadb1"
+  },
+  {
+   "path": "golden-rtl/CustomL1Hint.sv",
+   "kind": "golden",
+   "sha256": "2758b800b3266dc4e7e1f1adbeb33e3c127cea66a4439d285314743c25e6e162"
+  },
+  {
+   "path": "golden-rtl/Queue16_HintQueueEntry.sv",
+   "kind": "golden",
+   "sha256": "b600f78abee1e8fef6166b58e744b55b6ebb74e71e233386f72ded990bc5392e"
+  },
+  {
+   "path": "golden-rtl/ram_16x11.sv",
+   "kind": "golden",
+   "sha256": "ed374e505d92bc606919d3f8c26318878214e1fe533ee7606d9eb5e2e8af81b4"
+  },
+  {
+   "path": "golden-rtl/Queue4_HintQueueEntry.sv",
+   "kind": "golden",
+   "sha256": "532979a4f284c1c2a71ada67cf024aaebc7ae89d7f2555e3a765d36b15aa197a"
+  },
+  {
+   "path": "golden-rtl/ram_4x11.sv",
+   "kind": "golden",
+   "sha256": "8b798a3ef135985b33fab51deab85cd939aa2ee4e00acf6618883998f87a3847"
+  },
+  {
+   "path": "golden-rtl/RXDAT.sv",
+   "kind": "golden",
+   "sha256": "e0a5882f7276f5cb8ecd304585f90a04d7e7ef0eeb7505b0eb0c7548851c0d56"
+  },
+  {
+   "path": "golden-rtl/RXRSP.sv",
+   "kind": "golden",
+   "sha256": "e693b3d1c7919bb17239ebbc20b2278abb63a90a0412748aa1af0d0e776616f4"
+  },
+  {
+   "path": "golden-rtl/RXSNP.sv",
+   "kind": "golden",
+   "sha256": "90464c31b0b52bb88404bdc28f0f5d01081e71e21113a84fcedcc5d813474c32"
+  },
+  {
+   "path": "golden-rtl/Queue2_CHISNP.sv",
+   "kind": "golden",
+   "sha256": "8dd116b83f0374e862197141bde54595dfa2d862c9e78fb5ca1dc82e1ba4c26c"
+  },
+  {
+   "path": "golden-rtl/ram_2x98.sv",
+   "kind": "golden",
+   "sha256": "854d57ae0dc9752b2ea8e2b5156d5d8224dae231e8db1d36857608e8a5a0c731"
+  },
+  {
+   "path": "golden-rtl/RequestArb.sv",
+   "kind": "golden",
+   "sha256": "cb0aab99279ff0e0fec35c7287b834ed7074f3635f5072c1e60387d7c30387d9"
+  },
+  {
+   "path": "golden-rtl/RequestBuffer.sv",
+   "kind": "golden",
+   "sha256": "1b5c73aa39cf6cc16fadfab3316ca1459384a3386a365ef4030cb300946f4022"
+  },
+  {
+   "path": "golden-rtl/FastArbiter_2.sv",
+   "kind": "golden",
+   "sha256": "512c806b1f1e9d73a8715b7854aa02237200a7289f096dadee0f518bbf8517c3"
+  },
+  {
+   "path": "golden-rtl/Queue1_ChosenQBundle.sv",
+   "kind": "golden",
+   "sha256": "0c8c5477ac5ea4a0ca081d090f7768ff85b290607fedccd0612278e87dc23f5e"
+  },
+  {
+   "path": "golden-rtl/SinkA.sv",
+   "kind": "golden",
+   "sha256": "624c589bfcd2a246b0327570ce8d191a25ae288bbbbf5f9af2870491b5497d48"
+  },
+  {
+   "path": "golden-rtl/SinkC.sv",
+   "kind": "golden",
+   "sha256": "dd20ebf79662a107f07d8c885a6b2bf67d3dc49a5fb96bd4d07b2a840440ab0a"
+  },
+  {
+   "path": "golden-rtl/RRArbiterInit_16.sv",
+   "kind": "golden",
+   "sha256": "47cb274e3682b83c3515dd0820f41d263bdbaa78726313a234e7900947eee852"
+  },
+  {
+   "path": "golden-rtl/TXDAT.sv",
+   "kind": "golden",
+   "sha256": "9edee36c8773795ea0a4976a4408beca2ed98b0f9c1c0d1e1d06a540046032fe"
+  },
+  {
+   "path": "golden-rtl/Queue16_DSBeat.sv",
+   "kind": "golden",
+   "sha256": "311a5fdc6b7291ae866cd5a334ff2ac9d092c5df06641c93f4974bce8547524f"
+  },
+  {
+   "path": "golden-rtl/Queue16_TaskBundle.sv",
+   "kind": "golden",
+   "sha256": "3b56919308fe3ff664f1c126b4bde34696205cb36c6a6655953a5dadcb9753cc"
+  },
+  {
+   "path": "golden-rtl/ram_16x67.sv",
+   "kind": "golden",
+   "sha256": "738cfb6bc637120cf26c638a112325a2d9b0a386eba7d92dfca11fd2f3b0767f"
+  },
+  {
+   "path": "golden-rtl/TXREQ.sv",
+   "kind": "golden",
+   "sha256": "5b8c0cf994b57298954b45b6a3ca849221e9876f2896a383ec711ba30ccf5164"
+  },
+  {
+   "path": "golden-rtl/Queue16_CHIREQ.sv",
+   "kind": "golden",
+   "sha256": "5e5fa1eb0b5e901955c1356167cad2c6496fadecd90a9698b2c7d6309dd3b118"
+  },
+  {
+   "path": "golden-rtl/ram_16x137.sv",
+   "kind": "golden",
+   "sha256": "030610f33ab27cfd2b469dfe88fe787ba63f782eb1d3524eb701c223f73f0f20"
+  },
+  {
+   "path": "golden-rtl/TXRSP.sv",
+   "kind": "golden",
+   "sha256": "e95ee2faab0a1d7263cd812476a6c2432fcfe24fab1bb960e0747a219a66c31d"
+  },
+  {
+   "path": "golden-rtl/Queue16_CHIRSP.sv",
+   "kind": "golden",
+   "sha256": "f9cfaacef188d46ace91494170de7c9f5d0d1a8545dba628f3aa7c30d173431a"
+  },
+  {
+   "path": "golden-rtl/ram_16x62.sv",
+   "kind": "golden",
+   "sha256": "cd46497f3c73f593106e83a666e9c64a814205a53c1f525049e8b29c6a1b6149"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/uncore/uncore_common_pkg.sv",
+   "kind": "repo",
+   "sha256": "a17da62ee2c52f0bed15e1bb05585457f0536cfd3b95db55ed8810d1a3debf00"
+  },
+  {
+   "path": "rtl/uncore/Slice.sv",
+   "kind": "repo",
+   "sha256": "8b14b01c503c8dacff2df600b7f39ab28fb665886c58d010ffff14e1ac1816af"
+  },
+  {
+   "path": "rtl/uncore/Slice_1.sv",
+   "kind": "repo",
+   "sha256": "019147759befaf2219bb602ccc23c9d3bf02baada6bdee1b23fe956d5d248136"
+  },
+  {
+   "path": "rtl/uncore/Slice_2.sv",
+   "kind": "repo",
+   "sha256": "c07922397220a60a12c8bb04cdd1165e7504252e7c1c5c531bc65f6b2d2c2ee8"
+  },
+  {
+   "path": "rtl/uncore/Slice_3.sv",
+   "kind": "repo",
+   "sha256": "481c3d012017c5078ee83e73fa420389dbc0e9e493777330ace235b3aad35199"
+  },
+  {
+   "path": "rtl/uncore/SinkA.sv",
+   "kind": "repo",
+   "sha256": "80502720511ceb2be16658c32aaaa68684fdd5526d28f7bea32727a7023dea16"
+  },
+  {
+   "path": "rtl/uncore/SinkC.sv",
+   "kind": "repo",
+   "sha256": "5daa19c575b8e0247caa42dff7c857d1cf45f09a7174f815e417d82665497593"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit.sv",
+   "kind": "repo",
+   "sha256": "b6a3406112df63bc1ec77562e11b7fcabaf9ee6ae3e5d90a0edc89034b964bac"
+  },
+  {
+   "path": "rtl/common/RRArbiterInit_16.sv",
+   "kind": "repo",
+   "sha256": "9ad874468a5838c287650ad204439cee75ce5704973e40851d9ad20dd9bfdefa"
+  },
+  {
+   "path": "rtl/uncore/GrantBuffer.sv",
+   "kind": "repo",
+   "sha256": "b038e70b0ddc9cdf44bf2367a475429514f273de77eafcda888966ae2c5bed8b"
+  },
+  {
+   "path": "rtl/common/xs_ChiselQueue_core.sv",
+   "kind": "repo",
+   "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+  },
+  {
+   "path": "rtl/uncore/Queue16_GrantQueueTask.sv",
+   "kind": "repo",
+   "sha256": "6a7b84928df37a28918938c423c270e20d1b7e2f73a729d37dd639ae8f9fb65c"
+  },
+  {
+   "path": "rtl/uncore/Queue16_GrantQueueData.sv",
+   "kind": "repo",
+   "sha256": "53596927fad32889e3e43f8077caf194f54b482782d51a7d2368885447072ea1"
+  },
+  {
+   "path": "rtl/uncore/Queue10_GrantBuffer_Anon.sv",
+   "kind": "repo",
+   "sha256": "f3966df0733c17eb6e49e83a69c14019c7d3855c79435b833a8a157a20553d55"
+  },
+  {
+   "path": "rtl/uncore/TXREQ.sv",
+   "kind": "repo",
+   "sha256": "a2c5444ad1e79532dc1aea6bc31434ec5a24e4f9f927b1967b80df9dc1cbf036"
+  },
+  {
+   "path": "rtl/uncore/TXRSP.sv",
+   "kind": "repo",
+   "sha256": "d621414df62f0e5c427fb8b578259289d2ecc4bbd5a61caff63d87657cf3b0ef"
+  },
+  {
+   "path": "rtl/uncore/TXDAT.sv",
+   "kind": "repo",
+   "sha256": "eb107cc8d31703bc7708f94186d354011d2b1e95c4efbaf4397bd4b4bacdae42"
+  },
+  {
+   "path": "rtl/uncore/Queue16_TaskBundle.sv",
+   "kind": "repo",
+   "sha256": "7a60604b94faf4f3de157b583bf7dca99f73339b61fc67bf439338ef0fbd33c6"
+  },
+  {
+   "path": "rtl/uncore/Queue16_DSBeat.sv",
+   "kind": "repo",
+   "sha256": "a4f431a1a0571d41b4f01b6d454d9934ecdccd5fdd09d25ca706a9732a3810d4"
+  },
+  {
+   "path": "rtl/uncore/RXSNP.sv",
+   "kind": "repo",
+   "sha256": "4a1c8df531a5fd259faa3166f8d808019ed935f6d457b09f622af6aa00157b28"
+  },
+  {
+   "path": "rtl/uncore/Queue2_CHISNP.sv",
+   "kind": "repo",
+   "sha256": "4ec895e2d57f28a84abf0fbf069f52f6d5b57d26b65f1d777f5c7e8e9bb2eed5"
+  },
+  {
+   "path": "rtl/uncore/RXDAT.sv",
+   "kind": "repo",
+   "sha256": "b87b8c55a8204544f958835dbeff4be28cb2ee79e5647a10d13a9b2fbaf7520a"
+  },
+  {
+   "path": "rtl/uncore/RXRSP.sv",
+   "kind": "repo",
+   "sha256": "8b24ea7b06c2e1fc46b8248b782252a249f2da423b876bedf115e839822ac923"
+  },
+  {
+   "path": "rtl/uncore/MSHRBuffer.sv",
+   "kind": "repo",
+   "sha256": "7a8b20d2a9157ce31d00269209b88a3c6fb1fb8a1b81e70d3dc8ba82b6a50dd5"
+  },
+  {
+   "path": "rtl/uncore/MSHRBuffer_1.sv",
+   "kind": "repo",
+   "sha256": "e78cc0f7d82babf0fa466bf82426d2ac653c8b9ad6fc8c5a9aa791395ba260a6"
+  },
+  {
+   "path": "rtl/uncore/RequestArb.sv",
+   "kind": "repo",
+   "sha256": "52fa7c2dff0ae5e16afcf45421750e65f50629eccc6620b992dcfb76d7d4704a"
+  },
+  {
+   "path": "rtl/uncore/MainPipe_1.sv",
+   "kind": "repo",
+   "sha256": "4f028fa09d9043c37330ba5778d5275a6097d1fdd228434a891ba9d0209ac808"
+  },
+  {
+   "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+   "kind": "repo",
+   "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+  },
+  {
+   "path": "rtl/uncore/Arbiter3_CHIREQ.sv",
+   "kind": "repo",
+   "sha256": "012019a5379ee479efba069748734cf77007a285704ca05a01461334bb61b793"
+  },
+  {
+   "path": "rtl/uncore/Arbiter3_TaskBundle.sv",
+   "kind": "repo",
+   "sha256": "2645cac0e54cc2ad152223907cf09776d244907901fccf094be172dc961d7983"
+  },
+  {
+   "path": "rtl/uncore/Arbiter3_TaskWithData.sv",
+   "kind": "repo",
+   "sha256": "7af3d51e28dbb0d319a19e08fca8db0ef11fcfd436f54a3bbc07dbb51794bf09"
+  },
+  {
+   "path": "rtl/uncore/CustomL1Hint.sv",
+   "kind": "repo",
+   "sha256": "dcae2344e6b1f8940c52a637d39bee98bf5ca2b3f9e32fb679a5044a8403e0dd"
+  },
+  {
+   "path": "rtl/uncore/Queue16_HintQueueEntry.sv",
+   "kind": "repo",
+   "sha256": "3e2ea28a1df16a091bc331fa2664b08a513cea87e73a84c118f8a38f989f2ff6"
+  },
+  {
+   "path": "rtl/uncore/Queue4_HintQueueEntry.sv",
+   "kind": "repo",
+   "sha256": "93b1324acbf88809b27bd225edf87672caf16f2168e8e8c5649d77c8d430b35b"
+  },
+  {
+   "path": "rtl/uncore/RequestBuffer.sv",
+   "kind": "repo",
+   "sha256": "ad4321c227811fe39f1d8e7b9f1ad78f80476c2c76e1dd7015c8345bf6801dc2"
+  },
+  {
+   "path": "rtl/common/xs_FastArbiter_core.sv",
+   "kind": "repo",
+   "sha256": "589e52634821c1701e1567bd5ce921eca305f26513303c055dad40fe8cefd804"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_2.sv",
+   "kind": "repo",
+   "sha256": "6c32548b3060a48da9a33bcb92f371565f6fbdf7c83b29064937a6ef1649b0c1"
+  },
+  {
+   "path": "rtl/common/xs_ChiselQueue1_core.sv",
+   "kind": "repo",
+   "sha256": "8c12ab1b2180d56e2c80d07cd66a488272a41b455496e87d7f097e15e87e3fa1"
+  },
+  {
+   "path": "rtl/uncore/Queue1_ChosenQBundle.sv",
+   "kind": "repo",
+   "sha256": "6c5e2c907147420b2f953148b3899bea191e15c2c0f2d7d9186c27f1de7eb2db"
+  },
+  {
+   "path": "rtl/uncore/MSHRCtl.sv",
+   "kind": "repo",
+   "sha256": "ebc52f3b740254e9bb2033a16fcd3e6288a69e008f1df8586ac7500bc433ea20"
+  },
+  {
+   "path": "rtl/uncore/MSHR.sv",
+   "kind": "repo",
+   "sha256": "73dbe69dcb9e0a0ea3a6e51b6a3e78b95dff12348660a638c740945639f560c1"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_3.sv",
+   "kind": "repo",
+   "sha256": "c5154464bc93f4ee53658c4bdcea36c4dcf82ec1c2f4f2c54f6c3139df01bf16"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_4.sv",
+   "kind": "repo",
+   "sha256": "5c0dbcd584cf2394b0163e5ca142066c6744aca5d45018e701858e1c9ff0c3c7"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_5.sv",
+   "kind": "repo",
+   "sha256": "d40b33145d2c04ff599c9b15f0c711f4c2972d79979ce6022170dded7279b75a"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_6.sv",
+   "kind": "repo",
+   "sha256": "7f7cd47dda60633a0a58439fc790ef54f79df445f150e03661ceb8c788a07d94"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_7.sv",
+   "kind": "repo",
+   "sha256": "0c59b92e48fc19035dcf5ebecaaaf3d88ce9b59e35bd614fa4fe74aee4bad7ef"
+  },
+  {
+   "path": "rtl/uncore/SourceB.sv",
+   "kind": "repo",
+   "sha256": "28067d80108b25584261be597fa9d5a42a9674ba32ac18aaa7217320b37819b0"
+  },
+  {
+   "path": "rtl/uncore/MSHRSelector.sv",
+   "kind": "repo",
+   "sha256": "ad711a511b490accb8a9012988bad0cd8c0240aeaab428bb3264258976972926"
+  },
+  {
+   "path": "rtl/uncore/xs_Directory_core.sv",
+   "kind": "repo",
+   "sha256": "1b41f5c98b7060eeee8c24177d57ce4ca32411445f7d315ed2789c2d45d0ab8a"
+  },
+  {
+   "path": "rtl/uncore/Directory.sv",
+   "kind": "repo",
+   "sha256": "92bb0d5b01eac700d84e6516f25d04200292cd02e7ef95af8ebbc9b97c680861"
+  },
+  {
+   "path": "rtl/uncore/Directory_1.sv",
+   "kind": "repo",
+   "sha256": "82306e5c0eea4d2a09041c0ff7bb853969656300de6813b1996521e57b19c9cc"
+  },
+  {
+   "path": "rtl/uncore/Directory_2.sv",
+   "kind": "repo",
+   "sha256": "76d43de8aa6167490ad5ba3e4c368529bbf9d0246d0764290ef47ec517c06871"
+  },
+  {
+   "path": "rtl/uncore/Directory_3.sv",
+   "kind": "repo",
+   "sha256": "f01bfc094a86effa60e99b69ad29e5f1b41c56523e50c69639f938efae33da37"
+  },
+  {
+   "path": "rtl/uncore/SplittedSRAM_3.sv",
+   "kind": "repo",
+   "sha256": "2d70c0adfbac0a1bcc8d857f6eb064fe6f2effc12caf7c8d57cc876a3544f272"
+  },
+  {
+   "path": "rtl/uncore/SplittedSRAM_4.sv",
+   "kind": "repo",
+   "sha256": "13c3a6b514b79df6c5568059e0774f8e7ea544ee16917c07629a09675f429c4b"
+  },
+  {
+   "path": "rtl/uncore/SplittedSRAM_5.sv",
+   "kind": "repo",
+   "sha256": "844ac46a85aa93a7f33504b88fe3a0b5b31b54c0644452645b9fbf6577ce914d"
+  },
+  {
+   "path": "rtl/uncore/SplittedSRAM_6.sv",
+   "kind": "repo",
+   "sha256": "cecbca2b1a082c257b30e5a2e755661047d03b261a790ecfdcbc6d208089dde7"
+  },
+  {
+   "path": "rtl/uncore/L2Directory.sv",
+   "kind": "repo",
+   "sha256": "25636487cb84d257b509a58195ebcf244ab8a0d6fcce2174f68d972298ff7a13"
+  },
+  {
+   "path": "rtl/dft/xs_mbist_pipe_core.sv",
+   "kind": "repo",
+   "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+  },
+  {
+   "path": "rtl/dft/L2Directory_1.sv",
+   "kind": "repo",
+   "sha256": "4a6953c3ddd951dfdacc37aad51aec3e7dc8fa5a75ffadaf4850a796135461bd"
+  },
+  {
+   "path": "rtl/dft/L2Directory_2.sv",
+   "kind": "repo",
+   "sha256": "85d115d96ef612cf4f323f86e62df7b812ebb58830e622050c543c218ac068e3"
+  },
+  {
+   "path": "rtl/dft/L2Directory_3.sv",
+   "kind": "repo",
+   "sha256": "1d86474b69198db68b5648e7f45595a144415f97b94030aa41fca45dfd665f09"
+  },
+  {
+   "path": "rtl/uncore/xs_DataStorage_core.sv",
+   "kind": "repo",
+   "sha256": "0e684c3a53ab7426988e61bbd039ecfcab003ae3b8e30c15182680451b3cdb0c"
+  },
+  {
+   "path": "rtl/uncore/DataStorage.sv",
+   "kind": "repo",
+   "sha256": "b850f14eea109f214fa4571e34cc8c1b1d0efd7ed0933cdea9605eefef1e7e06"
+  },
+  {
+   "path": "rtl/uncore/DataStorage_1.sv",
+   "kind": "repo",
+   "sha256": "f835864d9b9ae9d8c5083e27ee0668c28216c72438ec36a3ea2af15fa21f3598"
+  },
+  {
+   "path": "rtl/uncore/DataStorage_2.sv",
+   "kind": "repo",
+   "sha256": "1f4a9a45a7bc306921d7cdcebbda3cf1e42aae33155096838c3f9a8f6a42da03"
+  },
+  {
+   "path": "rtl/uncore/DataStorage_3.sv",
+   "kind": "repo",
+   "sha256": "312f7e975576bef0b02ab0edebbddc2f1f278c6c574040a737ae66fb250ee46c"
+  },
+  {
+   "path": "rtl/uncore/GatedSplittedSRAM.sv",
+   "kind": "repo",
+   "sha256": "0b1cad54f25e5448cd6b5541191b715aefa0a94964511474076b25ff02dd16d0"
+  },
+  {
+   "path": "rtl/uncore/GatedSplittedSRAM_1.sv",
+   "kind": "repo",
+   "sha256": "6cec07f8677ecd12f9935bbffa51f9bb9c49450a789b132e1994e702f80b7a68"
+  },
+  {
+   "path": "rtl/uncore/GatedSplittedSRAM_2.sv",
+   "kind": "repo",
+   "sha256": "0aeb2dd7cfd99919d866cbb7efafa255d120086d0f6cb48537ac99f0c2681b54"
+  },
+  {
+   "path": "rtl/uncore/GatedSplittedSRAM_3.sv",
+   "kind": "repo",
+   "sha256": "1947ab68e97c503591f51cbcd36bde2350fb59d1f347e564c8fe651b0b62da2a"
+  },
+  {
+   "path": "rtl/common/MbistClockGateCell_93.sv",
+   "kind": "repo",
+   "sha256": "818bb56a41557d2638fdae8cb0c6b8e34f2d57751e929f27f4c9f0ead55c4654"
+  },
+  {
+   "path": "rtl/common/ClockMux.sv",
+   "kind": "repo",
+   "sha256": "f295d3a7f557744136826c204af5f5dc0a5d079f2c566b9af5de7ad3dbe9fa5b"
+  },
+  {
+   "path": "rtl/dft/xs_mbist_hold_leaf_core.sv",
+   "kind": "repo",
+   "sha256": "65acb62a7ef631d1fd190a8ebdc32a17521f3b9bd3a506afe000776b76acebf3"
+  },
+  {
+   "path": "rtl/dft/L2DataStorage.sv",
+   "kind": "repo",
+   "sha256": "5ec4e03d1decb2a7b1e992adfe11941e25f51833f27b4ce8d67f45373401f70f"
+  },
+  {
+   "path": "rtl/dft/L2DataStorage_1.sv",
+   "kind": "repo",
+   "sha256": "6f5830e0c288680586c29b70a0cbdfbe30708efe47378b7834ed5bbe8d93395a"
+  },
+  {
+   "path": "rtl/dft/L2DataStorage_2.sv",
+   "kind": "repo",
+   "sha256": "f626ca8a7d5c0ddd8685795b1282f39144ebe6e641ce33cd5cbf4dfd793bb0aa"
+  },
+  {
+   "path": "rtl/dft/L2DataStorage_3.sv",
+   "kind": "repo",
+   "sha256": "d7fefeb72f536e8ed510090625e5f2e65ded23d6f387c28e38e28bc819d1d1f7"
+  },
+  {
+   "path": "rtl/dft/L2Slice.sv",
+   "kind": "repo",
+   "sha256": "7817014bffd6c44c2a9c4a563b030cae66cca56965e046f5bf32943e7d4ecbfa"
+  },
+  {
+   "path": "rtl/dft/L2Slice_1.sv",
+   "kind": "repo",
+   "sha256": "43521ee07e26e42f572941de875ffa93996a92b2727ab2ac0a87f65ebe0c68ff"
+  },
+  {
+   "path": "rtl/dft/L2Slice_2.sv",
+   "kind": "repo",
+   "sha256": "f611dc25c08be74831960c9e7a0592a11a46a458efdee662b7fe8079cbc631f6"
+  },
+  {
+   "path": "rtl/dft/L2Slice_3.sv",
+   "kind": "repo",
+   "sha256": "4965db6af583732ba65514979edb54d66e0c71b666f9d4acb7e98eb8a742f47a"
+  },
+  {
+   "path": "rtl/common/xs_SRAMTemplate_core.sv",
+   "kind": "repo",
+   "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_148.sv",
+   "kind": "repo",
+   "sha256": "9dffaf5227648f84f7ed97f4b3035d1129c594b79e92b870ba83523a06367572"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_150.sv",
+   "kind": "repo",
+   "sha256": "4a83a08089348a8223f802d1cd82c1c6bf21ca72cf4b68e61f4799e6b50cd525"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_152.sv",
+   "kind": "repo",
+   "sha256": "cd21fe2a3ff41e0c9563c73e33dc2d6afc799ee43343841fd088a2bba0fccd86"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_153.sv",
+   "kind": "repo",
+   "sha256": "ef8bb70817740e63f5427357ed503c8572cbeda3af2cad7efb9d20642fd0ea27"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_154.sv",
+   "kind": "repo",
+   "sha256": "b3828e0f6c1dd747b2af10b939e4e58024d2784ebb00da7019694ab9eeb0298c"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_155.sv",
+   "kind": "repo",
+   "sha256": "cd2082894d9c64f4d46df8bff6ef7cae34baf7cb179210ab0da0e8b39db74bb1"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_159.sv",
+   "kind": "repo",
+   "sha256": "4f5f00f71a204a14fe395ffb4e2c7c8a5d86340babada3a4c31177c3005871fe"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_162.sv",
+   "kind": "repo",
+   "sha256": "93dcbcda152e207f0546d2d9ec868f82d9533d67aa60911a4cc84d0f00bdb4b5"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_163.sv",
+   "kind": "repo",
+   "sha256": "615844a144307616639312b26e625f4edf7492543957ba41b069d6b0bfab65b8"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_164.sv",
+   "kind": "repo",
+   "sha256": "d978c6f2366831fa4f0526661978279840680f79f1ce73d0106056ea07f46c07"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_165.sv",
+   "kind": "repo",
+   "sha256": "9c8375e28e9773561414970aa7f4c096bebeb1dba94258fd57fe61669431ee3f"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_166.sv",
+   "kind": "repo",
+   "sha256": "81c4c2612d773dd1634d44efcf3a7d2700f0b6e9b27be1085d2c4087bb90373a"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_178.sv",
+   "kind": "repo",
+   "sha256": "16371e306a5963332552e7e4e798c14d7fe603aae9e49013d97f0f9eea903dd9"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_181.sv",
+   "kind": "repo",
+   "sha256": "a74e7857fcff7b80d4d0e367ca8af1213b5250d0a071c64d8d86c52fbe2f83eb"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_185.sv",
+   "kind": "repo",
+   "sha256": "a6a9403b871d287b6973091790899b399a0a283f2d5e38b256e1b7f3fa15eb28"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_186.sv",
+   "kind": "repo",
+   "sha256": "0053010092500bcad188fd7b9b799a3bb15dfd5792723c134f644b4bb9f8c25b"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_187.sv",
+   "kind": "repo",
+   "sha256": "64b36ab4db6d0e3bf39025d3b1c4e7303be901af5d791e5c2f354e23572fb891"
+  },
+  {
+   "path": "rtl/uncore/Queue16_CHIREQ.sv",
+   "kind": "repo",
+   "sha256": "027e74138e216c6d26a4e61cde8292e5c64bd6802382dca50c6b95d7baa620a3"
+  },
+  {
+   "path": "rtl/uncore/Queue16_CHIRSP.sv",
+   "kind": "repo",
+   "sha256": "f5d33530de5bafe3c21b4a3b039cbedb5222fb056c956c5697d3a041b8cc57e7"
+  },
+  {
+   "path": "golden-rtl/ram_16x137.sv",
+   "kind": "golden",
+   "sha256": "030610f33ab27cfd2b469dfe88fe787ba63f782eb1d3524eb701c223f73f0f20"
+  },
+  {
+   "path": "golden-rtl/ram_16x62.sv",
+   "kind": "golden",
+   "sha256": "cd46497f3c73f593106e83a666e9c64a814205a53c1f525049e8b29c6a1b6149"
+  },
+  {
+   "path": "golden-rtl/ram_16x67.sv",
+   "kind": "golden",
+   "sha256": "738cfb6bc637120cf26c638a112325a2d9b0a386eba7d92dfca11fd2f3b0767f"
+  },
+  {
+   "path": "golden-rtl/ram_data_16x256.sv",
+   "kind": "golden",
+   "sha256": "fbaf26b94de42cedbe31ccf5d8795b481c1bcdb5c9095eac776fc5b28e479cf0"
+  },
+  {
+   "path": "golden-rtl/ram_16x25.sv",
+   "kind": "golden",
+   "sha256": "8b8d39c2fc1a2a7568c6e97593b4c0b4059f510471a5eb1d786b4f67277a645c"
+  },
+  {
+   "path": "golden-rtl/ram_2x98.sv",
+   "kind": "golden",
+   "sha256": "854d57ae0dc9752b2ea8e2b5156d5d8224dae231e8db1d36857608e8a5a0c731"
+  },
+  {
+   "path": "golden-rtl/ram_16x11.sv",
+   "kind": "golden",
+   "sha256": "ed374e505d92bc606919d3f8c26318878214e1fe533ee7606d9eb5e2e8af81b4"
+  },
+  {
+   "path": "golden-rtl/ram_4x11.sv",
+   "kind": "golden",
+   "sha256": "8b798a3ef135985b33fab51deab85cd939aa2ee4e00acf6618883998f87a3847"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv",
+   "kind": "golden",
+   "sha256": "db452077988544dc4ac5422e9dbec4fa358af33c9ccd98d8d616f4dd92ecc355"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv",
+   "kind": "golden",
+   "sha256": "1c050746cdebd341ae0435533278751c468661b6de081e726483887629a83dc2"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv",
+   "kind": "golden",
+   "sha256": "f22e033e284c23005ef660050149d716024193826625d92d7c0f6e5fb0c04317"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv",
+   "kind": "golden",
+   "sha256": "c1148b3f1e9f82de90a2d24624b1ab9d72a8cc383caffe5b628f064800a7fcdb"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "kind": "golden",
+   "sha256": "f0f2e53a82ae880e5cc7bf6b0c8b835ad06dd0422c0ee7c328ff97b6a3e1b5a2"
+  },
+  {
+   "path": "golden-rtl/array_14.sv",
+   "kind": "golden",
+   "sha256": "f677f855c44fe28c8bd2de442d891e1280911b22ce5def9bc52b8f92672ee74d"
+  },
+  {
+   "path": "golden-rtl/array_15.sv",
+   "kind": "golden",
+   "sha256": "f6dce4d1f4942e6b27160b1ae09679b07c21d8704b60f17319d473cf7caf2c67"
+  },
+  {
+   "path": "golden-rtl/array_16.sv",
+   "kind": "golden",
+   "sha256": "0eb0c03c56b40b61e3ea7b1e5be20c4def9ba15ee52299571cd1b5fc933b135b"
+  },
+  {
+   "path": "golden-rtl/array_17.sv",
+   "kind": "golden",
+   "sha256": "4627c91343d441ad0e554225ba8ac92d7e8f0ae8c49006fbb4da23cead7ec057"
+  },
+  {
+   "path": "golden-rtl/array_18.sv",
+   "kind": "golden",
+   "sha256": "038df97bd3611ed4e1d8b1762a8a54bf7bdcbd9d5de6e4db83f3edaf2bc52f62"
+  },
+  {
+   "path": "rtl/common/ClockGate.sv",
+   "kind": "repo",
+   "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+  }
+ ],
+ "impl_commit": "1e99538b1f92c82aafb0792982ed420c1cc18017",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "24",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "829deba10f96ae6965f87ec7de7e09ee9045fc121c9a174e49e47343ada1d616"
+  },
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/Slice_1.json",
+    "sha256": "267a99b61162bcbc7e2a883d80980e8d362b66a87f42fe2bfca59566a2fd0226"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "Slice-20261005T084343Z-1e99538b1",
+  "top": "Slice_1",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 68308,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/Slice_1/dataStorage/array/array_0_0_0/array/array/array_18_ext",
+     "impl_path": "i:/WORK/Slice_1/dataStorage/array/array_0_0_0/array/array/array_18_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/dataStorage/array/array_0_0_1/array/array/array_18_ext",
+     "impl_path": "i:/WORK/Slice_1/dataStorage/array/array_0_0_1/array/array/array_18_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/dataStorage/array/array_0_0_2/array/array/array_18_ext",
+     "impl_path": "i:/WORK/Slice_1/dataStorage/array/array_0_0_2/array/array/array_18_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/dataStorage/array/array_0_0_3/array/array/array_18_ext",
+     "impl_path": "i:/WORK/Slice_1/dataStorage/array/array_0_0_3/array/array/array_18_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/directory/metaArray/array/array/array_15_ext",
+     "impl_path": "i:/WORK/Slice_1/directory/metaArray/array/array/array_15_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/directory/origin_bit_opt/array/array/array_17_ext",
+     "impl_path": "i:/WORK/Slice_1/directory/origin_bit_opt/array/array/array_17_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/directory/replacer_sram_opt/array/array/array_16_ext",
+     "impl_path": "i:/WORK/Slice_1/directory/replacer_sram_opt/array/array/array_16_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/directory/tagArray/array_0_0_0/array/array/array_14_ext",
+     "impl_path": "i:/WORK/Slice_1/directory/tagArray/array_0_0_0/array/array/array_14_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/directory/tagArray/array_0_0_1/array/array/array_14_ext",
+     "impl_path": "i:/WORK/Slice_1/directory/tagArray/array_0_0_1/array/array/array_14_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/directory/tagArray/array_0_1_0/array/array/array_14_ext",
+     "impl_path": "i:/WORK/Slice_1/directory/tagArray/array_0_1_0/array/array/array_14_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/directory/tagArray/array_0_1_1/array/array/array_14_ext",
+     "impl_path": "i:/WORK/Slice_1/directory/tagArray/array_0_1_1/array/array/array_14_ext"
+    },
+    {
+     "ref_path": "r:/WORK/Slice_1/grantBuf/pftRespQueue/ram_ext",
+     "impl_path": "i:/WORK/Slice_1/u_core/grantBuf/pftRespQueue/ram_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/Slice_1/dataStorage/array/array_0_0_0/array/array/array_18_ext",
+    "r:/WORK/Slice_1/dataStorage/array/array_0_0_1/array/array/array_18_ext",
+    "r:/WORK/Slice_1/dataStorage/array/array_0_0_2/array/array/array_18_ext",
+    "r:/WORK/Slice_1/dataStorage/array/array_0_0_3/array/array/array_18_ext",
+    "r:/WORK/Slice_1/directory/metaArray/array/array/array_15_ext",
+    "r:/WORK/Slice_1/directory/origin_bit_opt/array/array/array_17_ext",
+    "r:/WORK/Slice_1/directory/replacer_sram_opt/array/array/array_16_ext",
+    "r:/WORK/Slice_1/directory/tagArray/array_0_0_0/array/array/array_14_ext",
+    "r:/WORK/Slice_1/directory/tagArray/array_0_0_1/array/array/array_14_ext",
+    "r:/WORK/Slice_1/directory/tagArray/array_0_1_0/array/array/array_14_ext",
+    "r:/WORK/Slice_1/directory/tagArray/array_0_1_1/array/array/array_14_ext",
+    "r:/WORK/Slice_1/grantBuf/pftRespQueue/ram_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/Slice_1/dataStorage/array/array_0_0_0/array/array/array_18_ext",
+    "i:/WORK/Slice_1/dataStorage/array/array_0_0_1/array/array/array_18_ext",
+    "i:/WORK/Slice_1/dataStorage/array/array_0_0_2/array/array/array_18_ext",
+    "i:/WORK/Slice_1/dataStorage/array/array_0_0_3/array/array/array_18_ext",
+    "i:/WORK/Slice_1/directory/metaArray/array/array/array_15_ext",
+    "i:/WORK/Slice_1/directory/origin_bit_opt/array/array/array_17_ext",
+    "i:/WORK/Slice_1/directory/replacer_sram_opt/array/array/array_16_ext",
+    "i:/WORK/Slice_1/directory/tagArray/array_0_0_0/array/array/array_14_ext",
+    "i:/WORK/Slice_1/directory/tagArray/array_0_0_1/array/array/array_14_ext",
+    "i:/WORK/Slice_1/directory/tagArray/array_0_1_0/array/array/array_14_ext",
+    "i:/WORK/Slice_1/directory/tagArray/array_0_1_1/array/array/array_14_ext",
+    "i:/WORK/Slice_1/u_core/grantBuf/pftRespQueue/ram_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 68308,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "constant_reg": 1540,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "Slice_1",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_aux_observed": 0,
+  "bbox_aux_declared": 0,
+  "bbox_objects": 24
+ }
+}

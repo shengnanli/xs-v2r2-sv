@@ -1,0 +1,645 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-05T10:25:24Z",
+ "generator": {
+  "run_context_worktree_digest": "6206ba9f4dbe5587df3de33b666cec408a52dccb456b2652dfe4686c905f3611",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/70deb97b6803/TL2CHICoupledL2",
+  "version": 1
+ },
+ "impl_commit": "70deb97b6803df5f963166fe6aec8bf6a5f2995e",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TL2CHICoupledL2.sv",
+    "sha256": "20749f136c3b63e568cdae0d42d479b71b3a63579cefa031e699a79ab376dfe0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter16_CHIDAT.sv",
+    "sha256": "c5c9e88c74d08a1731bf5059a5cfde004fee567e8e569d413a4dbeb705115333"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter16_TLBundleD.sv",
+    "sha256": "f574e65e0cd07d692884967381488e667891062b279ac0921cc024da2ad39adf"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter4_L2CacheErrorInfo.sv",
+    "sha256": "5550916d032e8801577e50d9eb92fc4b76a2cc735733ba479acd67f790064bf8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter4_L2ToL1Hint.sv",
+    "sha256": "161073cc11a3c7fe4c7f0f9e40cf8e6d5592fe46c00f00288ea9672097055824"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Decoupled2LCredit.sv",
+    "sha256": "b20b0ef8ba8d06360dda90b2bdc231a9984a1bfa666e17fcb74505d0a64b98e5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Decoupled2LCredit_1.sv",
+    "sha256": "fb8725625796222bff13fb82b315bf53287f2b1bdb35c1f7a0601f8bd4baf392"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Decoupled2LCredit_2.sv",
+    "sha256": "8a92d1f5414a4cef90d9663414d261646c0ed1ec32cd73bc3bab41438706358a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FastArbiter.sv",
+    "sha256": "c78852f51ed6d4c5500e2e3373289467e7df1a8878886db7fb40a1983fe3d0f1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FastArbiter_1.sv",
+    "sha256": "69225f8780f2fd296bd323e9b2fd52ec24e643b6104fd88341863a8332f217ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FastArbiter_26.sv",
+    "sha256": "64c8c71ad2ee316d3684908e291cf573913fe5614d13f258cc5d0171d1768329"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FastArbiter_27.sv",
+    "sha256": "0e4462d052865c8d048381d7061311b1f89f16fd99d1a82ea0622f5f5f0bd68a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FastArbiter_28.sv",
+    "sha256": "11cc67156872893c3a0d59705b706072873e5cd8cc7734a93ea90c8765c829b0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/L2Cache.sv",
+    "sha256": "439cbb5531b392e62eda6fc3b92258c22586a3b439ef2bb6baa7360c6d99714b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LCredit2Decoupled.sv",
+    "sha256": "cc930f0060f519040c2d13e0a3d368e8c08986c0c3eefb711d02ae930341c766"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LCredit2Decoupled_1.sv",
+    "sha256": "1aef83b6e2de62cd1b0ed0bc269430da317d07ce76a9f08a303db6ffe64b3af2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LCredit2Decoupled_2.sv",
+    "sha256": "68debfd7e1079540fcd660c6b9b54ce94590ba1483235813ced8805db9d46f15"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LinkMonitor.sv",
+    "sha256": "db4587184d54929ac03f47570676cbe47ff46a2d1d7a890d423c66565eb12bcf"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MMIOBridge.sv",
+    "sha256": "b60ffba0f7bf61fbb56504f0b1482fbb54588f2f8188d3118d0ef7075f9187b5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MMIOBridgeEntry.sv",
+    "sha256": "7a0bfe612b6f0c297a1c035c4e60472c2293cb64d70fae5c4b06b7ead8ae7bb4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MMIOBridgeEntry_2.sv",
+    "sha256": "6bc3a2f07bdf6cdb8155e4f42deb0b475dcee5b041e310d425a3f3f787ea3e4c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MMIOBridgeEntry_4.sv",
+    "sha256": "edb014d2edcc05f74b063dfe5f368ed7f81df2f8b2ffa98afe1e441eaef665ed"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MMIOBridgeEntry_8.sv",
+    "sha256": "fccea1aa46ba16df2e1d76c862aa245294058358740c299cd69489f8a7d9aaf0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistIntfL2.sv",
+    "sha256": "34a642642e8123f9858866d7e85cf334002570236b6e1f0a3120a410cb9d19e0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pipeline_10.sv",
+    "sha256": "a68931a82b7d03cd774132e8f5b627d945cacc5a0d0957118f4f8e4100f1717f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pipeline_11.sv",
+    "sha256": "1cfc489d582b73dddf14e3a33f1a101cecf68ede8b8a5b234096f289b433e224"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pipeline_12.sv",
+    "sha256": "80b7231296aab84a87f94ec2f9e56ceedce025dab245f80fd4891d402672c0b5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pipeline_13.sv",
+    "sha256": "45e454b067b5936fb06f389f7ec7fc53ed9a6c26f64f16f5f0ce95b04db666b2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pipeline_2.sv",
+    "sha256": "f237b93af403a8198e26468aa65445f174f37737493daaf19b59527372c09bff"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pipeline_3.sv",
+    "sha256": "450e19332c39ed0759c65748b7c448a4372c398176c86e83dba9b75b672934fc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue1_CHIDAT.sv",
+    "sha256": "73eaf07b84568af46d2b364df365e70c58f41c308d3e5c849f94c194bbc0808e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue1_CHIRSP.sv",
+    "sha256": "171e458843be9d0dc8d69a4015febe10f604815fb842b412cb890b7c65c9354e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue1_PrefetchResp.sv",
+    "sha256": "c663288c7b819f78a1a40e21ab36523f9edde7ee47cc744f3643607a7f756120"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue1_PrefetchTrain.sv",
+    "sha256": "1993e11f363cff61a7be989f4bcf89c7c6a09c9af486e1b718d1ca96970ccf48"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue1_UInt32.sv",
+    "sha256": "362bf5b65d06d9ba06522b06d60b3b1aabd7605e32b3f2609af79000351a09e0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_PCrdGranted.sv",
+    "sha256": "e7a1bf9a23497dbce8563b66c1043aa38e9862c87bde66e9f5ed92b76f859a93"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue4_CHISNP.sv",
+    "sha256": "c7fb47ee27788f57ba8860865d29b0d6287d4e2fa974f077e0b858684bc263f4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RRArbiterInit_13.sv",
+    "sha256": "7c82f3c1f3cf4ccac80d20ce4bc121dff4b29cd7ca8169d29350e045627cdacf"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RRArbiterInit_20.sv",
+    "sha256": "18788d67359467031fe972c592cddd7a11ec7144f013e474b3134a1db937d00e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TopDownMonitor.sv",
+    "sha256": "257376bf8717825e4e2f3b81b94b6898ba472f0c72989194dcb844f3e4d53422"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x15.sv",
+    "sha256": "3ea24366708cc431f053f57e3435a1978af209f8860b66423a02a095c22a6861"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_4x115.sv",
+    "sha256": "d87ff7eaa723614e8ea98e10d87b923352cadb348f13704f55bc39ec1f2164de"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Slice.sv",
+    "sha256": "86c64e0a7fbd686c02b1d008d0acfd78c1e864e1927fefefd1df452c9803b2b6"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Slice_1.sv",
+    "sha256": "0730f51a2b519369e5ca4e9a1c508b5f6d76c320dd80713b43b93b7ec105086f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Slice_2.sv",
+    "sha256": "74aecc2cfefafaa65e7c90ea05ff985748cf96361dae4660f4bc743d99cfbce0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Slice_3.sv",
+    "sha256": "cbe795c60212fd62f86a793c8d1cdf12878dbe74b45516037d0f8f5041effa89"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Prefetcher.sv",
+    "sha256": "4983de919dc727206c3594fcf7a7c0f1327f157f594a08d5c806b72de4b82075"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue78_PCrdGranted.sv",
+    "sha256": "3dc2fd96499b154e9cf39f4509df62fbda51e02fc73e67bf8d6ccbae4b498f7c"
+   }
+  ],
+  "golden_sha256": "6ed5b61f510d05bcf724fe75af69fb7ae75a4ec0b6f814475166e297082e5105",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/TL2CHICoupledL2.sv",
+    "sha256": "87cf102bd3fc8ca92da51266fdaadc8451fa761c3b3ff5553b8a2bfc644d1da6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Pipeline_13.sv",
+    "sha256": "923a2320e8bdd3eccf7161628dc1441cdd096779cbed3c8b36d6947ae61e8c4a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue1_CHIRSP.sv",
+    "sha256": "ed91589509c8e7b0d9592464d7658442d4db13683a2bce97bdbc1748786950c7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_ChiselQueue1_core.sv",
+    "sha256": "8c12ab1b2180d56e2c80d07cd66a488272a41b455496e87d7f097e15e87e3fa1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Pipeline_12.sv",
+    "sha256": "946e03f32839ce094232ec93896a5bd61964eab9fdd0e610014e792d71f6d884"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue1_CHIDAT.sv",
+    "sha256": "7927928f36cf034c5bf8e3a7a92f1b24722d87ea29100672ed14213704438bc1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/LinkMonitor.sv",
+    "sha256": "0ca499b1620969db09c5403697a5b77cf6c60a1e39654923f6be2c63c7493049"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/LCredit2Decoupled_2.sv",
+    "sha256": "523120d1d7ac130a4db7cc5448e95bc16f75391c62e8f0b4b652f25d6eadc116"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/LCredit2Decoupled_1.sv",
+    "sha256": "9d644dc33165c2aa501ad2ec677c666f5cb83937f609faca2bf4174e314dc68d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/LCredit2Decoupled.sv",
+    "sha256": "7c5da50e352132fb6367ba22b7b09824a7a1458f1076c57bad805d5133220884"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue4_CHISNP.sv",
+    "sha256": "2495cd96672b256454c32007f1c6af4770c9817d16e6417e154bac631682a517"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/xs_ChiselQueuePipe_core.sv",
+    "sha256": "66820a8dd32c8e6cd1e513b798a602833a3b81590abbf016604e37a033e0af63"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Decoupled2LCredit_2.sv",
+    "sha256": "ee52a1cdddc6f5066b274d1e69eb45ca0c4e48828dcc30edbcc94c692ad381b5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Decoupled2LCredit_1.sv",
+    "sha256": "3f3e7aa4beec8cb6478c64d18996673b1af3c4e85d9246274a73273f66e834b1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Decoupled2LCredit.sv",
+    "sha256": "6ba47abf963c2a336010b0a9f3bff5bf152a04f3b75ca6c8fd535c5e0d826a09"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/FastArbiter_28.sv",
+    "sha256": "69b756d1c189ed6433c1d69cc44e9823fc65490fa4a5eab5bd89bd8cc6b54174"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_FastArbiter_core.sv",
+    "sha256": "589e52634821c1701e1567bd5ce921eca305f26513303c055dad40fe8cefd804"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue2_PCrdGranted.sv",
+    "sha256": "e910651c6c4bc0971dee5b3d078b03e67f431a963844123fac42a8a582fa4fa4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_ChiselQueue_core.sv",
+    "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/FastArbiter_27.sv",
+    "sha256": "35e42f56c2c9e92cc26032b7e4282f890ac71888aaf8dd42ebf3bee4ef93f666"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/FastArbiter_26.sv",
+    "sha256": "b1ae2fce5a7dcdec35093e63e037406a30875de5eee1caec82cabe74c9ff286d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit_20.sv",
+    "sha256": "254859bfc07221063fad0957265eaf59622779da3ecb2e505b14e2e9cabfd2ca"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit.sv",
+    "sha256": "b6a3406112df63bc1ec77562e11b7fcabaf9ee6ae3e5d90a0edc89034b964bac"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistIntfL2.sv",
+    "sha256": "13ccdeb989dd106a3d9ae0cb7f9fbeef22fea002b3de1de59c5c4c133b4f2db5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/L2Cache.sv",
+    "sha256": "4cbcfff922cdf724e85d794cedfc8ad61af54fd1ef207e3c2abcf37d0f4285ff"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/xs_mbist_pipe_core.sv",
+    "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Pipeline_11.sv",
+    "sha256": "8bebe8a5f66465ecca1060e3056d6f9c56721e53c102ac0b6188293590cdd46e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Queue1_UInt32.sv",
+    "sha256": "0778933def80565e689356f86f180832b5f7aefcb04fef9e5df5c9d7e21e2087"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Pipeline_10.sv",
+    "sha256": "1814d77f4e66356f9c0101d41d389c2bd1dc34c13d3118ac0351536c11127a3e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/TopDownMonitor.sv",
+    "sha256": "1ee5bb8aae89ce1a7e9a985dae520ed4b3c5e2dda6986b43bf6e196290ba1956"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Arbiter4_L2ToL1Hint.sv",
+    "sha256": "fa5daf49e4f01096dcff148b6a5238cb6e6ac463c158a9ca934bda8b56311ded"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+    "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/Arbiter4_L2CacheErrorInfo.sv",
+    "sha256": "855af3b2199259490337a33a6f9b82cd214df7d5cf0ad626912f334a3d2b9bc9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Pipeline_3.sv",
+    "sha256": "1e5275e1c4731207e8a4d93803e1915fbb990804ff2b3dc7ba96383f9f7804d6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Queue1_PrefetchResp.sv",
+    "sha256": "80d2985902db15f3923adf11d905a54305fbbc0fe09f7641423b02e826e46b8c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Pipeline_2.sv",
+    "sha256": "f37cafb9b36b31f3695db06b447d250cc69afcbc644135a18f235148d2139bc4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Queue1_PrefetchTrain.sv",
+    "sha256": "486765ac524348483a65843bf83d29d23c973145af1f2039d10f30a88d87cf34"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/FastArbiter_1.sv",
+    "sha256": "3a3d18093f1012bbb8d3e24370283a41a10e74920f5c46dcabe6411c95347dc2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/FastArbiter.sv",
+    "sha256": "ed8178f1c41793d03c86ba03cc0e8a0bca30dcbec6ce758f1d77c449a02797d4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/MMIOBridge.sv",
+    "sha256": "e6af43a5c6d9332a35b3b0a23f5c2c01014f8a5e9177b214200aab0afe630601"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Arbiter16_TLBundleD.sv",
+    "sha256": "6b76e6ecb161a98949e3bd1d31a101ec0838e5b16ce2bad2c30c9d41cabe65f9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Arbiter16_CHIDAT.sv",
+    "sha256": "9a6df016b9eb1e46ab3258e49552c45e232a2e6fc37414ab99103a5aaa696756"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit_13.sv",
+    "sha256": "56646875144bb0b00fc3f9c6ac1a14d099303b440633e7742dc20d5979187b4c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/MMIOBridgeEntry_8.sv",
+    "sha256": "d31512f9158e2610258c1f39f1c3ac24bbc50502fcadd85674f74b4370c3c099"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/xs_MMIOBridgeEntry_core.sv",
+    "sha256": "c7310d826833adffad71a13d00df29d0334327afacb02c847d53a9a4bd4ea2e9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/MMIOBridgeEntry_4.sv",
+    "sha256": "fcf0b31ce280fc99f89bd33c691adcc096cb564759121ff5eeb9fcf11d916efc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/MMIOBridgeEntry_2.sv",
+    "sha256": "78cb9336cbde630eae7b88b2d80cc6c2bec12e4dae25f63cd86045ab873206b7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/MMIOBridgeEntry.sv",
+    "sha256": "446f091ab5836056f3f44130916520692c2544559be865920698038f3b5caff5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Slice.sv",
+    "sha256": "8b14b01c503c8dacff2df600b7f39ab28fb665886c58d010ffff14e1ac1816af"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Slice_1.sv",
+    "sha256": "019147759befaf2219bb602ccc23c9d3bf02baada6bdee1b23fe956d5d248136"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Slice_2.sv",
+    "sha256": "c07922397220a60a12c8bb04cdd1165e7504252e7c1c5c531bc65f6b2d2c2ee8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Slice_3.sv",
+    "sha256": "481c3d012017c5078ee83e73fa420389dbc0e9e493777330ace235b3aad35199"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/Prefetcher.sv",
+    "sha256": "48bcfd17a57e2a9043d9a02184180a53f20b2c090bc776ec15af568f1e5d337b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue78_PCrdGranted.sv",
+    "sha256": "4b0d25dff57ae6e2ca9f6cc660827ca0fd53a0f83796ec156ee6aaa5a5bdb55a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x15.sv",
+    "sha256": "3ea24366708cc431f053f57e3435a1978af209f8860b66423a02a095c22a6861"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_4x115.sv",
+    "sha256": "d87ff7eaa723614e8ea98e10d87b923352cadb348f13704f55bc39ec1f2164de"
+   }
+  ],
+  "impl_sha256": "9623503d279eea048a0944fe679d15872029bc33bb669444c581cba0a63a2b4c",
+  "repo_impl_files": 54
+ },
+ "mc_memory_objects": [
+  "ram_2x15",
+  "ram_4x115"
+ ],
+ "native_facts_sha256": "a9174e5a6b4ffc09db194f6a51791b8b1a7c923af95ddefb0691f2c4d9aafd08",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 20084,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "70deb97b6803df5f963166fe6aec8bf6a5f2995e",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/TL2CHICoupledL2.json",
+    "sha256": "3d6409019ad2986c4c3f50e5df6fdadb061e1e11de66ec9d81f755fa8e5cd459"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "Slice Slice_1 Slice_2 Slice_3 Prefetcher Queue78_PCrdGranted",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "assembly",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "a564670d17bea4fdd512ea1d73a0561b50aac5872653216d92093e0308292d6a"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "bc207b6ab441626178a6b25aad523de71c7e9e71033a1c5f770e80381d508c3f",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "6206ba9f4dbe5587df3de33b666cec408a52dccb456b2652dfe4686c905f3611",
+ "provisional": false,
+ "receipt_sha256": "7eef24689366db6d503d94d249ad144b8523cd0ddf246e1bbceb61e2bb00ad55",
+ "reproduce": {
+  "command": "PROOF_COMMIT=70deb97b6803df5f963166fe6aec8bf6a5f2995e scripts/run_proof.sh TL2CHICoupledL2 TL2CHICoupledL2",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "763547752b5c3f52c0e86b391571f3d671791fb47c3bb8909d85e92f061941ec",
+ "run_id": "TL2CHICoupledL2-20261005T102030Z-70deb97b6",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/TL2CHICoupledL2.tcl",
+    "sha256": "602f392e15f87296ea7097ffda957b5d9522be792bafa35d6735bd3de5828094"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/TL2CHICoupledL2/fm_pins_pre.tcl",
+    "sha256": "a564670d17bea4fdd512ea1d73a0561b50aac5872653216d92093e0308292d6a"
+   }
+  ],
+  "sha256": "591b52600aa0ca1a1aaf5967d95307fad452e48907da6917c6e40572beb79740"
+ },
+ "target": "TL2CHICoupledL2",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "TL2CHICoupledL2",
+ "variant": "TL2CHICoupledL2",
+ "verdict": "SUCCEEDED"
+}

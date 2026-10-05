@@ -39,5 +39,5 @@
       "points": 101
     }
   },
-  "note": "sramcore-d1d2d3 跑前登记（codex 0206 D1+D3）：merge_dup=false 模型适用。预测 passing = 68310（= 上一跑实测，即 expected - constant_reg）；D1 删掉的 Directory 7 个 rdata_last_REG 是 impl 独有 unread（无 golden 对家、不计 passing），故 passing 不变、unread 7→0；DataStorage_2 bore_array 位宽修正只动 MBIST 的 array 号线（golden SRAMTemplate 内仅 mbistBd_array 探针 wire，无扇出），预期不产生新比较点；ram_10x89 按 codex_0206 父级授权 → verdict 预期 SUCCEEDED；failing/unverified/aborted/unmatched 0。"
+  "note": "impl 侧 TXREQ/TXRSP 内 Queue16_CHIREQ/CHIRSP 改读本仓已签重写件（evidence/1fda02fae0f1，ref 仍读 G1；内部 ram_16x137/ram_16x62 存储模型照旧两侧同源）。预测 passing = 68310（不变：队列控制寄存器两侧一一对应，点数同 e051dab3a 实测），其余计数全 0，verdict SUCCEEDED。"
 }

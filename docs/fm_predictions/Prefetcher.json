@@ -14,5 +14,5 @@
       "points": 48
     }
   },
-  "note": "lane 内 diagnostic-full 诊断跑（关 vmucp、带 884 位 child 钉点）passing 8325 + matched-unread 900 + unmatched-unread 76；钉 960 + vmucp 后预期 = 模型 9301"
+  "note": "codex 0222 §3 重证：RTL/allow 不变（存储 wrapper 不本地化，sram_array_..._pftch_rrt/array_13 = MC_MEMORY_MODEL，array_13_ext = MC_MEMORY_BLACKBOX），在含 MC 登记表的当前 tip 上出 current-valid 证书（receipt 记 external_dependency）。预测 passing = 9301（= 16617425bad6 实测），其余计数全 0，verdict SUCCEEDED。"
 }

@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-05T09:18:34Z",
+ "generator": {
+  "run_context_worktree_digest": "1308898627e6e1ffd0b0cb7b3944fea14575ca72954b685d5e6c6b3472eb5f9d",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/19914dd7374f/Queue78_PCrdGranted",
+  "version": 1
+ },
+ "impl_commit": "19914dd7374fa2eaf7f756de1fc21dd513b963f5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue78_PCrdGranted.sv",
+    "sha256": "3dc2fd96499b154e9cf39f4509df62fbda51e02fc73e67bf8d6ccbae4b498f7c"
+   }
+  ],
+  "golden_sha256": "0a437ce8a990fe82b99b227050b064ba446ae360c47a04d098baeb65f08e30f0",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_ChiselQueue_core.sv",
+    "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue78_PCrdGranted.sv",
+    "sha256": "4b0d25dff57ae6e2ca9f6cc660827ca0fd53a0f83796ec156ee6aaa5a5bdb55a"
+   }
+  ],
+  "impl_sha256": "7a6a22fa610230de1911a3b4de0a258177126229c9bd8375b959e80430df7306",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "0721528671b4322067ed83c649e1778184b02e9e871f2dfb742a04f0ff8c9eba",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 65,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "19914dd7374fa2eaf7f756de1fc21dd513b963f5",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/Queue78_PCrdGranted.json",
+    "sha256": "4faca614c4e9b461f2696511ea354122908324b83c8d1dbbabd7cc2dd993c951"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "1",
+  "fm_mode": "assembly",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "a33d7225f029f174ed96a7dbe48d8e173237c212a1ddf81feb66c274b17c467a",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "1308898627e6e1ffd0b0cb7b3944fea14575ca72954b685d5e6c6b3472eb5f9d",
+ "provisional": false,
+ "receipt_sha256": "d403d2245cd72f97b40e39a9bb6486253f1ec901e4f20c7c37cb66e3dd0af28b",
+ "reproduce": {
+  "command": "PROOF_COMMIT=19914dd7374fa2eaf7f756de1fc21dd513b963f5 scripts/run_proof.sh UncoreChiQueues Queue78_PCrdGranted",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "95714ebe56b433007be8b517195d9033007e467a409e092f4a64cc931c7ad59a",
+ "run_id": "UncoreChiQueues-20261005T081835Z-19914dd73",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "Queue78_PCrdGranted",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "UncoreChiQueues",
+ "variant": "Queue78_PCrdGranted",
+ "verdict": "SUCCEEDED"
+}

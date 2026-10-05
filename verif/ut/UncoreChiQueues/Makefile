@@ -51,6 +51,14 @@ FM_REF_DEPS_Queue40_L2TlbMQBundle =
 # 只有这两个目标走 assembly + 逐对象声明（verif/allow/<T>.json：黑盒只许 ram_* 两侧各 1）；其余四个仍 signoff-strict
 fm-Queue78_PCrdGranted fm-Queue40_L2TlbMQBundle: FM_MODE = assembly
 fm-Queue78_PCrdGranted fm-Queue40_L2TlbMQBundle: FM_ALLOWLIST = 1
+# codex 0219 §2：Queue78_PCrdGranted 的 FM 证明输入收窄为它**真实例化**的最小闭包 ——
+# 共享核 xs_ChiselQueue_core + Queue78 薄 wrapper；ram_78x15 两侧对称黑盒（不进任何一侧），
+# 其余变体用的 ram_16x137/ram_16x62/ram_4x115/ram_2x15 与别的薄文件**不属于** Queue78，
+# 原先因同目录共用 RTL_SRCS/RTL_GOLDEN_DEPS 被一并记进 receipt.impl_closure（假依赖）。
+# 只是 target-specific 覆盖：另外 5 个目标的 FM 输入不变；VCS UT（simv）仍用全集。
+fm-Queue78_PCrdGranted: RTL_SRCS = $(RTL_DIR)/common/xs_ChiselQueue_core.sv \
+                                   $(RTL_DIR)/uncore/Queue78_PCrdGranted.sv
+fm-Queue78_PCrdGranted: RTL_GOLDEN_DEPS =
 # 不合并重复寄存器：比较点 = 寄存器位 + 输出位，fm_predict 模型精确适用；常量段 ram 位
 # 在 merge=true 下两侧合并不对称（TLBuffer_13 Makefile 实测），关掉是加强不是放宽。
 FM_MERGE_DUP = false

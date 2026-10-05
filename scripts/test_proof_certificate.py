@@ -59,7 +59,7 @@ _TMPDIRS = []
 
 #: 实际会跑到的断言条数。少一条 = 有测试被跳过/提前 return，整体判失败。
 #: 改测试时必须同步改这个数字（这正是它的用途：逼你意识到少跑了）。
-EXPECTED_ASSERTIONS = 78
+EXPECTED_ASSERTIONS = 95
 
 
 def check(name, cond, detail=''):
@@ -125,7 +125,7 @@ class Fixture(object):
 
     def __init__(self, cert_mutate=None, policy_mutate=None, allow_mutate=None,
                  commit_cert=True, child_is_fm_target=True, post_commit=None,
-                 golden_mutate=None):
+                 golden_mutate=None, extra_golden=None, mc_repo=False):
         self.root = pathlib.Path(tempfile.mkdtemp(prefix='xsv2-certtest-'))
         _TMPDIRS.append(self.root)
         self.repo_dir = self.root / 'repo'
@@ -134,9 +134,13 @@ class Fixture(object):
         (self.g1 / 'golden-rtl').mkdir(parents=True)
         for n, t in GOLDEN_FILES.items():
             (self.g1 / 'golden-rtl' / n).write_text(t)
+        extra_golden = extra_golden or {}
+        for n, b in extra_golden.items():
+            (self.g1 / 'golden-rtl' / n).write_bytes(b)
         (self.g1 / 'CANONICAL_ID.txt').write_text(CANON + '\n')
         man = ''.join('%s\t%d\t%s\n' % (_sha(t.encode()), len(t), n)
                       for n, t in GOLDEN_FILES.items())
+        man += ''.join('%s\t%d\t%s\n' % (_sha(b), len(b), n) for n, b in extra_golden.items())
         if golden_mutate:
             man = golden_mutate(man)
         (self.g1 / 'MANIFEST.tsv').write_text(man)
@@ -159,6 +163,10 @@ class Fixture(object):
         # targets=272 / unresolved=0，所以这只是夹具上下文问题，不是功能退化。）
         self._w('scripts/ut_common.mk',
                 '# 夹具占位：make 引擎 git archive 需要此文件存在\n')
+        if mc_repo:
+            # codex 0222：真实的 MC 登记表与 vendor_boundary 进夹具仓库（判据从父 commit 读它们）
+            for rel in ('verif/mc_memory_registry.tsv', 'verif/vendor_boundary.tsv'):
+                self._w(rel, (HOME / rel).read_text())
         self._w('verif/dead_ref/ChildLeaf.json',
                 json.dumps({'entries': [{'ref_path': 'r:/WORK/ChildLeaf/dead'}]}) + '\n')
         sh(self.repo_dir, 'git', 'init', '-q')
@@ -566,11 +574,116 @@ def test_canonical_and_freeze_commit():
         return
     expect_reason('D57-4:canonical_mismatch', f.judge(canonical='G1-something-else'),
                   'green_child_canonical_mismatch')
+    # codex 0219 §1：freeze_commit=null 不再"一律拒绝"，而是 rolling/current-valid（正负测见 test_rolling_mode）
     g = Fixture(policy_mutate=lambda p: p.update({'freeze_commit': None}) or p)
-    expect_reason('D57-5:policy_no_freeze_commit', g.judge(),
-                  'green_child_policy_no_freeze_commit')
+    check('D57-5:policy_null_freeze_is_rolling', g.judge() is True, repr(g.judge()))
     h = Fixture(policy_mutate=lambda p: p.update({'freeze_commit': 'f' * 40}) or p)
     expect_reason('D57-5:not_freeze_commit', h.judge(), 'green_child_not_freeze_commit')
+
+
+def _reclose(doc):
+    """证书突变后重算自洽摘要（模拟"生成器照实写出的那份证书"）。"""
+    ic = doc['input_closure']
+    ic['golden_sha256'] = PC.closure_digest(ic['golden'])
+    ic['impl_sha256'] = PC.closure_digest(ic['impl'])
+    ic['repo_impl_files'] = sum(1 for e in ic['impl'] if e.get('kind') == 'repo')
+    return doc
+
+
+def test_rolling_mode():
+    """★codex 0219 §1：freeze_commit=null = rolling/current-valid★。
+    祖先 + 父 commit 上闭包未变 → 通过（父 commit 在证书 commit 之后又有无关提交也通过）；
+    RTL / 脚本 / 声明（allow·dead_ref）/ target-config 任一变化 → 红；非祖先 → 红；声明 sha 不符 → 红；
+    freeze 非空且不等 → 红；freeze 相等 → 通过。"""
+    roll = lambda p: p.update({'freeze_commit': None}) or p
+    f = Fixture(policy_mutate=roll)
+    check('R0:rolling_ancestor_closure_unchanged', f.judge() is True, repr(f.judge()))
+
+    def unrelated(fx):
+        fx._w('docs/unrelated.md', 'x\n')
+    g = Fixture(policy_mutate=roll, post_commit=unrelated)
+    check('R1:rolling_later_unrelated_commit', g.judge() is True, repr(g.judge()))
+
+    def rtl(fx):
+        fx._w('rtl/common/xs_child_core.sv', 'module xs_child_core; wire w; endmodule\n')
+    expect_reason('R2:rolling_rtl_changed', Fixture(policy_mutate=roll, post_commit=rtl).judge(),
+                  'green_child_closure_changed')
+
+    def scr(fx):
+        fx._w('scripts/fm_eq.tcl', FM_EQ_TCL + '# changed\n')
+    expect_reason('R3:rolling_script_changed', Fixture(policy_mutate=roll, post_commit=scr).judge(),
+                  'green_child_script_closure_changed')
+
+    def decl(fx):
+        fx._w('verif/dead_ref/ChildLeaf.json', json.dumps({'entries': []}) + '\n')
+    expect_reason('R4:rolling_declaration_changed',
+                  Fixture(policy_mutate=roll, post_commit=decl).judge(),
+                  'green_child_declaration_changed')
+
+    def tcfg(fx):
+        fx._w('verif/fm_target_config/ChildLeaf.tcl', 'set x 1\n')
+    expect_reason('R5:rolling_target_config_added',
+                  Fixture(policy_mutate=roll, post_commit=tcfg).judge(),
+                  'green_child_target_config_added')
+    na = Fixture(policy_mutate=roll, cert_mutate=lambda d: d.update({'impl_commit': 'f' * 40}) or d)
+    expect_reason('R6:rolling_not_ancestor', na.judge(), 'green_child_commit_not_ancestor')
+    expect_reason('R7:rolling_declared_sha_mismatch', f.judge(declared_sha='0' * 64),
+                  'green_child_certificate_sha_mismatch')
+    eq = Fixture()                         # 夹具默认 freeze_commit = C1 = 证书 impl_commit
+    check('R8:freeze_equal_passes', eq.judge() is True, repr(eq.judge()))
+    ne = Fixture(policy_mutate=lambda p: p.update({'freeze_commit': 'e' * 40}) or p)
+    expect_reason('R9:freeze_set_not_equal', ne.judge(), 'green_child_not_freeze_commit')
+
+
+def test_mc_memory_contract():
+    """★codex 0222 §2：3d 的 MC 存储契约分支★（真实登记表 + 真实 G1 存储模型字节）。
+    M0 impl 挂登记的 MC_MEMORY_MODEL（两侧同一份）+ external_dependency → 通过
+    M1 同上但证书没记 external_dependency → 红        M2 MODEL 只在 impl 侧、ref 闭包里没有 → 红
+    M3 名字像 RAM 但未登记（ram_2x116）→ 按普通功能 RTL 规则红（不是 FM target）
+    M4 MC_MEMORY_BLACKBOX（厂商叶子）被 impl 侧读进来 → 红
+    M5 登记表不在父 commit 里 → 同一条目按普通功能 RTL 规则红
+    M6 证书写了 external_dependency 但闭包里没有 MC 对象 → 红"""
+    G = pathlib.Path(os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical') / 'golden-rtl'
+    names = {'ram_16x25.sv': None, 'ram_2x116.sv': None, 'array_13_ext.v': None}
+    extra = {n: (G / n).read_bytes() for n in names}
+
+    def add(doc, n, impl=True, ref=True, ed=PC.EXTERNAL_DEPENDENCY_MC):
+        e = {'path': 'golden-rtl/%s' % n, 'kind': 'golden', 'sha256': _sha(extra[n])}
+        if impl:
+            doc['input_closure']['impl'].append(dict(e))
+        if ref:
+            doc['input_closure']['golden'].append(dict(e))
+        if ed:
+            doc['external_dependency'] = ed
+        return _reclose(doc)
+    roll = lambda p: p.update({'freeze_commit': None}) or p
+    m0 = Fixture(policy_mutate=roll, extra_golden=extra, mc_repo=True,
+                 cert_mutate=lambda d: add(d, 'ram_16x25.sv'))
+    check('M0:mc_model_shared_with_external_dependency', m0.judge() is True, repr(m0.judge()))
+    expect_reason('M1:mc_external_dependency_missing', Fixture(
+        policy_mutate=roll, extra_golden=extra, mc_repo=True,
+        cert_mutate=lambda d: add(d, 'ram_16x25.sv', ed=None)).judge(),
+        'green_child_external_dependency_missing')
+    expect_reason('M2:mc_model_not_shared', Fixture(
+        policy_mutate=roll, extra_golden=extra, mc_repo=True,
+        cert_mutate=lambda d: add(d, 'ram_16x25.sv', ref=False)).judge(),
+        'green_child_impl_golden_mc_not_shared')
+    expect_reason('M3:ram_named_but_unregistered', Fixture(
+        policy_mutate=roll, extra_golden=extra, mc_repo=True,
+        cert_mutate=lambda d: add(d, 'ram_2x116.sv', ed=None)).judge(),
+        'green_child_impl_golden_not_fm_target')
+    expect_reason('M4:mc_blackbox_read_by_impl', Fixture(
+        policy_mutate=roll, extra_golden=extra, mc_repo=True,
+        cert_mutate=lambda d: add(d, 'array_13_ext.v')).judge(),
+        'green_child_impl_golden_')
+    expect_reason('M5:registry_absent_at_parent', Fixture(
+        policy_mutate=roll, extra_golden=extra, mc_repo=False,
+        cert_mutate=lambda d: add(d, 'ram_16x25.sv', ed=None)).judge(),
+        'green_child_impl_golden_not_fm_target')
+    expect_reason('M6:external_dependency_spurious', Fixture(
+        policy_mutate=roll, extra_golden=extra, mc_repo=True,
+        cert_mutate=lambda d: d.update({'external_dependency': PC.EXTERNAL_DEPENDENCY_MC}) or d).judge(),
+        'green_child_external_dependency_spurious')
 
 
 def test_no_fm_target_child():
@@ -838,7 +951,7 @@ def test_repo_policy_and_schema_are_valid():
         pol = json.loads(pol_p.read_text())
         if pol.get('freeze_commit') is None:
             NOTES.append('%-52s -> %s' % ('repo:POLICY.freeze_commit',
-                                          'null（未冻结；此状态下 green_child 一律拒绝放行）'))
+                                          'null（rolling/current-valid 模式，codex 0219 §1）'))
     sp = HOME / PC.CERT_DIR / 'schema-v1.json'
     check('repo:schema-v1.json_exists', sp.exists(), str(sp))
     if sp.exists():

@@ -445,10 +445,30 @@ def impl_golden_entries(doc):
             if e.get('kind') == 'golden']
 
 
+MC_REGISTRY_PATH = 'verif/mc_memory_registry.tsv'
+VENDOR_BOUNDARY_PATH = 'verif/vendor_boundary.tsv'
+EXTERNAL_DEPENDENCY_MC = 'MC_MEMORY_CONTRACT'
+
+
+def load_mc_context(repo, commit):
+    """codex 0222：从**父 commit** 读 MC 存储契约登记表与 vendor_boundary（不读工作树）。
+    返回 (ctx, None) 或 (None, reason)。表不在该 commit 里 = 空表（于是任何 golden 都走普通功能 RTL 规则）。"""
+    if str(_HERE) not in sys.path:
+        sys.path.insert(0, str(_HERE))
+    import mc_memory_registry as _MC
+    blob = repo.show(commit, MC_REGISTRY_PATH)
+    try:
+        reg = _MC.parse_registry_text(blob.decode('utf-8')) if blob is not None else {}
+    except Exception as e:                                  # noqa: BLE001
+        return None, 'mc_registry_invalid:%s' % e
+    vb = repo.show(commit, VENDOR_BOUNDARY_PATH)
+    return {'MC': _MC, 'reg': reg, 'vendor_text': vb.decode('utf-8') if vb is not None else ''}, None
+
+
 def validate_impl_golden_certified(repo, parent_commit, child, doc,
                                    policy=None, fm_targets=None,
                                    fm_targets_unresolved=None, g1_root=None,
-                                   _seen=None, _depth=0):
+                                   _seen=None, _depth=0, _mc=None, _mc_hits=None):
     """★递归★：child 的 impl 闭包里若挂着 golden 文件，那些文件必须**自身**有合格证书，
     且该证书证的 golden 与这里挂的**逐字节同一份**。返回 True 或失败原因串。
 
@@ -482,6 +502,27 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
         if mod in _seen:
             continue
         _seen.add(mod)
+        # (0) ★codex 0222★ 精确命中 MC 存储契约登记表：从 G1 复算登记的 sha / 端口 / 存储语义 / 子模块链，
+        #     并核对使用形态。命中后不再要求它是 FM target（存储层不重写）；登记了但复算不过 = 红，不往下落。
+        if _mc is None:
+            _mc, merr = load_mc_context(repo, parent_commit)
+            if merr:
+                return 'green_child_%s' % merr
+        if mod in _mc['reg']:
+            ok, how = _mc['MC'].check_golden_entry(e, reg=_mc['reg'], g1_root=(
+                str(pathlib.Path(g1_root)) if g1_root else None), vendor_text=_mc['vendor_text'])
+            if not ok:
+                return 'green_child_impl_golden_mc_invalid:%s:%s' % (child, how)
+            if how != 'MC_MEMORY_MODEL':
+                # 黑盒宏边界不该被 impl 侧读进来（读进来就不是对称黑盒了）
+                return 'green_child_impl_golden_mc_blackbox_read:%s:%s' % (child, mod)
+            # MC_MEMORY_MODEL = 两侧读同一份：ref 侧闭包里必须有逐字节同一份
+            if not any(os.path.basename(g.get('path') or '') == base and g.get('sha256') == e.get('sha256')
+                       for g in (doc.get('input_closure', {}).get('golden') or [])):
+                return 'green_child_impl_golden_mc_not_shared:%s:%s' % (child, mod)
+            if _mc_hits is not None:
+                _mc_hits.append(mod)
+            continue
         # (i) 那个模块必须自身是 FM target —— 与 D57 尾条同一条判据，不许在这里放松
         if fm_targets is None:
             return 'green_child_impl_golden_universe_unavailable:%s' % child
@@ -514,7 +555,7 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
         r = validate_impl_golden_certified(
             repo, parent_commit, mod, gdoc, policy=policy, fm_targets=fm_targets,
             fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root,
-            _seen=_seen, _depth=_depth + 1)
+            _seen=_seen, _depth=_depth + 1, _mc=_mc, _mc_hits=None)
         if r is not True:
             return r
     return True
@@ -524,31 +565,12 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
                                expect_canonical=None, policy=None,
                                fm_targets=None, fm_targets_unresolved=None,
                                g1_root=None):
-    """D57 五条的落地。返回 True 或**失败原因串**（永不抛出、永不 fail-open）。
-
-    参数全部来自调用方已有的上下文：
-      repo/parent_commit  = 父 proof 的 `--impl-commit`（ut_common.mk 传的 git rev-parse HEAD）
-      declared_sha        = allow 条目里写死的 certificate_sha256
-      expect_canonical    = 父本次的 G1 canonical ID
-      fm_targets          = fm_target_universe.targets_at(parent_commit) 的结果
-    """
-    # 0) 上下文齐全才谈判定 —— 缺就拒（fail-closed）
+    """green_child 判据 = 「allow 声明的 certificate_sha256 与 commit 里那份证书逐字节相等」
+    + 公共 current-valid 核心 `validate_certificate_current`。返回 True 或失败原因串（fail-closed）。"""
     if not parent_commit:
         return 'green_child_no_commit_context'
     if not repo.available():
         return 'green_child_git_unavailable'
-
-    # (D57 尾条) child 必须是真的 FM target。不是 FM target 的 child 只能走
-    # 两侧 inline elaborate 或新建 AUX leaf target，不得用 allow 绕过。
-    if fm_targets is None:
-        return 'green_child_target_universe_unavailable'
-    if child not in fm_targets:
-        if fm_targets_unresolved:
-            # 全集没完全展开时不许下"不是 target"的结论，也不许放行
-            return 'green_child_target_universe_unresolved:%s' % child
-        return 'green_child_not_fm_target:%s' % child
-
-    # 1) 从**当前提交**读 tracked certificate
     doc, blob_sha, err = load_certificate(repo, parent_commit, child)
     if err:
         return 'green_child_%s' % err
@@ -557,31 +579,58 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
     if declared_sha != blob_sha:
         return ('green_child_certificate_sha_mismatch:%s:declared=%s,actual=%s'
                 % (child, declared_sha[:12], blob_sha[:12]))
+    return validate_certificate_current(
+        repo, parent_commit, child, doc, expect_canonical=expect_canonical, policy=policy,
+        fm_targets=fm_targets, fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root)
+
+
+def validate_certificate_current(repo, parent_commit, child, doc,
+                                 expect_canonical=None, policy=None,
+                                 fm_targets=None, fm_targets_unresolved=None,
+                                 g1_root=None):
+    """★公共 current-valid 核心（codex 0219 §1 / 0222 §2）★ —— green_child 与 D3「经由 child 证书」
+    （fm_verdict._child_cert_current）**共用这一份**，不许再分叉。返回 True 或失败原因串。
+
+    两种模式（POLICY.freeze_commit）：
+      null      rolling/current-valid：证书 impl_commit 必须是父 commit 的祖先，且在父 commit 上复算的
+                impl / script / 声明文件 / target-config / G1 canonical 与 MANIFEST / 工具 / 钉死 appvar
+                全部与证书一致；满足即有效。
+      40-hex    发布冻结：以上全部 + 证书 impl_commit 必须精确等于 freeze_commit。
+    impl 侧挂 golden（3d）：精确命中 MC 存储契约登记表（verif/mc_memory_registry.tsv，读父 commit 的字节）
+    且复算通过 → 允许，并要求证书记 external_dependency=MC_MEMORY_CONTRACT；否则必须是独立 FM target
+    并持有合格证书（递归）；未登记 fail-closed。仅"名字像 RAM"或"等于 G1 MANIFEST"都不够。
+    """
+    if not parent_commit:
+        return 'green_child_no_commit_context'
+    if not repo.available():
+        return 'green_child_git_unavailable'
+    # child 必须是真的 FM target（D57 尾条）
+    if fm_targets is None:
+        return 'green_child_target_universe_unavailable'
+    if child not in fm_targets:
+        if fm_targets_unresolved:
+            return 'green_child_target_universe_unresolved:%s' % child
+        return 'green_child_not_fm_target:%s' % child
     errs = validate_document(doc)
     if errs:
         return 'green_child_certificate_invalid:%s:%s' % (child, errs[0])
     if doc['target'] != child:
         return 'green_child_certificate_target_mismatch:%s!=%s' % (doc['target'], child)
+    ed = doc.get('external_dependency')
+    if ed is not None and ed != EXTERNAL_DEPENDENCY_MC:
+        return 'green_child_external_dependency_unknown:%s:%r' % (child, ed)
 
-    # 2) 只接受规定的合格 verdict
-    qual = policy['qualifying_verdicts'] if policy else list(QUALIFYING_VERDICTS)
-    if doc['verdict'] not in qual:
-        return 'green_child_verdict_not_qualifying:%s=%s' % (child, doc['verdict'])
-
-    # 4a) 配置变化 → 失效：canonical 必须与父本次同源
-    if expect_canonical and doc['g1_canonical_id'] != expect_canonical:
-        return 'green_child_canonical_mismatch:%s' % child
-    if policy and policy.get('g1_canonical_id') and \
-            doc['g1_canonical_id'] != policy['g1_canonical_id']:
-        return 'green_child_canonical_not_policy:%s' % child
-
-    # 4b) 工具策略变化 → 失效
     if policy is None:
         return 'green_child_policy_missing'
+    qual = policy.get('qualifying_verdicts') or list(QUALIFYING_VERDICTS)
+    if doc['verdict'] not in qual:
+        return 'green_child_verdict_not_qualifying:%s=%s' % (child, doc['verdict'])
+    if expect_canonical and doc['g1_canonical_id'] != expect_canonical:
+        return 'green_child_canonical_mismatch:%s' % child
+    if policy.get('g1_canonical_id') and doc['g1_canonical_id'] != policy['g1_canonical_id']:
+        return 'green_child_canonical_not_policy:%s' % child
     ptool = policy['tool']
-    if doc['tool'].get('name') != ptool.get('name') or \
-            doc['tool'].get('version') != ptool.get('version') or \
-            doc['tool'].get('build') != ptool.get('build'):
+    if any(doc['tool'].get(k) != ptool.get(k) for k in ('name', 'version', 'build')):
         return ('green_child_tool_policy_mismatch:%s:%s/%s vs policy %s/%s'
                 % (child, doc['tool'].get('version'), doc['tool'].get('build'),
                    ptool.get('version'), ptool.get('build')))
@@ -591,7 +640,7 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
             return ('green_child_appvar_policy_mismatch:%s:%s=%r!=%r'
                     % (child, k, appvars.get(k), want))
 
-    # 4c) 声明文件（allow / dead_ref）在父 commit 上必须仍是证书记录的那份字节
+    # 声明文件（allow / dead_ref）在父 commit 上必须仍是证书记录的那份字节
     for kind, rec in (doc['proof_config'].get('declarations') or {}).items():
         p = rec.get('path')
         if not p:
@@ -602,9 +651,8 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
         if hashlib.sha256(blob).hexdigest() != rec.get('sha256'):
             return 'green_child_declaration_changed:%s:%s' % (child, p)
 
-    # 3) 用 git show / 当前提交重新计算 child closure，并与证书一致
-    ok, changed, missing = recompute_closure_at(repo, parent_commit,
-                                                doc['input_closure']['impl'])
+    # impl 闭包在父 commit 上复算
+    ok, changed, missing = recompute_closure_at(repo, parent_commit, doc['input_closure']['impl'])
     if missing:
         return 'green_child_closure_missing_at_parent:%s:%s' % (child, missing[0])
     if changed:
@@ -612,30 +660,19 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
     if ok == 0:
         return 'green_child_closure_empty:%s' % child
 
-    # 3b) script closure（工具脚本也是证明输入）同样在父 commit 上复算
-    sok, schanged, smissing = recompute_closure_at(repo, parent_commit,
-                                                   doc['script_closure']['entries'])
+    # 脚本闭包同样复算，且覆盖 policy 规定的脚本全集
+    sok, schanged, smissing = recompute_closure_at(repo, parent_commit, doc['script_closure']['entries'])
     if smissing:
         return 'green_child_script_closure_missing_at_parent:%s:%s' % (child, smissing[0])
     if schanged:
         return 'green_child_script_closure_changed:%s:%s' % (child, schanged[0])
     want_scripts = set(policy['script_closure_files'])
-    have_scripts = {e['path'] for e in doc['script_closure']['entries']
-                    if e.get('kind') == 'repo'}
+    have_scripts = {e['path'] for e in doc['script_closure']['entries'] if e.get('kind') == 'repo'}
     if want_scripts - have_scripts:
         return ('green_child_script_closure_incomplete:%s:%s'
                 % (child, sorted(want_scripts - have_scripts)[0]))
 
-    # 3b') ★per-target 配置的"不存在"也要被绑★（2026-09-20，fm_eq.tcl 拆分）
-    #
-    # 白名单与目标专属 appvar 从 scripts/fm_eq.tcl 搬进了
-    # verif/fm_target_config/<top>.tcl（理由：共享文件每改一个字节，全仓 child 证书
-    # 一起失效 —— 实测 6 份证书里 4 个不同的 fm_eq.tcl 哈希、无一等于 HEAD）。
-    # 文件**存在**时它由 sidecar 的 source 快照进 script_closure，上面 3b 已逐字节复算。
-    # 但绝大多数目标**没有**这份文件，而"证书里没记它"不能推出"它不存在" ——
-    # 否则"事后给某个目标补一份配置（开 vmucp / 改 appvar）"就是一条没人绑的缝：
-    # 证书里每个 sha256 都还对得上，而证明语义已经变了。
-    # 所以这里把**不存在**这件事也验一遍：证书没记 ⇒ 父 commit 上必须仍然没有。
+    # per-target 配置的"不存在"也绑（证书没记 ⇒ 父 commit 上必须仍然没有）
     tcdir = policy.get('target_config_dir')
     if tcdir:
         tcpath = '%s/%s.tcl' % (tcdir.rstrip('/'), child)
@@ -644,32 +681,34 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
         if not recorded and repo.show(parent_commit, tcpath) is not None:
             return 'green_child_target_config_added:%s:%s' % (child, tcpath)
 
-    # 3c) golden 闭包对 G1 MANIFEST（golden 换字节 = 换被比对对象）
-    if g1_root:
-        man = _g1_manifest(g1_root)
-        if man:
-            for e in doc['input_closure']['golden']:
-                base = e['path'].split('/')[-1]
-                if base in man and man[base] != e['sha256']:
-                    return 'green_child_golden_changed:%s:%s' % (child, base)
+    # golden（ref 闭包 + impl 侧挂的 golden）对 G1 MANIFEST：缺 MANIFEST / 缺条目 / 字节不同 一律红
+    if not g1_root:
+        return 'green_child_g1_root_missing:%s' % child
+    man = _g1_manifest(g1_root)
+    if not man:
+        return 'green_child_g1_manifest_unavailable:%s' % child
+    for e in list(doc['input_closure']['golden']) + impl_golden_entries(doc):
+        base = e['path'].split('/')[-1]
+        if man.get(base) != e['sha256']:
+            return 'green_child_golden_changed:%s:%s' % (child, base)
 
-    # 3d) ★递归★ child 的 **impl** 闭包里若挂着 golden 文件，那些必须自身有合格证书，
-    #     且证的 golden 与这里挂的逐字节同一份。原来的九条一条都不管这个：
-    #     `recompute_closure_at` 只复算 kind=='repo'，golden 条目被整个跳过。
+    # 3d：impl 侧挂的 golden（MC 契约 / 递归证书）
+    hits = []
     r = validate_impl_golden_certified(
         repo, parent_commit, child, doc, policy=policy, fm_targets=fm_targets,
-        fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root)
+        fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root, _mc_hits=hits)
     if r is not True:
         return r
+    if hits and ed != EXTERNAL_DEPENDENCY_MC:
+        return 'green_child_external_dependency_missing:%s:%s' % (child, hits[0])
+    if not hits and ed is not None:
+        return 'green_child_external_dependency_spurious:%s' % child
 
-    # 5) child 必须在 freeze commit 上 clean 重跑过；且其 commit 在父之前（或同一个）
+    # 祖先 + 冻结模式
     if not repo.is_ancestor(doc['impl_commit'], parent_commit):
-        return ('green_child_commit_not_ancestor:%s=%s'
-                % (child, doc['impl_commit'][:12]))
+        return 'green_child_commit_not_ancestor:%s=%s' % (child, doc['impl_commit'][:12])
     fc = policy.get('freeze_commit')
-    if not fc:
-        return 'green_child_policy_no_freeze_commit'
-    if doc['impl_commit'] != fc:
+    if fc and doc['impl_commit'] != fc:
         return ('green_child_not_freeze_commit:%s=%s,policy=%s'
                 % (child, doc['impl_commit'][:12], fc[:12]))
     return True

@@ -1,16 +1,17 @@
 {
  "evidence_archive": null,
  "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-03T23:25:52Z",
+ "generated_at": "2026-10-05T09:06:43Z",
  "generator": {
-  "run_context_worktree_digest": "957005a50a5043bcd1539477d6f3cac6ee67bef8c6cb3b03f0311cc26293a094",
+  "run_context_worktree_digest": "e96994df4ee475bb3a28dc6c49dfb579ee36037890be1c80ce745cc0a7965258",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/403937053e1e/GrantBuffer",
+  "source_evidence_dir": "evidence/ad7290123724/GrantBuffer",
   "version": 1
  },
- "impl_commit": "403937053e1e06835920b9f4df98ec3b053fcb65",
+ "impl_commit": "ad7290123724e99949c46a1376e80a98af12cb01",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -86,7 +87,11 @@
   "impl_sha256": "6b6ad44cfbda21937d0a6740caccb3c0fdb57b44476f8d8de9524ad52890bbfb",
   "repo_impl_files": 5
  },
- "native_facts_sha256": "01cce4447bbd434fea649e7f714ec99597fd23cecba139ac9f96c36aefdda61f",
+ "mc_memory_objects": [
+  "ram_16x25",
+  "ram_data_16x256"
+ ],
+ "native_facts_sha256": "27e7ed7bc6d116c607c0a08f248ed003d13b3647843952dcddb4af0b21adc4bb",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -105,7 +110,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "403937053e1e06835920b9f4df98ec3b053fcb65",
+ "proof_commit": "ad7290123724e99949c46a1376e80a98af12cb01",
  "proof_config": {
   "declarations": {
    "allow": {
@@ -133,18 +138,18 @@
  },
  "proof_config_sha256": "8012c75e7f8b8c1a71496b2507567feab3a0575d8e44c344c462cfe28a1ad480",
  "proof_mode": "assembly",
- "proof_worktree_digest": "957005a50a5043bcd1539477d6f3cac6ee67bef8c6cb3b03f0311cc26293a094",
+ "proof_worktree_digest": "e96994df4ee475bb3a28dc6c49dfb579ee36037890be1c80ce745cc0a7965258",
  "provisional": false,
- "receipt_sha256": "5d529ec9519edc0e6641f04140870e061162641abd8d0c4d5a9dc338abd56766",
+ "receipt_sha256": "c598bab369f464672c60606f4091cba4f0b264ec0ad904ead2fa08240b1c8105",
  "reproduce": {
-  "command": "PROOF_COMMIT=403937053e1e06835920b9f4df98ec3b053fcb65 scripts/run_proof.sh GrantBuffer GrantBuffer",
+  "command": "PROOF_COMMIT=ad7290123724e99949c46a1376e80a98af12cb01 scripts/run_proof.sh GrantBuffer GrantBuffer",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "5d346f7578c7c0884b8d3d6a0bdc7973123ae16deb015813ba8b7a84c4cbb6aa",
- "run_id": "GrantBuffer-20261003T232410Z-403937053",
+ "run_id": "GrantBuffer-20261005T090348Z-ad7290123",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [

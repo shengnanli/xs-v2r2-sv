@@ -7,8 +7,10 @@ MODULE = Slice
 #
 # child 处置 = **两侧白盒**：golden 闭包里每个 child 在 docs/coverage_three_axis.tsv 都是
 # PROVEN_DIRECT（或 PROVEN_IN_CONE 的 golden 复用件），ref 读 golden 同名件，impl 读本仓重写件；
-# 两侧共读同一份 golden 文件的只有：存储宏行为模型（ram_* / sram_array_* / array_N）、ClockGate、
-# 以及 TXREQ/TXRSP 内部的 Queue16_CHIREQ / Queue16_CHIRSP（与 TXREQ/TXRSP 自身签核时相同）。
+# 两侧共读同一份 golden 文件的只有：存储宏行为模型（ram_* / sram_array_* / array_N）与 ClockGate。
+# TXREQ/TXRSP 内部的 Queue16_CHIREQ / Queue16_CHIRSP 是普通队列逻辑（非存储层）：impl 侧读本仓已签
+# 重写件 rtl/uncore/Queue16_CHI{REQ,RSP}.sv（uncore-queues lane），ref 侧照旧读 G1（codex 0219 §3.2）；
+# 它们内部的 ram_16x137 / ram_16x62 存储模型仍按存储层两侧同源处理。
 # 厂商 SRAM 叶子 array_*_ext 两侧都不给 = 对称黑盒（verif/vendor_boundary.tsv 已审定），
 # 故走 assembly 模式 + verif/allow/Slice*.json 逐对象声明。
 RTL_DIR  = ../../../rtl
@@ -66,11 +68,11 @@ RTL_SRCS = $(RTL_DIR)/uncore/uncore_common_pkg.sv \
            $(RTL_DIR)/common/SRAMTemplate_165.sv $(RTL_DIR)/common/SRAMTemplate_166.sv \
            $(RTL_DIR)/common/SRAMTemplate_178.sv $(RTL_DIR)/common/SRAMTemplate_181.sv \
            $(RTL_DIR)/common/SRAMTemplate_185.sv $(RTL_DIR)/common/SRAMTemplate_186.sv \
-           $(RTL_DIR)/common/SRAMTemplate_187.sv
+           $(RTL_DIR)/common/SRAMTemplate_187.sv \
+           $(RTL_DIR)/uncore/Queue16_CHIREQ.sv $(RTL_DIR)/uncore/Queue16_CHIRSP.sv
 
-# 两侧共读的 golden 文件（存储宏行为模型 / 时钟门控 / TXREQ、TXRSP 内的 Queue16_CHI*）
-SHARED_GOLDEN = Queue16_CHIREQ.sv Queue16_CHIRSP.sv \
-                ram_16x137.sv ram_16x62.sv ram_16x67.sv ram_data_16x256.sv ram_16x25.sv \
+# 两侧共读的 golden 文件（存储宏行为模型 / 时钟门控）
+SHARED_GOLDEN = ram_16x137.sv ram_16x62.sv ram_16x67.sv ram_data_16x256.sv ram_16x25.sv \
                 ram_2x98.sv ram_16x11.sv ram_4x11.sv \
                 ClockGate.sv \
                 sram_array_1p512x76m19s1h0l1b_l2_tag.sv sram_array_1p512x104m13s1h0l1b_l2_meta.sv \

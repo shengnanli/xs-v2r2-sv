@@ -613,6 +613,15 @@ CHILD_PINS = [   # (UT 目录, 本层实例名, 变体 -> child golden 名)
     ('L2Slice', 'mbistPl', lambda v: 'L2Slice' + SFX[v]),
 ]
 PINS_TSV = REPO / 'verif' / 'ut' / 'Slice' / 'child_pins.tsv'
+# 同名但 FM 在本层按名配不上的寄存器（只差 impl 可读核的固定实例层 u_core/u_ctrl），逐变体、逐位写死。
+# 2026-10-05（agent/l2-top，impl 侧改读 Queue16_CHIREQ/CHIRSP 重写件后）：Slice（variant 0）的
+# directory.mbistPl（L2Directory = MBIST 分发流水）里 10 位 addrReg 与 addrRdReg[9] 两侧都成了
+# unmatched unread（e051dab3a 那次 FM 按名自配、计入 passing）；Slice_1..3 同一结构仍自配，不加。
+# 只声明对应，不约束、不放宽；fail-closed 计数并入本变体的字面 expect。
+EXTRA_PINS = {
+    'Slice': [('directory/mbistPl/addrReg_reg', 'directory/mbistPl/u_core/u_ctrl/addrReg_reg', 10),
+              ('directory/mbistPl/addrRdReg_reg[9]', 'directory/mbistPl/u_core/u_ctrl/addrRdReg_reg[9]', 0)],
+}
 # 配对方式 Name / Func / User 都收（Func = FM 按功能配上的、User = child 自己的 set_user_match）。
 PAIR_RE = re.compile(r'Ref\s+(\w+)\s+(?:Name|Func|User)\(Last\)\s+r:/WORK/(\w+)/(\S+)\n\s+Impl\s+(\w+)\s+(?:Name|Func|User)\(Last\)\s+i:/WORK/(\w+)/(\S+)')
 # child 自带的钉点文件：钉的对象在 child 里可能是 not-compared（unread），不进 matched.rpt，
@@ -770,6 +779,18 @@ def pins_file():
                     body.append('  slice_pin {%s} {%s}' % (r, i))
                     n += 1
             per.append('%s %d' % (child, n))
+            total += n
+        n = 0
+        for rb, ib, w in EXTRA_PINS.get(v, []):
+            r, i = 'r:/WORK/%s/%s' % (v, rb), 'i:/WORK/%s/%s' % (v, ib)
+            if w:
+                body.append('  slice_pinw {%s} {%s} %d' % (r, i, w))
+                n += w
+            else:
+                body.append('  slice_pin {%s} {%s}' % (r, i))
+                n += 1
+        if n:
+            per.append('EXTRA_PINS %d' % n)
             total += n
         L.append('if {$top eq "%s"} {' % v)
         L.append('  # %s' % ', '.join(per))

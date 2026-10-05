@@ -157,3 +157,68 @@ DCache A 413 / D 846 / B 31、ICache D 409、PTW D 318、外部 MMIO A 106、tra
 变异（20k 拍）8 个抓 7：critical error 复位值 1、trap 不看 itype、priv 无条件锁存、hartIsInReset 复位 0、MSI bits 无条件锁存、
 iaddr/ilastsize 用第 0 组 valid、l3Miss 接错；未抓：BEU 的 L2 错误地址错位（只进 BEU 内部寄存器，经 TL 读口才外显）→ FM 覆盖。
 复跑：`cd verif/ut/L2Top && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+## 4. 配对缺口（路线 a：收割 child 实际配对，不改 scripts/fm_eq.tcl）—— 诊断跑结果（不出证、无 allow）
+
+1. 42 个 child（TL2CHICoupledL2 的 26 种 + L2Top 的 16 种）在 main 65668c7d 字节上各重跑一次 diagnostic-full：**全部 native SUCCEEDED、
+   failing 0、unmatched 0**（passing 与各自签核值一致，如 Slice/_1/_2/_3 68305/68308/68310/68311、Prefetcher 9301、MMIOBridge 7794、
+   TLBuffer_13 12912、TLXbar_5 4446）。不产 receipt，fm_work 不入库。
+2. `scripts/gen_tl2chi_pins.py --harvest`：从每个 child 的 matched.rpt 取寄存器配对，并上同一跑 fm.log 里 child 钉点的生效回显
+   （matched.rpt 不列无读者 / 常量点——第一版只收 matched.rpt，诊断跑剩 48 位 sourceB probes_*_waitG[6:4] 两侧 unmatched-unread，即此），
+   两侧相对路径不同的才收 → `verif/ut/TL2CHICoupledL2/child_pairs.tsv`（表头记每个 child 的 sha256 与位数）。加本层 841 位异名寄存器。
+   字面期望：TL2CHICoupledL2 **283021** 位、L2Top **292228** 位（含 inner_l2cache/ 前缀的 TL2 全套）。
+3. 第一次带收割钉点的诊断跑报 TL2_PIN_FAIL：TL2/L2Top 的 impl 闭包读的是 Queue16_CHIREQ/CHIRSP（及 L2Top 的 7 个 Queue2_TLBundle*）
+   的重写件，而 Slice / TLBuffer_20/22/6/8 签核时读的是 golden 共享件——层次不同，child 配对对不上。改为与 child 证明**逐模块一致**
+   （这些队列也走 SHARED_GOLDEN，commit 034979f7d）；UT 9 档 × 2 目标在新闭包上重跑，读数与 §2.2 / §3.2 逐档相同、errors=0。
+4. 诊断跑（commit 034979f7d 的 detached worktree，钉点为收割第一版：TL2 282581 / L2Top 291788，全部 `ok bad=0`）：
+
+| 目标 | native | passing | failing | unmatched compare | unread（matched_nc + unmatched） | constant reg | 黑盒 | 用时 |
+|---|---|---|---|---|---|---|---|---|
+| TL2CHICoupledL2 | SUCCEEDED | 244571 | 0 | 0(0) | 37783（37735 + 两侧各 48 waitG） | 9670 | 8 类对称（array_13..18_ext、ram_10x89、ram_78x15） | 1.61 h |
+| L2Top | SUCCEEDED | 257503 | 0 | 0(0) | 38541（含两侧各 48 waitG） | 9753 | 同上（多一层 inner_l2cache/） | 1.86 h |
+
+   matching：TL2 matched by user 235594 / name 8959 / signature 18 / topology 0，unmatched compare **0**（上一轮无收割钉点时 25051）。
+   failing 0 —— 不需要找反例。那 48 位 waitG 已由收割第二版（commit 7737b13f4，并入钉点回显）补上，**第二版钉点尚未在 FM 里跑过**。
+5. 离正式证明还差：codex 0214 对 ram_10x89 ×4 / ram_78x15 ×1 扩父级授权 → 落 allow；37735+ 对称 matched-unread 按 vmucp 六条写
+   verif/fm_target_config/<T>.tcl 并开 vmucp；constant_reg 9670 / 9753（`constant_reg_toggle_assumed=true`）按全仓既有口径登记；
+   fm_predict 跑前登记（模型 TL2 292072 / L2Top 305845）后再出正式 receipt。
+
+## 5. 层次化组合（codex 0217 / 0219 / 0222）—— 跑前登记（★跑完不许改本节★）
+
+§4 的路线（父级收割/匹配 child 内部配对）作废：codex 0217 改为**已证 child 的 green_child 组合**，0222 用 MC 存储契约
+（verif/mc_memory_registry.tsv）闭合 golden-in-impl。本节只登记 TL2CHICoupledL2；L2Top 在 TL2 出证书后另起 §6。
+
+### 5.1 TL2CHICoupledL2 的证明形态
+- green_child（两侧 `-interface_only` 读入，allow 逐实例绑定证书 sha256，`verif/allow/TL2CHICoupledL2.json` 12 条）：
+  slices_0..3 = Slice / Slice_1 / Slice_2 / Slice_3、prefetcher = Prefetcher、pCrdQueue_s2 = Queue78_PCrdGranted。
+  ram_10x89 / ram_78x15 在 child 里面，不再出现在父级 FM-184 报告中，allow 不保留它们（0217）。
+- 本层 glue + 其余 child 两侧白盒：ref 41 个 G1 文件 + 6 个 child 端口定义；impl 48 个重写件 + 6 个 child wrapper；
+  两侧共读的只有 MC_MEMORY_MODEL ram_2x15 / ram_4x115。
+- 钉点 1474 位（scripts/gen_tl2chi_pins.py）：本层异名 841 + txdat_arb pendingMask[0] 1 + 三组同名跨 wrapper 层的无读者寄存器
+  （mbistPl 137 / rxdatPipe stages_0 ram 422 / rxrspPipe stages_0 ram 73，全宽）。
+- vmucp：verif/fm_target_config/TL2CHICoupledL2.tcl（979 对 matched-unread，六条证据）。
+
+### 5.2 诊断依据（canary，detached worktree，未出证）
+| 跑 | commit | 形态 | native | passing | failing | unmatched | unread | constant_reg |
+|---|---|---|---|---|---|---|---|---|
+| canary2 | ad7290123 | child 未解析黑盒 | FAILED | 19343 | 16（全是黑盒端口方向推断的假点） | 33/1 | 841+18 | 371 |
+| canary3 | a49da1872 | child interface_only | SUCCEEDED | 19242 | 0 | 0 | 736 nc + 243/243 | 234 |
+| canary4 | 99410311e | + 钉点 1474 + vmucp | SUCCEEDED | **20084** | 0 | 0 | 0 | **371** |
+
+canary4 与 canary3 守恒：19242 + 234 + 979 = 20455 = 20084 + 371（vmucp 打开后 137 位 mbistPl 返回寄存器被判常量）。
+
+### 5.3 预测（official，docs/fm_predictions/TL2CHICoupledL2.json）
+passing **20084**、constant_reg **371**、failing / unverified / aborted / unmatched / unread / blackbox_out **0**、无 dont_verify / elab147，
+verdict **SUCCEEDED**（assembly：观测黑盒集合 = allow 12 条，6 个 green child 证书在父 commit 上 current-valid）。
+
+## 6. L2Top（层次化组合，inner_l2cache = TL2CHICoupledL2 green child）—— 跑前登记（★跑完不许改本节★）
+
+- TL2CHICoupledL2 official：SUCCEEDED（70deb97b6，passing 20084 / constant_reg 371 = §5.3 预测），证书 verif/proof_certificates/TL2CHICoupledL2.json
+  （sha256 815d69a9…）。verif/allow/L2Top.json 2 条（两侧 inner_l2cache，attrs i，green_child，绑该 sha）。
+- 本层：ref 44 个 G1 文件 + TL2CHICoupledL2 端口定义；impl 36 个重写件 + TL2 wrapper；两侧共读 14 个已登记 MC_MEMORY_MODEL
+  （Queue2_TLBundle* 的 ram_2x*/ram_sink_2x8）。无钉点。vmucp：verif/fm_target_config/L2Top.tcl（662 对）。
+- canary：canaryL（798ba1e56，无 vmucp）native SUCCEEDED、passing 19288、unread 662（全 matched_nc）、constant_reg 267；
+  canaryL2（62d7e6e21，+vmucp）native SUCCEEDED、passing **19950**、constant_reg **267**、其余全 0。模型 20217 = 19950 + 267。
+- 预测（docs/fm_predictions/L2Top.json）：passing 19950、constant_reg 267、failing/unverified/aborted/unmatched/unread/blackbox_out 0，SUCCEEDED。
+- ★正式证明暂缓★：TL2 证书在统一核心下报 `green_child_appvar_policy_mismatch:hdlin_interface_only`（POLICY 钉死 ''），且孙级证书
+  （Slice×4/Prefetcher/Queue78）在父 commit 上的递归复核尚未实现 —— 待 codex 裁定。

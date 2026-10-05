@@ -763,8 +763,12 @@ MANUAL_REVIEW_PARENTS = {
         'Queue40_L2TlbMQBundle': ('codex_0210', None, 'ram_ext'),
     },
     # codex 0210 R1：仅 Queue78_PCrdGranted（TL2CHICoupledL2.pCrdQueue_s2）当前闭包内两侧对称的 ram_ext
+    # codex 0215 Q1：显式扩到 TL2CHICoupledL2 / L2Top 两个父级，逐对象完整路径写死（见 TL2_RAM_PATHS），
+    # 经由 Queue78 的 tracked receipt（Q78_RECEIPT，本 commit 字节上复算不 stale）
     'ram_78x15': {
         'Queue78_PCrdGranted': ('codex_0210', None, 'ram_ext'),
+        'TL2CHICoupledL2':     ('codex_0215', None, None),   # 占位，下面用 TL2_RAM_PATHS 填
+        'L2Top':               ('codex_0215', None, None),
     },
     'ram_10x89': {
         'GrantBuffer':              ('codex_0202', None, 'pftRespQueue/ram_ext'),
@@ -773,8 +777,27 @@ MANUAL_REVIEW_PARENTS = {
         'Slice_1':                  ('codex_0206', 'GrantBuffer', 'grantBuf/pftRespQueue/ram_ext'),
         'Slice_2':                  ('codex_0206', 'GrantBuffer', 'grantBuf/pftRespQueue/ram_ext'),
         'Slice_3':                  ('codex_0206', 'GrantBuffer', 'grantBuf/pftRespQueue/ram_ext'),
+        'TL2CHICoupledL2':          ('codex_0215', None, None),   # 占位，下面用 TL2_RAM_PATHS 填
+        'L2Top':                    ('codex_0215', None, None),
     },
 }
+
+# codex 0215 Q1：TL2CHICoupledL2 / L2Top 两个父级里的授权对象，**逐 top、逐对象完整路径**（不通配）。
+# 多对象父级的 rel 写成 [(ref_rel, impl_rel), ...]：两侧观测集合必须与之**精确相等**（不多、不少、不错位），
+# impl 路径按表写死（保留 slices_<k>/u_core/...），不再做 u_core 可选归一。
+#   ram_10x89：slices_0..3 的 grantBuf.pftRespQueue.ram_ext，经由已签 GrantBuffer 的 tracked 证书（fm_verdict 验）；
+#   ram_78x15：pCrdQueue_s2.ram_ext，经由 Queue78_PCrdGranted 的 tracked receipt（本 commit 字节上复算）。
+Q78_RECEIPT = 'receipt:evidence/3afabfed181d/Queue78_PCrdGranted/receipt.json'
+TL2_RAM_PATHS = {
+    'ram_10x89': ('GrantBuffer',
+                  [('slices_%d/grantBuf/pftRespQueue/ram_ext' % k,
+                    'slices_%d/u_core/grantBuf/pftRespQueue/ram_ext' % k) for k in range(4)]),
+    'ram_78x15': (Q78_RECEIPT, [('pCrdQueue_s2/ram_ext', 'pCrdQueue_s2/ram_ext')]),
+}
+for _d, (_via, _pairs) in TL2_RAM_PATHS.items():
+    MANUAL_REVIEW_PARENTS[_d]['TL2CHICoupledL2'] = ('codex_0215', _via, list(_pairs))
+    MANUAL_REVIEW_PARENTS[_d]['L2Top'] = ('codex_0215', _via,
+                                          [('inner_l2cache/' + r, 'inner_l2cache/' + i) for r, i in _pairs])
 # 0202 的精确绑定（golden 文件 sha256 + 端口签名），与 verif/vendor_boundary.tsv 第 5/7 列相同。
 MANUAL_REVIEW_GOLDEN = {
     'ram_40x47': ('68dbc6df0bcb0aafe5bdf199e6241e5a744207d34db15af3dd7aa191413f9766',
@@ -813,20 +836,37 @@ def check_parent_scope(design, target, objects, golden_rtl=None):
            if ln.split('\t')[0] == design] if vb.is_file() else []
     if len(row) != 1 or len(row[0]) < 7 or row[0][4] != want_sha or row[0][6] != want_ports:
         return False, f'verif/vendor_boundary.tsv 的 {design} 行与授权绑定（sha256/端口签名）不符', None
-    ref_rel, impl_rel = rel if isinstance(rel, tuple) else (rel, rel)
-    want = {('r', f'r:/WORK/{target}/{ref_rel}'),
-            ('i', f'i:/WORK/{target}/{impl_rel}'), ('i', f'i:/WORK/{target}/u_core/{impl_rel}')}
     got = [(o.get('side'), o.get('path')) for o in objects]
     for o in objects:
         if o.get('class') != 'APPROVED_MEMORY_MACRO_MODEL':
             return False, f'{o.get("path")} 的 class={o.get("class")!r} 不是 APPROVED_MEMORY_MACRO_MODEL', None
-    bad = [x for x in got if x not in want]
-    if bad:
-        return False, f'{design} 出现在授权路径之外：{bad[0][1]}（只许 {rel}）', None
-    n_r = sum(1 for sd, _ in got if sd == 'r')
-    n_i = sum(1 for sd, _ in got if sd == 'i')
-    if n_r != 1 or n_i != 1:
-        return False, f'{target} 里 {design} 两侧实例不对称/不唯一（ref={n_r}, impl={n_i}，须各恰好 1）', None
+    if isinstance(rel, list):
+        # codex 0215：多对象父级，逐对象完整路径写死，观测集合与表精确相等（各侧不多不少、无重复）
+        want_r = sorted(f'r:/WORK/{target}/{r}' for r, _ in rel)
+        want_i = sorted(f'i:/WORK/{target}/{i}' for _, i in rel)
+        got_r = sorted(p for sd, p in got if sd == 'r')
+        got_i = sorted(p for sd, p in got if sd == 'i')
+        if any(sd not in ('r', 'i') for sd, _ in got):
+            return False, f'{target} 里 {design} 有认不出的 side', None
+        if got_r != want_r or got_i != want_i:
+            miss = sorted(set(want_r + want_i) - set(got_r + got_i))
+            extra = sorted(set(got_r + got_i) - set(want_r + want_i))
+            dup = len(got_r) != len(set(got_r)) or len(got_i) != len(set(got_i))
+            return False, (f'{target} 里 {design} 的对象集合与 codex 0215 授权表不精确相等'
+                           f'（缺 {miss[:2]} 多 {extra[:2]}{" 有重复" if dup else ""}；'
+                           f'ref={len(got_r)}/{len(want_r)} impl={len(got_i)}/{len(want_i)}）'), None
+        ref_rel = '%d 对' % len(rel)
+    else:
+        ref_rel, impl_rel = rel if isinstance(rel, tuple) else (rel, rel)
+        want = {('r', f'r:/WORK/{target}/{ref_rel}'),
+                ('i', f'i:/WORK/{target}/{impl_rel}'), ('i', f'i:/WORK/{target}/u_core/{impl_rel}')}
+        bad = [x for x in got if x not in want]
+        if bad:
+            return False, f'{design} 出现在授权路径之外：{bad[0][1]}（只许 {rel}）', None
+        n_r = sum(1 for sd, _ in got if sd == 'r')
+        n_i = sum(1 for sd, _ in got if sd == 'i')
+        if n_r != 1 or n_i != 1:
+            return False, f'{target} 里 {design} 两侧实例不对称/不唯一（ref={n_r}, impl={n_i}，须各恰好 1）', None
     if via and via.startswith('receipt:'):
         ok, why = check_child_receipt_current(via[len('receipt:'):], golden_rtl=golden_rtl)
         if not ok:

@@ -217,6 +217,18 @@ def main():
         'verdict': vname,
         'verdict_detail': vq,
     }
+    # codex 0222 §4：impl 闭包里挂着已登记的 MC 存储契约对象 ⇒ 机读标记 external_dependency。
+    # 含义：周边可读逻辑与存储连接已证等价，RAM 本体在手写重写范围之外，最终 MC 宏接入另需
+    # 独立 memory contract 检查。不是 PROOF_GAP、不是 dont_verify。登记表读不了就不写（判据侧另验）。
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import mc_memory_registry as _MC
+        _mc = _MC.mc_objects_in_closure(impl_cl)
+    except Exception:                                       # noqa: BLE001
+        _mc = []
+    if _mc:
+        receipt['external_dependency'] = _MC.EXTERNAL_DEPENDENCY
+        receipt['mc_memory_objects'] = _mc
     # 原子写：先写 tmp 再 rename（避免中断留下半截 receipt）
     out = wd / 'receipt.json'
     tmp = wd / 'receipt.json.tmp'

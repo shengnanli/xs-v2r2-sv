@@ -1,0 +1,43 @@
+{
+  "target": "TL2CHICoupledL2",
+  "ut": "TL2CHICoupledL2",
+  "regs": 11098,
+  "outs": 3672,
+  "expected": 20455,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 5685,
+  "bbox": {
+    "Prefetcher": {
+      "insts": 1,
+      "in_bits": 301,
+      "points": 301
+    },
+    "Queue78_PCrdGranted": {
+      "insts": 1,
+      "in_bits": 19,
+      "points": 19
+    },
+    "Slice": {
+      "insts": 1,
+      "in_bits": 1340,
+      "points": 1340
+    },
+    "Slice_1": {
+      "insts": 1,
+      "in_bits": 1341,
+      "points": 1341
+    },
+    "Slice_2": {
+      "insts": 1,
+      "in_bits": 1342,
+      "points": 1342
+    },
+    "Slice_3": {
+      "insts": 1,
+      "in_bits": 1342,
+      "points": 1342
+    }
+  },
+  "note": "codex 0217/0222 层次化组合：6 个 green child（Slice×4/Prefetcher/Queue78，interface_only，allow 12 条绑证书 sha）。预测 passing = 20084、constant_reg = 371（= canary4 @99410311e 实测；canary3 19242+234+979 nc = 20455 守恒），failing/unverified/aborted/unmatched/unread/blackbox_out 0，verdict SUCCEEDED。详见 docs/lanes/l2-top_prereg.md §5。"
+}
