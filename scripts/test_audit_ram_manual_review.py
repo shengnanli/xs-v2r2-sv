@@ -66,11 +66,12 @@ def main():
     fails += scope_cases()
     fails += ram40_cases()
     fails += codex0210_cases()
+    fails += codex0215_cases()
     if fails:
         print(f'test_audit_ram_manual_review: ★{len(fails)} 条不过★ {fails}')
         return 1
     print('test_audit_ram_manual_review: 全过（M3 复核 1 正 + 7 负；父级范围 2 正 + 10 负；ram_40x47 3 正 + 10 负；'
-          'codex 0210 3 正 + 12 负）')
+          'codex 0210 3 正 + 12 负；codex 0215 6 正 + 16 负）')
     return 0
 
 
@@ -271,6 +272,121 @@ def ram40_cases():
     chk('R9 fm_verdict 子树外多一个', F._ram_parent_scope_check(decl, 'L2TLB', None, None), False)
     decl_ok = {(e['side'], e['design'], e['path']): e for e in lt}
     chk('R9- fm_verdict 真实声明通过', F._ram_parent_scope_check(decl_ok, 'L2TLB', None, None), True)
+    return fails
+
+
+def codex0215_cases():
+    """codex 0215 Q1：ram_10x89（slices_0..3）/ ram_78x15（pCrdQueue_s2）扩到 TL2CHICoupledL2 / L2Top，逐对象完整路径。
+    U0 TL2 / L2Top 两 design 的合成正例（与诊断跑 black_boxes.rpt 实测路径一致）各通过（4 正）
+    U1 ram_78x15 经由的 Queue78 receipt 在本仓字节上不 stale；副本仓库原样通过（2 正）
+    负例（必须红）：
+    V1 错 slice 编号（slices_4）           V2 少一个 slice                 V3 单侧路径不同（impl 少 u_core）
+    V4 L2Top 少 inner_l2cache 层（用 TL2 的路径）  V5 多一个同名 RAM（别处的 ram_10x89）
+    V6 一侧重复同一对象                     V7 ref / impl slice 交叉（ref slices_0 配 impl slices_1 缺）
+    V8 L2Top 用 TL2 的 target 名            V9 golden ram_10x89 hash 变（golden 副本改一字节）
+    V10 golden ram_78x15 深度变（副本把 Memory[0:77] 改成 [0:79]）
+    V11 Queue78 receipt 的指针核心 xs_ChiselQueue_core.sv 变（副本仓库）
+    V12 ram_78x15 套 TL2 的 slices 路径      V13 别的父级（XSTile）
+    V14 class 不是 APPROVED_MEMORY_MACRO_MODEL  V15 ram_10x89 少了 ref 侧整组
+    V16 fm_verdict 判据：TL2 声明里多一个授权外 ram_10x89"""
+    import json
+    import shutil
+    import tempfile
+    import fm_verdict as F
+    fails = []
+
+    def chk(name, got, want):
+        ok = (got is True) == want
+        print(f'  {name:28s} {"ok" if ok else "★FAIL★"}  {str(got)[:110]}')
+        if not ok:
+            fails.append(name)
+
+    def mk(top, design, pfx=''):
+        out = []
+        if design == 'ram_10x89':
+            for k in range(4):
+                out.append({'side': 'r', 'design': design, 'attrs': 'u', 'class': 'APPROVED_MEMORY_MACRO_MODEL',
+                            'path': f'r:/WORK/{top}/{pfx}slices_{k}/grantBuf/pftRespQueue/ram_ext'})
+                out.append({'side': 'i', 'design': design, 'attrs': 'u', 'class': 'APPROVED_MEMORY_MACRO_MODEL',
+                            'path': f'i:/WORK/{top}/{pfx}slices_{k}/u_core/grantBuf/pftRespQueue/ram_ext'})
+        else:
+            for sd in 'ri':
+                out.append({'side': sd, 'design': design, 'attrs': 'u', 'class': 'APPROVED_MEMORY_MACRO_MODEL',
+                            'path': f'{sd}:/WORK/{top}/{pfx}pCrdQueue_s2/ram_ext'})
+        return out
+
+    for top, pfx in (('TL2CHICoupledL2', ''), ('L2Top', 'inner_l2cache/')):
+        for d in ('ram_10x89', 'ram_78x15'):
+            ok, msg, _ = A.check_parent_scope(d, top, mk(top, d, pfx))
+            chk(f'U0 {top} {d}', ok or msg, True)
+    rel = A.Q78_RECEIPT[len('receipt:'):]
+    chk('U1 Q78 receipt 不 stale', A.check_child_receipt_current(rel)[0] or 'red', True)
+    t10 = mk('TL2CHICoupledL2', 'ram_10x89')
+    l10 = mk('L2Top', 'ram_10x89', 'inner_l2cache/')
+    T = 'TL2CHICoupledL2'
+    ps = lambda os_, a, b: [dict(e, path=e['path'].replace(a, b)) for e in os_]
+    chk('V1 错 slice 编号', A.check_parent_scope('ram_10x89', T, ps(t10, 'slices_3/', 'slices_4/'))[0] or 'red', False)
+    chk('V2 少一个 slice', A.check_parent_scope(
+        'ram_10x89', T, [e for e in t10 if 'slices_2/' not in e['path']])[0] or 'red', False)
+    one = [dict(e, path=e['path'].replace('slices_1/u_core/', 'slices_1/')) for e in t10]
+    chk('V3 单侧路径不同', A.check_parent_scope('ram_10x89', T, one)[0] or 'red', False)
+    chk('V4 L2Top 少 inner_l2cache', A.check_parent_scope(
+        'ram_10x89', 'L2Top', ps(t10, '/WORK/TL2CHICoupledL2/', '/WORK/L2Top/'))[0] or 'red', False)
+    extra = dict(t10[0], path='r:/WORK/TL2CHICoupledL2/mmioBridge/q/ram_ext')
+    extra_i = dict(t10[1], path='i:/WORK/TL2CHICoupledL2/mmioBridge/q/ram_ext')
+    chk('V5 多一个同名 RAM', A.check_parent_scope('ram_10x89', T, t10 + [extra, extra_i])[0] or 'red', False)
+    chk('V6 一侧重复', A.check_parent_scope('ram_10x89', T, t10 + t10[:1])[0] or 'red', False)
+    cross = [e for e in t10 if not (e['side'] == 'i' and 'slices_0/' in e['path'])]
+    chk('V7 ref/impl slice 交叉缺', A.check_parent_scope('ram_10x89', T, cross)[0] or 'red', False)
+    chk('V8 L2Top 用 TL2 target', A.check_parent_scope('ram_10x89', T, l10)[0] or 'red', False)
+    with tempfile.TemporaryDirectory() as td:
+        g = pathlib.Path(td)
+        src = pathlib.Path(A.DEFAULT_G1) / 'golden-rtl'
+        for f in ('ram_10x89.sv', 'ram_78x15.sv'):
+            (g / f).write_bytes((src / f).read_bytes())
+        ok0 = A.check_parent_scope('ram_10x89', T, t10, golden_rtl=str(g))
+        chk('V9- golden 副本原样通过', ok0[0] or ok0[1], True)
+        (g / 'ram_10x89.sv').write_bytes((src / 'ram_10x89.sv').read_bytes() + b'\n')
+        chk('V9 ram_10x89 hash 变', A.check_parent_scope('ram_10x89', T, t10, golden_rtl=str(g))[0] or 'red', False)
+        t78 = (src / 'ram_78x15.sv').read_text()
+        if '[0:77]' not in t78:
+            raise SystemExit('ram_78x15.sv 里没有 [0:77]（负测前提变了）')
+        (g / 'ram_78x15.sv').write_text(t78.replace('[0:77]', '[0:79]'))
+        chk('V10 ram_78x15 深度变', A.check_parent_scope(
+            'ram_78x15', T, mk(T, 'ram_78x15'), golden_rtl=str(g))[0] or 'red', False)
+    rec = json.loads((REPO / rel).read_text())
+    with tempfile.TemporaryDirectory() as td:
+        tdp = pathlib.Path(td)
+
+        def mkrepo(tamper):
+            shutil.rmtree(tdp / 'rtl', ignore_errors=True)
+            (tdp / rel).parent.mkdir(parents=True, exist_ok=True)
+            (tdp / rel).write_text(json.dumps(rec))
+            for e in rec['impl_closure']:
+                if e.get('kind') != 'repo':
+                    continue
+                dst = tdp / e['path']
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                b = (REPO / e['path']).read_bytes()
+                if tamper and e['path'].endswith('xs_ChiselQueue_core.sv'):
+                    b = b.replace(b'next_ptr', b'next_ptr ', 1)
+                dst.write_bytes(b)
+        mkrepo(False)
+        chk('U1- 副本仓库原样通过', A.check_child_receipt_current(rel, repo=tdp)[0] or 'red', True)
+        if not any(e['path'].endswith('xs_ChiselQueue_core.sv') for e in rec['impl_closure']):
+            raise SystemExit('Q78 receipt 闭包里没有 xs_ChiselQueue_core.sv（负测前提变了）')
+        mkrepo(True)
+        chk('V11 Q78 指针核心变', A.check_child_receipt_current(rel, repo=tdp)[0] or 'red', False)
+    chk('V12 78x15 套 slices 路径', A.check_parent_scope(
+        'ram_78x15', T, [dict(e, design='ram_78x15') for e in t10])[0] or 'red', False)
+    chk('V13 别的父级 XSTile', A.check_parent_scope(
+        'ram_10x89', 'XSTile', ps(l10, '/WORK/L2Top/', '/WORK/XSTile/'))[0] or 'red', False)
+    chk('V14 class 不对', A.check_parent_scope(
+        'ram_10x89', T, [dict(e, **{'class': 'vendor_macro'}) for e in t10])[0] or 'red', False)
+    chk('V15 少 ref 整组', A.check_parent_scope(
+        'ram_10x89', T, [e for e in t10 if e['side'] == 'i'])[0] or 'red', False)
+    decl = {(e['side'], e['design'], e['path']): e for e in mk(T, 'ram_78x15') + [extra]}
+    chk('V16 fm_verdict 多一个授权外', F._ram_parent_scope_check(decl, T, None, None), False)
     return fails
 
 
