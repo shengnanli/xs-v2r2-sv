@@ -39,5 +39,5 @@
       "points": 101
     }
   },
-  "note": "l2-top lane 在当前 tip 重证（codex 0217：ce9d0692bc8e 证书候选因 scripts/fm_eq.tcl 变更 script 闭包 stale）。RTL/allow/pins 未改，预测 passing = 68305（= ce9d0692bc8e 上一跑实测，expected - constant_reg），failing/unmatched/unverified/aborted/unread 全 0，verdict SUCCEEDED。"
+  "note": "impl 侧 TXREQ/TXRSP 内 Queue16_CHIREQ/CHIRSP 改读本仓已签重写件（evidence/1fda02fae0f1，ref 仍读 G1；内部 ram_16x137/ram_16x62 存储模型照旧两侧同源）。预测 passing = 68305（不变：队列控制寄存器两侧一一对应，点数同 e051dab3a 实测），其余计数全 0，verdict SUCCEEDED。"
 }

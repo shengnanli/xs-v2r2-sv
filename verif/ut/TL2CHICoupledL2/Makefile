@@ -5,8 +5,8 @@ MODULE = TL2CHICoupledL2
 #        wrapper，32 个 child 实例名同 golden）。
 # child 全部 PROVEN_DIRECT，两侧白盒：ref 读 golden，impl 读本仓重写件（闭包见 RTL_SRCS，按 impl 侧例化关系
 # 从 rtl/ 现找，一模块一文件）。两侧共读同一份 golden 的（SHARED_GOLDEN）：行为级存储模型（ram_* / sram_array_* / array_N）、
-# 本地重写的 ClockGate（codex 0208），以及 Slice 签核时 TXREQ/TXRSP 内用的 Queue16_CHIREQ/CHIRSP —— 两侧闭包必须与已签 child
-# 证明逐模块一致，child 的 FM 配对（child_pairs.tsv，scripts/gen_tl2chi_pins.py）才对得上。
+# 本地重写的 ClockGate（codex 0208）。Queue16_CHIREQ/CHIRSP 是普通队列逻辑：impl 读本仓已签重写件、ref 读 G1
+# （与 Slice 一致，codex 0219 §3.2）。
 # FM 两侧都不给（= 对称黑盒）的：厂商 SRAM 叶子 array_13..18_ext（vendor_boundary 已审定），以及
 #   ram_10x89（4 个 Slice 的 GrantBuffer.pftRespQueue）/ ram_78x15（pCrdQueue_s2）——这两个 APPROVED_MEMORY_MACRO_MODEL
 #   的授权父级目前不含 TL2CHICoupledL2（codex 0202/0206/0210），**本目标的正式 FM 待 codex 扩授权后再跑**。
@@ -87,9 +87,10 @@ RTL_SRCS = $(RTL_DIR)/uncore/uncore_common_pkg.sv $(RTL_DIR)/uncore/TL2CHICouple
            $(RTL_DIR)/uncore/Arbiter16_CHIDAT.sv $(RTL_DIR)/common/RRArbiterInit_13.sv \
            $(RTL_DIR)/uncore/MMIOBridgeEntry_8.sv $(RTL_DIR)/uncore/xs_MMIOBridgeEntry_core.sv \
            $(RTL_DIR)/uncore/MMIOBridgeEntry_4.sv $(RTL_DIR)/uncore/MMIOBridgeEntry_2.sv \
-           $(RTL_DIR)/uncore/MMIOBridgeEntry.sv
+           $(RTL_DIR)/uncore/MMIOBridgeEntry.sv \
+           $(RTL_DIR)/uncore/Queue16_CHIREQ.sv $(RTL_DIR)/uncore/Queue16_CHIRSP.sv
 
-SHARED_GOLDEN = Queue16_CHIREQ.sv Queue16_CHIRSP.sv \
+SHARED_GOLDEN = \
                 array_13.sv array_14.sv array_15.sv array_16.sv array_17.sv array_18.sv ram_16x11.sv \
                 ram_16x137.sv ram_16x25.sv ram_16x62.sv ram_16x67.sv ram_2x15.sv ram_2x98.sv ram_4x11.sv \
                 ram_4x115.sv ram_data_16x256.sv sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
