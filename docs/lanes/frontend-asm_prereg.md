@@ -113,6 +113,114 @@ unread 全是 Queue2 ram 里"写入但出口无人读"的字段位（D 的 param
 - 处置：照先例**不列 FM_VARIANTS、不出 receipt**；形式上无比较点（与 StorePipe 同类），正确性由端口契约 + 父级 DCache 闭包证明承担。
   本 lane 不需要新裁定。
 
+
+## 4. Frontend（前端顶层装配）
+
+### 4.1 历史与路线
+
+- "Frontend = 真 shadow 核（SHADOW_CHECK）"是**上一轮（xs-v2r2-sv / G0）**的结论：那时 Frontend.sv 的输出由 golden 本体副本驱动、
+  可读核只伴随比对（native SUCCEEDED passing≈48971，proof_mode=shadow）。本轮（G1）仓里**没有** Frontend 的任何重写件、UT 目录或
+  receipt（`docs/coverage_three_axis.tsv`：MISSING / UNPROVEN），旧结论不适用，本 lane 从零做。
+- 路线：**整棵前端子树两侧白盒**——ref = golden Frontend + 185 个 golden 子树模块；impl = 重写件 Frontend（可读核 + 生成 wrapper）+
+  子树里 163 个非存储模块**全部用已签核重写件**（各自 evidence 里都有与当前字节一致的绿 receipt，清单由
+  `/tmp/.../closure.py` 机械算出，落在 verif/ut/Frontend/Makefile 的 RTL_SRCS）。两侧同读 golden 的只剩存储宏链
+  sram_array_* / array_* 与 MbistClockGateCell；ClockGate 用本地件（codex 0208）。唯一黑盒是宏内叶子 array_*_ext（84 个/侧，
+  verif/vendor_boundary.tsv 已审 vendor_sram_leaf）→ FM_MODE=assembly + verif/allow/Frontend.json。不用 green_child 证书路线。
+
+### 4.2 重写件
+
+- `rtl/frontend/Frontend.sv`（8619 行，`_GEN_`/`_T_` 0，可读性审计 A~G 全 0）：
+  * `xs_Frontend_core`（手写，466 行）七节：§1 重定向打一拍分发给 IBuffer；§2 sfence 两拍、ICache 预取开关 / fence.i 一拍；
+    §3 FTQ→IFU/ICache 取指请求联合握手；§4 wfi safe；§5 ICache ECC 上报两拍；§6 性能事件两拍；§7 指令流自检（checkPcMem 64×50
+    + 三组跨拍记录，只喂 `ifndef SYNTHESIS 断言，照 golden 一位不少）。寄存器复位域逐个对齐 golden（只有自检三个 valid 异步复位）。
+  * `Frontend` wrapper：`scripts/gen_frontend.py` 生成（带 `--check`），fail-closed 规则见生成器头：端口逐位同序、23 个实例照搬、
+    每个连接表达式必须落进已知形状（顶层口 / 子模块输出线 / MBIST 具名线 / 常量 / 核输出 / 探针悬空），实例间每一对连接都要有
+    一句说明（PAIR_DESC），按 §A 预测取指主干 / §B 翻译与权限 / §C CSR 与 wfi 延迟 / §D 性能 / §E MBIST 分节。
+- golden 10,940 行 → impl 8,619 行（其中生成区约 8,100 行是 5,630 个端口连接的逐行展开）。
+
+### 4.3 UT（verif/ut/Frontend；tb 由 gen.py → scripts/gen_l2slice_ut.py 生成）
+
+双例化 golden Frontend（golden 子树）vs Frontend_xs（**整棵子树都是重写件**，派生 _xs），逐拍 4 态比全部 195 个输出。
+激励按 5000 拍分四相：M 态顺序取指 / S 态 Sv39 + 随机 PTW 回包 / 全随机 / 频繁重定向 + MMIO 取指（复位向量落在 PMA 的可执行
+不可缓存区）。initreg 三档沿用 DCache 先例：`0`（全设计 0）、`glue`（子模块 0、两侧 Frontend 本层随机，种子 SEED）、
+`glue017`（种子 <SEED>017）；双例化下全设计 random 会让两侧 SRAM/表项各摇各的初值，比出来的是初值噪声。
+（`+vcs+initreg+config` 的实例档已用 UCLI 实测生效：两侧 sfence_s1_addr / check_pc_mem[5] 在 0 时刻为不同的随机值。）
+
+UT 结果（commit 5312439b，RTL 与 fd925bcf 相同；每档 200k 拍，checks = 200k × 195）：
+
+| seed | `0` | `glue` | `glue017` |
+|---|---|---|---|
+| 1  | checks=39000000 errors=0 PASSED（翻转 152/195） | 同左 | 同左 |
+| 7  | checks=39000000 errors=0 PASSED（152/195） | 同左 | 同左 |
+| 42 | checks=39000000 errors=0 PASSED（153/195） | 同左 | 同左 |
+
+覆盖（initreg 0 档）：取指请求三方握手 25513 / 27608 / 28741 次；IBuffer→后端 out_0 fire 50175 / 55817 / 56772；
+后端重定向冲刷 26664 / 26762 / 26544；MMIO 取指请求 80 / 16 / 148；ITLB→PTW 52160 / 52399 / 52225；FTQ 重定向 BPU
+26800 / 26802 / 26680；ICache ECC 错误 2 / 1 / 1；自检 (b) taken 目标跨拍记录 2471 / 605 / 706；(c) not-taken 跨拍记录
+300 / 90 / 314（seed 1 / 7 / 42）。自检 (a) 的跨拍记录 0 次（要 BPU 预测出 taken 的条件分支），不设闸，由 FM 覆盖。
+翻转闸 152：未翻转的 43 个输出逐一列在 verif/ut/Frontend/gen.py（12 个 debug_seqNum 在 golden 里恒 0；其余 31 个未逐一追查原因）。
+
+判据自证（scratchpad 变异，不进库，seed 7 initreg 0，40k 拍）：M2 sfence 少打一拍 ⇒ errors=21077；M3 ECC 上报去掉
+report_to_beu 门控 ⇒ 1；M4 性能事件少打一拍 ⇒ 689；M5 IBuffer.flush 接成 ControlRedirect 标志 ⇒ 668396 —— 抓到。
+**UT 抓不到的三个**：M1 取指握手去掉 ICache.ready（激励下 IFU ready 时 ICache 也总 ready）、M6 wfi safe 去掉 InstrUncache
+的 safe（wfiReq 与 MMIO 在途从未同时出现）、M7 checkPcMem 永不写（自检只喂断言、无观察者）——前两个在输出锥里，FM 逐点证明；
+M7 的寄存器两侧都是无读者对称死位，FM 开 vmucp 后逐位真比。
+复跑：`cd verif/ut/Frontend && make derive && touch ut_gen/*.sv && make run SEED=<1|7|42> INITREG=<0|glue|glue017>`
+（ut_common 的 derive 规则对 160 个派生文件逐个触发全量派生，派生幂等不改 mtime，先显式派生一次再 touch，否则每次 make 白跑 ~1.5 小时。）
+
+### 4.4 FM 的配对（为什么要 15 万条钉点）
+
+golden 自比基线（golden 闭包对其逐字副本，FM_MERGE_DUP=false，array_*_ext 两侧黑盒）：native SUCCEEDED，passing 124,020，
+failing 0，unread 49,746（全 matched_nc），constant_reg 2,884，2,272 s / 5.2 GB；passing + unread + constant = 176,650 =
+fm_predict 模型（寄存器 166,444 + 输出 4,478 + 黑盒输入 5,728），地板 0 failing。
+
+整棵子树换成重写件后，首次诊断（无钉点、诊断脚本关签名分析）23,138(22,576) 个比较点未配对；fm_eq.tcl 全流程（签名分析开）
+也只配上几百到一千个，且签名分析会交叉配错（DelayN_7、IPrefetchPipe waymask，见 4.5）。钉点 `verif/ut/Frontend/fm_pins_pre.tcl`
+（scripts/gen_frontend.py 生成，四节、全部字面、逐条数返回值、拒一条即 error）：
+1. 顶层胶合寄存器 3,612 位（golden 115 个 inner_* 寄存器 → u_core，映射表 CORE_REGS 必须覆盖 golden 本层全部 reg）；
+2. 子树钉点重定位 102,654 条：34 个已签子目标自己的钉点脚本（tclsh 打桩执行取字面对；Predictor 的发现式脚本在诊断 FM 里执行录成
+   predictor_pins.tsv，2711/2711），按实例对应表（UCLI 从双例化 simv 导出层次 → fe_inst_map.tsv）改写成 Frontend 实例路径；
+   ★不能用设计作用域路径：实测设计被例化两次时 set_user_match 返回 1 却不生效★；钉点源证明时 impl 侧读 golden 的子模块内部的
+   钉点（如 Composer 当年读 golden SRAMTemplate / ClockGate）判为过期剔除（1,445 条）；
+3. 子树自配对录制 46,833 条：对未配对点所在的 67 个设计各单独跑一次 FM 匹配（同一套重写件），把 FM 自己给出的配对录成
+   harvest_pins.tsv 再按实例重定位（-type cell，避开 golden "x_reg 单元 / x_reg 线网"同名的 FM-013）。
+4. 恒等副本 / 多源配对类 798 次多对多 set_user_match（verif/ut/Frontend/dup_groups.tsv；identify_duplicate_registers -by_structure
+   的同侧副本组 + 第二/三节里与之相连的钉点并查集成类，整类一次给出）。
+
+### 4.5 诊断跑记录（scratchpad，不产 receipt；同一 RTL 字节 fd925bcf，钉点按 commit 递进）
+
+| 跑 | 设置 | 配对结果 | verify |
+|---|---|---|---|
+| match14 | merge_dup=false，一对多分段 | 828(286) 未配对，292 条 "Ignoring user match: more than one reference object" | — |
+| match15 | merge_dup=true，同一套钉点（去第四节） | 4017(819) 未配对；35149 条钉点指向被合并掉的对象被丢 | — |
+| match16 | merge_dup=false + user_match_enable_many_to_many_matching | 11(0)，0 条被丢 | — |
+| match17 | 同上 + 补录 11 个，fm_eq.tcl 全流程 | 0(0)；unread 4766(34)（DelayN_7 被签名分析交叉配错） | failing 20（上限截断），unverified 131801 |
+| match18 | + DelayN_7 显式钉住（438 对），failing 不限 | 0(0)；unread 4732(0) | passing 109054 / failing 58959（分段一对一配错，analyze_points 指认） |
+| match19 | 第四节改整类多对多（FM 先证同侧等价） | 0(0)；798/798 组预证明通过；unread 4732(0) | **passing 167630 / failing 383 / aborted 0 / unverified 0** |
+| match20 | + IPrefetchPipe waymask 改取 merge=true 录制；+ pc_mem 低 6 位存储位类（384 组预证明全失败、被删） | 0(0)；unread 4732(0) | **passing 168007 / failing 6 / aborted 0 / unverified 0**，constant_reg 2680；6 个全是 toPrefetchPc_nextLineAddr[5:0]（见 4.6） |
+
+unread 4732(0) 全在 golden 侧：4582 位 = 子目标自己的 PASS_DEAD_REF 声明（Ftq 4276 / Tage_SC 192 / HPerfCounter 64 / FTBBank 50）按实例
+重定位后逐条相同，另 150 位 = ftbBank req_pc_reg / _2 / _3（与 FTBBank.json 的 _1 同为断言专用 PC 副本，FTBBank 自签 merge=true 时
+并成 _1）。声明 verif/dead_ref/Frontend.json（4732 条，按诊断观测写出；正式跑观测须与之精确相等，否则 PARTIAL）。
+对模型：176650 − (168007 + 6) − 4732 − 2680 = **1225** 位指认不了 —— 正是多对多配对类里被 FM "Moved loads" 并掉、不再单独成比较点的
+ref 副本（match20 日志 3788 行 Moved loads，含 impl 侧）。fm_predict 目前不认这一项。
+
+### 4.6 ★正式证明前需要集成者裁定的两件事（本 lane 不改共享脚本 / 已签共享核）★
+
+1. **user_match_enable_many_to_many_matching 不在 sidecar appvar 注册表里**（scripts/sidecar/fm_native_emit.tcl 的
+   SIDECAR_APPVAR_REQUIRED/OPTIONAL、scripts/fm_eq.tcl 的 FM_TARGET_APPVAR_ALLOWED、SIDECAR_SCHEMA.md APPVAR_SPEC）：
+   钉点里 set_app_var 会被运行期拦截 exit 3，fm_target_appvar 也只许 OPTIONAL 四项。它不放宽比较——玩具实测：
+   3 个 ref 副本对 1 个 impl → 16 点全 passing；把其中一个 ref 副本改成不等价（a_1 <= d ^ e）→ FM 报
+   "Many-to-many matching: Verify failed for a_1 to a / Deleting failing many_to_many user match"，点变未配对、下游 4 点 failing。
+   副作用：被并掉的 ref 副本不再各自成比较点（"Moved loads of X to Y"），fm_predict 的 merge=false 模型（176650）会出现
+   与合并类成员数相等的、constant_reg + unread 指认不了的余额 —— 需要模型认这一项，或改判 MODEL_NA。
+2. **6 个 failing 根在已签共享核 rtl/frontend/Ftq.sv**（2306-2318 行）：可读核的 toPrefetchPc_nextLineAddr[5:0] 直接取
+   startAddr 那一路（注释写明是为了 Ftq 自签 merge_dup=true 时与 golden 合并后的形状一致）；golden 读的是 ftq_pc_mem 里单独存的
+   nextLineAddr[5:0]。两者只在"每个条目写入时 nextLineAddr[5:0] == startAddr[5:0]"这条可达状态不变量下相等。
+   Frontend 层 merge_dup=false 证不出（多对多预证明对带自保持环的存储位一律失败，match20/21 384 组全删）。
+   可选路线：(a) Frontend 改 merge_dup=true（match15 实测到 Matching 3 小时 7.4GB，且要整套改用 merge=true 录制的配对，
+   未收敛）；(b) Ftq.sv 改成照 golden 读存储的 nextLineAddr[5:0]（动已签共享核 + 要重签 Ftq）；(c) 其它裁定。
+
 ## 对账
 
 ### 第一批：三个 FrontendBridge 缓冲 + MuxBundle（run_proof @ 3390b6ba，evidence/3390b6ba80a9/<目标>/）
