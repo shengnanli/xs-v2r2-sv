@@ -1203,7 +1203,7 @@ def render_dup_groups(groups=None, fold=()):
     calls = dup_classes(groups, fold)
     L = []
     A = L.append
-    A('# ---- 四、恒等副本配对类（%d 行副本组 + 第二/三节里与之相连的 %d 条钉点 -> %d 个配对类 -> %d 次一对多 set_user_match；'
+    A('# ---- 四、恒等副本 / 多源配对类（%d 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 %d 条钉点 -> %d 个配对类 -> %d 次一对多 set_user_match；'
       '数据 verif/ut/Frontend/dup_groups.tsv）----' % (len(groups), len(fold), ncls[0], len(calls)))
     A('#   FM 对"同一个对象被多次 set_user_match"会忽略后来的（实测 Warning: Ignoring user match: implementation object')
     A('#   matched more than once），所以凡与副本组相连的钉点都并成配对类一次给出；类内 ref / impl 都多于 1 个时，')
@@ -1253,6 +1253,10 @@ def main():
     # 与副本组相连的第二/三节钉点并入第四节（不动点：并入的钉点又可能连出新的钉点）
     touched = set(o for g in dups for o in g)
     pool = [(r, list(i)) for r, i in seen.items()] + [(r, [i]) for r, i in hv_out.items()]
+    # 同一个 impl 对象出现在不止一条钉点里（不同钉点源给它配了不同的 ref，如 ICache 把 blkPaddr 与 vSetIdx
+    # 都钉到 vset_idx_q）：FM 只认第一次，后面的被忽略 —— 也并进配对类一次给出
+    icount = collections.Counter(i for _, imps in pool for i in imps)
+    touched.update(i for i, c in icount.items() if c > 1)
     fold = []
     changed = True
     while changed:

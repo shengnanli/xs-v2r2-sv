@@ -3629,7 +3629,7 @@ puts "FE_CORE_PIN_END ok=$::FE_CORE_OK bad=$::FE_CORE_BAD expect=$::FE_CORE_EXPE
 if {$::FE_CORE_BAD != 0 || $::FE_CORE_OK != $::FE_CORE_EXPECT} {
   error "FE_CORE_PIN: ok=$::FE_CORE_OK bad=$::FE_CORE_BAD expect=$::FE_CORE_EXPECT"
 }
-# ---- 二、子树钉点重定位（34 个钉点源 -> 102678 条，去重后；规则见 scripts/gen_frontend.py）----
+# ---- 二、子树钉点重定位（34 个钉点源 -> 102654 条，去重后；规则见 scripts/gen_frontend.py）----
 #   钉点源 / 脚本 / 出证 evidence（* = 该脚本出证后又改过，用该目标最新绿 receipt）/ 原条数 / 过期丢弃（伸进其证明时读 golden 的子模块）/ 去重后新增
 #   Composer                             verif/ut/Composer/fm_pins_pre.tcl                  335a330a9baa 原  23684 丢   1445 增  22239
 #   FauFTB                               verif/ut/FauFTB/fm_pins_pre.tcl                    335a330a9baa 原    400 丢      0 增      0
@@ -3670,7 +3670,7 @@ if {$::FE_CORE_BAD != 0 || $::FE_CORE_OK != $::FE_CORE_EXPECT} {
 #   不取 PredChecker：NewIFU 的钉点已含 predChecker/* 1799 条（重写侧 NewIFU 直接例化 xs_PredChecker_core）
 #   不取 TLBFA：TLB 的钉点已含 entries/page_itlb_storage_fa/reqVpn 33 条死位（同一族）
 #   不取 TlbStorageWrapper：TLB 的钉点已含 entries/page_itlb_storage_fa/reqVpn 33 条死位（同一族）
-set ::FE_CHILD_EXPECT 102678
+set ::FE_CHILD_EXPECT 102654
 set ::FE_CHILD_OK 0
 set ::FE_CHILD_BAD 0
 proc fe_child_pin {r args} {
@@ -95041,12 +95041,6 @@ fe_child_pin {r:/WORK/Frontend/inner_ifu/frontendTrigger/triggerEnableVec_0_reg}
 fe_child_pin {r:/WORK/Frontend/inner_ifu/frontendTrigger/triggerEnableVec_1_reg} {i:/WORK/Frontend/inner_ifu/u_core/u_frontendTrigger/enable_q_reg[1]}
 fe_child_pin {r:/WORK/Frontend/inner_ifu/frontendTrigger/triggerEnableVec_2_reg} {i:/WORK/Frontend/inner_ifu/u_core/u_frontendTrigger/enable_q_reg[2]}
 fe_child_pin {r:/WORK/Frontend/inner_ifu/frontendTrigger/triggerEnableVec_3_reg} {i:/WORK/Frontend/inner_ifu/u_core/u_frontendTrigger/enable_q_reg[3]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[0]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[1]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[2]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[3]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[4]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[6]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[7]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[7]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[8]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[8]}
@@ -95085,12 +95079,6 @@ fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[4
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[41]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[41]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[6]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[7]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[7]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[0]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[1]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[2]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[3]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[4]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[6]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[7]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[7]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[8]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[8]}
@@ -95129,12 +95117,6 @@ fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[4
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[41]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[41]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[6]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[7]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[7]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[0]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[1]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[2]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[3]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[4]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[6]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[7]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[7]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[8]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[8]}
@@ -95173,12 +95155,6 @@ fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[4
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[41]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[41]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[6]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[7]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[7]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[0]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[1]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[2]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[3]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[4]}
-fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[6]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[7]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[7]}
 fe_child_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[8]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[8]}
@@ -106362,7 +106338,7 @@ puts "FE_CHILD_PIN_END ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_
 if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
   error "FE_CHILD_PIN: ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_EXPECT"
 }
-# ---- 三、子树自配对录制钉点（66 个设计 -> 46424 条；另 1346 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----
+# ---- 三、子树自配对录制钉点（66 个设计 -> 46398 条；另 1372 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----
 #   Composer                             录     93 对 x   1 个实例 -> 新增     93 条
 #   DelayN                               录      5 对 x   5 个实例 -> 新增     25 条
 #   DelayN_1                             录      2 对 x   3 个实例 -> 新增      6 条
@@ -106429,7 +106405,7 @@ if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
 #   WrBypass_32                          录    151 对 x   1 个实例 -> 新增      0 条
 #   WrBypass_41                          录     47 对 x   2 个实例 -> 新增     94 条
 #   WrBypass_43                          录     51 对 x   3 个实例 -> 新增    153 条
-set ::FE_HV_EXPECT 46424
+set ::FE_HV_EXPECT 46398
 set ::FE_HV_OK 0
 set ::FE_HV_BAD 0
 proc fe_hv_pin {r i} {
@@ -111191,7 +111167,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/entry_hit_status_8_reg[0]} {i:/WORK/Fronte
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/entry_hit_status_8_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/entry_hit_status_reg[8][1]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/entry_hit_status_9_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/entry_hit_status_reg[9][0]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/entry_hit_status_9_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/entry_hit_status_reg[9][1]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/entry_is_to_send_REG_1_reg} {i:/WORK/Frontend/inner_ftq/u_core/entry_send_p1_b_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/entry_next_addr_REG_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/enext_p1_reg_reg[0]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/entry_next_addr_REG_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/enext_p1_reg_reg[10]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/entry_next_addr_REG_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/enext_p1_reg_reg[11]}
@@ -111979,7 +111954,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_meta_mem} {i:/WORK/Frontend/inner_ftq/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pd_mem} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pd_mem}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_redirect_mem} {i:/WORK/Frontend/inner_ftq/u_core/ftq_redirect_mem}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/copied_ifu_plus1_to_send_REG_1_reg} {i:/WORK/Frontend/inner_ftq/u_core/entry_send_p1_b_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/copied_ifu_ptr_to_send_REG_1_reg} {i:/WORK/Frontend/inner_ftq/u_core/entry_send_b_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_fallThruError_reg} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][100]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][50]}
@@ -120240,24 +120214,12 @@ fe_hv_pin {r:/WORK/Frontend/inner_icache/ctrlUnitOpt/out_back_q/ram_reg[9]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/fencei_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/fencei_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/flush_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/flush_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/issue_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/issued_q_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[0]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[1]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[2]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[3]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[4]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[5]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/valid_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/valid_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/way_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/way_q_reg[0]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/way_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/way_q_reg[1]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/fencei_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/fencei_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/flush_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/flush_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/issue_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/issued_q_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[0]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[1]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[2]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[3]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[4]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[5]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/valid_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/valid_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/way_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/way_q_reg[0]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/way_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/way_q_reg[1]}
@@ -120288,24 +120250,12 @@ fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/prefetchMSHRs_9/way_reg[1]} {i
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/fencei_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/fencei_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/flush_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/flush_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/issue_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/issued_q_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[0]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[1]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[2]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[3]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[4]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[5]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/valid_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/valid_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/way_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/way_q_reg[0]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/way_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/way_q_reg[1]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/fencei_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/fencei_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/flush_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/flush_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/issue_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/issued_q_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[0]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[1]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[2]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[3]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[4]}
-fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[5]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/valid_reg} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/valid_q_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/way_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/way_q_reg[0]}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/way_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/way_q_reg[1]}
@@ -152867,11 +152817,11 @@ puts "FE_HV_PIN_END ok=$::FE_HV_OK bad=$::FE_HV_BAD expect=$::FE_HV_EXPECT"
 if {$::FE_HV_BAD != 0 || $::FE_HV_OK != $::FE_HV_EXPECT} {
   error "FE_HV_PIN: ok=$::FE_HV_OK bad=$::FE_HV_BAD expect=$::FE_HV_EXPECT"
 }
-# ---- 四、恒等副本配对类（1810 行副本组 + 第二/三节里与之相连的 1346 条钉点 -> 770 个配对类 -> 3309 次一对多 set_user_match；数据 verif/ut/Frontend/dup_groups.tsv）----
+# ---- 四、恒等副本 / 多源配对类（1810 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 1396 条钉点 -> 795 个配对类 -> 3358 次一对多 set_user_match；数据 verif/ut/Frontend/dup_groups.tsv）----
 #   FM 对"同一个对象被多次 set_user_match"会忽略后来的（实测 Warning: Ignoring user match: implementation object
 #   matched more than once），所以凡与副本组相连的钉点都并成配对类一次给出；类内 ref / impl 都多于 1 个时，
 #   按排序把较少一侧逐个对上较多一侧的一段（恒等副本之间任意配对都等价），每段一次一对多。
-set ::FE_DUP_EXPECT 3309
+set ::FE_DUP_EXPECT 3358
 set ::FE_DUP_OK 0
 set ::FE_DUP_BAD 0
 proc fe_dup_grp {args} {
@@ -156190,6 +156140,55 @@ fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/toIfuPc_p1_nextLineAddr_reg[11]} {
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/toIfuPc_p1_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_1_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_2_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_3_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_4_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_nextLineAddr_reg[10]} {r:/WORK/Frontend/inner_ftq/toIfuPcBundle_REG_nextLineAddr_reg[10]}
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/toIfuPc_p1_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_1_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_2_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_3_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_4_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_nextLineAddr_reg[9]} {r:/WORK/Frontend/inner_ftq/toIfuPcBundle_REG_nextLineAddr_reg[9]}
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/toIfuPc_p1_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_1_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_2_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_3_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_4_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/pc_mem_ifu_plus1_rdata_REG_nextLineAddr_reg[8]} {r:/WORK/Frontend/inner_ftq/toIfuPcBundle_REG_nextLineAddr_reg[8]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[0]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[0]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[1]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[1]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[2]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[2]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[3]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[3]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[4]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[4]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[5]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[5]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[0]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[0]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[1]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[1]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[2]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[2]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[3]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[3]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[4]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[4]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/blk_paddr_q_reg[5]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_1/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_1/u_core/vset_idx_q_reg[5]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[0]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[0]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[1]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[1]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[2]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[2]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[3]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[3]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[4]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[4]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/blk_paddr_q_reg[5]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_2/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_2/u_core/vset_idx_q_reg[5]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[0]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[0]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[1]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[1]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[2]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[2]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[3]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[3]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[3]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[4]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[4]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[4]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/blkPaddr_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/blk_paddr_q_reg[5]}
+fe_dup_grp {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_3/vSetIdx_reg[5]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_3/u_core/vset_idx_q_reg[5]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/entry_send_p1_b_reg} {r:/WORK/Frontend/inner_ftq/copied_ifu_plus1_to_send_REG_1_reg} {r:/WORK/Frontend/inner_ftq/entry_is_to_send_REG_1_reg}
 puts "FE_DUP_END ok=$::FE_DUP_OK bad=$::FE_DUP_BAD expect=$::FE_DUP_EXPECT"
 if {$::FE_DUP_BAD != 0 || $::FE_DUP_OK != $::FE_DUP_EXPECT} {
   error "FE_DUP: ok=$::FE_DUP_OK bad=$::FE_DUP_BAD expect=$::FE_DUP_EXPECT"
