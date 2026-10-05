@@ -1,0 +1,25 @@
+{
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "objects": [
+  {
+   "attrs": "i",
+   "certificate_sha256": "815d69a92f86c4d3f87700168730c226bfbc70c7c0171a72622cb1960eebe74e",
+   "child_target": "TL2CHICoupledL2",
+   "class": "green_child",
+   "design": "TL2CHICoupledL2",
+   "path": "i:/WORK/L2Top/inner_l2cache",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "815d69a92f86c4d3f87700168730c226bfbc70c7c0171a72622cb1960eebe74e",
+   "child_target": "TL2CHICoupledL2",
+   "class": "green_child",
+   "design": "TL2CHICoupledL2",
+   "path": "r:/WORK/L2Top/inner_l2cache",
+   "side": "r"
+  }
+ ],
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "L2Top"
+}

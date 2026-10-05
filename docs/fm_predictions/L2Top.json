@@ -1,0 +1,18 @@
+{
+  "target": "L2Top",
+  "ut": "L2Top",
+  "regs": 14242,
+  "outs": 3203,
+  "expected": 20217,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 2772,
+  "bbox": {
+    "TL2CHICoupledL2": {
+      "insts": 1,
+      "in_bits": 2772,
+      "points": 2772
+    }
+  },
+  "note": "codex 0217/0222：inner_l2cache = TL2CHICoupledL2 green child（interface_only，allow 2 条绑 TL2 证书 sha）。预测 passing = 19950、constant_reg = 267（= canaryL2 @62d7e6e21 实测；canaryL 19288 + 662 nc = 19950 守恒），failing/unverified/aborted/unmatched/unread/blackbox_out 0，verdict SUCCEEDED。正式证明待 codex 就 TL2 证书的 hdlin_interface_only pinned appvar / 孙级证书递归复核裁定。"
+}

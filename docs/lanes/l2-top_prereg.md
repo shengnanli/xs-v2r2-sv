@@ -210,3 +210,15 @@ canary4 与 canary3 守恒：19242 + 234 + 979 = 20455 = 20084 + 371（vmucp 打
 ### 5.3 预测（official，docs/fm_predictions/TL2CHICoupledL2.json）
 passing **20084**、constant_reg **371**、failing / unverified / aborted / unmatched / unread / blackbox_out **0**、无 dont_verify / elab147，
 verdict **SUCCEEDED**（assembly：观测黑盒集合 = allow 12 条，6 个 green child 证书在父 commit 上 current-valid）。
+
+## 6. L2Top（层次化组合，inner_l2cache = TL2CHICoupledL2 green child）—— 跑前登记（★跑完不许改本节★）
+
+- TL2CHICoupledL2 official：SUCCEEDED（70deb97b6，passing 20084 / constant_reg 371 = §5.3 预测），证书 verif/proof_certificates/TL2CHICoupledL2.json
+  （sha256 815d69a9…）。verif/allow/L2Top.json 2 条（两侧 inner_l2cache，attrs i，green_child，绑该 sha）。
+- 本层：ref 44 个 G1 文件 + TL2CHICoupledL2 端口定义；impl 36 个重写件 + TL2 wrapper；两侧共读 14 个已登记 MC_MEMORY_MODEL
+  （Queue2_TLBundle* 的 ram_2x*/ram_sink_2x8）。无钉点。vmucp：verif/fm_target_config/L2Top.tcl（662 对）。
+- canary：canaryL（798ba1e56，无 vmucp）native SUCCEEDED、passing 19288、unread 662（全 matched_nc）、constant_reg 267；
+  canaryL2（62d7e6e21，+vmucp）native SUCCEEDED、passing **19950**、constant_reg **267**、其余全 0。模型 20217 = 19950 + 267。
+- 预测（docs/fm_predictions/L2Top.json）：passing 19950、constant_reg 267、failing/unverified/aborted/unmatched/unread/blackbox_out 0，SUCCEEDED。
+- ★正式证明暂缓★：TL2 证书在统一核心下报 `green_child_appvar_policy_mismatch:hdlin_interface_only`（POLICY 钉死 ''），且孙级证书
+  （Slice×4/Prefetcher/Queue78）在父 commit 上的递归复核尚未实现 —— 待 codex 裁定。
