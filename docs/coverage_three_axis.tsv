@@ -152,8 +152,8 @@ CSA4to2	REWRITTEN	PROVEN_DIRECT	rtl/backend/CSA4to2.sv
 CSA4to2_15	REWRITTEN	PROVEN_DIRECT	rtl/backend/CSA4to2_15.sv
 CSA4to2_16	REWRITTEN	PROVEN_DIRECT	rtl/backend/CSA4to2_16.sv
 CSA_Nto2With3to2MainPipeline	REWRITTEN	PROVEN_DIRECT	rtl/backend/CSA_Nto2With3to2MainPipeline.sv
-CSR	MISSING	UNPROVEN	-
-CSRPermitModule	MISSING	UNPROVEN	-
+CSR	REWRITTEN	PROVEN_DIRECT	rtl/backend/CSR.sv
+CSRPermitModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/CSRPermitModule.sv
 CVT16	REWRITTEN	PROVEN_DIRECT	rtl/backend/CVT16.sv
 CVT32	REWRITTEN	PROVEN_DIRECT	rtl/backend/CVT32.sv
 CVT64	REWRITTEN	PROVEN_DIRECT	rtl/backend/CVT64.sv
@@ -181,7 +181,7 @@ ClosePathFloatAdderF64WidenPipeline	REWRITTEN	PROVEN_DIRECT	rtl/backend/ClosePat
 CloseShiftLeftWithMux	REWRITTEN	PROVEN_DIRECT	rtl/backend/CloseShiftLeftWithMux.sv
 CloseShiftLeftWithMux_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/CloseShiftLeftWithMux_1.sv
 CloseShiftLeftWithMux_9	REWRITTEN	PROVEN_DIRECT	rtl/backend/CloseShiftLeftWithMux_9.sv
-CommitIDModule	NO_OUTPUT	UNPROVEN	rtl/backend/CommitIDModule.sv
+CommitIDModule	NO_OUTPUT	PROVEN_IN_CONE	rtl/backend/CommitIDModule.sv
 CommitStuckCounter	REWRITTEN	PROVEN_DIRECT	rtl/backend/CommitStuckCounter.sv
 Composer	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/Composer.sv
 CompressUnit	REWRITTEN	PROVEN_DIRECT	rtl/backend/CompressUnit.sv
@@ -196,7 +196,7 @@ CtrlBlock	REWRITTEN	PROVEN_DIRECT	rtl/backend/CtrlBlock.sv
 CtrlUnit	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/CtrlUnit.sv
 CustomL1Hint	REWRITTEN	PROVEN_DIRECT	rtl/uncore/CustomL1Hint.sv
 DCache	REWRITTEN	PROVEN_DIRECT	rtl/memblock/DCache.sv
-DCacheWrapper	REWRITTEN	UNPROVEN	rtl/memblock/DCacheWrapper.sv
+DCacheWrapper	REWRITTEN	PROVEN_DIRECT	rtl/memblock/DCacheWrapper.sv
 DMIToTL	GOLDEN_REUSE	PROVEN_IN_CONE	-
 DataModule_BackendPC_16entry	REWRITTEN	PROVEN_DIRECT	rtl/common/DataModule_BackendPC_16entry.sv
 DataModule_FtqPC_16entry	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DataModule_FtqPC_16entry.sv
@@ -345,7 +345,7 @@ ExeUnit_7	MISSING	UNPROVEN	-
 ExeUnit_8	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit_8.sv
 ExeUnit_9	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit_9.sv
 ExuBlock	MISSING	UNPROVEN	-
-ExuBlock_1	MISSING	UNPROVEN	-
+ExuBlock_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExuBlock_1.sv
 ExuBlock_2	MISSING	UNPROVEN	-
 F3Predecoder	REWRITTEN	PROVEN_DIRECT	rtl/frontend/F3Predecoder.sv
 FAlu	REWRITTEN	PROVEN_DIRECT	rtl/backend/FAlu.sv
@@ -660,7 +660,7 @@ L2TLB	REWRITTEN	PROVEN_DIRECT	rtl/memblock/L2TLB.sv
 L2TLBWrapper	REWRITTEN	PROVEN_DIRECT	rtl/mmu/L2TLBWrapper.sv
 L2TlbMissQueue	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/L2TlbMissQueue.sv
 L2TlbPrefetch	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/L2TlbPrefetch.sv
-L2Top	MISSING	UNPROVEN	-
+L2Top	REWRITTEN	UNPROVEN	rtl/l2/L2Top.sv
 LCredit2Decoupled	REWRITTEN	PROVEN_DIRECT	rtl/uncore/LCredit2Decoupled.sv
 LCredit2Decoupled_1	REWRITTEN	PROVEN_DIRECT	rtl/uncore/LCredit2Decoupled_1.sv
 LCredit2Decoupled_10	REWRITTEN	PROVEN_DIRECT	rtl/uncore/LCredit2Decoupled_10.sv
@@ -868,7 +868,7 @@ NCBUpstreamTXRSP	MISSING	UNPROVEN	-
 NCBUpstreamTXRSP_1	MISSING	UNPROVEN	-
 NewAgeDetector	REWRITTEN	PROVEN_DIRECT	rtl/backend/NewAgeDetector.sv
 NewAgeDetector_6	REWRITTEN	PROVEN_DIRECT	rtl/backend/NewAgeDetector_6.sv
-NewCSR	MISSING	UNPROVEN	-
+NewCSR	REWRITTEN	PROVEN_DIRECT	rtl/backend/NewCSR.sv
 NewDispatch	REWRITTEN	PROVEN_DIRECT	rtl/backend/NewDispatch.sv
 NewIFU	REWRITTEN	PROVEN_DIRECT	rtl/frontend/NewIFU.sv
 NewPipelineConnectPipe	REWRITTEN	PROVEN_DIRECT	rtl/uncore/NewPipelineConnectPipe.sv
@@ -1146,7 +1146,7 @@ PrefetchFilter	REWRITTEN	PROVEN_DIRECT	rtl/memblock/PrefetchFilter.sv
 PrefetchQueue	REWRITTEN	PROVEN_DIRECT	rtl/l2/PrefetchQueue.sv
 PrefetchReceiver	REWRITTEN	PROVEN_DIRECT	rtl/l2/PrefetchReceiver.sv
 PrefetchReqBuffer	MACRO_OPAQUE	PROVEN_DIRECT	rtl/l2/PrefetchReqBuffer.sv
-Prefetcher	MISSING	UNPROVEN	-
+Prefetcher	REWRITTEN	PROVEN_DIRECT	rtl/l2/Prefetcher.sv
 PrefetcherMonitor	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/PrefetcherMonitor.sv
 PrintCommitIDModule	MISSING	UNPROVEN	-
 PriorityMuxModule	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/PriorityMuxModule.sv
@@ -1355,7 +1355,7 @@ SCTable_1	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/SCTable_1.sv
 SCTable_2	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/SCTable_2.sv
 SCTable_3	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/SCTable_3.sv
 SLevelPermitModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/SLevelPermitModule.sv
-SMSPrefetcher	MISSING	UNPROVEN	-
+SMSPrefetcher	REWRITTEN	PROVEN_DIRECT	rtl/memblock/SMSPrefetcher.sv
 SMSTrainFilter	REWRITTEN	PROVEN_DIRECT	rtl/memblock/SMSTrainFilter.sv
 SNLinkMonitor	MISSING	UNPROVEN	-
 SNXbar	REWRITTEN	UNPROVEN	rtl/uncore/SNXbar.sv
@@ -1538,7 +1538,7 @@ SyncDataModuleTemplate__64entry_3	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SyncData
 SyncDataModuleTemplate__64entry_4	REWRITTEN	PROVEN_DIRECT	rtl/common/SyncDataModuleTemplate__64entry_4.sv
 SyncDataModuleTemplate__64entry_5	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/SyncDataModuleTemplate__64entry_5.sv
 TIMER	MISSING	UNPROVEN	-
-TL2CHICoupledL2	MISSING	UNPROVEN	-
+TL2CHICoupledL2	REWRITTEN	UNPROVEN	rtl/uncore/TL2CHICoupledL2.sv
 TLAsyncCrossingSink	GOLDEN_REUSE	PROVEN_IN_CONE	-
 TLAsyncCrossingSource	GOLDEN_REUSE	PROVEN_IN_CONE	-
 TLB	REWRITTEN	PROVEN_DIRECT	rtl/memblock/TLB.sv
@@ -1704,10 +1704,10 @@ VSetRvfWvf	REWRITTEN	PROVEN_DIRECT	rtl/backend/VSetRvfWvf.sv
 VSieModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VSieModule.sv
 VSipModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VSipModule.sv
 VSiregModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VSiregModule.sv
-VSiselectModule	REWRITTEN	UNPROVEN	rtl/backend/VSiselectModule.sv
+VSiselectModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VSiselectModule.sv
 VSscratchModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VSscratchModule.sv
-VSstatusModule	REWRITTEN	UNPROVEN	rtl/backend/VSstatusModule.sv
-VStimecmpModule	REWRITTEN	UNPROVEN	rtl/backend/VStimecmpModule.sv
+VSstatusModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VSstatusModule.sv
+VStimecmpModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VStimecmpModule.sv
 VStopeiModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VStopeiModule.sv
 VStopiModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VStopiModule.sv
 VStvalModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VStvalModule.sv
@@ -1732,7 +1732,7 @@ VfRegFilePart1	REWRITTEN	PROVEN_DIRECT	rtl/backend/VfRegFilePart1.sv
 VfRegFilePart2	REWRITTEN	PROVEN_DIRECT	rtl/backend/VfRegFilePart2.sv
 VfRegFilePart3	REWRITTEN	PROVEN_DIRECT	rtl/backend/VfRegFilePart3.sv
 VfofBuffer	REWRITTEN	PROVEN_DIRECT	rtl/memblock/VfofBuffer.sv
-VirtualLevelPermitModule	REWRITTEN	UNPROVEN	rtl/backend/VirtualLevelPermitModule.sv
+VirtualLevelPermitModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VirtualLevelPermitModule.sv
 VirtualLoadQueue	REWRITTEN	PROVEN_DIRECT	rtl/memblock/VirtualLoadQueue.sv
 VlBusyTable	REWRITTEN	PROVEN_DIRECT	rtl/backend/VlBusyTable.sv
 VlRFReadArbiter	REWRITTEN	PROVEN_DIRECT	rtl/backend/VlRFReadArbiter.sv
@@ -1741,8 +1741,8 @@ VlRegFile	REWRITTEN	PROVEN_DIRECT	rtl/backend/VlRegFile.sv
 VldMergeUnit	REWRITTEN	PROVEN_DIRECT	rtl/backend/VldMergeUnit.sv
 VldMgu	REWRITTEN	PROVEN_DIRECT	rtl/backend/VldMgu.sv
 VsetModule	GOLDEN_REUSE	PROVEN_DIRECT	rtl/backend/VsetModule.sv
-VstartModule	REWRITTEN	UNPROVEN	rtl/backend/VstartModule.sv
-VtypeModule	REWRITTEN	UNPROVEN	rtl/backend/VtypeModule.sv
+VstartModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VstartModule.sv
+VtypeModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VtypeModule.sv
 WBArbiter	REWRITTEN	PROVEN_DIRECT	rtl/backend/WBArbiter.sv
 WBArbiter_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/WBArbiter_1.sv
 WBArbiter_2	REWRITTEN	PROVEN_DIRECT	rtl/backend/WBArbiter_2.sv
