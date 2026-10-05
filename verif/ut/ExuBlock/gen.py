@@ -133,6 +133,11 @@ for typ, iname, pin, pout in INSTS:
                 _const = False
         if _const:
             EXEMPT.append(pout + _o[len("io_out"):])
+    # (2c) redirect.cfiUpdate.backendIGPF（brh / jmp）：只在取指地址翻译处于 sv39x4 / sv48x4（两级翻译）且目标越界时才置 1，
+    #      要 CSR 先进 V 态并写好 hgatp/vsatp —— 本激励不专门进虚拟化模式（同 ExeUnit_7 tb 豁免 VS 态 ecall 位）；
+    #      seed 1 碰巧翻到过，seed 7 没有，不能当按构造的闸
+    if any(t in ("BranchUnit", "JumpUnit") for t, _, _ in v.fus):
+        EXEMPT.append(pout + "_bits_redirect_bits_cfiUpdate_backendIGPF")
     if typ == "ExeUnit_5":
         # (4) data_5 = {64'h0, VSetRiWvf.res_data}，而 VSetRiWvf 的 res_data = {56'h0, vl}（golden VSetRiWvf.sv）⇒ [63:8] 也恒 0
         if not re.search(r"assign io_out_bits_data_5 = \{64'h0, _VSetRiWvf_io_out_bits_res_data\};", etxt) or \
