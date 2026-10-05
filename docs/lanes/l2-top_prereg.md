@@ -222,3 +222,5 @@ verdict **SUCCEEDED**（assembly：观测黑盒集合 = allow 12 条，6 个 gre
 - 预测（docs/fm_predictions/L2Top.json）：passing 19950、constant_reg 267、failing/unverified/aborted/unmatched/unread/blackbox_out 0，SUCCEEDED。
 - ★正式证明暂缓★：TL2 证书在统一核心下报 `green_child_appvar_policy_mismatch:hdlin_interface_only`（POLICY 钉死 ''），且孙级证书
   （Slice×4/Prefetcher/Queue78）在父 commit 上的递归复核尚未实现 —— 待 codex 裁定。
+- 补记（跑前，codex 0224 后）：证书核心改为嵌套 green_child（声明驱动 hdlin_interface_only + 递归复核，c45ce8c2e），
+  TL2CHICoupledL2 证书在该提交上重出（未重跑 FM），新 sha256 f2298a68…；verif/allow/L2Top.json 重新写死该 sha。预测数字不变。

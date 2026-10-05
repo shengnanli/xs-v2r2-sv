@@ -3,7 +3,7 @@
  "objects": [
   {
    "attrs": "i",
-   "certificate_sha256": "815d69a92f86c4d3f87700168730c226bfbc70c7c0171a72622cb1960eebe74e",
+   "certificate_sha256": "f2298a684090cbe529db7014a214eef785e54640f6821cc841654dd91fba09cf",
    "child_target": "TL2CHICoupledL2",
    "class": "green_child",
    "design": "TL2CHICoupledL2",
@@ -12,7 +12,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "815d69a92f86c4d3f87700168730c226bfbc70c7c0171a72622cb1960eebe74e",
+   "certificate_sha256": "f2298a684090cbe529db7014a214eef785e54640f6821cc841654dd91fba09cf",
    "child_target": "TL2CHICoupledL2",
    "class": "green_child",
    "design": "TL2CHICoupledL2",
