@@ -1192,11 +1192,12 @@ def dup_classes(groups, fold):
         imps = sorted(m for m in members if m.startswith('i:'))
         if not refs or not imps:
             fail('副本配对类只有一侧: %s' % members[:4])
-        few, many = (refs, imps) if len(refs) <= len(imps) else (imps, refs)
-        k = len(few)
-        for j, f in enumerate(few):
-            seg = many[j * len(many) // k:(j + 1) * len(many) // k]
-            calls.append([f] + seg)
+        # 整类一次多对多给出（不再按段拆成一对多）：FM 在 match 前先逐个证明同侧成员互相等价（"Setting up preverify
+        # for match group"），证不出就整组删掉（Warning: Many-to-many matching: Verify failed / Deleting failing
+        # many_to_many user match），这些点随即变成未配对、显式可见 —— 类分错了不会被悄悄吞掉。
+        # 旧做法按段拆成一对多时，段内若只剩 1 对 1 就没有同侧预证明，类里混进的错配直接变成 failing
+        # （match18：58959 failing，analyze_points 指向 ftq_meta_mem / ftq_pd_mem 的 raddr、ftbBank 的 u_total_hits_REG*）。
+        calls.append(sorted(imps) + sorted(refs))
     ncls[0] = len(cls)
     return calls
 
@@ -1210,11 +1211,11 @@ def render_dup_groups(groups=None, fold=()):
     calls = dup_classes(groups, fold)
     L = []
     A = L.append
-    A('# ---- 四、恒等副本 / 多源配对类（%d 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 %d 条钉点 -> %d 个配对类 -> %d 次一对多 set_user_match；'
+    A('# ---- 四、恒等副本 / 多源配对类（%d 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 %d 条钉点 -> %d 个配对类 -> %d 次多对多 set_user_match；'
       '数据 verif/ut/Frontend/dup_groups.tsv）----' % (len(groups), len(fold), ncls[0], len(calls)))
     A('#   FM 对"同一个对象被多次 set_user_match"会忽略后来的（实测 Warning: Ignoring user match: implementation object')
-    A('#   matched more than once），所以凡与副本组相连的钉点都并成配对类一次给出；类内 ref / impl 都多于 1 个时，')
-    A('#   按排序把较少一侧逐个对上较多一侧的一段（恒等副本之间任意配对都等价），每段一次一对多。')
+    A('#   matched more than once），所以凡与副本组相连的钉点都并成配对类，每类一次多对多 set_user_match 给出')
+    A('#   （须 user_match_enable_many_to_many_matching；FM 先证同侧成员互相等价，证不出整组删掉、点变未配对）。')
     groups = calls
     A('set ::FE_DUP_EXPECT %d' % len(groups))
     A('set ::FE_DUP_OK 0')
