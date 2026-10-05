@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/ICacheCtrlBuffer
+Implementation : i:/WORK/ICacheCtrlBuffer
+Version        : V-2023.12-SP3
+Date           : Sun Oct  4 09:23:36 2026
+**************************************************
+
+No failing compare points.
+
+1

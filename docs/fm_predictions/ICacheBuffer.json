@@ -1,0 +1,10 @@
+{
+  "target": "ICacheBuffer",
+  "ut": "FrontendBridgeBuffers",
+  "regs": 2572,
+  "outs": 631,
+  "expected": 3203,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "vmucp 开；预期差额 = constant_reg（试跑实测 ICacheBuffer 307 / InstrUncacheBuffer 83 / ICacheCtrlBuffer 5 / MuxBundle 0），unread 0"
+}
