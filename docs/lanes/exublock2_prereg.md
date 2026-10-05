@@ -100,3 +100,37 @@ ExeUnit_16 首次 official 跑（commit `0bff177c2`，evidence/0bff177c2290/ExeU
 （U_FS1 io_result_r_2 ↔ lo_sum_q 全 18 位）与 VFAlu 匹配后钉点里的 4 对（各实例 U_FS1 io_result_r_2[0]）重复，FM 对重复
 的 set_user_match 返回 1 但不打印。生成器改为跳过与子 FU 原钉点重复的外壳附加对，钉点文件 3250 → **3246**（期望 = 真实
 Set a match 数），其余不变；用新钉点重证，预测不变（passing 6150 / constant 362）。旧 receipt 不入库。
+
+## 对账（跑后追加）
+
+### ExeUnit_16 —— evidence/286da6e8f076/ExeUnit_16（commit `286da6e8f`，run_proof.sh，signoff-strict，vmucp=true）
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| native | SUCCEEDED | SUCCEEDED |
+| passing | 6150 | **6150** |
+| constant_reg | 362 | 362 |
+| failing / unverified / aborted / unmatched / unread_notcompared | 0 | 0 / 0 / 0 / 0 / 0 |
+| 黑盒 / dont_verify / elab147 | 无 | 无 / 无 / 无 |
+| 钉点 | 3246 | PIN_END ok=3246 bad=0；fm.log `Set a match` 3246 |
+
+vmucp 六条：精确绑定（诊断跑 unread 148 点，名单见 ExeUnit_16.tcl）/ 双射（148 ref ↔ 148 impl，全 matched_nc）/
+真比较（passing 6002 → 6150，恰 +148）/ 全零 / 无 dont_verify、无黑盒 / 本文件进 receipt script_closure。
+`fm_predict.py check ExeUnit_16`：差额 362 = constant_reg 362，rc=0。
+
+### ExeUnit_17 —— evidence/0bff177c2290/ExeUnit_17（commit `0bff177c2`，同口径）
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| native | SUCCEEDED | SUCCEEDED |
+| passing | 17123 | **17123** |
+| constant_reg | 12 | 12 |
+| failing / unverified / aborted / unmatched / unread_notcompared | 0 | 0 / 0 / 0 / 0 / 0 |
+| 黑盒 / dont_verify / elab147 | 无 | 无 / 无 / 无 |
+| 钉点 | 1632 | PIN_END ok=1632 bad=0；fm.log `Set a match` 1632 |
+
+vmucp 六条：精确绑定（104 matched_nc + 2 个钉上的 pdest_r[7]）/ 双射 / 真比较（17019 → 17123，+104；两个 pdest[7] 输入恒 0、
+归 constant_reg）/ 全零 / 无 dont_verify、无黑盒 / 本文件进 script_closure。`fm_predict.py check ExeUnit_17`：差额 12 = constant_reg 12，rc=0。
+
+变异 ExeUnit_17 M3（Vfdiv pdest 补位 1'h0 → 1'h1）的 FM 实测：在沙箱里对变异体跑同口径 FM，**SUCCEEDED passing 17123**
+—— pdest[7] 两侧都是常量寄存器且无读者，到不了任何输出口，这是边界上的**等价变异**（不是 UT / FM 的漏检）；记为 EQUIV，不计分母。
