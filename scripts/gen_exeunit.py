@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""gen_exeunit.py —— ExeUnit 家族（ExeUnit / _1 / _4 / _5 / _8 / _9 / _10）wrapper 与 FM 钉点生成器。
+"""gen_exeunit.py —— ExeUnit 家族（ExeUnit / _1 / _4 / _5 / _7 / _8 / _9 / _10）wrapper 与 FM 钉点生成器。
 
 ## 生成什么
 
@@ -16,6 +16,20 @@
      (b) 子 FU 自己签核时用过的钉点（FMA / FCVT / Bku / FAlu）：用 tclsh 桩真跑那份钉点
          文件，取出它实际发出的 set_user_match 序列，加上实例路径前缀照搬。条数必须等于
          docs/pin_call_seq.tsv 里该文件登记的调用数，否则拒绝生成。
+  3. `verif/ut/ExeUnit_<k>/fm_pins.tcl`（只有含「动态钉点」子 FU 的变体才有，当前 = ExeUnit_7 的 CSR）——
+     FM「匹配后」钉点：子 FU 签核用的动态钉点文件（按 report_unmatched_points 现场配对）机械改前缀：
+     `/WORK/<FU 类型>/` -> `/WORK/<变体>/<实例>/`、守卫 `$top eq "<FU 类型>"` -> `$top eq "<变体>"`，
+     替换次数逐项核对（fail-closed），其余逐字照搬。
+
+## ExeUnit_7（CSR 外壳）比别的变体多的三样外壳结构（2026-10-04，exublock0 lane 加）
+
+  * 常开时钟门控：csr / Fence 是不定延迟 FU 但 Scala 配置 ckAlwaysEn，ClockGate.E 恒 1'h1 ——
+    golden 里它们的 uncer_en_reg 被 firtool 删光（clk_en 被覆盖成常 1，没有读者）。核里按「延迟 0、
+    无不定延迟」给参数（不生成任何门控寄存器），wrapper 直接把 E 接 1'b1；
+  * CSR 输入打拍：Scala `fuio.exception := DelayN(exuio.exception, 2)`、robDeqPtr 同理，golden 是两个
+    DelayN_<n> 实例（已签核件），本脚本把它们当「辅助实例」原样例化（输入只许是顶层端口，输出只许喂 FU）；
+  * 致命错误上报：HasCriticalErrors 的 `io_error(i) := RegNext(RegNext(fu.error))`，两级寄存器交给共享件
+    rtl/common/xs_CriticalErrorDelay_core.sv（核 xs_ExeUnit_core 不改）。
 
 ## fail-closed（解析不认识的形状一律退出，不猜）
 
@@ -41,7 +55,7 @@ import tempfile
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
-VARIANTS = ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10']
+VARIANTS = ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_7', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10']
 
 # 子 FU 自己签核用过的「匹配前/后」钉点文件（相对 verif/ut/）；本脚本用 tclsh 桩取其调用序列
 CHILD_PIN_FILES = {
@@ -49,6 +63,12 @@ CHILD_PIN_FILES = {
     'FCVT': 'FCVT/fm_pins_pre.tcl',
     'Bku':  'Bku/fm_pins_pre.tcl',
     'FAlu': 'FAlu/fm_pins.tcl',
+}
+
+# 子 FU 自己签核用过的**动态**钉点文件（匹配后跑，按 report_unmatched_points 现场配对；相对 verif/ut/）。
+# 进外壳后路径多一层实例名：机械改前缀后整份照搬成 verif/ut/<变体>/fm_pins.tcl（见 gen_dyn_pins）。
+DYN_CHILD_PIN_FILES = {
+    'CSR': 'CSR/fm_pins.tcl',
 }
 
 ATT_BITS = ['bare', 'sv39', 'sv39x4', 'sv48', 'sv48x4']
@@ -82,6 +102,64 @@ EXTRA_CHILD_PINS = {
     #   golden 把部分积 / 中间级寄存器展平成 r_0..r_2306（= 重写件 pp_reg[0..2306]）与
     #   r_2307..r_2561（= mid_reg[0..254]）。其中 r_2303..r_2306 / r_2558..r_2561 两侧都无读者（死位，
     #   无扇出签名）FM 配不上，按这条下标规则钉；其余位靠签名能配上。
+    # DivUnit：golden 孩子 SRT16DividerDataModule 的 6 个自带死位（aLZCReg/dLZCReg[6] 恒 0 且读者只取 [5:0]；
+    #   udNegReg_{0,1,3,4}[67] 无读者），两侧同死、层次名不同（divDataModule vs u_core/u_div/u_core），
+    #   无扇出签名配不上。DivUnit 自己签核时由 verif/ut/ArithVecLeaves5/fm_pins.tcl 匹配后按叶名逐对钉
+    #   （那份文件按「全设计 unread 恰 6 个」自检，进了外壳不再成立，不能照搬），这里按同一组字面名静态钉，
+    #   再交 vmucp 实比（白名单 verif/fm_target_config/ExeUnit_7.tcl）。名字取自 evidence/c2fc93f125d3/DivUnit/fm.log。
+    'DivUnit': (
+        [(f'divDataModule/{r}', f'u_core/u_div/u_core/{r}')
+         for r in ('aLZCReg_reg[6]', 'dLZCReg_reg[6]', 'udNegReg_0_reg[67]', 'udNegReg_1_reg[67]',
+                   'udNegReg_3_reg[67]', 'udNegReg_4_reg[67]')]
+    ),
+    # Fence（ExeUnit_7）：锁存的 uop 操作码 9 位。golden 是标量 uop_ctrl_fuOpType，重写件聚合成 struct uop
+    #   （fence_uop_t；FM 按字段名给 struct 寄存器起名：uop_reg[fuOpType][b]，fm_shell find_cells 实查）。Fence 单独签核时靠签名配上；进了 ExeUnit_7，同一个发射口 fuOpType 还被
+    #   CSR 的 trapInstMod faultCsrUop fuOpType 锁存（ref 侧 [8:3] 是 golden 死位，verif/dead_ref/CSR.json），两组签名
+    #   撞在一起，诊断跑里 ref 的 [8:3] 6 位配不上 —— 按字段整组钉 9 位。
+    'Fence': (
+        [(f'uop_ctrl_fuOpType_reg[{b}]', f'u_core/uop_reg[fuOpType][{b}]') for b in range(9)]
+    ),
+    # CSR（ExeUnit_7）：几族「golden 展平标量 / 重写件数组」寄存器。CSR 单独签核时它们全靠签名分析配上（CSR 自己的
+    #   钉点只管匹配后剩下的四族，verif/ut/CSR/fm_pins.tcl）；进了 ExeUnit_7（输入多过一层 Dispatcher / DelayN），
+    #   诊断跑里签名分析没能配上这几族（ref 侧 4921 个孤儿全落在下面各族里）。按结构整族钉（全部条目全部位，不是照
+    #   孤儿名单抄）：
+    #   * imsic 9 个 IntFile 的 eies_1..3 / eithreshold（各 64 位）：golden intFile{,_k}/eies_<w> ↔ 重写
+    #     u_core/g_file[k].intFile/u_core/eies_reg[w]、eithreshold_reg（eies_0 / eidelivery 高位留给匹配后的 CSR 钉点）；
+    #   * imsic 读数据打拍：golden intfile_rdata_d{,_k}_bits / _valid ↔ 重写 u_core/rdata_d_bits_reg[k] / rdata_d_valid_reg[k]；
+    #   * csrMod 的 PMP / PMA 32 个地址寄存器（各 46 位）：golden pmpAddr_<k>_ADDRESS / pmaAddr_<k> ↔ 重写
+    #     u_core/g_entry[k].addr_q_reg；
+    #   * isPerfCnt 两拍保持：golden io_csrio_isPerfCnt_r ↔ 重写 not_jmp_q（CSR.sv：本条不是系统指令）、golden
+    #     csrMod/io_out_bits_isPerfCnt_r ↔ 重写 csrMod/is_perf_cnt_q；
+    #   * 两个 1 位中断使能 / 挂起位：golden csrMod/mvip/reg_SSIP ↔ 重写 mvip/u_core/ssip_q、golden csrMod/sie/reg_SSIE ↔
+    #     重写 sie/u_core/g_bit[1].g_flop.q（SSIE 是 sie 的第 1 位）—— 第二次诊断跑匹配后仅剩的 2 个族外孤儿。
+    'CSR': (
+        [(f'imsic/imsic/intFile{"_%d" % k if k else ""}/eies_{w}_reg[{b}]',
+          f'imsic/imsic/u_core/g_file[{k}].intFile/u_core/eies_reg[{w}][{b}]')
+         for k in range(9) for w in (1, 2, 3) for b in range(64)]
+        + [(f'imsic/imsic/intFile{"_%d" % k if k else ""}/eithreshold_reg[{b}]',
+            f'imsic/imsic/u_core/g_file[{k}].intFile/u_core/eithreshold_reg[{b}]')
+           for k in range(9) for b in range(64)]
+        + [(f'imsic/imsic/intfile_rdata_d{"_%d" % k if k else ""}_bits_reg[{b}]',
+            f'imsic/imsic/u_core/rdata_d_bits_reg[{k}][{b}]')
+           for k in range(9) for b in range(64)]
+        + [(f'imsic/imsic/intfile_rdata_d{"_%d" % k if k else ""}_valid_reg',
+            f'imsic/imsic/u_core/rdata_d_valid_reg[{k}]') for k in range(9)]
+        + [(f'csrMod/pmpEntryMod/pmpAddr_{k}_ADDRESS_reg[{b}]',
+            f'csrMod/pmpEntryMod/u_core/g_entry[{k}].addr_q_reg[{b}]') for k in range(32) for b in range(46)]
+        + [(f'csrMod/pmaEntryMod/pmaAddr_{k}_reg[{b}]',
+            f'csrMod/pmaEntryMod/u_core/g_entry[{k}].addr_q_reg[{b}]') for k in range(32) for b in range(46)]
+        + [('io_csrio_isPerfCnt_r_reg', 'not_jmp_q_reg'),
+           ('csrMod/io_out_bits_isPerfCnt_r_reg', 'csrMod/is_perf_cnt_q_reg'),
+           ('csrMod/mvip/reg_SSIP_reg', 'csrMod/mvip/u_core/ssip_q_reg'),
+           ('csrMod/sie/reg_SSIE_reg', 'csrMod/sie/u_core/g_bit[1].g_flop.q_reg')]
+    ),
+    # DelayN_214（ExeUnit_7 的 csr exception 打两拍，辅助实例）：gpaddr[63:56] 第 2 级 8 位。CSR 只读 gpaddr 的低位，
+    #   这 8 位两侧都无读者（unread），层次名 REG_1_bits_gpaddr[b] vs 核里扁平载荷 u_core/g_chain.stage_reg[1][b+9]
+    #   （载荷拼包里 gpaddr 在 [72:9]，第 1 级同位 REG_bits_gpaddr[56..63] ↔ stage_reg[0][65..72] FM 自己配上了），
+    #   无扇出签名配不上 —— 按载荷位置钉，再交 vmucp 实比（白名单 verif/fm_target_config/ExeUnit_7.tcl）。
+    'DelayN_214': (
+        [(f'REG_1_bits_gpaddr_reg[{b}]', f'u_core/g_chain.stage_reg[1][{b + 9}]') for b in range(56, 64)]
+    ),
     'MulUnit': (
         [(f'mulDataModule/r_{k}_reg', f'u_core/mulDataModule/u_core/pp_reg_reg[{k}]') for k in (2303, 2304, 2305, 2306)]
         + [(f'mulDataModule/r_{2307 + j}_reg', f'u_core/mulDataModule/u_core/mid_reg_reg[{j}]')
@@ -205,7 +283,9 @@ class Variant(object):
         self.top = top
         disp = [x for x in g.insts if x[0].startswith('Dispatcher')]
         cgs = [x for x in g.insts if x[0] == 'ClockGate']
-        fus = [x for x in g.insts if x[0] != 'ClockGate' and not x[0].startswith('Dispatcher')]
+        # 辅助实例：Scala 在 ExeUnit 里给 FU 输入做的 DelayN 打拍（ExeUnit_7 的 CSR exception / robDeqPtr）
+        aux = [x for x in g.insts if re.fullmatch(r'DelayN_\d+', x[0])]
+        fus = [x for x in g.insts if x[0] != 'ClockGate' and not x[0].startswith('Dispatcher') and x not in aux]
         if len(disp) != 1 or disp[0][1] != 'in1ToN':
             die(f'{top}: Dispatcher 实例不唯一或名字不是 in1ToN')
         self.disp = disp[0]
@@ -223,12 +303,40 @@ class Variant(object):
         self.fu_names = [n for _, n, _ in self.fus]
         self.fu_idx = {n: k for k, n in enumerate(self.fu_names)}
         self.cgs = cgs
+        self.aux = aux
+        self.analyze_aux()
         self.analyze_clock_gates()
         self.analyze_inpipe()
         self.analyze_busy()
         self.analyze_att()
+        self.analyze_err()
         self.check_regs()
         self.analyze_outputs()
+
+    # ---- 辅助实例（DelayN）-----------------------------------------------------
+    def analyze_aux(self):
+        g, top = self.g, self.top
+        fu_names = {n for _, n, _ in self.fus}
+        for typ, name, conns in self.aux:
+            for p, e in conns:
+                if p == 'clock':
+                    if e != 'clock':
+                        die(f'{top}.{name}: clock 不接 clock')
+                elif p.startswith('io_in_'):
+                    if g.port_dir.get(e) != 'input':
+                        die(f'{top}.{name}.{p}: 输入不是顶层输入端口 {e}')
+                elif p.startswith('io_out_'):
+                    if e != f'_{name}_{p}' or e not in g.wire_w:
+                        die(f'{top}.{name}.{p}: 输出线名不认识 {e}')
+                    # 读者只许是 FU 的输入
+                    readers = [(n, q) for _, n, cs in self.fus + [self.disp] + self.cgs + self.aux
+                               for q, x in cs if e in idents(x) and (n, q) != (name, p)]
+                    if not readers or any(n not in fu_names for n, _ in readers):
+                        die(f'{top}.{name}.{p}: 输出 {e} 的读者不全是 FU {readers}')
+                    if any(e in idents(x) for x in list(g.assign.values()) + list(g.wire_expr.values())):
+                        die(f'{top}.{name}.{p}: 输出 {e} 被胶合逻辑读')
+                else:
+                    die(f'{top}.{name}: 不认识的端口 {p}')
 
     # ---- 时钟门控 -------------------------------------------------------------
     def analyze_clock_gates(self):
@@ -236,6 +344,7 @@ class Variant(object):
         self.fu_lat = [0] * len(self.fus)
         self.fu_unc = [0] * len(self.fus)
         self.fu_cg = [None] * len(self.fus)          # ClockGate 实例名
+        self.fu_cg_on = [0] * len(self.fus)           # 常开门控（Scala ckAlwaysEn：E 恒 1）
         self.cg_te = {}                               # ClockGate 实例名 -> cg_bore 端口
         self.reg_pin = {}                             # golden reg -> (impl 路径模板, 位映射)
         for typ, cname, conns in self.cgs:
@@ -262,7 +371,10 @@ class Variant(object):
             ex = g.wire_expr.get(en, '')
             m1 = re.fullmatch(r'(fuVld_en(?:_\d+)?) \| (fuVld_en_reg(?:_\d+)?)', ex)
             m2 = re.fullmatch(r'(_GEN(?:_\d+)?) \| (uncer_en_reg(?:_\d+)?)', ex)
-            if m1:
+            if en == "1'h1":
+                # ckAlwaysEn：门控恒开，FU 当作延迟 0 处理（不读后级 ctrlPipe，下面另核）、核里不生成门控寄存器
+                self.fu_cg_on[k] = 1
+            elif m1:
                 chain = g.wire_expr.get(m1.group(1), '').split(' | ')
                 if chain[0] != f'_in1ToN_io_out_{k}_valid':
                     die(f'{top}.{fu}: fuVld_en 第 0 项不是本 FU 的 in.valid: {chain}')
@@ -430,6 +542,34 @@ class Variant(object):
                         die(f'{top}.{name}: io_instrAddrTransType_{b} 不接打拍寄存器')
                     self.reg_pin[r] = (f'u_core/att_q_reg\\[{a}\\]', bi)
 
+    # ---- 致命错误上报（HasCriticalErrors：RegNext(RegNext(fu.io_error))）-------------------
+    def analyze_err(self):
+        g, top = self.g, self.top
+        al = '\n'.join(g.always)
+        self.err = []                 # [(k, 来源 FU, FU 的 io_error 下标)]
+        for r in g.reg_w:
+            m = re.fullmatch(r'io_error_(\d+)_REG', r)
+            if not m:
+                continue
+            k = int(m.group(1))
+            r2 = f'io_error_{k}_REG_1'
+            if g.reg_w[r] != 1 or g.reg_w.get(r2) != 1:
+                die(f'{top}: {r} / {r2} 不是一对 1 位寄存器')
+            mm = re.search(re.escape(r) + r' <= _(\w+?)_io_error_(\d+);', al)
+            if not mm or mm.group(1) not in self.fu_idx:
+                die(f'{top}: {r} 的来源不是某个 FU 的 io_error')
+            if f'{r2} <= {r};' not in al:
+                die(f'{top}: {r2} 不是 {r} 的下一拍')
+            if g.assign.get(f'io_error_{k}') != r2:
+                die(f'{top}: io_error_{k} 不是直接取 {r2}')
+            self.err.append((k, mm.group(1), int(mm.group(2))))
+        self.err.sort()
+        if [k for k, _, _ in self.err] != list(range(len(self.err))):
+            die(f'{top}: io_error 下标不连续 {self.err}')
+        for k, _, _ in self.err:
+            self.reg_pin[f'io_error_{k}_REG'] = ('u_err/stage1_q_reg', k)
+            self.reg_pin[f'io_error_{k}_REG_1'] = ('u_err/stage2_q_reg', k)
+
     def check_regs(self):
         extra = set(self.g.reg_w) - set(self.reg_pin)
         if extra:
@@ -460,6 +600,10 @@ class Variant(object):
         for d, w, n in g.ports:
             if d != 'output':
                 continue
+            m = re.fullmatch(r'io_error_(\d+)', n)
+            if m and int(m.group(1)) < len(self.err):
+                self.out_kind[n] = ('err', int(m.group(1)))
+                continue
             if n in self.out_direct:
                 inst, p = self.out_direct[n]
                 if n == 'io_in_ready':
@@ -469,7 +613,15 @@ class Variant(object):
                 else:
                     # 单 FU 外壳：写回字段即单元素 Mux1H 直通；多 FU 外壳：只允许 FU 专属的旁路口
                     # （vtype / vlIsZero / vlIsVlmax …，Scala 里是 exuio := fuio 直接赋值）
-                    if inst not in fu_set or (len(self.fus) != 1 and n.startswith('io_out_bits_')):
+                    # 例外：redirect 在 Scala 里是「先按有没有 redirect 过滤 FU、再 Mux1H」
+                    #   （ExeUnit.scala `Mux1H((fuOutValidOH zip fuRedirectVec).filter(_._2.isDefined)...)`），
+                    #   只有一个 FU（ExeUnit_7 的 csr）有 redirect 时是单元素 Mux1H —— 直连、不与 valid 相与
+                    filtered = n.startswith('io_out_bits_redirect_') and \
+                        p == 'io_out_bits_res_redirect_' + n[len('io_out_bits_redirect_'):]
+                    # isPerfCnt 不走 Mux1H：Scala 是全体 FU 的 csrio.isPerfCnt 相或（没有 csrio 的给 false），
+                    #   只有 csr 有 ⇒ 直连
+                    filtered = filtered or (n == 'io_out_bits_debug_isPerfCnt' and p == 'io_csrio_isPerfCnt')
+                    if inst not in fu_set or (len(self.fus) != 1 and n.startswith('io_out_bits_') and not filtered):
                         die(f'{top}: {n} 直连到 {inst}.{p}（写回字段只允许单 FU 外壳直通）')
                     self.out_kind[n] = ('direct', inst, p)
                 continue
@@ -536,8 +688,9 @@ def gen_wrapper(v):
     L = []
     nf = len(v.fus)
     fu_desc = ', '.join(
-        f'{n}({t}, ' + ('不定延迟' if v.fu_unc[k] else f'延迟 {v.fu_lat[k]}') +
-        (', 门控' if v.fu_cg[k] else '') + ')'
+        (f'{n}({t}, 不定延迟·常开门控)' if v.fu_cg_on[k] else
+         f'{n}({t}, ' + ('不定延迟' if v.fu_unc[k] else f'延迟 {v.fu_lat[k]}') +
+         (', 门控' if v.fu_cg[k] else '') + ')')
         for k, (t, n, _) in enumerate(v.fus))
     L.append('// =============================================================================')
     L.append(f'// {v.top} —— 执行单元外壳（golden 同名 wrapper；由 scripts/gen_exeunit.py 从 G1 golden 生成，勿手改）')
@@ -548,9 +701,15 @@ def gen_wrapper(v):
              ('；含 busy（不定延迟外壳一次只放一条）' if v.has_busy else ''))
     if v.att_fus:
         L.append(f'// instrAddrTransType 打一拍：{", ".join(v.att_fus)} 各一份')
+    if v.aux:
+        L.append('// FU 输入打拍（Scala DelayN，已签核件原样例化）：' +
+                 ', '.join(f'{n}({t})' for t, n, _ in v.aux))
+    if v.err:
+        L.append(f'// 致命错误上报 io_error × {len(v.err)}：本层再打两拍（xs_CriticalErrorDelay_core，HasCriticalErrors）')
     L.append('// 机制全部在 xs_ExeUnit_core（发射握手 / inPipe 冲刷流水 / 时钟门控使能 / 写回有效）与')
     L.append('//   xs_ExeUnit_wbsel（写回字段 Mux1H）里；本文件只有例化、连线与字段打包。')
-    L.append('// 子模块：Dispatcher 与各 FU、ClockGate 均为已签核件（两侧白盒，实例名与 golden 相同）。')
+    L.append('// 子模块：Dispatcher 与各 FU、ClockGate' + ('、DelayN' if v.aux else '') +
+             ' 均为已签核件（两侧白盒，实例名与 golden 相同）。')
     L.append(f'// golden 对照：G1-canonical/golden-rtl/{v.top}.sv')
     L.append('// 本文件导航（一个 golden 模块一个文件，不拆；行号由生成器回填）：')
     nav_at = len(L)
@@ -693,13 +852,33 @@ def gen_wrapper(v):
     L.append('  // ---- 功能单元 ----')
     for typ, name, cs in v.fus:
         emit_inst(typ, name, cs)
+    if v.aux:
+        L.append('')
+        L.append('  // ---- FU 输入打拍：Scala `DelayN(exuio.exception, 2)` / `DelayN(exuio.robDeqPtr, 2)` ----')
+        for typ, name, cs in v.aux:
+            emit_inst(typ, name, cs)
     if v.cgs:
         L.append('')
-        L.append('  // ---- 时钟门控（E 来自核 §3；TE 来自 DFT 的 cg_bore）----')
+        if any(v.fu_cg_on):
+            L.append('  // ---- 时钟门控（E 来自核 §3，常开门控的 FU 接 1；TE 来自 DFT 的 cg_bore）----')
+        else:
+            L.append('  // ---- 时钟门控（E 来自核 §3；TE 来自 DFT 的 cg_bore）----')
         for typ, name, cs in v.cgs:
             k = v.fu_cg.index(name)
-            emit_inst(typ, name, cs, override={'TE': v.cg_te[name], 'E': f'fu_clk_en[{k}]',
+            emit_inst(typ, name, cs, override={'TE': v.cg_te[name],
+                                               'E': "1'b1" if v.fu_cg_on[k] else f'fu_clk_en[{k}]',
                                                'CK': 'clock', 'Q': f'{name}_Q'})
+    if v.err:
+        L.append('')
+        L.append('  // ---- 致命错误上报：FU 的 io_error 在本层再打两拍（HasCriticalErrors）----')
+        L.append(f'  wire [{len(v.err) - 1}:0] err_out;')
+        L.append(f'  xs_CriticalErrorDelay_core #(.N({len(v.err)})) u_err (')
+        L.append('    .clock   (clock),')
+        L.append('    .err_in  (' + sel([f'{f}_io_error_{j}' for _, f, j in v.err]) + '),')
+        L.append('    .err_out (err_out)')
+        L.append('  );')
+        for k, _, _ in v.err:
+            L.append(f'  assign io_error_{k} = err_out[{k}];')
     # ---- 写回
     L.append('')
     L.append('  // ---- 写回：io.out.valid 与各字段的 Mux1H ----')
@@ -832,6 +1011,9 @@ def gen_pins(v):
                               tcl_esc(ip[len(f'i:/WORK/{typ}/'):])))
         for rp, ip in EXTRA_CHILD_PINS.get(typ, []):
             child.append((name, typ + ' 外壳附加', tcl_esc(rp), tcl_esc(ip)))
+    for typ, name, cs in v.aux:          # 辅助实例（DelayN）同样可有外壳附加钉点
+        for rp, ip in EXTRA_CHILD_PINS.get(typ, []):
+            child.append((name, typ + ' 外壳附加', tcl_esc(rp), tcl_esc(ip)))
     total = shell_n + len(child)
     if total == 0:
         return None          # 没有要钉的点：不生成钉点文件（空钉点文件没有意义，gate 的钉点结构闸要求期望数为正）
@@ -872,6 +1054,39 @@ def gen_pins(v):
     return '\n'.join(L) + '\n'
 
 
+def gen_dyn_pins(v):
+    """含动态钉点子 FU 的变体：把子 FU 的匹配后钉点文件机械改前缀照搬（逐项核替换次数）。"""
+    parts = []
+    for typ, name, cs in v.fus:
+        if typ not in DYN_CHILD_PIN_FILES:
+            continue
+        rel = DYN_CHILD_PIN_FILES[typ]
+        src = (REPO / 'verif' / 'ut' / rel).read_text()
+        old_pfx, new_pfx = f'/WORK/{typ}/', f'/WORK/{v.top}/{name}/'
+        old_g, new_g = f'if {{$top eq "{typ}"}} {{', f'if {{$top eq "{v.top}"}} {{'
+        n_pfx = src.count(old_pfx)
+        if n_pfx == 0 or src.count(old_g) != 1:
+            die(f'{v.top}.{name}: {rel} 的前缀 / 守卫形状不认识（前缀 {n_pfx} 处，守卫 {src.count(old_g)} 处）')
+        out = src.replace(old_pfx, new_pfx).replace(old_g, new_g)
+        if out.count(new_pfx) != n_pfx + src.count(new_pfx) or f'"{typ}"' in out.replace(f'"{v.top}"', ''):
+            die(f'{v.top}.{name}: {rel} 改前缀后核对不过')
+        parts.append((name, typ, rel, n_pfx, out))
+    if not parts:
+        return None
+    L = [f'# {v.top} FM「匹配后」钉点 —— 自动生成：scripts/gen_exeunit.py gen_dyn_pins（勿手改）',
+         '#',
+         '# 子 FU 签核用的动态钉点文件（匹配后按 report_unmatched_points 现场配对、fail-closed）整份照搬，',
+         '# 只做两处机械替换：点名前缀 /WORK/<FU 类型>/ -> /WORK/<本变体>/<实例名>/，守卫 $top eq "<FU 类型>" -> 本变体。',
+         '# 族的定义、自检与 error 判据一字未改（见原文件头）。']
+    for name, typ, rel, n_pfx, _ in parts:
+        L.append(f'#   {name}（{typ}）<- verif/ut/{rel}：前缀替换 {n_pfx} 处，守卫 1 处')
+    L.append('')
+    body = '\n'.join(L) + '\n'
+    for name, typ, rel, n_pfx, out in parts:
+        body += f'# ==== {name}（{typ}）：verif/ut/{rel} 改前缀 ====\n' + out
+    return body
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true', help='只比对不写，有漂移 rc=1')
@@ -884,6 +1099,9 @@ def main():
             REPO / 'rtl' / 'backend' / f'{top}.sv': gen_wrapper(v),
             REPO / 'verif' / 'ut' / top / 'fm_pins_pre.tcl': gen_pins(v),
         }
+        dyn = gen_dyn_pins(v)
+        if dyn is not None:            # 只有含动态钉点子 FU 的变体才管这个文件，其余变体不碰
+            outs[REPO / 'verif' / 'ut' / top / 'fm_pins.tcl'] = dyn
         for p, text in outs.items():
             cur = p.read_text() if p.exists() else None
             if text is None:                       # 本变体不该有这个文件
