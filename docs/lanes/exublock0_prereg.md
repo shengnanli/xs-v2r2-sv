@@ -148,3 +148,22 @@ native SUCCEEDED、passing 52729、failing 0、unmatched compare 0、constant_re
 - 第一次起跑因 proof worktree 路径长（TMPDIR=/home/eda/xs-env/tmp-exublock0）make 配方超 /bin/sh 单参数上限（Argument list too long），
   未进 FM；改 TMPDIR=/tmp/exb0 重跑即上表（同一 commit）。
 - 动态钉点夹具 `verif/ut/ExuBlock/fm_pins_fixture.tcl`：照该 fm.log 661 条抄入，桩序列与 fm.log 逐条相同（661/661）。
+
+### 3.3 UT 读数
+- ExeUnit_7（RTL 字节 = 28d32f0d1 起未变，tb @28d32f0d1）：§1.2 九档全部 errors=0、cov_fail=0、TEST PASSED。
+- ExuBlock（RTL 字节 = 9a7c74f51 起未变，tb @a326876ee；tb 中途补了 brh/jmp redirect.backendIGPF 豁免后整套 9 档重跑）：
+  - seed=1 initreg=0 checks=147978109 errors=0 cov_fail=0 TEST PASSED
+  - seed=1 initreg=random checks=147978109 errors=0 cov_fail=0 TEST PASSED
+  - seed=1 initreg=1017 checks=147978109 errors=0 cov_fail=0 TEST PASSED
+  - seed=7 initreg=0 checks=148050180 errors=0 cov_fail=0 TEST PASSED
+  - seed=7 initreg=random checks=148050180 errors=0 cov_fail=0 TEST PASSED
+  - seed=7 initreg=7017 checks=148050180 errors=0 cov_fail=0 TEST PASSED
+  - seed=42 initreg=0 checks=147975880 errors=0 cov_fail=0 TEST PASSED
+  - seed=42 initreg=random checks=147975880 errors=0 cov_fail=0 TEST PASSED
+  - seed=42 initreg=42017 checks=147975880 errors=0 cov_fail=0 TEST PASSED
+  覆盖（seed 1 × initreg 0，全部 >= 100）：exus_fire 119340；exus_Alu_out 33806；exus_Mul_out 33061；exus_Bku_out 32595；exus_1_fire 119873；exus_1_brh_out 51293；exus_1_jmp_out 50764；exus_2_fire 119364；exus_2_Alu_out 33833；exus_2_Mul_out 32915；exus_2_Bku_out 32809；exus_3_fire 119327；exus_3_brh_out 50992；exus_3_jmp_out 50484；exus_4_fire 119334；exus_4_Alu_out 101493；exus_5_fire 119836；exus_5_brh_out 16971；exus_5_jmp_out 17034；exus_5_i2f_out 16482；exus_5_VSetRiWi_out 17027；exus_5_VSetRiWvf_out 16869；exus_5_i2v_out 16960；exus_6_fire 119873；exus_6_Alu_out 101890；exus_7_csr_fire 27740；exus_7_fence_fire 1943；exus_7_div_fire 2959；exus_7_csr_out 33574；exus_7_fence_out 1945；exus_7_div_out 3416；exus_7_busy 143823；exus_7_flush_busy 4332；exus_7_stall 7883；exus_7_trap_m 499；exus_7_mret 282；exus_7_csr_wen 9468；exus_7_ex_ii 16576；exus_7_redirect 6002；exus_7_msi 9893；
+- 变异（seed 7 × random × 20k，独立 worktree）：B1 顶层 instrAddrTransType_sv39 接成 bare errors=19260；B2 exus_7 io_error 输入接 0 449；
+  B3 exus_5 的 frm 不打拍 48。3/3 抓到。
+- 复跑：`cd verif/ut/<ExeUnit_7|ExuBlock> && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`；
+  FM：`bash scripts/run_proof.sh ExeUnit_7 ExeUnit_7 < /dev/null`、`TMPDIR=/tmp/<短路径> bash scripts/run_proof.sh ExuBlock ExuBlock < /dev/null`；
+  `python3 scripts/fm_predict.py check ExeUnit_7 ExuBlock`。
