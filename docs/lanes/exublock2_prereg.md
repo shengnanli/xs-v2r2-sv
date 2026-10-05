@@ -134,3 +134,28 @@ vmucp 六条：精确绑定（104 matched_nc + 2 个钉上的 pdest_r[7]）/ 双
 
 变异 ExeUnit_17 M3（Vfdiv pdest 补位 1'h0 → 1'h1）的 FM 实测：在沙箱里对变异体跑同口径 FM，**SUCCEEDED passing 17123**
 —— pdest[7] 两侧都是常量寄存器且无读者，到不了任何输出口，这是边界上的**等价变异**（不是 UT / FM 的漏检）；记为 EQUIV，不计分母。
+
+## 3. ExeUnit_15（本节先于该目标的 official FM 提交；生成器已在 main 61f5d3df 之上提交，`--check` 全变体逐字节不变）
+
+### 3.1 UT（3 seed × 3 档 initreg × 200k，串行，全部 errors=0、TEST PASSED，每档 checks 4,999,475）
+
+| seed 1：0 / random / 1017 | seed 7：0 / random / 7017 | seed 42：0 / random / 42017 |
+|---|---|---|
+| 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 |
+
+覆盖：seed 1 in {50858, 49820} / out {43500, 48435} / 反压 8153 / 冲刷 16432 / 无 FU 17986 / 门控开 275604 / 关 124366；
+seed 7、42 的 *017 档同量级（反压 8326 / 8081）。
+（首轮 9 档在旧 wrapper 上 errors≈949k：生成器写出 `{-1'h0, pdest}`，见 §0.2；修后整轮重跑，上表为重跑结果。）
+
+变异自检（同 §2.1 方法）：M1 Vfma 第 3 级 pdest 改读第 1 级（4136）/ M3 Mux1H 选择位对调（126371）/ M4 Vfma validPipe_3 改读第 2 级（41628）
+3/3 抓到；M2 VialuFix 第 1 级 pdest 补位 1'h0 → 1'h1：UT 0 —— 与 ExeUnit_17 M3 同类（只进 FU 锁存的 pdest[7]，无读者到不了输出口），
+按 §对账里 ExeUnit_17 M3 的 FM 实测结论记为等价变异。
+
+### 3.2 跑前预测（★跑完不许改★，docs/fm_predictions/ExeUnit_15.json）
+
+| 模型 expected | 预测 passing | 预测 constant_reg | vmucp 前 unread | 钉点 | 其余 |
+|---|---|---|---|---|---|
+| 9166（8114 + 1052） | **8960** | 206 | 388（全 matched_nc） | fm_pins_pre.tcl 4830（外壳 1322 + VFMA 3508；fm.log Set a match 4830） | failing / unverified / unmatched 0，无黑盒，SUCCEEDED |
+
+依据：诊断跑（vmucp=false）passing 8572 / constant 206 / unread 388（inPipe 三级 src_4[127:8] 360 + vuopIdx[6:3] 12 + 第 2、3 级 fuOpType
+除 bit4 外 16，见 verif/fm_target_config/ExeUnit_15.tcl）；8572 + 388 + 206 = 9166。

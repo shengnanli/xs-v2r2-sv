@@ -1,0 +1,9 @@
+{
+  "target": "ExeUnit_15",
+  "ut": "ExeUnit_15",
+  "regs": 8114,
+  "outs": 1052,
+  "expected": 9166,
+  "merge_dup": "false",
+  "model_applicable": true
+}
