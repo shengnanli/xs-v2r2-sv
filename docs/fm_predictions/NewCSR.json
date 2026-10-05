@@ -1,0 +1,18 @@
+{
+  "target": "NewCSR",
+  "ut": "NewCSR",
+  "regs": 14951,
+  "outs": 4849,
+  "expected": 19847,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 47,
+  "bbox": {
+    "PrintCommitIDModule": {
+      "insts": 1,
+      "in_bits": 47,
+      "points": 47
+    }
+  },
+  "note": "模型=golden 闭包寄存器位14951+输出4849。lane 诊断跑（未出receipt）观测：passing 19193 / constant_reg 296 / unread(ref) 142（dead_ref 声明）/ unmatched 169(85)=intrMod iprios 85 对（fm_pins.tcl 钉）+ golden mtopei/stopeiChange_REG 常零位 84（impl 已改为照 golden 存 64 位同名）。预计 receipt：passing+constant_reg+unread=19847，差额全部由 constant_reg+unread 指认。"
+}

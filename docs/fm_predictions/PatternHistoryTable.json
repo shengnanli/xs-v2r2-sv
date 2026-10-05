@@ -1,0 +1,18 @@
+{
+  "target": "PatternHistoryTable",
+  "ut": "PatternHistoryTable",
+  "regs": 1809,
+  "outs": 218,
+  "expected": 2185,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 158,
+  "bbox": {
+    "array_12_ext": {
+      "insts": 1,
+      "in_bits": 158,
+      "points": 158
+    }
+  },
+  "note": "lane 内 diagnostic-full 诊断跑（带 991 位名差钉点、关 vmucp）passing 2166 + matched-unread 19（s3_region_vaddr[39:21]）；vmucp 后预期 = 模型 2185"
+}

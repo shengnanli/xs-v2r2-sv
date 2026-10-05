@@ -1,0 +1,10 @@
+{
+  "target": "LinkMonitor",
+  "ut": "LinkMonitor",
+  "regs": 1371,
+  "outs": 1286,
+  "expected": 2657,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "第一跑(vmucp 关)预期 unread=192(retryAckCnt/pCrdGrantCnt/noAllowRetryCnt 各 64 位)、passing=2657-192=2465、strict 判 PARTIAL；第二跑(vmucp 开)预期 passing=2657、unread 0、SUCCEEDED"
+}

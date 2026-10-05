@@ -717,6 +717,7 @@ def m3_any(side, text, region, expr, depth, width, contract):
 #   · 只放行 MANUAL，不放行 FAIL；ref 侧永远要机器 PASS。
 MANUAL_REVIEW_DESIGNS = {
     'ram_10x89': 'codex_0202',   # GrantBuffer/Queue10_GrantBuffer_Anon；xs_ChiselQueue_core 指针归纳 ∈[0,9]
+    'ram_78x15': 'codex_0210',   # Queue78_PCrdGranted；xs_ChiselQueue_core #(.DEPTH(78)) 指针归纳 ∈[0,77]
 }
 BRIDGE_OUTBOX = pathlib.Path('/home/eda/xs-env/.agent-bridge/outbox')
 
@@ -758,6 +759,12 @@ MANUAL_REVIEW_PARENTS = {
                            ('missQueue/io_out_q/ram_ext', 'u_missQueue/io_out_q/ram_ext')),
         'L2TLBWrapper':   ('codex_0209', L2TLB_MQ_RECEIPT,
                            ('ptw/missQueue/io_out_q/ram_ext', 'ptw/u_core/u_missQueue/io_out_q/ram_ext')),
+        # codex 0210 R2：Queue40 自己作为目标，同一个 ram_ext（impl 侧挂在复用的 xs_L2TlbMissQueue_core 即 u_core 下）
+        'Queue40_L2TlbMQBundle': ('codex_0210', None, 'ram_ext'),
+    },
+    # codex 0210 R1：仅 Queue78_PCrdGranted（TL2CHICoupledL2.pCrdQueue_s2）当前闭包内两侧对称的 ram_ext
+    'ram_78x15': {
+        'Queue78_PCrdGranted': ('codex_0210', None, 'ram_ext'),
     },
     'ram_10x89': {
         'GrantBuffer':              ('codex_0202', None, 'pftRespQueue/ram_ext'),
@@ -776,6 +783,9 @@ MANUAL_REVIEW_GOLDEN = {
     'ram_10x89': ('7cdc3e1c7dd131d409d1ed2b639b7cdb1f5ef12bad423815e50fed20fa6c2f0f',
                   'input [3:0] R0_addr;input R0_en;input R0_clk;output [88:0] R0_data;'
                   'input [3:0] W0_addr;input W0_en;input W0_clk;input [88:0] W0_data'),
+    'ram_78x15': ('6563db65bfaa610b27eff79224e23e94200f62261a6bce5c8fd2daf2e28452fa',
+                  'input [6:0] R0_addr;input R0_en;input R0_clk;output [14:0] R0_data;'
+                  'input [6:0] W0_addr;input W0_en;input W0_clk;input [14:0] W0_data'),
 }
 
 

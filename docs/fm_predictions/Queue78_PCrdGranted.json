@@ -1,0 +1,18 @@
+{
+  "target": "Queue78_PCrdGranted",
+  "ut": "UncoreChiQueues",
+  "regs": 15,
+  "outs": 17,
+  "expected": 65,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 33,
+  "bbox": {
+    "ram_78x15": {
+      "insts": 1,
+      "in_bits": 33,
+      "points": 33
+    }
+  },
+  "note": "codex 0210 后两侧对称黑盒（regimeA）：ram Memory 不是比较点，换成黑盒输入引脚（Queue78: 7+1+1+7+1+1+15=33；Queue40: 6+1+1+6+1+1+47=63）。预测 SUCCEEDED，failing/unverified/unmatched/unread 全 0；唯一允许的指认项是 receipt 的 constant_reg/unread"
+}

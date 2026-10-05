@@ -1,0 +1,18 @@
+{
+  "target": "SMSPrefetcher",
+  "ut": "SMSPrefetcher",
+  "regs": 8181,
+  "outs": 380,
+  "expected": 8719,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 158,
+  "bbox": {
+    "array_12_ext": {
+      "insts": 1,
+      "in_bits": 158,
+      "points": 158
+    }
+  },
+  "note": "诊断跑 7612 + vmucp 1107（matched 308 + 钉点 (c) 799）= 8719 = 模型，constant_reg 0"
+}

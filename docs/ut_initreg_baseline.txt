@@ -1,3 +1,3 @@
 # 未配置 +vcs+initreg 的 UT 数量基线（棘轮：只许降，不许升）
 # 复算: python3 scripts/check_ut_initreg.py
-55
+45

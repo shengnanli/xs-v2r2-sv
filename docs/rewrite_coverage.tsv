@@ -21,15 +21,15 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	1500	1503	99.8
-unique_design_written	931	1191	78.2
-unique_design_proven	899	1191	75.5
-golden_lines_written	3257557	3902283	83.5
-golden_lines_proven	2936401	3902283	75.2
+fm_targets_configured	1559	1563	99.7
+unique_design_written	959	1191	80.5
+unique_design_proven	946	1191	79.4
+golden_lines_written	3286423	3902283	84.2
+golden_lines_proven	3012541	3902283	77.2
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	3087142	3349905	92.2
-incore_golden_lines_proven	2770238	3349905	82.7
+incore_golden_lines_written	3116008	3349905	93.0
+incore_golden_lines_proven	2846378	3349905	85.0
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	170415	552378	30.9
@@ -38,43 +38,20 @@ outcore_golden_lines_proven	166163	552378	30.1
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	8	1401	0.6
-#   合计 4001 golden 行
-#   LCredit2Decoupled_1                           192 行
-#   LinkMonitor                                   535 行
+legacy_proven_unanchored	4	1550	0.3
+#   合计 2127 golden 行
 #   MuxBundle                                     230 行
 #   SNXbar                                        557 行
-#   SRAMTemplate_128                              230 行
 #   SubDirectory                                  516 行
 #   SubDirectory_1                                824 行
-#   TLBuffer_13                                   917 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
-#   Arbiter1_L1BankedDataWriteReq                     121 行
-#   Arbiter1_L1BankedDataWriteReqCtrl                 100 行
-#   Arbiter1_TagWriteReq                              103 行
-#   BankedDataArray                                  4168 行
 #   CommitIDModule                                     97 行
-#   DataSRAMBank                                     1272 行
-#   Directory                                       10900 行
-#   DuplicatedTagArray                                651 行
+#   DCacheWrapper                                    1985 行
 #   FDPrefetcherMonitor                               111 行
-#   FoldedSRAMTemplate                               1336 行
-#   ICache                                           1754 行
-#   MissReadyGen                                      143 行
 #   OpenLLC                                          4252 行
-#   PrefetcherMonitor                                 212 行
-#   RecentRequestTable                                456 行
 #   Rob                                            266227 行
-#   SCTable                                          1851 行
-#   SRAMTemplateWithFixedWidth                        584 行
-#   SplittedSRAM                                     4570 行
-#   SplittedSRAMTemplate                             2754 行
 #   StorePipe                                          93 行
-#   TagArray                                          201 行
-#   TagSRAMBank                                       184 行
-#   Tage_SC                                          7767 行
-#   TreeArbiter                                       214 行
 #   VSiselectModule                                   128 行
 #   VSstatusModule                                    267 行
 #   VStimecmpModule                                   128 行
@@ -89,33 +66,33 @@ remaining_design	golden_lines	variants	scope
 Backend	79590	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
 NewCSR	15945	1	REWRITE_L
-ExeUnit	15312	13	REWRITE_L
 XSCore	13423	1	REWRITE_L
 LoadUnit	13028	1	REWRITE_L
 Frontend	10940	1	REWRITE_L
 TL2CHICoupledL2	7663	1	REWRITE_L
 ExuBlock	5454	3	REWRITE_L
 L2Top	3779	1	REWRITE_L
-PatternHistoryTable	3739	1	-
 MMIOBridge	2673	1	-
-Queue2_TLBundleA	2189	11	-
 XSTile	2077	1	REWRITE_L
 MMIOBridgeEntry	2020	4	-
-DCacheWrapper	1985	1	REWRITE_L
-VecExcpDataMergeModule	1825	1	-
 CSR	1774	1	-
-Queue2_TLBundleD	1698	9	-
-Reduction	1394	1	-
 VFAlu	1202	1	-
 VIAluFix	1040	1	-
-FloatDividerR64	766	1	-
 VFMA	599	1	-
 VFDivSqrt	553	1	-
 VIMacU	530	1	-
 Prefetcher	521	1	-
 SMSPrefetcher	478	1	-
-VBestOffsetPrefetch	419	1	-
-Queue2_TLBundleC	388	2	-
+VIPU	378	1	-
+FloatAdderF64WidenPipeline	364	1	-
+FloatAdderF64Pipeline	334	1	-
+VectorFloatAdder	304	1	-
+FrontendBridge	295	1	-
+CSRPermitModule	286	1	-
+ICacheBuffer	257	1	-
+InstrUncacheBuffer	245	1	-
+ICacheCtrlBuffer	243	1	-
+Mgtu	223	1	-
 #
 # ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
 #   让人看得见它们的存在，别当成"还没人接的活"★  合计 352600 行

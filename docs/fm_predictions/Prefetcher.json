@@ -1,0 +1,18 @@
+{
+  "target": "Prefetcher",
+  "ut": "Prefetcher",
+  "regs": 9080,
+  "outs": 173,
+  "expected": 9301,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 48,
+  "bbox": {
+    "array_13_ext": {
+      "insts": 2,
+      "in_bits": 24,
+      "points": 48
+    }
+  },
+  "note": "lane 内 diagnostic-full 诊断跑（关 vmucp、带 884 位 child 钉点）passing 8325 + matched-unread 900 + unmatched-unread 76；钉 960 + vmucp 后预期 = 模型 9301"
+}

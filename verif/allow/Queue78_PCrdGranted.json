@@ -1,0 +1,22 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "Queue78_PCrdGranted",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "assembly 边界声明：黑盒**只有** codex 0210 R1 单条审定的 firtool 行为级存储宏 ram_78x15（verif/vendor_boundary.tsv，golden sha256 6563db65…；深度 78 / 7 位地址，inline 必 FMR_ELAB-147），两侧对称各恰好 1 个 ram_ext（ref golden Queue78_PCrdGranted.ram_ext / impl rtl/uncore/Queue78_PCrdGranted.sv 的 ram_ext）。控制核 xs_ChiselQueue_core 在 impl 侧白盒受验。不含逻辑子模块、green_child、golden_logic_reuse。",
+ "objects": [
+  {
+   "side": "i",
+   "design": "ram_78x15",
+   "path": "i:/WORK/Queue78_PCrdGranted/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "ram_78x15",
+   "path": "r:/WORK/Queue78_PCrdGranted/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}

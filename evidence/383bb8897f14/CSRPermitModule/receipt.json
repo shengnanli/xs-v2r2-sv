@@ -1,0 +1,217 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "CSRPermitModule",
+ "run_id": "CSRPermitModule-20261004T131254Z-383bb8897",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/CSRPermitModule.sv",
+   "kind": "golden",
+   "sha256": "4f8f2a72986317701647a9314f69f408b59088b96b64ad97062c01f9b226f2e1"
+  },
+  {
+   "path": "golden-rtl/XRetPermitModule.sv",
+   "kind": "golden",
+   "sha256": "1fdc626719bcdc8aea9aadb0787a8eaae8385e45cde0996c8c3b7f46c83e3cc9"
+  },
+  {
+   "path": "golden-rtl/MLevelPermitModule.sv",
+   "kind": "golden",
+   "sha256": "effa597ee6475cfefda7f85a9b8904672cf97aba1f26ea504bc2085287430251"
+  },
+  {
+   "path": "golden-rtl/SLevelPermitModule.sv",
+   "kind": "golden",
+   "sha256": "4726a4754912a17cea2af3755e286f48e43c2eda13bb3da507d0b6ae4060256e"
+  },
+  {
+   "path": "golden-rtl/PrivilegePermitModule.sv",
+   "kind": "golden",
+   "sha256": "5cd82cf1ec6b84b44870e6d9a365ecb70162780e756feb9f1f22357a22a41eb0"
+  },
+  {
+   "path": "golden-rtl/VirtualLevelPermitModule.sv",
+   "kind": "golden",
+   "sha256": "6431d0bf96cb9f1e1df7fbf4f3cf8ba19eef62e1ad8ce95d6edf20aefbcf7c7d"
+  },
+  {
+   "path": "golden-rtl/IndirectCSRPermitModule.sv",
+   "kind": "golden",
+   "sha256": "80344565cbdd3fce1abf9e7c4c3c052c61f17a624b95f64a69d69d2963a347a5"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/XRetPermitModule.sv",
+   "kind": "repo",
+   "sha256": "d838bd385d4c86612b0d9470465b9d0150f962953020100d44f4f608a7cfbf1e"
+  },
+  {
+   "path": "rtl/backend/MLevelPermitModule.sv",
+   "kind": "repo",
+   "sha256": "297f28ecc3175b44101575bc218774d56df0b51d9be3fab45572fe4e43d522e7"
+  },
+  {
+   "path": "rtl/backend/SLevelPermitModule.sv",
+   "kind": "repo",
+   "sha256": "5462ab2e0923877f7f3d53591ef663f5c674e956198c9fd9422c7fa6d03c051b"
+  },
+  {
+   "path": "rtl/backend/PrivilegePermitModule.sv",
+   "kind": "repo",
+   "sha256": "e541a51de0aebc492073617a836602390948c2ae22a0a2b20e9819ff6b6f463d"
+  },
+  {
+   "path": "rtl/backend/VirtualLevelPermitModule.sv",
+   "kind": "repo",
+   "sha256": "73c4e498564191d16f9779fb82935f55705368722219540a493a2b75c5205e02"
+  },
+  {
+   "path": "rtl/backend/IndirectCSRPermitModule.sv",
+   "kind": "repo",
+   "sha256": "4c1d8f60dbd17fa39643b1e6d499fdad2f3a8b862b4fa5495f39287cde02560a"
+  },
+  {
+   "path": "rtl/backend/CSRPermitModule.sv",
+   "kind": "repo",
+   "sha256": "44600ba85c535eb3c044ff8c29606cedb7e8abae027095b45dc6ae6fcb7af5f3"
+  }
+ ],
+ "impl_commit": "383bb8897f140123f6100b840651585a95d64bc8",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "CSRPermitModule-20261004T131254Z-383bb8897",
+  "top": "CSRPermitModule",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 9,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 9,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "CSRPermitModule",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

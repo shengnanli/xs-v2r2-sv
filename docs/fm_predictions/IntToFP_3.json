@@ -1,0 +1,9 @@
+{
+  "target": "IntToFP_3",
+  "ut": "IntToFP_3",
+  "regs": 1427,
+  "outs": 731,
+  "expected": 2158,
+  "merge_dup": "false",
+  "model_applicable": true
+}

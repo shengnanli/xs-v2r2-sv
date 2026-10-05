@@ -1,0 +1,234 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "ExeUnit_1",
+ "run_id": "ExeUnit_1-20261004T113757Z-41366b7e2",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/ExeUnit_1.sv",
+   "kind": "golden",
+   "sha256": "76882c166bf679f37383d9b7af679788347b94df095e4f214c122e1939d0b10a"
+  },
+  {
+   "path": "golden-rtl/BranchUnit.sv",
+   "kind": "golden",
+   "sha256": "8e838959deede2f8db5ea8ed97446aa10596764b1e7f0126050e84d0825111bc"
+  },
+  {
+   "path": "golden-rtl/BranchModule.sv",
+   "kind": "golden",
+   "sha256": "18bc2dd6ea0dec27c9e8752aeaa603a350dccae0aec6290d531a2433feb25492"
+  },
+  {
+   "path": "golden-rtl/SubModule.sv",
+   "kind": "golden",
+   "sha256": "fa307eef9a5b4ea88cd29064c58fa3c0f9d9debaa1e282fe5f7f7a22059cc39c"
+  },
+  {
+   "path": "golden-rtl/AddrAddModule.sv",
+   "kind": "golden",
+   "sha256": "d7e8b426b792bf84dc6952146faf835ae0003c78c72fde392ab5fd9ff80b23ac"
+  },
+  {
+   "path": "golden-rtl/JumpUnit.sv",
+   "kind": "golden",
+   "sha256": "d691011ba600448c0552b5b9b769ee926539ae28b3a35cd67020a2b838f68b65"
+  },
+  {
+   "path": "golden-rtl/JumpDataModule.sv",
+   "kind": "golden",
+   "sha256": "400dd8ee1d13d1ca17ebd04ccd71d43862a54b6359c68d21ae79f80ad9013d21"
+  },
+  {
+   "path": "golden-rtl/Dispatcher_1.sv",
+   "kind": "golden",
+   "sha256": "96efd4a0d6dd8cf6ef5950167db9ace0231535b12dadd1f80b2f8a5c9d85a398"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/ExeUnit_1.sv",
+   "kind": "repo",
+   "sha256": "9a1c80d2e4ad030ea98cc275974f771311aa3ed364e6e53cd79e4e9dc1aa6898"
+  },
+  {
+   "path": "rtl/backend/xs_ExeUnit_core.sv",
+   "kind": "repo",
+   "sha256": "d828af2f8da07bf32d54f964ef87cf54325b87a8e9f1f5e67b56c2653cf23524"
+  },
+  {
+   "path": "rtl/backend/Dispatcher_1.sv",
+   "kind": "repo",
+   "sha256": "dc7eaa9a8095f65b8ce20c65dbd3951b2a7c756b68564063748a8656f8574cfe"
+  },
+  {
+   "path": "rtl/backend/xs_Dispatcher_core.sv",
+   "kind": "repo",
+   "sha256": "a257f47c6d616f0c8a9d0be29cb9b54c3f55adadecae46c39ce8317d5d8d8829"
+  },
+  {
+   "path": "rtl/backend/BranchUnit.sv",
+   "kind": "repo",
+   "sha256": "1c548dd9fc33dc31d1c7bf6e6209040adf9e45745cdf7ef847d1b5e599435a6d"
+  },
+  {
+   "path": "rtl/backend/BranchModule.sv",
+   "kind": "repo",
+   "sha256": "31d3ebf676be786d931e26c2d183d0661682407cc82e06e393789ab559841a67"
+  },
+  {
+   "path": "rtl/backend/AddrAddModule.sv",
+   "kind": "repo",
+   "sha256": "22a00a34b76be3137e2788e163d8904a4cb95d67e83d3a150650ec975380e007"
+  },
+  {
+   "path": "rtl/backend/JumpUnit.sv",
+   "kind": "repo",
+   "sha256": "769c8b501667ffa8d8c456bcfeaf1b46d79c9b6d42268521c080d5cdb3b52670"
+  },
+  {
+   "path": "rtl/backend/JumpDataModule.sv",
+   "kind": "repo",
+   "sha256": "b3842d6575f3ee6f8772928f7dd33026a89683795a8467c117d3a5e489847d4e"
+  }
+ ],
+ "impl_commit": "41366b7e2f9c2121995f58e1f96b4a07fe5c2203",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "73a8d50bd3771c6c76fd6bac41a26d5a305175d0169b59c74a3a327162ec8b16"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ExeUnit_1-20261004T113757Z-41366b7e2",
+  "top": "ExeUnit_1",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 1373,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 1373,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "ExeUnit_1",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

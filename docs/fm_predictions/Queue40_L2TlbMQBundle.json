@@ -1,0 +1,18 @@
+{
+  "target": "Queue40_L2TlbMQBundle",
+  "ut": "UncoreChiQueues",
+  "regs": 13,
+  "outs": 49,
+  "expected": 125,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 63,
+  "bbox": {
+    "ram_40x47": {
+      "insts": 1,
+      "in_bits": 63,
+      "points": 63
+    }
+  },
+  "note": "codex 0210 后两侧对称黑盒（regimeA）：ram Memory 不是比较点，换成黑盒输入引脚（Queue78: 7+1+1+7+1+1+15=33；Queue40: 6+1+1+6+1+1+47=63）。预测 SUCCEEDED，failing/unverified/unmatched/unread 全 0；唯一允许的指认项是 receipt 的 constant_reg/unread"
+}

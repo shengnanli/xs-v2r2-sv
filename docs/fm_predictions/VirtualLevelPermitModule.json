@@ -1,0 +1,9 @@
+{
+  "target": "VirtualLevelPermitModule",
+  "ut": "NewcsrLeaves6",
+  "regs": 0,
+  "outs": 2,
+  "expected": 2,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,10 @@
+{
+  "target": "ExuBlock_1",
+  "ut": "ExuBlock_1",
+  "regs": 21607,
+  "outs": 4620,
+  "expected": 26227,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "诊断跑 25302 + vmucp 22 = 25324 = 模型 26227 - constant_reg 903（299+2×30+2×272）"
+}
