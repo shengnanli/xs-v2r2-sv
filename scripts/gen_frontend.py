@@ -1003,12 +1003,9 @@ SPECIAL_INST = {
 }
 
 
-def render_child_pins(seen=None, per_src=None, exclude=frozenset()):
+def render_child_pins(seen=None, per_src=None):
     if seen is None:
         seen, per_src = rebase_child_pins()
-    if exclude:
-        seen = collections.OrderedDict((r, i) for r, i in seen.items()
-                                       if r not in exclude and not (set(i) & exclude))
     L = []
     A = L.append
     A('# ---- 二、子树钉点重定位（%d 个钉点源 -> %d 条，去重后；规则见 scripts/gen_frontend.py）----'
@@ -1062,13 +1059,12 @@ def load_harvest():
     return rows
 
 
-def render_harvest_pins(already, exclude=frozenset(), precomputed=None):
+def render_harvest_pins(already, precomputed=None):
     if precomputed is not None:
         out, per = precomputed
-        out = collections.OrderedDict((r, i) for r, i in out.items() if r not in exclude and i not in exclude)
-        return _render_hv(out, per, len(precomputed[0]) - len(out))
+        return _render_hv(out, per)
     out, per = harvest_pairs(already)
-    return _render_hv(out, per, 0)
+    return _render_hv(out, per)
 
 
 def harvest_pairs(already):
@@ -1098,11 +1094,11 @@ def harvest_pairs(already):
     return out, per
 
 
-def _render_hv(out, per, nfold):
+def _render_hv(out, per):
     L = []
     A = L.append
-    A('# ---- 三、子树自配对录制钉点（%d 个设计 -> %d 条；另 %d 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----'
-      % (len(per), len(out), nfold))
+    A('# ---- 三、子树自配对录制钉点（%d 个设计 -> %d 条；数据 verif/ut/Frontend/harvest_pins.tsv，规则见生成器）----'
+      % (len(per), len(out)))
     for d, n0, ninst, n in per:
         A('#   %-36s 录 %6d 对 x %3d 个实例 -> 新增 %6d 条' % (d, n0, ninst, n))
     A('set ::FE_HV_EXPECT %d' % len(out))
@@ -1127,107 +1123,6 @@ def _render_hv(out, per, nfold):
     return '\n'.join(L) + '\n'
 
 
-# ---------------------------------------------------------------------------
-# 四、恒等副本寄存器组
-#   golden 有"同一个值存好几份"的寄存器（firtool 保留的 dup 副本，如 Ftq 的 pc_mem_ifu_*_rdata_REG_1..4、
-#   SyncDataModule 每 bank 一份的写数据/写地址寄存器、FTBBank 的 req_pc_reg_1..3），重写件常只存一份
-#   （或份数不同）。这些目标自己签核时用的是 FM_MERGE_DUP=true（FM 先把恒等副本并成一个再配对）；
-#   Frontend 层不能整体打开 merge（Predictor 实测打开后到达 Matching 慢 7 倍，见 docs/predictor_fm_scaling_wall.md），
-#   改为：在诊断跑里让 FM 自己做结构识别（identify_duplicate_registers -by_structure），对它给出的每个同侧副本组，
-#   取组内任一成员**已配上的对侧对象**作锚点，写成一对多的 set_user_match <锚> <组内全部成员>
-#   （FM 不接受同侧对象直接成组，FM-012；一对多可以，且多次一对多会把两侧的副本组并成一个配对类 —— 效果与 merge
-#   相同、范围只到这些组）。数据 verif/ut/Frontend/dup_groups.tsv（由诊断跑的 FM 输出与配对表机械转写，见文件头）。
-# ---------------------------------------------------------------------------
-DUP_GROUPS = REPO / 'verif' / 'ut' / 'Frontend' / 'dup_groups.tsv'
-
-
-def load_dup_lines():
-    groups = []
-    if DUP_GROUPS.exists():
-        for ln in DUP_GROUPS.read_text().splitlines():
-            if ln.startswith('#') or not ln.strip():
-                continue
-            objs = ln.split('\t')
-            # 一行 = 对侧锚点 + 同侧恒等副本组：set_user_match <锚> <副本...>（FM 只接受"一对多"，同侧成组会报 FM-012）
-            if len(objs) < 2 or objs[0][0] == objs[1][0] or len({o[0] for o in objs[1:]}) != 1:
-                fail('dup_groups.tsv 行形状不对（须"对侧锚点 + 同侧 >=1 个对象"）: %r' % ln[:120])
-            groups.append(objs)
-    return groups
-
-
-def dup_classes(groups, fold):
-    """把副本组行与 fold（第二/三节里与之相连的 (r, [i...]) 钉点）并查集合并成配对类，返回 set_user_match 调用列表。"""
-    par = {}
-
-    def find(x):
-        par.setdefault(x, x)
-        while par[x] != x:
-            par[x] = par[par[x]]
-            x = par[x]
-        return x
-
-    def union(a, b):
-        ra, rb = find(a), find(b)
-        if ra != rb:
-            par[ra] = rb
-    for g in groups:
-        for o in g[1:]:
-            union(g[0], o)
-    for r, imps in fold:
-        for i in imps:
-            union(r, i)
-    cls = collections.defaultdict(list)
-    for x in list(par):
-        cls[find(x)].append(x)
-    calls = []
-    for members in cls.values():
-        refs = sorted(m for m in members if m.startswith('r:'))
-        imps = sorted(m for m in members if m.startswith('i:'))
-        if not refs or not imps:
-            fail('副本配对类只有一侧: %s' % members[:4])
-        few, many = (refs, imps) if len(refs) <= len(imps) else (imps, refs)
-        k = len(few)
-        for j, f in enumerate(few):
-            seg = many[j * len(many) // k:(j + 1) * len(many) // k]
-            calls.append([f] + seg)
-    ncls[0] = len(cls)
-    return calls
-
-
-ncls = [0]
-
-
-def render_dup_groups(groups=None, fold=()):
-    if groups is None:
-        groups = load_dup_lines()
-    calls = dup_classes(groups, fold)
-    L = []
-    A = L.append
-    A('# ---- 四、恒等副本 / 多源配对类（%d 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 %d 条钉点 -> %d 个配对类 -> %d 次一对多 set_user_match；'
-      '数据 verif/ut/Frontend/dup_groups.tsv）----' % (len(groups), len(fold), ncls[0], len(calls)))
-    A('#   FM 对"同一个对象被多次 set_user_match"会忽略后来的（实测 Warning: Ignoring user match: implementation object')
-    A('#   matched more than once），所以凡与副本组相连的钉点都并成配对类一次给出；类内 ref / impl 都多于 1 个时，')
-    A('#   按排序把较少一侧逐个对上较多一侧的一段（恒等副本之间任意配对都等价），每段一次一对多。')
-    groups = calls
-    A('set ::FE_DUP_EXPECT %d' % len(groups))
-    A('set ::FE_DUP_OK 0')
-    A('set ::FE_DUP_BAD 0')
-    A('proc fe_dup_grp {args} {')
-    A('  if {[set_user_match -type cell {*}$args]} { incr ::FE_DUP_OK } else {')
-    A('    incr ::FE_DUP_BAD')
-    A('    if {$::FE_DUP_BAD <= 10} { puts "FE_DUP_FAIL: $args" }')
-    A('  }')
-    A('}')
-    A('puts "FE_DUP_BEGIN expect=$::FE_DUP_EXPECT"')
-    for g in groups:
-        A('fe_dup_grp %s' % ' '.join('{%s}' % o for o in g))
-    A('puts "FE_DUP_END ok=$::FE_DUP_OK bad=$::FE_DUP_BAD expect=$::FE_DUP_EXPECT"')
-    A('if {$::FE_DUP_BAD != 0 || $::FE_DUP_OK != $::FE_DUP_EXPECT} {')
-    A('  error "FE_DUP: ok=$::FE_DUP_OK bad=$::FE_DUP_BAD expect=$::FE_DUP_EXPECT"')
-    A('}')
-    return '\n'.join(L) + '\n'
-
-
 def splice(text, gen):
     if BEGIN in text:
         i = text.index(BEGIN)
@@ -1248,36 +1143,9 @@ def main():
     seen, per_src = rebase_child_pins()
     core_refs = set(re.findall(r'^fe_core_pin \{(\S+)\}', render_pins(), re.M))
     already = set(seen) | core_refs
-    hv_out, hv_per = harvest_pairs(already)
-    dups = load_dup_lines()
-    # 与副本组相连的第二/三节钉点并入第四节（不动点：并入的钉点又可能连出新的钉点）
-    touched = set(o for g in dups for o in g)
-    pool = [(r, list(i)) for r, i in seen.items()] + [(r, [i]) for r, i in hv_out.items()]
-    # 同一个 impl 对象出现在不止一条钉点里（不同钉点源给它配了不同的 ref，如 ICache 把 blkPaddr 与 vSetIdx
-    # 都钉到 vset_idx_q）：FM 只认第一次，后面的被忽略 —— 也并进配对类一次给出
-    icount = collections.Counter(i for _, imps in pool for i in imps)
-    touched.update(i for i, c in icount.items() if c > 1)
-    fold = []
-    changed = True
-    while changed:
-        changed = False
-        rest = []
-        for r, imps in pool:
-            if r in touched or any(i in touched for i in imps):
-                fold.append((r, imps))
-                touched.add(r)
-                touched.update(imps)
-                changed = True
-            else:
-                rest.append((r, imps))
-        pool = rest
-    if set(core_refs) & touched:
-        fail('副本配对类碰到了第一节（顶层胶合寄存器）的钉点')
     outs = [(OUT, text, splice(text, render())),
             (PINS, PINS.read_text() if PINS.exists() else '',
-             render_pins() + render_child_pins(seen, per_src, frozenset(touched)) +
-             render_harvest_pins(already, frozenset(touched), (hv_out, hv_per)) +
-             render_dup_groups(dups, fold))]
+             render_pins() + render_child_pins(seen, per_src) + render_harvest_pins(already))]
     rc = 0
     for path, old, new in outs:
         if a.check:
