@@ -4,7 +4,7 @@
 正例：P0 整表复算一致；P1 证书闭包条目（真实 sha）命中；P2 三层链 sram_array→array_N→ext 递归通过。
 负例（每条都必须红，且按原因关键字断言）：
   N1  表外 design（从表副本删掉 ram_16x137）                       mc_not_registered
-  N2  名字像 RAM 但未登记（ram_2x117 / sram_array_1p32x148m74s1h0l1b_pftch_pht）  mc_not_registered
+  N2  名字像 RAM 但未登记（ram_2x116 / sram_array_1p32x148m74s1h0l1b_pftch_pht）  mc_not_registered
   N3  普通功能模块（Queue16_CHIREQ）                               mc_not_registered
   N4  G1 字节变一位（副本里加一个空行）                              mc_field_mismatch:...:g1_sha256
   N5  登记的端口签名改了                                            mc_field_mismatch:...:port_signature
@@ -74,7 +74,7 @@ def main():
     # --- 负例：表外 / 像 RAM / 功能模块
     r2 = dict(reg); r2.pop('ram_16x137')
     chk('N1 表外 design', MC.check_entry('ram_16x137', reg=r2), 'mc_not_registered')
-    chk('N2a ram_2x117 名字像 RAM', MC.check_entry('ram_2x117', reg=reg), 'mc_not_registered')
+    chk('N2a ram_2x116 名字像 RAM', MC.check_entry('ram_2x116', reg=reg), 'mc_not_registered')
     chk('N2b sram_array pftch_pht 名字像 RAM', MC.check_entry('sram_array_1p32x148m74s1h0l1b_pftch_pht', reg=reg),
         'mc_not_registered')
     chk('N3 普通功能模块 Queue16_CHIREQ', MC.check_entry('Queue16_CHIREQ', reg=reg), 'mc_not_registered')
