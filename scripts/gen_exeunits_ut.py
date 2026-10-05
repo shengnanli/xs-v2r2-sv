@@ -375,7 +375,8 @@ def exeunit_cfg(top):
                 init="    foreach (c_in[k]) begin c_in[k] = 0; c_out[k] = 0; end")
 
 
-for _t in ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10']:
+for _t in ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10',
+           'ExeUnit_15', 'ExeUnit_16', 'ExeUnit_17']:
     TARGETS[_t] = ('lazy', _t)
 
 

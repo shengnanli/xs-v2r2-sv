@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""gen_exeunit.py —— ExeUnit 家族（ExeUnit / _1 / _4 / _5 / _7 / _8 / _9 / _10）wrapper 与 FM 钉点生成器。
+"""gen_exeunit.py —— ExeUnit 家族（ExeUnit / _1 / _4 / _5 / _7 / _8 / _9 / _10 / _15 / _16 / _17）wrapper 与 FM 钉点生成器。
 
 ## 生成什么
 
@@ -31,6 +31,14 @@
   * 致命错误上报：HasCriticalErrors 的 `io_error(i) := RegNext(RegNext(fu.error))`，两级寄存器交给共享件
     rtl/common/xs_CriticalErrorDelay_core.sv（核 xs_ExeUnit_core 不改）。
 
+## 向量外壳 ExeUnit_15 / _16 / _17 比标量外壳多的几种形状（2026-10-05，exublock2 lane 加）
+
+  * 源操作数也随 inPipe 打拍：FU 读 `dataPipe_<s>_src_<k>`，与 ctrlPipe 同一套保留规则；
+  * 连线改位宽：低位截取 `x[h:0]`（src_4 只要 [7:0]）、高位补零 `{n'h0, x}`（FU 的 9 位 pdest 口接 7 位 pdest）；
+  * 写回字段比输出口宽（FU pdest 9 位、写回口 7 位）：golden 是 `x[6:0]` 低位截取，必须核到才生成；
+  * 子 FU 钉点可有多份文件（VFAlu 匹配前 + 匹配后），可带 `-type cell`；外壳附加钉点见 EXTRA_CHILD_PINS 的
+    VFDivSqrt / VIDiv / VFAlu 条目（VFAlu 的语义表 _VFALU_*）。
+
 ## fail-closed（解析不认识的形状一律退出，不猜）
 
   * golden 每个 reg 都必须归入已知的五类之一（inPipe 字段 / inPipe valid / FU 门控链 /
@@ -55,7 +63,8 @@ import tempfile
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
-VARIANTS = ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_7', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10']
+VARIANTS = ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_7', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10',
+            'ExeUnit_15', 'ExeUnit_16', 'ExeUnit_17']
 
 # 子 FU 自己签核用过的「匹配前/后」钉点文件（相对 verif/ut/）；本脚本用 tclsh 桩取其调用序列
 CHILD_PIN_FILES = {
@@ -63,7 +72,18 @@ CHILD_PIN_FILES = {
     'FCVT': 'FCVT/fm_pins_pre.tcl',
     'Bku':  'Bku/fm_pins_pre.tcl',
     'FAlu': 'FAlu/fm_pins.tcl',
+    # 向量 FU（exublock2 lane 加，ExeUnit_15/16/17）。VFAlu 签核时有「匹配前 + 匹配后」两份，都是纯静态
+    #   set_user_match（无现场查询），按文件顺序照搬进外壳的匹配前钉点（同 FAlu 的先例：静态对不依赖匹配结果）。
+    'VFMA':  'VFMA/fm_pins_pre.tcl',
+    'VIDiv': 'VIDiv/fm_pins_pre.tcl',
+    'VFAlu': ('VFAlu/fm_pins_pre.tcl', 'VFAlu/fm_pins.tcl'),
 }
+
+
+def child_pin_files(fu_type):
+    """CHILD_PIN_FILES 的值可以是一份文件或按序的几份（tuple）。"""
+    v = CHILD_PIN_FILES[fu_type]
+    return list(v) if isinstance(v, tuple) else [v]
 
 # 子 FU 自己签核用过的**动态**钉点文件（匹配后跑，按 report_unmatched_points 现场配对；相对 verif/ut/）。
 # 进外壳后路径多一层实例名：机械改前缀后整份照搬成 verif/ut/<变体>/fm_pins.tcl（见 gen_dyn_pins）。
@@ -160,6 +180,14 @@ EXTRA_CHILD_PINS = {
     'DelayN_214': (
         [(f'REG_1_bits_gpaddr_reg[{b}]', f'u_core/g_chain.stage_reg[1][{b + 9}]') for b in range(56, 64)]
     ),
+    # VFDivSqrt / VIDiv（ExeUnit_17，exublock2 lane）：写回 pdest 锁存 8 位（golden io_out_bits_ctrl_pdest_r，重写件
+    #   u_core/out_pdest），外壳写回口只要 [6:0]、外壳给 FU 的 pdest 是 {1'h0, 7 位} —— [7] 恒 0 且两侧都无读者
+    #   （FU 单独签核时 [7] 直通输出口有读者、靠签名配上；进外壳后成无扇出死位，诊断跑实测两侧各 1 个 unmatched unread）。
+    #   按字段整组钉 8 位，再交 vmucp 实比（白名单 verif/fm_target_config/ExeUnit_17.tcl）。
+    'VFDivSqrt': [(f'io_out_bits_ctrl_pdest_r_reg[{b}]', f'u_core/out_pdest_reg[{b}]') for b in range(8)],
+    'VIDiv': [(f'io_out_bits_ctrl_pdest_r_reg[{b}]', f'u_core/out_pdest_reg[{b}]') for b in range(8)],
+    # VFAlu（ExeUnit_16）：见下方 _VFALU_* 语义表与 _vfalu_pins 的注释。
+    'VFAlu': None,
     'MulUnit': (
         [(f'mulDataModule/r_{k}_reg', f'u_core/mulDataModule/u_core/pp_reg_reg[{k}]') for k in (2303, 2304, 2305, 2306)]
         + [(f'mulDataModule/r_{2307 + j}_reg', f'u_core/mulDataModule/u_core/mid_reg_reg[{j}]')
@@ -167,6 +195,70 @@ EXTRA_CHILD_PINS = {
     ),
 }
 
+
+
+# VFAlu（ExeUnit_16，exublock2 lane）外壳附加钉点的语义表：(lane 实例, 子层次, golden 寄存器, 重写件寄存器, 位宽)。
+#   每一行都是重写件源码里逐行注明的 golden 对应名（如 FarPathFloatAdderF64WidenPipeline.sv
+#   `shifted_out_q; // B_sticky_normal_reg_r_3`），整寄存器全部位钉。
+#   为什么要钉：VFAlu 单独签核时这些寄存器全靠 FM 签名分析配上；进了 ExeUnit_16 外壳后诊断跑实测 595 个 ref DFF
+#   配不上（另有远路加法器的两个加数寄存器被交叉配对成 1 个 failing DFF + 写回数据 515 位 failing）——它们要么只被按位或
+#   归约读（B_sticky_normal_reg_r_*），要么是交换律对称的两个加数（io_result_r / _r_1），扇出签名分不清。
+#   核对：这 595 个点在 VFAlu 自签核（同一份 RTL）的 FM matched.rpt 里的配对与下表逐位一致（位下标偏移 0）。
+_VFALU_F64 = [('U_F64_Widen_0', 'U_far_path', 'B_sticky_normal_reg_r_2', 'shifted_out_inv_q', 54),
+              ('U_F64_Widen_0', 'U_far_path', 'B_sticky_normal_reg_r_3', 'shifted_out_q', 54),
+              ('U_F64_Widen_0', 'U_far_path', 'far_exponent_result_r_1', 'exp_base_plus1_q', 11),
+              ('U_F64_Widen_0', 'U_far_path', 'far_exponent_result_r_2', 'exp_base_q', 11),
+              ('U_F64_Widen_0', 'U_far_path', 'OF_r', 'exp_plus1_all_one_q', 1),
+              ('U_F64_Widen_0', 'U_far_path/U_FS0', 'io_result_r', 'a_q', 54),
+              ('U_F64_Widen_0', 'U_far_path/U_FS0', 'io_result_r_1', 'b_q', 54),
+              ('U_F64_Widen_0', 'U_far_path/U_FS1', 'io_result_r', 'a_q', 54),
+              ('U_F64_Widen_0', 'U_far_path/U_FS1', 'io_result_r_1', 'b_q', 54)]
+_VFALU_F16 = [(ln, d, r, i, w) for ln in ('U_F16_1', 'U_F16_3') for d, r, i, w in (
+              ('U_far_path', 'B_sticky_normal_reg_r_3', 'low_bits_inv_q', 12),
+              ('U_far_path', 'B_sticky_normal_reg_r_4', 'low_bits_q', 12),
+              ('U_far_path', 'far_exponent_result_r_1', 'exp_base_plus1_q', 5),
+              ('U_far_path', 'far_exponent_result_r_2', 'exp_base_q', 5),
+              ('U_far_path/U_FS0', 'io_result_r', 'a_q', 12),
+              ('U_far_path/U_FS0', 'io_result_r_1', 'b_q', 12),
+              ('U_far_path/U_FS1', 'io_result_r', 'a_q', 12),
+              ('U_far_path/U_FS1', 'io_result_r_1', 'b_q', 12))]
+_VFALU_F32 = [(ln, d, r, i, w) for ln in ('U_F32_Mixed_0', 'U_F32_Mixed_1') for d, r, i, w in (
+              ('', 'float_adder_result_r_1', 's1_b_signed', 32),
+              ('', 'float_adder_result_r_2', 's1_a_to32', 32),
+              ('', 'r_3', 's1_result_is_inf', 1),
+              ('', 'r_4', 's1_widen_both_zero', 1),
+              ('', 'is_far_path_reg', 's1_is_far_path', 1),
+              ('', 'io_fflags_r', 's1_use_adder_for_flags', 1),
+              ('U_far_path', 'far_exponent_result_reg_r_1', 'exp_base_plus1_q', 8),
+              ('U_far_path', 'far_exponent_result_reg_r_2', 'exp_base_q', 8),
+              ('U_far_path', 'OF_reg_r', 'exp_plus1_all_one_q', 1),
+              ('U_far_path', 'far_sign_result_reg', 'sign_q', 1),
+              ('U_far_path/U_FS0', 'io_result_r', 'hi_sum_q', 7),
+              ('U_far_path/U_FS0', 'io_result_r_1', 'lo_carry_q', 7),
+              ('U_far_path/U_FS0', 'io_result_r_2', 'lo_sum_q', 18),
+              ('U_far_path/U_FS1', 'io_result_r', 'hi_sum_q', 7),
+              ('U_far_path/U_FS1', 'io_result_r_1', 'lo_carry_q', 7),
+              ('U_far_path/U_FS1', 'io_result_r_2', 'lo_sum_q', 18),
+              ('U_close_path', 'EA_sub_value_reg_r', 'exp_from_cs4_q', 1),
+              ('U_close_path', 'EA_sub_value_reg_r_1', 'exp_sub_lzd_q', 8),
+              ('U_close_path', 'lshift_result_head_is_one_reg_r', 'cs_selected_nz_q', 1),
+              ('U_close_path', 'lshift_result_head_is_one_reg_r_1', 'floor_hit_q', 1))]
+
+
+def _vfalu_pins():
+    out = []
+    for v in (0, 1):
+        for lane, sub, r, i, w in _VFALU_F64 + _VFALU_F16 + _VFALU_F32:
+            rd = f'vfalus_{v}/{lane}' + (f'/{sub}' if sub else '')
+            idir = f'u_core/vfalus_{v}/u_core/{lane}/u_core' + ''.join(f'/{x}/u_core' for x in sub.split('/') if x)
+            if w == 1:
+                out.append((f'{rd}/{r}_reg', f'{idir}/{i}_reg'))
+            else:
+                out += [(f'{rd}/{r}_reg[{b}]', f'{idir}/{i}_reg[{b}]') for b in range(w)]
+    return out
+
+
+EXTRA_CHILD_PINS['VFAlu'] = _vfalu_pins()
 
 
 def die(msg):
@@ -272,6 +364,28 @@ IDENT = re.compile(r'\b[A-Za-z_]\w*\b')
 
 def idents(expr):
     return IDENT.findall(LIT.sub(' ', expr.replace('/* unused */', '')))
+
+
+def unwrap(e):
+    """连线表达式的两种「改位宽」外形（向量外壳 ExeUnit_13..17 才有）：
+       低位截取 `x[h:0]`（FU 端口比源窄，如 src_4 只要 [7:0]）→ (x, ('slice', h))；
+       高位补零 `{n'h0, x}`（FU 端口比源宽，如 9 位 pdest 口接 8 位 pdest）→ (x, ('zext', n))；
+       其余原样 → (e, None)。x 必须是单个标识符。"""
+    m = re.fullmatch(r'(\w+)\[(\d+):0\]', e)
+    if m:
+        return m.group(1), ('slice', int(m.group(2)))
+    m = re.fullmatch(r"\{(\d+)'h0, (\w+)\}", e)
+    if m:
+        return m.group(2), ('zext', int(m.group(1)))
+    return e, None
+
+
+def rewrap(x, how):
+    if how is None:
+        return x
+    if how[0] == 'slice':
+        return f'{x}[{how[1]}:0]'
+    return f"{{{how[1]}'h0, {x}}}"
 
 
 # =============================================================================
@@ -401,7 +515,7 @@ class Variant(object):
         # 无门控的 FU 必须延迟 0：不接任何第 s>0 级的 ctrlPipe / validPipe
         for k, (typ, name, conns) in enumerate(self.fus):
             stages = [int(m.group(1)) for p, _ in conns
-                      for m in [re.match(r'io_in_bits_(?:ctrlPipe|validPipe)_(\d+)', p)] if m]
+                      for m in [re.match(r'io_in_bits_(?:ctrlPipe|dataPipe|validPipe)_(\d+)', p)] if m]
             mx = max(stages) if stages else 0
             if self.fu_cg[k] is None:
                 if mx != 0:
@@ -485,16 +599,18 @@ class Variant(object):
         reads = {}
         for typ, name, conns in self.fus:
             for p, e in conns:
-                m = re.fullmatch(r'io_in_bits_ctrlPipe_(\d+)_(\w+)', p)
+                # ctrlPipe（控制字段）与 dataPipe（向量外壳：源操作数也随流水打拍）同一套 inPipe 寄存器
+                m = re.fullmatch(r'io_in_bits_(ctrl|data)Pipe_(\d+)_(\w+)', p)
                 if not m:
                     continue
-                s, sub = int(m.group(1)), m.group(2)
+                s, sub = int(m.group(2)), m.group(3)
+                core, _ = unwrap(e)        # 允许低位截取 x[h:0] / 高位补零 {n'h0, x}（端口位宽不同）
                 if s == 0:
-                    if e != f'io_in_bits_{sub}':
-                        die(f'{top}.{name}: ctrlPipe_0_{sub} 不接顶层端口: {e}')
+                    if core != f'io_in_bits_{sub}':
+                        die(f'{top}.{name}: {m.group(1)}Pipe_0_{sub} 不接顶层端口: {e}')
                     continue
-                if e != f'inPipe_1_{s}_{sub}':
-                    die(f'{top}.{name}: ctrlPipe_{s}_{sub} 不接 inPipe: {e}')
+                if core != f'inPipe_1_{s}_{sub}':
+                    die(f'{top}.{name}: {m.group(1)}Pipe_{s}_{sub} 不接 inPipe: {e}')
                 base = 'robIdx' if sub.startswith('robIdx_') else sub
                 reads[base] = max(reads.get(base, 0), s)
         for n, w, depth, subs, lo in self.fields:
@@ -672,6 +788,11 @@ class Variant(object):
                 continue
             if sorted(set(valids), key=lambda f: self.fu_idx[f]) != members:
                 die(f'{top}: 输出 {n} 的 valid 集合 {valids} 与数据成员 {members} 不一致')
+            # FU 写回字段比输出口宽（向量外壳：FU 的 pdest 9 位、写回口 7 位）：golden 必须是低位截取 x[ow-1:0]
+            for f in members:
+                sw = g.wire_w[f'_{f}_io_out_bits_{fields[f]}']
+                if sw > w and f'_{f}_io_out_bits_{fields[f]}[{w - 1}:0]' not in ex:
+                    die(f'{top}: 输出 {n} 比来源 {f}.{fields[f]} 窄，但 golden 不是低位截取: {ex}')
             self.out_kind[n] = ('mux', tuple(members), fields)
 
 
@@ -799,7 +920,7 @@ def gen_wrapper(v):
         used = set()
         for typ, name, cs in v.fus:
             for p, e in cs:
-                m = re.fullmatch(r'inPipe_1_(\d+)_(\w+)', e)
+                m = re.fullmatch(r'inPipe_1_(\d+)_(\w+)', unwrap(e)[0])
                 if m:
                     used.add((int(m.group(1)), m.group(2)))
         for s, sub in sorted(used):
@@ -820,6 +941,9 @@ def gen_wrapper(v):
             return 'in1ToN_io_in_ready'
         if e in g.port_w:
             return e
+        core, how = unwrap(e)           # 改位宽外形：先翻译里面的标识符，再原样套回
+        if how is not None:
+            return rewrap(conn_expr(iname, p, core), how)
         m = re.fullmatch(r'inPipe_1_(\d+)_(\w+)', e)
         if m:
             return f'pipe{m.group(1)}_{m.group(2)}'
@@ -895,6 +1019,8 @@ def gen_wrapper(v):
             src = f'{k[1]}_io_out_bits_{k[2]}'
             sw = g.wire_w['_' + src]
             ow = g.port_w[n]
+            if sw > ow:
+                die(f'{v.top}: 直通输出 {n} 比来源 {src} 窄（不认识的截取形状）')
             ex = src if sw == ow else f"{{{ow - sw}'h0, {src}}}"
             L.append(f'  assign {n} = {ex};   // 只有 {k[1]} 产出：单元素 Mux1H 直通')
     for gi, (members, outs) in enumerate(groups.items()):
@@ -909,7 +1035,8 @@ def gen_wrapper(v):
                 src = f'{f}_io_out_bits_{fld}'
                 sw = g.wire_w['_' + src]
                 ow = g.port_w[o]
-                parts.append(src if sw == ow else f"{{{ow - sw}'h0, {src}}}")
+                parts.append(src if sw == ow else
+                             f'{src}[{ow - 1}:0]' if sw > ow else f"{{{ow - sw}'h0, {src}}}")
             datas.append((f, parts))
         L.append(f"  xs_ExeUnit_wbsel #(.N({len(members)}), .W({W})) wb{gi} (")
         L.append(f"    .sel  ({sel([f'{f}_io_out_valid' for f in members])}),")
@@ -949,8 +1076,16 @@ def gen_wrapper(v):
 #  钉点
 # =============================================================================
 def child_pin_pairs(fu_type):
-    """用 tclsh 桩真跑子 FU 的钉点文件，取 set_user_match 调用序列。"""
-    f = REPO / 'verif' / 'ut' / CHILD_PIN_FILES[fu_type]
+    """子 FU 的全部钉点文件按序取调用序列，拼起来。"""
+    pairs = []
+    for rel in child_pin_files(fu_type):
+        pairs += child_pin_pairs_one(fu_type, rel)
+    return pairs
+
+
+def child_pin_pairs_one(fu_type, rel):
+    """用 tclsh 桩真跑子 FU 的一份钉点文件，取 set_user_match 调用序列。"""
+    f = REPO / 'verif' / 'ut' / rel
     stub = (
         'rename puts ::__orig_puts\n'
         'proc puts {args} {}\n'
@@ -972,18 +1107,25 @@ def child_pin_pairs(fu_type):
     want = None
     for ln in (REPO / 'docs' / 'pin_call_seq.tsv').read_text().splitlines():
         c = ln.split('\t')
-        if len(c) >= 3 and c[0] == f'verif/ut/{CHILD_PIN_FILES[fu_type]}' and c[1] == fu_type:
+        if len(c) >= 3 and c[0] == f'verif/ut/{rel}' and c[1] == fu_type:
             want = int(c[2])
     if want is None or want != len(pairs):
-        die(f'{fu_type}: 钉点调用数 {len(pairs)} 与 pin_call_seq.tsv 登记 {want} 不符')
+        die(f'{fu_type}: {rel} 钉点调用数 {len(pairs)} 与 pin_call_seq.tsv 登记 {want} 不符')
+    out = []
     for p in pairs:
+        # 允许 `set_user_match -type cell r i`（VFAlu 的钉点按 cell 钉）：类型原样带到外壳
+        typ = None
+        if len(p) == 4 and p[0] == '-type' and p[1] == 'cell':
+            typ, p = 'cell', p[2:]
         if len(p) != 2 or not p[0].startswith(f'r:/WORK/{fu_type}/') or not p[1].startswith(f'i:/WORK/{fu_type}/'):
             die(f'{fu_type}: 钉点形状不认识 {p}')
-    return pairs
+        out.append(p if typ is None else (p[0], p[1], typ))
+    return out
 
 
 def tcl_esc(s):
-    return s.replace('[', '\\[').replace(']', '\\]')
+    # 先转义反斜杠本身（VIDiv 的打包结构体寄存器名 outCtrl_r_reg\[vuopIdx][b] 里带一个字面 \），再转义方括号
+    return s.replace('\\', '\\\\').replace('[', '\\[').replace(']', '\\]')
 
 
 def gen_pins(v):
@@ -1006,10 +1148,16 @@ def gen_pins(v):
     child = []
     for typ, name, cs in v.fus:
         if typ in CHILD_PIN_FILES:
-            for rp, ip in child_pin_pairs(typ):
-                child.append((name, typ, tcl_esc(rp[len(f'r:/WORK/{typ}/'):]),
-                              tcl_esc(ip[len(f'i:/WORK/{typ}/'):])))
+            for pr in child_pin_pairs(typ):
+                rp, ip = pr[0], pr[1]
+                row = (name, typ, tcl_esc(rp[len(f'r:/WORK/{typ}/'):]), tcl_esc(ip[len(f'i:/WORK/{typ}/'):]))
+                child.append(row + (('cell',) if len(pr) == 3 else ()))
+        # 外壳附加钉点与子 FU 原钉点重复的同一对不再发第二次（FM 对重复的 set_user_match 返回 1 但不打印 Set a match，
+        #   会让「接受数」与 fm.log 的 Set a match 数对不上）
+        have = {(c[2], c[3]) for c in child if c[0] == name}
         for rp, ip in EXTRA_CHILD_PINS.get(typ, []):
+            if (tcl_esc(rp), tcl_esc(ip)) in have:
+                continue
             child.append((name, typ + ' 外壳附加', tcl_esc(rp), tcl_esc(ip)))
     for typ, name, cs in v.aux:          # 辅助实例（DelayN）同样可有外壳附加钉点
         for rp, ip in EXTRA_CHILD_PINS.get(typ, []):
@@ -1035,19 +1183,29 @@ def gen_pins(v):
     L.append(f'    if {{$::{tag}_PIN_BAD <= 10}} {{ puts "{tag}_PIN_FAIL: $rr <-> $ii" }}')
     L.append('  }')
     L.append('}')
+    if any(len(c) == 5 for c in child):
+        # 按 cell 钉的一族（子 FU 原钉点就是 -type cell）：同一套计数
+        L.append(f'proc {tag.lower()}_pinc {{r i}} {{')
+        L.append(f'  set rr "r:/WORK/{v.top}/$r"')
+        L.append(f'  set ii "i:/WORK/{v.top}/$i"')
+        L.append(f'  if {{[set_user_match -type cell $rr $ii]}} {{ incr ::{tag}_PIN_OK }} else {{')
+        L.append(f'    incr ::{tag}_PIN_BAD')
+        L.append(f'    if {{$::{tag}_PIN_BAD <= 10}} {{ puts "{tag}_PIN_FAIL: $rr <-> $ii" }}')
+        L.append('  }')
+        L.append('}')
     L.append(f'puts "{tag}_PIN_BEGIN {v.top} expect={total}"')
     L.append('# ---- (a) 外壳寄存器 ----')
     for r, i in rows:
         L.append(f'{tag.lower()}_pin {r} {i}')
     cur = None
-    for name, typ, rp, ip in child:
+    for name, typ, rp, ip, *cell in child:
         if cur != (name, typ):
             if typ.endswith(' 外壳附加'):
                 L.append(f'# ---- (c) {name}（{typ}）：gen_exeunit.py EXTRA_CHILD_PINS（依据见该表注释）----')
             else:
-                L.append(f'# ---- (b) {name}（{typ}）：verif/ut/{CHILD_PIN_FILES[typ]} 的调用序列 ----')
+                L.append(f'# ---- (b) {name}（{typ}）：' + ' + '.join(f'verif/ut/{r}' for r in child_pin_files(typ)) + ' 的调用序列 ----')
             cur = (name, typ)
-        L.append(f'{tag.lower()}_pin {name}/{rp} {name}/{ip}')
+        L.append(f'{tag.lower()}_pin{"c" if cell else ""} {name}/{rp} {name}/{ip}')
     L.append(f'puts "{tag}_PIN_END ok=$::{tag}_PIN_OK bad=$::{tag}_PIN_BAD expect={total}"')
     L.append(f'if {{$::{tag}_PIN_BAD != 0}} {{ error "{tag}_PIN_REFUSED=$::{tag}_PIN_BAD" }}')
     L.append(f'if {{$::{tag}_PIN_OK != {total}}} {{ error "{tag}_PIN_COUNT=$::{tag}_PIN_OK expected {total}" }}')
