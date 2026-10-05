@@ -105570,7 +105570,7 @@ puts "FE_CHILD_PIN_END ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_
 if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
   error "FE_CHILD_PIN: ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_EXPECT"
 }
-# ---- 三、子树自配对录制钉点（67 个设计 -> 46833 条；另 1375 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----
+# ---- 三、子树自配对录制钉点（67 个设计 -> 46785 条；另 1423 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----
 #   Composer                             录     93 对 x   1 个实例 -> 新增     93 条
 #   DelayN                               录      5 对 x   5 个实例 -> 新增     25 条
 #   DelayN_1                             录      2 对 x   3 个实例 -> 新增      6 条
@@ -105638,7 +105638,7 @@ if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
 #   WrBypass_32                          录    151 对 x   1 个实例 -> 新增      0 条
 #   WrBypass_41                          录     47 对 x   2 个实例 -> 新增     94 条
 #   WrBypass_43                          录     51 对 x   3 个实例 -> 新增    153 条
-set ::FE_HV_EXPECT 46833
+set ::FE_HV_EXPECT 46785
 set ::FE_HV_OK 0
 set ::FE_HV_BAD 0
 proc fe_hv_pin {r i} {
@@ -112028,7 +112028,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem} {i:/WORK/Frontend/inner_ftq/u_
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pd_mem} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pd_mem}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_redirect_mem} {i:/WORK/Frontend/inner_ftq/u_core/ftq_redirect_mem}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_fallThruError_reg} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][100]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][50]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][60]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][61]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[12]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][62]}
@@ -112039,7 +112038,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[16]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[17]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][67]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[18]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][68]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[19]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][69]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][51]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[20]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][70]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[21]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][71]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[22]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][72]}
@@ -112050,7 +112048,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[26]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[27]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][77]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[28]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][78]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[29]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][79]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][52]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[30]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][80]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[31]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][81]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[32]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][82]}
@@ -112061,7 +112058,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[36]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[37]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][87]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[38]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][88]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[39]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][89]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][53]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[40]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][90]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[41]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][91]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[42]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][92]}
@@ -112072,13 +112068,10 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[46]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[47]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][97]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[48]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][98]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[49]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][99]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][54]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[5]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][55]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[6]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][56]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[7]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][57]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[8]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][58]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[9]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][59]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][0]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][10]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][11]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[12]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][12]}
@@ -112089,7 +112082,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[16]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[17]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][17]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[18]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][18]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[19]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][19]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][1]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[20]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][20]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[21]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][21]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[22]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][22]}
@@ -112100,7 +112092,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[26]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[27]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][27]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[28]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][28]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[29]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][29]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][2]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[30]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][30]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[31]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][31]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[32]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][32]}
@@ -112111,7 +112102,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[36]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[37]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][37]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[38]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][38]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[39]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][39]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][3]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[40]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][40]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[41]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][41]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[42]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][42]}
@@ -112122,14 +112112,11 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[46]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[47]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][47]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[48]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][48]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[49]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][49]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][4]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[5]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][5]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[6]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][6]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[7]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][7]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[8]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][8]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[9]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][9]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_fallThruError_reg} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][100]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][50]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][60]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][61]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[12]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][62]}
@@ -112140,7 +112127,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[16]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[17]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][67]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[18]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][68]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[19]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][69]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][51]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[20]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][70]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[21]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][71]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[22]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][72]}
@@ -112151,7 +112137,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[26]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[27]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][77]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[28]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][78]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[29]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][79]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][52]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[30]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][80]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[31]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][81]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[32]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][82]}
@@ -112162,7 +112147,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[36]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[37]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][87]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[38]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][88]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[39]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][89]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][53]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[40]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][90]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[41]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][91]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[42]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][92]}
@@ -112173,13 +112157,10 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[46]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[47]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][97]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[48]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][98]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[49]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][99]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][54]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[5]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][55]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[6]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][56]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[7]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][57]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[8]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][58]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[9]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][59]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][0]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][10]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][11]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[12]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][12]}
@@ -112190,7 +112171,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[16]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[17]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][17]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[18]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][18]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[19]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][19]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][1]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[20]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][20]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[21]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][21]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[22]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][22]}
@@ -112201,7 +112181,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[26]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[27]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][27]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[28]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][28]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[29]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][29]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][2]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[30]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][30]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[31]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][31]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[32]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][32]}
@@ -112212,7 +112191,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[36]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[37]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][37]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[38]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][38]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[39]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][39]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][3]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[40]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][40]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[41]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][41]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[42]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][42]}
@@ -112223,14 +112201,11 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[46]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[47]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][47]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[48]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][48]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[49]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][49]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][4]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[5]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][5]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[6]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][6]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[7]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][7]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[8]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][8]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[9]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][9]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_fallThruError_reg} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][100]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][50]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][60]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][61]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[12]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][62]}
@@ -112241,7 +112216,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[16]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[17]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][67]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[18]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][68]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[19]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][69]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][51]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[20]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][70]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[21]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][71]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[22]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][72]}
@@ -112252,7 +112226,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[26]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[27]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][77]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[28]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][78]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[29]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][79]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][52]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[30]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][80]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[31]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][81]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[32]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][82]}
@@ -112263,7 +112236,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[36]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[37]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][87]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[38]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][88]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[39]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][89]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][53]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[40]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][90]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[41]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][91]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[42]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][92]}
@@ -112274,13 +112246,10 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[46]} {
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[47]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][97]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[48]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][98]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[49]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][99]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][54]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[5]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][55]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[6]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][56]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[7]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][57]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[8]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][58]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[9]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][59]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][0]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][10]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][11]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[12]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][12]}
@@ -112291,7 +112260,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[16]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[17]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][17]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[18]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][18]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[19]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][19]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][1]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[20]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][20]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[21]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][21]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[22]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][22]}
@@ -112302,7 +112270,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[26]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[27]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][27]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[28]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][28]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[29]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][29]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][2]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[30]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][30]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[31]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][31]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[32]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][32]}
@@ -112313,7 +112280,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[36]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[37]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][37]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[38]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][38]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[39]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][39]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][3]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[40]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][40]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[41]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][41]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[42]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][42]}
@@ -112324,14 +112290,11 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[46]} {i:/
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[47]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][47]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[48]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][48]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[49]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][49]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][4]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[5]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][5]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[6]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][6]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[7]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][7]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[8]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][8]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[9]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][9]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_fallThruError_reg} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][100]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][50]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][60]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][61]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[12]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][62]}
@@ -112342,7 +112305,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[16]} {i:
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[17]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][67]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[18]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][68]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[19]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][69]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][51]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[20]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][70]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[21]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][71]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[22]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][72]}
@@ -112353,7 +112315,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[26]} {i:
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[27]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][77]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[28]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][78]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[29]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][79]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][52]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[30]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][80]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[31]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][81]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[32]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][82]}
@@ -112364,7 +112325,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[36]} {i:
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[37]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][87]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[38]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][88]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[39]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][89]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][53]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[40]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][90]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[41]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][91]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[42]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][92]}
@@ -112375,13 +112335,10 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[46]} {i:
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[47]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][97]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[48]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][98]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[49]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][99]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][54]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[5]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][55]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[6]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][56]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[7]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][57]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[8]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][58]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[9]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][59]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][0]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[10]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][10]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[11]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][11]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[12]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][12]}
@@ -112392,7 +112349,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[16]} {i:/WO
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[17]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][17]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[18]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][18]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[19]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][19]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][1]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[20]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][20]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[21]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][21]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[22]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][22]}
@@ -112403,7 +112359,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[26]} {i:/WO
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[27]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][27]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[28]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][28]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[29]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][29]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][2]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[30]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][30]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[31]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][31]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[32]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][32]}
@@ -112414,7 +112369,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[36]} {i:/WO
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[37]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][37]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[38]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][38]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[39]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][39]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][3]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[40]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][40]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[41]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][41]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[42]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][42]}
@@ -112425,8 +112379,6 @@ fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[46]} {i:/WO
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[47]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][47]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[48]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][48]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[49]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][49]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][4]}
-fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[5]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][5]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[6]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][6]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[7]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][7]}
 fe_hv_pin {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[8]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][8]}
@@ -152485,11 +152437,11 @@ puts "FE_HV_PIN_END ok=$::FE_HV_OK bad=$::FE_HV_BAD expect=$::FE_HV_EXPECT"
 if {$::FE_HV_BAD != 0 || $::FE_HV_OK != $::FE_HV_EXPECT} {
   error "FE_HV_PIN: ok=$::FE_HV_OK bad=$::FE_HV_BAD expect=$::FE_HV_EXPECT"
 }
-# ---- 四、恒等副本 / 多源配对类（2198 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 2167 条钉点 -> 1182 个配对类 -> 1182 次多对多 set_user_match；数据 verif/ut/Frontend/dup_groups.tsv）----
+# ---- 四、恒等副本 / 多源配对类（2222 行副本组 + 第二/三节里与之相连或 impl 端重复出现的 2215 条钉点 -> 1206 个配对类 -> 1206 次多对多 set_user_match；数据 verif/ut/Frontend/dup_groups.tsv）----
 #   FM 对"同一个对象被多次 set_user_match"会忽略后来的（实测 Warning: Ignoring user match: implementation object
 #   matched more than once），所以凡与副本组相连的钉点都并成配对类，每类一次多对多 set_user_match 给出
 #   （须 user_match_enable_many_to_many_matching；FM 先证同侧成员互相等价，证不出整组删掉、点变未配对）。
-set ::FE_DUP_EXPECT 1182
+set ::FE_DUP_EXPECT 1206
 set ::FE_DUP_OK 0
 set ::FE_DUP_BAD 0
 proc fe_dup_grp {args} {
@@ -153657,6 +153609,30 @@ fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][53]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_nextLineAddr_reg[3]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_startAddr_reg[3]}
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][54]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_nextLineAddr_reg[4]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_startAddr_reg[4]}
 fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][55]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_nextLineAddr_reg[5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_startAddr_reg[5]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][50]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[0]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[0]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][51]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[1]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[1]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][52]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[2]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[2]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][53]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[3]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[3]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][54]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[4]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[4]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][55]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_startAddr_reg[5]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][50]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[0]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[0]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][51]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[1]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[1]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][52]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[2]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[2]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][53]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[3]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[3]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][54]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[4]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[4]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][55]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_startAddr_reg[5]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][50]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[0]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[0]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][51]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[1]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[1]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][52]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[2]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[2]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][53]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[3]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[3]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][54]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[4]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[4]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][55]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_startAddr_reg[5]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][0]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][50]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[0]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[0]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][1]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][51]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[1]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[1]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][2]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][52]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[2]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[2]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][3]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][53]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[3]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[3]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][4]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][54]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[4]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[4]}
+fe_dup_grp {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][55]} {i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[5]} {r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_startAddr_reg[5]}
 fe_dup_grp {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[0]} {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[0]} {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[0]}
 fe_dup_grp {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[1]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[1]} {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[1]} {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[1]}
 fe_dup_grp {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/blk_paddr_q_reg[2]} {i:/WORK/Frontend/inner_icache/u_core/missUnit/u_core/fetchMSHRs_0/u_core/vset_idx_q_reg[2]} {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/blkPaddr_reg[2]} {r:/WORK/Frontend/inner_icache/missUnit/fetchMSHRs_0/vSetIdx_reg[2]}

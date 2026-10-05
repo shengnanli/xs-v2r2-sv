@@ -14,6 +14,9 @@
 #   firtool 已化成同一根线），Ftq 自己签核（merge_dup=true）时 FM 把两者并成一个代表；可读核的 toPrefetchPc_nextLineAddr[5:0]
 #   直接取 startAddr 那一路（rtl/frontend/Ftq.sv 2306-2318 行注释）。这里把每个条目的 nextLineAddr[k]（k<6）并进 startAddr[k]
 #   的配对类（锚点 = startAddr[k] 已配上的 impl 存储位），由 FM 多对多预证明同侧等价。机械生成：384 行（64 条目 × 6 位）。
+#   第五次补录（HEAD=a2cefeb30，依据 match20：上面 384 个存储位类全部预证明失败 —— 两者的写数据来自各 bank 一份的写数据寄存器
+#   r_<b>_startAddr / r_<b>_nextLineAddr，FM 把这一层当切点，不先把它们配成同类就证不出存储位同类）：把 4 个 bank 写数据寄存器的
+#   nextLineAddr[k]（k<6）也并进 startAddr[k] 的类（锚点 = startAddr[k] 已配上的 impl wdata_dup 位）。机械生成：24 行（4 bank × 6 位）。
 # 每行：对侧锚点 \t 同侧副本...
 r:/WORK/Frontend/inner_ftq/ftb_entry_mem/wen_dup_last_REG_1_reg	i:/WORK/Frontend/inner_ftq/u_core/ftb_entry_mem/u_core/g_bank[0].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftb_entry_mem/u_core/g_bank[2].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftb_entry_mem/u_core/g_bank[3].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftq_meta_mem/u_core/g_bank[0].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftq_meta_mem/u_core/g_bank[1].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftq_meta_mem/u_core/g_bank[2].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftq_meta_mem/u_core/g_bank[3].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftq_redirect_mem/u_core/g_bank[0].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftq_redirect_mem/u_core/g_bank[1].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftq_redirect_mem/u_core/g_bank[2].wen_dup_reg[0]	i:/WORK/Frontend/inner_ftq/u_core/ftq_redirect_mem/u_core/g_bank[3].wen_dup_reg[0]
 i:/WORK/Frontend/inner_ftq/u_core/ftb_entry_mem/u_core/g_bank[0].wen_dup_reg[0]	r:/WORK/Frontend/inner_ftq/ftb_entry_mem/wen_dup_last_REG_1_reg	r:/WORK/Frontend/inner_ftq/ftb_entry_mem/wen_dup_last_REG_2_reg	r:/WORK/Frontend/inner_ftq/ftb_entry_mem/wen_dup_last_REG_3_reg	r:/WORK/Frontend/inner_ftq/ftq_meta_mem/wen_dup_last_REG_1_reg	r:/WORK/Frontend/inner_ftq/ftq_meta_mem/wen_dup_last_REG_2_reg	r:/WORK/Frontend/inner_ftq/ftq_meta_mem/wen_dup_last_REG_3_reg	r:/WORK/Frontend/inner_ftq/ftq_meta_mem/wen_dup_last_REG_reg	r:/WORK/Frontend/inner_ftq/ftq_redirect_mem/wen_dup_last_REG_1_reg	r:/WORK/Frontend/inner_ftq/ftq_redirect_mem/wen_dup_last_REG_2_reg	r:/WORK/Frontend/inner_ftq/ftq_redirect_mem/wen_dup_last_REG_3_reg	r:/WORK/Frontend/inner_ftq/ftq_redirect_mem/wen_dup_last_REG_reg
@@ -2213,3 +2216,27 @@ i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/dat
 i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][3]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_nextLineAddr_reg[3]
 i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][4]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_nextLineAddr_reg[4]
 i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].dataBank/data_reg[15][5]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/dataBanks_3/data_15_nextLineAddr_reg[5]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][0]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[0]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][1]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[1]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][2]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[2]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][3]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[3]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][4]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[4]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[1].wdata_dup_reg[0][5]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_1_nextLineAddr_reg[5]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][0]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[0]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][1]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[1]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][2]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[2]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][3]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[3]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][4]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[4]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[2].wdata_dup_reg[0][5]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_2_nextLineAddr_reg[5]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][0]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[0]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][1]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[1]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][2]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[2]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][3]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[3]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][4]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[4]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[3].wdata_dup_reg[0][5]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_3_nextLineAddr_reg[5]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][0]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[0]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][1]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[1]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][2]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[2]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][3]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[3]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][4]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[4]
+i:/WORK/Frontend/inner_ftq/u_core/ftq_pc_mem/u_core/u_mem/g_bank[0].wdata_dup_reg[0][5]	r:/WORK/Frontend/inner_ftq/ftq_pc_mem/mem/r_nextLineAddr_reg[5]
