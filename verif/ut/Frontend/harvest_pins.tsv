@@ -6,6 +6,8 @@
 #   另：对含"恒等副本寄存器"的设计（Ftq、SyncDataModule 族、FTBBank、ICacheMSHR_0..3、ICacheMainPipe、IPrefetchPipe、
 #   TageBTable、ICacheReplacer）再以 FM_MERGE_DUP=true（与这些目标自己签核时同口径，带各自钉点）录一遍，只补入
 #   第一遍没有的 ref 点（合并类的代表配对）；与第一遍冲突时以第一遍为准。
+#   例外（M2_OVERRIDE）：IPrefetchPipe 的 s1_waymasks_r_<p>[w] 第一遍被签名分析交叉配错（Frontend 诊断 match19 的 failing 与
+#   analyze_points 指认），改取 FM_MERGE_DUP=true 那一遍（与 IPrefetchPipe 自己签核同口径）的配对。
 # 设计	录到的配对数	X 层仍未配对点数（这些由第二节钉点或上层负责）
 #   Composer	93	2186
 #   DelayN	5	0
@@ -30883,14 +30885,14 @@ IPrefetchPipe	REG	s1_req_vaddr_1_reg[9]	u_core/s1_req_vaddr_reg[1][9]
 IPrefetchPipe	REG	s1_valid_reg	u_core/s1_valid_reg
 IPrefetchPipe	REG	s1_wait_itlb_0_reg	u_core/g_s1_itlb[0].wait_itlb_q_reg
 IPrefetchPipe	REG	s1_wait_itlb_1_reg	u_core/g_s1_itlb[1].wait_itlb_q_reg
-IPrefetchPipe	REG	s1_waymasks_r_0_reg[0]	u_core/g_s1_update[1].waymask_q_reg[1]
-IPrefetchPipe	REG	s1_waymasks_r_0_reg[1]	u_core/g_s1_update[1].waymask_q_reg[3]
-IPrefetchPipe	REG	s1_waymasks_r_0_reg[2]	u_core/g_s1_update[0].waymask_q_reg[3]
-IPrefetchPipe	REG	s1_waymasks_r_0_reg[3]	u_core/g_s1_update[0].waymask_q_reg[0]
+IPrefetchPipe	REG	s1_waymasks_r_0_reg[0]	u_core/g_s1_update[0].waymask_q_reg[0]
+IPrefetchPipe	REG	s1_waymasks_r_0_reg[1]	u_core/g_s1_update[0].waymask_q_reg[1]
+IPrefetchPipe	REG	s1_waymasks_r_0_reg[2]	u_core/g_s1_update[0].waymask_q_reg[2]
+IPrefetchPipe	REG	s1_waymasks_r_0_reg[3]	u_core/g_s1_update[0].waymask_q_reg[3]
 IPrefetchPipe	REG	s1_waymasks_r_1_reg[0]	u_core/g_s1_update[1].waymask_q_reg[0]
-IPrefetchPipe	REG	s1_waymasks_r_1_reg[1]	u_core/g_s1_update[1].waymask_q_reg[2]
-IPrefetchPipe	REG	s1_waymasks_r_1_reg[2]	u_core/g_s1_update[0].waymask_q_reg[2]
-IPrefetchPipe	REG	s1_waymasks_r_1_reg[3]	u_core/g_s1_update[0].waymask_q_reg[1]
+IPrefetchPipe	REG	s1_waymasks_r_1_reg[1]	u_core/g_s1_update[1].waymask_q_reg[1]
+IPrefetchPipe	REG	s1_waymasks_r_1_reg[2]	u_core/g_s1_update[1].waymask_q_reg[2]
+IPrefetchPipe	REG	s1_waymasks_r_1_reg[3]	u_core/g_s1_update[1].waymask_q_reg[3]
 IPrefetchPipe	REG	s2_MSHR_hits_valid_1_reg	u_core/g_s2_hit[1].mshr_hit_q_reg
 IPrefetchPipe	REG	s2_MSHR_hits_valid_reg	u_core/g_s2_hit[0].mshr_hit_q_reg
 IPrefetchPipe	REG	s2_doubleline_reg	u_core/s2_doubleline_reg
