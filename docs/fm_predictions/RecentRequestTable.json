@@ -13,5 +13,6 @@
       "in_bits": 24,
       "points": 24
     }
-  }
+  },
+  "note": "codex 0219 §2 重证：同上（经 SRAMTemplate_146）。预测 passing = 97（= 上一次 official 实测；包装层只有组合直连/wmode&en，进的是同一 array_13_ext 黑盒输入比较点，点数不变），其余计数全 0，verdict SUCCEEDED。"
 }

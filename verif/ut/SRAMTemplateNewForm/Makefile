@@ -80,3 +80,8 @@ FM_VARIANTS = SRAMTemplate_128 SRAMTemplate_145 SRAMTemplate_146 SRAMTemplate_15
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS
+
+# codex 0219 §2：SRAMTemplate_146 唯一例化 sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt → array_13 这两层包装；
+# 它的 FM impl 侧改读本仓 rtl/common/ 的可读重写（ref 侧 FM_REF_DEPS 仍读 G1），两侧只把 array_13_ext
+# 当 vendor 边界。只做 target-specific 替换：其余 8 个变体的 FM 输入不变；VCS UT 仍用上面的全集。
+fm-SRAMTemplate_146: RTL_GOLDEN_DEPS := $(patsubst $(GOLDEN_RTL)/array_13.sv,$(XSSV_HOME)/rtl/common/array_13.sv,$(patsubst $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv,$(XSSV_HOME)/rtl/common/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv,$(RTL_GOLDEN_DEPS)))
