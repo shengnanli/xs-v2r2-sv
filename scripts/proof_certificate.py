@@ -584,10 +584,44 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
         fm_targets=fm_targets, fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root)
 
 
+MAX_NEST_DEPTH = 16
+
+
+def _allow_doc_of(repo, commit, doc):
+    """证书绑定的 allow 声明（proof_config.declarations['allow']），从 commit 读。
+    返回 (allow_dict or None, err)。没有 allow 声明 → (None, None)。字节是否未变由调用方另验。"""
+    rec = (doc.get('proof_config', {}).get('declarations') or {}).get('allow')
+    if not rec:
+        return None, None
+    blob = repo.show(commit, rec.get('path') or '')
+    if blob is None:
+        return None, 'allow_missing_at_parent:%s' % rec.get('path')
+    try:
+        return json.loads(blob.decode('utf-8')), None
+    except Exception as e:                                  # noqa: BLE001
+        return None, 'allow_unparsable:%s:%s' % (rec.get('path'), type(e).__name__)
+
+
+def green_child_designs(allow):
+    """allow 里 class=green_child 条目的 design 唯一集合（codex 0224 §1；MC_* 不计入）。"""
+    return sorted({o.get('design') for o in (allow or {}).get('objects') or []
+                   if o.get('class') == 'green_child'})
+
+
+def parse_tcl_name_list(v):
+    """hdlin_interface_only 的回读值按 Tcl list 解析成名字列表；含花括号/引号等非简单名字 → None（判错）。"""
+    if v is None:
+        return []
+    items = str(v).split()
+    if any(not re.match(r'^[A-Za-z_][A-Za-z0-9_$]*$', x) for x in items):
+        return None
+    return items
+
+
 def validate_certificate_current(repo, parent_commit, child, doc,
                                  expect_canonical=None, policy=None,
                                  fm_targets=None, fm_targets_unresolved=None,
-                                 g1_root=None):
+                                 g1_root=None, _stack=None, _memo=None):
     """★公共 current-valid 核心（codex 0219 §1 / 0222 §2）★ —— green_child 与 D3「经由 child 证书」
     （fm_verdict._child_cert_current）**共用这一份**，不许再分叉。返回 True 或失败原因串。
 
@@ -634,13 +668,7 @@ def validate_certificate_current(repo, parent_commit, child, doc,
         return ('green_child_tool_policy_mismatch:%s:%s/%s vs policy %s/%s'
                 % (child, doc['tool'].get('version'), doc['tool'].get('build'),
                    ptool.get('version'), ptool.get('build')))
-    appvars = (doc['proof_config'].get('entry_appvars_readback') or {})
-    for k, want in policy['pinned_entry_appvars'].items():
-        if appvars.get(k) != want:
-            return ('green_child_appvar_policy_mismatch:%s:%s=%r!=%r'
-                    % (child, k, appvars.get(k), want))
-
-    # 声明文件（allow / dead_ref）在父 commit 上必须仍是证书记录的那份字节
+    # 声明文件（allow / dead_ref）在父 commit 上必须仍是证书记录的那份字节（先验它，appvar 的声明驱动要读 allow）
     for kind, rec in (doc['proof_config'].get('declarations') or {}).items():
         p = rec.get('path')
         if not p:
@@ -650,6 +678,29 @@ def validate_certificate_current(repo, parent_commit, child, doc,
             return 'green_child_declaration_missing_at_parent:%s:%s' % (child, p)
         if hashlib.sha256(blob).hexdigest() != rec.get('sha256'):
             return 'green_child_declaration_changed:%s:%s' % (child, p)
+
+    # entry appvar：POLICY 钉死值精确比较；唯独 hdlin_interface_only 改为**声明驱动**（codex 0224 §1）——
+    # 回读值按 Tcl list 解析、不许重复，去重排序后必须严格等于本证书 allow 里 green_child 的 design 集合
+    # （没有 green_child 则必须为空）。MC_MEMORY_* 不计入。
+    allow, aerr = _allow_doc_of(repo, parent_commit, doc)
+    if aerr:
+        return 'green_child_%s:%s' % (aerr, child)
+    gc_designs = green_child_designs(allow)
+    appvars = (doc['proof_config'].get('entry_appvars_readback') or {})
+    for k, want in policy['pinned_entry_appvars'].items():
+        if k == 'hdlin_interface_only':
+            got = parse_tcl_name_list(appvars.get(k))
+            if got is None:
+                return 'green_child_interface_only_unparsable:%s:%r' % (child, appvars.get(k))
+            if len(got) != len(set(got)):
+                return 'green_child_interface_only_duplicate:%s:%r' % (child, appvars.get(k))
+            if sorted(got) != gc_designs:
+                return ('green_child_interface_only_not_declared_set:%s:readback=%s,green_child=%s'
+                        % (child, sorted(got), gc_designs))
+            continue
+        if appvars.get(k) != want:
+            return ('green_child_appvar_policy_mismatch:%s:%s=%r!=%r'
+                    % (child, k, appvars.get(k), want))
 
     # impl 闭包在父 commit 上复算
     ok, changed, missing = recompute_closure_at(repo, parent_commit, doc['input_closure']['impl'])
@@ -699,10 +750,6 @@ def validate_certificate_current(repo, parent_commit, child, doc,
         fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root, _mc_hits=hits)
     if r is not True:
         return r
-    if hits and ed != EXTERNAL_DEPENDENCY_MC:
-        return 'green_child_external_dependency_missing:%s:%s' % (child, hits[0])
-    if not hits and ed is not None:
-        return 'green_child_external_dependency_spurious:%s' % child
 
     # 祖先 + 冻结模式
     if not repo.is_ancestor(doc['impl_commit'], parent_commit):
@@ -711,6 +758,60 @@ def validate_certificate_current(repo, parent_commit, child, doc,
     if fc and doc['impl_commit'] != fc:
         return ('green_child_not_freeze_commit:%s=%s,policy=%s'
                 % (child, doc['impl_commit'][:12], fc[:12]))
+
+    # ★嵌套 green_child 递归复核（codex 0224 §2）★：本证书 allow 里的每个 green_child design，
+    # r/i 全部条目须声明同一个非空 certificate_sha256 与同一 child_target；从**根父 commit** 读孙级
+    # tracked 证书，核 blob sha，再以根父 commit 为准递归同一 current-valid 校验。
+    # recursion stack 判环、深度上限 MAX_NEST_DEPTH；memo 只做性能优化（键含证书 sha），不代替判环。
+    stack = list(_stack or []) + [child]
+    if len(stack) > MAX_NEST_DEPTH:
+        return 'green_child_nested_too_deep:%s' % '->'.join(stack)
+    memo = _memo if _memo is not None else {}
+    child_mc = []
+    by_design = {}
+    for o in (allow or {}).get('objects') or []:
+        if o.get('class') == 'green_child':
+            by_design.setdefault(o.get('design'), []).append(o)
+    for design in sorted(by_design):
+        objs = by_design[design]
+        shas = {o.get('certificate_sha256') for o in objs}
+        tgts = {o.get('child_target') for o in objs}
+        if len(shas) != 1 or not next(iter(shas)):
+            return 'green_child_nested_sha_inconsistent:%s:%s' % (child, design)
+        if len(tgts) != 1 or not next(iter(tgts)):
+            return 'green_child_nested_target_inconsistent:%s:%s' % (child, design)
+        gsha, gt = next(iter(shas)), next(iter(tgts))
+        if gt in stack:
+            return 'green_child_nested_cycle:%s' % '->'.join(stack + [gt])
+        key = (parent_commit, gt, gsha)
+        if key in memo:
+            res, gdoc_ed = memo[key]
+        else:
+            gdoc, gblob, gerr = load_certificate(repo, parent_commit, gt)
+            if gerr:
+                res, gdoc_ed = 'green_child_nested_%s' % gerr, None
+            elif gblob != gsha:
+                res, gdoc_ed = ('green_child_nested_certificate_sha_mismatch:%s->%s:declared=%s,actual=%s'
+                                % (child, gt, gsha[:12], gblob[:12])), None
+            elif gdoc.get('target') != gt:
+                res, gdoc_ed = 'green_child_nested_target_mismatch:%s->%s' % (child, gt), None
+            else:
+                res = validate_certificate_current(
+                    repo, parent_commit, gt, gdoc, expect_canonical=expect_canonical, policy=policy,
+                    fm_targets=fm_targets, fm_targets_unresolved=fm_targets_unresolved,
+                    g1_root=g1_root, _stack=stack, _memo=memo)
+                gdoc_ed = gdoc.get('external_dependency')
+            memo[key] = (res, gdoc_ed)
+        if res is not True:
+            return res if res.startswith('green_child_nested') else 'green_child_nested_via_%s:%s' % (child, res)
+        if gdoc_ed == EXTERNAL_DEPENDENCY_MC:
+            child_mc.append(gt)
+
+    # external_dependency：自身 MC 命中，或任一（递归）green child 带 MC 契约 ⇒ 必须记 MC_MEMORY_CONTRACT（0224 §3，transitive）
+    if (hits or child_mc) and ed != EXTERNAL_DEPENDENCY_MC:
+        return 'green_child_external_dependency_missing:%s:%s' % (child, (hits or child_mc)[0])
+    if not hits and not child_mc and ed is not None:
+        return 'green_child_external_dependency_spurious:%s' % child
     return True
 
 

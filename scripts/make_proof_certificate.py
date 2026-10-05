@@ -299,13 +299,28 @@ def build_certificate(repo_path, evidence_dir, archive=None, g1_root=None,
 
     # codex 0222 §4：impl 闭包里挂已登记 MC 存储契约对象 ⇒ external_dependency=MC_MEMORY_CONTRACT
     # （登记表取自本仓 HEAD 的 committed 字节；validator 在父 commit 上按同一张表复算并要求一致）
-    mc_blob = PC.Repo(repo_path).show('HEAD', PC.MC_REGISTRY_PATH)
+    _repo = PC.Repo(repo_path)
+    mc_blob = _repo.show('HEAD', PC.MC_REGISTRY_PATH)
     if mc_blob is not None:
         import mc_memory_registry as _MC
         mc_objs = _MC.mc_objects_in_closure(impl_cl, reg=_MC.parse_registry_text(mc_blob.decode('utf-8')))
         if mc_objs:
             doc['external_dependency'] = PC.EXTERNAL_DEPENDENCY_MC
             doc['mc_memory_objects'] = mc_objs
+    # codex 0224 §3：MC 契约沿嵌套 green_child 向上传播（transitive）。本证书 allow 里任一 green child 的证书
+    # （从 HEAD 的 committed 字节读）带 MC_MEMORY_CONTRACT ⇒ 本证书也记，并列出经由的 child target。
+    allow, _aerr = PC._allow_doc_of(_repo, 'HEAD', {'proof_config': proof_config})
+    via = []
+    for o in (allow or {}).get('objects') or []:
+        if o.get('class') != 'green_child':
+            continue
+        cdoc, _sha, cerr = PC.load_certificate(_repo, 'HEAD', o.get('child_target') or '')
+        if not cerr and cdoc.get('external_dependency') == PC.EXTERNAL_DEPENDENCY_MC \
+                and o['child_target'] not in via:
+            via.append(o['child_target'])
+    if via:
+        doc['external_dependency'] = PC.EXTERNAL_DEPENDENCY_MC
+        doc['external_dependency_via_children'] = sorted(via)
 
     errs = PC.validate_document(doc)
     if errs:
