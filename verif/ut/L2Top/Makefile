@@ -178,6 +178,8 @@ FM_VARIANTS = L2Top
 FM_MERGE_DUP = false
 FM_MODE = assembly
 FM_ALLOWLIST ?= 0
+# vmucp（加强不是放宽）：662 个对称 matched-unread 点（MC 存储模型无读者位），六条证据见 verif/fm_target_config/L2Top.tcl
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 # FM impl 侧（codex 0217）：只给 L2Top 本层 glue 例化到的重写件；inner_l2cache 子树不给（= 对称黑盒）。
 # UT 的 RTL_SRCS 仍是全集（derive / VCS 用），这里只对 fm-L2Top 做 target-specific 覆盖。
 FM_IMPL_RTL = $(RTL_DIR)/l2/L2Top.sv $(RTL_DIR)/common/DelayNWithValid_203.sv \
