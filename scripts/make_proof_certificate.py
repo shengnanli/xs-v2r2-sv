@@ -297,6 +297,16 @@ def build_certificate(repo_path, evidence_dir, archive=None, g1_root=None,
         },
     }
 
+    # codex 0222 §4：impl 闭包里挂已登记 MC 存储契约对象 ⇒ external_dependency=MC_MEMORY_CONTRACT
+    # （登记表取自本仓 HEAD 的 committed 字节；validator 在父 commit 上按同一张表复算并要求一致）
+    mc_blob = PC.Repo(repo_path).show('HEAD', PC.MC_REGISTRY_PATH)
+    if mc_blob is not None:
+        import mc_memory_registry as _MC
+        mc_objs = _MC.mc_objects_in_closure(impl_cl, reg=_MC.parse_registry_text(mc_blob.decode('utf-8')))
+        if mc_objs:
+            doc['external_dependency'] = PC.EXTERNAL_DEPENDENCY_MC
+            doc['mc_memory_objects'] = mc_objs
+
     errs = PC.validate_document(doc)
     if errs:
         die('生成的证书没过自己的 schema：%s' % '; '.join(errs[:5]))

@@ -73,6 +73,8 @@ run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_cert
 run "RAM 模型审查负测"    python3 scripts/test_audit_ram_memory_model.py
 run "RAM 模型审查复算"    python3 scripts/audit_ram_memory_model.py --check
 run "RAM 人工复核窄出口负测" python3 scripts/test_audit_ram_manual_review.py
+run "MC 存储契约登记表复算" python3 scripts/mc_memory_registry.py --check
+run "MC 存储契约登记表负测" python3 scripts/test_mc_memory_registry.py
 # codex 0206 D2：disabled_empty_module 只认 DCache 的 stu_0/stu_1 两个 StorePipe 空壳（sha/实例/empty 属性/无输出无状态/父级干净）。
 run "空壳禁用模块类别负测" python3 scripts/test_disabled_empty_module.py
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
