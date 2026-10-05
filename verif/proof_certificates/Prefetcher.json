@@ -1,0 +1,370 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-05T09:20:58Z",
+ "generator": {
+  "run_context_worktree_digest": "c4e7732b2799f17bb2dc0ea2a95085dab6c0bf4997696bbdb880522ba443fe55",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/8165a4806905/Prefetcher",
+  "version": 1
+ },
+ "impl_commit": "8165a4806905be36a1ce1907dd331462d6c3cd70",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Prefetcher.sv",
+    "sha256": "4983de919dc727206c3594fcf7a7c0f1327f157f594a08d5c806b72de4b82075"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PBestOffsetPrefetch.sv",
+    "sha256": "750f83399a0d7e16a80bca2a38d168fb685f2ce0ac7ab2a3b20d8e7f8bb87a98"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VBestOffsetPrefetch.sv",
+    "sha256": "c25e94f70e3ba8f84524a7de590d349773fdc22739f1ab640c32950aafabf918"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayQueue.sv",
+    "sha256": "1b54decc0f0eb6969e2ebc3fe6ecc455fa1838cf33773a07bee67a5ab0cbd64b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayQueue_1.sv",
+    "sha256": "359f617966d25c385c5900578065f3807d58a2f24887b29c401745e83fb618a8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/OffsetScoreTable.sv",
+    "sha256": "6005749f0bbd8d03a05248449d59117ffdfe88567ca1d1035d6ccc0ff3722b4a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/OffsetScoreTable_1.sv",
+    "sha256": "701266afdcae3b060951c72aec294669f864f7827517ada3c5b4f812071751ed"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RecentRequestTable.sv",
+    "sha256": "aa726af23ef8f4bbe97dda89d46748cae94caf05d11950f99a36ea82e911a90a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RecentRequestTable_1.sv",
+    "sha256": "80c035343f1163bcc60fda03d015f324143ff7ab2fc5bc8e612cc203ac8b59b4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_146.sv",
+    "sha256": "110bb6a4d3b4db080c6fe830dad08e9e5518705615edb25a3233694720ec578f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PrefetchReqBuffer.sv",
+    "sha256": "ac053660428cf5226b83d2b6cc33190285e50d7cfaad74e8ff9fb6afda9981b9"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RRArbiterInit_14.sv",
+    "sha256": "c4f69b97b461dc89bd5291890addd6603335beab275dd1e28269055993c0e154"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RRArbiterInit_15.sv",
+    "sha256": "8ccea765ecebf0c925e36bc4ed8380a98ff47c1d30ec54d1ffd1039756b65e0e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PrefetchReceiver.sv",
+    "sha256": "0a72d6174d29ac11541aeb5c81b3ea34c7844e856aa8d010a37fc5002b5913b2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeL2Prefetcher.sv",
+    "sha256": "43f868a93452ec4ad02d3e28c1247455887ada7c838ee970ee0d2dc05dcc5c62"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PrefetchQueue.sv",
+    "sha256": "699ab935ad969e9da012ca31e41bc18b950aec5261a021303bc088ea476b2604"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Pipeline_1.sv",
+    "sha256": "4eb09ecff550a4c547c4363b4df9ab0dce17ff5c5cfe02e2caf615768a412a13"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue1_PrefetchReq.sv",
+    "sha256": "846280fb0979cfd8ffae07f37eb374d9aa058c6d9120c967f97f40ed8ff5524e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter4_PrefetchReq.sv",
+    "sha256": "ab5e742e90e2d0636fce3de43cec32ffcfbdfcfb1a7f16f85bd338f89b3bdcdc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+    "sha256": "148d3cc8da05a2f729caf919a5d69354016554f58afd15b0b9bf88498294f9d7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_13.sv",
+    "sha256": "888dc80ed642a3fd6d36097900d02cf07e9f14df362217c166b57aa8e7300410"
+   }
+  ],
+  "golden_sha256": "810dd01f393fcd516d83c5fded5a44a33d55da1b92f04be786f141f87bfbc204",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/l2/Prefetcher.sv",
+    "sha256": "48bcfd17a57e2a9043d9a02184180a53f20b2c090bc776ec15af568f1e5d337b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/PBestOffsetPrefetch.sv",
+    "sha256": "a0b1988f7667ed4a1d31f47eac03d509440c4783d0f461e3979edbc42aa70306"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/VBestOffsetPrefetch.sv",
+    "sha256": "271392eeb05be612c28d86a0465b5ef190bf762188f5656c722134938d6f630e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/xs_DelayQueue_core.sv",
+    "sha256": "33a14cca203cf54757849d42d52c1c3615fcca42d4c3bb0cf6b242244bcb6857"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/DelayQueue.sv",
+    "sha256": "9b124ed7de8c520db98d8f13adaa5dc0d6ed4b020b4ae67198dd96d85ae38054"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/DelayQueue_1.sv",
+    "sha256": "6248d220305e930198835120fbea58e8c029c8dd7f737a761916cf9bb0962cdd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/xs_OffsetScoreTable_core.sv",
+    "sha256": "ef6373f10a03a6ed2ca1ac131cddbcd7ad736544e9ebf22e530311cfeeaa2465"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/OffsetScoreTable.sv",
+    "sha256": "6e98e636ace7a09e4429a81eb2c6f295f1a7ccfc94e4ccf4163ee76c5a5bf40f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/OffsetScoreTable_1.sv",
+    "sha256": "d8a6fc8e2755bf20a337fbea72567dc6a6788eb37ed6548155bd9ac68b9e8fc1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/RecentRequestTable.sv",
+    "sha256": "b35ba547e3f0f80e81ce4cbfbca315ed3b7a24be4393b8a54f86fb623723f44e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/RecentRequestTable_1.sv",
+    "sha256": "49340be7bea178493e82f7211fecc387dfbe32fb7ce0e544534f701467295086"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_SRAMTemplate_core.sv",
+    "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_146.sv",
+    "sha256": "3b94937fda990b4105f5fe9e30980cdb926384fe0a31d23b596c94234c1d9746"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit.sv",
+    "sha256": "b6a3406112df63bc1ec77562e11b7fcabaf9ee6ae3e5d90a0edc89034b964bac"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit_14.sv",
+    "sha256": "adc4d8c0109d5ae34f8e700661eb069a88b24b025bfe281cbdb23fc242a34e7b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit_15.sv",
+    "sha256": "a892b86f8251ff9ac5f334ff0f77f61d68336285817c77f811d6e6bf72fdf1c4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/PrefetchReqBuffer.sv",
+    "sha256": "56f9a86529fe0fd16705e8c0ed25930c0b9a7b7da52343f6f374540d746cbcf5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/PrefetchReceiver.sv",
+    "sha256": "ebc8df899ddd63ddcdcf806f47778b7138339c3db5a923ed3800d18ce3a39b7c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/xs_mbist_pipe_core.sv",
+    "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeL2Prefetcher.sv",
+    "sha256": "9f4a4df2159cd04f798dd495054ec32d30975bfe840fc4fe8bbb8041f5e5ccd1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/PrefetchQueue.sv",
+    "sha256": "e0c8bc774c2ab35e1162ec033176c3af4706ae618f8b0bf10f518a32d5eb25ab"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_ChiselQueue1_core.sv",
+    "sha256": "8c12ab1b2180d56e2c80d07cd66a488272a41b455496e87d7f097e15e87e3fa1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Queue1_PrefetchReq.sv",
+    "sha256": "0fbdd695e09bef8b1fd5b5915921a36ddcc84ec42934c4fa9821bff1a2f66317"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Pipeline_1.sv",
+    "sha256": "a2b8fb5fec38b69da29dad6e82c011db186e99bf3b6a6dd237a6ebd8bb8b0641"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+    "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Arbiter4_PrefetchReq.sv",
+    "sha256": "4586bffeb1fa81ad12c69e2cc745d12a82fb3b44f2b15a3e2db83b44d1c64f37"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+    "sha256": "148d3cc8da05a2f729caf919a5d69354016554f58afd15b0b9bf88498294f9d7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_13.sv",
+    "sha256": "888dc80ed642a3fd6d36097900d02cf07e9f14df362217c166b57aa8e7300410"
+   }
+  ],
+  "impl_sha256": "b4c74d77a03feaa5aede44c54c853161504865ff04fa4577ca794193c80e32bc",
+  "repo_impl_files": 26
+ },
+ "mc_memory_objects": [
+  "sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt",
+  "array_13"
+ ],
+ "native_facts_sha256": "b964624912e57fdd1156e030778d073264dd75617294791585a046e0123275e8",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 9301,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "8165a4806905be36a1ce1907dd331462d6c3cd70",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/Prefetcher.json",
+    "sha256": "9d1d508ba50c7d185872abfed7445daf4dd1d3852e775cf7ecfbe768b2db718e"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "assembly",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "219e043a2d7ca85af12960c51187c9b7985257cfba21410ba45b68a68e73c680"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "d8aea30110c6bed8fa6f50922ce9937904dbf43f3667ad0d98a876ee6d264f24",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "c4e7732b2799f17bb2dc0ea2a95085dab6c0bf4997696bbdb880522ba443fe55",
+ "provisional": false,
+ "receipt_sha256": "e5d67459cc818b7ecd06f7102696d1d51be06abfc967f77ca9a3bfb0518f9469",
+ "reproduce": {
+  "command": "PROOF_COMMIT=8165a4806905be36a1ce1907dd331462d6c3cd70 scripts/run_proof.sh Prefetcher Prefetcher",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "5f01c632f8a3cd2ab355f3b7aca01d3949d0f085f5bfc6f71b4e4e8e597273ec",
+ "run_id": "Prefetcher-20261005T090625Z-8165a4806",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/Prefetcher.tcl",
+    "sha256": "1888ad9f7c2a88f172b413be1493876552936e6d2e76743db943ebef310900dc"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/Prefetcher/fm_pins_pre.tcl",
+    "sha256": "219e043a2d7ca85af12960c51187c9b7985257cfba21410ba45b68a68e73c680"
+   }
+  ],
+  "sha256": "f4ce66d711afa75c444e7c2cee00410a5d30b1bbb4ccd7acff3b619d3d01ddb7"
+ },
+ "target": "Prefetcher",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Prefetcher",
+ "variant": "Prefetcher",
+ "verdict": "SUCCEEDED"
+}
