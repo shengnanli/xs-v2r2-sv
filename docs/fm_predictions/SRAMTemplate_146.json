@@ -13,6 +13,5 @@
       "in_bits": 24,
       "points": 24
     }
-  },
-  "note": "codex 0219 §2 重证：impl 侧 sram_array_..._l2_pftch_rrt/array_13 改读本仓 rtl/common 重写。预测 passing = 75（= 上一次 official 实测；包装层只有组合直连/wmode&en，进的是同一 array_13_ext 黑盒输入比较点，点数不变），其余计数全 0，verdict SUCCEEDED。"
+  }
 }

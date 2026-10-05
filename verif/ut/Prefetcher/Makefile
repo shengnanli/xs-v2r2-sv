@@ -35,8 +35,8 @@ RTL_SRCS = $(RTL_DIR)/l2/Prefetcher.sv \
            $(RTL_DIR)/uncore/Pipeline_1.sv \
            $(RTL_DIR)/frontend/xs_FixedPriorityArbiter_core.sv \
            $(RTL_DIR)/frontend/Arbiter4_PrefetchReq.sv
-RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
-                  $(XSSV_HOME)/rtl/common/array_13.sv
+RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+                  $(GOLDEN_RTL)/array_13.sv
 TB_SRCS  = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/Prefetcher.sv \
@@ -58,6 +58,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Prefetcher.sv \
               $(GOLDEN_RTL)/Pipeline_1.sv \
               $(GOLDEN_RTL)/Queue1_PrefetchReq.sv \
               $(GOLDEN_RTL)/Arbiter4_PrefetchReq.sv \
+              $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+              $(GOLDEN_RTL)/array_13.sv \
               $(GOLDEN_RTL)/array_13_ext.v
 FM_VARIANTS = Prefetcher
 FM_REF_DEPS_Prefetcher = PBestOffsetPrefetch.sv VBestOffsetPrefetch.sv DelayQueue.sv DelayQueue_1.sv \

@@ -15,8 +15,8 @@ RTL_SRCS = $(RTL_DIR)/l2/PBestOffsetPrefetch.sv \
            $(RTL_DIR)/uncore/RecentRequestTable.sv \
            $(RTL_DIR)/common/xs_SRAMTemplate_core.sv \
            $(RTL_DIR)/common/SRAMTemplate_146.sv
-RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
-                  $(XSSV_HOME)/rtl/common/array_13.sv
+RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+                  $(GOLDEN_RTL)/array_13.sv
 TB_SRCS  = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/PBestOffsetPrefetch.sv \
@@ -24,6 +24,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/PBestOffsetPrefetch.sv \
               $(GOLDEN_RTL)/OffsetScoreTable.sv \
               $(GOLDEN_RTL)/RecentRequestTable.sv \
               $(GOLDEN_RTL)/SRAMTemplate_146.sv \
+              $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+              $(GOLDEN_RTL)/array_13.sv \
               $(GOLDEN_RTL)/array_13_ext.v
 FM_VARIANTS = PBestOffsetPrefetch
 FM_REF_DEPS_PBestOffsetPrefetch = DelayQueue.sv OffsetScoreTable.sv RecentRequestTable.sv \

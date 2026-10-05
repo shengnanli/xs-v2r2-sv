@@ -12,12 +12,14 @@ RTL_SRCS = $(RTL_DIR)/common/xs_SRAMTemplate_core.sv \
            $(RTL_DIR)/uncore/RecentRequestTable_1.sv
 TB_SRCS = tb.sv
 
-RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
-                  $(XSSV_HOME)/rtl/common/array_13.sv
+RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+                  $(GOLDEN_RTL)/array_13.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/RecentRequestTable.sv \
               $(GOLDEN_RTL)/RecentRequestTable_1.sv \
               $(GOLDEN_RTL)/SRAMTemplate_146.sv \
+              $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+              $(GOLDEN_RTL)/array_13.sv \
               $(GOLDEN_RTL)/array_13_ext.v
 
 FM_REF_DEPS_RecentRequestTable = SRAMTemplate_146.sv sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv array_13.sv

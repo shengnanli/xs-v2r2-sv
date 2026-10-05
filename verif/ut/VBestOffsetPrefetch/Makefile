@@ -21,8 +21,8 @@ RTL_SRCS = $(RTL_DIR)/l2/VBestOffsetPrefetch.sv \
            $(RTL_DIR)/common/RRArbiterInit_14.sv \
            $(RTL_DIR)/common/RRArbiterInit_15.sv \
            $(RTL_DIR)/l2/PrefetchReqBuffer.sv
-RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
-                  $(XSSV_HOME)/rtl/common/array_13.sv
+RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+                  $(GOLDEN_RTL)/array_13.sv
 TB_SRCS  = tb.sv
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/VBestOffsetPrefetch.sv \
@@ -33,6 +33,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/VBestOffsetPrefetch.sv \
               $(GOLDEN_RTL)/PrefetchReqBuffer.sv \
               $(GOLDEN_RTL)/RRArbiterInit_14.sv \
               $(GOLDEN_RTL)/RRArbiterInit_15.sv \
+              $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv \
+              $(GOLDEN_RTL)/array_13.sv \
               $(GOLDEN_RTL)/array_13_ext.v
 FM_VARIANTS = VBestOffsetPrefetch
 FM_REF_DEPS_VBestOffsetPrefetch = DelayQueue_1.sv OffsetScoreTable_1.sv RecentRequestTable_1.sv SRAMTemplate_146.sv \
