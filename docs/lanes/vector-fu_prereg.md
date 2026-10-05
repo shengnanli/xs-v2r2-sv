@@ -564,3 +564,9 @@ PROOF_COMMIT=f60583b94，`bash scripts/run_proof.sh VFAlu VFAlu`：native SUCCEE
 unmatched 全 0，constant_reg **362**，黑盒 0，dont_verify 无；钉点 `VFALUP_PIN_PRE_END n=1104 bad=0`、`VFALU_PIN_END n=34`（2286 s）。
 预测 5319 / 362 —— 逐项相等；`fm_predict.py check VFAlu`：5681 − 5319 = 362，rc=0。vmucp 六条：(1) 34 点（字面钉）+ vdIdx_r[6:3] 4 位（按名）；
 (2) 38↔38；(3) unread_notcompared 0、全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VFAlu.tcl 在 script_closure。
+
+### K. VFMA —— evidence/0ff9bafc9912/VFMA
+
+PROOF_COMMIT=0ff9bafc9，`bash scripts/run_proof.sh VFMA VFMA`：native SUCCEEDED，passing **6024** / failing 0 / unverified 0 / aborted 0 / unread 0，
+unmatched 全 0，constant_reg **206**，黑盒 0，dont_verify 无，vmucp 不开；钉点 `VFMAS_PIN_END ok=3508 bad=0`（271 s）。预测 6024 / 206 ——
+逐项相等；`fm_predict.py check VFMA`：6230 − 6024 = 206，rc=0。
