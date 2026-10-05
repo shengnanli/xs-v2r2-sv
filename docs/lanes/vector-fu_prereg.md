@@ -1,0 +1,572 @@
+# vector-fu lane（agent/vector-fu）—— 跑前登记
+
+本文件在每个目标 **FM 起跑之前**提交对应分节；跑完在文末「对账」追加，
+★不修改已提交分节的任何数字★。
+
+## 0. 输入
+
+| 项 | 值 |
+|---|---|
+| 基线 commit | `8af07f3f9`（main 上集成者预建 claim） |
+| 工作树 | `/home/eda/xs-env/wt-vector-fu`，分支 `agent/vector-fu` |
+| golden | `/home/eda/xs-env/G1-canonical/golden-rtl`（只读） |
+| 口径 | 全部 `signoff-strict`，`FM_MERGE_DUP=false`（模型严格适用），无 dont_verify |
+
+## 1. VecDataSplitModule（golden 152 行，纯组合叶子）
+
+### 1.1 为什么原有重写件没有 receipt
+
+`rtl/backend/VecDataSplitModule.sv` 来自 `5ccd73c62`（newrtl-next200c「checkpoint recovered readable leaf
+implementation」——该 commit 明说只是实现 bring-up checkpoint，不声称 UT/FM 签核）。全仓（含各 worktree）
+没有它的 UT 目录、Makefile FM_VARIANTS 条目或任何 evidence/*/VecDataSplitModule。另外它是单个 module
+（无 `xs_*_core`），不合单文件规范。本 lane：改成 `xs_VecDataSplitModule_core`（packed 数组按元素宽度重解释）+
+golden 同名 wrapper，新建 `verif/ut/VecDataSplitModule`。
+
+### 1.2 UT（9 档 × 200k，commit ab6b77c6d 的字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+oracle_errors=0（独立逐元素取位）；覆盖：全部 30 个输出的每一位都见过 0 和 1（PASS 判据）。
+变异自证（scratchpad，5k 拍）：M1 16 位视图第 3 元素接成第 4 元素 ⇒ errors=3125；M2 8 位视图元素反序 ⇒ errors=3506。
+纯组合无寄存器，initreg 三档对行为无影响（照规范仍跑）。
+
+复跑：`cd verif/ut/VecDataSplitModule && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 1.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VecDataSplitModule.json）
+
+| 项 | 预测 |
+|---|---|
+| passing | **512**（寄存器 0 + 输出位 16×8+8×16+4×32+2×64 = 512） |
+| failing / unverified / aborted / unread | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| 黑盒 / dont_verify / vmucp | 无 / 无 / 不开 |
+| verdict | SUCCEEDED（signoff-strict） |
+
+没有做过任何 FM 试跑。
+
+## 2. FloatAdderF64Pipeline（golden 334 行；重写 313 行）
+
+### 2.1 结构与子模块处置
+
+- 标量 f64 加法器顶层（FloatAdder 的 f64 通路）：`xs_FloatAdderF64Pipeline_core`（§1 拆字段 / §2 特殊值 / §3 far-close
+  两路 / §4 min-max-比较-sgnj-fclass / §5 第 0 拍寄存器 / §6 第 1 拍选择）+ golden 同名 wrapper。
+- child：FarPathFloatAdderF64WidenPipeline（evidence/6038c4afbc60）、ClosePathFloatAdderF64WidenPipeline（evidence/5990b596a86b）
+  及其闭包全部已签核 → 两侧白盒（ref golden / impl 重写件），无黑盒。
+- 寄存器逐个对应 golden 15 个 reg（含两个指数/尾数恒常量的 64 位特殊结果寄存器，整宽照留）。
+
+### 2.2 UT（9 档 × 200k，commit d939ecbb6 的字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+| 7  | checks=199998 errors=0 PASSED | checks=199998 errors=0 PASSED | checks=199998 errors=0 PASSED |
+| 42 | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+
+独立 IEEE oracle（fp_add_oracle_pkg + 本目录 fp64_misc_oracle_pkg）全部 oracle_errors=0。覆盖（seed 1 / +0）：
+oracle 186956 次，far 55181 / close 14635，NaN 结果 19601 / Inf 结果 1742，NV 6675 / OF 906 / NX 43921，
+canonical 标志 a/b 11712/11675，15 个已定义 op 码各 >= 1000，fire=0 拍 50090，输出每位见过 0/1（PASS 判据）。
+变异自证见文末对账节（证明起跑后在 scratchpad 跑，不进库）。
+
+复跑：`cd verif/ut/FloatAdderF64Pipeline && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`
+
+### 2.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/FloatAdderF64Pipeline.json）
+
+模型 expected = 1075（golden 闭包寄存器位 1006 = 本体 334 + far 361 + close 311；顶层输出位 69）。
+预期 constant reg（不进 passing）共 **131**：
+- 本体 126：`float_adder_result_r_1[62:0]`（Inf 结果的指数全 1 / 尾数 0，63 位）+ `float_adder_result_r_2[62:0]`（两零结果低 63 位恒 0）；
+- 本体 4：`io_fflags_r_1[3:0]`（非加减类 fflags 低 4 位恒 0）；
+- close 子树 1：`U_close_path/U_CS4_io_adder_op1_r_reg[52]`（恒 0 减数 MSB；子树自身签核时 constant_reg=1 即此点）。
+
+vmucp（standing rule 六条，`verif/fm_target_config/FloatAdderF64Pipeline.tcl` + `verif/ut/FloatAdderF64Pipeline/fm_pins.tcl`
+字面 3 对）：close 子树两侧对称死位 CS4 op0[52] / CS4 op1[52] / Lshift src[53]，与子树自签核同一组。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **944**（= 1075 − 131） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 131 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED（signoff-strict） |
+
+没有做过任何 FM 试跑；常量位数按 golden 源码逐个寄存器数出，若 FM 的常量折叠多/少于此，差额在对账节逐位指认。
+
+## 3. FloatAdderF64WidenPipeline（golden 364 行；重写 365 行）
+
+### 3.1 结构与子模块处置
+
+- 向量 f64 / f32→f64 加宽加法器（VectorFloatAdder 的 64 位 lane）：`xs_FloatAdderF64WidenPipeline_core`（§1 选操作数 /
+  §2 特殊值（f32 来源的 0x369 / 0x47F 指数）/ §3 far-close / §4 非加减类 22 个 op / §5 第 0 拍寄存器 / §6 第 1 拍选择）+ wrapper。
+- child 同 §2（far / close 及闭包全部已签核，两侧白盒）。寄存器逐个对应 golden 16 个 reg（两个 64 位常量特殊结果寄存器整宽照留）。
+- 钉点：`fm_pins_pre.tcl`（匹配前，字面 444 对：本体 16 寄存器 335 位语义名 + close 子树两对同源双份寄存器 109 位，
+  依据见 §2 首跑失败的对账 B）+ `fm_pins.tcl`（匹配后，close 死位 3 对，同 §2）。
+
+### 3.2 UT（9 档 × 200k，commit d939ecbb6 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+| 7  | checks=199998 errors=0 PASSED | checks=199998 errors=0 PASSED | checks=199998 errors=0 PASSED |
+| 42 | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+
+独立 IEEE oracle 全部 oracle_errors=0；覆盖（seed 1 / +0）：oracle 152288，far 59040 / close 13941，加宽加法 27630（其中
+加宽零操作数 3258、.wv 7087、vfwredosum 7036），NaN 结果 13659 / Inf 结果 3818，NV 8243 / OF 757 / NX 44263，22 个 op 各 >= 1000。
+变异（scratchpad，30k 拍）：f32 零指数 0x369→0x36A ⇒ errors=380；vfwredosum 的 b 也加宽 ⇒ 1057；fsum_ore 掩码位换 mask[1] ⇒ 135；
+比较符号改用选后操作数 ⇒ 382（oracle 0：向量单元不对加宽格式发比较，差分抓到）；f32 全 1 指数 0x47F→0x47E ⇒ 1613；
+★UT 抓不到★：「零操作数直通」去掉 res_widening 门控（200k 拍 errors=0）——非加宽时 a=0 走 far/close 也精确给出 ±b，
+推断为输出等价变异；FM 是最终裁判。
+
+### 3.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/FloatAdderF64WidenPipeline.json）
+
+模型 expected = 1076（寄存器 1007 = 本体 335 + far 361 + close 311；输出 69）。预期 constant reg **131**（同 §2：本体
+float_adder_result_r_1[62:0] 63 + float_adder_result_r_2[62:0] 63 + io_fflags_r_1[3:0] 4 + close CS4 op1[52] 1）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **945**（= 1076 − 131） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 131 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过 FM 试跑（同族 FloatAdderF64Pipeline 的第二个正式 run 在跑，本节登记早于本目标任何证明）。
+
+## 4. FloatDivider（golden 166 行；重写 128 行）
+
+### 4.1 结构与子模块处置
+
+- 标量除法 / 开方单元外壳：`xs_FloatDivider_core`（§1/§2 启动分派与开方器格式码减 1 / §3 握手与结果汇合）+ wrapper；本层无寄存器。
+- child：FloatDividerR64（evidence/6038c4afbc60）+ fpsqrt_r16（evidence/44292961f2c0）及其闭包全部已签核 → 两侧白盒，无黑盒。
+
+### 4.2 UT（9 档 × 200k，commit d939ecbb6 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=799990 errors=0 PASSED | checks=799990 errors=0 PASSED | checks=799990 errors=0 PASSED |
+| 7  | checks=799990 errors=0 PASSED | checks=799990 errors=0 PASSED | checks=799990 errors=0 PASSED |
+| 42 | checks=799998 errors=0 PASSED | checks=799998 errors=0 PASSED | checks=799998 errors=0 PASSED |
+
+（checks = 每拍 4 个输出 × 200k。）独立 IEEE oracle（除法照抄 FloatDividerR64 UT、开方照抄 fpsqrt_r16 UT）全部 oracle_errors=0；
+覆盖（seed 1 / +0）：除法 oracle 20595、开方 oracle 24585；除法结果类别 规格/非规格/上溢/NaN/∞/0 = 8627/3054/1647/4639/1270/1358；
+标志 NV/DZ/OF/UF/NX = 1568/588/1647/2801/10436；flush 打断 1044、finish 反压 17476、两子单元同时在忙 70442 拍。
+★UT 发现的 golden 行为★（照抄、写进 tb 头）：start 分派不看对外 start_ready，除法器在忙时开方器照样能接新运算（反之亦然）。
+变异（scratchpad，20k 拍）：开方格式码不减 1 ⇒ errors=15106；start_ready 与改或 ⇒ 10048；结果汇合改优先级 ⇒ 13247；
+b 的 canonical 标志接成 a 的 ⇒ 829。
+
+### 4.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/FloatDivider.json）
+
+模型 expected = 751（寄存器 680 = FloatDividerR64 366 + fpsqrt_r16 314；输出 71）。预期 constant reg **30**
+（= 两个子单元自签核的 constant_reg 27 + 3，本层不约束它们的任何输入）。vmucp：FloatDividerR64 的 fp_format_onehot_q[2] 1 位
+（`verif/fm_target_config/FloatDivider.tcl`，无钉点，预期 FM 按名配上）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **721**（= 751 − 30） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 30 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过任何 FM 试跑。
+
+## 5. FPCVT（golden 145 行；重写 87 行）
+
+### 5.1 结构与子模块处置
+
+- 标量浮点转换外壳：`xs_FPCVT_core`（{opType[4:3], sew} → 源 / 结果宽度独热两张译码表，case 表与 Scala TruthTable 逐行对应；
+  golden 的 PLA 积之和与该表 16 种输入逐一核对相等）+ wrapper（wrapper 里例化 CVT64 fcvt，层次名同 golden）。本层纯组合。
+- child：**CVT64 —— docs/coverage_three_axis.tsv 第 3 列 PROVEN_IN_CONE，main 无重写件**（exeunits lane 有，分支未合入、属其认领）→
+  两侧同源 golden（RTL_GOLDEN_DEPS，同 verif/ut/FCVT 的处置），不设黑盒；CVT64 例化的 FP_INCVT 及其 4 个 child（已签核）
+  两侧白盒（ref golden / impl 重写件）。★exeunits 的 CVT64 重写件合入 main 后，本 receipt 的 impl 闭包会变（CVT64 golden→重写件），需重证。★
+- vmucp：FP_INCVT 内 fcvtmodTrueExpReg[4:0] 5 位两侧对称死位（与 FP_INCVT / FCVT 签核同一组，按名配上，无钉点）。
+
+### 5.2 UT（9 档 × 200k，commit fcbaac7f0 的字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED |
+| 7  | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED |
+| 42 | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED | checks=199985 errors=0 PASSED |
+
+★UT 限度★：CVT64 两侧共用 golden 定义，FP_INCVT 在两侧都解析到 golden（重写件的替换由 FM 兜底；其自身 UT 在 verif/ut/FP_INCVT）。
+独立 oracle：tb 内按 Scala TruthTable 另写的表逐拍比重写核的 input1H / output1H，oracle_errors=0；16 种 {宽度关系, sew} 各 >= 1000 拍；
+fire 计数（seed 1 / +0）f2i 71406 / i2f 35839 / f2f 32676 / fround 24250 / fcvtmod 9222；result 64 位、fflags 除 DZ 外每位见过 0/1。
+变异（scratchpad，20k 拍）：变窄 32→16 表项结果宽度改 32 ⇒ errors=1159；f64→f16 表项改 64 ⇒ 386；
+★default 行 input1H 改 W8 ⇒ 差分 0、oracle 5634★（非法组合下 CVT64 输出不受 input1H 影响，只有 oracle 看得见；FM 同样只比输出，
+这类变异两侧等价，不构成可观测差异）。
+
+### 5.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/FPCVT.json）
+
+模型 expected = 572（寄存器 503 = CVT64 78 + FP_INCVT 425；输出 69）。预期 constant reg **27**（= FP_INCVT 自签核与 FCVT 签核的
+constant_reg 27，本层只是把 input1H/output1H 从自由输入换成译码表输出，不新增常量寄存器）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **545**（= 572 − 27） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 27 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过任何 FM 试跑。
+
+## 6. VectorFloatAdder（golden 304 行；重写 281 行）
+
+### 6.1 结构与子模块处置
+
+- 向量浮点加法单元 64 位一组：`xs_VectorFloatAdder_core`（§1 三个加宽格式化件 / §2 折叠路由 / §3 五条运算 lane / §4 按锁存格式拼结果与
+  20 位 fflags）+ wrapper。本层唯一寄存器 fp_format_reg（2 位）。
+- child 全部两侧白盒（ref golden / impl 重写件）：FloatAdderWidenFormat ×3（evidence/d65d2da418a4）、
+  FloatAdderF32WidenF16MixedPipeline ×2（evidence/194f78e14165）、FloatAdderF64WidenPipeline ×1（本 lane §3/§D）、
+  FloatAdderF16Pipeline ×2（evidence/6038c4afbc60）及各自闭包。无黑盒。
+- 钉点：`fm_pins_pre.tcl`（匹配前，字面 444 对 = F64 lane 自签核的同一套，前缀换成 U_F64_Widen_0）+ `fm_pins.tcl`（匹配后，
+  五条 lane 的对称死位字面 17 对 = 各 lane 自签核的同一组）。vmucp 配置 `verif/fm_target_config/VectorFloatAdder.tcl`。
+
+### 6.2 UT（9 档 × 200k，commit fcbaac7f0 的字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+| 7  | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED |
+| 42 | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED | checks=199999 errors=0 PASSED |
+
+独立按元素 IEEE oracle（加减含加宽 .vv/.wv 与 uop_idx 半边选择、min/max、feq/flt/fle；fflags 组布局按 golden 怪癖建模）
+全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 88066，加减 f16/f32/f64 = 15826/11947/11977，加宽 f32/f64 = 4003/3915
+（.wv 956/973、uop_idx=1 2037/1943），比较类 40398，fold 单热 1/2/4 = 10635/10499/10529，fp_format=0 9254 拍；
+NaN 结果 24194 / NV 25762 / OF 1074 / NX 51055；输出每位见过 0/1（fflags 各组 DZ/UF 只要求见过 0）。
+变异（scratchpad，20k 拍）：fflags[9:5] 在 f32 时取错 lane ⇒ errors=1724（oracle 986）；U_F32_Mixed_1 的掩码位固定取 mask[2] ⇒ 30；
+fold[2] 取错 vs2_fold 半字 ⇒ 448；F64 lane 折叠加宽源不选 fold 件 ⇒ 43；fp_format_reg 去掉 fire 使能 ⇒ 2727。
+（后三个 oracle 0：折叠 / merge 不在 oracle 范围，差分抓到。）
+
+### 6.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VectorFloatAdder.json）
+
+模型 expected = 2131（寄存器 2047 = 本层 2 + F32Mixed 310×2 + F64Widen 1007 + F16 209×2；输出 84）。预期 constant reg **181**
+（= 各 lane 自签核 constant_reg 之和：F32Mixed 20×2 + F64Widen 131 + F16 5×2；本层不把任何 lane 输入接成常量，
+三个格式化件无寄存器）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **1950**（= 2131 − 181） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 181 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过任何 FM 试跑。可能出错处：两份同构 lane（F32Mixed ×2、F16 ×2）的内部寄存器在签名分析里互相混淆——若出现 unmatched，
+按 F64 lane 的办法补匹配前钉点（只消名差），不改 RTL。
+
+## 7. VIAlu（golden 202 行；重写 166 行）
+
+### 7.1 结构与子模块处置
+
+- yunsuan VIAlu（向量整数归约 / 掩码 / vmv.x.s，两拍）：`xs_VIAlu_core`（§1 两个子单元 / §2 vmv.x.s 符号扩展与两拍打拍 / §3 出口三选一）
+  + wrapper。本层 5 个寄存器名与 golden 同名、全无复位（validS1 = RegNext）。
+- child：Reduction（evidence/6038c4afbc60）及其闭包（CSA3to2_124/125/127/132、CSA4to2_15/16、compare_2to1(_2)、compare_3to1(_1/_2/_6)，
+  golden compare_* 内部的 Adder_xb* 仅 ref 侧）；VMask（evidence/afe9babc7a2e，叶子）。两侧白盒，无黑盒。
+- 钉点：`fm_pins_pre.tcl`（Reduction 自签核那套 817 位，前缀换成 vReduAlu）。vmucp：Reduction vdType_reg_s1[3:2] 2 位 + VMask
+  vs1_reg_s1[127:8] 120 位（各同其自签核），配置 `verif/fm_target_config/VIAlu.tcl`。
+
+### 7.2 UT（9 档 × 200k，commit fcbaac7f0 的字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED |
+| 7  | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED |
+| 42 | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED | checks=199997 errors=0 PASSED |
+
+oracle（归约照抄 verif/ut/Reduction 的整数语义参考 + vmv.x.s 符号扩展；VMask 类纯差分）每档 oracle_checks 约 109.7k，oracle_errors=0；
+覆盖：vmv.x.s 4 种 SEW 各约 8k，VMask 7 个 opcode 各约 7k，归约 8 种运算 × 4 种 vd SEW 各 >= 781，加宽 alu 3 种 SEW 各约 450。
+★更正一次无效读数★：第一遍 9 档里 seed 7 的 random / 7017 与 seed 42 的 random / 42017 跑在**同一 UT 目录正在跑变异体**的时段
+（变异 harness 改写 rtl/backend/VIAlu.sv 并重编 simv），seed 42 两档因此读到 errors=11793 / 25628 —— 那是变异体的读数，不是 RTL。
+已在变异结束、文件还原（git status 干净）后整轮 9 档重跑，上表是重跑读数。规矩：同一 UT 目录有后台回归时不跑变异。
+变异（scratchpad，20k 拍）：归约 opcode 上界 0x27→0x26 ⇒ errors=1150；vmv.x.s 的 16 位零扩展 ⇒ 443；opcodeS2 用 in_valid 而非 validS1 门控 ⇒ 2542。
+
+### 7.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VIAlu.json）
+
+模型 expected = 2106（寄存器 1978 = 本层 141（vs2Ext 64 + opcodeS1 6 + validS1 1 + opcodeS2 6 + vs2ExtS2 64）+ Reduction 817 + VMask 1020；输出 128）。预期 constant reg **1**
+（VMask 的 ele_cnt_reg_s1[0]，同其自签核；Reduction 自签核 constant 0）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **2105**（= 2106 − 1） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 1 |
+| 黑盒 / dont_verify | 无 / 无 |
+| verdict | SUCCEEDED |
+
+没有做过任何 FM 试跑。
+
+## 8. VFDivSqrt（golden 553 行；重写 452 行 + 共享辅助件 xs_VecFflagsElemMask 59 行）
+
+### 8.1 结构与子模块处置
+
+- VecNonPipedFuncUnit 外壳（同 VIDiv 一类）：`xs_VFDivSqrt_core`（§1 保持旁路 / §2 冲刷 / §3 两个 VectorFloatDivider / §4 Mgu 与 fflags 合并 /
+  §5 出口锁存）+ wrapper。保持旁路寄存器名与 golden 同名（outCtrl_r_* / outData_r_*）。
+- 新建共享辅助件 `rtl/common/xs_VecFflagsElemMask.sv`（VFDivSqrt / VFMA / VFAlu 共用；golden 里由 VecFuncUnit 内联、无对应模块）：
+  按 eew / vlmul / uop / vl / 掩码算出 8 组 fflags 里哪些计入。纯组合。
+- child 全部两侧白盒：VectorFloatDivider ×2（evidence/6038c4afbc60）+ 闭包、VecDataSplitModule ×2（本 lane §A）、Mgu（evidence/d09e1997840f）+ 闭包。
+- vmucp：outCtrl_r_vpu_vuopIdx[6:3] 4 位（只读 [2:0]），配置 verif/fm_target_config/VFDivSqrt.tcl。
+
+### 8.2 UT（9 档 × 200k，commit 54eaace12 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+按元素 IEEE oracle（除法 / 开方照抄 VectorFloatDivider UT；Mgu 的 mask / tail / vstart / vstart>=vl 与 fflags 元素选择按 RVV 语义独立建模；
+只对合法 RVV 配置——Mgu 的字节计数 vl<<SEW 截 8 位，非法 vl 无 RVV 语义）全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 10529
+（除 5368 / 开方 5161；SEW16/32/64 = 3914/3516/3099），掩码关 5372、尾部 ta0/1 = 10296/9902、vstart 前部 1793、vstart>=vl 9780、分数 LMUL 2658、
+flush 打断 840、反压 6361、违规发起 2902。
+变异（scratchpad，20k 拍）：去掉 Mgu 前的清掩码 ⇒ errors=364；out_valid 与改或 ⇒ 132；fflags 摊位 e32 错 ⇒ 104；掩码窗口用 vlMaxThisUop ⇒ 9；
+★UT 抓不到★：冲刷的「level=1 且就是这条」分支去掉（20k 拍 errors=0）——需要冲刷 robIdx 与在途 uop 完全相等且 level=1，随机激励
+命中率约 1/(150·512·2)，归 FM。
+
+### 8.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VFDivSqrt.json）
+
+模型 expected = 3772（寄存器 2976 = 外壳 968 + VectorFloatDivider 1004×2；输出 796）。预期 constant reg **2**（两个 VectorFloatDivider
+各 1，同其自签核）。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **3770** |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 2 |
+| 黑盒 / dont_verify | 无 / 无 |
+
+没有做过任何 FM 试跑。可能出错处：两个同构 VectorFloatDivider 子实例在签名分析里混淆（同 §G 的现象）——若 unmatched，补匹配前钉点，不改 RTL。
+
+## 9. VIAluFix（golden 1040 行；重写 618 行）
+
+### 9.1 结构与子模块处置
+
+- VecPipedFuncUnit（LAT=1）外壳：`xs_VIAluFix_core`（§1 valid / 反压 / §2 typeMod 译码与 isSub / isMisc（QMC 化简后的表，按 golden 逐码列出）/
+  §3 两 lane 操作数分组 / §4 掩码与旧 vd 切片 / §5 两个 VIntFixpAlu64b / §6 第 1 级寄存器 / §7 vwsll 还原、比较位加尾部、Mgu / Mgtu、vxsat）+ wrapper。
+- child 全部两侧白盒：VIAluSrcTypeModule（evidence/20d19bc5cd93）、VecDataSplitModule ×2（本 lane）、VIntFixpAlu64b ×2（evidence/5a3282d30ab1）+ 闭包、
+  Mgu（evidence/d09e1997840f）+ 闭包、Mgtu（evidence/cb2892a30a11）。无钉点、无 vmucp。
+
+### 9.2 UT（9 档 × 200k，commit a2847d61f 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+按元素 oracle（同宽 vadd/vsub/vand/vor/vxor/vsll/vsrl/vsra/vmin(u)/vmax(u)/vmerge/vmv 与加宽 vwadd(u)/vwsub(u) .vv/.wv；只用合法编码；
+含 mask/tail/vstart/vstart>=vl，vxsat 应为 0）全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 91808，加宽 .vv / .wv = 12938 / 13268，
+SEW8/16/32/64 = 25266/24947/25168/16427，掩码关 45062、尾部 ta0/1 = 133849/135724、vstart 前部 24294、vstart>=vl 79564；
+差分覆盖 dstMask / narrow / ext 拍 = 18699 / 11239 / 11330。
+变异（scratchpad，20k 拍）：isSub 表去掉 0x1E ⇒ errors=44；掩码组号不看 narrow ⇒ 2；vmv.s.x 的 vl 不当 1 ⇒ 10；比较位不加尾部 ⇒ 27；
+变窄第 2 个 uop 不拼高半 ⇒ 244（均为差分抓到，oracle 范围外的路径）。
+
+### 9.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VIAluFix.json）
+
+模型 expected = 2147（寄存器 1356 = 外壳 650 + VIntFixpAlu64b 353×2；输出 791）。预期 constant reg **0**、unread 0。
+依据：lane 内非正式试跑（commit 7cd754e7e，RTL 字节同 a2847d61f，`make fm-VIAluFix FM_MODE=diagnostic-full`，不出 receipt）
+native SUCCEEDED passing 2147 / failing 0 / unverified 0 / unmatched 0 / unread 0。
+
+| 项 | 预测（正式 run_proof，signoff-strict） |
+|---|---|
+| passing | **2147** |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 0 |
+| 黑盒 / dont_verify / vmucp | 无 / 无 / 不开 |
+
+## 10. VFAlu（golden 1202 行；重写 707 行）
+
+### 10.1 结构与子模块处置
+
+- VecPipedFuncUnit（LAT=1）外壳：`xs_VFAlu_core`（§1 valid / 反压 / §2 第 0 级掩码：vfmerge 选择位、归约掩码 genMaskForReduction /
+  §3 两个 VectorFloatAdder / §4 第 0 级寄存器 existMaskReg / vs1Reg / outWiden / outVlFix / allVmZero / Mgu eew、vdIdx /
+  §5 第 1 级写回：结果选择、比较位、有序归约旧 vd 移位、Mgu ta/ma、fflags 选择、vl=0 不改 vd）+ wrapper。
+- ★本件抓到并照抄的 golden 细节★：f64 的折叠掩码在 Scala 里是**单项 Mux1H**——Chisel 单项 Mux1H 直接返回该项、不按选择位门控
+  （golden `isFold ? 8'h11 : 8'hFF` 即此）；照 Scala 字面写成门控会错（变异 m2 实测 errors=128）。
+- child 全部两侧白盒：VectorFloatAdder ×2（本 lane §6/§G）+ 全闭包、VecDataSplitModule ×2、Mgu + 闭包、Mgtu；共享辅助件 xs_VecFflagsElemMask。
+- 钉点：fm_pins_pre.tcl 1104 对（VectorFloatAdder 那 536 对 × 2 实例 + 4 条 lane 的 io_fflags_r_1[3:0] 常量寄存器 32 对）；fm_pins.tcl 34 对
+  （VectorFloatAdder 的 17 对死位 × 2）。vmucp：这 34 点 + 外壳 mgu_io_in_info_vdIdx_r[6:3] 4 位，配置 verif/fm_target_config/VFAlu.tcl。
+
+### 10.2 UT（9 档 × 200k，commit d7139c2dd 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+按元素 IEEE oracle（vfadd / vfsub / vfmin / vfmax / vfmerge 与加宽加减 .vv/.wv；含 vl=0、mask / tail / vstart / vstart>=vl 与 fflags 元素选择；
+只对第 0 级真正握手的 uop——被反压时第 0 级寄存器不更新，golden 行为只做差分）全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 61998
+（op0..4 = 8361/8202/8208/8327/8194，加宽 .vv/.wv = 10326/10380，SEW16/32/64 结果 = 13771/24001/24226），掩码关 17004、尾部 43838/43610、
+vstart 前部 8124、vstart>=vl 12752、vl=0 15691；差分覆盖：比较类 16859、vfmv.f.s / vfmv.s.f = 3811/3765、5 种归约 × {折叠, 不折叠} 各 >= 300。
+变异（scratchpad，20k 拍）：无序归约全掩码时不看 existMaskReg ⇒ errors=526；f64 折叠掩码按选择位门控 ⇒ 128；vfmv.s.f 的 vl 不改 ⇒ 179；
+vl=0 时对 vfmv.f.s 也不改 vd ⇒ 114；ta 修正去掉 ⇒ 165；★UT 抓不到★：outEew_s0 的加宽位改取 ctrlPipe_0（tb 里 ctrl 与 ctrlPipe_0 恒同值，
+结构上看不见），归 FM。
+
+### 10.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VFAlu.json）
+
+模型 expected = 5681（寄存器 4884 = 外壳 790 + VectorFloatAdder 2047×2；输出 797）。预期 constant reg **362**（= VectorFloatAdder 181×2）。
+依据：lane 内非正式试跑（commit 7cd754e7e 的钉点 1072 对版本，`make fm-VFAlu FM_MODE=diagnostic-full`，不出 receipt）：native SUCCEEDED，
+passing 5319 / failing 0 / unverified 0 / unread 0，constant_reg 360，unmatched 2+2（两对 lane 常量寄存器 io_fflags_r_1[0] 被签名匹配交叉配到
+兄弟 lane）—— 360 + 2 = 362；补 32 对常量钉点后预期 unmatched 0、constant 362。
+
+| 项 | 预测（正式 run_proof，vmucp 开） |
+|---|---|
+| passing | **5319**（= 5681 − 362） |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 362 |
+| 黑盒 / dont_verify | 无 / 无 |
+
+## 11. VFMA（golden 599 行；重写 430 行）
+
+### 11.1 结构与子模块处置
+
+- VecPipedFuncUnit（LAT=3）外壳：`xs_VFMA_core`（§1 valid / 反压链与调试信息 3 级搬运 / §2 两个 VectorFloatFMA 与加宽源分组 / §3 第 3 级 Mgu 与
+  fflags 合并）+ wrapper。
+- child 全部两侧白盒：VectorFloatFMA ×2（evidence/a757ff84032a 等，impl 闭包 sha 与当前字节一致）+ BoothEncoder / CSA 闭包、VecDataSplitModule ×3、
+  Mgu + 闭包；共享辅助件 xs_VecFflagsElemMask。
+- 钉点：fm_pins_pre.tcl 3508 对（VectorFloatFMA 自签核那 1754 位 × 2 实例，前缀换成 vfmas_0 / vfmas_1）。无 vmucp（无对称死位）。
+
+### 11.2 UT（9 档 × 200k，commit 0e66b16ee 的 RTL 字节）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+random` | `+vcs+initreg+<seed>017` |
+|---|---|---|---|
+| 1  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 7  | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+| 42 | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED | checks=200000 errors=0 PASSED |
+
+按元素独立 IEEE 乘加 oracle（新写 verif/ut/VFMA/fp_fma_oracle_pkg.sv：乘积精确、对齐粘滞、舍入后判 tiny；9 个运算码的取反 / 交换按 RVV 语义；
+加宽源元素按 vuopIdx[0] 选半边；Mgu mask / tail / vstart / vstart>=vl 与 fflags 元素选择）全部 oracle_errors=0。覆盖（seed 1 / +0）：oracle 81178，
+op0..8 = 10156/10090/10225/10263/10166/7609/7577/7554/7538，加宽 f32/f64 结果 = 6317/6312，SEW16/32/64 结果 = 22810/29187/29181；
+元素级 NV/OF/UF/NX = 20281/9424/3669/59859；掩码关 25731、尾部 68190/69672、vstart 前部 11807、vstart>=vl 72318、分数 LMUL 20332。
+变异（scratchpad，20k 拍）：低半 lane 加宽源取错块 ⇒ errors=678；写回 eew 不随加宽 +1 ⇒ 3091；vlmulFix 不随加宽 +1 ⇒ 375；
+★UT 抓不到★：out_valid 去掉 validPipe_3（tb 的 validPipe_3 是入口 valid 的 3 拍延迟，与本层 valid 链恒同值），归 FM。
+
+### 11.3 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/VFMA.json）
+
+模型 expected = 6230（寄存器 5434 = 外壳 1926 + VectorFloatFMA 1754×2；输出 796）。预期 constant reg **206**（= VectorFloatFMA 103×2）。
+依据：lane 内非正式试跑（commit 0773e232e 前后同字节，`make fm-VFMA FM_MODE=diagnostic-full`，不出 receipt）native SUCCEEDED passing 6024 /
+failing 0 / unverified 0 / unmatched 0 / unread 0，constant_reg 206，`VFMAS_PIN_END ok=3508 bad=0`。
+
+| 项 | 预测（正式 run_proof，signoff-strict） |
+|---|---|
+| passing | **6024** |
+| failing / unverified / aborted / unread_notcompared | 0 / 0 / 0 / 0 |
+| unmatched | 0(0) |
+| constant_reg | 206 |
+| 黑盒 / dont_verify / vmucp | 无 / 无 / 不开 |
+
+## 对账（跑完追加）
+
+### A. VecDataSplitModule —— evidence/a29f86c7a27c/VecDataSplitModule
+
+`bash scripts/run_proof.sh VecDataSplitModule VecDataSplitModule < /dev/null`（commit a29f86c7a）：
+native SUCCEEDED，passing 512 / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，黑盒 0，dont_verify 无。
+impl_closure `rtl/backend/VecDataSplitModule.sv` sha256 4c5691e6…（= 提交字节）。
+预测 512 vs 实测 512，差 0（`fm_predict.py check VecDataSplitModule` rc=0）。
+
+### B. FloatAdderF64Pipeline —— 首跑 FAILED（未收录）→ 补「匹配前」钉点后 evidence/56fb4b9ce03f/FloatAdderF64Pipeline
+
+**首跑（commit 9ba6efb8a，evidence/9ba6efb8ae1f，FAILED，不 add）**：native FAILED，passing 875 / failing 20（FM 默认 limit 截断，
+「至少 20」）/ unverified 43 / unmatched 125+125，constant_reg 12。unmatched.rpt 逐类：本体常量位 119 对（ref
+`float_adder_result_r_1[51:0]`/`_r_2[62:0]`/`io_fflags_r_1[3:0]` 为 DFF0X ↔ impl `s1_inf_result`/`s1_both_zero_result`/`s1_fflags_stage0`
+为 DFF0，名字不同、又是常量无签名）+ close 子树两对同源双份寄存器 6 位（golden `U_Lshift_io_src_r[1:0]` / `lshift_result_head_is_one_r_1[1:0]` /
+`close_fraction_result_r` / `EA_sub_value_r`，同一 D 输入两份，签名分析分不清）。20 个 failing 全是 `io_fp_c` 位，落在这些未配上寄存器的锥里。
+**根因是配对，不是 RTL**：修法 = `verif/ut/FloatAdderF64Pipeline/fm_pins_pre.tcl`（commit 75f0b38a2，字面 443 对：本体 15 寄存器 334 位
+按 golden 名 ↔ 语义名、close 两对按各自读者一一对应），RTL 一字未改（impl 闭包 sha 两跑相同：FloatAdderF64Pipeline.sv bb030055…）。
+预测（§2.3）登记在首跑之前，未改。
+
+**第二跑（PROOF_COMMIT=56fb4b9ce，`bash scripts/run_proof.sh FloatAdderF64Pipeline FloatAdderF64Pipeline`）**：
+native SUCCEEDED，passing **944** / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，constant_reg **131**，黑盒 0，
+dont_verify 无；钉点 `F64P_PIN_PRE_END n=443 bad=0`、`FADD64TOP_PIN_END n=3`。预测 944 / constant 131 —— 逐项相等；
+`fm_predict.py check FloatAdderF64Pipeline`：1075 − 944 = 131 = constant_reg 131，rc=0。
+vmucp 六条：(1) 精确绑定 = close 子树 3 点（钉点文件字面 3 对）；(2) 双射 3↔3；(3) 真比较：unread_notcompared 0、
+3 点里 CS4 op1[52] 归 constant（含在 131 内）、其余 2 点进 passing（模型 1075 − 131 = 944 恰好全比）；(4) 全零；(5) 无 dont_verify / elab147 /
+放宽 appvar / 黑盒；(6) `verif/fm_target_config/FloatAdderF64Pipeline.tcl` 在 sidecar/script_closure.list。
+变异（scratchpad，30k 拍，判据 = 失配数）：sgnj 不做 canonical 修正 ⇒ errors=51；fltq 的 NV 改任意 NaN ⇒ 177；
+去掉「差 1 且恰一个零指数归 far」 ⇒ 2；两零相加符号用 RUP ⇒ 42；fminm 不判 NaN ⇒ 97；fclass 不看 canonical ⇒ 15（全部 oracle 也同数抓到）。
+
+### C. FloatDivider —— evidence/56fb4b9ce03f/FloatDivider
+
+PROOF_COMMIT=56fb4b9ce，`bash scripts/run_proof.sh FloatDivider FloatDivider`：native SUCCEEDED，passing **721** / failing 0 / unverified 0 /
+aborted 0 / unread 0，unmatched 全 0，constant_reg **30**，黑盒 0，dont_verify 无。预测 721 / 30 —— 逐项相等；
+`fm_predict.py check FloatDivider`：751 − 721 = 30 = constant_reg 30，rc=0。vmucp 六条：(1) 精确绑定 = FloatDividerR64 的
+fp_format_onehot_q[2] 1 位（FM 按名配上，无钉点）；(2) 双射 1↔1；(3) 真比较：unread_notcompared 0，passing 含此点（751 − 30 恰好全比）；
+(4) 全零；(5) 无放宽、无黑盒；(6) `verif/fm_target_config/FloatDivider.tcl` 在 script_closure。
+
+### D. FloatAdderF64WidenPipeline —— evidence/fcbaac7f047f/FloatAdderF64WidenPipeline
+
+PROOF_COMMIT=fcbaac7f0，`bash scripts/run_proof.sh FloatAdderF64WidenPipeline FloatAdderF64WidenPipeline`：native SUCCEEDED，
+passing **945** / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，constant_reg **131**，黑盒 0，dont_verify 无；
+钉点 `F64W_PIN_PRE_END n=444 bad=0`、`FADD64W_PIN_END n=3`（925 s）。预测 945 / 131 —— 逐项相等；`fm_predict.py check`：
+1076 − 945 = 131 = constant_reg，rc=0。vmucp 六条同 §B（close 子树同一组 3 点；配置 verif/fm_target_config/FloatAdderF64WidenPipeline.tcl）。
+
+### E. FPCVT —— evidence/f18656085f00/FPCVT
+
+PROOF_COMMIT=f18656085，`bash scripts/run_proof.sh FPCVT FPCVT`：native SUCCEEDED，passing **545** / failing 0 / unverified 0 / aborted 0 /
+unread 0，unmatched 全 0，constant_reg **27**，黑盒 0，dont_verify 无。预测 545 / 27 —— 逐项相等；`fm_predict.py check FPCVT`：
+572 − 545 = 27 = constant_reg，rc=0。impl 闭包含 `golden-rtl/CVT64.sv`（两侧同源 golden，§5.1 已登记；exeunits 的 CVT64 重写件合入后需重证）。
+vmucp 六条：(1) FP_INCVT fcvtmodTrueExpReg[4:0] 5 位（FM 按名配上，无钉点）；(2) 5↔5；(3) unread_notcompared 0，572 − 27 = 545 全比；
+(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/FPCVT.tcl 在 script_closure。
+更正（不改 §5 原文）：§5 标题写的「重写 87 行」应为 **82 行**（`wc -l rtl/backend/FPCVT.sv`），是登记时笔误，与证明无关。
+
+### F. VIAlu —— evidence/dc51d6bbad58/VIAlu
+
+PROOF_COMMIT=dc51d6bba，`bash scripts/run_proof.sh VIAlu VIAlu`：native SUCCEEDED，passing **2105** / failing 0 / unverified 0 / aborted 0 /
+unread 0，unmatched 全 0，constant_reg **1**，黑盒 0，dont_verify 无；钉点 `VIALU_REDU_PIN_PRE_END regs=33 ok=817 bad=0`（91 s）。
+预测 2105 / 1 —— 逐项相等；`fm_predict.py check VIAlu`：2106 − 2105 = 1 = constant_reg，rc=0。
+vmucp 六条：(1) Reduction vdType_reg_s1[3:2] 2 位（钉配）+ VMask vs1_reg_s1[127:8] 120 位（按名配上）；(2) 122↔122；
+(3) unread_notcompared 0，2106 − 1 = 2105 全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VIAlu.tcl 在 script_closure。
+
+### G. VectorFloatAdder —— 首跑 FAILED（未收录）→ 补钉点后 evidence/7cd754e7e025/VectorFloatAdder
+
+**首跑（PROOF_COMMIT=38d3a4051，evidence/38d3a405182a，FAILED，不 add）**：native FAILED，passing 1835 / failing 20（截断，至少 20）/
+unverified 43 / unmatched 52+52，constant_reg 181。unmatched.rpt 逐类：全是 close 子树「同一 D 输入两份拷贝」的寄存器——
+U_F64_Widen_0 的 close_exponent_result_r / EA_sub_value_r_1（11+11）、U_F16_1 与 U_F16_3 的 close_exponent_result_r / EA_sub_value_r_1 /
+U_Lshift_io_src_r[1:0] / lshift_result_head_is_one_r_1[1:0] / close_fraction_result_r / EA_sub_value_r（各 15 或 13 位）。子树自签核时
+签名分析分得清，换到本层分不清。**根因是配对，不是 RTL**：修法 = fm_pins_pre.tcl 在 F64 lane 那 444 对之外按读者补 92 对
+（commit 7cd754e7e，共 536），RTL 一字未改。§6.3 预测登记在首跑之前，未改。
+
+**第二跑（PROOF_COMMIT=7cd754e7e）**：native SUCCEEDED，passing **1950** / failing 0 / unverified 0 / aborted 0 / unread 0，unmatched 全 0，
+constant_reg **181**，黑盒 0，dont_verify 无；钉点 `VFAP_PIN_PRE_END n=536 bad=0`、`VFADD_PIN_END n=17`（613 s）。预测 1950 / 181 ——
+逐项相等；`fm_predict.py check VectorFloatAdder`：2131 − 1950 = 181 = constant_reg，rc=0。vmucp 六条：(1) 五条 lane 17 点（字面钉）；
+(2) 17↔17；(3) unread_notcompared 0，2131 − 181 = 1950 全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VectorFloatAdder.tcl 在 script_closure。
+
+### H. VFDivSqrt —— evidence/462112cae72a/VFDivSqrt
+
+PROOF_COMMIT=462112cae，`bash scripts/run_proof.sh VFDivSqrt VFDivSqrt`：native SUCCEEDED，passing **3770** / failing 0 / unverified 0 / aborted 0 /
+unread 0，unmatched 全 0，constant_reg **2**，黑盒 0，dont_verify 无（332 s，无钉点）。预测 3770 / 2 —— 逐项相等；`fm_predict.py check`：
+3772 − 3770 = 2，rc=0。vmucp 六条：(1) outCtrl_r_vpu_vuopIdx[6:3] 4 位（按名配上）；(2) 4↔4；(3) unread_notcompared 0、全比；(4) 全零；
+(5) 无放宽、无黑盒；(6) verif/fm_target_config/VFDivSqrt.tcl 在 script_closure。
+更正（不改 §8 原文）：§8 标题的行数应为重写 **444** 行、xs_VecFflagsElemMask **54** 行（登记时笔误）。
+
+### I. VIAluFix —— evidence/65d1243f7a9c/VIAluFix
+
+PROOF_COMMIT=65d1243f7，`bash scripts/run_proof.sh VIAluFix VIAluFix`：native SUCCEEDED，passing **2147** / failing 0 / unverified 0 / aborted 0 /
+unread 0，unmatched 全 0，constant_reg 0，黑盒 0，dont_verify 无，vmucp 不开、无钉点（227 s）。预测 2147 / 0 —— 逐项相等；
+`fm_predict.py check VIAluFix` rc=0。
+
+### J. VFAlu —— evidence/f60583b94598/VFAlu
+
+PROOF_COMMIT=f60583b94，`bash scripts/run_proof.sh VFAlu VFAlu`：native SUCCEEDED，passing **5319** / failing 0 / unverified 0 / aborted 0 / unread 0，
+unmatched 全 0，constant_reg **362**，黑盒 0，dont_verify 无；钉点 `VFALUP_PIN_PRE_END n=1104 bad=0`、`VFALU_PIN_END n=34`（2286 s）。
+预测 5319 / 362 —— 逐项相等；`fm_predict.py check VFAlu`：5681 − 5319 = 362，rc=0。vmucp 六条：(1) 34 点（字面钉）+ vdIdx_r[6:3] 4 位（按名）；
+(2) 38↔38；(3) unread_notcompared 0、全比；(4) 全零；(5) 无放宽、无黑盒；(6) verif/fm_target_config/VFAlu.tcl 在 script_closure。
+
+### K. VFMA —— evidence/0ff9bafc9912/VFMA
+
+PROOF_COMMIT=0ff9bafc9，`bash scripts/run_proof.sh VFMA VFMA`：native SUCCEEDED，passing **6024** / failing 0 / unverified 0 / aborted 0 / unread 0，
+unmatched 全 0，constant_reg **206**，黑盒 0，dont_verify 无，vmucp 不开；钉点 `VFMAS_PIN_END ok=3508 bad=0`（271 s）。预测 6024 / 206 ——
+逐项相等；`fm_predict.py check VFMA`：6230 − 6024 = 206，rc=0。

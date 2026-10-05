@@ -1,0 +1,9 @@
+{
+  "target": "VectorFloatAdder",
+  "ut": "VectorFloatAdder",
+  "regs": 2047,
+  "outs": 84,
+  "expected": 2131,
+  "merge_dup": "false",
+  "model_applicable": true
+}

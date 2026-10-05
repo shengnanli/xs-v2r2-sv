@@ -1,0 +1,9 @@
+{
+  "target": "VecDataSplitModule",
+  "ut": "VecDataSplitModule",
+  "regs": 0,
+  "outs": 512,
+  "expected": 512,
+  "merge_dup": "false",
+  "model_applicable": true
+}

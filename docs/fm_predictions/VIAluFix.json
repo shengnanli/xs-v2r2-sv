@@ -1,0 +1,9 @@
+{
+  "target": "VIAluFix",
+  "ut": "VIAluFix",
+  "regs": 1356,
+  "outs": 791,
+  "expected": 2147,
+  "merge_dup": "false",
+  "model_applicable": true
+}

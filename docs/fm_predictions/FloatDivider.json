@@ -1,0 +1,9 @@
+{
+  "target": "FloatDivider",
+  "ut": "FloatDivider",
+  "regs": 680,
+  "outs": 71,
+  "expected": 751,
+  "merge_dup": "false",
+  "model_applicable": true
+}
