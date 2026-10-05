@@ -1,0 +1,94 @@
+# exublock2 lane（agent/exublock2）—— 跑前登记
+
+本文件在每个目标 **FM 起跑之前**提交对应分节；跑完在文末「对账」追加，★不修改已提交分节的任何数字★。
+
+## 0. 输入
+
+| 项 | 值 |
+|---|---|
+| 基线 | main `e1c779848` 之上的认领 commit `24229b85b`（`docs/lanes/exublock2_claim.md`） |
+| 工作树 | `/home/eda/xs-env/wt-exublock2`，分支 `agent/exublock2` |
+| golden | `/home/eda/xs-env/G1-canonical/golden-rtl`（只读） |
+| 认领目标 | `ExeUnit_13` / `_14` / `_15` / `_16` / `_17` → `ExuBlock_2` |
+| 口径 | 全部 `signoff-strict`，`FM_MERGE_DUP=false`，allowlist 空，无 dont_verify，无黑盒；vmucp 逐目标白名单（`verif/fm_target_config/<T>.tcl`） |
+| 冲突核对 | codex outbox 最新 0215、全部 `codex/*` 分支、全部 worktree 的 `*_claim.md` / `*_prereg.md` 逐名 grep：6 个目标无他人认领 / 改动（`fpu-parents_misc3_prereg.md` 里的 ExeUnit_13 只是「父未签」提及） |
+
+### 0.1 child 签核核实（receipt impl_closure / golden_closure 逐文件 sha256 对当前字节）
+
+| child | receipt | 结论 |
+|---|---|---|
+| VFMA | evidence/0ff9bafc9912/VFMA | SUCCEEDED，闭包一致 |
+| VIAluFix | evidence/65d1243f7a9c/VIAluFix | SUCCEEDED，闭包一致 |
+| VFAlu | evidence/f60583b94598/VFAlu | SUCCEEDED，闭包一致 |
+| VFDivSqrt | evidence/462112cae72a/VFDivSqrt | SUCCEEDED，闭包一致 |
+| VIDiv | evidence/9193a2e0077d/VIDiv | SUCCEEDED，闭包一致 |
+| VPPU | evidence/d65d2da418a4/VPPU | SUCCEEDED，闭包一致 |
+| VCVT_8 | evidence/0cb325757095/VCVT_8 | SUCCEEDED，闭包一致 |
+| VSetRvfWvf | evidence/b5084fb3e0ed/VSetRvfWvf | SUCCEEDED，闭包一致 |
+| ClockGate | evidence/bef96c62cc68/ClockGate | SUCCEEDED，闭包一致 |
+| Dispatcher_13..17 | evidence/{fa200b1c,92a50405}-200c-final/Dispatcher_1[3-7] | SUCCEEDED，闭包一致 |
+| **VIMacU** | 无 | **未重写、未签核**（rtl 里没有，任何分支 / claim 都没有）→ ExeUnit_13 阻塞 |
+| **VIPU** | 无 | **未重写、未签核** → ExeUnit_14 阻塞 |
+
+⇒ 本 lane 只做 ExeUnit_15 / 16 / 17；ExeUnit_13、ExeUnit_14 与其父 ExuBlock_2 阻塞，停下报告，不做。
+
+### 0.2 生成器
+
+wrapper 与钉点由 `scripts/gen_exeunit.py` 生成。exublock0 lane 在同一文件上有未合入 main 的改动（ExeUnit_7），
+按任务书**本分支暂不提交 gen_exeunit.py / gen_exeunits_ut.py 的改动**：新增能力在 exublock0 版本之上开发（草稿留在
+lane scratch），待 exublock0 合入 main 后 `git merge main` 再提交，并要求届时 `--check` 对本分支已提交的 wrapper /
+钉点 / tb **逐字节不变**（老变体 ExeUnit / _1 / _4 / _5 / _8 / _9 / _10 已验 `--check` 不变）。新增能力：
+- 向量外壳的 `dataPipe_<s>_src_<k>`（源操作数随 inPipe 打拍）计入字段保留规则；
+- 连线表达式的两种改位宽外形：低位截取 `x[h:0]`、高位补零 `{n'h0, x}`；
+- 写回字段比输出口宽时 golden 的低位截取 `x[ow-1:0]`（FU pdest 9 位 → 写回口 7 位）——★原生成器在这里会写出
+  `{-1'h0, x}`（VCS 不报错、整个 Mux1H 拼包错位），UT 首轮 ExeUnit_17 / _15 大量失配即此，已修并加 fail-closed 检查★；
+- 子 FU 钉点文件可以是多份（VFAlu 匹配前 1104 + 匹配后 34），支持 `set_user_match -type cell`；
+- `tcl_esc` 先转义反斜杠（VIDiv 打包结构体寄存器名 `outCtrl_r_reg\[vuopIdx][b]`）。
+
+## 1. 结构
+
+| 目标 | FU | golden 行 | impl 行 | `_GEN_`/`_T_` | 子模块 |
+|---|---|---|---|---|---|
+| ExeUnit_15 | Vfma(VFMA, 延迟 3) / VialuFix(VIAluFix, 延迟 1)，inPipe 3 级 | 976 | 586 | 0 / 0 | 全部两侧白盒 |
+| ExeUnit_16 | Vfalu(VFAlu, 延迟 1)，inPipe 1 级 | 528 | 348 | 0 / 0 | 全部两侧白盒 |
+| ExeUnit_17 | Vfdiv(VFDivSqrt) / Vidiv(VIDiv)，均不定延迟，busy | 753 | 563 | 0 / 0 | 全部两侧白盒 |
+
+共享核 `rtl/backend/xs_ExeUnit_core.sv` **未改**（字节同 main）。UT：`verif/ut/<T>`，tb 由 gen_exeunits_ut.py 的
+ExeUnit 家族通用配置生成；复跑 `cd verif/ut/<T> && make run SEED=<1|7|42> INITREG=<0|random|<seed>017>`。
+
+## 2. ExeUnit_16 / ExeUnit_17（本节先于这两个目标的 official FM 提交）
+
+### 2.1 UT（3 seed × 3 档 initreg × 200k 拍，串行，全部 errors=0、TEST PASSED）
+
+| 目标 | seed 1：0 / random / 1017 | seed 7：0 / random / 7017 | seed 42：0 / random / 42017 | 每档 checks |
+|---|---|---|---|---|
+| ExeUnit_16 | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 5,199,662 |
+| ExeUnit_17 | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 4,799,496 |
+
+覆盖（seed 1 / 7 / 42 的 *017 档等，均过门槛 >1000）：
+- ExeUnit_16：in 97010 / out 97054 / 反压 9682 / 冲刷 16381 / 无 FU 命中 17889 / 门控开 177670 / 关 22318；
+- ExeUnit_17：in {8233, 8210} / out {5785, 5620} / 反压 1111 / 冲刷 12110 / 无 FU 18232 / 门控开 229872 / 关 170092 / busy 167374
+  （seed 7：反压 1087；seed 42：1150 —— 反压门槛余量小，长延迟除法器外壳 busy 拦截使 out.valid 拍数少）。
+
+变异自检（`scratchpad/exublock2/mut.py`，沙箱 = UT 目录与 wrapper 副本，仓库 RTL 不被触碰；seed 7 × random × 20k 拍）：
+- ExeUnit_16 3/3 抓到：M1 dataPipe_1_src_2 接成 src_3（75684）/ M2 data_src_4 取 [15:8]（16）/ M3 第 1 级 src_4 改读本拍（29152）；
+- ExeUnit_17 2/2 抓到：M1 写回 pdest 取 [7:1]（549）/ M2 Mux1H 选择位对调（20483）；
+  M3（Vfdiv 的 pdest 补位 1'h0 → 1'h1）UT errors=0 —— 只进 FU 锁存的 pdest[7]，外壳写回口只取 [6:0]，结构上不可见；
+  由 FM 覆盖（pdest_r[7] 两侧整组钉点 + vmucp 实比，见下；FM 实测见对账）。
+
+### 2.2 跑前预测（★跑完不许改本节★，登记见 docs/fm_predictions/<T>.json）
+
+模型 = golden 闭包寄存器位 + 顶层 output 位（merge_dup=false 下严格）。数字取自诊断跑（diagnostic-full，不产 receipt）。
+
+| 目标 | 模型 expected | 预测 passing | 预测 constant_reg | vmucp 前 unread | 钉点 | 其余 |
+|---|---|---|---|---|---|---|
+| ExeUnit_16 | 6512（5331 + 1181） | **6150** | 362 | 148（全 matched_nc，开 vmucp 后计入 passing） | fm_pins_pre.tcl 3250 | failing / unverified / unmatched 0，无黑盒，SUCCEEDED |
+| ExeUnit_17 | 17135（16084 + 1051） | **17123** | 12 | 104 matched_nc + 2 钉上后归常量 | fm_pins_pre.tcl 1632 | 同上 |
+
+依据：
+- ExeUnit_16 诊断跑（vmucp=false）：passing 6002 / constant 362 / unread 148 = inPipe_1_1_src_4[127:8] 120 + Vfalu mgu vdIdx[6:3] 4 +
+  VectorFloatAdder 子实例对称死位 24；6002 + 148 + 362 = 6512。钉点 3250 = 外壳寄存器 446 + VFAlu 匹配前 1104 + 匹配后 34 +
+  外壳附加 1666（gen_exeunit.py `_VFALU_*` 语义表：进外壳后 FM 签名分析配不上的 595 个 ref DFF 与远路加法器交换律对称的两个加数，
+  按重写件源码逐行注明的 golden 对应名整寄存器钉；与 VFAlu 自签核 FM matched.rpt 的配对逐位一致）。
+- ExeUnit_17 诊断跑（vmucp=true，白名单 verif/fm_target_config/ExeUnit_17.tcl）：passing 17123 / constant 12 / unread_notcompared 0，
+  17123 + 12 = 17135。vmucp=false 时 passing 17019、unread 106（104 matched_nc + 2 unmatched 的 pdest_r[7]，已钉）。
