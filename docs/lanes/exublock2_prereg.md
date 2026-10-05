@@ -159,3 +159,17 @@ seed 7、42 的 *017 档同量级（反压 8326 / 8081）。
 
 依据：诊断跑（vmucp=false）passing 8572 / constant 206 / unread 388（inPipe 三级 src_4[127:8] 360 + vuopIdx[6:3] 12 + 第 2、3 级 fuOpType
 除 bit4 外 16，见 verif/fm_target_config/ExeUnit_15.tcl）；8572 + 388 + 206 = 9166。
+
+### ExeUnit_15 —— evidence/72b8d871e573/ExeUnit_15（commit `72b8d871e`，run_proof.sh，signoff-strict，vmucp=true）
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| native | SUCCEEDED | SUCCEEDED |
+| passing | 8960 | **8960** |
+| constant_reg | 206 | 206 |
+| failing / unverified / aborted / unmatched / unread_notcompared | 0 | 0 / 0 / 0 / 0 / 0 |
+| 黑盒 / dont_verify / elab147 | 无 | 无 / 无 / 无 |
+| 钉点 | 4830 | PIN_END ok=4830 bad=0；fm.log `Set a match` 4830 |
+
+vmucp 六条：精确绑定（388 点，ExeUnit_15.tcl）/ 双射 / 真比较（8572 → 8960，恰 +388）/ 全零 / 无 dont_verify、无黑盒 /
+本文件进 script_closure。`fm_predict.py check ExeUnit_15`：差额 206 = constant_reg 206，rc=0。
