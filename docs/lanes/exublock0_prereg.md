@@ -86,3 +86,55 @@ impl-only 8、matched_nc 20。ref-only 266 = CSR 190 + Fence 68（两 child dead
 
 可能出错：(1) 若 passing = 30265，说明 DelayN_214 那 8 对没被钉成 matched（钉点会 error，不会静默）；(2) 若 CSR 动态钉点孤儿数与
 诊断跑（661）不同，钉点文件 fail-closed 报错，不改判据改钉点。
+
+## 2. ExuBlock（golden 3634 行）
+
+### 2.1 结构与子模块处置
+
+- wrapper `rtl/backend/ExuBlock.sv`（2478 行，`_GEN_`/`_T_` = 0）由 `scripts/gen_exublock.py` 新增变体生成（ExuBlock_1 `--check` 字节不变）。
+  本层时序逻辑只有两样：frm 打拍 1 份（**未改**的共享核 `xs_ExuBlock_core`）、exus_7 的 io_error 再打两拍（共享件
+  `xs_CriticalErrorDelay_core`，与 ExeUnit_7 同一个件）。CSR 的 instrAddrTransType 从 exus_7 的 csrio 出来直通顶层口并送 brh/jmp 所在
+  ExeUnit（纯连线）；perf（alu/brh fire PopCount 分布）在综合口径被删，golden 只剩无读者的 *_probe / _GEN* 线，生成器核验无读者。
+- 8 个直接 child 两侧白盒：exus/exus_2 = ExeUnit、exus_1/exus_3 = ExeUnit_1、exus_4/exus_6 = ExeUnit_4、exus_5 = ExeUnit_5、
+  exus_7 = ExeUnit_7（evidence/52257043735e，PASS_DEAD_REF）；闭包 = 五个 ExeUnit UT Makefile 文件表的并集。无黑盒。
+- FM 钉点：`fm_pins_pre.tcl`（字面 6089 = frm 3 + ExeUnit 70×2 + ExeUnit_1 10×2 + ExeUnit_5 53 + ExeUnit_7 5873；ExeUnit_7 那份
+  尚未进 docs/pin_call_seq.tsv，条数与其签核 fm.log 的 `EXEUNIT_7_PIN_END ok=5873 bad=0 expect=5873` 核对，见 gen_exublock.py
+  PENDING_PIN_LOGS）；`fm_pins.tcl`（动态）= ExeUnit_7 的 fm_pins.tcl 机械改前缀（/WORK/ExeUnit_7/ -> /WORK/ExuBlock/exus_7/）。
+
+### 2.2 UT（verif/ut/ExuBlock，tb 由 gen.py 生成；RTL 字节 = commit 522570437，ExuBlock.sv 自 9a7c74f51 未变）
+
+exus_7 口与全部 CSR 环境口照搬 ExeUnit_7 的 csr_exu_parts（激励 / 暖机 / arm / 覆盖），其余 7 口同 ExuBlock_1 套路（fuType 85% 取
+Dispatcher acceptVec 编码、valid 60%、robIdx 窄范围、48 拍暖机）。翻转闸豁免全部按机理：exus_7 上 ExeUnit_7 tb 豁免的直连口；
+无 busy 外壳的 in.ready；`{64'h0,..}` 高 64 位；ExeUnit_5 data_5[63:8]（VSetRiWvf res_data = {56'h0, vl}）；i2f fflags 的 UF/DZ/NV；
+写回 Mux1H 全部成员 FU 在 golden 里把该字段赋常量的口（BranchUnit/JumpUnit 的 redirect.cfiUpdate 历史字段等）。
+9 档读数见文末对账（official FM 与 UT 并行跑，同一 RTL 字节）。
+
+### 2.3 诊断跑（如实记；diagnostic-full，关 vmucp，@28d32f0d1，未出证，钉点 6081 条全部生效）
+
+native SUCCEEDED、passing 52729、failing 0、unmatched compare 0、constant_reg 1985；CSR 动态钉点 661/661；unread：ref-only 266
+（= ExeUnit_7 dead_ref 258 加前缀 + exus_7 DelayN_214 第 2 级 gpaddr[63:56] 8）、impl-only 8（其对家）、matched_nc 74
+（exus/exus_2 各 27 = ExeUnit 白名单、exus_7 Div 6 + DelayN_214 14）。那次 ExeUnit_7 钉点还没补 gpaddr 8 对，现已继承。
+
+### 2.4 跑前预测（★跑完不许改本节★；docs/fm_predictions/ExuBlock.json）
+
+| 项 | 预测 |
+|---|---|
+| 模型 expected | 55101（regs 40954 + outs 14100 + 模型误计 PrintCommitIDModule 黑盒 47） |
+| passing | **52811**（52729 + vmucp 82 对） |
+| constant_reg / unread | 1985 / 258（ref，= verif/dead_ref/ExuBlock.json 逐条） |
+| failing / unverified / unmatched / 黑盒 / dont_verify | 0 / 0 / 0 / 0 / 无 |
+| verdict | PASS_DEAD_REF（native SUCCEEDED） |
+| fm_predict check | 预计报余额 47（已知模型偏差） |
+
+## 3. 对账（跑后追加；上文各节未改）
+
+### 3.1 ExeUnit_7（evidence/52257043735e，@522570437）
+- verdict PASS_DEAD_REF：native SUCCEEDED，passing 30273，failing 0，unverified 0，unmatched 0，unread(ref) 258 = dead_ref 逐条相等，
+  constant_reg 1011，无黑盒，无 dont_verify；钉点 pre 5873/5873、CSR 动态 661/661。与 §1.4 预测逐项相等（差 0）。
+- vmucp 六条：(1) unread 只剩 258 ref = 声明；(2) 28 对一对一；(3) passing 30245 → 30273 恰 +28；(4) 全零；(5) 无放宽、无黑盒；
+  (6) fm_target_config/ExeUnit_7.tcl 与钉点文件进 sidecar script_closure。
+- `fm_predict check`：余额 47 = PrintCommitIDModule 模型偏差（§1.4 事先写明），工具按 fail 报。
+- receipt sha256 `58e8d50ecf9aa88ba221836b732620561897c773ad19388a12e12cfe44876e0c`。
+- 动态钉点夹具 `verif/ut/ExeUnit_7/fm_pins_fixture.tcl`：照该 fm.log 的 661 条 Set a match 抄入；tclsh 桩跑 fm_pins.tcl 的调用序列与
+  fm.log 逐条相同（661/661）。
+- 勘误（非预测数字）：§1.2 覆盖行「trap 进 M 1 602」应为「trap 进 M 602」。

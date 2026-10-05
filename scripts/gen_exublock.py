@@ -69,7 +69,7 @@ DYN_CHILD_PIN_FILES = {
 #   条数改与该 child **签核跑**的 fm.log 里钉点文件自己打印的 `<TAG>_PIN_END ok=N bad=0 expect=N` 核对 ——
 #   那是同一份钉点文件在 FM 里真跑出的计数。登记后两处都在，取登记值并要求与 fm.log 一致。
 PENDING_PIN_LOGS = {
-    'verif/ut/ExeUnit_7/fm_pins_pre.tcl': '@@E7_FMLOG@@',
+    'verif/ut/ExeUnit_7/fm_pins_pre.tcl': 'evidence/52257043735e/ExeUnit_7/fm.log',
 }
 
 

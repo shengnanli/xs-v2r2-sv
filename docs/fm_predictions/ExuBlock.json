@@ -1,0 +1,18 @@
+{
+  "target": "ExuBlock",
+  "ut": "ExuBlock",
+  "regs": 40954,
+  "outs": 14100,
+  "expected": 55101,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 47,
+  "bbox": {
+    "PrintCommitIDModule": {
+      "insts": 1,
+      "in_bits": 47,
+      "points": 47
+    }
+  },
+  "note": "模型 55101 = regs 40954 + outs 14100 + 47（PrintCommitIDModule.v 被模型当黑盒计 47 输入点，实际两侧 elaborate、无黑盒，同 CSR/ExeUnit_7 的已知模型偏差）。诊断跑 @28d32f0d1（关 vmucp）：passing 52729 / constant_reg 1985 / unread 266 ref + 8 impl + 74 matched_nc。官方预测：继承 ExeUnit_7 补过的 DelayN_214 gpaddr 8 对钉点、vmucp 实比 82 对（ExeUnit ×2 各 27 + ExeUnit_7 28）⇒ passing 52811、constant_reg 1985、unread 258（= verif/dead_ref/ExuBlock.json），52811+1985+258 = 55054 = 模型 - 47；fm_predict check 预计报余额 47。"
+}
