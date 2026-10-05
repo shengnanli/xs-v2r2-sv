@@ -10,7 +10,9 @@
   * TL2CHICoupledL2 本层（xs_TL2CHICoupledL2_core）与 golden 异名的寄存器：OWN_RULES，841 位。
   child 钉点逐行读、只换层次前缀（slices_<k>/、prefetcher/；L2Top 再加 inner_l2cache/），条数逐块对账。
 
-二、fm_pins.tcl（匹配后，动态；scripts/fm_eq.tcl 在首次 match 与 auto_match 之后 source、随后再 match）——
+二、（codex 0217：已从 TL2/L2Top 正式 pin closure 移除——生产 canary matched=0。MATCHER_TCL 与
+build_post/build_fixture 只作辅助保留，由 scripts/test_tl2chi_ucore_matcher.py 测；本脚本不再写出
+verif/ut/<T>/fm_pins.tcl / fm_pins_fixture.tcl。）原设计：fm_pins.tcl（匹配后，动态；scripts/fm_eq.tcl 在首次 match 与 auto_match 之后 source、随后再 match）——
   nested-u_core prefix-aware matcher（codex 0215 Q2 规则 1~5）：
   1. 取当前 unmatched DFF 集合（compare 与 unread 两种状态，两侧分别查询，`-point_type dff`）；
   2. key = 相对 top 的完整路径；impl 侧**只删除名字恰为 `u_core` 的层次段**（整段相等才删，不做子串替换），
@@ -24,7 +26,7 @@
   scripts/test_tl2chi_ucore_matcher.py（多 slice 正例 / 重复 key / 跨 slice / 非 u_core 子串 / set_user_match 失败）。
   pin_call_equiv 的夹具：verif/ut/<T>/fm_pins_fixture.tcl（由本脚本一并生成）。
 
-用法：python3 scripts/gen_tl2chi_pins.py          # 生成两个目标的三份文件
+用法：python3 scripts/gen_tl2chi_pins.py          # 生成两个目标的 fm_pins_pre.tcl
       python3 scripts/gen_tl2chi_pins.py --check  # 与仓库里的文件逐字节比较，不一致 rc=1
 """
 import os
@@ -277,8 +279,6 @@ def outputs():
     for top, pfx in TARGETS.items():
         d = os.path.join(REPO, 'verif', 'ut', top)
         out[os.path.join(d, 'fm_pins_pre.tcl')] = build_pre(top, pfx)
-        out[os.path.join(d, 'fm_pins.tcl')] = build_post(top)
-        out[os.path.join(d, 'fm_pins_fixture.tcl')] = build_fixture(top, pfx)
     return out
 
 
