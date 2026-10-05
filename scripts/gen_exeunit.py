@@ -153,6 +153,13 @@ EXTRA_CHILD_PINS = {
            ('csrMod/mvip/reg_SSIP_reg', 'csrMod/mvip/u_core/ssip_q_reg'),
            ('csrMod/sie/reg_SSIE_reg', 'csrMod/sie/u_core/g_bit[1].g_flop.q_reg')]
     ),
+    # DelayN_214（ExeUnit_7 的 csr exception 打两拍，辅助实例）：gpaddr[63:56] 第 2 级 8 位。CSR 只读 gpaddr 的低位，
+    #   这 8 位两侧都无读者（unread），层次名 REG_1_bits_gpaddr[b] vs 核里扁平载荷 u_core/g_chain.stage_reg[1][b+9]
+    #   （载荷拼包里 gpaddr 在 [72:9]，第 1 级同位 REG_bits_gpaddr[56..63] ↔ stage_reg[0][65..72] FM 自己配上了），
+    #   无扇出签名配不上 —— 按载荷位置钉，再交 vmucp 实比（白名单 verif/fm_target_config/ExeUnit_7.tcl）。
+    'DelayN_214': (
+        [(f'REG_1_bits_gpaddr_reg[{b}]', f'u_core/g_chain.stage_reg[1][{b + 9}]') for b in range(56, 64)]
+    ),
     'MulUnit': (
         [(f'mulDataModule/r_{k}_reg', f'u_core/mulDataModule/u_core/pp_reg_reg[{k}]') for k in (2303, 2304, 2305, 2306)]
         + [(f'mulDataModule/r_{2307 + j}_reg', f'u_core/mulDataModule/u_core/mid_reg_reg[{j}]')
@@ -1002,6 +1009,9 @@ def gen_pins(v):
             for rp, ip in child_pin_pairs(typ):
                 child.append((name, typ, tcl_esc(rp[len(f'r:/WORK/{typ}/'):]),
                               tcl_esc(ip[len(f'i:/WORK/{typ}/'):])))
+        for rp, ip in EXTRA_CHILD_PINS.get(typ, []):
+            child.append((name, typ + ' 外壳附加', tcl_esc(rp), tcl_esc(ip)))
+    for typ, name, cs in v.aux:          # 辅助实例（DelayN）同样可有外壳附加钉点
         for rp, ip in EXTRA_CHILD_PINS.get(typ, []):
             child.append((name, typ + ' 外壳附加', tcl_esc(rp), tcl_esc(ip)))
     total = shell_n + len(child)

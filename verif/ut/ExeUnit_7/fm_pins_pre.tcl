@@ -2,7 +2,7 @@
 #
 # 只消命名差：set_user_match 只声明两点对应，比较照比；不约束 ref、不改 appvar、不加黑盒。
 # (a) 外壳寄存器 13 位：golden 扁平名 <-> xs_ExeUnit_core 的数组 / generate 名；
-# (b) 子 FU 签核时用过的钉点 5852 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。
+# (b) 子 FU 签核时用过的钉点 5860 条：tclsh 桩真跑原钉点文件取调用序列，加实例前缀。
 # fail-closed：逐条数返回值；拒一条或总数 != 字面整数即 error。输出一律 ASCII。
 set ::EXEUNIT_7_PIN_OK 0
 set ::EXEUNIT_7_PIN_BAD 0
@@ -14,7 +14,7 @@ proc exeunit_7_pin {r i} {
     if {$::EXEUNIT_7_PIN_BAD <= 10} { puts "EXEUNIT_7_PIN_FAIL: $rr <-> $ii" }
   }
 }
-puts "EXEUNIT_7_PIN_BEGIN ExeUnit_7 expect=5865"
+puts "EXEUNIT_7_PIN_BEGIN ExeUnit_7 expect=5873"
 # ---- (a) 外壳寄存器 ----
 exeunit_7_pin busy_reg u_core/g_busy.busy_q_reg
 exeunit_7_pin io_error_0_REG_reg u_err/stage1_q_reg\[0\]
@@ -5884,6 +5884,15 @@ exeunit_7_pin Div/divDataModule/udNegReg_0_reg\[67\] Div/u_core/u_div/u_core/udN
 exeunit_7_pin Div/divDataModule/udNegReg_1_reg\[67\] Div/u_core/u_div/u_core/udNegReg_1_reg\[67\]
 exeunit_7_pin Div/divDataModule/udNegReg_3_reg\[67\] Div/u_core/u_div/u_core/udNegReg_3_reg\[67\]
 exeunit_7_pin Div/divDataModule/udNegReg_4_reg\[67\] Div/u_core/u_div/u_core/udNegReg_4_reg\[67\]
-puts "EXEUNIT_7_PIN_END ok=$::EXEUNIT_7_PIN_OK bad=$::EXEUNIT_7_PIN_BAD expect=5865"
+# ---- (c) csr_io_csrio_exception_delay（DelayN_214 外壳附加）：gen_exeunit.py EXTRA_CHILD_PINS（依据见该表注释）----
+exeunit_7_pin csr_io_csrio_exception_delay/REG_1_bits_gpaddr_reg\[56\] csr_io_csrio_exception_delay/u_core/g_chain.stage_reg\[1\]\[65\]
+exeunit_7_pin csr_io_csrio_exception_delay/REG_1_bits_gpaddr_reg\[57\] csr_io_csrio_exception_delay/u_core/g_chain.stage_reg\[1\]\[66\]
+exeunit_7_pin csr_io_csrio_exception_delay/REG_1_bits_gpaddr_reg\[58\] csr_io_csrio_exception_delay/u_core/g_chain.stage_reg\[1\]\[67\]
+exeunit_7_pin csr_io_csrio_exception_delay/REG_1_bits_gpaddr_reg\[59\] csr_io_csrio_exception_delay/u_core/g_chain.stage_reg\[1\]\[68\]
+exeunit_7_pin csr_io_csrio_exception_delay/REG_1_bits_gpaddr_reg\[60\] csr_io_csrio_exception_delay/u_core/g_chain.stage_reg\[1\]\[69\]
+exeunit_7_pin csr_io_csrio_exception_delay/REG_1_bits_gpaddr_reg\[61\] csr_io_csrio_exception_delay/u_core/g_chain.stage_reg\[1\]\[70\]
+exeunit_7_pin csr_io_csrio_exception_delay/REG_1_bits_gpaddr_reg\[62\] csr_io_csrio_exception_delay/u_core/g_chain.stage_reg\[1\]\[71\]
+exeunit_7_pin csr_io_csrio_exception_delay/REG_1_bits_gpaddr_reg\[63\] csr_io_csrio_exception_delay/u_core/g_chain.stage_reg\[1\]\[72\]
+puts "EXEUNIT_7_PIN_END ok=$::EXEUNIT_7_PIN_OK bad=$::EXEUNIT_7_PIN_BAD expect=5873"
 if {$::EXEUNIT_7_PIN_BAD != 0} { error "EXEUNIT_7_PIN_REFUSED=$::EXEUNIT_7_PIN_BAD" }
-if {$::EXEUNIT_7_PIN_OK != 5865} { error "EXEUNIT_7_PIN_COUNT=$::EXEUNIT_7_PIN_OK expected 5865" }
+if {$::EXEUNIT_7_PIN_OK != 5873} { error "EXEUNIT_7_PIN_COUNT=$::EXEUNIT_7_PIN_OK expected 5873" }

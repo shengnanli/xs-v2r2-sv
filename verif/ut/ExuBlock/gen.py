@@ -120,6 +120,19 @@ for typ, iname, pin, pout in INSTS:
     # (3) golden ExeUnit 里写成 {64'h0, ...} 的数据口高 64 位恒 0（同 ExuBlock_1）
     for m in re.finditer(r"assign io_out_bits_(data_\d+) = \{64'h0,", etxt):
         EXEMPT += ["%s_bits_%s[%d]" % (pout, m.group(1), b) for b in range(64, 128)]
+    # (2b) 写回 Mux1H 的成员 FU 在各自 golden 里把该字段赋成常量（如 BranchUnit / JumpUnit 的 redirect.cfiUpdate 历史字段
+    #      全 0）⇒ 外壳输出口按构造恒 0（逐个成员核 golden 的 `assign <口> = <N>'h0;`，有一个不是常量就不豁免）
+    for _o, _k in v.out_kind.items():
+        if _k[0] != "mux":
+            continue
+        _const = True
+        for _f in _k[1]:
+            _ft = [t for t, n, _ in v.fus if n == _f][0]
+            _fx = open(os.path.join(GOLDEN, _ft + ".sv")).read()
+            if not re.search(r"^  assign io_out_bits_%s = \d+'h0;$" % re.escape(_k[2][_f]), _fx, re.M):
+                _const = False
+        if _const:
+            EXEMPT.append(pout + _o[len("io_out"):])
     if typ == "ExeUnit_5":
         # (4) data_5 = {64'h0, VSetRiWvf.res_data}，而 VSetRiWvf 的 res_data = {56'h0, vl}（golden VSetRiWvf.sv）⇒ [63:8] 也恒 0
         if not re.search(r"assign io_out_bits_data_5 = \{64'h0, _VSetRiWvf_io_out_bits_res_data\};", etxt) or \
