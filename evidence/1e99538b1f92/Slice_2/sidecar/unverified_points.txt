@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/Slice_2
+Implementation : i:/WORK/Slice_2
+Version        : V-2023.12-SP3
+Date           : Mon Oct  5 04:43:40 2026
+**************************************************
+
+No unverified compare points.
+
+1
