@@ -182,3 +182,31 @@ iaddr/ilastsize 用第 0 组 valid、l3Miss 接错；未抓：BEU 的 L2 错误�
 5. 离正式证明还差：codex 0214 对 ram_10x89 ×4 / ram_78x15 ×1 扩父级授权 → 落 allow；37735+ 对称 matched-unread 按 vmucp 六条写
    verif/fm_target_config/<T>.tcl 并开 vmucp；constant_reg 9670 / 9753（`constant_reg_toggle_assumed=true`）按全仓既有口径登记；
    fm_predict 跑前登记（模型 TL2 292072 / L2Top 305845）后再出正式 receipt。
+
+## 5. 层次化组合（codex 0217 / 0219 / 0222）—— 跑前登记（★跑完不许改本节★）
+
+§4 的路线（父级收割/匹配 child 内部配对）作废：codex 0217 改为**已证 child 的 green_child 组合**，0222 用 MC 存储契约
+（verif/mc_memory_registry.tsv）闭合 golden-in-impl。本节只登记 TL2CHICoupledL2；L2Top 在 TL2 出证书后另起 §6。
+
+### 5.1 TL2CHICoupledL2 的证明形态
+- green_child（两侧 `-interface_only` 读入，allow 逐实例绑定证书 sha256，`verif/allow/TL2CHICoupledL2.json` 12 条）：
+  slices_0..3 = Slice / Slice_1 / Slice_2 / Slice_3、prefetcher = Prefetcher、pCrdQueue_s2 = Queue78_PCrdGranted。
+  ram_10x89 / ram_78x15 在 child 里面，不再出现在父级 FM-184 报告中，allow 不保留它们（0217）。
+- 本层 glue + 其余 child 两侧白盒：ref 41 个 G1 文件 + 6 个 child 端口定义；impl 48 个重写件 + 6 个 child wrapper；
+  两侧共读的只有 MC_MEMORY_MODEL ram_2x15 / ram_4x115。
+- 钉点 1474 位（scripts/gen_tl2chi_pins.py）：本层异名 841 + txdat_arb pendingMask[0] 1 + 三组同名跨 wrapper 层的无读者寄存器
+  （mbistPl 137 / rxdatPipe stages_0 ram 422 / rxrspPipe stages_0 ram 73，全宽）。
+- vmucp：verif/fm_target_config/TL2CHICoupledL2.tcl（979 对 matched-unread，六条证据）。
+
+### 5.2 诊断依据（canary，detached worktree，未出证）
+| 跑 | commit | 形态 | native | passing | failing | unmatched | unread | constant_reg |
+|---|---|---|---|---|---|---|---|---|
+| canary2 | ad7290123 | child 未解析黑盒 | FAILED | 19343 | 16（全是黑盒端口方向推断的假点） | 33/1 | 841+18 | 371 |
+| canary3 | a49da1872 | child interface_only | SUCCEEDED | 19242 | 0 | 0 | 736 nc + 243/243 | 234 |
+| canary4 | 99410311e | + 钉点 1474 + vmucp | SUCCEEDED | **20084** | 0 | 0 | 0 | **371** |
+
+canary4 与 canary3 守恒：19242 + 234 + 979 = 20455 = 20084 + 371（vmucp 打开后 137 位 mbistPl 返回寄存器被判常量）。
+
+### 5.3 预测（official，docs/fm_predictions/TL2CHICoupledL2.json）
+passing **20084**、constant_reg **371**、failing / unverified / aborted / unmatched / unread / blackbox_out **0**、无 dont_verify / elab147，
+verdict **SUCCEEDED**（assembly：观测黑盒集合 = allow 12 条，6 个 green child 证书在父 commit 上 current-valid）。
