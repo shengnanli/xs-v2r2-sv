@@ -138,3 +138,13 @@ native SUCCEEDED、passing 52729、failing 0、unmatched compare 0、constant_re
 - 动态钉点夹具 `verif/ut/ExeUnit_7/fm_pins_fixture.tcl`：照该 fm.log 的 661 条 Set a match 抄入；tclsh 桩跑 fm_pins.tcl 的调用序列与
   fm.log 逐条相同（661/661）。
 - 勘误（非预测数字）：§1.2 覆盖行「trap 进 M 1 602」应为「trap 进 M 602」。
+
+### 3.2 ExuBlock（evidence/0da19ca59ab5，@0da19ca59）
+- verdict PASS_DEAD_REF：native SUCCEEDED，passing 52811，failing 0，unverified 0，unmatched 0，unread(ref) 258 = dead_ref 逐条相等，
+  constant_reg 1985，无黑盒，无 dont_verify；钉点 pre 6089/6089、CSR 动态 661/661。与 §2.4 预测逐项相等（差 0）。4310 s。
+- vmucp 六条：(1) unread 只剩 258 ref = 声明；(2) 82 对一对一；(3) passing 52729 → 52811 恰 +82；(4) 全零；(5) 无放宽、无黑盒；(6) 进 script_closure。
+- `fm_predict check`：余额 47 = PrintCommitIDModule 模型偏差（§2.4 事先写明）。
+- receipt sha256 `d4946d3e7a661b79e013e478e85d382d75f07c3a6e6c510899b1cd1fa9bc27ee`。
+- 第一次起跑因 proof worktree 路径长（TMPDIR=/home/eda/xs-env/tmp-exublock0）make 配方超 /bin/sh 单参数上限（Argument list too long），
+  未进 FM；改 TMPDIR=/tmp/exb0 重跑即上表（同一 commit）。
+- 动态钉点夹具 `verif/ut/ExuBlock/fm_pins_fixture.tcl`：照该 fm.log 661 条抄入，桩序列与 fm.log 逐条相同（661/661）。
