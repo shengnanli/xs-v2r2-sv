@@ -9,6 +9,8 @@ DelayN	inner_bpu/predictors/ras_io_ctrl_delay	inner_bpu/predictors/ras_io_ctrl_d
 DelayN_1	inner_bpu/predictors/ftb/write_valid_delay	inner_bpu/predictors/ftb/write_valid_delay	.
 DelayN_1	inner_itlbRepeater1/flush_delay	inner_itlbRepeater1/u_core/flush_delay	.
 DelayN_1	inner_itlbRepeater2/delay	inner_itlbRepeater2/u_core/delay	.
+DelayN_7	inner_tlbCsr_delay	inner_tlbCsr_delay	.
+DelayN_7	inner_itlb/csr_delay	inner_itlb/csr_delay	.
 DelayN_8	inner_csrCtrl_delay	inner_csrCtrl_delay	.
 FIFOReg	inner_icache/missUnit/priorityFIFO	inner_icache/u_core/missUnit/u_core/priorityFIFO	.
 FTB	inner_bpu/predictors/ftb	inner_bpu/predictors/ftb	.
