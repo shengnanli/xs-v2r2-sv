@@ -39,5 +39,5 @@
       "points": 101
     }
   },
-  "note": "sramcore-d1d2d3 跑前登记（codex 0206 D1+D3）：merge_dup=false 模型适用。预测 passing = 68305（= 上一跑实测，即 expected - constant_reg）；D1 删掉的 Directory 7 个 rdata_last_REG 是 impl 独有 unread（无 golden 对家、不计 passing），故 passing 不变、unread 7→0；DataStorage_2 bore_array 位宽修正只动 MBIST 的 array 号线（golden SRAMTemplate 内仅 mbistBd_array 探针 wire，无扇出），预期不产生新比较点；ram_10x89 按 codex_0206 父级授权 → verdict 预期 SUCCEEDED；failing/unverified/aborted/unmatched 0。"
+  "note": "l2-top lane 在当前 tip 重证（codex 0217：ce9d0692bc8e 证书候选因 scripts/fm_eq.tcl 变更 script 闭包 stale）。RTL/allow/pins 未改，预测 passing = 68305（= ce9d0692bc8e 上一跑实测，expected - constant_reg），failing/unmatched/unverified/aborted/unread 全 0，verdict SUCCEEDED。"
 }
