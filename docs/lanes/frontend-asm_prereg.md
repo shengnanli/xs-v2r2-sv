@@ -397,6 +397,12 @@ dont_verify / elab147 / relaxed_appvars 空。30418 − 30093 = 325 = 259 + 64 +
    改法同 verif/ut/Composer：FM 两侧都不给 .v（hdlin_unresolved_modules=black_box 对称黑盒），UT 不变。
    **预测**（docs/fm_predictions/Predictor.json，模型 44750）：native SUCCEEDED、failing / unmatched 0，passing + constant_reg = 44750 − 未读点；verdict SUCCEEDED。
 
+4. **Frontend official 重跑**（跑前登记）：八个 green child 证书全部 CURRENT（Predictor 4257175da / 97d0091c5，其余同 §6），allow 只重盖 Predictor 的 sha。
+   Frontend 本层闭包与 27112f2ee 逐字节相同 ⇒ 预测同 §6.3：native SUCCEEDED、passing **30093**、constant_reg **259**、failing / unverified / aborted /
+   unmatched / blackbox_out 0、unread 64 = dead_ref；**verdict PASS_DEAD_REF**。fm_predict check 预计报余额 2（模型 30418 − 30093 − 259 − 64 = 2：
+   scripts/fm_passing_model.py 的 BB_IN_RE 扫模块体全文，把 golden Ftq.sv / NewIFU.sv 注释里的 "input that" 各数成 1 个黑盒输入位；
+   实际比较点没有它们。公共工具，按集成者裁定本次不改）。
+
 ## 对账
 
 ### 第一批：三个 FrontendBridge 缓冲 + MuxBundle（run_proof @ 3390b6ba，evidence/3390b6ba80a9/<目标>/）

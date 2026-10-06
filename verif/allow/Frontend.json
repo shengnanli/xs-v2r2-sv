@@ -3,7 +3,7 @@
  "objects": [
   {
    "attrs": "i",
-   "certificate_sha256": "e90eed3da2a480e7d04075fb6392610ec9f4263d60b5eb607c7c95740b1c9032",
+   "certificate_sha256": "693ea0ca2118cab64cb418a3a1c29ff684be32854f37fe5d7a3645aaed75d97e",
    "child_target": "Predictor",
    "class": "green_child",
    "design": "Predictor",
@@ -12,7 +12,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "e90eed3da2a480e7d04075fb6392610ec9f4263d60b5eb607c7c95740b1c9032",
+   "certificate_sha256": "693ea0ca2118cab64cb418a3a1c29ff684be32854f37fe5d7a3645aaed75d97e",
    "child_target": "Predictor",
    "class": "green_child",
    "design": "Predictor",
