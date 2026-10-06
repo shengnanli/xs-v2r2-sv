@@ -75,6 +75,17 @@ RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv \
                   $(GOLDEN_RTL)/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv
 
+# codex 0222/0226：impl 侧 MC 存储模型必须与 ref 侧逐字节共读（proof_certificate 的 mc_not_shared 判据）——
+# 下面这些 variant 只给自己 golden 闭包里真用到的那几份（frontend-asm lane 为 Frontend green_child 证书链补）。
+fm-SRAMTemplate_36: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_1.sv $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv
+fm-SRAMTemplate_44: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_2.sv $(GOLDEN_RTL)/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv
+fm-SRAMTemplate_45: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_3.sv $(GOLDEN_RTL)/sram_array_1p512x24m12s1h0l1b_bp_tage.sv
+fm-SRAMTemplate_64: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_4.sv $(GOLDEN_RTL)/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv
+fm-SRAMTemplate_68: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_5.sv $(GOLDEN_RTL)/sram_array_1p128x24m6s1h0l1b_bp_sc.sv
+fm-SRAMTemplate_76: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_6.sv $(GOLDEN_RTL)/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
+fm-SRAMTemplate_78: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_6.sv $(GOLDEN_RTL)/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
+
+
 GOLDEN_SRCS = $(GOLDEN_RTL)/SRAMTemplate.sv \
               $(GOLDEN_RTL)/SRAMTemplate_100.sv \
               $(GOLDEN_RTL)/SRAMTemplate_116.sv \
