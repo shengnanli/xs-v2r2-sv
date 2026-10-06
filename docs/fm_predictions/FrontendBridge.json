@@ -1,0 +1,10 @@
+{
+  "target": "FrontendBridge",
+  "ut": "FrontendBridge",
+  "regs": 4220,
+  "outs": 952,
+  "expected": 5172,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "诊断 vmucp-off: passing 4432 + matched_nc 345(三子缓冲队列存储 52+277+16，同子签核) + constant_reg 395 = 5172 = 模型；vmucp-on 预期 passing 4777"
+}
