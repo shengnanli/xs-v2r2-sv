@@ -20,8 +20,8 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED        7521
-# status GAP            16488
+# status MEASURED        7518
+# status GAP            16491
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -119,14 +119,14 @@ ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_7.in1To
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_13	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.Vfma	Vfalu OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VFMA	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.VialuFix	VialuF OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VIAluFix	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.Vimac	VialuF OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VIMacU	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.Vimac	VialuF OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VIMacU	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.Vppu	VpermType OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VPPU	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_13	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_13	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_14	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_14	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.Vfalu	Vfalu OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VFAlu	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.Vfcvt	Vfcvt OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VCVT_8	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.Vipu	VIPU OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VIPU	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.Vipu	VIPU OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VIPU	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_14	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_14	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_2	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_15	yes	assert_is_cycle_visible_behavior	
@@ -11239,10 +11239,10 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vialuFix	B_CONTROL	MEASURED	1	1	0	ExeUnit_13	no	FC/drives_child_input:ExeUnit_13.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vimac	B_CONTROL	MEASURED	1	1	0	ExeUnit_13	no	FC/drives_child_input:ExeUnit_13.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vppu	B_CONTROL	MEASURED	1	1	0	ExeUnit_13	no	FC/drives_child_input:ExeUnit_13.clk_en_3_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vfalu	B_CONTROL	MEASURED	1	1	0	ExeUnit_14	no	FC/drives_child_input:ExeUnit_14.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vfcvt	B_CONTROL	MEASURED	1	1	0	ExeUnit_14	no	FC/drives_child_input:ExeUnit_14.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vipu	B_CONTROL	MEASURED	1	1	0	ExeUnit_14	no	FC/drives_child_input:ExeUnit_14.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vsetrvfwvf	C_DIAG	MEASURED	1	0	0	ExeUnit_14	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_14.clk_en_3_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vfalu	B_CONTROL	GAP	1	1	1	ExeUnit_14	yes	FC/drives_child_input:ExeUnit_14.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vfcvt	B_CONTROL	GAP	1	1	1	ExeUnit_14	yes	FC/drives_child_input:ExeUnit_14.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vipu	B_CONTROL	GAP	1	1	1	ExeUnit_14	yes	FC/drives_child_input:ExeUnit_14.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vsetrvfwvf	C_DIAG	MEASURED	1	0	0	ExeUnit_14	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExeUnit_14.clk_en_3_probe
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_2	clock_gate_en_vfma	B_CONTROL	GAP	1	1	1	ExeUnit_15	yes	FC/drives_child_input:ExeUnit_15.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_2	clock_gate_en_vialuFix	B_CONTROL	GAP	1	1	1	ExeUnit_15	yes	FC/drives_child_input:ExeUnit_15.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_3	clock_gate_en_vfalu	B_CONTROL	GAP	1	1	1	ExeUnit_16	yes	FC/drives_child_input:ExeUnit_16.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）

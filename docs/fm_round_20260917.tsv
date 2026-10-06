@@ -293,6 +293,7 @@ ExceptionGen	SUCCEEDED	p718 f0 um0 unread=? const_reg=? mode=signoff-strict vmuc
 ExeUnit	SUCCEEDED	p7352 f0 um0 unread=? const_reg=487 mode=signoff-strict vmucp=true @bbd73158a339 evidence/bbd73158a339/ExeUnit/receipt.json
 ExeUnit_1	SUCCEEDED	p1373 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @41366b7e2f9c evidence/41366b7e2f9c/ExeUnit_1/receipt.json
 ExeUnit_10	SUCCEEDED	p6229 f0 um0 unread=? const_reg=272 mode=signoff-strict vmucp=true @21fcdf533a90 evidence/21fcdf533a90/ExeUnit_10/receipt.json
+ExeUnit_14	SUCCEEDED	p14448 f0 um0 unread=? const_reg=504 mode=signoff-strict vmucp=true @c2901c9d813e evidence/c2901c9d813e/ExeUnit_14/receipt.json
 ExeUnit_15	SUCCEEDED	p8960 f0 um0 unread=? const_reg=206 mode=signoff-strict vmucp=true @72b8d871e573 evidence/72b8d871e573/ExeUnit_15/receipt.json
 ExeUnit_16	SUCCEEDED	p6150 f0 um0 unread=? const_reg=362 mode=signoff-strict vmucp=true @286da6e8f076 evidence/286da6e8f076/ExeUnit_16/receipt.json
 ExeUnit_17	SUCCEEDED	p17123 f0 um0 unread=? const_reg=12 mode=signoff-strict vmucp=true @0bff177c2290 evidence/0bff177c2290/ExeUnit_17/receipt.json
@@ -344,6 +345,7 @@ Fence	PASS_DEAD_REF	p905 f0 um0 unread=68 const_reg=? mode=signoff-strict vmucp=
 FliDTable	SUCCEEDED	p16 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @64f5633a1e77 evidence/64f5633a1e77/FliDTable/receipt.json
 FliHTable	SUCCEEDED	p16 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @64f5633a1e77 evidence/64f5633a1e77/FliHTable/receipt.json
 FliSTable	SUCCEEDED	p16 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @64f5633a1e77 evidence/64f5633a1e77/FliSTable/receipt.json
+FloatAdder	SUCCEEDED	p1270 f0 um0 unread=? const_reg=167 mode=signoff-strict vmucp=true @57d1475144ad evidence/57d1475144ad/FloatAdder/receipt.json
 FloatAdderF16Pipeline	SUCCEEDED	p225 f0 um0 unread=? const_reg=5 mode=signoff-strict vmucp=true @6038c4afbc60 evidence/6038c4afbc60/FloatAdderF16Pipeline/receipt.json
 FloatAdderF32F16MixedPipeline	SUCCEEDED	p360 f0 um0 unread=? const_reg=36 mode=signoff-strict vmucp=true @5990b596a86b evidence/5990b596a86b/FloatAdderF32F16MixedPipeline/receipt.json
 FloatAdderF32WidenF16MixedPipeline	SUCCEEDED	p327 f0 um0 unread=? const_reg=20 mode=signoff-strict vmucp=true @194f78e14165 evidence/194f78e14165/FloatAdderF32WidenF16MixedPipeline/receipt.json
@@ -370,6 +372,7 @@ FreeList_3	SUCCEEDED	p707 f0 um0 unread=? const_reg=4 mode=signoff-strict vmucp=
 FreeList_4	SUCCEEDED	p289 f0 um0 unread=? const_reg=4 mode=signoff-strict vmucp=false @aad807db4fb6 evidence/aad807db4fb6/FreeList_4/receipt.json
 FreeList_5	SUCCEEDED	p724 f0 um0 unread=? const_reg=4 mode=signoff-strict vmucp=false @aad807db4fb6 evidence/aad807db4fb6/FreeList_5/receipt.json
 FreeList_6	SUCCEEDED	p151 f0 um0 unread=? const_reg=4 mode=signoff-strict vmucp=false @aad807db4fb6 evidence/aad807db4fb6/FreeList_6/receipt.json
+FrontendBridge	SUCCEEDED	p4777 f0 um0 unread=? const_reg=395 mode=signoff-strict vmucp=true @4a36296f0fcc evidence/4a36296f0fcc/FrontendBridge/receipt.json
 FrontendTrigger	SUCCEEDED	p356 f0 um0 unread=? const_reg=4 mode=signoff-strict vmucp=true @f57e436cb8ae evidence/f57e436cb8ae/FrontendTrigger/receipt.json
 Ftq	PASS_DEAD_REF	p66481 f0 um0 unread=4282 const_reg=28 mode=signoff-strict vmucp=true @6b056a122fad evidence/6b056a122fad/Ftq/receipt.json
 FtqPcMemWrapper	SUCCEEDED	p7166 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @25cdce831a66 evidence/25cdce831a66/FtqPcMemWrapper/receipt.json
@@ -1466,6 +1469,8 @@ VIAluSrcTypeModule	SUCCEEDED	p15 f0 um0 unread=? const_reg=? mode=signoff-strict
 VIDiv	SUCCEEDED	p13876 f0 um0 unread=? const_reg=8 mode=signoff-strict vmucp=true @9193a2e0077d evidence/9193a2e0077d/VIDiv/receipt.json
 VIMac64b	SUCCEEDED	p921 f0 um0 unread=? const_reg=80 mode=signoff-strict vmucp=true @e7a91a910053 evidence/e7a91a910053/VIMac64b/receipt.json
 VIMacSrcTypeModule	SUCCEEDED	p8 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @1b6da7421248 evidence/1b6da7421248/VIMacSrcTypeModule/receipt.json
+VIMacU	SUCCEEDED	p3773 f0 um0 unread=? const_reg=160 mode=signoff-strict vmucp=true @2db266cd4a80 evidence/2db266cd4a80/VIMacU/receipt.json
+VIPU	SUCCEEDED	p4052 f0 um0 unread=? const_reg=2 mode=signoff-strict vmucp=true @d242da086eb2 evidence/d242da086eb2/VIPU/receipt.json
 VIntAdder64b	SUCCEEDED	p160 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f0492477b75c evidence/f0492477b75c/VIntAdder64b/receipt.json
 VIntFixpAlu64b	SUCCEEDED	p465 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @5a3282d30ab1 evidence/5a3282d30ab1/VIntFixpAlu64b/receipt.json
 VIntMisc64b	SUCCEEDED	p176 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @837949eaffbf evidence/837949eaffbf/VIntMisc64b/receipt.json

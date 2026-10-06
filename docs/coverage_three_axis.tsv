@@ -335,7 +335,7 @@ ExeUnit	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit.sv
 ExeUnit_1	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit_1.sv
 ExeUnit_10	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit_10.sv
 ExeUnit_13	MISSING	UNPROVEN	-
-ExeUnit_14	MISSING	UNPROVEN	-
+ExeUnit_14	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit_14.sv
 ExeUnit_15	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit_15.sv
 ExeUnit_16	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit_16.sv
 ExeUnit_17	REWRITTEN	PROVEN_DIRECT	rtl/backend/ExeUnit_17.sv
@@ -399,7 +399,7 @@ Fence	REWRITTEN	PROVEN_DIRECT	rtl/backend/Fence.sv
 FliDTable	REWRITTEN	PROVEN_DIRECT	rtl/backend/FliDTable.sv
 FliHTable	REWRITTEN	PROVEN_DIRECT	rtl/backend/FliHTable.sv
 FliSTable	REWRITTEN	PROVEN_DIRECT	rtl/backend/FliSTable.sv
-FloatAdder	GOLDEN_REUSE	PROVEN_IN_CONE	-
+FloatAdder	GOLDEN_REUSE	PROVEN_DIRECT	rtl/backend/FloatAdder.sv
 FloatAdderF16Pipeline	REWRITTEN	PROVEN_DIRECT	rtl/backend/FloatAdderF16Pipeline.sv
 FloatAdderF32F16MixedPipeline	REWRITTEN	PROVEN_DIRECT	rtl/backend/FloatAdderF32F16MixedPipeline.sv
 FloatAdderF32WidenF16MixedPipeline	REWRITTEN	PROVEN_DIRECT	rtl/backend/FloatAdderF32WidenF16MixedPipeline.sv
@@ -427,7 +427,7 @@ FreeList_4	REWRITTEN	PROVEN_DIRECT	rtl/memblock/FreeList_4.sv
 FreeList_5	REWRITTEN	PROVEN_DIRECT	rtl/memblock/FreeList_5.sv
 FreeList_6	REWRITTEN	PROVEN_DIRECT	rtl/memblock/FreeList_6.sv
 Frontend	MACRO_OPAQUE	UNPROVEN	rtl/frontend/Frontend.sv
-FrontendBridge	MISSING	UNPROVEN	-
+FrontendBridge	REWRITTEN	PROVEN_DIRECT	rtl/memblock/FrontendBridge.sv
 FrontendTrigger	REWRITTEN	PROVEN_DIRECT	rtl/frontend/FrontendTrigger.sv
 Ftq	REWRITTEN	PROVEN_DIRECT	rtl/frontend/Ftq.sv
 FtqPcMemWrapper	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/FtqPcMemWrapper.sv
@@ -1677,8 +1677,8 @@ VIAluSrcTypeModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIAluSrcTypeModule.sv
 VIDiv	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIDiv.sv
 VIMac64b	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIMac64b.sv
 VIMacSrcTypeModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIMacSrcTypeModule.sv
-VIMacU	MISSING	UNPROVEN	-
-VIPU	MISSING	UNPROVEN	-
+VIMacU	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIMacU.sv
+VIPU	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIPU.sv
 VIntAdder64b	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIntAdder64b.sv
 VIntFixpAlu64b	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIntFixpAlu64b.sv
 VIntMisc64b	REWRITTEN	PROVEN_DIRECT	rtl/backend/VIntMisc64b.sv
