@@ -1,0 +1,10 @@
+{
+  "target": "FloatAdder",
+  "ut": "FloatAdder",
+  "regs": 1368,
+  "outs": 69,
+  "expected": 1437,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "诊断 vmucp-off: passing 1265 + matched_nc 5(两子流水线自签核同组) + constant_reg 167 = 1437 = 模型；vmucp-on 预期 passing 1270"
+}
