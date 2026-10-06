@@ -4,14 +4,14 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-06T16:19:09Z",
+ "generated_at": "2026-10-06T17:05:27Z",
  "generator": {
-  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "run_context_worktree_digest": "9d5add5ce24726226113fd0949ad7f81077b3a5037d5a4a7d7c18b1df2c5876d",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/7b1dd37bad70/FoldedSRAMTemplate_1",
+  "source_evidence_dir": "evidence/0591d79d6132/FoldedSRAMTemplate_1",
   "version": 1
  },
- "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_commit": "0591d79d6132233e59c09d92d971b70d8e0663a3",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -134,16 +134,6 @@
     "sha256": "6e5d8cadac88084af1eb1e0861299d92dc0b68d39c322c47af2a0d90c3d5c03e"
    },
    {
-    "kind": "golden",
-    "path": "golden-rtl/array_4.sv",
-    "sha256": "4b9e6d5526099063ba418e5ba67c3bd612e1550078b7846f958abbcaddb3b32e"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv",
-    "sha256": "ab0a784001a44cf0c865064eddba456c276a987cb3a74b70edba86a18ed64b80"
-   },
-   {
     "kind": "repo",
     "path": "rtl/common/ClockGate.sv",
     "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
@@ -155,28 +145,8 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array_2.sv",
-    "sha256": "9fffa1bbf796cd2c726de8aa6bd72795d2846f719e14ada37c9509d074a5faa2"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/array_3.sv",
     "sha256": "a428051fe6762e835677debc5b021a7a894baa9d2cc14c972b101f1361aa2d39"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_6.sv",
-    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
-    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv",
-    "sha256": "789bff7724dfe1f76ebf9286bd4bb7b9f8eef8aa0a311cc8e834a00df766f244"
    },
    {
     "kind": "golden",
@@ -184,20 +154,14 @@
     "sha256": "5c0a94587436757dec6582bb4f779471a14b61d99d1c0546e38f8a92e733e602"
    }
   ],
-  "impl_sha256": "c8551d3e06e60a0f26046397ba64871c2ef2853060b839ce896335d4ec5dc845",
+  "impl_sha256": "7fbc57f63c43bf28e7e361808f9d0b6a8122c0e4cda6d9d2a3b9d49259cbc7aa",
   "repo_impl_files": 17
  },
  "mc_memory_objects": [
-  "array_4",
-  "sram_array_1p256x8m2s1h0l1b_bp_tage_bt",
-  "array_2",
   "array_3",
-  "array_6",
-  "sram_array_1p128x76m1s1h0l1b_bp_ittage",
-  "sram_array_1p256x16m1s1h0l1b_bp_tage_us",
   "sram_array_1p512x24m12s1h0l1b_bp_tage"
  ],
- "native_facts_sha256": "8bdb3696652be55fc43616789c0757a21b7d680561e05cce6386dcc80742af66",
+ "native_facts_sha256": "9f51cba6bfeb22a1cf151ba8023ed672aeb86265c0a254df698518ed91cb8798",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -216,7 +180,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_commit": "0591d79d6132233e59c09d92d971b70d8e0663a3",
  "proof_config": {
   "declarations": {
    "allow": {
@@ -242,18 +206,18 @@
  },
  "proof_config_sha256": "fb6fb75554c7f6c8928d8b2f49f2431e2000847b5ffbdfe9dd04d3672ac697ab",
  "proof_mode": "assembly",
- "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "proof_worktree_digest": "9d5add5ce24726226113fd0949ad7f81077b3a5037d5a4a7d7c18b1df2c5876d",
  "provisional": false,
- "receipt_sha256": "78cb3a0c208bab2cfefee8de2999aedf3cc1bf8d55bfbc00f3dce68d04b803df",
+ "receipt_sha256": "825ec0ca3a71aa26a45484e079f77c12f239f53ffcd5708b3b5439fa261f7b33",
  "reproduce": {
-  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh FoldedSRAMTemplate FoldedSRAMTemplate_1",
+  "command": "PROOF_COMMIT=0591d79d6132233e59c09d92d971b70d8e0663a3 scripts/run_proof.sh FoldedSRAMTemplate FoldedSRAMTemplate_1",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "d24576194a0cc456020f60b134822059b7838d0d8e540227e3744898d92b5037",
- "run_id": "FoldedSRAMTemplate-20261006T121524Z-7b1dd37ba",
+ "run_id": "FoldedSRAMTemplate-20261006T170219Z-0591d79d6",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [

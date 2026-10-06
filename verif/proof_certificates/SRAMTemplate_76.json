@@ -4,14 +4,14 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-06T16:45:12Z",
+ "generated_at": "2026-10-06T17:11:18Z",
  "generator": {
-  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "run_context_worktree_digest": "9d5add5ce24726226113fd0949ad7f81077b3a5037d5a4a7d7c18b1df2c5876d",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/7b1dd37bad70/SRAMTemplate_76",
+  "source_evidence_dir": "evidence/0591d79d6132/SRAMTemplate_76",
   "version": 1
  },
- "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_commit": "0591d79d6132233e59c09d92d971b70d8e0663a3",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -225,191 +225,23 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array.sv",
-    "sha256": "06bc1822c55794dcecb95b2c5a61a7cd455e381f197bfa08f5de853abb8e0141"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_0.sv",
-    "sha256": "bb8ff854f91d431b6049a1c31360b1c6e91ab8d9593cd03db52ef31e72f36918"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_1.sv",
-    "sha256": "ab20f90c8946593903339761fe59c69ca6c123816911ec92060eee386979db78"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_11.sv",
-    "sha256": "3c45cea38a26687b43ea069e9adafa65f5388daf845e9988698cc1541c439524"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_14.sv",
-    "sha256": "f677f855c44fe28c8bd2de442d891e1280911b22ce5def9bc52b8f92672ee74d"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_16.sv",
-    "sha256": "0eb0c03c56b40b61e3ea7b1e5be20c4def9ba15ee52299571cd1b5fc933b135b"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_17.sv",
-    "sha256": "4627c91343d441ad0e554225ba8ac92d7e8f0ae8c49006fbb4da23cead7ec057"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_2.sv",
-    "sha256": "9fffa1bbf796cd2c726de8aa6bd72795d2846f719e14ada37c9509d074a5faa2"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_3.sv",
-    "sha256": "a428051fe6762e835677debc5b021a7a894baa9d2cc14c972b101f1361aa2d39"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_4.sv",
-    "sha256": "4b9e6d5526099063ba418e5ba67c3bd612e1550078b7846f958abbcaddb3b32e"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_5.sv",
-    "sha256": "75f44affa1722d3787eda926dc82ad85da225c9cfad1e8dcb054b11f3c165dc0"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/array_6.sv",
     "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array_7.sv",
-    "sha256": "7264fe6afd65dc735c4a8cd6a1b010e701d198f4b9496974fd30f4e2482ac569"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_8.sv",
-    "sha256": "d70134cf6e0c6ce3394b1974952b45b7ebf7b51ed8e41a41768d807900f0a3f5"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_9.sv",
-    "sha256": "14a80bd6c84e3fb6b9748e1c33f447520c8ce7a2086e6272d5a3c0ef5fe851f6"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
-    "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv",
-    "sha256": "5cd07a307e325aa7dbee27c7a12ae47463829caa114b8fda7e8968cf8f91c002"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
     "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv",
-    "sha256": "789bff7724dfe1f76ebf9286bd4bb7b9f8eef8aa0a311cc8e834a00df766f244"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv",
-    "sha256": "1f25ac82c0233189fa4a6b93f0668334cdd9ad840f622f3c229aefff222f1b95"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv",
-    "sha256": "b97f942f082b9fbaa9705be3ef0bdf9fe4b7545ab095d2c88b1afe01e0c1d7ae"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv",
-    "sha256": "459728f1586dac6694517478cd9c6ab087cca5ee14997e95ae6e2a436799ee1b"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv",
-    "sha256": "ab0a784001a44cf0c865064eddba456c276a987cb3a74b70edba86a18ed64b80"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p32x90m45s1h0l1b_bitmap.sv",
-    "sha256": "13e0a6e1dc4305dcd16bc7750005572bffb8af0ae3771576616dd4d7c5fefc5e"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv",
-    "sha256": "f22e033e284c23005ef660050149d716024193826625d92d7c0f6e5fb0c04317"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv",
-    "sha256": "5c0a94587436757dec6582bb4f779471a14b61d99d1c0546e38f8a92e733e602"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv",
-    "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv",
-    "sha256": "db452077988544dc4ac5422e9dbec4fa358af33c9ccd98d8d616f4dd92ecc355"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv",
-    "sha256": "c1148b3f1e9f82de90a2d24624b1ab9d72a8cc383caffe5b628f064800a7fcdb"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv",
-    "sha256": "5610aced301c5109da388bb13fd702ae9b93aa10d74d1f78e42bfe1a1191a29b"
    }
   ],
-  "impl_sha256": "559990ed379204d7614df384413ede0864261232ae11ac2e511fbb422fa0d208",
+  "impl_sha256": "757e995aa5549692d15b1a2102226fef925ddf288eba4442f48fe942b5862c2a",
   "repo_impl_files": 35
  },
  "mc_memory_objects": [
-  "array",
-  "array_0",
-  "array_1",
-  "array_11",
-  "array_14",
-  "array_16",
-  "array_17",
-  "array_2",
-  "array_3",
-  "array_4",
-  "array_5",
   "array_6",
-  "array_7",
-  "array_8",
-  "array_9",
-  "sram_array_1p128x24m6s1h0l1b_bp_sc",
-  "sram_array_1p128x74m37s1h0l1b_icsh_tag",
-  "sram_array_1p128x76m1s1h0l1b_bp_ittage",
-  "sram_array_1p256x16m1s1h0l1b_bp_tage_us",
-  "sram_array_1p256x66m66s1h0l1b_icsh_dat",
-  "sram_array_1p256x72m72s1h0l1b_dcsh_dat",
-  "sram_array_1p256x86m43s1h0l1b_dcsh_tag",
-  "sram_array_1p256x8m2s1h0l1b_bp_tage_bt",
-  "sram_array_1p32x90m45s1h0l1b_bitmap",
-  "sram_array_1p512x16m16s1h0l1b_l2_repl",
-  "sram_array_1p512x24m12s1h0l1b_bp_tage",
-  "sram_array_1p512x40m10s1h0l1b_bp_ftb",
-  "sram_array_1p512x76m19s1h0l1b_l2_tag",
-  "sram_array_1p512x8m1s1h0l1b_l2_orgb",
-  "sram_array_1p64x114m57s1h0l1b_ptw_l0"
+  "sram_array_1p128x76m1s1h0l1b_bp_ittage"
  ],
- "native_facts_sha256": "9f8aaefc3b02e340e3b11f176055b326497e6a9492408ffb81cb60d41994d03c",
+ "native_facts_sha256": "e507e89e205e1553f6794cb19798ba287b3a6aa045fa80704de76c2174239686",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -428,7 +260,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_commit": "0591d79d6132233e59c09d92d971b70d8e0663a3",
  "proof_config": {
   "declarations": {
    "allow": {
@@ -454,18 +286,18 @@
  },
  "proof_config_sha256": "3b205bb3df7b5bf1f53f3bec95ae9580db82c55426f41684cfa269bc64279218",
  "proof_mode": "assembly",
- "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "proof_worktree_digest": "9d5add5ce24726226113fd0949ad7f81077b3a5037d5a4a7d7c18b1df2c5876d",
  "provisional": false,
- "receipt_sha256": "76fd321e5e62685d7f526b2643d7f86b41d03145a73b28af59b456631daf70f8",
+ "receipt_sha256": "f396a3151d13ea6dd89f10020271cf22e74c7fed382d78cdb982c9faf18201d8",
  "reproduce": {
-  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh SRAMTemplate SRAMTemplate_76",
+  "command": "PROOF_COMMIT=0591d79d6132233e59c09d92d971b70d8e0663a3 scripts/run_proof.sh SRAMTemplate SRAMTemplate_76",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "e72789e10ee556abf9727e514b4c1b7f7eb89a4751be76c9fc8e93ea997813f9",
- "run_id": "SRAMTemplate-20261006T122806Z-7b1dd37ba",
+ "run_id": "SRAMTemplate-20261006T170002Z-0591d79d6",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
