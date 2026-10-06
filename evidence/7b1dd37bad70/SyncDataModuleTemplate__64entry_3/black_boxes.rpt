@@ -1,0 +1,124 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/SyncDataModuleTemplate__64entry_3
+Implementation : i:/WORK/SyncDataModuleTemplate__64entry_3
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 09:48:04 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    DataModule_BackendPC_16entry
+
+       Instances : 0
+
+e *    DataModule_FtqPC_16entry
+
+       Instances : 0
+
+e *    DataModule__16entry
+
+       Instances : 0
+
+e *    DataModule__16entry_12
+
+       Instances : 0
+
+e *    DataModule__16entry_16
+
+       Instances : 0
+
+e *    DataModule__16entry_20
+
+       Instances : 0
+
+e *    DataModule__16entry_4
+
+       Instances : 0
+
+e *    DataModule__16entry_8
+
+       Instances : 0
+
+e *    DataModule__64entry
+
+       Instances : 0
+
+e *    DataModule__64entry_16
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate_BackendPC_64entry
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate_FtqPC_64entry
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate__1024entry
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate__1024entry_1
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate__64entry
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate__64entry_1
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate__64entry_2
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate__64entry_4
+
+       Instances : 0
+
+e *    SyncDataModuleTemplate__64entry_5
+
+       Instances : 0
+
+e *    xs_DataModule
+
+       Instances : 0
+
+e *    xs_SyncDataModule
+
+       Instances : 0
+
+e *    xs_SyncDataModule_1024e1
+
+       Instances : 0
+
+
+1
+

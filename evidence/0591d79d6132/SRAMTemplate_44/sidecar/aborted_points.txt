@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/SRAMTemplate_44
+Implementation : i:/WORK/SRAMTemplate_44
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 12:59:23 2026
+**************************************************
+
+No aborted compare points.
+
+1

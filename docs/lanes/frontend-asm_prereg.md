@@ -393,3 +393,28 @@ rc=0（模型 − 实测 = constant_reg，逐项指认）。
 
 复跑：`bash scripts/run_proof.sh FrontendBridgeBuffers ICacheBuffer InstrUncacheBuffer ICacheCtrlBuffer < /dev/null`；
 `bash scripts/run_proof.sh MuxBundle MuxBundle < /dev/null`。
+
+### 第二批：codex 0226 证书链重证（§5）+ Frontend official（§6）
+
+**§5 重证 96 个 target**（PROOF_COMMIT=7b1dd37ba，evidence/7b1dd37bad70/<T>/，全部 rc=0）：95 个 verdict 与 passing 与 §5 表逐个相同；
+1 个不同——**TageTable：§5 表写 797，实测 1585**。§5 表的"上一份 receipt"取错了：f811f8d51f92 早于 e7882180b（Tage 去 green_child 改两侧
+同源白盒），之后 TageTable 的已登记预测 docs/fm_predictions/TageTable.json 与 1585 一致（`fm_predict.py check TageTable` rc=0）。这是本 lane 登记表的抄录错误，不是证明的变化。
+Predictor 528967 / 16114 s，Ftq PASS_DEAD_REF 66481 / 2732 s，ICache 21174 / 1229 s。
+之后 SRAMTemplate / SplittedSRAMTemplate / FoldedSRAMTemplate 的 18 个前端 variant 改成各自只读真用到的 MC 模型（0591d79d6），在 evidence/0591d79d6132/ 重证，
+passing 与上一份逐个相同（189/120/148/58/145/478/478、1505/110/478/955/120/148、113/148/109/443/846）。证书 96 份（verif/proof_certificates/）。
+
+**§6 Frontend official**（bash scripts/run_proof.sh Frontend Frontend，commit 27112f2ee，evidence/27112f2ee5cd/Frontend/，347 s）：
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| native | SUCCEEDED | SUCCEEDED |
+| passing | 30093 | **30093** |
+| constant_reg | 259 | 259 |
+| failing / unverified / aborted / unmatched / blackbox_out | 0 | 0 / — / — / 0(0) / 0 |
+| unread | 64（= dead_ref） | 64 |
+| verdict | PARTIAL（Predictor 证书链） | **PARTIAL**：assembly_green_child_impl_golden_not_fm_target:Composer:data_mem_8x4 |
+
+fm_verdict 拒绝出 receipt（receipt.json 不存在，证据目录只有 fm.log / sidecar / 报告），故无 receipt sha256，也不能跑 fm_predict check / 出 Frontend 证书。
+剩余：§6.4 的两项公共核心改动（MC 模板覆盖 2R1W 带掩码 ram，或 Composer/TageBTable/Tage_SC/Predictor 不再共读 golden WrBypass_32；
+validate_impl_golden_certified 的 `_seen` 共享）落地后，按 PROOF_COMMIT 重出受影响 child 的证书、重写 allow 的 Predictor sha，再跑一次 official。
+

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Ftq
+Implementation : i:/WORK/Ftq
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 10:39:30 2026
+**************************************************
+
+No aborted compare points.
+
+1

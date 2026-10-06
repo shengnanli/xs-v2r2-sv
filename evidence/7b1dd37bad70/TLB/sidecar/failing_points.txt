@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/TLB
+Implementation : i:/WORK/TLB
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 11:28:25 2026
+**************************************************
+
+No failing compare points.
+
+1

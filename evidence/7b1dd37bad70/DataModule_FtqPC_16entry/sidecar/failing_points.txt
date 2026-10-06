@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/DataModule_FtqPC_16entry
+Implementation : i:/WORK/DataModule_FtqPC_16entry
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 09:38:00 2026
+**************************************************
+
+No failing compare points.
+
+1

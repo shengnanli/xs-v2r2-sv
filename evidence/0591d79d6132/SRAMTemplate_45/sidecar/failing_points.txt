@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/SRAMTemplate_45
+Implementation : i:/WORK/SRAMTemplate_45
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 12:59:36 2026
+**************************************************
+
+No failing compare points.
+
+1
