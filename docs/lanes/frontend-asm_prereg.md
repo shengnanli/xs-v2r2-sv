@@ -376,6 +376,21 @@ dont_verify / elab147 / relaxed_appvars 空。30418 − 30093 = 325 = 259 + 64 +
    先在递归到 SRAMTemplate_36 时被记进 `_seen`，回到 FTB 本层就被跳过、不计 hit，于是 FTB / FTBBank 的
    external_dependency=MC_MEMORY_CONTRACT 被判 spurious（证书本身如实）。
 
+## 7. 集成者裁定后的收尾（2026-10-06）
+
+1. **validator 修复**（0bad09974，scripts/proof_certificate.py 由本 lane 单 owner）：validate_impl_golden_certified 里 MC 命中改为按当前层计，
+   `_seen` 只用于证书递归的去重 / 防环。负测在 test_proof_certificate_grandchild「正例2」：本层与 golden 子层共用同一 MC 对象，
+   旧实现报 green_child_external_dependency_spurious、新实现放行；SABOTAGE_GC 元负例仍抓到；test_proof_certificate / _nested 22 /
+   _grandchild 6 / test_audit_ram_manual_review / test_audit_ram_memory_model 15 全过。修后 FTB / FTBBank 证书 CURRENT（证书未重出）。
+2. **data_mem_8x4 走路线 (b)**（80c887760）：Composer / TageBTable / Tage_SC / Predictor 的 FM impl 侧改读已签重写件 WrBypass_32（target-specific，
+   UT 闭包不变）；Predictor 另把 golden WrBypass / IndexableCAMTemplate（与重写核文件同名模块冲突）和 WrBypass_33（例化 data_mem_16x12，
+   同样推导不出 MC 模板）一并换成已签重写件（三者均持 current 证书）。Composer 的 child_pairs/Tage_SC.tsv 按新配置的 Tage_SC FM 配对重抽（bb871960e，
+   151 条 tage/bt/wrbypass 换名，总数 14262 不变），钉点重生成、`--check` OK。
+   预测 = 各自已登记的 docs/fm_predictions（本节写于 TageBTable / Tage_SC / Composer 重证之后、Predictor 重证完成之前；登记文件早于这些证明）：
+   TageBTable 396、Tage_SC 16112（PASS_DEAD_REF）、Composer 42060（PASS_DEAD_REF）、Predictor 528967。
+   实测（PROOF_COMMIT=bb871960e，evidence/bb871960e9ea/）：TageBTable SUCCEEDED 396、Tage_SC PASS_DEAD_REF 16112、Composer PASS_DEAD_REF 42060，
+   fm_predict check 三个 rc=0；证书重出（9058b0b2c），递归复核 CURRENT。
+
 ## 对账
 
 ### 第一批：三个 FrontendBridge 缓冲 + MuxBundle（run_proof @ 3390b6ba，evidence/3390b6ba80a9/<目标>/）
