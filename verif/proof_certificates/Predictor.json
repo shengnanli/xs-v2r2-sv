@@ -1,0 +1,1128 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:53:43Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/Predictor",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Predictor.sv",
+    "sha256": "421d54c531f5c89f0524588c3268127b6f4f231f11d6f37581d7a35406c95c53"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Composer.sv",
+    "sha256": "d22e2e305f27db86607ea03f006ddf84f4760a776af0096a69beb99de166a415"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN.sv",
+    "sha256": "c45a67e43e6d8615bbdd4718eaed018b5708700405b53c92aa20f34e5b54d3d2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid.sv",
+    "sha256": "d8ca69ff2c4094078fbd5fece9ccbbdd4169fcf5ea464c39b83c98d999e1f86c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid_1.sv",
+    "sha256": "96539daa279de6e5ee858ea44605595a314af5c49e9a0f6423019c26339fe7d3"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_1.sv",
+    "sha256": "912369ea3484f75ece44658af080f43b3bb6705d24e33c39ea552c9d39efe092"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FTB.sv",
+    "sha256": "b98d780d7475c604936a088e820deef9f589933acae57313b5c3521b9ec24936"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FTBBank.sv",
+    "sha256": "655f766f37e55d0fce6d346efaf074e24ac3a81e7b210fca794a9b1b729c218c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FauFTB.sv",
+    "sha256": "604a1b94073e9e253ad6c797439a0d787d47fe4069b7ee6092b3b9778d62438a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FauFTBWay.sv",
+    "sha256": "d2725e598c7271b16af37586bbf2bd4344363a77f9013fa0dc8d9021b517bef5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate.sv",
+    "sha256": "86079a74f5573cbebe8c5a1e69e9d35b82582298ebef8c0b064f2a74654e001f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_1.sv",
+    "sha256": "840cdf4b8512fe989452586d79ff162fea28a8a093d0cdf582e33f987e6c1898"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_20.sv",
+    "sha256": "d3264b4e599bc435c9117af1f6e3f1c01be89d9c303256095f7b1085b4068dd1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_22.sv",
+    "sha256": "d24ee1b59f93a5f139561de0d02d0ec97b581920e82ac5e02e0f5c87fff0e4cd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+    "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTage.sv",
+    "sha256": "951a1841cf0459a734a4799c1a8ab415018e06b6c1e224f94da16d28c99b718b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable.sv",
+    "sha256": "ebb4a7e78f713adac7daccbdad25f2b116c12c2e083b837137bf4db5b8aec037"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_1.sv",
+    "sha256": "51e75455a8a1e20a23bd36e5a43beea0ce740970b77ca113c1f1ada208e73d28"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_2.sv",
+    "sha256": "72b8fa393aa689cc2bf55e17bc6fb0551dec96fc011abed21be197f1473db6b1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_3.sv",
+    "sha256": "18fdc20b419ea9ce722c822d72f2657a25391bc157e81a256f4e80e597abc68f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_4.sv",
+    "sha256": "1b0f4a3da11eb26230254c65d5f4ecb8f7c99039df2d803482ad5fceb0b82f26"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate.sv",
+    "sha256": "292d902ab0125b24d3819b5339aa17b2c6415d96304e00513a595b316adee9aa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_32.sv",
+    "sha256": "a600b9c860151cb279343e34d34583bea651242a7b9a30bc6687253c456335a1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_33.sv",
+    "sha256": "f6a063bf079a58fb7305dd51f9c889261c15a7686f9bf08b618c38b325cc88e5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_41.sv",
+    "sha256": "e28782c82a9284e98a7b571ace1e8a9be98b3452440544b7f4fd292246879b2d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+    "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MaxPeriodFibonacciLFSR.sv",
+    "sha256": "1c978986035cdf73992dc427f3806eff1de362ee9fad8fb649dae3734460437c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeFtb.sv",
+    "sha256": "c32768a36f85e41a09f2076e5381beab0ceed9116de43c9850fdb19885f96e03"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage.sv",
+    "sha256": "0c8145350c1005ab79d59c1027208c22e38db4f02f3d997e98cd088cf75bc4aa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_1.sv",
+    "sha256": "d6d4c9e5cdef44c3769463eb097e293f0e8692943ac6d500906e2e50070b3f81"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_2.sv",
+    "sha256": "4ac305b224e154392ce9cea760fcbdc8c24fea3030dffaae4aae7fdd0c69e653"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_3.sv",
+    "sha256": "ce4d275fe3dc6ee646e033fbd8150e2eabb06d144984c799032883254a483bab"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_4.sv",
+    "sha256": "de2ccb252f34de08b10e455b877204ac5891a01fde56fb0e1f77bc46bdfb9f22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc.sv",
+    "sha256": "d1fce4dc720df3ee9509600b84ef9234fa75693853b6ae6f7047b3023eac24f8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc_1.sv",
+    "sha256": "0b163209ff0baf811f27c3b334450330c82f9533e8da0105833f79f0fa77521c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc_2.sv",
+    "sha256": "0d4b1fefc4629cb0203dac5ac90760559eda236a4ed9075f966467b69a0946cb"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc_3.sv",
+    "sha256": "2fc3e8b0ac7186f7c93555b89e052fff0697b3fdf88ff93a3f7b75e4adbdc50a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeTage.sv",
+    "sha256": "8617b0935d71a30b71bcf9e7c2471288fc22dff66bec1ac8b549880fab7c0d8f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule.sv",
+    "sha256": "6c0bc8678986f52ef89f4c1632408dcf2afda2f024a255538160d71a23692147"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_12.sv",
+    "sha256": "6f844fa96f181bb4ae4493aa5b7d3efa69c03b94dc80578f1448a5378770e83e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_16.sv",
+    "sha256": "b357a1e23d604fdf980fa23bcdbdd697affa4b534499ab6df5181512c1072145"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_20.sv",
+    "sha256": "e7e42fd6b683cd47cffcd8418d7339aaccfa80bf0000c5ca3b73c5ddc9fc0382"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_4.sv",
+    "sha256": "67c982938b819281d1867e10d167beeb33b424af46328008354d14899aeab2e8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_8.sv",
+    "sha256": "fa3254dd3b7ee5982af30615de9943e0c09cab70910d991a9c63848c8f93a59c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RAS.sv",
+    "sha256": "7d0cf19ecaaf4bf14d6a517bf60edbed4f7e74af784d322c2a06f1590642954e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RASStack.sv",
+    "sha256": "cf42f1b0e862e53c8cc056542976dd84648270809d5cb74fad768236e0eadd8a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegionWays.sv",
+    "sha256": "4c1428648ffaae6021ff016de3d7c7b055228a255ad4381047c53e87be87ff4d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable.sv",
+    "sha256": "a1da0a9b1293cbd4a7a056a330d3d06fbe5cff8ca1f83922135981fd3eb1bb44"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable_1.sv",
+    "sha256": "df157e937fe0eb15c94bd1b268b4be5c38f24b38d3f0f0002fc65fa9ec4572d4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable_2.sv",
+    "sha256": "13bc061bfa899752f3ee4ca56958f4b672f621544d9fc4b02ea1b6e2f05a6dec"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable_3.sv",
+    "sha256": "ca9993260e7fa9714444ceb31113829747c316f8616521d9065824eba218cc78"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_36.sv",
+    "sha256": "d7edcb550f3ae281e567ea2ab5d8a8edb9f7f15ee068e575433d38c5970ea7da"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_44.sv",
+    "sha256": "fb609432cf912b53bf7c36e9790a481ecd019ed41b22815a6340fe2698fdceac"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_45.sv",
+    "sha256": "c1ff40f62556143751b607f46bce381e71b0c2ef2954ca8735a59be70ca030c5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_64.sv",
+    "sha256": "031a7e4212ee56697d3da354460ac210e98ea982e8e98099d4d15fd74630e2c0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_68.sv",
+    "sha256": "3459d557dc6c198e3f228fbb8c788932c10cbd3ddde00cd34b9cdea487fd536d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_76.sv",
+    "sha256": "9d5ca6fbb68d209d26e343aaf48ef5e12b86ef7c8c11c5ce0192b7fc228a8da1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_78.sv",
+    "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_2.sv",
+    "sha256": "74cd5e498d09085c8ab9f6d1639f47e63ed7f11c54f41f9fcdeeb9db13edbfa7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_23.sv",
+    "sha256": "05f1a303b23616f09955a8ebeae9398d5d0428a9ce343fcc2d8ddee48cc60e45"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_25.sv",
+    "sha256": "e09a6e83d421c169821b62ccac78013a8081f942a859aa8ae882b679113d0543"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+    "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_3.sv",
+    "sha256": "b6f19537efff940c56330839a0d8eb074b7657d91b33a12c3e7cbebb3a982cf4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_4.sv",
+    "sha256": "938d6938943b599ac91c03008cca03a3a58ced8a05a1d2f5931be84fb9fb82ae"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageBTable.sv",
+    "sha256": "4ca67ba6c34bf43f5f4f860991e2864c6d1ba39aa0fa13b2dc049b5a89b2c023"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageTable.sv",
+    "sha256": "818a6d2227ee9abd44a3828e0f3589c4327eec1bcdbd7a6f6e5919d3142c31ca"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageTable_1.sv",
+    "sha256": "c16c5e9df6f47cd22d180a184fc0c65dd2cb6bda10097221078d73f7f8897b5e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageTable_2.sv",
+    "sha256": "48782c9d319b43f8fc619e9b1a621f87d08a306bbd19f660aeb93053383fe70b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageTable_3.sv",
+    "sha256": "89c3ea5d3ca0844af7e9cfde7d5c2fd42e182870e45b554d4030d273ba315d83"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Tage_SC.sv",
+    "sha256": "89bb91f1db66c133de1890ba685e938d51840d3f224c12444cac3eefe1b5e095"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass.sv",
+    "sha256": "d9d8ed174441b3e221d5c78b5e49e9e06ded09b8c64e6c952321470a2ea6b8ff"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_32.sv",
+    "sha256": "4586ff8dab86fbde9debdc344b0cee3b355954a1aa43a0f10ffc9e0bd8b6779c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_33.sv",
+    "sha256": "72ae6263c313dbb17151e812fe8fc50d5fe50172003c05fc9b5ed2a1aa550676"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_41.sv",
+    "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_43.sv",
+    "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_1.sv",
+    "sha256": "ab20f90c8946593903339761fe59c69ca6c123816911ec92060eee386979db78"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_1_ext.v",
+    "sha256": "7124905b5fdb7c19294fd0529aeaeb06e1d1ecc08936c99cda85306d7a9d2b53"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_2.sv",
+    "sha256": "9fffa1bbf796cd2c726de8aa6bd72795d2846f719e14ada37c9509d074a5faa2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_2_ext.v",
+    "sha256": "392155fafd2b472569edc3f9affe3989c64bb746b4a33f6cdd9412898b94334a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_3.sv",
+    "sha256": "a428051fe6762e835677debc5b021a7a894baa9d2cc14c972b101f1361aa2d39"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_3_ext.v",
+    "sha256": "76099ddd1c6f05c1813bd52fa8764d3e1d6e14632c89cdfa678558975bd3a466"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_4.sv",
+    "sha256": "4b9e6d5526099063ba418e5ba67c3bd612e1550078b7846f958abbcaddb3b32e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_4_ext.v",
+    "sha256": "d4612a5252c86c3838d44ae0bf9ad8f4c21b9e2ee78ae2ecfc7f69b467aab7eb"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_5.sv",
+    "sha256": "75f44affa1722d3787eda926dc82ad85da225c9cfad1e8dcb054b11f3c165dc0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_5_ext.v",
+    "sha256": "2e2882f57dcd53f1d7f9fa597b0dd4bb901cee9d47fbb67a07881e673587e886"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6_ext.v",
+    "sha256": "9e0a36f23925910cc8ce8fee9fe340b75ca8109fa592544b758c9804c1ae43c5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_4x2.sv",
+    "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_8x3.sv",
+    "sha256": "0583f4bcb53864c85652c381aa81d4fbfb9d5827082e57c2c0922d0baf8c95f0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_16x12.sv",
+    "sha256": "15028dbf010167820b6a2762d3ba6880c17949a10b0154624fde3844f77cb476"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_8x4.sv",
+    "sha256": "85eef452b97f0766622b90d615f34ff1c27fcf858d325afa832f35e41e8a92ef"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
+    "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv",
+    "sha256": "789bff7724dfe1f76ebf9286bd4bb7b9f8eef8aa0a311cc8e834a00df766f244"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv",
+    "sha256": "ab0a784001a44cf0c865064eddba456c276a987cb3a74b70edba86a18ed64b80"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv",
+    "sha256": "5c0a94587436757dec6582bb4f779471a14b61d99d1c0546e38f8a92e733e602"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv",
+    "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
+   }
+  ],
+  "golden_sha256": "076788047d64ffc2486aaafbea27b429baabbc44c7229ce2404665694a6f4722",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Predictor.sv",
+    "sha256": "34617ee9da8c0661af56ded9d7b965e283e22e50a57f9e543a9266a0de977180"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Composer.sv",
+    "sha256": "d22e2e305f27db86607ea03f006ddf84f4760a776af0096a69beb99de166a415"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN.sv",
+    "sha256": "c45a67e43e6d8615bbdd4718eaed018b5708700405b53c92aa20f34e5b54d3d2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid.sv",
+    "sha256": "d8ca69ff2c4094078fbd5fece9ccbbdd4169fcf5ea464c39b83c98d999e1f86c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid_1.sv",
+    "sha256": "96539daa279de6e5ee858ea44605595a314af5c49e9a0f6423019c26339fe7d3"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_1.sv",
+    "sha256": "912369ea3484f75ece44658af080f43b3bb6705d24e33c39ea552c9d39efe092"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FTB.sv",
+    "sha256": "b98d780d7475c604936a088e820deef9f589933acae57313b5c3521b9ec24936"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FTBBank.sv",
+    "sha256": "655f766f37e55d0fce6d346efaf074e24ac3a81e7b210fca794a9b1b729c218c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FauFTB.sv",
+    "sha256": "604a1b94073e9e253ad6c797439a0d787d47fe4069b7ee6092b3b9778d62438a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FauFTBWay.sv",
+    "sha256": "d2725e598c7271b16af37586bbf2bd4344363a77f9013fa0dc8d9021b517bef5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate.sv",
+    "sha256": "86079a74f5573cbebe8c5a1e69e9d35b82582298ebef8c0b064f2a74654e001f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_1.sv",
+    "sha256": "840cdf4b8512fe989452586d79ff162fea28a8a093d0cdf582e33f987e6c1898"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_20.sv",
+    "sha256": "d3264b4e599bc435c9117af1f6e3f1c01be89d9c303256095f7b1085b4068dd1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_22.sv",
+    "sha256": "d24ee1b59f93a5f139561de0d02d0ec97b581920e82ac5e02e0f5c87fff0e4cd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+    "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTage.sv",
+    "sha256": "951a1841cf0459a734a4799c1a8ab415018e06b6c1e224f94da16d28c99b718b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable.sv",
+    "sha256": "ebb4a7e78f713adac7daccbdad25f2b116c12c2e083b837137bf4db5b8aec037"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_1.sv",
+    "sha256": "51e75455a8a1e20a23bd36e5a43beea0ce740970b77ca113c1f1ada208e73d28"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_2.sv",
+    "sha256": "72b8fa393aa689cc2bf55e17bc6fb0551dec96fc011abed21be197f1473db6b1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_3.sv",
+    "sha256": "18fdc20b419ea9ce722c822d72f2657a25391bc157e81a256f4e80e597abc68f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_4.sv",
+    "sha256": "1b0f4a3da11eb26230254c65d5f4ecb8f7c99039df2d803482ad5fceb0b82f26"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate.sv",
+    "sha256": "292d902ab0125b24d3819b5339aa17b2c6415d96304e00513a595b316adee9aa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_32.sv",
+    "sha256": "a600b9c860151cb279343e34d34583bea651242a7b9a30bc6687253c456335a1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_33.sv",
+    "sha256": "f6a063bf079a58fb7305dd51f9c889261c15a7686f9bf08b618c38b325cc88e5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_41.sv",
+    "sha256": "e28782c82a9284e98a7b571ace1e8a9be98b3452440544b7f4fd292246879b2d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+    "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MaxPeriodFibonacciLFSR.sv",
+    "sha256": "1c978986035cdf73992dc427f3806eff1de362ee9fad8fb649dae3734460437c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeFtb.sv",
+    "sha256": "c32768a36f85e41a09f2076e5381beab0ceed9116de43c9850fdb19885f96e03"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage.sv",
+    "sha256": "0c8145350c1005ab79d59c1027208c22e38db4f02f3d997e98cd088cf75bc4aa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_1.sv",
+    "sha256": "d6d4c9e5cdef44c3769463eb097e293f0e8692943ac6d500906e2e50070b3f81"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_2.sv",
+    "sha256": "4ac305b224e154392ce9cea760fcbdc8c24fea3030dffaae4aae7fdd0c69e653"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_3.sv",
+    "sha256": "ce4d275fe3dc6ee646e033fbd8150e2eabb06d144984c799032883254a483bab"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_4.sv",
+    "sha256": "de2ccb252f34de08b10e455b877204ac5891a01fde56fb0e1f77bc46bdfb9f22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc.sv",
+    "sha256": "d1fce4dc720df3ee9509600b84ef9234fa75693853b6ae6f7047b3023eac24f8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc_1.sv",
+    "sha256": "0b163209ff0baf811f27c3b334450330c82f9533e8da0105833f79f0fa77521c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc_2.sv",
+    "sha256": "0d4b1fefc4629cb0203dac5ac90760559eda236a4ed9075f966467b69a0946cb"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc_3.sv",
+    "sha256": "2fc3e8b0ac7186f7c93555b89e052fff0697b3fdf88ff93a3f7b75e4adbdc50a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeTage.sv",
+    "sha256": "8617b0935d71a30b71bcf9e7c2471288fc22dff66bec1ac8b549880fab7c0d8f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule.sv",
+    "sha256": "6c0bc8678986f52ef89f4c1632408dcf2afda2f024a255538160d71a23692147"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_12.sv",
+    "sha256": "6f844fa96f181bb4ae4493aa5b7d3efa69c03b94dc80578f1448a5378770e83e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_16.sv",
+    "sha256": "b357a1e23d604fdf980fa23bcdbdd697affa4b534499ab6df5181512c1072145"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_20.sv",
+    "sha256": "e7e42fd6b683cd47cffcd8418d7339aaccfa80bf0000c5ca3b73c5ddc9fc0382"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_4.sv",
+    "sha256": "67c982938b819281d1867e10d167beeb33b424af46328008354d14899aeab2e8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_8.sv",
+    "sha256": "fa3254dd3b7ee5982af30615de9943e0c09cab70910d991a9c63848c8f93a59c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RAS.sv",
+    "sha256": "7d0cf19ecaaf4bf14d6a517bf60edbed4f7e74af784d322c2a06f1590642954e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RASStack.sv",
+    "sha256": "cf42f1b0e862e53c8cc056542976dd84648270809d5cb74fad768236e0eadd8a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegionWays.sv",
+    "sha256": "4c1428648ffaae6021ff016de3d7c7b055228a255ad4381047c53e87be87ff4d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable.sv",
+    "sha256": "a1da0a9b1293cbd4a7a056a330d3d06fbe5cff8ca1f83922135981fd3eb1bb44"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable_1.sv",
+    "sha256": "df157e937fe0eb15c94bd1b268b4be5c38f24b38d3f0f0002fc65fa9ec4572d4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable_2.sv",
+    "sha256": "13bc061bfa899752f3ee4ca56958f4b672f621544d9fc4b02ea1b6e2f05a6dec"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable_3.sv",
+    "sha256": "ca9993260e7fa9714444ceb31113829747c316f8616521d9065824eba218cc78"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_36.sv",
+    "sha256": "d7edcb550f3ae281e567ea2ab5d8a8edb9f7f15ee068e575433d38c5970ea7da"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_44.sv",
+    "sha256": "fb609432cf912b53bf7c36e9790a481ecd019ed41b22815a6340fe2698fdceac"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_45.sv",
+    "sha256": "c1ff40f62556143751b607f46bce381e71b0c2ef2954ca8735a59be70ca030c5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_64.sv",
+    "sha256": "031a7e4212ee56697d3da354460ac210e98ea982e8e98099d4d15fd74630e2c0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_68.sv",
+    "sha256": "3459d557dc6c198e3f228fbb8c788932c10cbd3ddde00cd34b9cdea487fd536d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_76.sv",
+    "sha256": "9d5ca6fbb68d209d26e343aaf48ef5e12b86ef7c8c11c5ce0192b7fc228a8da1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_78.sv",
+    "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_2.sv",
+    "sha256": "74cd5e498d09085c8ab9f6d1639f47e63ed7f11c54f41f9fcdeeb9db13edbfa7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_23.sv",
+    "sha256": "05f1a303b23616f09955a8ebeae9398d5d0428a9ce343fcc2d8ddee48cc60e45"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_25.sv",
+    "sha256": "e09a6e83d421c169821b62ccac78013a8081f942a859aa8ae882b679113d0543"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+    "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_3.sv",
+    "sha256": "b6f19537efff940c56330839a0d8eb074b7657d91b33a12c3e7cbebb3a982cf4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_4.sv",
+    "sha256": "938d6938943b599ac91c03008cca03a3a58ced8a05a1d2f5931be84fb9fb82ae"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageBTable.sv",
+    "sha256": "4ca67ba6c34bf43f5f4f860991e2864c6d1ba39aa0fa13b2dc049b5a89b2c023"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageTable.sv",
+    "sha256": "818a6d2227ee9abd44a3828e0f3589c4327eec1bcdbd7a6f6e5919d3142c31ca"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageTable_1.sv",
+    "sha256": "c16c5e9df6f47cd22d180a184fc0c65dd2cb6bda10097221078d73f7f8897b5e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageTable_2.sv",
+    "sha256": "48782c9d319b43f8fc619e9b1a621f87d08a306bbd19f660aeb93053383fe70b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TageTable_3.sv",
+    "sha256": "89c3ea5d3ca0844af7e9cfde7d5c2fd42e182870e45b554d4030d273ba315d83"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Tage_SC.sv",
+    "sha256": "89bb91f1db66c133de1890ba685e938d51840d3f224c12444cac3eefe1b5e095"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass.sv",
+    "sha256": "d9d8ed174441b3e221d5c78b5e49e9e06ded09b8c64e6c952321470a2ea6b8ff"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_32.sv",
+    "sha256": "4586ff8dab86fbde9debdc344b0cee3b355954a1aa43a0f10ffc9e0bd8b6779c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_33.sv",
+    "sha256": "72ae6263c313dbb17151e812fe8fc50d5fe50172003c05fc9b5ed2a1aa550676"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_41.sv",
+    "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_43.sv",
+    "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_1.sv",
+    "sha256": "ab20f90c8946593903339761fe59c69ca6c123816911ec92060eee386979db78"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_1_ext.v",
+    "sha256": "7124905b5fdb7c19294fd0529aeaeb06e1d1ecc08936c99cda85306d7a9d2b53"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_2.sv",
+    "sha256": "9fffa1bbf796cd2c726de8aa6bd72795d2846f719e14ada37c9509d074a5faa2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_2_ext.v",
+    "sha256": "392155fafd2b472569edc3f9affe3989c64bb746b4a33f6cdd9412898b94334a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_3.sv",
+    "sha256": "a428051fe6762e835677debc5b021a7a894baa9d2cc14c972b101f1361aa2d39"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_3_ext.v",
+    "sha256": "76099ddd1c6f05c1813bd52fa8764d3e1d6e14632c89cdfa678558975bd3a466"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_4.sv",
+    "sha256": "4b9e6d5526099063ba418e5ba67c3bd612e1550078b7846f958abbcaddb3b32e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_4_ext.v",
+    "sha256": "d4612a5252c86c3838d44ae0bf9ad8f4c21b9e2ee78ae2ecfc7f69b467aab7eb"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_5.sv",
+    "sha256": "75f44affa1722d3787eda926dc82ad85da225c9cfad1e8dcb054b11f3c165dc0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_5_ext.v",
+    "sha256": "2e2882f57dcd53f1d7f9fa597b0dd4bb901cee9d47fbb67a07881e673587e886"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6_ext.v",
+    "sha256": "9e0a36f23925910cc8ce8fee9fe340b75ca8109fa592544b758c9804c1ae43c5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_4x2.sv",
+    "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_8x3.sv",
+    "sha256": "0583f4bcb53864c85652c381aa81d4fbfb9d5827082e57c2c0922d0baf8c95f0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_16x12.sv",
+    "sha256": "15028dbf010167820b6a2762d3ba6880c17949a10b0154624fde3844f77cb476"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_8x4.sv",
+    "sha256": "85eef452b97f0766622b90d615f34ff1c27fcf858d325afa832f35e41e8a92ef"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
+    "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv",
+    "sha256": "789bff7724dfe1f76ebf9286bd4bb7b9f8eef8aa0a311cc8e834a00df766f244"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv",
+    "sha256": "ab0a784001a44cf0c865064eddba456c276a987cb3a74b70edba86a18ed64b80"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv",
+    "sha256": "5c0a94587436757dec6582bb4f779471a14b61d99d1c0546e38f8a92e733e602"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv",
+    "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
+   }
+  ],
+  "impl_sha256": "e5e4654b9f86c3d5ddfe109d4c7d80ccbcd85bcd278a07fbbeadea801929033b",
+  "repo_impl_files": 2
+ },
+ "mc_memory_objects": [
+  "array_1",
+  "array_1_ext",
+  "array_2",
+  "array_2_ext",
+  "array_3",
+  "array_3_ext",
+  "array_4",
+  "array_4_ext",
+  "array_5",
+  "array_5_ext",
+  "array_6",
+  "array_6_ext",
+  "data_mem_0_4x2",
+  "data_mem_0_8x3",
+  "sram_array_1p128x24m6s1h0l1b_bp_sc",
+  "sram_array_1p128x76m1s1h0l1b_bp_ittage",
+  "sram_array_1p256x16m1s1h0l1b_bp_tage_us",
+  "sram_array_1p256x8m2s1h0l1b_bp_tage_bt",
+  "sram_array_1p512x24m12s1h0l1b_bp_tage",
+  "sram_array_1p512x40m10s1h0l1b_bp_ftb"
+ ],
+ "native_facts_sha256": "d2e7c493906df408ee98239816139c8c8c2bbcf139c2d2d7efde7541842ee0cb",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 528967,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "222d458783bd3308eabc34ac7d3a2c4cf87bd05fbf6c3de323c5f7e38de78506"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "1e7e08f65bf1574846640c4d5f02bc8ebe535d222edf9c55e60501256c84bce6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "b986461d12ce6df44c04b1bee7287fa15d0a283164a64219a9f16fcb991a0375",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh Predictor Predictor",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "91bf88fee6a0062e1101d6046d2734daf1ce121eafb835af9a9c06f0be1ddfcb",
+ "run_id": "Predictor-20261006T114921Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/Predictor.tcl",
+    "sha256": "99ed2dd79686f6c5e96858d01fc7de06b516de6b020bc64a62c68a1a028677ce"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/Predictor/fm_pins_pre.tcl",
+    "sha256": "222d458783bd3308eabc34ac7d3a2c4cf87bd05fbf6c3de323c5f7e38de78506"
+   }
+  ],
+  "sha256": "31f4e417538bf8f34915a5796386882df31f4769fb4d14c34ca57908f3ebae32"
+ },
+ "target": "Predictor",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Predictor",
+ "variant": "Predictor",
+ "verdict": "SUCCEEDED"
+}
