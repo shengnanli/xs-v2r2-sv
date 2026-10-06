@@ -4,14 +4,14 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-06T16:48:29Z",
+ "generated_at": "2026-10-06T18:35:17Z",
  "generator": {
-  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "run_context_worktree_digest": "ea6277e20d29412d1867dea0d1e193cacd3fc76d0dbf49091792a5e47df9c934",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/7b1dd37bad70/Tage_SC",
+  "source_evidence_dir": "evidence/bb871960e9ea/Tage_SC",
   "version": 1
  },
- "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_commit": "bb871960e9ea524764dfdc6f34b2ffe54bb8258c",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -369,6 +369,11 @@
     "sha256": "035cac43c31fede9826fac44a2be08f6972e4621c056603defe9f1aa6b3b0d75"
    },
    {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_32.sv",
+    "sha256": "f789b4fe800ebf67a8fdc316a49bf93d605e5bf9a6be810099e29d6da0087346"
+   },
+   {
     "kind": "golden",
     "path": "golden-rtl/MbistClockGateCell.sv",
     "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
@@ -450,21 +455,6 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/WrBypass_32.sv",
-    "sha256": "4586ff8dab86fbde9debdc344b0cee3b355954a1aa43a0f10ffc9e0bd8b6779c"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/IndexableCAMTemplate_32.sv",
-    "sha256": "a600b9c860151cb279343e34d34583bea651242a7b9a30bc6687253c456335a1"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/data_mem_8x4.sv",
-    "sha256": "85eef452b97f0766622b90d615f34ff1c27fcf858d325afa832f35e41e8a92ef"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
     "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
    },
@@ -479,8 +469,8 @@
     "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
    }
   ],
-  "impl_sha256": "2e63fec0c062d3fa946bb1f932b99b08476b4e2578d911f4fa0634c23452c9cd",
-  "repo_impl_files": 26
+  "impl_sha256": "6225346b12124378564b2edc53c0049fe42905820c269679dc6eebeabe8c4b80",
+  "repo_impl_files": 27
  },
  "mc_memory_objects": [
   "sram_array_1p256x16m1s1h0l1b_bp_tage_us",
@@ -492,7 +482,7 @@
   "sram_array_1p128x24m6s1h0l1b_bp_sc",
   "array_5"
  ],
- "native_facts_sha256": "8c572eedcbf40748e82a6d1b09d2afdfd4787fba701381f7570884df6c4263c8",
+ "native_facts_sha256": "438d0d4ca5722a2d86271ed5400b8a5ddebcaeb09a78f00617a066cb4a2a85ec",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -511,7 +501,7 @@
    "unread_ref": 192
   }
  },
- "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_commit": "bb871960e9ea524764dfdc6f34b2ffe54bb8258c",
  "proof_config": {
   "declarations": {
    "dead_ref": {
@@ -539,18 +529,18 @@
  },
  "proof_config_sha256": "c206b0368876d33e1c31124ea47decbcfd36f60bbb58ba8e49f645fb722cd965",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "proof_worktree_digest": "ea6277e20d29412d1867dea0d1e193cacd3fc76d0dbf49091792a5e47df9c934",
  "provisional": false,
- "receipt_sha256": "dd235d93c1d74e5a5c0023c10e948cdf56bd3fc7df2dc1d6e8a47c5fc6526751",
+ "receipt_sha256": "b95bab924fde0405b92ab12175dbd4c27d1c1e02de681ceaefe0bdfc51da5184",
  "reproduce": {
-  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh Tage_SC Tage_SC",
+  "command": "PROOF_COMMIT=bb871960e9ea524764dfdc6f34b2ffe54bb8258c scripts/run_proof.sh Tage_SC Tage_SC",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "622226cfefd9a8201cb4c871d2fa954e973c5791d8e2abc61f6c8b1787d87fe6",
- "run_id": "Tage_SC-20261006T132634Z-7b1dd37ba",
+ "run_id": "Tage_SC-20261006T181232Z-bb871960e",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [

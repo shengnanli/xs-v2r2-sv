@@ -4,14 +4,14 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-06T16:48:07Z",
+ "generated_at": "2026-10-06T18:34:56Z",
  "generator": {
-  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "run_context_worktree_digest": "ea6277e20d29412d1867dea0d1e193cacd3fc76d0dbf49091792a5e47df9c934",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/7b1dd37bad70/TageBTable",
+  "source_evidence_dir": "evidence/bb871960e9ea/TageBTable",
   "version": 1
  },
- "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_commit": "bb871960e9ea524764dfdc6f34b2ffe54bb8258c",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -79,6 +79,26 @@
     "sha256": "54ecd4591f9905bdf9081d99a54de54a8640385f5a5df098e1dae5cab53e0aa1"
    },
    {
+    "kind": "repo",
+    "path": "rtl/common/xs_PlruReplacer.sv",
+    "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/IndexableCAMTemplate.sv",
+    "sha256": "3e9279529e9d69b83df73d199c4c5fac81205b0040967fffa168cbea54107198"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass.sv",
+    "sha256": "96a5a297ddfec217bfb29a0c8fe01b8a64d89681561bbc12de4800160f50a916"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_32.sv",
+    "sha256": "f789b4fe800ebf67a8fdc316a49bf93d605e5bf9a6be810099e29d6da0087346"
+   },
+   {
     "kind": "golden",
     "path": "golden-rtl/FoldedSRAMTemplate_20.sv",
     "sha256": "d3264b4e599bc435c9117af1f6e3f1c01be89d9c303256095f7b1085b4068dd1"
@@ -112,31 +132,16 @@
     "kind": "repo",
     "path": "rtl/common/ClockGate.sv",
     "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/WrBypass_32.sv",
-    "sha256": "4586ff8dab86fbde9debdc344b0cee3b355954a1aa43a0f10ffc9e0bd8b6779c"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/IndexableCAMTemplate_32.sv",
-    "sha256": "a600b9c860151cb279343e34d34583bea651242a7b9a30bc6687253c456335a1"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/data_mem_8x4.sv",
-    "sha256": "85eef452b97f0766622b90d615f34ff1c27fcf858d325afa832f35e41e8a92ef"
    }
   ],
-  "impl_sha256": "0cbc6821da214d63d72e9777725f2fee8f11d85ff5c6cc3d7ee6460c577be4fc",
-  "repo_impl_files": 2
+  "impl_sha256": "d64b18b7040f20f7bdf89678246e067263992e467bfa89c3805d7f57f0daf079",
+  "repo_impl_files": 6
  },
  "mc_memory_objects": [
   "sram_array_1p256x8m2s1h0l1b_bp_tage_bt",
   "array_4"
  ],
- "native_facts_sha256": "c7596a11188143bb063f08ca639210e7980e4716d75dba01178aa43113cd179c",
+ "native_facts_sha256": "8cabb6cec54eb10e906457025e0a0b75ccf65703eca9e064e9f9f254f511513e",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -155,7 +160,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_commit": "bb871960e9ea524764dfdc6f34b2ffe54bb8258c",
  "proof_config": {
   "declarations": {
    "allow": {
@@ -181,18 +186,18 @@
  },
  "proof_config_sha256": "7fc73ff9d3735c6cb431545b566a0d48c1d40cb1b17300fb1d8c605e23af88e9",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "proof_worktree_digest": "ea6277e20d29412d1867dea0d1e193cacd3fc76d0dbf49091792a5e47df9c934",
  "provisional": false,
- "receipt_sha256": "43ed67ad6848bf11eb33dba91f4dccf499a46b2f8a75c00aea528ba63b332e89",
+ "receipt_sha256": "2a6861b9cc80452ada28cd65a7009b54fefa6d9353b9e55040b6f73771a5b6a6",
  "reproduce": {
-  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh TageBTable TageBTable",
+  "command": "PROOF_COMMIT=bb871960e9ea524764dfdc6f34b2ffe54bb8258c scripts/run_proof.sh TageBTable TageBTable",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "f7b2a8bde6cd39ca34689326dec15da9e368b3569d117aebb2254e22eca13df1",
- "run_id": "TageBTable-20261006T132000Z-7b1dd37ba",
+ "run_id": "TageBTable-20261006T181039Z-bb871960e",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
