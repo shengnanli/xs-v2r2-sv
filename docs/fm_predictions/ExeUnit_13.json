@@ -1,0 +1,10 @@
+{
+  "target": "ExeUnit_13",
+  "ut": "ExeUnit_13",
+  "regs": 15892,
+  "outs": 1053,
+  "expected": 16945,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "诊断 vmucp-off: passing 16030 + matched_nc 515 + Vimac uopIdx 20(补 VIMacU 子钉点后按名配上) + constant_reg 380 = 16945 = 模型；vmucp-on 预期 passing 16565"
+}

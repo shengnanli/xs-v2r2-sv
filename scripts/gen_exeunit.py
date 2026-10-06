@@ -64,7 +64,7 @@ import tempfile
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 VARIANTS = ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_7', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10',
-            'ExeUnit_15', 'ExeUnit_16', 'ExeUnit_17']
+            'ExeUnit_13', 'ExeUnit_14', 'ExeUnit_15', 'ExeUnit_16', 'ExeUnit_17']
 
 # 子 FU 自己签核用过的「匹配前/后」钉点文件（相对 verif/ut/）；本脚本用 tclsh 桩取其调用序列
 CHILD_PIN_FILES = {
@@ -77,6 +77,8 @@ CHILD_PIN_FILES = {
     'VFMA':  'VFMA/fm_pins_pre.tcl',
     'VIDiv': 'VIDiv/fm_pins_pre.tcl',
     'VFAlu': ('VFAlu/fm_pins_pre.tcl', 'VFAlu/fm_pins.tcl'),
+    # exeunit13 lane 加：VIMacU 签核时钉两个 VIMac64b 实例里 uopIdx 两级打拍寄存器（24 条，纯静态）
+    'VIMacU': 'VIMacU/fm_pins_pre.tcl',
 }
 
 
@@ -335,6 +337,14 @@ class Golden(object):
                     self.wire_expr[mm.group(1)] = mm.group(2)
                 continue
             die(f'{top}: 不认识的语句: {st[:120]}')
+        # firtool 把多个实例共用的改位宽表达式提成具名 _GEN 线（ExeUnit_13：`_GEN = {1'h0, inPipe_1_2_pdest}` 同时
+        # 接 Vimac / Vialu 的 ctrlPipe_2_pdest）。只把「改位宽外形」的 _GEN 线就地展开回表达式，其余照旧。
+        def inline(e):
+            x = self.wire_expr.get(e)
+            if e.startswith('_GEN') and x is not None and unwrap(x)[1] is not None:
+                return x
+            return e
+        self.insts = [(typ, name, [(p, inline(e)) for p, e in conns]) for typ, name, conns in self.insts]
 
     @staticmethod
     def parse_conns(text, iname):
