@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/VIPU
+Implementation : i:/WORK/VIPU
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 01:41:48 2026
+**************************************************
+
+No unverified compare points.
+
+1
