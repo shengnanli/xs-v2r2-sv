@@ -46,7 +46,7 @@ import tempfile
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
-VARIANTS = ['ExuBlock_1', 'ExuBlock']
+VARIANTS = ['ExuBlock_1', 'ExuBlock', 'ExuBlock_2']
 
 # child 类型 -> 该类型签核时用过的「匹配前」钉点文件（相对 verif/ut/）
 CHILD_PIN_FILES = {
@@ -58,6 +58,12 @@ CHILD_PIN_FILES = {
     'ExeUnit_4':  None,              # 单 FU（Alu）无外壳寄存器、无子钉点：gen_exeunit.py 不为它生成钉点文件
     'ExeUnit_5':  'ExeUnit_5/fm_pins_pre.tcl',
     'ExeUnit_7':  'ExeUnit_7/fm_pins_pre.tcl',
+    # 向量执行块 ExuBlock_2（exublock2b lane 加）
+    'ExeUnit_13': 'ExeUnit_13/fm_pins_pre.tcl',
+    'ExeUnit_14': 'ExeUnit_14/fm_pins_pre.tcl',
+    'ExeUnit_15': 'ExeUnit_15/fm_pins_pre.tcl',
+    'ExeUnit_16': 'ExeUnit_16/fm_pins_pre.tcl',
+    'ExeUnit_17': 'ExeUnit_17/fm_pins_pre.tcl',
 }
 
 # child 签核用的**动态**钉点文件（匹配后跑）：进本层后机械改前缀照搬成 verif/ut/<变体>/fm_pins.tcl
@@ -70,6 +76,7 @@ DYN_CHILD_PIN_FILES = {
 #   那是同一份钉点文件在 FM 里真跑出的计数。登记后两处都在，取登记值并要求与 fm.log 一致。
 PENDING_PIN_LOGS = {
     'verif/ut/ExeUnit_7/fm_pins_pre.tcl': 'evidence/52257043735e/ExeUnit_7/fm.log',
+    'verif/ut/ExeUnit_13/fm_pins_pre.tcl': 'evidence/5ec0626546dd/ExeUnit_13/fm.log',
 }
 
 
@@ -388,14 +395,19 @@ def child_pin_pairs(typ):
         die(f'{typ}: 钉点调用数 {len(pairs)} 与 pin_call_seq.tsv 登记 {want} 不符')
     out = []
     for p in pairs:
+        # 允许 `set_user_match -type cell r i`（向量 ExeUnit 里 VFAlu 的钉点按 cell 钉，同 gen_exeunit.py）：类型原样带到本层
+        cell = len(p) == 4 and p[0] == '-type' and p[1] == 'cell'
+        if cell:
+            p = p[2:]
         if len(p) != 2 or not p[0].startswith(f'r:/WORK/{typ}/') or not p[1].startswith(f'i:/WORK/{typ}/'):
             die(f'{typ}: 钉点形状不认识 {p}')
-        out.append((p[0][len(f'r:/WORK/{typ}/'):], p[1][len(f'i:/WORK/{typ}/'):]))
+        out.append((p[0][len(f'r:/WORK/{typ}/'):], p[1][len(f'i:/WORK/{typ}/'):]) + (('cell',) if cell else ()))
     return out
 
 
 def tcl_esc(s):
-    return s.replace('[', '\\[').replace(']', '\\]')
+    # 先转义反斜杠本身（打包结构体寄存器名里可能带字面 \），再转义方括号（同 gen_exeunit.py）
+    return s.replace('\\', '\\\\').replace('[', '\\[').replace(']', '\\]')
 
 
 def gen_pins(v):
@@ -407,8 +419,8 @@ def gen_pins(v):
     shell_n = len(rows)
     child = []
     for typ, iname, _ in v.g.insts:
-        for rp, ip in child_pin_pairs(typ):
-            child.append((iname, typ, f'{iname}/{rp}', f'{iname}/{ip}'))
+        for rp, ip, *cell in child_pin_pairs(typ):
+            child.append((iname, typ, f'{iname}/{rp}', f'{iname}/{ip}') + tuple(cell))
     seen = set()
     for _, i in rows + [(c[2], c[3]) for c in child]:
         if i in seen:
@@ -433,16 +445,25 @@ def gen_pins(v):
     L.append(f'    if {{$::{tag}_PIN_BAD <= 10}} {{ puts "{tag}_PIN_FAIL: $rr <-> $ii" }}')
     L.append('  }')
     L.append('}')
+    if any(len(c) > 4 for c in child):
+        L.append(f'proc {tag.lower()}_pin_cell {{r i}} {{')
+        L.append(f'  set rr "r:/WORK/{v.top}/$r"')
+        L.append(f'  set ii "i:/WORK/{v.top}/$i"')
+        L.append(f'  if {{[set_user_match -type cell $rr $ii]}} {{ incr ::{tag}_PIN_OK }} else {{')
+        L.append(f'    incr ::{tag}_PIN_BAD')
+        L.append(f'    if {{$::{tag}_PIN_BAD <= 10}} {{ puts "{tag}_PIN_FAIL: cell $rr <-> $ii" }}')
+        L.append('  }')
+        L.append('}')
     L.append(f'puts "{tag}_PIN_BEGIN {v.top} expect={total}"')
     L.append('# ---- (a) 本层寄存器 ----')
     for r, i in rows:
         L.append(f'{tag.lower()}_pin {tcl_esc(r)} {tcl_esc(i)}')
     cur = None
-    for iname, typ, r, i in child:
+    for iname, typ, r, i, *cell in child:
         if cur != iname:
             L.append(f'# ---- (b) {iname}（{typ}）：verif/ut/{CHILD_PIN_FILES[typ]} 的调用序列 ----')
             cur = iname
-        L.append(f'{tag.lower()}_pin {tcl_esc(r)} {tcl_esc(i)}')
+        L.append(f'{tag.lower()}_pin{"_cell" if cell else ""} {tcl_esc(r)} {tcl_esc(i)}')
     L.append(f'puts "{tag}_PIN_END ok=$::{tag}_PIN_OK bad=$::{tag}_PIN_BAD expect={total}"')
     L.append(f'if {{$::{tag}_PIN_BAD != 0}} {{ error "{tag}_PIN_REFUSED=$::{tag}_PIN_BAD" }}')
     L.append(f'if {{$::{tag}_PIN_OK != {total}}} {{ error "{tag}_PIN_COUNT=$::{tag}_PIN_OK expected {total}" }}')

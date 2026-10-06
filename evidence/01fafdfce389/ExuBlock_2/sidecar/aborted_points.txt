@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ExuBlock_2
+Implementation : i:/WORK/ExuBlock_2
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 11:57:52 2026
+**************************************************
+
+No aborted compare points.
+
+1

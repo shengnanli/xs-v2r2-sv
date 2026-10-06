@@ -1,0 +1,10 @@
+{
+  "target": "ExuBlock_2",
+  "ut": "ExuBlock_2",
+  "regs": 58937,
+  "outs": 5788,
+  "expected": 64725,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "诊断 vmucp-off: passing 61160 + matched_nc 2101(五个 ExeUnit 自签核同组) + constant_reg 1464 = 64725 = 模型；vmucp-on 预期 passing 63261"
+}
