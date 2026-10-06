@@ -391,6 +391,12 @@ dont_verify / elab147 / relaxed_appvars 空。30418 − 30093 = 325 = 259 + 64 +
    实测（PROOF_COMMIT=bb871960e，evidence/bb871960e9ea/）：TageBTable SUCCEEDED 396、Tage_SC PASS_DEAD_REF 16112、Composer PASS_DEAD_REF 42060，
    fm_predict check 三个 rc=0；证书重出（9058b0b2c），递归复核 CURRENT。
 
+3. **Predictor 的厂商 SRAM 叶子**（跑前登记）：bb871960e 的 Predictor 重证 SUCCEEDED 528967 / constant 727（与上一份相同），但证书复核报
+   `green_child_impl_golden_unexpected_path:Predictor:array_1_ext.v` —— Predictor 是全仓唯一把 array_*_ext.v 两侧白盒读进 FM 的 BPU 目标，
+   与 0222「MC_MEMORY_BLACKBOX 只能两侧对称黑盒」冲突（`fm_predict check Predictor` 也一直红：模型 44750 按黑盒计，实测 528967 里绝大部分是 SRAM 存储位）。
+   改法同 verif/ut/Composer：FM 两侧都不给 .v（hdlin_unresolved_modules=black_box 对称黑盒），UT 不变。
+   **预测**（docs/fm_predictions/Predictor.json，模型 44750）：native SUCCEEDED、failing / unmatched 0，passing + constant_reg = 44750 − 未读点；verdict SUCCEEDED。
+
 ## 对账
 
 ### 第一批：三个 FrontendBridge 缓冲 + MuxBundle（run_proof @ 3390b6ba，evidence/3390b6ba80a9/<目标>/）
