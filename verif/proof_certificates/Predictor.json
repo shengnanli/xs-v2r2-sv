@@ -4,14 +4,14 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-06T23:28:44Z",
+ "generated_at": "2026-10-06T23:52:16Z",
  "generator": {
-  "run_context_worktree_digest": "ea6277e20d29412d1867dea0d1e193cacd3fc76d0dbf49091792a5e47df9c934",
+  "run_context_worktree_digest": "0e67be6616469bb78fb8239987bc06f8315280081c453cc54945286226b6e8d5",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/bb871960e9ea/Predictor",
+  "source_evidence_dir": "evidence/4257175daab2/Predictor",
   "version": 1
  },
- "impl_commit": "bb871960e9ea524764dfdc6f34b2ffe54bb8258c",
+ "impl_commit": "4257175daab28c368bba0b019207296739005ba1",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -407,18 +407,8 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array_1_ext.v",
-    "sha256": "7124905b5fdb7c19294fd0529aeaeb06e1d1ecc08936c99cda85306d7a9d2b53"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/array_2.sv",
     "sha256": "9fffa1bbf796cd2c726de8aa6bd72795d2846f719e14ada37c9509d074a5faa2"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_2_ext.v",
-    "sha256": "392155fafd2b472569edc3f9affe3989c64bb746b4a33f6cdd9412898b94334a"
    },
    {
     "kind": "golden",
@@ -427,18 +417,8 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array_3_ext.v",
-    "sha256": "76099ddd1c6f05c1813bd52fa8764d3e1d6e14632c89cdfa678558975bd3a466"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/array_4.sv",
     "sha256": "4b9e6d5526099063ba418e5ba67c3bd612e1550078b7846f958abbcaddb3b32e"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_4_ext.v",
-    "sha256": "d4612a5252c86c3838d44ae0bf9ad8f4c21b9e2ee78ae2ecfc7f69b467aab7eb"
    },
    {
     "kind": "golden",
@@ -447,18 +427,8 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array_5_ext.v",
-    "sha256": "2e2882f57dcd53f1d7f9fa597b0dd4bb901cee9d47fbb67a07881e673587e886"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/array_6.sv",
     "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_6_ext.v",
-    "sha256": "9e0a36f23925910cc8ce8fee9fe340b75ca8109fa592544b758c9804c1ae43c5"
    },
    {
     "kind": "golden",
@@ -511,7 +481,7 @@
     "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
    }
   ],
-  "golden_sha256": "076788047d64ffc2486aaafbea27b429baabbc44c7229ce2404665694a6f4722",
+  "golden_sha256": "a4d280854c1de99ac2fc888c9af838a0eb7aca2deb968e1ac76c44e323d29f94",
   "impl": [
    {
     "kind": "repo",
@@ -900,18 +870,8 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array_1_ext.v",
-    "sha256": "7124905b5fdb7c19294fd0529aeaeb06e1d1ecc08936c99cda85306d7a9d2b53"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/array_2.sv",
     "sha256": "9fffa1bbf796cd2c726de8aa6bd72795d2846f719e14ada37c9509d074a5faa2"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_2_ext.v",
-    "sha256": "392155fafd2b472569edc3f9affe3989c64bb746b4a33f6cdd9412898b94334a"
    },
    {
     "kind": "golden",
@@ -920,18 +880,8 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array_3_ext.v",
-    "sha256": "76099ddd1c6f05c1813bd52fa8764d3e1d6e14632c89cdfa678558975bd3a466"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/array_4.sv",
     "sha256": "4b9e6d5526099063ba418e5ba67c3bd612e1550078b7846f958abbcaddb3b32e"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_4_ext.v",
-    "sha256": "d4612a5252c86c3838d44ae0bf9ad8f4c21b9e2ee78ae2ecfc7f69b467aab7eb"
    },
    {
     "kind": "golden",
@@ -940,18 +890,8 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/array_5_ext.v",
-    "sha256": "2e2882f57dcd53f1d7f9fa597b0dd4bb901cee9d47fbb67a07881e673587e886"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/array_6.sv",
     "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/array_6_ext.v",
-    "sha256": "9e0a36f23925910cc8ce8fee9fe340b75ca8109fa592544b758c9804c1ae43c5"
    },
    {
     "kind": "golden",
@@ -989,22 +929,16 @@
     "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
    }
   ],
-  "impl_sha256": "d8981c977f81f93ca285d94f0ddb17b97ecf56bcf83dd112a197ec90173af299",
+  "impl_sha256": "e0efc53cd8d1617de1a6efcb783568e0d346c35eb1c56919a82254a519e716c8",
   "repo_impl_files": 7
  },
  "mc_memory_objects": [
   "array_1",
-  "array_1_ext",
   "array_2",
-  "array_2_ext",
   "array_3",
-  "array_3_ext",
   "array_4",
-  "array_4_ext",
   "array_5",
-  "array_5_ext",
   "array_6",
-  "array_6_ext",
   "data_mem_0_4x2",
   "sram_array_1p128x24m6s1h0l1b_bp_sc",
   "sram_array_1p128x76m1s1h0l1b_bp_ittage",
@@ -1013,13 +947,13 @@
   "sram_array_1p512x24m12s1h0l1b_bp_tage",
   "sram_array_1p512x40m10s1h0l1b_bp_ftb"
  ],
- "native_facts_sha256": "b25a68d0c52aa2e0b586f2661f78ced57fe7e87291dc5dd50ac2f4b632cc43e0",
+ "native_facts_sha256": "d179284e26e78c3d8e10b2ebba3519f70ba386e49fcdd8711edafa141affc79b",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
    "aborted": 0,
    "failing": 0,
-   "passing": 528967,
+   "passing": 44023,
    "unread_notcompared": 0,
    "unverified": 0
   },
@@ -1032,7 +966,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "bb871960e9ea524764dfdc6f34b2ffe54bb8258c",
+ "proof_commit": "4257175daab28c368bba0b019207296739005ba1",
  "proof_config": {
   "declarations": {},
   "entry_appvars_readback": {
@@ -1055,18 +989,18 @@
  },
  "proof_config_sha256": "1e7e08f65bf1574846640c4d5f02bc8ebe535d222edf9c55e60501256c84bce6",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "ea6277e20d29412d1867dea0d1e193cacd3fc76d0dbf49091792a5e47df9c934",
+ "proof_worktree_digest": "0e67be6616469bb78fb8239987bc06f8315280081c453cc54945286226b6e8d5",
  "provisional": false,
- "receipt_sha256": "1752fbb6b4506272fa208408c0ec95b1678931e6541512df2763fec951cceec7",
+ "receipt_sha256": "1f1df114f8a40f6dc94dd0cd3c129887e213408656002f7e27dbf834065803e2",
  "reproduce": {
-  "command": "PROOF_COMMIT=bb871960e9ea524764dfdc6f34b2ffe54bb8258c scripts/run_proof.sh Predictor Predictor",
+  "command": "PROOF_COMMIT=4257175daab28c368bba0b019207296739005ba1 scripts/run_proof.sh Predictor Predictor",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
- "result_sha256": "91bf88fee6a0062e1101d6046d2734daf1ce121eafb835af9a9c06f0be1ddfcb",
- "run_id": "Predictor-20261006T183128Z-bb871960e",
+ "result_sha256": "c7168fc5030b452522869ae179182f3b5a984e9ae4a7368a73f4fdcd81a52363",
+ "run_id": "Predictor-20261006T233255Z-4257175da",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
