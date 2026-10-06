@@ -3629,9 +3629,9 @@ puts "FE_CORE_PIN_END ok=$::FE_CORE_OK bad=$::FE_CORE_BAD expect=$::FE_CORE_EXPE
 if {$::FE_CORE_BAD != 0 || $::FE_CORE_OK != $::FE_CORE_EXPECT} {
   error "FE_CORE_PIN: ok=$::FE_CORE_OK bad=$::FE_CORE_BAD expect=$::FE_CORE_EXPECT"
 }
-# ---- 二、子树钉点重定位（34 个钉点源 -> 102654 条，去重后；规则见 scripts/gen_frontend.py）----
+# ---- 二、子树钉点重定位（34 个钉点源 -> 102662 条，去重后；规则见 scripts/gen_frontend.py）----
 #   钉点源 / 脚本 / 出证 evidence（* = 该脚本出证后又改过，用该目标最新绿 receipt）/ 原条数 / 过期丢弃（伸进其证明时读 golden 的子模块）/ 去重后新增
-#   Composer                             verif/ut/Composer/fm_pins_pre.tcl                  335a330a9baa 原  23684 丢   1445 增  22239
+#   Composer                             verif/ut/Composer/fm_pins_pre.tcl                  be19d6a02dba 原  23684 丢   1437 增  22247
 #   FauFTB                               verif/ut/FauFTB/fm_pins_pre.tcl                    335a330a9baa 原    400 丢      0 增      0
 #   FTB                                  verif/ut/FTB/fm_pins_pre.tcl                       68d1a0932a12 原   3194 丢      0 增   3194
 #   ITTage                               verif/ut/ITTage/fm_pins_pre.tcl                    68d1a0932a12 原   3301 丢      0 增      0
@@ -3670,7 +3670,7 @@ if {$::FE_CORE_BAD != 0 || $::FE_CORE_OK != $::FE_CORE_EXPECT} {
 #   不取 PredChecker：NewIFU 的钉点已含 predChecker/* 1799 条（重写侧 NewIFU 直接例化 xs_PredChecker_core）
 #   不取 TLBFA：TLB 的钉点已含 entries/page_itlb_storage_fa/reqVpn 33 条死位（同一族）
 #   不取 TlbStorageWrapper：TLB 的钉点已含 entries/page_itlb_storage_fa/reqVpn 33 条死位（同一族）
-set ::FE_CHILD_EXPECT 102654
+set ::FE_CHILD_EXPECT 102662
 set ::FE_CHILD_OK 0
 set ::FE_CHILD_BAD 0
 proc fe_child_pin {r args} {
@@ -9661,6 +9661,7 @@ fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/_res
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/_resetSet_reg[5]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/u_core/resetSet_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/_resetSet_reg[6]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/u_core/resetSet_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/_resetState_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/u_core/resetState_reg}
+fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/rdataReg_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/u_core/rdataReg_reg[0]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/rdataReg_reg[10]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/u_core/rdataReg_reg[10]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/rdataReg_reg[11]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/u_core/rdataReg_reg[11]}
@@ -9719,6 +9720,7 @@ fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/_res
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/_resetSet_reg[5]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/u_core/resetSet_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/_resetSet_reg[6]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/u_core/resetSet_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/_resetState_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/u_core/resetState_reg}
+fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/rdataReg_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/u_core/rdataReg_reg[0]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/rdataReg_reg[10]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/u_core/rdataReg_reg[10]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/rdataReg_reg[11]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/u_core/rdataReg_reg[11]}
@@ -10725,6 +10727,7 @@ fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/_res
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/_resetSet_reg[5]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/u_core/resetSet_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/_resetSet_reg[6]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/u_core/resetSet_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/_resetState_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/u_core/resetState_reg}
+fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/rdataReg_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/u_core/rdataReg_reg[0]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/rdataReg_reg[10]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/u_core/rdataReg_reg[10]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/rdataReg_reg[11]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/u_core/rdataReg_reg[11]}
@@ -10783,6 +10786,7 @@ fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/_res
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/_resetSet_reg[5]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/u_core/resetSet_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/_resetSet_reg[6]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/u_core/resetSet_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/_resetState_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/u_core/resetState_reg}
+fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/rdataReg_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/u_core/rdataReg_reg[0]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/rdataReg_reg[10]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/u_core/rdataReg_reg[10]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/rdataReg_reg[11]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/u_core/rdataReg_reg[11]}
@@ -12045,6 +12049,7 @@ fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/_res
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/_resetSet_reg[5]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/u_core/resetSet_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/_resetSet_reg[6]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/u_core/resetSet_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/_resetState_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/u_core/resetState_reg}
+fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/rdataReg_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/u_core/rdataReg_reg[0]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/rdataReg_reg[10]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/u_core/rdataReg_reg[10]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/rdataReg_reg[11]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/u_core/rdataReg_reg[11]}
@@ -12103,6 +12108,7 @@ fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/_res
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/_resetSet_reg[5]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/u_core/resetSet_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/_resetSet_reg[6]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/u_core/resetSet_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/_resetState_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/u_core/resetState_reg}
+fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/rdataReg_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/u_core/rdataReg_reg[0]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/rdataReg_reg[10]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/u_core/rdataReg_reg[10]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/rdataReg_reg[11]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/u_core/rdataReg_reg[11]}
@@ -13365,6 +13371,7 @@ fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/_res
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/_resetSet_reg[5]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/u_core/resetSet_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/_resetSet_reg[6]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/u_core/resetSet_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/_resetState_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/u_core/resetState_reg}
+fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/rdataReg_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/u_core/rdataReg_reg[0]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/rdataReg_reg[10]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/u_core/rdataReg_reg[10]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/rdataReg_reg[11]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/u_core/rdataReg_reg[11]}
@@ -13423,6 +13430,7 @@ fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/_res
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/_resetSet_reg[5]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/u_core/resetSet_reg[5]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/_resetSet_reg[6]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/u_core/resetSet_reg[6]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/_resetState_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/u_core/resetState_reg}
+fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/rdataReg_reg[0]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/u_core/rdataReg_reg[0]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/rdataReg_reg[10]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/u_core/rdataReg_reg[10]}
 fe_child_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/rdataReg_reg[11]} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/u_core/rdataReg_reg[11]}
@@ -106338,7 +106346,7 @@ puts "FE_CHILD_PIN_END ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_
 if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
   error "FE_CHILD_PIN: ok=$::FE_CHILD_OK bad=$::FE_CHILD_BAD expect=$::FE_CHILD_EXPECT"
 }
-# ---- 三、子树自配对录制钉点（67 个设计 -> 46833 条；另 1375 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----
+# ---- 三、子树自配对录制钉点（67 个设计 -> 46825 条；另 1375 条并入第四节的副本配对类；数据 verif/ut/Frontend/harvest_pins.tsv）----
 #   Composer                             录     93 对 x   1 个实例 -> 新增     93 条
 #   DelayN                               录      5 对 x   5 个实例 -> 新增     25 条
 #   DelayN_1                             录      2 对 x   3 个实例 -> 新增      6 条
@@ -106377,10 +106385,10 @@ if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
 #   PFEvent                              录   1464 对 x   1 个实例 -> 新增   1464 条
 #   Predictor                            录   2987 对 x   1 个实例 -> 新增   1439 条
 #   RASStack                             录   2942 对 x   1 个实例 -> 新增   2942 条
-#   SCTable                              录    935 对 x   1 个实例 -> 新增      4 条
-#   SCTable_1                            录    935 对 x   1 个实例 -> 新增      4 条
-#   SCTable_2                            录    935 对 x   1 个实例 -> 新增      4 条
-#   SCTable_3                            录    935 对 x   1 个实例 -> 新增      4 条
+#   SCTable                              录    935 对 x   1 个实例 -> 新增      2 条
+#   SCTable_1                            录    935 对 x   1 个实例 -> 新增      2 条
+#   SCTable_2                            录    935 对 x   1 个实例 -> 新增      2 条
+#   SCTable_3                            录    935 对 x   1 个实例 -> 新增      2 条
 #   SRAMTemplate                         录    160 对 x   2 个实例 -> 新增      0 条
 #   SRAMTemplate_16                      录    144 对 x  16 个实例 -> 新增   2288 条
 #   SRAMTemplate_2                       录    160 对 x   2 个实例 -> 新增      0 条
@@ -106406,7 +106414,7 @@ if {$::FE_CHILD_BAD != 0 || $::FE_CHILD_OK != $::FE_CHILD_EXPECT} {
 #   WrBypass_32                          录    151 对 x   1 个实例 -> 新增      0 条
 #   WrBypass_41                          录     47 对 x   2 个实例 -> 新增     94 条
 #   WrBypass_43                          录     51 对 x   3 个实例 -> 新增    153 条
-set ::FE_HV_EXPECT 46833
+set ::FE_HV_EXPECT 46825
 set ::FE_HV_OK 0
 set ::FE_HV_BAD 0
 proc fe_hv_pin {r i} {
@@ -132626,20 +132634,12 @@ fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/ras/RASStack/writeBypassNos_val
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/ras/RASStack/writeBypassNos_value_reg[3]} {i:/WORK/Frontend/inner_bpu/predictors/ras/RASStack/u_core/writeBypassNos_reg\[value][3]}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/ras/RASStack/writeBypassNos_value_reg[4]} {i:/WORK/Frontend/inner_bpu/predictors/ras/RASStack/u_core/writeBypassNos_reg\[value][4]}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/ras/RASStack/writeBypassValid_reg} {i:/WORK/Frontend/inner_bpu/predictors/ras/RASStack/u_core/writeBypassValid_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_0/array/array/array_5_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[0].u_table/array/array/array_5_ext}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/table_1/array/array/array_5_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_0/u_core/g_bank[1].u_table/array/array/array_5_ext}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_0/array/array/array_5_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[0].u_table/array/array/array_5_ext}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/table_1/array/array/array_5_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_1/u_core/g_bank[1].u_table/array/array/array_5_ext}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_0/array/array/array_5_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[0].u_table/array/array/array_5_ext}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/table_1/array/array/array_5_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_2/u_core/g_bank[1].u_table/array/array/array_5_ext}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
-fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/rcg/CG/EN_reg} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/u_core/g_cg.rcg/CG/enableLatched_reg}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_0/array/array/array_5_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[0].u_table/array/array/array_5_ext}
 fe_hv_pin {r:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/table_1/array/array/array_5_ext} {i:/WORK/Frontend/inner_bpu/predictors/tage/scTables_3/u_core/g_bank[1].u_table/array/array/array_5_ext}
 fe_hv_pin {r:/WORK/Frontend/inner_icache/dataArray/dataArrays_1_4/srams_0/_resetSet_reg[0]} {i:/WORK/Frontend/inner_icache/u_core/dataArray/dataArrays_1_4/srams_0/u_core/resetSet_reg[0]}

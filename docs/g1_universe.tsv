@@ -84,7 +84,7 @@ FreeList	FreeList	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 Frontend	Frontend	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 Ftq	Ftq	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 FtqPcMemWrapper	FtqPcMemWrapper	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-GrantBuffer	GrantBuffer	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/GrantBuffer.json sha256=5c7e929840c6bd0b
+GrantBuffer	GrantBuffer	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/GrantBuffer.json sha256=698f424c7e0198e9
 HPTW	HPTW	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 IBuffer	IBuffer	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 ICache	ICache	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
@@ -139,7 +139,7 @@ L2TLB	L2TLB	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 L2TLBWrapper	L2TLBWrapper	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 L2TlbMissQueue	L2TlbMissQueue	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 L2TlbPrefetch	L2TlbPrefetch	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-L2Top	L2Top	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+L2Top	L2Top	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/L2Top.json sha256=fd732f5035f3730e
 LCredit2Decoupled	LCredit2Decoupled	same_name	TRIVIAL	REQUIRED	UNVERIFIED	no tracked certificate
 LCredit2Decoupled_1	LCredit2Decoupled_1	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 LCredit2Decoupled_10	LCredit2Decoupled_10	same_name	TRIVIAL	REQUIRED	UNVERIFIED	no tracked certificate
@@ -235,7 +235,7 @@ Scheduler_2	Scheduler_2	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certi
 Scheduler_3	Scheduler_3	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 SinkA	SinkA	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 SinkC	SinkC	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-Slice	Slice	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+Slice	Slice	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Slice.json sha256=58cbeb321535d734
 SourceB	SourceB	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 SplittedSRAMTemplate	SplittedSRAMTemplate	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 SplittedSRAMTemplate_1	SplittedSRAMTemplate_1	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
@@ -272,7 +272,7 @@ SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_2	slot_map	REW
 SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_3	slot_map	REWRITE_L	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 SyncDataModuleTemplate__64entry_2；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
 SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_4	slot_map	REWRITE_L	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 SyncDataModuleTemplate__64entry_3；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
 SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_5	slot_map	REWRITE_L	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 SyncDataModuleTemplate__64entry_4；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
-TL2CHICoupledL2	TL2CHICoupledL2	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+TL2CHICoupledL2	TL2CHICoupledL2	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TL2CHICoupledL2.json sha256=f2298a684090cbe5
 TLBFA	TLBFA	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 TLBFA_1	TLBFA_1	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 TLBNonBlock	TLBNonBlock	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
