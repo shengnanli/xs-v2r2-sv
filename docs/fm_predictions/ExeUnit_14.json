@@ -1,0 +1,10 @@
+{
+  "target": "ExeUnit_14",
+  "ut": "ExeUnit_14",
+  "regs": 13501,
+  "outs": 1451,
+  "expected": 14952,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "诊断 vmucp-off: passing 13522 + matched_nc 926(外壳 244 + Vfalu 28 + Vipu 122 + Vfcvt 532) + constant_reg 504 = 14952 = 模型；vmucp-on 预期 passing 14448"
+}

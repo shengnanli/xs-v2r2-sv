@@ -376,7 +376,7 @@ def exeunit_cfg(top):
 
 
 for _t in ['ExeUnit', 'ExeUnit_1', 'ExeUnit_4', 'ExeUnit_5', 'ExeUnit_8', 'ExeUnit_9', 'ExeUnit_10',
-           'ExeUnit_15', 'ExeUnit_16', 'ExeUnit_17']:
+           'ExeUnit_13', 'ExeUnit_14', 'ExeUnit_15', 'ExeUnit_16', 'ExeUnit_17']:
     TARGETS[_t] = ('lazy', _t)
 
 
