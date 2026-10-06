@@ -352,3 +352,15 @@ fm-pins-smoke:
 	 if [ "$$ok" != 1 ] || [ "$$pin" != 1 ] || [ "$$n" != 0 ]; then \
 	   echo "fm-pins-smoke: FAIL"; exit 1; fi; \
 	 echo "fm-pins-smoke: PASS"
+
+# ★FM impl 侧不再共读 golden WrBypass_32（集成者 2026-10-06 裁定，data_mem_8x4 路线 (b)）★
+# golden WrBypass_32 例化 data_mem_8x4（firtool 2R1W 带掩码 ram），它推导不出 MC 存储契约模板、也不是 FM target，
+# 挂在 impl 闭包里会让本目标证书递归复核不过。改读已签重写件 rtl/frontend/WrBypass_32.sv（寄存器实现，核在
+# rtl/frontend/WrBypass.sv / rtl/common/IndexableCAMTemplate.sv / rtl/common/xs_PlruReplacer.sv）。只改 FM 的 impl 侧
+# （target-specific），UT 的双例化闭包不变。
+# Predictor 的 impl 原先整棵子树共读 golden：重写 WrBypass_32 的核文件 WrBypass.sv / IndexableCAMTemplate.sv 同时定义
+# WrBypass / IndexableCAMTemplate 两个模块，与 golden 同名文件不能共存 —— 这两个（及 golden WrBypass 的 data_mem_0_8x3）
+# 也一并换成已签重写件（WrBypass / IndexableCAMTemplate 均为独立 FM target，持证）。golden WrBypass_33 例化的
+# data_mem_16x12 同样是 2R1W 带掩码、推导不出 MC 模板，WrBypass_33 同理换成已签重写件。
+fm-Predictor: RTL_SRCS += $(RTL_DIR)/common/xs_PlruReplacer.sv $(RTL_DIR)/common/IndexableCAMTemplate.sv $(RTL_DIR)/frontend/WrBypass.sv $(RTL_DIR)/frontend/WrBypass_32.sv $(RTL_DIR)/frontend/WrBypass_33.sv
+fm-Predictor: RTL_GOLDEN_DEPS := $(filter-out $(GOLDEN_RTL)/WrBypass_33.sv $(GOLDEN_RTL)/IndexableCAMTemplate_33.sv $(GOLDEN_RTL)/data_mem_16x12.sv $(GOLDEN_RTL)/WrBypass_32.sv $(GOLDEN_RTL)/IndexableCAMTemplate_32.sv $(GOLDEN_RTL)/data_mem_8x4.sv $(GOLDEN_RTL)/WrBypass.sv $(GOLDEN_RTL)/IndexableCAMTemplate.sv $(GOLDEN_RTL)/data_mem_0_8x3.sv,$(RTL_GOLDEN_DEPS))
