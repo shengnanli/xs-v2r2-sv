@@ -227,12 +227,12 @@ ref 副本（match20 日志 3788 行 Moved loads，含 impl 侧）。fm_predict 
 0226 定 Frontend 为八个直接实例的 green_child 组合（inner_bpu=Predictor、inner_ftq=Ftq、inner_icache=ICache、inner_ifu=NewIFU、
 inner_ibuffer=IBuffer、inner_instrUncache=InstrUncache、inner_itlb=TLB、inner_itlbRepeater1=PTWFilter）。§4 的全展开 + 15 万条收割钉点路线作废。
 
-现状（HEAD=80d35d8c0， 逐个复核，scratchpad certcheck.py / certtree.py）：
+现状（HEAD=80d35d8c0，`scripts/proof_certificate.py` 的 validate_certificate_current 逐个复核，scratchpad certcheck.py / certtree.py）：
 八个 child 都**没有 tracked 证书**；仓里最新的合格 receipt 全部失效 —— 主因 scripts/fm_eq.tcl 在它们之后改过（script_closure_changed），
 另 ICache a7279429 的 xs_SRAMTemplate_core.sv 闭包变了、TLB 6571efce 缺 RUN_CONTEXT（非 run_proof 产出）。
 而且 Predictor / Ftq / ICache 的 impl 闭包里两侧共读 golden 子模块（Composer、FTB、SyncDataModuleTemplate*…），按 0222 §3d
 这些 golden 必须是持有合格证书的独立 FM target（递归）或已登记的 MC 存储契约。递归展开后要出证书的 target 共 **96 个**（下表），
-全部在同一个钉住的 commit 上用  重跑（不改它们的 RTL / Makefile / 钉点）。
+全部在同一个钉住的 commit 上用 `PROOF_COMMIT=<c> bash scripts/run_proof.sh <ut> <T> < /dev/null` 重跑（不改它们的 RTL / Makefile / 钉点）。
 它们 impl 闭包里的 sram_array_* / array* / data_mem_* 存储层按 verif/mc_memory_registry.tsv 的推导模板逐条登记（mc_memory_registry.py --derive / --check），
 登记在跑完、出证书之前提交（登记表不在任何 target 的 script closure 里）。
 
