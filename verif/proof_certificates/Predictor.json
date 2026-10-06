@@ -4,14 +4,14 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-06T16:53:43Z",
+ "generated_at": "2026-10-06T23:28:44Z",
  "generator": {
-  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "run_context_worktree_digest": "ea6277e20d29412d1867dea0d1e193cacd3fc76d0dbf49091792a5e47df9c934",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/7b1dd37bad70/Predictor",
+  "source_evidence_dir": "evidence/bb871960e9ea/Predictor",
   "version": 1
  },
- "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_commit": "bb871960e9ea524764dfdc6f34b2ffe54bb8258c",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -520,6 +520,31 @@
    },
    {
     "kind": "repo",
+    "path": "rtl/common/xs_PlruReplacer.sv",
+    "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/IndexableCAMTemplate.sv",
+    "sha256": "3e9279529e9d69b83df73d199c4c5fac81205b0040967fffa168cbea54107198"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass.sv",
+    "sha256": "96a5a297ddfec217bfb29a0c8fe01b8a64d89681561bbc12de4800160f50a916"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_32.sv",
+    "sha256": "f789b4fe800ebf67a8fdc316a49bf93d605e5bf9a6be810099e29d6da0087346"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_33.sv",
+    "sha256": "7f1abbd3534afe5a38bc29da3c2eb60802c1fe304b1776fc5eb589d00c194189"
+   },
+   {
+    "kind": "repo",
     "path": "rtl/common/ClockGate.sv",
     "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
    },
@@ -622,21 +647,6 @@
     "kind": "golden",
     "path": "golden-rtl/ITTageTable_4.sv",
     "sha256": "1b0f4a3da11eb26230254c65d5f4ecb8f7c99039df2d803482ad5fceb0b82f26"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/IndexableCAMTemplate.sv",
-    "sha256": "292d902ab0125b24d3819b5339aa17b2c6415d96304e00513a595b316adee9aa"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/IndexableCAMTemplate_32.sv",
-    "sha256": "a600b9c860151cb279343e34d34583bea651242a7b9a30bc6687253c456335a1"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/IndexableCAMTemplate_33.sv",
-    "sha256": "f6a063bf079a58fb7305dd51f9c889261c15a7686f9bf08b618c38b325cc88e5"
    },
    {
     "kind": "golden",
@@ -875,21 +885,6 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/WrBypass.sv",
-    "sha256": "d9d8ed174441b3e221d5c78b5e49e9e06ded09b8c64e6c952321470a2ea6b8ff"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/WrBypass_32.sv",
-    "sha256": "4586ff8dab86fbde9debdc344b0cee3b355954a1aa43a0f10ffc9e0bd8b6779c"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/WrBypass_33.sv",
-    "sha256": "72ae6263c313dbb17151e812fe8fc50d5fe50172003c05fc9b5ed2a1aa550676"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/WrBypass_41.sv",
     "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
    },
@@ -965,21 +960,6 @@
    },
    {
     "kind": "golden",
-    "path": "golden-rtl/data_mem_0_8x3.sv",
-    "sha256": "0583f4bcb53864c85652c381aa81d4fbfb9d5827082e57c2c0922d0baf8c95f0"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/data_mem_16x12.sv",
-    "sha256": "15028dbf010167820b6a2762d3ba6880c17949a10b0154624fde3844f77cb476"
-   },
-   {
-    "kind": "golden",
-    "path": "golden-rtl/data_mem_8x4.sv",
-    "sha256": "85eef452b97f0766622b90d615f34ff1c27fcf858d325afa832f35e41e8a92ef"
-   },
-   {
-    "kind": "golden",
     "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
     "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
    },
@@ -1009,8 +989,8 @@
     "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
    }
   ],
-  "impl_sha256": "e5e4654b9f86c3d5ddfe109d4c7d80ccbcd85bcd278a07fbbeadea801929033b",
-  "repo_impl_files": 2
+  "impl_sha256": "d8981c977f81f93ca285d94f0ddb17b97ecf56bcf83dd112a197ec90173af299",
+  "repo_impl_files": 7
  },
  "mc_memory_objects": [
   "array_1",
@@ -1026,7 +1006,6 @@
   "array_6",
   "array_6_ext",
   "data_mem_0_4x2",
-  "data_mem_0_8x3",
   "sram_array_1p128x24m6s1h0l1b_bp_sc",
   "sram_array_1p128x76m1s1h0l1b_bp_ittage",
   "sram_array_1p256x16m1s1h0l1b_bp_tage_us",
@@ -1034,7 +1013,7 @@
   "sram_array_1p512x24m12s1h0l1b_bp_tage",
   "sram_array_1p512x40m10s1h0l1b_bp_ftb"
  ],
- "native_facts_sha256": "d2e7c493906df408ee98239816139c8c8c2bbcf139c2d2d7efde7541842ee0cb",
+ "native_facts_sha256": "b25a68d0c52aa2e0b586f2661f78ced57fe7e87291dc5dd50ac2f4b632cc43e0",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -1053,7 +1032,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_commit": "bb871960e9ea524764dfdc6f34b2ffe54bb8258c",
  "proof_config": {
   "declarations": {},
   "entry_appvars_readback": {
@@ -1076,18 +1055,18 @@
  },
  "proof_config_sha256": "1e7e08f65bf1574846640c4d5f02bc8ebe535d222edf9c55e60501256c84bce6",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "proof_worktree_digest": "ea6277e20d29412d1867dea0d1e193cacd3fc76d0dbf49091792a5e47df9c934",
  "provisional": false,
- "receipt_sha256": "b986461d12ce6df44c04b1bee7287fa15d0a283164a64219a9f16fcb991a0375",
+ "receipt_sha256": "1752fbb6b4506272fa208408c0ec95b1678931e6541512df2763fec951cceec7",
  "reproduce": {
-  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh Predictor Predictor",
+  "command": "PROOF_COMMIT=bb871960e9ea524764dfdc6f34b2ffe54bb8258c scripts/run_proof.sh Predictor Predictor",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "91bf88fee6a0062e1101d6046d2734daf1ce121eafb835af9a9c06f0be1ddfcb",
- "run_id": "Predictor-20261006T114921Z-7b1dd37ba",
+ "run_id": "Predictor-20261006T183128Z-bb871960e",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
