@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:30:10Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/MbistClockGateCell",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   }
+  ],
+  "golden_sha256": "32387a144ec52f9555ed9cc84d91d1668a0246b6a6a201e0d6e004e02da78f54",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/MbistClockGateCell.sv",
+    "sha256": "be496866c5932327088277418a85b07f9653c09e220a0c7bdab99a509a901415"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   }
+  ],
+  "impl_sha256": "bffbff1d3668c4ec85b06557ae2a90d2d7ad1d514863f9556851b51d3f0e81cd",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "d9096d4850e80061f1e660ceb71b249927a42c83c75ece07a6feca5fb5165857",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 2,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "465c0f18aa12f88213c8b6acd0f5c1243b336188f8ea32d027ffdd9da8d6d5d6",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh MbistClockGateCell MbistClockGateCell",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "1161bcf299467b91ce637a1a8ea73cee801b24025192a4383d2cc9df2194d6b0",
+ "run_id": "MbistClockGateCell-20261006T115814Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "MbistClockGateCell",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "MbistClockGateCell",
+ "variant": "MbistClockGateCell",
+ "verdict": "SUCCEEDED"
+}

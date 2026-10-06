@@ -1,0 +1,225 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:15:43Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/DataModule_FtqPC_16entry",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule_FtqPC_16entry.sv",
+    "sha256": "375703a2f34a417d8d5dec25230c4caf443b888a50eee6fad70fd81460b53687"
+   }
+  ],
+  "golden_sha256": "6b9cacaccf4ea1b3143a366aba4d03c7b63baf7d5e8e17e73d0ededa4c659161",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_DataModule.sv",
+    "sha256": "879ed4221bd71d51d456dec4c8e8a701e8361bb94e5466a0ecd8d2a3e4cb6e1f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_SyncDataModule.sv",
+    "sha256": "79d4dfdbed51fddadb93dea11c71a8d330257bf9a6797105dff15d22c18a170f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule_BackendPC_16entry.sv",
+    "sha256": "099bb0a5fc85bdd9399aef13bafa2d197454397c828c695bf0c82551c11bdf14"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule_FtqPC_16entry.sv",
+    "sha256": "332d4db9b82ece8b9c2eb9fae15cd7856fef4290f001cfcc99c5cac1f55fd793"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__64entry.sv",
+    "sha256": "807126b660451e91fba095875bb2a4215b05fc322d58603ca808cb6d87d7efcf"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__64entry_16.sv",
+    "sha256": "c33b92332eab386025ef07d948f4b4f56d24ffb0528dc7a4170b3082ee6e6d16"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__16entry.sv",
+    "sha256": "7b23c030c68e4e70e0b2e498ddf536d9b83a98a93d0d27eb17f3f19120ad38b1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__16entry_4.sv",
+    "sha256": "3aa06cb0313777f77b53d65193a92bbefbbcaf0da3051e4156bd32c758f3bc6e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__16entry_8.sv",
+    "sha256": "f3193c301518b42696aa8ec5ee8c2808ab07dd9c15f1b827bca91e92cdfebee9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__16entry_12.sv",
+    "sha256": "fc2d9d8172196038a73241da3523f3b1e1163196eacbbacf955d38bacdd08a30"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__16entry_16.sv",
+    "sha256": "5584cc2b57c97b1615c46b78650b1bb1d45b241897f5284522aac898dc63ae09"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate_BackendPC_64entry.sv",
+    "sha256": "d2004593b4424b34c576b73fa17e3ec00288d25f60145ed172d5b0e49b4d762f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate_FtqPC_64entry.sv",
+    "sha256": "a3c81af32ca6f1a075704d295c8ac332c15774b44532ef388eb92562e45aaa1b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__1024entry.sv",
+    "sha256": "322b4047b48d72c560c021f99222b77e088f0584eb18a93d1a82647d8d91f75b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__1024entry_1.sv",
+    "sha256": "f97a8c0d9c6733136f565c2877675c3b48c3d8ccc29a087f6e9cc24a4ae6348e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__64entry.sv",
+    "sha256": "6441d50c991fea299be250a67997465aeb8c8283c46a8660d85a022414050791"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__64entry_1.sv",
+    "sha256": "6c063d79533e78da522106fe520cd2d8ba5f477ba702039740ff7951d234d054"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__64entry_2.sv",
+    "sha256": "b653b8ef7de8b583c70917c9bed801eea3fd40679b826b98ad163ebada8fe028"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__64entry_3.sv",
+    "sha256": "7d107ecb15880fd67c8fcb4e28d714b19cee19f4352a33d76eb14f61305a987d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__64entry_4.sv",
+    "sha256": "00fae2afb0bcb642b8827695987c3f9d976ab06d99e304dfd0591f9bcb908860"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__16entry_20.sv",
+    "sha256": "905d6318ab049173d78f124f09616366fb29ee443893254d18bb74df9bdbb1cc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__64entry_5.sv",
+    "sha256": "76f2c44a8690a5e2dc7f7bf806fdf74c51af1a69630003979b28001f2d3137b1"
+   }
+  ],
+  "impl_sha256": "ff46affcc5e8248145885edf489ea7baf381bb139fb217ccbadca7b685d3c853",
+  "repo_impl_files": 22
+ },
+ "native_facts_sha256": "051d11778fac7c159406413a62448a2ef71d0f04ae58f045cf3ea60b1ed94e23",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 2168,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "6e03d795ab9141287938b2cc692f442ff3fc827b5aed31258f59a82a1d79ab04"
+  },
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "4ef4dcc555594b5bbd01da3190f947d9e210b18067f74484cc3867faab57ed9e",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "4258e056a7338308a99e268fd7f2163c1054060064e11eaa38476f7ab0ce9c28",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh SyncDataModule DataModule_FtqPC_16entry",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "eda5656e83f31167799629940afac7c4d9bc94f145cf3843f0b03f17a5390645",
+ "run_id": "SyncDataModule-20261006T133734Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/SyncDataModule/fm_pins_pre.tcl",
+    "sha256": "6e03d795ab9141287938b2cc692f442ff3fc827b5aed31258f59a82a1d79ab04"
+   }
+  ],
+  "sha256": "04d7fc39ceb9cb9bd4aa5b7ffa406ed658dad9a9f7f8a34a5a491d22af138df5"
+ },
+ "target": "DataModule_FtqPC_16entry",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "SyncDataModule",
+ "variant": "DataModule_FtqPC_16entry",
+ "verdict": "SUCCEEDED"
+}

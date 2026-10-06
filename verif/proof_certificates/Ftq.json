@@ -1,0 +1,250 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:22:15Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/Ftq",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Ftq.sv",
+    "sha256": "87e46f3bdd3ad9bad32b8494294ec28c35245aa65e22891714dfe0a79d553ee3"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FtqPcMemWrapper.sv",
+    "sha256": "91b278c8a09f328bc107d272fea68031bf115f0fbafe3790cf188fcd30ec0d40"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate_FtqPC_64entry.sv",
+    "sha256": "c1d1fce146ac56992785f8e236151f4a23138fc27fe74c0c59d85ad540d1cd72"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule_FtqPC_16entry.sv",
+    "sha256": "375703a2f34a417d8d5dec25230c4caf443b888a50eee6fad70fd81460b53687"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry.sv",
+    "sha256": "7c3b4b1979abe2ea95899234c2bd2e34109dc11e855648076693523a55799996"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry.sv",
+    "sha256": "07e01a10114696df76f9658ec24834af03e60bf99eb32fea6fb1ece919cc10fe"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry_1.sv",
+    "sha256": "9794f9c844c0a0e2099a0515c2c5f55ab113a78aa32345e19fac86bb3bdffa3a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry_4.sv",
+    "sha256": "657eb8794296a276276607a33fa50acd905a2684074fc4f5c2d1d1cf6f43cc6b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry_2.sv",
+    "sha256": "6002ff477796e8ab3b24b8988858c0b977e6a768ac6632e6750d76d5a2387c68"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry_8.sv",
+    "sha256": "8959a67c6adaeb6396c0b468fdfd13489c966fce82818c886e80f9cd2c12b57e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry_3.sv",
+    "sha256": "c5765170e2bd9f57f466d7a12c76cc5e0f88d5767632cec823903b7a55413c22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry_12.sv",
+    "sha256": "0c691795963037f7bd1a0df82ec745db6d37a7e1130c7cb23d91ec29011d4c5f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FTBEntryGen.sv",
+    "sha256": "87b82da9c1f7dc8565d1b37605a2835e82013ae0856b7db1dfa78795aa7797c2"
+   }
+  ],
+  "golden_sha256": "15b036dedcaa5fab34168fb5425b88f5d6728810b078f1c266db16f760a373b0",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Ftq.sv",
+    "sha256": "c58cf2c569fda63d4fbe437ab6427cfb117c1cb7aa513d24df08c5f1f6eb338d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FtqPcMemWrapper.sv",
+    "sha256": "91b278c8a09f328bc107d272fea68031bf115f0fbafe3790cf188fcd30ec0d40"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate_FtqPC_64entry.sv",
+    "sha256": "c1d1fce146ac56992785f8e236151f4a23138fc27fe74c0c59d85ad540d1cd72"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule_FtqPC_16entry.sv",
+    "sha256": "375703a2f34a417d8d5dec25230c4caf443b888a50eee6fad70fd81460b53687"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry.sv",
+    "sha256": "7c3b4b1979abe2ea95899234c2bd2e34109dc11e855648076693523a55799996"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry.sv",
+    "sha256": "07e01a10114696df76f9658ec24834af03e60bf99eb32fea6fb1ece919cc10fe"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry_1.sv",
+    "sha256": "9794f9c844c0a0e2099a0515c2c5f55ab113a78aa32345e19fac86bb3bdffa3a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry_4.sv",
+    "sha256": "657eb8794296a276276607a33fa50acd905a2684074fc4f5c2d1d1cf6f43cc6b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry_2.sv",
+    "sha256": "6002ff477796e8ab3b24b8988858c0b977e6a768ac6632e6750d76d5a2387c68"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry_8.sv",
+    "sha256": "8959a67c6adaeb6396c0b468fdfd13489c966fce82818c886e80f9cd2c12b57e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry_3.sv",
+    "sha256": "c5765170e2bd9f57f466d7a12c76cc5e0f88d5767632cec823903b7a55413c22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry_12.sv",
+    "sha256": "0c691795963037f7bd1a0df82ec745db6d37a7e1130c7cb23d91ec29011d4c5f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FTBEntryGen.sv",
+    "sha256": "87b82da9c1f7dc8565d1b37605a2835e82013ae0856b7db1dfa78795aa7797c2"
+   }
+  ],
+  "impl_sha256": "4cb0a5836c3f6aec82fb3f4c2412e0db3371bb56601e497d198a2cbd48aaa209",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "7c5f874d78c7421f44fd7b4b0fa4e7e5742025c26cb1f646d5804be1e22b3d86",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 66481,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 4282
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/Ftq.json",
+    "sha256": "67f3b6407fde4f2017d80330e150e11fef323fcdee730b23a034464fc03ab7df"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "986938b7ac20db2dc787ea8b154f0486ad06a689d641439c68d9b3334c4afb86"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "9dbd0a87ecfb50ac0e107d7414607caf54ae2eb27125a79a0ca7b92eac4aa822",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "bec0b6b62c92e05e667f647e1724df107e3c28f66c564224e5b044951d67f43a",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh Ftq Ftq",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "23138a2cda3a9c80a3960fa9108fe94ebc9574d0c21c70c25c086afb3fac6319",
+ "run_id": "Ftq-20261006T135535Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/Ftq.tcl",
+    "sha256": "80b4cb05eacaf957c50d962f6ec9b428ec874b46c8677a195cb042269b811267"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/Ftq/fm_pins_pre.tcl",
+    "sha256": "986938b7ac20db2dc787ea8b154f0486ad06a689d641439c68d9b3334c4afb86"
+   }
+  ],
+  "sha256": "c81c5c26a036c6999bbc414d101278c792d2cc0a46204181693a7114929fba63"
+ },
+ "target": "Ftq",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Ftq",
+ "variant": "Ftq",
+ "verdict": "PASS_DEAD_REF"
+}

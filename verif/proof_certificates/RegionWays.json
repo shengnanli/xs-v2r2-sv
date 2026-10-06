@@ -1,0 +1,118 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:38:29Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/RegionWays",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegionWays.sv",
+    "sha256": "4c1428648ffaae6021ff016de3d7c7b055228a255ad4381047c53e87be87ff4d"
+   }
+  ],
+  "golden_sha256": "f154ae1c91e496e2fbea1fb366f81a7d88e90ba16eba956910936c2639bd1707",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_PlruReplacer.sv",
+    "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/RegionWays.sv",
+    "sha256": "69eb1ec036ae5baebbad3a32d340e95ee3ecd6fc9d851606235da13c65068ca9"
+   }
+  ],
+  "impl_sha256": "716f02b1885e6f34bf65fdf8d1852c88ce534cf0efbd3d7b9225e7a75e3ff983",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "019099714fc19ad7ba7109e08e828ec0bcd5bbe81fcf5a1e80fa23f6e2019a24",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 680,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "db5e3f0f123d781281d487ac941c3922ff63fe3bc6d1d2e235c2b3f643c3ad0e",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh RegionWays RegionWays",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "f8d6767f03f88acee9698090c34f78474ac68e9cd37aa13b8cd4c6385bb145fd",
+ "run_id": "RegionWays-20261006T131426Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "RegionWays",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RegionWays",
+ "variant": "RegionWays",
+ "verdict": "SUCCEEDED"
+}

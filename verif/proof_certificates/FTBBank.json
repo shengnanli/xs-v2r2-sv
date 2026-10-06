@@ -1,0 +1,212 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:21:32Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/FTBBank",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FTBBank.sv",
+    "sha256": "655f766f37e55d0fce6d346efaf074e24ac3a81e7b210fca794a9b1b729c218c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeFtb.sv",
+    "sha256": "c32768a36f85e41a09f2076e5381beab0ceed9116de43c9850fdb19885f96e03"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_2.sv",
+    "sha256": "74cd5e498d09085c8ab9f6d1639f47e63ed7f11c54f41f9fcdeeb9db13edbfa7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_36.sv",
+    "sha256": "d7edcb550f3ae281e567ea2ab5d8a8edb9f7f15ee068e575433d38c5970ea7da"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv",
+    "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_1.sv",
+    "sha256": "ab20f90c8946593903339761fe59c69ca6c123816911ec92060eee386979db78"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   }
+  ],
+  "golden_sha256": "0c9ffa5ac3a04e31a55e67941d934827622bc03f2d7181d62805ca16ac4e91e1",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/frontend_common_pkg.sv",
+    "sha256": "7233bfa35e6e3bd9c3fe74644f40d6c24efc174ea84b6952b7ddcf3c9ba6f5fd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/FTBEntryGen.sv",
+    "sha256": "9700194f5371ab4e12aa6307151797f35dbe259bb126675066411161247d31d0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/FTBBank.sv",
+    "sha256": "2448b7e26b09d4167e4086557ee0fe16bb55bfaacf1d9a16ee7d86a87731d724"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeFtb.sv",
+    "sha256": "c32768a36f85e41a09f2076e5381beab0ceed9116de43c9850fdb19885f96e03"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_36.sv",
+    "sha256": "d7edcb550f3ae281e567ea2ab5d8a8edb9f7f15ee068e575433d38c5970ea7da"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_2.sv",
+    "sha256": "74cd5e498d09085c8ab9f6d1639f47e63ed7f11c54f41f9fcdeeb9db13edbfa7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_1.sv",
+    "sha256": "ab20f90c8946593903339761fe59c69ca6c123816911ec92060eee386979db78"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv",
+    "sha256": "4cd9ede01d01aeb99749e867214ad559a14a4d29b71fb82949b501ab7cea2ba1"
+   }
+  ],
+  "impl_sha256": "2c39c801425814a2b2c949bb8fc1e48646975b896d07519aa0bde313abd27426",
+  "repo_impl_files": 4
+ },
+ "mc_memory_objects": [
+  "array_1",
+  "sram_array_1p512x40m10s1h0l1b_bp_ftb"
+ ],
+ "native_facts_sha256": "2a2c53e5fcd319e9d67bc0bb4b43b9aa106a5d910b8ec0d6f959773d1ba9e93a",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 3276,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 50
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/FTBBank.json",
+    "sha256": "956d670f43d2d4f409030f4b2f7d0dce67b2baf2c62a1806323a59e0df123e7a"
+   },
+   "dead_ref": {
+    "path": "verif/dead_ref/FTBBank.json",
+    "sha256": "97fc0574003e950072b39a6edb83630c9eef8f3939a1fa4ef3d257e59bd69d18"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "8",
+  "fm_mode": "assembly",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "ab84ff00b3d7869ea7c75814c201f29695889c384757152b5d5e08c8d6f56dad",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "2a4e23be4dd35f5291520aac186c7894f3bc2d51f33eee3dc76115e01ac555aa",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh FTBBank FTBBank",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "9225bbb053e96dffa6b41504d11aa353cc7f7f024c11252630ac316b2d057133",
+ "run_id": "FTBBank-20261006T120958Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/FTBBank.tcl",
+    "sha256": "eb4fdaf47269b8620d8d6789ce86d75f45c8ada9073f84ffa488a1726a2dabcb"
+   }
+  ],
+  "sha256": "11719db72cb1f8d9e39a4086ceec195a8275e0c97e73d71389c15de361472c7c"
+ },
+ "target": "FTBBank",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FTBBank",
+ "variant": "FTBBank",
+ "verdict": "PASS_DEAD_REF"
+}

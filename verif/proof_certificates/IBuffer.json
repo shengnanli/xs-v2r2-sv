@@ -1,0 +1,125 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:23:24Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/IBuffer",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IBuffer.sv",
+    "sha256": "8e578f7a55708b1831a4b8e064967f32e7971740aec3ddec0e57ba62fa8152c2"
+   }
+  ],
+  "golden_sha256": "b94c4232c82197bbea00532e991f97e9f13a9b3dcc47e154370dc4b62a9adab1",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/IBuffer.sv",
+    "sha256": "2a22348f0f9df4a615a751edfcd3f10ddefd32b40f52d63b8690ad4791a46f96"
+   }
+  ],
+  "impl_sha256": "dd3467237a7dd5c6837aefcfe6f480e394d1ae59a514be3ab9705e8da5993a3f",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "4e7e48f1687a8e518918c505a10070ae88d23e07c04d897e172cc5edc9dad949",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 7908,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "5954993edb27609532aa947ff2bff5bcfc1a0dac390500289e6ba942fbdd884f"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "4bb0a9b4b0e89292c8c8b66e9cb633b5bba9f5e659fe4221ded404132f80ad0f",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "10c95c0d73a2ef3700723f36e43518e29fddcfb35eab7efdad231473c7cd4a03",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh IBuffer IBuffer",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "36918ed3f8fb3a1fe271315cab681ca4cdc2b1150864ec70fe7682c5ed6e77df",
+ "run_id": "IBuffer-20261006T150546Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/IBuffer.tcl",
+    "sha256": "08fac49e6530e0e7da804704c668a8feacf8c26814bcb49946ff958a55f1dea7"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/IBuffer/fm_pins.tcl",
+    "sha256": "5954993edb27609532aa947ff2bff5bcfc1a0dac390500289e6ba942fbdd884f"
+   }
+  ],
+  "sha256": "cda9a9ed8c8dfade8966ee03d6352a67cf77b3a6f23df0a233b2a34d059f7560"
+ },
+ "target": "IBuffer",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "IBuffer",
+ "variant": "IBuffer",
+ "verdict": "SUCCEEDED"
+}

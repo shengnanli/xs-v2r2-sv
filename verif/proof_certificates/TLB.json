@@ -1,0 +1,185 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:50:51Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/TLB",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TLB.sv",
+    "sha256": "d4bc37051c667011f86bfac93df3e191d4837b74e1833bf010786784b2da31a1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_9.sv",
+    "sha256": "89cdb765b5398d55d1621a57ebf2ff6c0a1340b14183fbf5bc10336c4d5c0ffc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_7.sv",
+    "sha256": "fe8af33d68c8dc05c9edc7802ebde39b115b8e321ea62da12b49c50bcd82edca"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TlbStorageWrapper.sv",
+    "sha256": "592cf1bb45accdd07d90f3f22c0efe2ab547bacce031b64c6b2fddd9044f5015"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TLBFA.sv",
+    "sha256": "38e824116202ea62e9c49307b10efc86c8432e13e1fde8629ebfe1e9bfbf11cb"
+   }
+  ],
+  "golden_sha256": "f4a3ae779f05b0e0ef09b61daf3425c7f044de2d09eaf44891a025c593399187",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/memblock_common_pkg.sv",
+    "sha256": "d5f097b8dff9f709df8da7e75abc9a2f50c598152d5187fc0895d07e840cc04a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_DelayN_core.sv",
+    "sha256": "59f58808b76e143acdd35544d695b434758002779d502eccc0a757eb5ac27d15"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayN_7.sv",
+    "sha256": "a40c09d0da8eb9ab70315cfbeeebfedbec00f3cf2c6399949c73739340acb3ce"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayN_9.sv",
+    "sha256": "1f693e134ccb7957a00be309fcf14b84fb12975b515c161f4c233da81effe01e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/xs_TLBFA_core.sv",
+    "sha256": "147484b3b6aab4b381391ec294f587168d80d54ee24a77245267e3174b6d9781"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/TLBFA.sv",
+    "sha256": "d6b349d84c5c95998f35766018bcd4cb1990d33dd2b533c441c2886d9762a39b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/xs_TlbStorageWrapper_core.sv",
+    "sha256": "19ccacc70c184bf9c157bbbfb2b46dce16399053903646366aa2485154ce3a86"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/TlbStorageWrapper.sv",
+    "sha256": "2436abb3082b995a661ff9c89ae350dce2cb1381d0a34c8c730e5423fc149a2c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/TLB.sv",
+    "sha256": "166319d5886d910a56f112db251c81c0296344964ebd37e82dea04e52a447e38"
+   }
+  ],
+  "impl_sha256": "fdd64696dc1eb1a53003c77370d618383b352495b5db8ab5540e9b0e636fadc8",
+  "repo_impl_files": 9
+ },
+ "native_facts_sha256": "7b683641c6772a5f4417ac139cb77c83f42339fd68070a14605b8fad9a8682cc",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 11118,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "f20daef153f368985ae3a0b17dc46df019b017e5561ead41da8622c7d4f11a18"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "0b55aa7ff7ca34c0facc83f4ba9335545d850090c67e99b415dc23361a2d493c",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "e1ad4e956e224a2f07c3889f5fcfbe98b14a50d9c601acf4afd9d52e6ba78b0e",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh TLB TLB",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "5683a220e8cd2487c48d38e85675768493d404b2012931ee1d262ca8748c1edf",
+ "run_id": "TLB-20261006T152340Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/TLB.tcl",
+    "sha256": "7af0530219ca2e36d0a1452839cc1a14052487b5b2c5863e46926d19fb723dd7"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/TLB/fm_pins.tcl",
+    "sha256": "f20daef153f368985ae3a0b17dc46df019b017e5561ead41da8622c7d4f11a18"
+   }
+  ],
+  "sha256": "1733391764243f8eff1b5bd5d863a1e4e22aebf9de7b024a64da58effd79ff6d"
+ },
+ "target": "TLB",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "TLB",
+ "variant": "TLB",
+ "verdict": "SUCCEEDED"
+}

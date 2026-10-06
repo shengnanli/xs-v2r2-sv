@@ -1,0 +1,153 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:51:33Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/WrBypass_32",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_32.sv",
+    "sha256": "4586ff8dab86fbde9debdc344b0cee3b355954a1aa43a0f10ffc9e0bd8b6779c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_32.sv",
+    "sha256": "a600b9c860151cb279343e34d34583bea651242a7b9a30bc6687253c456335a1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_8x4.sv",
+    "sha256": "85eef452b97f0766622b90d615f34ff1c27fcf858d325afa832f35e41e8a92ef"
+   }
+  ],
+  "golden_sha256": "dae072d4d720a6c8152963754d36c37919fa9697a8c1b9891f80a7e823edfce1",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_PlruReplacer.sv",
+    "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/IndexableCAMTemplate.sv",
+    "sha256": "3e9279529e9d69b83df73d199c4c5fac81205b0040967fffa168cbea54107198"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass.sv",
+    "sha256": "96a5a297ddfec217bfb29a0c8fe01b8a64d89681561bbc12de4800160f50a916"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_32.sv",
+    "sha256": "f789b4fe800ebf67a8fdc316a49bf93d605e5bf9a6be810099e29d6da0087346"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_33.sv",
+    "sha256": "7f1abbd3534afe5a38bc29da3c2eb60802c1fe304b1776fc5eb589d00c194189"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_41.sv",
+    "sha256": "e9efb703da120219db4b66fb375063804b32db520839557249e3e138f2c5339f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_43.sv",
+    "sha256": "234b768ed8a866ee8c2a0268d5661c0debd4675bfa80b91bbb90498c5c5d82ab"
+   }
+  ],
+  "impl_sha256": "559e1a7243d91df6090d9d7b7905700b575efea9680b3f00dcce4b291836bf4c",
+  "repo_impl_files": 7
+ },
+ "native_facts_sha256": "5a06edfd5326b709597fd01f575eb130faba5274308dff86d2adb29b9c6ef196",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 158,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "5992616f0e8bf4e22555d5f23aa9675d79801d341967a5e626009a3a9fa88600",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh WrBypass WrBypass_32",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "6400a6661f7f4a8262cd9678e33ac16d7aadb32dfe3f1b237a96e7332b4ed1d3",
+ "run_id": "WrBypass-20261006T123304Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "WrBypass_32",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "WrBypass",
+ "variant": "WrBypass_32",
+ "verdict": "SUCCEEDED"
+}

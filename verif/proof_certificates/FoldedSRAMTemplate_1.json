@@ -1,0 +1,284 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:19:09Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/FoldedSRAMTemplate_1",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_1.sv",
+    "sha256": "840cdf4b8512fe989452586d79ff162fea28a8a093d0cdf582e33f987e6c1898"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_4.sv",
+    "sha256": "938d6938943b599ac91c03008cca03a3a58ced8a05a1d2f5931be84fb9fb82ae"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_45.sv",
+    "sha256": "c1ff40f62556143751b607f46bce381e71b0c2ef2954ca8735a59be70ca030c5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv",
+    "sha256": "5c0a94587436757dec6582bb4f779471a14b61d99d1c0546e38f8a92e733e602"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_3.sv",
+    "sha256": "a428051fe6762e835677debc5b021a7a894baa9d2cc14c972b101f1361aa2d39"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   }
+  ],
+  "golden_sha256": "b8fd472cc7aabc0646758d66ee284af38b319bd3eefc442707ca11d445648b33",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_SRAMTemplate_core.sv",
+    "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SplittedSRAMTemplate_3.sv",
+    "sha256": "63564e38b27efed05e80f8daec1105685f9cf82d0001aeb144f8efba9f3414c4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_44.sv",
+    "sha256": "adcf976160fdf8968088d002c1a91568daca9329b4942f23cc2e99c6a430a53b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/FoldedSRAMTemplate.sv",
+    "sha256": "15c056fd46dc4e09bc5240c6d80329871254d04ff08407dc9a0897966d24ff48"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SplittedSRAMTemplate_4.sv",
+    "sha256": "b60d2bf824e94e93dae4987f59cd0bd2ab33c2d6a6f39cabc395575db91c54b8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_45.sv",
+    "sha256": "8b3bf7627622bbe9d379e8a1a68e70538b26d974d9488cc28472b98fd581427e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/FoldedSRAMTemplate_1.sv",
+    "sha256": "72acd6cee83707261c63d3b3cd648695443b5b1cf577ae80d8a73e7bba8ec06d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SplittedSRAMTemplate_25.sv",
+    "sha256": "bceff7d08a48722f2e7653215cfb7a42b132467bcf53ee5f0f9415823039c697"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_76.sv",
+    "sha256": "ad1e9e2ea553485903ba525db039ea1da69968435e34de8656748f066277e6ed"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/FoldedSRAMTemplate_22.sv",
+    "sha256": "31b810d567de3717c6883081599f94bf07aba0d76b6cf87819c4c96d3b357a23"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SplittedSRAMTemplate_27.sv",
+    "sha256": "8f05725777f35bf56df96eff2ae0a4faafedca32b5b007a3abf10c67ddb0a6b3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_78.sv",
+    "sha256": "0eaf96bd515672491f6428b6ab0ddbfb571861e73cd4548c46fba89dc5e40bb4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/FoldedSRAMTemplate_24.sv",
+    "sha256": "5916225af79bcb6164be79e4faef1981d4e8032ce4e1fe19a8f5987dd1255d07"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SplittedSRAMTemplate_23.sv",
+    "sha256": "8c2981a21a2ecf9c4a42eb0e448c32e611eb870488fabf1ad5dfefdbfbf79893"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_64.sv",
+    "sha256": "e1b9b8417fe1c5358577147a6c9aa38b0969fca0967a4a96b2bd896e99f260f8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/FoldedSRAMTemplate_20.sv",
+    "sha256": "6e5d8cadac88084af1eb1e0861299d92dc0b68d39c322c47af2a0d90c3d5c03e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_4.sv",
+    "sha256": "4b9e6d5526099063ba418e5ba67c3bd612e1550078b7846f958abbcaddb3b32e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv",
+    "sha256": "ab0a784001a44cf0c865064eddba456c276a987cb3a74b70edba86a18ed64b80"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_2.sv",
+    "sha256": "9fffa1bbf796cd2c726de8aa6bd72795d2846f719e14ada37c9509d074a5faa2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_3.sv",
+    "sha256": "a428051fe6762e835677debc5b021a7a894baa9d2cc14c972b101f1361aa2d39"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv",
+    "sha256": "789bff7724dfe1f76ebf9286bd4bb7b9f8eef8aa0a311cc8e834a00df766f244"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv",
+    "sha256": "5c0a94587436757dec6582bb4f779471a14b61d99d1c0546e38f8a92e733e602"
+   }
+  ],
+  "impl_sha256": "c8551d3e06e60a0f26046397ba64871c2ef2853060b839ce896335d4ec5dc845",
+  "repo_impl_files": 17
+ },
+ "mc_memory_objects": [
+  "array_4",
+  "sram_array_1p256x8m2s1h0l1b_bp_tage_bt",
+  "array_2",
+  "array_3",
+  "array_6",
+  "sram_array_1p128x76m1s1h0l1b_bp_ittage",
+  "sram_array_1p256x16m1s1h0l1b_bp_tage_us",
+  "sram_array_1p512x24m12s1h0l1b_bp_tage"
+ ],
+ "native_facts_sha256": "8bdb3696652be55fc43616789c0757a21b7d680561e05cce6386dcc80742af66",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 148,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/FoldedSRAMTemplate_1.json",
+    "sha256": "d8038f20eae9dc543edb8b7a67354012620980fccda08f456e173c89bc36c898"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "8",
+  "fm_mode": "assembly",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "fb6fb75554c7f6c8928d8b2f49f2431e2000847b5ffbdfe9dd04d3672ac697ab",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "78cb3a0c208bab2cfefee8de2999aedf3cc1bf8d55bfbc00f3dce68d04b803df",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh FoldedSRAMTemplate FoldedSRAMTemplate_1",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "d24576194a0cc456020f60b134822059b7838d0d8e540227e3744898d92b5037",
+ "run_id": "FoldedSRAMTemplate-20261006T121524Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "FoldedSRAMTemplate_1",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FoldedSRAMTemplate",
+ "variant": "FoldedSRAMTemplate_1",
+ "verdict": "SUCCEEDED"
+}

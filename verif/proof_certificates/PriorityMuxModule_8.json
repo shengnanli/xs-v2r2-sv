@@ -1,0 +1,143 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:36:54Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/PriorityMuxModule_8",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PriorityMuxModule_8.sv",
+    "sha256": "fa3254dd3b7ee5982af30615de9943e0c09cab70910d991a9c63848c8f93a59c"
+   }
+  ],
+  "golden_sha256": "8026248fc3c6e5d77bd0e0a4e274e9417e7c805edb4e5609b3f49cbd622b975e",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_PriorityMuxModule_core.sv",
+    "sha256": "5d5959cfc0ab4eb99af47d414234e2b9bf34a7c690dc3ebd39bd63f77a41ad43"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/PriorityMuxModule.sv",
+    "sha256": "1f5beca93d4de5391a18514fff4cc13b86a3699d446381a16f7835fdb26df968"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/PriorityMuxModule_4.sv",
+    "sha256": "88268fbef29dee1c52ff1461d54e6deb9adec1b2df260a16169abe61caffadad"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/PriorityMuxModule_8.sv",
+    "sha256": "55b108ccf78a716f344143dd0486239014cee2160a65e68d3c3f8d884f07dba2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/PriorityMuxModule_12.sv",
+    "sha256": "8cf850850acd33faba120f6a4e9e40273cdd6740c1b9adba1d57b870dbc584f6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/PriorityMuxModule_16.sv",
+    "sha256": "75ef2575c8f16b3e0bc42a596a5ed88f6081d7c1f4d4d9b201b4be1c4769c80c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/PriorityMuxModule_20.sv",
+    "sha256": "1f784462208eb509cf80600c9c3ee1d7245fd930723e470d702caf63eb977512"
+   }
+  ],
+  "impl_sha256": "c6c18b3e2c33daff323b05698cbd4808a4c78221825de458e95381ce543585b7",
+  "repo_impl_files": 7
+ },
+ "native_facts_sha256": "82a1c370ab0df31527bdb1590c8832c7e27a5885dfc5ff53bfb93a4fd64b05a3",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 9,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "e31b22fb03247fa32ab75a9915f868c33b022346d11aba9904c3454f65158f1b",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh PriorityMuxModule PriorityMuxModule_8",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "f13b4b40f742920ebd4f5d413830824b1f48c1c1ed062dbec2c4fd663879e62b",
+ "run_id": "PriorityMuxModule-20261006T131237Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "PriorityMuxModule_8",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PriorityMuxModule",
+ "variant": "PriorityMuxModule_8",
+ "verdict": "SUCCEEDED"
+}

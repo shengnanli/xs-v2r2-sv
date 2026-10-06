@@ -1,0 +1,386 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:27:06Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/ITTage",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTage.sv",
+    "sha256": "951a1841cf0459a734a4799c1a8ab415018e06b6c1e224f94da16d28c99b718b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable.sv",
+    "sha256": "ebb4a7e78f713adac7daccbdad25f2b116c12c2e083b837137bf4db5b8aec037"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_1.sv",
+    "sha256": "51e75455a8a1e20a23bd36e5a43beea0ce740970b77ca113c1f1ada208e73d28"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_2.sv",
+    "sha256": "72b8fa393aa689cc2bf55e17bc6fb0551dec96fc011abed21be197f1473db6b1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_3.sv",
+    "sha256": "18fdc20b419ea9ce722c822d72f2657a25391bc157e81a256f4e80e597abc68f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_4.sv",
+    "sha256": "1b0f4a3da11eb26230254c65d5f4ecb8f7c99039df2d803482ad5fceb0b82f26"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage.sv",
+    "sha256": "0c8145350c1005ab79d59c1027208c22e38db4f02f3d997e98cd088cf75bc4aa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_1.sv",
+    "sha256": "d6d4c9e5cdef44c3769463eb097e293f0e8692943ac6d500906e2e50070b3f81"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_2.sv",
+    "sha256": "4ac305b224e154392ce9cea760fcbdc8c24fea3030dffaae4aae7fdd0c69e653"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_3.sv",
+    "sha256": "ce4d275fe3dc6ee646e033fbd8150e2eabb06d144984c799032883254a483bab"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_4.sv",
+    "sha256": "de2ccb252f34de08b10e455b877204ac5891a01fde56fb0e1f77bc46bdfb9f22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegionWays.sv",
+    "sha256": "4c1428648ffaae6021ff016de3d7c7b055228a255ad4381047c53e87be87ff4d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MaxPeriodFibonacciLFSR.sv",
+    "sha256": "1c978986035cdf73992dc427f3806eff1de362ee9fad8fb649dae3734460437c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_22.sv",
+    "sha256": "d24ee1b59f93a5f139561de0d02d0ec97b581920e82ac5e02e0f5c87fff0e4cd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+    "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_25.sv",
+    "sha256": "e09a6e83d421c169821b62ccac78013a8081f942a859aa8ae882b679113d0543"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+    "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_76.sv",
+    "sha256": "9d5ca6fbb68d209d26e343aaf48ef5e12b86ef7c8c11c5ce0192b7fc228a8da1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_78.sv",
+    "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_41.sv",
+    "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_43.sv",
+    "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_41.sv",
+    "sha256": "e28782c82a9284e98a7b571ace1e8a9be98b3452440544b7f4fd292246879b2d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+    "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_4x2.sv",
+    "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   }
+  ],
+  "golden_sha256": "91654d0902afb4c912b3092beba783d73225f710d72ed450cdcf8761bb7f61e1",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_BpuStagePc.sv",
+    "sha256": "212cdf0946daea8ae0736e94959e7f379da67ae59fed2bb01d4357dec66b270c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_PlruReplacer.sv",
+    "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/MaxPeriodFibonacciLFSR.sv",
+    "sha256": "2d5497f211fd60e92f2fc176313e49175e26e21c7508c6525634d65a2f087bd6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/RegionWays.sv",
+    "sha256": "69eb1ec036ae5baebbad3a32d340e95ee3ecd6fc9d851606235da13c65068ca9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable.sv",
+    "sha256": "e30de252f6a5ed8d576c85c97eb8c537d913ac21ad7a879cb3473b0df5162975"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable_1.sv",
+    "sha256": "72b21e31a48fd3527b33b435412d983d46efcb4abcabc0e5b9648a588d97d97a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable_2.sv",
+    "sha256": "b42d4dbc61601519c2d0c87efcfa4f9b9c7806844e17f7c5fef2a13f99e7cf01"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable_3.sv",
+    "sha256": "adb56d94931047f46d726295be88e383ba5340fd98a6531d120fbd4aca16f927"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable_4.sv",
+    "sha256": "00c9d9835845a1d92c88c6cb9d953f5a21795d0f975b41b46142d5cfa14583b6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTage.sv",
+    "sha256": "fb5ea8631e3a9669ba6193cf0888a340120b142fdb574b146c05d83199318eba"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_22.sv",
+    "sha256": "d24ee1b59f93a5f139561de0d02d0ec97b581920e82ac5e02e0f5c87fff0e4cd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+    "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_25.sv",
+    "sha256": "e09a6e83d421c169821b62ccac78013a8081f942a859aa8ae882b679113d0543"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+    "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_76.sv",
+    "sha256": "9d5ca6fbb68d209d26e343aaf48ef5e12b86ef7c8c11c5ce0192b7fc228a8da1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_78.sv",
+    "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_41.sv",
+    "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_43.sv",
+    "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_41.sv",
+    "sha256": "e28782c82a9284e98a7b571ace1e8a9be98b3452440544b7f4fd292246879b2d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+    "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_4x2.sv",
+    "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   }
+  ],
+  "impl_sha256": "e1a41a9ba090c72f792f3f90eecf3b22030195bc32c7e6f90691d7f59d37bdad",
+  "repo_impl_files": 11
+ },
+ "mc_memory_objects": [
+  "data_mem_0_4x2",
+  "array_6",
+  "sram_array_1p128x76m1s1h0l1b_bp_ittage"
+ ],
+ "native_facts_sha256": "3ace91867f399a0526bb83593f631ae02745642c50d81e5f28c7d84ca81b0caf",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 10426,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "e05b654b05d8a797106b121d9defa025cc6fd5bcb9651566b655ffd4f6efc36a"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "37f2f31a9038403b7d689362a4a21789d62afb367e160398b4a60c7133a8e7f0",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "b1589b335383be3ddc0de424636931feb46634d9a9fbdfaebbcfdbf0c68b40bd",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh ITTage ITTage",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "9f5581cc52e4daf981311ae0bded3bc3bad2a7d29bf1272268152e87123ef27d",
+ "run_id": "ITTage-20261006T125324Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/ITTage.tcl",
+    "sha256": "29aefcb1004e2eeb1120f197360e308d9b34f0add320e7cb7252800198cbe101"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/ITTage/fm_pins_pre.tcl",
+    "sha256": "e05b654b05d8a797106b121d9defa025cc6fd5bcb9651566b655ffd4f6efc36a"
+   }
+  ],
+  "sha256": "027841cf623389c63699ed8801793ed503db07a8db361773330f50f815f93593"
+ },
+ "target": "ITTage",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "ITTage",
+ "variant": "ITTage",
+ "verdict": "SUCCEEDED"
+}
