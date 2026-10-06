@@ -1,0 +1,10 @@
+{
+  "target": "VIPU",
+  "ut": "VIPU",
+  "regs": 3262,
+  "outs": 792,
+  "expected": 4054,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "诊断 vmucp-off: passing 3930 + matched_nc 122(VMask vs1[127:8]120 + Reduction vdType[3:2]2，同 VIAlu.tcl) + constant_reg 2 = 4054 = 模型；vmucp-on 预期 passing 4052"
+}
