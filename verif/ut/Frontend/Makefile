@@ -1,13 +1,10 @@
 MODULE = Frontend
 
 # Frontend —— 前端顶层装配（golden 10,940 行 / 441 端口 / 23 个直接子模块）。
-# 子模块处置：整棵前端子树**两侧白盒**，一直重写到厂商宏为止：
-#   ref  = golden Frontend + golden 子树（185 个模块文件）；
-#   impl = rtl/frontend/Frontend.sv（可读核 + 生成 wrapper）+ 子树里每个模块的已签核重写件
-#          （各自 evidence/ 下 receipt 的 impl 闭包，与当前字节一致；清单见 docs/lanes/frontend-asm_prereg.md）；
-#   两侧同读的 golden 叶子：存储宏链 sram_array_* / array_* 与 MbistClockGateCell（RTL_GOLDEN_DEPS），
-#   ClockGate 用本地件 rtl/common/ClockGate.sv（codex 0208）；
-#   黑盒：只有宏内叶子 array_*_ext（vendor_macro，UT 里由 GOLDEN_SRCS 的 .v 行为模型两侧共用）。
+# UT：整棵前端子树双例化 —— golden Frontend + golden 子树（UT_GOLDEN_CHILD_DEPS）对 rtl/frontend/Frontend.sv（可读核 +
+#   生成 wrapper）+ 子树里每个模块的重写件（RTL_SRCS）；两侧同读的 golden 叶子是存储宏链 sram_array_* / array_* 与
+#   MbistClockGateCell（RTL_GOLDEN_DEPS），array_*_ext 的 .v 行为模型两侧共用；ClockGate 用本地件 rtl/common/ClockGate.sv。
+# FM：见下面 FM_VARIANTS 一节 —— codex 0226 的 exact green_child 组合，只有本层 glue 与 10 种非 green 直接子模块白盒。
 RTL_DIR = ../../../rtl
 RTL_SRCS = $(XSSV_HOME)/rtl/frontend/InstrMMIOEntry.sv \
     $(XSSV_HOME)/rtl/mmu/PTWFilter.sv \
@@ -190,8 +187,8 @@ RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/MbistClockGateCell.sv \
     $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv \
     $(XSSV_HOME)/rtl/common/ClockGate.sv
 
-# golden 子树（字面文件名：fm_predict 静态解析本文件，不展开函数）
-FM_REF_DEPS_Frontend = InstrUncache.sv \
+# UT（VCS）用的整棵 golden 子树（含八个 green child 的子树；FM 不读这些，见下面 FM_REF_DEPS_Frontend）
+UT_GOLDEN_CHILD_DEPS = InstrUncache.sv \
     InstrMMIOEntry.sv \
     Arbiter1_InsUncacheResp.sv \
     PTWFilter.sv \
@@ -376,7 +373,7 @@ FM_REF_DEPS_Frontend = InstrUncache.sv \
     FTBEntryGen.sv \
     MbistPipeFrontend.sv
 
-GOLDEN_SRCS = $(GOLDEN_RTL)/Frontend.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_Frontend)) \
+GOLDEN_SRCS = $(GOLDEN_RTL)/Frontend.sv $(addprefix $(GOLDEN_RTL)/,$(UT_GOLDEN_CHILD_DEPS)) \
     $(GOLDEN_RTL)/array_0_ext.v \
     $(GOLDEN_RTL)/array_1_ext.v \
     $(GOLDEN_RTL)/array_2_ext.v \
@@ -387,12 +384,39 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Frontend.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS
     $(GOLDEN_RTL)/array_ext.v
 
 FM_VARIANTS = Frontend
-# 唯一黑盒 = 存储宏叶子 array_*_ext（84 对，vendor_macro），逐对象声明在 verif/allow/Frontend.json。
+# ★FM（codex 0226 层次化组合）★：八个直接实例是 exact green_child —— 已独立 official 证明、持有 tracked 证书的 child
+# （inner_bpu=Predictor、inner_ftq=Ftq、inner_icache=ICache、inner_ifu=NewIFU、inner_ibuffer=IBuffer、inner_instrUncache=
+# InstrUncache、inner_itlb=TLB、inner_itlbRepeater1=PTWFilter）两侧都以 -interface_only 读入（对称黑盒），
+# verif/allow/Frontend.json 逐实例绑定 child 证书 sha256。其余 10 种直接子模块（DelayN_7/8/13、PMP、PMPChecker_2×5、
+# PTWRepeaterNB、PFEvent、HPerfMonitor、MbistPipeFrontend、MbistIntfFrontend）连同 Frontend 本层 glue 两侧白盒受验。
+# ref 侧（字面文件名，fm_predict 静态解析）：本层 glue 例化到的 golden 模块 + 八个 green child 的端口定义。
+FM_REF_DEPS_Frontend = InstrUncache.sv ICache.sv Predictor.sv NewIFU.sv IBuffer.sv Ftq.sv DelayN_7.sv DelayN_8.sv PMP.sv \
+                       PMPChecker_2.sv TLB.sv PTWFilter.sv PTWRepeaterNB.sv DelayN_1.sv DelayN_13.sv PFEvent.sv \
+                       perfEventsModule.sv HPerfMonitor.sv HPerfCounter.sv MbistPipeFrontend.sv MbistIntfFrontend.sv
+# impl 侧：只给本层 glue 真正例化到的重写件 + 八个 green child 的 wrapper（只取端口）；定义 package 的文件排在
+# 引用它的文件之前（FM 逐文件分析）。UT 的 RTL_SRCS 仍是全集。
+FM_IMPL_RTL = $(XSSV_HOME)/rtl/frontend/ICache.sv $(XSSV_HOME)/rtl/memblock/memblock_common_pkg.sv \
+              $(XSSV_HOME)/rtl/memblock/TLB.sv $(XSSV_HOME)/rtl/frontend/IBuffer.sv \
+              $(XSSV_HOME)/rtl/frontend/frontend_common_pkg.sv $(XSSV_HOME)/rtl/frontend/NewIFU.sv \
+              $(XSSV_HOME)/rtl/mmu/PTWFilter.sv $(XSSV_HOME)/rtl/memblock/PMP.sv \
+              $(XSSV_HOME)/rtl/frontend/Predictor.sv $(XSSV_HOME)/rtl/frontend/Frontend.sv \
+              $(XSSV_HOME)/rtl/common/HPerfMonitor.sv $(XSSV_HOME)/rtl/common/DelayN_7.sv \
+              $(XSSV_HOME)/rtl/frontend/Ftq.sv $(XSSV_HOME)/rtl/frontend/MbistIntfFrontend.sv \
+              $(XSSV_HOME)/rtl/common/DelayN_8.sv $(XSSV_HOME)/rtl/frontend/InstrUncache.sv \
+              $(XSSV_HOME)/rtl/backend/PFEvent.sv $(XSSV_HOME)/rtl/common/DelayN_13.sv \
+              $(XSSV_HOME)/rtl/backend/PMPChecker_2.sv $(XSSV_HOME)/rtl/mmu/PTWRepeaterNB.sv \
+              $(XSSV_HOME)/rtl/dft/MbistPipeFrontend.sv $(XSSV_HOME)/rtl/backend/HPerfCounter.sv \
+              $(XSSV_HOME)/rtl/common/xs_DelayN_core.sv $(XSSV_HOME)/rtl/backend/perfEventsModule.sv \
+              $(XSSV_HOME)/rtl/backend/xs_PMPChecker_core.sv $(XSSV_HOME)/rtl/mmu/xs_PTWRepeaterNB_core.sv \
+              $(XSSV_HOME)/rtl/dft/xs_mbist_pipe_core.sv $(XSSV_HOME)/rtl/backend/xs_HPerfCounter_core.sv \
+              $(XSSV_HOME)/rtl/common/DelayN_1.sv
+fm-Frontend: RTL_SRCS = $(FM_IMPL_RTL)
+fm-Frontend: RTL_GOLDEN_DEPS =
+FM_INTERFACE_ONLY = Predictor Ftq ICache NewIFU IBuffer InstrUncache TLB PTWFilter
 FM_MODE = assembly
-# 不合并重复寄存器：Predictor 打开 merge 到达 Matching 慢 7 倍（docs/predictor_fm_scaling_wall.md）；golden 的恒等副本
-# 改由钉点第四节（FM 结构识别的副本组，一对多）配对。比较点 = 寄存器位 + 输出位 + 黑盒输入位，fm_predict 模型严格适用。
+# 不合并重复寄存器：比较点 = 寄存器位 + 输出位 + 黑盒输入位，fm_predict 模型严格适用。
 FM_MERGE_DUP = false
-# 两侧对称死位（子模块各自签核时已由 vmucp 真比较的那批）在本层继续真比；依据与六条见 verif/fm_target_config/Frontend.tcl。
+# 两侧对称死位真比；依据与六条见 verif/fm_target_config/Frontend.tcl。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
@@ -431,9 +455,3 @@ gencheck:
 	python3 gen.py --check
 gentb:
 	python3 gen.py
-
-# 实例对应表（FM 钉点重定位用）：从 simv 的实际层次机械生成，见 scripts/gen_frontend.py 的「子树钉点重定位」。
-.PHONY: hiermap
-hiermap: simv
-	./simv -ucli -i hiermap.tcl -l ut_gen/hiermap.log +ncycles=1 > /dev/null
-	python3 ../../../scripts/gen_frontend.py --refresh-inst-map ut_gen/hier_dump.txt

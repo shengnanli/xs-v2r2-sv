@@ -337,6 +337,45 @@ inner_ibuffer=IBuffer、inner_instrUncache=InstrUncache、inner_itlb=TLB、inner
 | TLB | TLB | SUCCEEDED | 11118 | evidence/6571efce8ce6 | 983 |
 | PTWFilter | PTWFilter | SUCCEEDED | 1077 | evidence/48bc44efbe64 | 61 |
 
+## 6. Frontend official（codex 0226 exact green_child 组合）—— 跑前登记（★跑完不许改本节★）
+
+### 6.1 证明形态
+- green_child（两侧 `-interface_only`，verif/allow/Frontend.json 16 条，逐 r/i 实例路径 + child_target + 证书 sha256 写死）：
+  inner_bpu=Predictor、inner_ftq=Ftq、inner_icache=ICache、inner_ifu=NewIFU、inner_ibuffer=IBuffer、inner_instrUncache=InstrUncache、
+  inner_itlb=TLB、inner_itlbRepeater1=PTWFilter；`FM_INTERFACE_ONLY` 恰为这 8 个 design。
+- 两侧白盒：Frontend 本层 glue（466 行可读核）+ 10 种非 green 直接子模块（DelayN_7/8/13、PMP、PMPChecker_2×5、PTWRepeaterNB、PFEvent、
+  HPerfMonitor、MbistPipeFrontend、MbistIntfFrontend）。ref 21 个 G1 文件（含 8 个 green child 的端口定义），impl 29 个重写件
+  （含 8 个 green wrapper，定义 package 的文件排前）。两侧不共读任何 golden 存储模型。
+- 钉点 verif/ut/Frontend/fm_pins_pre.tcl（scripts/gen_frontend.py，`--check` 幂等）：一、顶层胶合寄存器 3612 位；二、白盒子模块内部配对
+  9064 条（PMP 6664 / PTWRepeaterNB 312 由各自签核钉点重定位，PFEvent 1464 / DelayN_8 548 / MbistPipeFrontend 76 由源码结构推出）。
+  以前的「子树钉点重定位 / 自配对收割 / 副本配对类」约 15 万条与 5 个数据文件（harvest_pins.tsv、dup_groups.tsv、predictor_pins.tsv、
+  fe_inst_map.tsv、fe_impl_hier.tsv）全部删除（误随 e9be8cd8b 一起提交，提交说明没写，这里补记）。
+  第二节对 canary1 的 FM 自动配对逐条交叉核对：6750 条与 FM 一致、0 条不一致，其余 2314 条是对称无读者位（FM 不做函数配对）。
+- vmucp：verif/fm_target_config/Frontend.tcl（5516 对，六条证据）；dead_ref：verif/dead_ref/Frontend.json（64 位，HPerfMonitor 同一批）。
+
+### 6.2 canary（同一字节、工作树、不产 receipt）
+| 跑 | 形态 | native | passing | failing | unmatched | unread | constant_reg | 黑盒 |
+|---|---|---|---|---|---|---|---|---|
+| canary1 | 只有顶层钉点 | FAILED | 27845 | 10（inner_pmp wdata_reg，PMP 内部配错） | 0(0) | 2378(2314) | 183 | 8 design × r/i |
+| canary2 | + 第二节 9064，vmucp 开 | SUCCEEDED | **30093** | 0 | 0(0) | 64(0)（全是 dead_ref） | **259** | 8 design × r/i |
+| canary3 | 同 canary2，vmucp 关 | SUCCEEDED | 24577 | 0 | 0(0) | 5516 matched_nc + 64 | 259 | 同上 |
+canary2 用时 345 s。黑盒报告（FM-184）两侧恰为 8 个 `i` 属性 design，各 1 个实例（另有 12 个 0 实例的参数化核 `e *` 条目，未例化）。
+
+### 6.3 预测（docs/fm_predictions/Frontend.json，模型 30418）
+native SUCCEEDED；passing **30093**、constant_reg **259**、failing / unverified / aborted / unmatched / blackbox_out **0**、unread = dead_ref 64 位；
+dont_verify / elab147 / relaxed_appvars 空。30418 − 30093 = 325 = 259 + 64 + **2**：那 2 位是模型的 BB_IN_RE 把 golden Ftq.sv / NewIFU.sv 注释里的
+"input that" 各数成一个黑盒输入位（scripts/fm_passing_model.py 扫模块体全文）——实际比较点没有它们，fm_predict check 会因此报余额 2。
+**verdict 预测 PARTIAL**：八个 green child 证书里 7 个在父 commit 上 current-valid，inner_bpu=Predictor 递归复核不过
+（`green_child_impl_golden_not_fm_target:Composer:data_mem_8x4`，另 FTB / FTBBank 报 external_dependency_spurious），见 6.4。
+
+### 6.4 证书链现状（scripts/proof_certificate.validate_certificate_current，HEAD=d91546585 复核）
+96 个 target 里 90 个 CURRENT；不过的 6 个全在 Predictor 链上，两个原因都在公共核心，本 lane 不改：
+1. data_mem_8x4（G1 firtool 2R1W 带 2 段写掩码的 ram）推导不出 MC 模板（mc_memory_registry.py：not_single_instance），也不是 FM target；
+   Composer / TageBTable / Tage_SC 的 impl 闭包两侧共读 golden WrBypass_32 → 带上它（Predictor 经由 Composer）。
+2. proof_certificate.validate_impl_golden_certified 的 `_seen` 在递归里共享：FTB 自己的 MC 对象 array_1 / sram_array_1p512x40m10s1h0l1b_bp_ftb
+   先在递归到 SRAMTemplate_36 时被记进 `_seen`，回到 FTB 本层就被跳过、不计 hit，于是 FTB / FTBBank 的
+   external_dependency=MC_MEMORY_CONTRACT 被判 spurious（证书本身如实）。
+
 ## 对账
 
 ### 第一批：三个 FrontendBridge 缓冲 + MuxBundle（run_proof @ 3390b6ba，evidence/3390b6ba80a9/<目标>/）

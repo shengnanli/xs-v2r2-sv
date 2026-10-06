@@ -1,0 +1,52 @@
+{
+  "target": "Frontend",
+  "ut": "Frontend",
+  "regs": 13951,
+  "outs": 4478,
+  "expected": 30418,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 11989,
+  "bbox": {
+    "Ftq": {
+      "insts": 1,
+      "in_bits": 2868,
+      "points": 2868
+    },
+    "IBuffer": {
+      "insts": 1,
+      "in_bits": 1825,
+      "points": 1825
+    },
+    "ICache": {
+      "insts": 1,
+      "in_bits": 2157,
+      "points": 2157
+    },
+    "InstrUncache": {
+      "insts": 1,
+      "in_bits": 123,
+      "points": 123
+    },
+    "NewIFU": {
+      "insts": 1,
+      "in_bits": 1324,
+      "points": 1324
+    },
+    "PTWFilter": {
+      "insts": 1,
+      "in_bits": 453,
+      "points": 453
+    },
+    "Predictor": {
+      "insts": 1,
+      "in_bits": 2508,
+      "points": 2508
+    },
+    "TLB": {
+      "insts": 1,
+      "in_bits": 731,
+      "points": 731
+    }
+  }
+}
