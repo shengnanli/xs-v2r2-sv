@@ -221,6 +221,122 @@ ref 副本（match20 日志 3788 行 Moved loads，含 impl 侧）。fm_predict 
    可选路线：(a) Frontend 改 merge_dup=true（match15 实测到 Matching 3 小时 7.4GB，且要整套改用 merge=true 录制的配对，
    未收敛）；(b) Ftq.sv 改成照 golden 读存储的 nextLineAddr[5:0]（动已签共享核 + 要重签 Ftq）；(c) 其它裁定。
 
+
+## 5. codex 0226：Frontend 改走 exact green_child —— 第一步：八个直接 child 的证书闭包重证（★跑前登记，跑完不许改本节★）
+
+0226 定 Frontend 为八个直接实例的 green_child 组合（inner_bpu=Predictor、inner_ftq=Ftq、inner_icache=ICache、inner_ifu=NewIFU、
+inner_ibuffer=IBuffer、inner_instrUncache=InstrUncache、inner_itlb=TLB、inner_itlbRepeater1=PTWFilter）。§4 的全展开 + 15 万条收割钉点路线作废。
+
+现状（HEAD=80d35d8c0， 逐个复核，scratchpad certcheck.py / certtree.py）：
+八个 child 都**没有 tracked 证书**；仓里最新的合格 receipt 全部失效 —— 主因 scripts/fm_eq.tcl 在它们之后改过（script_closure_changed），
+另 ICache a7279429 的 xs_SRAMTemplate_core.sv 闭包变了、TLB 6571efce 缺 RUN_CONTEXT（非 run_proof 产出）。
+而且 Predictor / Ftq / ICache 的 impl 闭包里两侧共读 golden 子模块（Composer、FTB、SyncDataModuleTemplate*…），按 0222 §3d
+这些 golden 必须是持有合格证书的独立 FM target（递归）或已登记的 MC 存储契约。递归展开后要出证书的 target 共 **96 个**（下表），
+全部在同一个钉住的 commit 上用  重跑（不改它们的 RTL / Makefile / 钉点）。
+它们 impl 闭包里的 sram_array_* / array* / data_mem_* 存储层按 verif/mc_memory_registry.tsv 的推导模板逐条登记（mc_memory_registry.py --derive / --check），
+登记在跑完、出证书之前提交（登记表不在任何 target 的 script closure 里）。
+
+预测：每个 target 的 passing / verdict 与它上一份合格 receipt 相同（重跑只因脚本闭包变化，RTL 与钉点未动）。
+
+| target | UT 目录 | 预测 verdict | 预测 passing | 上一份 receipt | 上次用时 s |
+|---|---|---|---|---|---|
+| ClockGate | ClockGate | SUCCEEDED | 2 | evidence/bef96c62cc68 | 11 |
+| DelayN | DelayN | SUCCEEDED | 10 | evidence/f0bcd42e8a81 | 44 |
+| DelayNWithValid | DelayNWithValid | SUCCEEDED | 151 | evidence/7a881579fe64 | 45 |
+| DelayNWithValid_1 | DelayNWithValid | SUCCEEDED | 181 | evidence/7a881579fe64 | 45 |
+| DelayN_1 | DelayN | SUCCEEDED | 3 | evidence/f0bcd42e8a81 | 44 |
+| MbistClockGateCell | MbistClockGateCell | SUCCEEDED | 2 | evidence/2948215a047b | 10 |
+| MbistPipeFtb | MbistPipe | SUCCEEDED | 707 | evidence/40ec7fc36bb8 | 48 |
+| SRAMTemplate_36 | SRAMTemplate | SUCCEEDED | 189 | evidence/68d1a0932a12 | 11 |
+| SplittedSRAMTemplate_2 | SplittedSRAMTemplate | SUCCEEDED | 1505 | evidence/68d1a0932a12 | 64 |
+| FTB | FTB | PASS_DEAD_REF | 8605 | evidence/d37248da1db4 | 173 |
+| FTBBank | FTBBank | PASS_DEAD_REF | 3276 | evidence/f40deba9439d | 152 |
+| FoldedSRAMTemplate | FoldedSRAMTemplate | SUCCEEDED | 113 | evidence/68d1a0932a12 | 14 |
+| FoldedSRAMTemplate_1 | FoldedSRAMTemplate | SUCCEEDED | 148 | evidence/68d1a0932a12 | 11 |
+| FoldedSRAMTemplate_20 | FoldedSRAMTemplate | SUCCEEDED | 109 | evidence/68d1a0932a12 | 12 |
+| FoldedSRAMTemplate_22 | FoldedSRAMTemplate | SUCCEEDED | 443 | evidence/68d1a0932a12 | 33 |
+| FoldedSRAMTemplate_24 | FoldedSRAMTemplate | SUCCEEDED | 846 | evidence/68d1a0932a12 | 35 |
+| IndexableCAMTemplate_32 | IndexableCAMTemplate | SUCCEEDED | 96 | evidence/40ec7fc36bb8 | 45 |
+| IndexableCAMTemplate_41 | IndexableCAMTemplate | SUCCEEDED | 36 | evidence/40ec7fc36bb8 | 60 |
+| IndexableCAMTemplate_43 | IndexableCAMTemplate | SUCCEEDED | 40 | evidence/40ec7fc36bb8 | 44 |
+| RAS | RASTop | SUCCEEDED | 6592 | evidence/7f8365cc79ab | 60 |
+| RASStack | RAS | SUCCEEDED | 3018 | evidence/40ec7fc36bb8 | 99 |
+| SRAMTemplate_44 | SRAMTemplate | SUCCEEDED | 120 | evidence/68d1a0932a12 | 11 |
+| SRAMTemplate_45 | SRAMTemplate | SUCCEEDED | 148 | evidence/68d1a0932a12 | 11 |
+| SRAMTemplate_64 | SRAMTemplate | SUCCEEDED | 58 | evidence/68d1a0932a12 | 11 |
+| SRAMTemplate_76 | SRAMTemplate | SUCCEEDED | 478 | evidence/68d1a0932a12 | 11 |
+| SRAMTemplate_78 | SRAMTemplate | SUCCEEDED | 478 | evidence/68d1a0932a12 | 11 |
+| SplittedSRAMTemplate_23 | SplittedSRAMTemplate | SUCCEEDED | 110 | evidence/68d1a0932a12 | 13 |
+| SplittedSRAMTemplate_25 | SplittedSRAMTemplate | SUCCEEDED | 478 | evidence/68d1a0932a12 | 13 |
+| SplittedSRAMTemplate_27 | SplittedSRAMTemplate | SUCCEEDED | 955 | evidence/68d1a0932a12 | 13 |
+| SplittedSRAMTemplate_3 | SplittedSRAMTemplate | SUCCEEDED | 120 | evidence/68d1a0932a12 | 14 |
+| SplittedSRAMTemplate_4 | SplittedSRAMTemplate | SUCCEEDED | 148 | evidence/68d1a0932a12 | 11 |
+| WrBypass_32 | WrBypass | SUCCEEDED | 158 | evidence/40ec7fc36bb8 | 47 |
+| WrBypass_41 | WrBypass | SUCCEEDED | 50 | evidence/40ec7fc36bb8 | 51 |
+| WrBypass_43 | WrBypass | SUCCEEDED | 54 | evidence/40ec7fc36bb8 | 46 |
+| Composer | Composer | PASS_DEAD_REF | 42060 | evidence/be19d6a02dba | 601 |
+| FauFTB | FauFTB | SUCCEEDED | 5660 | evidence/cee2812229bf | 157 |
+| FauFTBWay | FauFTBWay | SUCCEEDED | 139 | evidence/40ec7fc36bb8 | 64 |
+| ITTage | ITTage | SUCCEEDED | 10426 | evidence/68d1a0932a12 | 118 |
+| ITTageTable | ITTageTable | SUCCEEDED | 682 | evidence/c6573076c5ba | 14 |
+| ITTageTable_1 | ITTageTable_1 | SUCCEEDED | 682 | evidence/c6573076c5ba | 20 |
+| ITTageTable_2 | ITTageTable_2 | SUCCEEDED | 1014 | evidence/c6573076c5ba | 18 |
+| ITTageTable_3 | ITTageTable_3 | SUCCEEDED | 1014 | evidence/c6573076c5ba | 15 |
+| ITTageTable_4 | ITTageTable_4 | SUCCEEDED | 1014 | evidence/c6573076c5ba | 15 |
+| IndexableCAMTemplate | IndexableCAMTemplate | SUCCEEDED | 80 | evidence/40ec7fc36bb8 | 45 |
+| IndexableCAMTemplate_33 | IndexableCAMTemplate | SUCCEEDED | 144 | evidence/40ec7fc36bb8 | 62 |
+| MaxPeriodFibonacciLFSR | MaxPeriodFibonacciLFSR | SUCCEEDED | 30 | evidence/1b420e2033a9 | 11 |
+| MbistPipeIttage | MbistPipe | SUCCEEDED | 435 | evidence/40ec7fc36bb8 | 59 |
+| MbistPipeIttage_1 | MbistPipe | SUCCEEDED | 435 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeIttage_2 | MbistPipe | SUCCEEDED | 614 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeIttage_3 | MbistPipe | SUCCEEDED | 614 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeIttage_4 | MbistPipe | SUCCEEDED | 614 | evidence/40ec7fc36bb8 | 47 |
+| MbistPipeSc | MbistPipe | SUCCEEDED | 190 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeSc_1 | MbistPipe | SUCCEEDED | 190 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeSc_2 | MbistPipe | SUCCEEDED | 190 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeSc_3 | MbistPipe | SUCCEEDED | 190 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeTage | MbistPipe | SUCCEEDED | 1396 | evidence/40ec7fc36bb8 | 49 |
+| PriorityMuxModule | PriorityMuxModule | SUCCEEDED | 50 | evidence/40ec7fc36bb8 | 45 |
+| PriorityMuxModule_12 | PriorityMuxModule | SUCCEEDED | 23 | evidence/40ec7fc36bb8 | 45 |
+| PriorityMuxModule_16 | PriorityMuxModule | SUCCEEDED | 3 | evidence/40ec7fc36bb8 | 44 |
+| PriorityMuxModule_20 | PriorityMuxModule | SUCCEEDED | 1 | evidence/40ec7fc36bb8 | 44 |
+| PriorityMuxModule_4 | PriorityMuxModule | SUCCEEDED | 140 | evidence/40ec7fc36bb8 | 48 |
+| PriorityMuxModule_8 | PriorityMuxModule | SUCCEEDED | 9 | evidence/40ec7fc36bb8 | 47 |
+| RegionWays | RegionWays | SUCCEEDED | 680 | evidence/1b420e2033a9 | 19 |
+| SCTable | SCTable | SUCCEEDED | 1123 | evidence/68d1a0932a12 | 30 |
+| SCTable_1 | SCTable | SUCCEEDED | 1123 | evidence/68d1a0932a12 | 26 |
+| SCTable_2 | SCTable | SUCCEEDED | 1123 | evidence/68d1a0932a12 | 28 |
+| SCTable_3 | SCTable | SUCCEEDED | 1123 | evidence/68d1a0932a12 | 47 |
+| SRAMTemplate_68 | SRAMTemplate | SUCCEEDED | 145 | evidence/68d1a0932a12 | 8 |
+| TageBTable | TageBTable | SUCCEEDED | 396 | evidence/c6573076c5ba | 14 |
+| TageTable | TageTable | PASS_DEAD_REF | 797 | evidence/f811f8d51f92 | 48 |
+| WrBypass | WrBypass | SUCCEEDED | 124 | evidence/40ec7fc36bb8 | 47 |
+| TageTable_1 | TageTable | PASS_DEAD_REF | 1585 | evidence/e0bc44bf9a73 | 73 |
+| TageTable_2 | TageTable | PASS_DEAD_REF | 1585 | evidence/e0bc44bf9a73 | 81 |
+| TageTable_3 | TageTable | PASS_DEAD_REF | 1585 | evidence/e0bc44bf9a73 | 85 |
+| Tage_SC | Tage_SC | PASS_DEAD_REF | 16112 | evidence/68d1a0932a12 | 554 |
+| WrBypass_33 | WrBypass | SUCCEEDED | 398 | evidence/40ec7fc36bb8 | 51 |
+| Predictor | Predictor | SUCCEEDED | 528967 | evidence/bfd1afc7451e | 17619 |
+| DataModule_FtqPC_16entry | SyncDataModule | SUCCEEDED | 2168 | evidence/25cdce831a66 | 58 |
+| DataModule__16entry | SyncDataModule | SUCCEEDED | 1504 | evidence/25cdce831a66 | 52 |
+| DataModule__16entry_12 | SyncDataModule | SUCCEEDED | 1570 | evidence/25cdce831a66 | 55 |
+| DataModule__16entry_4 | SyncDataModule | SUCCEEDED | 9792 | evidence/25cdce831a66 | 98 |
+| DataModule__16entry_8 | SyncDataModule | SUCCEEDED | 250 | evidence/25cdce831a66 | 48 |
+| FTBEntryGen | FTBEntryGen | SUCCEEDED | 72 | evidence/f40deba9439d | 47 |
+| FtqPcMemWrapper | FtqPcMemWrapper | SUCCEEDED | 7166 | evidence/25cdce831a66 | 163 |
+| SyncDataModuleTemplate_FtqPC_64entry | SyncDataModule | SUCCEEDED | 7166 | evidence/8b9c32ee57dd | 97 |
+| SyncDataModuleTemplate__64entry | SyncDataModule | SUCCEEDED | 5743 | evidence/8b9c32ee57dd | 50 |
+| SyncDataModuleTemplate__64entry_1 | SyncDataModule | SUCCEEDED | 38029 | evidence/8b9c32ee57dd | 294 |
+| SyncDataModuleTemplate__64entry_2 | SyncDataModule | SUCCEEDED | 955 | evidence/8b9c32ee57dd | 17 |
+| SyncDataModuleTemplate__64entry_3 | SyncDataModule | SUCCEEDED | 5999 | evidence/8b9c32ee57dd | 48 |
+| Ftq | Ftq | PASS_DEAD_REF | 66481 | evidence/ff4dfe24f181 | 2423 |
+| ICache | ICache | SUCCEEDED | 21174 | evidence/a72794293f57 | 1057 |
+| NewIFU | NewIFU | SUCCEEDED | 9247 | evidence/48bc44efbe64 | 205 |
+| IBuffer | IBuffer | SUCCEEDED | 7908 | evidence/5c7eec56325a | 944 |
+| InstrUncache | InstrUncache | SUCCEEDED | 205 | evidence/40ace84c0bea | 45 |
+| TLB | TLB | SUCCEEDED | 11118 | evidence/6571efce8ce6 | 983 |
+| PTWFilter | PTWFilter | SUCCEEDED | 1077 | evidence/48bc44efbe64 | 61 |
+
 ## 对账
 
 ### 第一批：三个 FrontendBridge 缓冲 + MuxBundle（run_proof @ 3390b6ba，evidence/3390b6ba80a9/<目标>/）
