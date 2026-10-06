@@ -1,0 +1,10 @@
+{
+  "target": "VIMacU",
+  "ut": "VIMacU",
+  "regs": 3142,
+  "outs": 791,
+  "expected": 3933,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "诊断 vmucp-off: passing 3753 + unread 20(两 VIMac64b 实例 uopIdxS1/S2[5:1]，同 VIMac64b.tcl，钉点 24 条) + constant_reg 160 = 3933 = 模型；vmucp-on 预期 passing 3773"
+}
