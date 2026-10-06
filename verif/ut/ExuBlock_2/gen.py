@@ -56,6 +56,14 @@ def fu_codes(typ):
     return v, codes
 
 
+
+# ExuBlock_2 额外的恒值输出位（不要求见过 0/1，照样逐拍比），逐条有依据：
+#   * exus_1（ExeUnit_14）的 data_5：golden ExeUnit_14 写 {64'h0, VSetRvfWvf.res_data}（上面通用规则已豁免 [127:64]），而
+#     golden VSetRvfWvf.res_data = {56'h0, vl 或 src_4[7:0]} —— [63:8] 结构上恒 0；
+#   * exus_3（ExeUnit_16，只有 VFAlu）的 fflags[1]（UF 下溢）：VFAlu 只做同格式/加宽的加减、比较、min/max、符号注入，
+#     IEEE 754 下这些运算结果落入次正规区时都是精确的，不会报下溢 —— 语义上不可能为 1，激励无法覆盖。
+EXTRA_EXEMPT = (["io_out_0_1_bits_data_5[%d]" % b for b in range(8, 64)] + ["io_out_1_1_bits_fflags[1]"])
+
 INSTS = golden_insts()
 ports = {n for _, _, n in Pair(TOP, X).ports}
 DECLS, STIM, COV, EXEMPT = [], [], [], []
@@ -103,6 +111,7 @@ for typ, iname, pin, pout in INSTS:
     if v.has_busy:
         COV.append(("%s_busy" % iname, "%s.%s.busy" % (G, iname)))
 
+EXEMPT += EXTRA_EXEMPT
 PAIRS = [Pair(TOP, X, clocked=True, stim="\n".join(STIM), cov=COV, decls="\n".join(DECLS), exempt=EXEMPT,
               warmup=WARM_END - 8, reset_period=20000, mode_period=2000, cov_min=1000)]
 

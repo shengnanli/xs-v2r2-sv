@@ -4102,7 +4102,6 @@ module tb;
     if (!(eb_s0_io_out_1_1_bits_vecWen && eb_s1_io_out_1_1_bits_vecWen)) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_1_1_bits_vecWen 未见过 0 和 1"); end
     if (!(eb_s0_io_out_1_1_bits_v0Wen && eb_s1_io_out_1_1_bits_v0Wen)) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_1_1_bits_v0Wen 未见过 0 和 1"); end
     if (!(eb_s0_io_out_1_1_bits_fflags[0] && eb_s1_io_out_1_1_bits_fflags[0])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_1_1_bits_fflags[0] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_1_1_bits_fflags[1] && eb_s1_io_out_1_1_bits_fflags[1])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_1_1_bits_fflags[1] 未见过 0 和 1"); end
     if (!(eb_s0_io_out_1_1_bits_fflags[2] && eb_s1_io_out_1_1_bits_fflags[2])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_1_1_bits_fflags[2] 未见过 0 和 1"); end
     if (!(eb_s0_io_out_1_1_bits_fflags[4] && eb_s1_io_out_1_1_bits_fflags[4])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_1_1_bits_fflags[4] 未见过 0 和 1"); end
     if (!(eb_s0_io_out_1_1_bits_wflags && eb_s1_io_out_1_1_bits_wflags)) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_1_1_bits_wflags 未见过 0 和 1"); end
@@ -6446,62 +6445,6 @@ module tb;
     if (!(eb_s0_io_out_0_1_bits_data_5[5] && eb_s1_io_out_0_1_bits_data_5[5])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[5] 未见过 0 和 1"); end
     if (!(eb_s0_io_out_0_1_bits_data_5[6] && eb_s1_io_out_0_1_bits_data_5[6])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[6] 未见过 0 和 1"); end
     if (!(eb_s0_io_out_0_1_bits_data_5[7] && eb_s1_io_out_0_1_bits_data_5[7])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[7] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[8] && eb_s1_io_out_0_1_bits_data_5[8])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[8] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[9] && eb_s1_io_out_0_1_bits_data_5[9])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[9] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[10] && eb_s1_io_out_0_1_bits_data_5[10])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[10] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[11] && eb_s1_io_out_0_1_bits_data_5[11])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[11] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[12] && eb_s1_io_out_0_1_bits_data_5[12])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[12] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[13] && eb_s1_io_out_0_1_bits_data_5[13])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[13] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[14] && eb_s1_io_out_0_1_bits_data_5[14])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[14] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[15] && eb_s1_io_out_0_1_bits_data_5[15])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[15] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[16] && eb_s1_io_out_0_1_bits_data_5[16])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[16] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[17] && eb_s1_io_out_0_1_bits_data_5[17])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[17] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[18] && eb_s1_io_out_0_1_bits_data_5[18])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[18] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[19] && eb_s1_io_out_0_1_bits_data_5[19])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[19] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[20] && eb_s1_io_out_0_1_bits_data_5[20])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[20] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[21] && eb_s1_io_out_0_1_bits_data_5[21])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[21] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[22] && eb_s1_io_out_0_1_bits_data_5[22])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[22] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[23] && eb_s1_io_out_0_1_bits_data_5[23])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[23] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[24] && eb_s1_io_out_0_1_bits_data_5[24])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[24] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[25] && eb_s1_io_out_0_1_bits_data_5[25])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[25] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[26] && eb_s1_io_out_0_1_bits_data_5[26])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[26] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[27] && eb_s1_io_out_0_1_bits_data_5[27])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[27] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[28] && eb_s1_io_out_0_1_bits_data_5[28])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[28] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[29] && eb_s1_io_out_0_1_bits_data_5[29])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[29] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[30] && eb_s1_io_out_0_1_bits_data_5[30])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[30] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[31] && eb_s1_io_out_0_1_bits_data_5[31])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[31] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[32] && eb_s1_io_out_0_1_bits_data_5[32])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[32] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[33] && eb_s1_io_out_0_1_bits_data_5[33])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[33] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[34] && eb_s1_io_out_0_1_bits_data_5[34])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[34] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[35] && eb_s1_io_out_0_1_bits_data_5[35])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[35] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[36] && eb_s1_io_out_0_1_bits_data_5[36])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[36] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[37] && eb_s1_io_out_0_1_bits_data_5[37])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[37] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[38] && eb_s1_io_out_0_1_bits_data_5[38])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[38] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[39] && eb_s1_io_out_0_1_bits_data_5[39])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[39] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[40] && eb_s1_io_out_0_1_bits_data_5[40])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[40] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[41] && eb_s1_io_out_0_1_bits_data_5[41])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[41] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[42] && eb_s1_io_out_0_1_bits_data_5[42])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[42] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[43] && eb_s1_io_out_0_1_bits_data_5[43])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[43] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[44] && eb_s1_io_out_0_1_bits_data_5[44])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[44] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[45] && eb_s1_io_out_0_1_bits_data_5[45])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[45] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[46] && eb_s1_io_out_0_1_bits_data_5[46])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[46] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[47] && eb_s1_io_out_0_1_bits_data_5[47])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[47] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[48] && eb_s1_io_out_0_1_bits_data_5[48])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[48] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[49] && eb_s1_io_out_0_1_bits_data_5[49])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[49] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[50] && eb_s1_io_out_0_1_bits_data_5[50])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[50] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[51] && eb_s1_io_out_0_1_bits_data_5[51])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[51] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[52] && eb_s1_io_out_0_1_bits_data_5[52])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[52] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[53] && eb_s1_io_out_0_1_bits_data_5[53])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[53] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[54] && eb_s1_io_out_0_1_bits_data_5[54])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[54] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[55] && eb_s1_io_out_0_1_bits_data_5[55])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[55] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[56] && eb_s1_io_out_0_1_bits_data_5[56])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[56] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[57] && eb_s1_io_out_0_1_bits_data_5[57])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[57] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[58] && eb_s1_io_out_0_1_bits_data_5[58])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[58] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[59] && eb_s1_io_out_0_1_bits_data_5[59])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[59] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[60] && eb_s1_io_out_0_1_bits_data_5[60])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[60] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[61] && eb_s1_io_out_0_1_bits_data_5[61])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[61] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[62] && eb_s1_io_out_0_1_bits_data_5[62])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[62] 未见过 0 和 1"); end
-    if (!(eb_s0_io_out_0_1_bits_data_5[63] && eb_s1_io_out_0_1_bits_data_5[63])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_data_5[63] 未见过 0 和 1"); end
     if (!(eb_s0_io_out_0_1_bits_pdest[0] && eb_s1_io_out_0_1_bits_pdest[0])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_pdest[0] 未见过 0 和 1"); end
     if (!(eb_s0_io_out_0_1_bits_pdest[1] && eb_s1_io_out_0_1_bits_pdest[1])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_pdest[1] 未见过 0 和 1"); end
     if (!(eb_s0_io_out_0_1_bits_pdest[2] && eb_s1_io_out_0_1_bits_pdest[2])) begin cov_fail++; $display("[COV] ExuBlock_2.io_out_0_1_bits_pdest[2] 未见过 0 和 1"); end
