@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ExeUnit_14
+Implementation : i:/WORK/ExeUnit_14
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 05:47:15 2026
+**************************************************
+
+No aborted compare points.
+
+1
