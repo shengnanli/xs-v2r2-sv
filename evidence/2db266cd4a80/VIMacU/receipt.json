@@ -1,0 +1,239 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "VIMacU",
+ "run_id": "VIMacU-20261006T102614Z-2db266cd4",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/VIMacU.sv",
+   "kind": "golden",
+   "sha256": "09d4b33971fc60393a4d29ddd45b9fbe71dfc70094595fec6d7228db1bbdf516"
+  },
+  {
+   "path": "golden-rtl/Mgu.sv",
+   "kind": "golden",
+   "sha256": "cd54eeeed6220215c40493877ebe52efc04c3f9785f702cf646aa8789fdbf10c"
+  },
+  {
+   "path": "golden-rtl/ByteMaskTailGen.sv",
+   "kind": "golden",
+   "sha256": "effbf95047e8c37d4f1533e5920e5f518574015e5c2c9df9186be5116209a506"
+  },
+  {
+   "path": "golden-rtl/UIntToContLow1s.sv",
+   "kind": "golden",
+   "sha256": "1196c703297a97a4a1888870be786b96439b7221d0fe7ab8a015169ab7e0bb49"
+  },
+  {
+   "path": "golden-rtl/UIntToContLow0s.sv",
+   "kind": "golden",
+   "sha256": "fc473dde42be7e2c0d114d7727c54e7414b753eca85f70de0ccf5de864f42e97"
+  },
+  {
+   "path": "golden-rtl/MaskExtractor.sv",
+   "kind": "golden",
+   "sha256": "8085f1d0ce0e90fd783e62e4663dbcd84ce2b8d28ab1628d5f18927b4c5e7adf"
+  },
+  {
+   "path": "golden-rtl/VecDataSplitModule.sv",
+   "kind": "golden",
+   "sha256": "f757b9ef5de4a94c2f4f7798d59487540674fb156a163af32db91a909a0247a6"
+  },
+  {
+   "path": "golden-rtl/VIMac64b.sv",
+   "kind": "golden",
+   "sha256": "2469f361e1168eae8750602f99e57a60a98cd5c00012750737a5089e6ee0cf7c"
+  },
+  {
+   "path": "golden-rtl/VIMacSrcTypeModule.sv",
+   "kind": "golden",
+   "sha256": "a01995c786140816124f63cecdc4cc39202ea95141547182c65c6d63285ee268"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/UIntToContLow1s.sv",
+   "kind": "repo",
+   "sha256": "ac3315bfa93de9c0f543eea8ecaa9d6dcad3505f83a0029e980162decc2cc549"
+  },
+  {
+   "path": "rtl/backend/UIntToContLow0s.sv",
+   "kind": "repo",
+   "sha256": "424a1075079ab12bdf8799017eeb0f03451134e00fb91d401e1aca3fdc3eadf9"
+  },
+  {
+   "path": "rtl/backend/MaskExtractor.sv",
+   "kind": "repo",
+   "sha256": "df726e90b8f5bace8232037ab8a326576e788cf51ea3924300144982525535d9"
+  },
+  {
+   "path": "rtl/backend/ByteMaskTailGen.sv",
+   "kind": "repo",
+   "sha256": "9a334754033b50d5c532eefd316a30d39457b0bea51f31b92c81232875287cec"
+  },
+  {
+   "path": "rtl/backend/Mgu.sv",
+   "kind": "repo",
+   "sha256": "40611aa79c3ff5429d13e1ac8c5e6a421bc0d846e60654dcb95959b02e913c7f"
+  },
+  {
+   "path": "rtl/backend/VecDataSplitModule.sv",
+   "kind": "repo",
+   "sha256": "4c5691e607307b545b16d895baff205518bb019b6786e05beee599f30b31295d"
+  },
+  {
+   "path": "rtl/backend/VIMac64b.sv",
+   "kind": "repo",
+   "sha256": "ba389865dc9c6f0edfe7d47618964f328a4e634177a005368d560f17cc9c1db0"
+  },
+  {
+   "path": "rtl/backend/VIMacSrcTypeModule.sv",
+   "kind": "repo",
+   "sha256": "57a35125fce83b6a22e02540f1e81765a77b406eba473b2f72e058709790e308"
+  },
+  {
+   "path": "rtl/backend/VIMacU.sv",
+   "kind": "repo",
+   "sha256": "a26d27614624f6fd95cc73c60ed45377c5ad082caae0eb5af779a64a995a4a31"
+  }
+ ],
+ "impl_commit": "2db266cd4a8018b210301a4514a1fcdacca2f562",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "23daa59e996254e5c539334e01e621ce1d48638e8cf7d89b8daa6bd1c6e5bebd"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "VIMacU-20261006T102614Z-2db266cd4",
+  "top": "VIMacU",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 3773,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 3773,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 160,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "VIMacU",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

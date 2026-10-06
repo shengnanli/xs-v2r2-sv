@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VIMacU
+Implementation : i:/WORK/VIMacU
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 06:30:30 2026
+**************************************************
+
+No aborted compare points.
+
+1
