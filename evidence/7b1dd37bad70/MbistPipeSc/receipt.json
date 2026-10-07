@@ -1,0 +1,277 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "MbistPipeSc",
+ "run_id": "MbistPipe-20261006T130846Z-7b1dd37ba",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/MbistPipeSc.sv",
+   "kind": "golden",
+   "sha256": "d1fce4dc720df3ee9509600b84ef9234fa75693853b6ae6f7047b3023eac24f8"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/dft/xs_mbist_pipe_core.sv",
+   "kind": "repo",
+   "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+  },
+  {
+   "path": "rtl/dft/MbistPipeDCacheData.sv",
+   "kind": "repo",
+   "sha256": "3991bda1daacb2f8d4c590a823f300febce260ae6227ba782543ed44e188ad4c"
+  },
+  {
+   "path": "rtl/dft/MbistPipeDcacheTag.sv",
+   "kind": "repo",
+   "sha256": "f28af702c9d18f7dd521403584f2705689365dd59670cb6ad778bfc138655062"
+  },
+  {
+   "path": "rtl/dft/MbistPipeFrontend.sv",
+   "kind": "repo",
+   "sha256": "f27da67978c36d391827b91d2d3931b1862385a91fae7bc9014560fe6cf99eb3"
+  },
+  {
+   "path": "rtl/dft/MbistPipeFtb.sv",
+   "kind": "repo",
+   "sha256": "492d0afa1a22058ac0d2eede46f56c53a990a19a48a58c9198757a2a38c847cc"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIcacheDataWay0.sv",
+   "kind": "repo",
+   "sha256": "c46f716b56ab95576e19768fb44e71cf5d4f7024a84003ea86bb08f6e90f7bed"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIcacheDataWay1.sv",
+   "kind": "repo",
+   "sha256": "93d46c443ea510db309448d28e32ce15707052c2a4c3f7a39b7ea4302d9236ce"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIcacheDataWay2.sv",
+   "kind": "repo",
+   "sha256": "e480b17f4626ef730090d723ab2bcbc13fee407664fb0b5837ba0e5221edc63e"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIcacheDataWay3.sv",
+   "kind": "repo",
+   "sha256": "bed12d1d7884b7e93b585870e33bb7d73d8d2337bc2913400041e1330fc132cf"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIcacheTag.sv",
+   "kind": "repo",
+   "sha256": "2b36f7c14ad01edf9d1ad2cac75724558e8a9de62f0065412146691b7d7fd45e"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIttage.sv",
+   "kind": "repo",
+   "sha256": "c7834a72a6513413829676a16e4d586d3687d5c04612188c99ab557093240218"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIttage_1.sv",
+   "kind": "repo",
+   "sha256": "db493a9ddb81983bfb5b1c874aba49f0acfb82699975035ccd66ce87f569a89a"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIttage_2.sv",
+   "kind": "repo",
+   "sha256": "826caf5a951e3cc3d3d9c963dc1bd9694c688be62fc48d8a1de77b5861120c7c"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIttage_3.sv",
+   "kind": "repo",
+   "sha256": "e6213350891d8cafa0b89b8ab581b3a8246f6478c816f3dd84ec5ffd4f292640"
+  },
+  {
+   "path": "rtl/dft/MbistPipeIttage_4.sv",
+   "kind": "repo",
+   "sha256": "a473a5ae9e816365d466d4966159040fecab28bf6411e7e01c790ddab1389639"
+  },
+  {
+   "path": "rtl/dft/MbistPipeL2Prefetcher.sv",
+   "kind": "repo",
+   "sha256": "9f4a4df2159cd04f798dd495054ec32d30975bfe840fc4fe8bbb8041f5e5ccd1"
+  },
+  {
+   "path": "rtl/dft/MbistPipeMemBlk.sv",
+   "kind": "repo",
+   "sha256": "0b1f8130dc30704351c79a4bcac4d8e03d3f6b7b46caaced1b4bdc199c48920f"
+  },
+  {
+   "path": "rtl/dft/MbistPipePtwL0.sv",
+   "kind": "repo",
+   "sha256": "f9063dc85f5a46a1044dfa746bfd5deaf837ef276d0ae92190fa07c3dfe9874a"
+  },
+  {
+   "path": "rtl/dft/MbistPipePtwL1.sv",
+   "kind": "repo",
+   "sha256": "a92e9e3931a186f1aba05282eafb04f124b3424c9fdf650931a61e8e59c0119a"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSc.sv",
+   "kind": "repo",
+   "sha256": "462b45d44fc9ec5b5b2b02fcad0592affba31fd5896eadf6ccfe3a1300612c8c"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSc_1.sv",
+   "kind": "repo",
+   "sha256": "a8995e7c42ecc818ff4d51ca1fed21de1d79665bb60e52d339465e6057279486"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSc_2.sv",
+   "kind": "repo",
+   "sha256": "894a2fc46b2b56a86add2303a1d8977bd9e54b4f30345f020742477c10fb9919"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSc_3.sv",
+   "kind": "repo",
+   "sha256": "9c2b0a3e9e1773e3a9c0f0d53bf119e1819b00c24e1fdbb4934fe6a4873f444f"
+  },
+  {
+   "path": "rtl/dft/MbistPipeSms.sv",
+   "kind": "repo",
+   "sha256": "1fd5a89cf9d47a54dc961e91a0e7da35cd2cab32aa04aa2eec65564a82b27539"
+  },
+  {
+   "path": "rtl/dft/MbistPipeTage.sv",
+   "kind": "repo",
+   "sha256": "cedb2144c62e290e191b4ea06a6df8837ee6cf8bf5073a3144a6805dbf7799a8"
+  }
+ ],
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "MbistPipe-20261006T130846Z-7b1dd37ba",
+  "top": "MbistPipeSc",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 190,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 190,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "MbistPipeSc",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

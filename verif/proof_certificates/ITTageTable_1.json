@@ -1,0 +1,241 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:28:01Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/ITTageTable_1",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_1.sv",
+    "sha256": "51e75455a8a1e20a23bd36e5a43beea0ce740970b77ca113c1f1ada208e73d28"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_22.sv",
+    "sha256": "d24ee1b59f93a5f139561de0d02d0ec97b581920e82ac5e02e0f5c87fff0e4cd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_41.sv",
+    "sha256": "e28782c82a9284e98a7b571ace1e8a9be98b3452440544b7f4fd292246879b2d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_1.sv",
+    "sha256": "d6d4c9e5cdef44c3769463eb097e293f0e8692943ac6d500906e2e50070b3f81"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_76.sv",
+    "sha256": "9d5ca6fbb68d209d26e343aaf48ef5e12b86ef7c8c11c5ce0192b7fc228a8da1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_25.sv",
+    "sha256": "e09a6e83d421c169821b62ccac78013a8081f942a859aa8ae882b679113d0543"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_41.sv",
+    "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_4x2.sv",
+    "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   }
+  ],
+  "golden_sha256": "61fa71e2b0eacd59336d93a05824aa92601fd32a6775d0f815eea8146031698f",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable_1.sv",
+    "sha256": "72b21e31a48fd3527b33b435412d983d46efcb4abcabc0e5b9648a588d97d97a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable.sv",
+    "sha256": "e30de252f6a5ed8d576c85c97eb8c537d913ac21ad7a879cb3473b0df5162975"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_22.sv",
+    "sha256": "d24ee1b59f93a5f139561de0d02d0ec97b581920e82ac5e02e0f5c87fff0e4cd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_41.sv",
+    "sha256": "e28782c82a9284e98a7b571ace1e8a9be98b3452440544b7f4fd292246879b2d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_76.sv",
+    "sha256": "9d5ca6fbb68d209d26e343aaf48ef5e12b86ef7c8c11c5ce0192b7fc228a8da1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_25.sv",
+    "sha256": "e09a6e83d421c169821b62ccac78013a8081f942a859aa8ae882b679113d0543"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_41.sv",
+    "sha256": "1d54a67f411d08c7bb86b28ea02a9ee94f96517ea8821892a146a0a675560afd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_4x2.sv",
+    "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   }
+  ],
+  "impl_sha256": "d896f0fa2966c627f442149e03d0a6ecf2b841e85492b3987a859c71443d3eb7",
+  "repo_impl_files": 3
+ },
+ "mc_memory_objects": [
+  "array_6",
+  "data_mem_0_4x2",
+  "sram_array_1p128x76m1s1h0l1b_bp_ittage"
+ ],
+ "native_facts_sha256": "9313fa97ddb85c13cbbd5b72cc27680931759d1895c25143c98328a765a0ce16",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 682,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "c1f3932c891ea3c8b0ace74c61f5175c41a011b29edae26e3b850af5549c024c"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "7164956bb1affb4f7b97c5d3d446f0dc5b132bf3b383de0fc0e4bdcb57598f4f",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "543bc1f45950e9fec111e844520d4b62c8a7064857ee13468a0b3085108294d2",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh ITTageTable_1 ITTageTable_1",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "5886ecf6299f9250b43002af4d19a710be2793854ca64825a13226cf466d1bc8",
+ "run_id": "ITTageTable_1-20261006T125816Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/ITTageTable_1.tcl",
+    "sha256": "1e4448f1b14d97d1bc19eb640471eded99f72302b6bb85fc2cf3510ca58bed9a"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/ITTageTable_1/fm_pins.tcl",
+    "sha256": "c1f3932c891ea3c8b0ace74c61f5175c41a011b29edae26e3b850af5549c024c"
+   }
+  ],
+  "sha256": "30dd7fa568c42722efa69191de18003d7b307b8a886fc79eb32f87c504498b89"
+ },
+ "target": "ITTageTable_1",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "ITTageTable_1",
+ "variant": "ITTageTable_1",
+ "verdict": "SUCCEEDED"
+}

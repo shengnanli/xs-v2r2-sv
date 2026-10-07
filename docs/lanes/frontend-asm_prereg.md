@@ -221,6 +221,188 @@ ref 副本（match20 日志 3788 行 Moved loads，含 impl 侧）。fm_predict 
    可选路线：(a) Frontend 改 merge_dup=true（match15 实测到 Matching 3 小时 7.4GB，且要整套改用 merge=true 录制的配对，
    未收敛）；(b) Ftq.sv 改成照 golden 读存储的 nextLineAddr[5:0]（动已签共享核 + 要重签 Ftq）；(c) 其它裁定。
 
+
+## 5. codex 0226：Frontend 改走 exact green_child —— 第一步：八个直接 child 的证书闭包重证（★跑前登记，跑完不许改本节★）
+
+0226 定 Frontend 为八个直接实例的 green_child 组合（inner_bpu=Predictor、inner_ftq=Ftq、inner_icache=ICache、inner_ifu=NewIFU、
+inner_ibuffer=IBuffer、inner_instrUncache=InstrUncache、inner_itlb=TLB、inner_itlbRepeater1=PTWFilter）。§4 的全展开 + 15 万条收割钉点路线作废。
+
+现状（HEAD=80d35d8c0，`scripts/proof_certificate.py` 的 validate_certificate_current 逐个复核，scratchpad certcheck.py / certtree.py）：
+八个 child 都**没有 tracked 证书**；仓里最新的合格 receipt 全部失效 —— 主因 scripts/fm_eq.tcl 在它们之后改过（script_closure_changed），
+另 ICache a7279429 的 xs_SRAMTemplate_core.sv 闭包变了、TLB 6571efce 缺 RUN_CONTEXT（非 run_proof 产出）。
+而且 Predictor / Ftq / ICache 的 impl 闭包里两侧共读 golden 子模块（Composer、FTB、SyncDataModuleTemplate*…），按 0222 §3d
+这些 golden 必须是持有合格证书的独立 FM target（递归）或已登记的 MC 存储契约。递归展开后要出证书的 target 共 **96 个**（下表），
+全部在同一个钉住的 commit 上用 `PROOF_COMMIT=<c> bash scripts/run_proof.sh <ut> <T> < /dev/null` 重跑（不改它们的 RTL / Makefile / 钉点）。
+它们 impl 闭包里的 sram_array_* / array* / data_mem_* 存储层按 verif/mc_memory_registry.tsv 的推导模板逐条登记（mc_memory_registry.py --derive / --check），
+登记在跑完、出证书之前提交（登记表不在任何 target 的 script closure 里）。
+
+预测：每个 target 的 passing / verdict 与它上一份合格 receipt 相同（重跑只因脚本闭包变化，RTL 与钉点未动）。
+
+| target | UT 目录 | 预测 verdict | 预测 passing | 上一份 receipt | 上次用时 s |
+|---|---|---|---|---|---|
+| ClockGate | ClockGate | SUCCEEDED | 2 | evidence/bef96c62cc68 | 11 |
+| DelayN | DelayN | SUCCEEDED | 10 | evidence/f0bcd42e8a81 | 44 |
+| DelayNWithValid | DelayNWithValid | SUCCEEDED | 151 | evidence/7a881579fe64 | 45 |
+| DelayNWithValid_1 | DelayNWithValid | SUCCEEDED | 181 | evidence/7a881579fe64 | 45 |
+| DelayN_1 | DelayN | SUCCEEDED | 3 | evidence/f0bcd42e8a81 | 44 |
+| MbistClockGateCell | MbistClockGateCell | SUCCEEDED | 2 | evidence/2948215a047b | 10 |
+| MbistPipeFtb | MbistPipe | SUCCEEDED | 707 | evidence/40ec7fc36bb8 | 48 |
+| SRAMTemplate_36 | SRAMTemplate | SUCCEEDED | 189 | evidence/68d1a0932a12 | 11 |
+| SplittedSRAMTemplate_2 | SplittedSRAMTemplate | SUCCEEDED | 1505 | evidence/68d1a0932a12 | 64 |
+| FTB | FTB | PASS_DEAD_REF | 8605 | evidence/d37248da1db4 | 173 |
+| FTBBank | FTBBank | PASS_DEAD_REF | 3276 | evidence/f40deba9439d | 152 |
+| FoldedSRAMTemplate | FoldedSRAMTemplate | SUCCEEDED | 113 | evidence/68d1a0932a12 | 14 |
+| FoldedSRAMTemplate_1 | FoldedSRAMTemplate | SUCCEEDED | 148 | evidence/68d1a0932a12 | 11 |
+| FoldedSRAMTemplate_20 | FoldedSRAMTemplate | SUCCEEDED | 109 | evidence/68d1a0932a12 | 12 |
+| FoldedSRAMTemplate_22 | FoldedSRAMTemplate | SUCCEEDED | 443 | evidence/68d1a0932a12 | 33 |
+| FoldedSRAMTemplate_24 | FoldedSRAMTemplate | SUCCEEDED | 846 | evidence/68d1a0932a12 | 35 |
+| IndexableCAMTemplate_32 | IndexableCAMTemplate | SUCCEEDED | 96 | evidence/40ec7fc36bb8 | 45 |
+| IndexableCAMTemplate_41 | IndexableCAMTemplate | SUCCEEDED | 36 | evidence/40ec7fc36bb8 | 60 |
+| IndexableCAMTemplate_43 | IndexableCAMTemplate | SUCCEEDED | 40 | evidence/40ec7fc36bb8 | 44 |
+| RAS | RASTop | SUCCEEDED | 6592 | evidence/7f8365cc79ab | 60 |
+| RASStack | RAS | SUCCEEDED | 3018 | evidence/40ec7fc36bb8 | 99 |
+| SRAMTemplate_44 | SRAMTemplate | SUCCEEDED | 120 | evidence/68d1a0932a12 | 11 |
+| SRAMTemplate_45 | SRAMTemplate | SUCCEEDED | 148 | evidence/68d1a0932a12 | 11 |
+| SRAMTemplate_64 | SRAMTemplate | SUCCEEDED | 58 | evidence/68d1a0932a12 | 11 |
+| SRAMTemplate_76 | SRAMTemplate | SUCCEEDED | 478 | evidence/68d1a0932a12 | 11 |
+| SRAMTemplate_78 | SRAMTemplate | SUCCEEDED | 478 | evidence/68d1a0932a12 | 11 |
+| SplittedSRAMTemplate_23 | SplittedSRAMTemplate | SUCCEEDED | 110 | evidence/68d1a0932a12 | 13 |
+| SplittedSRAMTemplate_25 | SplittedSRAMTemplate | SUCCEEDED | 478 | evidence/68d1a0932a12 | 13 |
+| SplittedSRAMTemplate_27 | SplittedSRAMTemplate | SUCCEEDED | 955 | evidence/68d1a0932a12 | 13 |
+| SplittedSRAMTemplate_3 | SplittedSRAMTemplate | SUCCEEDED | 120 | evidence/68d1a0932a12 | 14 |
+| SplittedSRAMTemplate_4 | SplittedSRAMTemplate | SUCCEEDED | 148 | evidence/68d1a0932a12 | 11 |
+| WrBypass_32 | WrBypass | SUCCEEDED | 158 | evidence/40ec7fc36bb8 | 47 |
+| WrBypass_41 | WrBypass | SUCCEEDED | 50 | evidence/40ec7fc36bb8 | 51 |
+| WrBypass_43 | WrBypass | SUCCEEDED | 54 | evidence/40ec7fc36bb8 | 46 |
+| Composer | Composer | PASS_DEAD_REF | 42060 | evidence/be19d6a02dba | 601 |
+| FauFTB | FauFTB | SUCCEEDED | 5660 | evidence/cee2812229bf | 157 |
+| FauFTBWay | FauFTBWay | SUCCEEDED | 139 | evidence/40ec7fc36bb8 | 64 |
+| ITTage | ITTage | SUCCEEDED | 10426 | evidence/68d1a0932a12 | 118 |
+| ITTageTable | ITTageTable | SUCCEEDED | 682 | evidence/c6573076c5ba | 14 |
+| ITTageTable_1 | ITTageTable_1 | SUCCEEDED | 682 | evidence/c6573076c5ba | 20 |
+| ITTageTable_2 | ITTageTable_2 | SUCCEEDED | 1014 | evidence/c6573076c5ba | 18 |
+| ITTageTable_3 | ITTageTable_3 | SUCCEEDED | 1014 | evidence/c6573076c5ba | 15 |
+| ITTageTable_4 | ITTageTable_4 | SUCCEEDED | 1014 | evidence/c6573076c5ba | 15 |
+| IndexableCAMTemplate | IndexableCAMTemplate | SUCCEEDED | 80 | evidence/40ec7fc36bb8 | 45 |
+| IndexableCAMTemplate_33 | IndexableCAMTemplate | SUCCEEDED | 144 | evidence/40ec7fc36bb8 | 62 |
+| MaxPeriodFibonacciLFSR | MaxPeriodFibonacciLFSR | SUCCEEDED | 30 | evidence/1b420e2033a9 | 11 |
+| MbistPipeIttage | MbistPipe | SUCCEEDED | 435 | evidence/40ec7fc36bb8 | 59 |
+| MbistPipeIttage_1 | MbistPipe | SUCCEEDED | 435 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeIttage_2 | MbistPipe | SUCCEEDED | 614 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeIttage_3 | MbistPipe | SUCCEEDED | 614 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeIttage_4 | MbistPipe | SUCCEEDED | 614 | evidence/40ec7fc36bb8 | 47 |
+| MbistPipeSc | MbistPipe | SUCCEEDED | 190 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeSc_1 | MbistPipe | SUCCEEDED | 190 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeSc_2 | MbistPipe | SUCCEEDED | 190 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeSc_3 | MbistPipe | SUCCEEDED | 190 | evidence/40ec7fc36bb8 | 46 |
+| MbistPipeTage | MbistPipe | SUCCEEDED | 1396 | evidence/40ec7fc36bb8 | 49 |
+| PriorityMuxModule | PriorityMuxModule | SUCCEEDED | 50 | evidence/40ec7fc36bb8 | 45 |
+| PriorityMuxModule_12 | PriorityMuxModule | SUCCEEDED | 23 | evidence/40ec7fc36bb8 | 45 |
+| PriorityMuxModule_16 | PriorityMuxModule | SUCCEEDED | 3 | evidence/40ec7fc36bb8 | 44 |
+| PriorityMuxModule_20 | PriorityMuxModule | SUCCEEDED | 1 | evidence/40ec7fc36bb8 | 44 |
+| PriorityMuxModule_4 | PriorityMuxModule | SUCCEEDED | 140 | evidence/40ec7fc36bb8 | 48 |
+| PriorityMuxModule_8 | PriorityMuxModule | SUCCEEDED | 9 | evidence/40ec7fc36bb8 | 47 |
+| RegionWays | RegionWays | SUCCEEDED | 680 | evidence/1b420e2033a9 | 19 |
+| SCTable | SCTable | SUCCEEDED | 1123 | evidence/68d1a0932a12 | 30 |
+| SCTable_1 | SCTable | SUCCEEDED | 1123 | evidence/68d1a0932a12 | 26 |
+| SCTable_2 | SCTable | SUCCEEDED | 1123 | evidence/68d1a0932a12 | 28 |
+| SCTable_3 | SCTable | SUCCEEDED | 1123 | evidence/68d1a0932a12 | 47 |
+| SRAMTemplate_68 | SRAMTemplate | SUCCEEDED | 145 | evidence/68d1a0932a12 | 8 |
+| TageBTable | TageBTable | SUCCEEDED | 396 | evidence/c6573076c5ba | 14 |
+| TageTable | TageTable | PASS_DEAD_REF | 797 | evidence/f811f8d51f92 | 48 |
+| WrBypass | WrBypass | SUCCEEDED | 124 | evidence/40ec7fc36bb8 | 47 |
+| TageTable_1 | TageTable | PASS_DEAD_REF | 1585 | evidence/e0bc44bf9a73 | 73 |
+| TageTable_2 | TageTable | PASS_DEAD_REF | 1585 | evidence/e0bc44bf9a73 | 81 |
+| TageTable_3 | TageTable | PASS_DEAD_REF | 1585 | evidence/e0bc44bf9a73 | 85 |
+| Tage_SC | Tage_SC | PASS_DEAD_REF | 16112 | evidence/68d1a0932a12 | 554 |
+| WrBypass_33 | WrBypass | SUCCEEDED | 398 | evidence/40ec7fc36bb8 | 51 |
+| Predictor | Predictor | SUCCEEDED | 528967 | evidence/bfd1afc7451e | 17619 |
+| DataModule_FtqPC_16entry | SyncDataModule | SUCCEEDED | 2168 | evidence/25cdce831a66 | 58 |
+| DataModule__16entry | SyncDataModule | SUCCEEDED | 1504 | evidence/25cdce831a66 | 52 |
+| DataModule__16entry_12 | SyncDataModule | SUCCEEDED | 1570 | evidence/25cdce831a66 | 55 |
+| DataModule__16entry_4 | SyncDataModule | SUCCEEDED | 9792 | evidence/25cdce831a66 | 98 |
+| DataModule__16entry_8 | SyncDataModule | SUCCEEDED | 250 | evidence/25cdce831a66 | 48 |
+| FTBEntryGen | FTBEntryGen | SUCCEEDED | 72 | evidence/f40deba9439d | 47 |
+| FtqPcMemWrapper | FtqPcMemWrapper | SUCCEEDED | 7166 | evidence/25cdce831a66 | 163 |
+| SyncDataModuleTemplate_FtqPC_64entry | SyncDataModule | SUCCEEDED | 7166 | evidence/8b9c32ee57dd | 97 |
+| SyncDataModuleTemplate__64entry | SyncDataModule | SUCCEEDED | 5743 | evidence/8b9c32ee57dd | 50 |
+| SyncDataModuleTemplate__64entry_1 | SyncDataModule | SUCCEEDED | 38029 | evidence/8b9c32ee57dd | 294 |
+| SyncDataModuleTemplate__64entry_2 | SyncDataModule | SUCCEEDED | 955 | evidence/8b9c32ee57dd | 17 |
+| SyncDataModuleTemplate__64entry_3 | SyncDataModule | SUCCEEDED | 5999 | evidence/8b9c32ee57dd | 48 |
+| Ftq | Ftq | PASS_DEAD_REF | 66481 | evidence/ff4dfe24f181 | 2423 |
+| ICache | ICache | SUCCEEDED | 21174 | evidence/a72794293f57 | 1057 |
+| NewIFU | NewIFU | SUCCEEDED | 9247 | evidence/48bc44efbe64 | 205 |
+| IBuffer | IBuffer | SUCCEEDED | 7908 | evidence/5c7eec56325a | 944 |
+| InstrUncache | InstrUncache | SUCCEEDED | 205 | evidence/40ace84c0bea | 45 |
+| TLB | TLB | SUCCEEDED | 11118 | evidence/6571efce8ce6 | 983 |
+| PTWFilter | PTWFilter | SUCCEEDED | 1077 | evidence/48bc44efbe64 | 61 |
+
+## 6. Frontend official（codex 0226 exact green_child 组合）—— 跑前登记（★跑完不许改本节★）
+
+### 6.1 证明形态
+- green_child（两侧 `-interface_only`，verif/allow/Frontend.json 16 条，逐 r/i 实例路径 + child_target + 证书 sha256 写死）：
+  inner_bpu=Predictor、inner_ftq=Ftq、inner_icache=ICache、inner_ifu=NewIFU、inner_ibuffer=IBuffer、inner_instrUncache=InstrUncache、
+  inner_itlb=TLB、inner_itlbRepeater1=PTWFilter；`FM_INTERFACE_ONLY` 恰为这 8 个 design。
+- 两侧白盒：Frontend 本层 glue（466 行可读核）+ 10 种非 green 直接子模块（DelayN_7/8/13、PMP、PMPChecker_2×5、PTWRepeaterNB、PFEvent、
+  HPerfMonitor、MbistPipeFrontend、MbistIntfFrontend）。ref 21 个 G1 文件（含 8 个 green child 的端口定义），impl 29 个重写件
+  （含 8 个 green wrapper，定义 package 的文件排前）。两侧不共读任何 golden 存储模型。
+- 钉点 verif/ut/Frontend/fm_pins_pre.tcl（scripts/gen_frontend.py，`--check` 幂等）：一、顶层胶合寄存器 3612 位；二、白盒子模块内部配对
+  9064 条（PMP 6664 / PTWRepeaterNB 312 由各自签核钉点重定位，PFEvent 1464 / DelayN_8 548 / MbistPipeFrontend 76 由源码结构推出）。
+  以前的「子树钉点重定位 / 自配对收割 / 副本配对类」约 15 万条与 5 个数据文件（harvest_pins.tsv、dup_groups.tsv、predictor_pins.tsv、
+  fe_inst_map.tsv、fe_impl_hier.tsv）全部删除（误随 e9be8cd8b 一起提交，提交说明没写，这里补记）。
+  第二节对 canary1 的 FM 自动配对逐条交叉核对：6750 条与 FM 一致、0 条不一致，其余 2314 条是对称无读者位（FM 不做函数配对）。
+- vmucp：verif/fm_target_config/Frontend.tcl（5516 对，六条证据）；dead_ref：verif/dead_ref/Frontend.json（64 位，HPerfMonitor 同一批）。
+
+### 6.2 canary（同一字节、工作树、不产 receipt）
+| 跑 | 形态 | native | passing | failing | unmatched | unread | constant_reg | 黑盒 |
+|---|---|---|---|---|---|---|---|---|
+| canary1 | 只有顶层钉点 | FAILED | 27845 | 10（inner_pmp wdata_reg，PMP 内部配错） | 0(0) | 2378(2314) | 183 | 8 design × r/i |
+| canary2 | + 第二节 9064，vmucp 开 | SUCCEEDED | **30093** | 0 | 0(0) | 64(0)（全是 dead_ref） | **259** | 8 design × r/i |
+| canary3 | 同 canary2，vmucp 关 | SUCCEEDED | 24577 | 0 | 0(0) | 5516 matched_nc + 64 | 259 | 同上 |
+canary2 用时 345 s。黑盒报告（FM-184）两侧恰为 8 个 `i` 属性 design，各 1 个实例（另有 12 个 0 实例的参数化核 `e *` 条目，未例化）。
+
+### 6.3 预测（docs/fm_predictions/Frontend.json，模型 30418）
+native SUCCEEDED；passing **30093**、constant_reg **259**、failing / unverified / aborted / unmatched / blackbox_out **0**、unread = dead_ref 64 位；
+dont_verify / elab147 / relaxed_appvars 空。30418 − 30093 = 325 = 259 + 64 + **2**：那 2 位是模型的 BB_IN_RE 把 golden Ftq.sv / NewIFU.sv 注释里的
+"input that" 各数成一个黑盒输入位（scripts/fm_passing_model.py 扫模块体全文）——实际比较点没有它们，fm_predict check 会因此报余额 2。
+**verdict 预测 PARTIAL**：八个 green child 证书里 7 个在父 commit 上 current-valid，inner_bpu=Predictor 递归复核不过
+（`green_child_impl_golden_not_fm_target:Composer:data_mem_8x4`，另 FTB / FTBBank 报 external_dependency_spurious），见 6.4。
+
+### 6.4 证书链现状（scripts/proof_certificate.validate_certificate_current，HEAD=d91546585 复核）
+96 个 target 里 90 个 CURRENT；不过的 6 个全在 Predictor 链上，两个原因都在公共核心，本 lane 不改：
+1. data_mem_8x4（G1 firtool 2R1W 带 2 段写掩码的 ram）推导不出 MC 模板（mc_memory_registry.py：not_single_instance），也不是 FM target；
+   Composer / TageBTable / Tage_SC 的 impl 闭包两侧共读 golden WrBypass_32 → 带上它（Predictor 经由 Composer）。
+2. proof_certificate.validate_impl_golden_certified 的 `_seen` 在递归里共享：FTB 自己的 MC 对象 array_1 / sram_array_1p512x40m10s1h0l1b_bp_ftb
+   先在递归到 SRAMTemplate_36 时被记进 `_seen`，回到 FTB 本层就被跳过、不计 hit，于是 FTB / FTBBank 的
+   external_dependency=MC_MEMORY_CONTRACT 被判 spurious（证书本身如实）。
+
+## 7. 集成者裁定后的收尾（2026-10-06）
+
+1. **validator 修复**（0bad09974，scripts/proof_certificate.py 由本 lane 单 owner）：validate_impl_golden_certified 里 MC 命中改为按当前层计，
+   `_seen` 只用于证书递归的去重 / 防环。负测在 test_proof_certificate_grandchild「正例2」：本层与 golden 子层共用同一 MC 对象，
+   旧实现报 green_child_external_dependency_spurious、新实现放行；SABOTAGE_GC 元负例仍抓到；test_proof_certificate / _nested 22 /
+   _grandchild 6 / test_audit_ram_manual_review / test_audit_ram_memory_model 15 全过。修后 FTB / FTBBank 证书 CURRENT（证书未重出）。
+2. **data_mem_8x4 走路线 (b)**（80c887760）：Composer / TageBTable / Tage_SC / Predictor 的 FM impl 侧改读已签重写件 WrBypass_32（target-specific，
+   UT 闭包不变）；Predictor 另把 golden WrBypass / IndexableCAMTemplate（与重写核文件同名模块冲突）和 WrBypass_33（例化 data_mem_16x12，
+   同样推导不出 MC 模板）一并换成已签重写件（三者均持 current 证书）。Composer 的 child_pairs/Tage_SC.tsv 按新配置的 Tage_SC FM 配对重抽（bb871960e，
+   151 条 tage/bt/wrbypass 换名，总数 14262 不变），钉点重生成、`--check` OK。
+   预测 = 各自已登记的 docs/fm_predictions（本节写于 TageBTable / Tage_SC / Composer 重证之后、Predictor 重证完成之前；登记文件早于这些证明）：
+   TageBTable 396、Tage_SC 16112（PASS_DEAD_REF）、Composer 42060（PASS_DEAD_REF）、Predictor 528967。
+   实测（PROOF_COMMIT=bb871960e，evidence/bb871960e9ea/）：TageBTable SUCCEEDED 396、Tage_SC PASS_DEAD_REF 16112、Composer PASS_DEAD_REF 42060，
+   fm_predict check 三个 rc=0；证书重出（9058b0b2c），递归复核 CURRENT。
+
+3. **Predictor 的厂商 SRAM 叶子**（跑前登记）：bb871960e 的 Predictor 重证 SUCCEEDED 528967 / constant 727（与上一份相同），但证书复核报
+   `green_child_impl_golden_unexpected_path:Predictor:array_1_ext.v` —— Predictor 是全仓唯一把 array_*_ext.v 两侧白盒读进 FM 的 BPU 目标，
+   与 0222「MC_MEMORY_BLACKBOX 只能两侧对称黑盒」冲突（`fm_predict check Predictor` 也一直红：模型 44750 按黑盒计，实测 528967 里绝大部分是 SRAM 存储位）。
+   改法同 verif/ut/Composer：FM 两侧都不给 .v（hdlin_unresolved_modules=black_box 对称黑盒），UT 不变。
+   **预测**（docs/fm_predictions/Predictor.json，模型 44750）：native SUCCEEDED、failing / unmatched 0，passing + constant_reg = 44750 − 未读点；verdict SUCCEEDED。
+
+4. **Frontend official 重跑**（跑前登记）：八个 green child 证书全部 CURRENT（Predictor 4257175da / 97d0091c5，其余同 §6），allow 只重盖 Predictor 的 sha。
+   Frontend 本层闭包与 27112f2ee 逐字节相同 ⇒ 预测同 §6.3：native SUCCEEDED、passing **30093**、constant_reg **259**、failing / unverified / aborted /
+   unmatched / blackbox_out 0、unread 64 = dead_ref；**verdict PASS_DEAD_REF**。fm_predict check 预计报余额 2（模型 30418 − 30093 − 259 − 64 = 2：
+   scripts/fm_passing_model.py 的 BB_IN_RE 扫模块体全文，把 golden Ftq.sv / NewIFU.sv 注释里的 "input that" 各数成 1 个黑盒输入位；
+   实际比较点没有它们。公共工具，按集成者裁定本次不改）。
+
 ## 对账
 
 ### 第一批：三个 FrontendBridge 缓冲 + MuxBundle（run_proof @ 3390b6ba，evidence/3390b6ba80a9/<目标>/）
@@ -238,3 +420,43 @@ rc=0（模型 − 实测 = constant_reg，逐项指认）。
 
 复跑：`bash scripts/run_proof.sh FrontendBridgeBuffers ICacheBuffer InstrUncacheBuffer ICacheCtrlBuffer < /dev/null`；
 `bash scripts/run_proof.sh MuxBundle MuxBundle < /dev/null`。
+
+### 第二批：codex 0226 证书链重证（§5）+ Frontend official（§6）
+
+**§5 重证 96 个 target**（PROOF_COMMIT=7b1dd37ba，evidence/7b1dd37bad70/<T>/，全部 rc=0）：95 个 verdict 与 passing 与 §5 表逐个相同；
+1 个不同——**TageTable：§5 表写 797，实测 1585**。§5 表的"上一份 receipt"取错了：f811f8d51f92 早于 e7882180b（Tage 去 green_child 改两侧
+同源白盒），之后 TageTable 的已登记预测 docs/fm_predictions/TageTable.json 与 1585 一致（`fm_predict.py check TageTable` rc=0）。这是本 lane 登记表的抄录错误，不是证明的变化。
+Predictor 528967 / 16114 s，Ftq PASS_DEAD_REF 66481 / 2732 s，ICache 21174 / 1229 s。
+之后 SRAMTemplate / SplittedSRAMTemplate / FoldedSRAMTemplate 的 18 个前端 variant 改成各自只读真用到的 MC 模型（0591d79d6），在 evidence/0591d79d6132/ 重证，
+passing 与上一份逐个相同（189/120/148/58/145/478/478、1505/110/478/955/120/148、113/148/109/443/846）。证书 96 份（verif/proof_certificates/）。
+
+**§6 Frontend official**（bash scripts/run_proof.sh Frontend Frontend，commit 27112f2ee，evidence/27112f2ee5cd/Frontend/，347 s）：
+
+| 项 | 预测 | 实测 |
+|---|---|---|
+| native | SUCCEEDED | SUCCEEDED |
+| passing | 30093 | **30093** |
+| constant_reg | 259 | 259 |
+| failing / unverified / aborted / unmatched / blackbox_out | 0 | 0 / — / — / 0(0) / 0 |
+| unread | 64（= dead_ref） | 64 |
+| verdict | PARTIAL（Predictor 证书链） | **PARTIAL**：assembly_green_child_impl_golden_not_fm_target:Composer:data_mem_8x4 |
+
+fm_verdict 拒绝出 receipt（receipt.json 不存在，证据目录只有 fm.log / sidecar / 报告），故无 receipt sha256，也不能跑 fm_predict check / 出 Frontend 证书。
+剩余：§6.4 的两项公共核心改动（MC 模板覆盖 2R1W 带掩码 ram，或 Composer/TageBTable/Tage_SC/Predictor 不再共读 golden WrBypass_32；
+validate_impl_golden_certified 的 `_seen` 共享）落地后，按 PROOF_COMMIT 重出受影响 child 的证书、重写 allow 的 Predictor sha，再跑一次 official。
+
+### 第三批：集成者裁定后的收尾（§7）
+
+| 目标 | PROOF_COMMIT / evidence | 预测 | 实测 | fm_predict check | 证书 sha256（文件） |
+|---|---|---|---|---|---|
+| TageBTable | bb871960e / evidence/bb871960e9ea | SUCCEEDED 396 | SUCCEEDED 396 | rc=0 | 9058b0b2c 提交 |
+| Tage_SC | bb871960e / evidence/bb871960e9ea | PASS_DEAD_REF 16112 | PASS_DEAD_REF 16112（constant 4） | rc=0 | 同上 |
+| Composer | bb871960e / evidence/bb871960e9ea | PASS_DEAD_REF 42060 | PASS_DEAD_REF 42060（constant 664） | rc=0 | 同上 |
+| Predictor（ext 白盒） | bb871960e / evidence/bb871960e9ea/Predictor | SUCCEEDED 528967 | SUCCEEDED 528967（17872 s） | 红（模型 44750 按黑盒计） | 证书复核 unexpected_path:array_1_ext.v，作废 |
+| Predictor（ext 黑盒，§7.3） | 4257175da / evidence/4257175daab2/Predictor | passing + constant = 44750 | SUCCEEDED 44023 + constant 727 = 44750（1181 s） | **rc=0** | 693ea0ca…（97d0091c5） |
+| **Frontend** | d6d8b726f / evidence/d6d8b726f919/Frontend | PASS_DEAD_REF 30093 / constant 259 / unread 64 | **PASS_DEAD_REF 30093 / constant 259 / unread 64**，failing / unmatched / blackbox_out 0，黑盒 16 对象，331 s | 余额 2（BB_IN_RE 注释误数，已登记） | d5730066d09db884949bf160f633f768a5b399509cf62a6f921ff992dc08f629 |
+
+Frontend receipt.json sha256 `1a52bbf99ec0e820142a7eb85d4dd6a125c44922a0ba610009f0c17f4fe588ee`；证书 verif/proof_certificates/Frontend.json（external_dependency=MC_MEMORY_CONTRACT，
+经由 ICache / Predictor），在 HEAD 上 validate_certificate_current = True；八个 green child 证书全部 CURRENT。check_lane_receipts rc=0。
+复跑：`bash scripts/run_proof.sh Frontend Frontend < /dev/null`；`python3 scripts/make_proof_certificate.py --repo . --evidence evidence/<c12>/Frontend`。
+

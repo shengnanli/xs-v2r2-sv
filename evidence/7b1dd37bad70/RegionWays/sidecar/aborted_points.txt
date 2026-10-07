@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/RegionWays
+Implementation : i:/WORK/RegionWays
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 09:14:43 2026
+**************************************************
+
+No aborted compare points.
+
+1

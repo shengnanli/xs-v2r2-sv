@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FTBEntryGen
+Implementation : i:/WORK/FTBEntryGen
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 09:50:09 2026
+**************************************************
+
+No aborted compare points.
+
+1

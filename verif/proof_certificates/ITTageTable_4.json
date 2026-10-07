@@ -1,0 +1,241 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:29:30Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/ITTageTable_4",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ITTageTable_4.sv",
+    "sha256": "1b0f4a3da11eb26230254c65d5f4ecb8f7c99039df2d803482ad5fceb0b82f26"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+    "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+    "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIttage_4.sv",
+    "sha256": "de2ccb252f34de08b10e455b877204ac5891a01fde56fb0e1f77bc46bdfb9f22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_78.sv",
+    "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+    "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_43.sv",
+    "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_4x2.sv",
+    "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   }
+  ],
+  "golden_sha256": "48dbff65f1513f16939ee61108a8fa2b87c92606fded2bf3e40b14ab28e9f10b",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable_4.sv",
+    "sha256": "00c9d9835845a1d92c88c6cb9d953f5a21795d0f975b41b46142d5cfa14583b6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ITTageTable.sv",
+    "sha256": "e30de252f6a5ed8d576c85c97eb8c537d913ac21ad7a879cb3473b0df5162975"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FoldedSRAMTemplate_24.sv",
+    "sha256": "9e87d86a8a925d54f19ea4b4fec85b16eeee3ee4455d0a4d117c5158eff5cbaa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_43.sv",
+    "sha256": "6b95f582270820258fdabf9e91dfc84357c85909861f630f078a66960de79956"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_78.sv",
+    "sha256": "591eddded1fb78b8d9d676da6a2a938d265b8217e57c70d75468d533e4930e14"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_27.sv",
+    "sha256": "6754c62fda85a64973d71afa0ddcfba27f3a76baa02e843abd1a3905fdffc916"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_43.sv",
+    "sha256": "9f6724227bd89624c83babfc9194074691d0668a0cb0802ce2c4fa57e3b5fa60"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_6.sv",
+    "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_0_4x2.sv",
+    "sha256": "43a044cab09d0bf6a0909771408f889240e10f77757b9fcf2e2b18195b0d27ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+    "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+   }
+  ],
+  "impl_sha256": "5aef33fd2f7bcb08d34f7ec0b07d9a9579e2a81fc652c7c89d2789f331b80bd5",
+  "repo_impl_files": 3
+ },
+ "mc_memory_objects": [
+  "array_6",
+  "data_mem_0_4x2",
+  "sram_array_1p128x76m1s1h0l1b_bp_ittage"
+ ],
+ "native_facts_sha256": "5d50c3a3005afa6687b15359bcafa6edfc054fd635186196da2795ae83b7ac33",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1014,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "eb4c3ee5290a19de7f71439bb2d2ad1a247846af7d7ba84d67d3e0c8d3743ba9"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "c422f11c1faf709d86f41dd91da45c122c2ba9d39be487fafbd96745b4df0761",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "89f375a7fde8cd7d56e788f834863983de7e978028dfcf469e9b1829e9d9538a",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh ITTageTable_4 ITTageTable_4",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "b709156eb56eb77cd787f2de08ce21f761a45272f56fe81eeaf2f1299f0cd7e1",
+ "run_id": "ITTageTable_4-20261006T130351Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/ITTageTable_4.tcl",
+    "sha256": "0bfb68bc9dd43dae592de5983ba7663c693a4f7451eabd543f123227170a644b"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/ITTageTable_4/fm_pins.tcl",
+    "sha256": "eb4c3ee5290a19de7f71439bb2d2ad1a247846af7d7ba84d67d3e0c8d3743ba9"
+   }
+  ],
+  "sha256": "1ca420cba064a716cbc95e6533471b84908e7f10e925b4438da44fa7de408243"
+ },
+ "target": "ITTageTable_4",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "ITTageTable_4",
+ "variant": "ITTageTable_4",
+ "verdict": "SUCCEEDED"
+}

@@ -1,0 +1,145 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:17:55Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/FauFTB",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FauFTB.sv",
+    "sha256": "604a1b94073e9e253ad6c797439a0d787d47fe4069b7ee6092b3b9778d62438a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FauFTBWay.sv",
+    "sha256": "d2725e598c7271b16af37586bbf2bd4344363a77f9013fa0dc8d9021b517bef5"
+   }
+  ],
+  "golden_sha256": "85f79c4cb0b1c2f048ffac7636f52010133bdbe06f2c4f7cfbc1a42d6fdd069c",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/frontend_common_pkg.sv",
+    "sha256": "7233bfa35e6e3bd9c3fe74644f40d6c24efc174ea84b6952b7ddcf3c9ba6f5fd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_BpuStagePc.sv",
+    "sha256": "212cdf0946daea8ae0736e94959e7f379da67ae59fed2bb01d4357dec66b270c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/FauFTBWay.sv",
+    "sha256": "d86bc842c9ceae9266c3a8951d90fffe9e574a50122c551b46a5bd6334ce80ae"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/FauFTB.sv",
+    "sha256": "8e0d9320479d26f96e28f316f805777bdbeb4dca44abd0bd35a47d4e977c197e"
+   }
+  ],
+  "impl_sha256": "79e163a5d61bc9ea0480d1cdda9ebff8b09efd2e4df07fc90e09ff18d5168cd3",
+  "repo_impl_files": 4
+ },
+ "native_facts_sha256": "46b5c817f97ee8c2509261a35f8194fbe89406692bd6201c9cd7633e0d3965f9",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 5660,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "33341e75d1f2cef94b5b316ff22b7118b612de6ca7ade44959a0e44324cfed57"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "e73d5a5360ce546f2de64f9abb023545451fc134c5987a52ea4b76eb2f40a5ae",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "af9ba6d49f73dd52f657b956a11115fe32bc658669a419e8b70ef6fc856d88f1",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh FauFTB FauFTB",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "0e9d8a193489ae86f6c83c1e010c6b160f0cc530187ef9fea48fffacd7dc44bf",
+ "run_id": "FauFTB-20261006T124736Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/FauFTB.tcl",
+    "sha256": "aa0b03b764205bbc28e29ec894c37b00e2e74cbb23ed6fe0dfc3b088a2877be3"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/FauFTB/fm_pins_pre.tcl",
+    "sha256": "33341e75d1f2cef94b5b316ff22b7118b612de6ca7ade44959a0e44324cfed57"
+   }
+  ],
+  "sha256": "92529c184243666a32679836da9c2843ccc0773992725f88aef796561216ae9f"
+ },
+ "target": "FauFTB",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FauFTB",
+ "variant": "FauFTB",
+ "verdict": "SUCCEEDED"
+}

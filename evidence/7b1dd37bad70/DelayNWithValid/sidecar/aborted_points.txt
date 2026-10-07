@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/DelayNWithValid
+Implementation : i:/WORK/DelayNWithValid
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 07:53:05 2026
+**************************************************
+
+No aborted compare points.
+
+1

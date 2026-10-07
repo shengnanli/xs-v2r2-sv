@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/WrBypass_32
+Implementation : i:/WORK/WrBypass_32
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 08:33:19 2026
+**************************************************
+
+No aborted compare points.
+
+1

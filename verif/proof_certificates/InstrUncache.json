@@ -1,0 +1,145 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:26:31Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/InstrUncache",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/InstrUncache.sv",
+    "sha256": "6d26efadfd210dde739273055d517592b7e3685e4907357200f4c5471474b335"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/InstrMMIOEntry.sv",
+    "sha256": "c899b2272c8dca427ef21545aaadeaaa5f6fa98718d52660c3977a7fb3915088"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter1_InsUncacheResp.sv",
+    "sha256": "cf2e000db9e615f16683bfd8479a7586fc8a58eda71b03c5b852db57ab57c81f"
+   }
+  ],
+  "golden_sha256": "777848e314fb1021e3418993a132fc6cbc1a5c2ff1fc3af66c4995ccfd9b6836",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/InstrMMIOEntry.sv",
+    "sha256": "eb863294e0ade7cf354c4e7923faa0a571c43a8b490f0c09dbbc054838502371"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Arbiter1_InsUncacheResp.sv",
+    "sha256": "e3b50283fbf056faa04e39a191230d9c1e7320629a946c1c4f4d8284fa3d2a7c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/InstrUncache.sv",
+    "sha256": "4a9ce67bb44ad68347fc587a1c4356d6d7ce703478971621c9e21123648e9633"
+   }
+  ],
+  "impl_sha256": "3c57ec4349e83c5a17fbe9fff961ed7406da004072f6c5027c0d48cebd190379",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "649d4b8347f230a25cd5611cd7f559811b16e2f60bb9cf72b6e5ff6d8fff3d46",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 205,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "0005562422d1c9a3093a656d963aeccc0f52c9094603a15e0802a568f1064c22"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "e4bb33da896039f5e185096126b6beb7b1ec42eb83ca3b17a50c64d7a0e5f17b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "4a32bff0d1a23fa2b14d3495a98d9500d440fe97c684eef7e63bbe7bacbff97d",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh InstrUncache InstrUncache",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "dddbd53495a6848e41008ba4b2cc541c0441e36b8f06da92eae89948242ccd33",
+ "run_id": "InstrUncache-20261006T152149Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/InstrUncache.tcl",
+    "sha256": "de545409c3a7fd368e56e4503249b64b7731e44e7ab105699102e29117dcaa6f"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/InstrUncache/fm_pins_pre.tcl",
+    "sha256": "0005562422d1c9a3093a656d963aeccc0f52c9094603a15e0802a568f1064c22"
+   }
+  ],
+  "sha256": "65da313e38a82dc83b30ce0105ee8dba722519b9cd4f38808e32bdd84cb65aec"
+ },
+ "target": "InstrUncache",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "InstrUncache",
+ "variant": "InstrUncache",
+ "verdict": "SUCCEEDED"
+}

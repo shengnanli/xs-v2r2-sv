@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/SyncDataModuleTemplate__64entry
+Implementation : i:/WORK/SyncDataModuleTemplate__64entry
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 09:42:25 2026
+**************************************************
+
+No unverified compare points.
+
+1

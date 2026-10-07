@@ -1,0 +1,130 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:37:49Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/RAS",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RAS.sv",
+    "sha256": "7d0cf19ecaaf4bf14d6a517bf60edbed4f7e74af784d322c2a06f1590642954e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RASStack.sv",
+    "sha256": "cf42f1b0e862e53c8cc056542976dd84648270809d5cb74fad768236e0eadd8a"
+   }
+  ],
+  "golden_sha256": "f4085a9f33215e8a61251040e9b9bc53ab2e2810cf604f43a21a95a594271d77",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/RASStack.sv",
+    "sha256": "aa0870c7b2936bf7a3b64af5e0267e9a1dd53dd764c7caff37ae36a73f8ead23"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/RAS.sv",
+    "sha256": "e8c593a77c2d8bf61d872b6fcda42ae548001f4826a5796edf071615fe9b64fd"
+   }
+  ],
+  "impl_sha256": "79fe606148944aff5b6bd05cfc999f838201aef92a6b84e09d775c1b7300d75b",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "c2803106b1b537c13cb4b19b3dd38d8251a78819fee675fcd401154c93047b80",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 6592,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "c288d351a3cd603e756f1507f61134a9600fa6a0784208832645c58066b10128"
+  },
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "cce1e8a38a6a16ae08a75e95f31d0a6f6fceed57a778a2b51f31f2404e24bff4",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "41c0688e9c9e018621ae9dcebc9af9d72c2c909e7084cb4deebddc34fec79f39",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh RASTop RAS",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "4e15f7a101ce417d8eb3edcba92f567d417a5fc40849a86922c31ff6b0d59652",
+ "run_id": "RAS-20261006T122222Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/RASTop/fm_pins_pre.tcl",
+    "sha256": "c288d351a3cd603e756f1507f61134a9600fa6a0784208832645c58066b10128"
+   }
+  ],
+  "sha256": "e7e990c3e4a39afba8b8b2def9dbb349073d2e577ea58bd3da8b8bb62d1b9a5a"
+ },
+ "target": "RAS",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RASTop",
+ "variant": "RAS",
+ "verdict": "SUCCEEDED"
+}

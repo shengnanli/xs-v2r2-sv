@@ -193,3 +193,11 @@ pincheck:
 	    ../../../evidence/6a791d008f45/Composer_prepin/unread_points.txt
 
 simv: | assemblycheck pincheck
+
+# ★FM impl 侧不再共读 golden WrBypass_32（集成者 2026-10-06 裁定，data_mem_8x4 路线 (b)）★
+# golden WrBypass_32 例化 data_mem_8x4（firtool 2R1W 带掩码 ram），它推导不出 MC 存储契约模板、也不是 FM target，
+# 挂在 impl 闭包里会让本目标证书递归复核不过。改读已签重写件 rtl/frontend/WrBypass_32.sv（寄存器实现，核在
+# rtl/frontend/WrBypass.sv / rtl/common/IndexableCAMTemplate.sv / rtl/common/xs_PlruReplacer.sv）。只改 FM 的 impl 侧
+# （target-specific），UT 的双例化闭包不变。
+fm-Composer: RTL_SRCS += $(RTL_DIR)/frontend/WrBypass_32.sv
+fm-Composer: RTL_GOLDEN_DEPS := $(filter-out $(GOLDEN_RTL)/WrBypass_32.sv $(GOLDEN_RTL)/IndexableCAMTemplate_32.sv $(GOLDEN_RTL)/data_mem_8x4.sv,$(RTL_GOLDEN_DEPS))

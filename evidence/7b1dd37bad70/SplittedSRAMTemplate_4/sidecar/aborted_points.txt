@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/SplittedSRAMTemplate_4
+Implementation : i:/WORK/SplittedSRAMTemplate_4
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 08:31:28 2026
+**************************************************
+
+No aborted compare points.
+
+1

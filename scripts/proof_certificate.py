@@ -499,9 +499,11 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
         if not base.endswith('.sv'):
             return 'green_child_impl_golden_unexpected_path:%s:%s' % (child, base or '?')
         mod = base[:-3]
-        if mod in _seen:
-            continue
-        _seen.add(mod)
+        # ★MC 命中按「当前层」计（2026-10-06 集成者裁定）★：`_seen` 只给递归去重 / 防环用，不许吞掉本层的 hit。
+        #   反例（FTB）：FTB 自己 impl 挂 array_1 / sram_array_…_bp_ftb，又挂 golden SRAMTemplate_36（其证书也挂这两份）；
+        #   旧写法先在递归里把它们记进共享的 `_seen`，回到 FTB 本层就 `continue` 掉，本层 0 hit
+        #   ⇒ 如实记着 MC_MEMORY_CONTRACT 的 FTB / FTBBank 证书被判 external_dependency_spurious。
+        #   MC 分支是逐条复算、无副作用、不递归，每层每条照查、照计 hit；只有走证书递归的 FM target 才用 `_seen` 去重。
         # (0) ★codex 0222★ 精确命中 MC 存储契约登记表：从 G1 复算登记的 sha / 端口 / 存储语义 / 子模块链，
         #     并核对使用形态。命中后不再要求它是 FM target（存储层不重写）；登记了但复算不过 = 红，不往下落。
         if _mc is None:
@@ -523,6 +525,9 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
             if _mc_hits is not None:
                 _mc_hits.append(mod)
             continue
+        if mod in _seen:
+            continue
+        _seen.add(mod)
         # (i) 那个模块必须自身是 FM target —— 与 D57 尾条同一条判据，不许在这里放松
         if fm_targets is None:
             return 'green_child_impl_golden_universe_unavailable:%s' % child

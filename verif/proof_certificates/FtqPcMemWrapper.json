@@ -1,0 +1,133 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:22:49Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/FtqPcMemWrapper",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FtqPcMemWrapper.sv",
+    "sha256": "91b278c8a09f328bc107d272fea68031bf115f0fbafe3790cf188fcd30ec0d40"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate_FtqPC_64entry.sv",
+    "sha256": "c1d1fce146ac56992785f8e236151f4a23138fc27fe74c0c59d85ad540d1cd72"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule_FtqPC_16entry.sv",
+    "sha256": "375703a2f34a417d8d5dec25230c4caf443b888a50eee6fad70fd81460b53687"
+   }
+  ],
+  "golden_sha256": "acce6d405deff9c02abc7910e6cb881c8b543d065722ee5d15c1269cb9a9ec71",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_DataModule.sv",
+    "sha256": "879ed4221bd71d51d456dec4c8e8a701e8361bb94e5466a0ecd8d2a3e4cb6e1f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_SyncDataModule.sv",
+    "sha256": "79d4dfdbed51fddadb93dea11c71a8d330257bf9a6797105dff15d22c18a170f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/FtqPcMemWrapper.sv",
+    "sha256": "e1ca121f1e719adf3de1777584873f8232829276749c86a76deeb6c2d43f0230"
+   }
+  ],
+  "impl_sha256": "35517bcbb2e542df933732a50bed413180802e162aa6bb58a2c4738de6c6de3c",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "2dc81989c31fc9b5f1d18c3499121adf5f381b21ae2a78c26558bb03a09e9b14",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 7166,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "d70bf8da0d9986f93e288a49a599708a00cbffc068290a174a9bc2310c7dbb39",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh FtqPcMemWrapper FtqPcMemWrapper",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "18e1ae8c8aa4749ab31bd1cff0d1c433e50b3dfc7102b4d5d151ac60b7aee428",
+ "run_id": "FtqPcMemWrapper-20261006T135146Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "FtqPcMemWrapper",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FtqPcMemWrapper",
+ "variant": "FtqPcMemWrapper",
+ "verdict": "SUCCEEDED"
+}

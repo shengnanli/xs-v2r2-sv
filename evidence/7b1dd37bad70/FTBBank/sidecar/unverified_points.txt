@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/FTBBank
+Implementation : i:/WORK/FTBBank
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 08:11:56 2026
+**************************************************
+
+No unverified compare points.
+
+1

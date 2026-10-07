@@ -314,9 +314,9 @@ FM_REF_DEPS_Predictor = ClockGate.sv Composer.sv DelayN.sv DelayNWithValid.sv \
   SplittedSRAMTemplate_4.sv TageBTable.sv TageTable.sv TageTable_1.sv \
   TageTable_2.sv TageTable_3.sv Tage_SC.sv WrBypass.sv \
   WrBypass_32.sv WrBypass_33.sv WrBypass_41.sv WrBypass_43.sv \
-  array_1.sv array_1_ext.v array_2.sv array_2_ext.v \
-  array_3.sv array_3_ext.v array_4.sv array_4_ext.v \
-  array_5.sv array_5_ext.v array_6.sv array_6_ext.v \
+  array_1.sv array_2.sv \
+  array_3.sv array_4.sv \
+  array_5.sv array_6.sv \
   data_mem_0_4x2.sv data_mem_0_8x3.sv data_mem_16x12.sv data_mem_8x4.sv \
   sram_array_1p128x24m6s1h0l1b_bp_sc.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv \
   sram_array_1p512x24m12s1h0l1b_bp_tage.sv sram_array_1p512x40m10s1h0l1b_bp_ftb.sv
@@ -352,3 +352,22 @@ fm-pins-smoke:
 	 if [ "$$ok" != 1 ] || [ "$$pin" != 1 ] || [ "$$n" != 0 ]; then \
 	   echo "fm-pins-smoke: FAIL"; exit 1; fi; \
 	 echo "fm-pins-smoke: PASS"
+
+# ★FM impl 侧不再共读 golden WrBypass_32（集成者 2026-10-06 裁定，data_mem_8x4 路线 (b)）★
+# golden WrBypass_32 例化 data_mem_8x4（firtool 2R1W 带掩码 ram），它推导不出 MC 存储契约模板、也不是 FM target，
+# 挂在 impl 闭包里会让本目标证书递归复核不过。改读已签重写件 rtl/frontend/WrBypass_32.sv（寄存器实现，核在
+# rtl/frontend/WrBypass.sv / rtl/common/IndexableCAMTemplate.sv / rtl/common/xs_PlruReplacer.sv）。只改 FM 的 impl 侧
+# （target-specific），UT 的双例化闭包不变。
+# Predictor 的 impl 原先整棵子树共读 golden：重写 WrBypass_32 的核文件 WrBypass.sv / IndexableCAMTemplate.sv 同时定义
+# WrBypass / IndexableCAMTemplate 两个模块，与 golden 同名文件不能共存 —— 这两个（及 golden WrBypass 的 data_mem_0_8x3）
+# 也一并换成已签重写件（WrBypass / IndexableCAMTemplate 均为独立 FM target，持证）。golden WrBypass_33 例化的
+# data_mem_16x12 同样是 2R1W 带掩码、推导不出 MC 模板，WrBypass_33 同理换成已签重写件。
+fm-Predictor: RTL_SRCS += $(RTL_DIR)/common/xs_PlruReplacer.sv $(RTL_DIR)/common/IndexableCAMTemplate.sv $(RTL_DIR)/frontend/WrBypass.sv $(RTL_DIR)/frontend/WrBypass_32.sv $(RTL_DIR)/frontend/WrBypass_33.sv
+fm-Predictor: RTL_GOLDEN_DEPS := $(filter-out $(GOLDEN_RTL)/WrBypass_33.sv $(GOLDEN_RTL)/IndexableCAMTemplate_33.sv $(GOLDEN_RTL)/data_mem_16x12.sv $(GOLDEN_RTL)/WrBypass_32.sv $(GOLDEN_RTL)/IndexableCAMTemplate_32.sv $(GOLDEN_RTL)/data_mem_8x4.sv $(GOLDEN_RTL)/WrBypass.sv $(GOLDEN_RTL)/IndexableCAMTemplate.sv $(GOLDEN_RTL)/data_mem_0_8x3.sv,$(RTL_GOLDEN_DEPS))
+# ★厂商 SRAM 叶子 array_*_ext 改回审定的厂商边界（2026-10-06，frontend-asm lane；同 verif/ut/Composer）★
+# 以前 FM 两侧都把 array_*_ext.v 行为模型读进来白盒展开（passing 528967 里绝大部分是 SRAM 存储位）。codex 0222 的 MC 契约里
+# array_*_ext 是 MC_MEMORY_BLACKBOX：只能两侧对称黑盒，impl 侧读进来即 green_child_impl_golden_unexpected_path / mc_blackbox_read。
+# 现在 FM 两侧都不给 .v（ref 从 FM_REF_DEPS_Predictor 去掉，impl 从 RTL_GOLDEN_DEPS 去掉），由 hdlin_unresolved_modules=black_box
+# 两侧对称黑盒；.v 仍给 VCS（UT 不变）。fm_predict 模型（44750，黑盒输入 2920 位）本来就按黑盒计。
+fm-Predictor: RTL_GOLDEN_DEPS := $(filter-out $(addprefix $(GOLDEN_RTL)/,array_1_ext.v array_2_ext.v array_3_ext.v array_4_ext.v array_5_ext.v array_6_ext.v),$(RTL_GOLDEN_DEPS))
+

@@ -1,0 +1,683 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:23:46Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/ICache",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICache.sv",
+    "sha256": "2ae2e6a862c749f93408f7eddac5d5f9660521a41013d9b73123c830e362da18"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheCtrlUnit.sv",
+    "sha256": "f5ccfd267c0081deef56bdc2d51cfacad4a24ce7884ae0ea4a4dd40ab295523b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue1_RegMapperInput_5.sv",
+    "sha256": "c30b22f78e6927b2964570fd20d6f5995a223cbd53e78689ab3dcb9052952ccc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMetaArray.sv",
+    "sha256": "7210ae82378dcb8a50135856018e1ffd2324b69f1e039d3802e30a16e9ddcb2c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate.sv",
+    "sha256": "376ba6fb02554da01aff83b1d8ad202169c33f575d87cbb1a23b167a4655aee5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAMTemplate_1.sv",
+    "sha256": "a0baa05d56654e5a597807de5c99d3940a68d6f84c16aec0ec8ee2265c851e4d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate.sv",
+    "sha256": "7d936907e61a8734a188602bd0fb80423c9dd3f80eabcaf0c9bae743e7c3adf1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_2.sv",
+    "sha256": "c658cb6265e67364c02719cac5c530976ceb2a4e9c4aa106759442bbeae47910"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv",
+    "sha256": "5cd07a307e325aa7dbee27c7a12ae47463829caa114b8fda7e8968cf8f91c002"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array.sv",
+    "sha256": "06bc1822c55794dcecb95b2c5a61a7cd455e381f197bfa08f5de853abb8e0141"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIcacheTag.sv",
+    "sha256": "c63ae70437159aaf2d62828c9dbe563ffb7a1dc3ca0be138882e06e2f91d8ff0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheDataArray.sv",
+    "sha256": "ac606822a419502402e283390e00ca38dee8daddfecd099626e82f72a138aa72"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplateWithFixedWidth.sv",
+    "sha256": "414d210f14834e62161b00d4d937bf12bd54c6b3df41b04b128bf4ead88ce931"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplateWithFixedWidth_4.sv",
+    "sha256": "093a2ded68a7e49af1f7fe91b7a3009f52da43c4eec9ab1ca8677ba58a3d104b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplateWithFixedWidth_12.sv",
+    "sha256": "19737f4ec433921174f901ed599fa95214d685b32856f338db46ea925919bb16"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplateWithFixedWidth_28.sv",
+    "sha256": "dca1e53e1dc4385d53411b25d526fbe15f3feab1c24e4de72a60665301113016"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_4.sv",
+    "sha256": "18af90d47186e4c1782fce302643e45d68b8453d22b5dfaa4370fcfb60079d01"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_8.sv",
+    "sha256": "a9f0ebc0816d29cd186c2f4a36be9ac157e3c79b9145a06631c75be3feecea80"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_16.sv",
+    "sha256": "a06495d8ab2c67ca38f3df1084f4ecc7e13329c3aa499792391f32225e641ea9"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_32.sv",
+    "sha256": "35fbd13eaef6668be6daceaef651bf71c690924d37274bf4d3d3d59e7168004f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv",
+    "sha256": "1f25ac82c0233189fa4a6b93f0668334cdd9ad840f622f3c229aefff222f1b95"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_0.sv",
+    "sha256": "bb8ff854f91d431b6049a1c31360b1c6e91ab8d9593cd03db52ef31e72f36918"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIcacheDataWay0.sv",
+    "sha256": "e3e351b394a355d21c61d2aab72f7461275baf131ac8ba218d169b75c5a0ad9c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIcacheDataWay1.sv",
+    "sha256": "f1ddaa9f8ddbff85fa8357f7ae714d2e891fd4ccbdc114da5fba128cdd6add1c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIcacheDataWay2.sv",
+    "sha256": "a66ed5706376453c7ce96b46a0f7839071273deef210d264c9b0f9e1191f364e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIcacheDataWay3.sv",
+    "sha256": "c31565bd0a64665c31bd19ce6a6a013ed507a2743817fdbea19fdaa451df28b1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMainPipe.sv",
+    "sha256": "5173671b1f5cc21064e1e6a1f14deb8d225ab67546239133ff60bd172b0b5a25"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter2_ICacheMissReq.sv",
+    "sha256": "5f7bf946eee8c3ee5652721ac63b71c58644f0fe8425a85fdde1abacc584d75a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMissUnit.sv",
+    "sha256": "fcd75f422f016f2b54d62aaa161ccb10122ff98697a762bd866bbc34fdec4383"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DeMultiplexer.sv",
+    "sha256": "3a7953324804e4abb05c97b5474906e8289eede6a950b7d82d9c4ec34dcbc53b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DeMultiplexer_1.sv",
+    "sha256": "d513323c4126d67244bd80da3540460e22adbe3bb782bb1174ec6054a81c5643"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MuxBundle.sv",
+    "sha256": "98c16eca3eab43a9a7464a1ba51df0a8e9f818562b6faa8330fe8b5eccc7a995"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter5_MSHRAcquire.sv",
+    "sha256": "dbf7040739819b589bcbac4966ea2c42807e327167f3b82db6bbbc0ff0fd9bb5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FIFOReg.sv",
+    "sha256": "946d8be505458d0de8e754121e8883dc74803d76c2e8fb6994b565ffc325e31f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR.sv",
+    "sha256": "a04bce3f6316944e5167b4f49f1f9d2420c840e7dedf80a63ee3d036ce8faa6e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_1.sv",
+    "sha256": "10fed8ea4ace4f9d0a721686e7129485905e218fec775851759dc41cf3dd7f8a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_2.sv",
+    "sha256": "53b693fb977644702032e2beb862194f9f7efd0ab9ca491f990ceb7d97630490"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_3.sv",
+    "sha256": "1f9dafed586493c960e187f860087e08e5fb9b77d3a42d2631655bc9b4374107"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_4.sv",
+    "sha256": "dce2d1a0d722caadcb4002bac0623fa5ac413850264955999aa4caeea8f21d97"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_5.sv",
+    "sha256": "d3ca229583b90c3545986cafb39fbfc6332c0cb2c71ecd0b4b973b7dea86e76a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_6.sv",
+    "sha256": "b527557635f77af5013303238f209bed9d2829c75ee5334d00a55fd0104b1366"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_7.sv",
+    "sha256": "268f0bb09a43eebe79cc52738538ad3c8e1cc76bf16e2c1b0f5104b5310485b1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_8.sv",
+    "sha256": "f661657461439615073b28facf0981524637d233680d00e90d21e6701c264b05"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_9.sv",
+    "sha256": "efa3bea47faf2afe4e44574c924b94fedf95a50479d54252d1bd1fd8b077ee58"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_10.sv",
+    "sha256": "d431c339dabe1c9b085618eef65c815a45aa38d6d9e4e3d3aaabe61a6d8a4e67"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_11.sv",
+    "sha256": "5a0871e443d17dd9fcde027e16cfb9fef6d0bac68415b532a2919c386e3f741e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_12.sv",
+    "sha256": "bff084735bc7d4ff7ea3787fabc91ca5a87dc27afcc1346e85255e1c90b87266"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheMSHR_13.sv",
+    "sha256": "2d0e75f434259c9c4b645e692a4ff7d8b26db78198c14134eb51410cfa8cdaa1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheReplacer.sv",
+    "sha256": "d98ce7cc983a9836846f859f23e2955bcbacbb21fbd8880b18dcd61ecaa598c7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IPrefetchPipe.sv",
+    "sha256": "37d109fb7c98a02beb6e73f61032d30e2d3bfb2ca3b20426bb4b863edd719e67"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WayLookup.sv",
+    "sha256": "2fbdc8dd0a87de3ccefb689d84721439828469e200d7f818fa955bf882c15ea9"
+   }
+  ],
+  "golden_sha256": "525462b5edb647351e2d9b27d2564528a870e5cecc87f6edd5bc902ee485ac90",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+    "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Arbiter2_ICacheMissReq.sv",
+    "sha256": "382f3cfd19bab86ff37c5f303aef382ca4e188f738d19916e802aa7dad17d8fc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheCtrlUnit.sv",
+    "sha256": "721aeaefa5965a027068a87e6a740626d1826286537426090d926a2e36fd31af"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMainPipe.sv",
+    "sha256": "5b3771fc6b59d15699253ecc4724d38f8c9d59fb5447b5b2bfbfd15d723d1f0a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/IPrefetchPipe.sv",
+    "sha256": "c51e57c83b9193582b7bd11e51fed9cbab826c8e29116f77514dc8ea64c06958"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WayLookup.sv",
+    "sha256": "2dfa3fd222b638790514b460da0a1d9fdc8b929df4ad30ee739d78d73c599fc9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheReplacer.sv",
+    "sha256": "bb217655180db02b89e5d81defc7107e400395a3ef598c0b8e4b36bb95b88feb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_ICacheMSHR_core.sv",
+    "sha256": "8aa6c7f0eab62d713ea50d04deab3f1d8ea83db4e057c35ce097e60df1070497"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR.sv",
+    "sha256": "4a0e045818ce55b049d7d888549641c2a00ddfffdacfb01d878aad17f7b4dcd4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_1.sv",
+    "sha256": "bc09aa317f705208b23f1acaabceb8acd3f58947518b703fb8b51b85f82888da"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_2.sv",
+    "sha256": "2ec3ee19fe961a0767ad2d857a50d15473d8faef1b93acc994c8f73fd0cfcb9d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_3.sv",
+    "sha256": "0787c015fe380dbe2bfa3e609b3326c257922f4d7ff744501e7d8fb89341063b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_4.sv",
+    "sha256": "9a330e4b19ddfb9e5d3660b91f91a78d1b0b04091230a3d2a7771d13ac2fc66b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_5.sv",
+    "sha256": "ecd804c2e05d5fcea1ab8814cac0128a9aac1c43f2af8aac583637c90c01838f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_6.sv",
+    "sha256": "60bfc705400ded10e36ad75e1e559bc33f7fc2cb6ee553976c15d4186d40e2cb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_7.sv",
+    "sha256": "9a9c5603b69f14425d9568b4c9f120698c317614ebf7ef0403641207c15c4bab"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_8.sv",
+    "sha256": "9f35440508457800193889400816832c0656af05506a4bfc7db2d776c1a2aa08"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_9.sv",
+    "sha256": "2095f8813ac51eaa9b0c88abf4ff5d4cc4f73bcb00b238a485e558ba66422b30"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_10.sv",
+    "sha256": "ae153a64c4cb76f2713ceed23c61047cba55e2c21e11bac550110fd003708afd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_11.sv",
+    "sha256": "45676fee353b5fa38d5a0898bfe1bebb4d19cd6aa262b00af583680d7d086a94"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_12.sv",
+    "sha256": "c7495f126fff0e39ebd946fe0e0fffc4a140d02a1b894ffdd45db651e4ddcdfb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMSHR_13.sv",
+    "sha256": "59b7cd8f62aea6a1e975d1ced23a37ccd12ca156edefcbbfbaa58cb070f03652"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_DeMultiplexer_core.sv",
+    "sha256": "ae342f903e17976f50ecd8d80d44cda7bd4112aa34cc1023df75505e73c8288c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/DeMultiplexer.sv",
+    "sha256": "6feb324366ae682083091dc10e5c4d765dbb04f61359d78231a9af1f30a63930"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/DeMultiplexer_1.sv",
+    "sha256": "e0bd18e94cab626dc1b9c5acea67e02a9584baf26773b2fb6ed1921934e6887b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Arbiter5_MSHRAcquire.sv",
+    "sha256": "60dacfd8726f6c2fd4590758b6bdafc228259e463cd6d11369f312efda165a95"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/MuxBundle.sv",
+    "sha256": "ddebdaa83ce061894a5a008f911772aa3359c9ee66996df121037e20ce70fdbc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/FIFOReg.sv",
+    "sha256": "f90db7033f5fda1d3cd36c887b87502660abe13a4a5b5da4bd44fe6a1153c5de"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMissUnit.sv",
+    "sha256": "da39b16f0ab70f2679b1b716dadf21694332b7840ea0fb8bc01fe4fffe8e8350"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_SRAMTemplate_core.sv",
+    "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate.sv",
+    "sha256": "ad2695280acf9eb4f211d79e73688c53f41f88aa171f034c803168c64bd843af"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_2.sv",
+    "sha256": "4d7f8c79ee9f7c63e5b221b6480ebcd5dcf6b1fffc679d89230a527d1ae56ed5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SplittedSRAMTemplate.sv",
+    "sha256": "32e033762f62b146e32db9ac7a1f2be37571e5a60bc4e61b830fbfedb3b7ed91"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SplittedSRAMTemplate_1.sv",
+    "sha256": "50fb8db7af9e40cd0175006d0b6568d5cf8157fbe687b01ec7d0d5caa5aef6c2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/xs_mbist_pipe_core.sv",
+    "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheTag.sv",
+    "sha256": "2b36f7c14ad01edf9d1ad2cac75724558e8a9de62f0065412146691b7d7fd45e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheMetaArray.sv",
+    "sha256": "fca629b94c805d53f32f4fe25df4f2192e9e3459d4cd3250c7e3483cfe69ffb9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_4.sv",
+    "sha256": "ea6cc59c9c3789b9b7615e508eec145e66a039629797813fbe2fd3fe00208873"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_8.sv",
+    "sha256": "22efe8e9ef84f7b6db3bc68a8776a8571566095b3651d8f67b48570c915bfc49"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_16.sv",
+    "sha256": "503ccef9abfcef9d65dd617c314215e6dcb929b0097993c36ea93586fd020cb2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_32.sv",
+    "sha256": "008fb7fb979406ef377f2a79ad1e8eaf06a28c19f0d2f4245ff6ff79ffa7beba"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/SRAMTemplateWithFixedWidth.sv",
+    "sha256": "9412561b13b7e694695ba44e451d1736f6f07e325919313041a0318adcfa3fb0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/SRAMTemplateWithFixedWidth_4.sv",
+    "sha256": "3bd74f8efd84f138c84e835f2b315116e6af458297775fd5a8d1519162d83c18"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/SRAMTemplateWithFixedWidth_12.sv",
+    "sha256": "22db2d263f7f689d9816f09a6d54816dddc48d87d7d8577f5ce3d2fab882880c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/SRAMTemplateWithFixedWidth_28.sv",
+    "sha256": "7967d0787cdd5ce9b6e73b574235654057579956c0a64bda6c52736c20f7f2d6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheDataWay0.sv",
+    "sha256": "c46f716b56ab95576e19768fb44e71cf5d4f7024a84003ea86bb08f6e90f7bed"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheDataWay1.sv",
+    "sha256": "93d46c443ea510db309448d28e32ce15707052c2a4c3f7a39b7ea4302d9236ce"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheDataWay2.sv",
+    "sha256": "e480b17f4626ef730090d723ab2bcbc13fee407664fb0b5837ba0e5221edc63e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheDataWay3.sv",
+    "sha256": "bed12d1d7884b7e93b585870e33bb7d73d8d2337bc2913400041e1330fc132cf"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICacheDataArray.sv",
+    "sha256": "74293241bcb21536c80b307aaa46d3d36da7f544745af752392bf1c177fd865f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/ICache.sv",
+    "sha256": "3fea8e26d58f4d6beb06aa10c66757f40dfa5ceea331cf260fdc8b9bb2f88dc3"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv",
+    "sha256": "5cd07a307e325aa7dbee27c7a12ae47463829caa114b8fda7e8968cf8f91c002"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array.sv",
+    "sha256": "06bc1822c55794dcecb95b2c5a61a7cd455e381f197bfa08f5de853abb8e0141"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv",
+    "sha256": "1f25ac82c0233189fa4a6b93f0668334cdd9ad840f622f3c229aefff222f1b95"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_0.sv",
+    "sha256": "bb8ff854f91d431b6049a1c31360b1c6e91ab8d9593cd03db52ef31e72f36918"
+   }
+  ],
+  "impl_sha256": "5dc486ddc8b8b8ae930873cd88d9219c277582cab9447ed32c2fef2cad8886e3",
+  "repo_impl_files": 52
+ },
+ "mc_memory_objects": [
+  "sram_array_1p128x74m37s1h0l1b_icsh_tag",
+  "array",
+  "sram_array_1p256x66m66s1h0l1b_icsh_dat",
+  "array_0"
+ ],
+ "native_facts_sha256": "c5b40fea6d3b88057debda4a6cc0f1ef71d145e8bd3b28eaf9422b126c153145",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 21174,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/ICache.json",
+    "sha256": "57f657bf0f54066fb53102229443ebf4a95722266bc1e2069bf63227ef5dae32"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "assembly",
+  "pin_scripts": {
+   "fm_pins.tcl": "cdcbb6da807aeae722c18f8268369e30d3718f50c118fb03b6053dec302a94ab",
+   "fm_pins_pre.tcl": "ea8291f571f5dad4e65bcea70b90f6a3d031034c720176356449ab51d6d3aa74"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "b614ba19a63773d241598e5b5135ff8aa76b1d3213fdfbbdb11fab7dfedb871f",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "7c75c86b58c297b93b100e7e765030c7d61b7319742228a9b49ebe89b1ea2bf9",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh ICache ICache",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "14821b1a8beb63a1e44aaa29498dbd0c50e080b617aeb29a7892cd3093448d75",
+ "run_id": "ICache-20261006T144109Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/ICache.tcl",
+    "sha256": "e210848ca7ca20276ed5d8270793021566cef3d2440529bcfc17bcda7e294a3c"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/ICache/fm_pins_pre.tcl",
+    "sha256": "ea8291f571f5dad4e65bcea70b90f6a3d031034c720176356449ab51d6d3aa74"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/ICache/fm_pins.tcl",
+    "sha256": "cdcbb6da807aeae722c18f8268369e30d3718f50c118fb03b6053dec302a94ab"
+   }
+  ],
+  "sha256": "815617a7e754abe381addf28c3e756ab97783739c7a873228d83e0f8ca33ecc7"
+ },
+ "target": "ICache",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "ICache",
+ "variant": "ICache",
+ "verdict": "SUCCEEDED"
+}

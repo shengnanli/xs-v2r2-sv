@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/DataModule__16entry_4
+Implementation : i:/WORK/DataModule__16entry_4
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 09:39:44 2026
+**************************************************
+
+No failing compare points.
+
+1

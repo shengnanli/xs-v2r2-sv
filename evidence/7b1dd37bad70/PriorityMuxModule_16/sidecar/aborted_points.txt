@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/PriorityMuxModule_16
+Implementation : i:/WORK/PriorityMuxModule_16
+Version        : V-2023.12-SP3
+Date           : Tue Oct  6 09:12:10 2026
+**************************************************
+
+No aborted compare points.
+
+1

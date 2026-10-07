@@ -1,0 +1,263 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-06T16:39:37Z",
+ "generator": {
+  "run_context_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/7b1dd37bad70/SCTable_1",
+  "version": 1
+ },
+ "impl_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SCTable_1.sv",
+    "sha256": "df157e937fe0eb15c94bd1b268b4be5c38f24b38d3f0f0002fc65fa9ec4572d4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_68.sv",
+    "sha256": "3459d557dc6c198e3f228fbb8c788932c10cbd3ddde00cd34b9cdea487fd536d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WrBypass_33.sv",
+    "sha256": "72ae6263c313dbb17151e812fe8fc50d5fe50172003c05fc9b5ed2a1aa550676"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IndexableCAMTemplate_33.sv",
+    "sha256": "f6a063bf079a58fb7305dd51f9c889261c15a7686f9bf08b618c38b325cc88e5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/data_mem_16x12.sv",
+    "sha256": "15028dbf010167820b6a2762d3ba6880c17949a10b0154624fde3844f77cb476"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
+    "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_5.sv",
+    "sha256": "75f44affa1722d3787eda926dc82ad85da225c9cfad1e8dcb054b11f3c165dc0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeSc_1.sv",
+    "sha256": "0b163209ff0baf811f27c3b334450330c82f9533e8da0105833f79f0fa77521c"
+   }
+  ],
+  "golden_sha256": "956c886cac7e67bb5d071ed7d0b5ad7bfc7f67b89a91e48414e6a34c76044bea",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/sctable_pkg.sv",
+    "sha256": "1061b9a7ec4598441d3a0c9cfd4710f1d14a8da6802261a81c8027784a4f3b8b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/SCTable.sv",
+    "sha256": "85c864194a822f01ebf413f3427a2fe9efdd37ccf66a1640b296c3afed1a879d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/SCTable_1.sv",
+    "sha256": "8b953df57cae245804e2eb05031ae1b704d3aeaaffba193e8782718502f83bda"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/SCTable_2.sv",
+    "sha256": "d65be0e2efde3cc12c0b556099c57c53a62941c40db4a2210dc7a7458f355fbe"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/SCTable_3.sv",
+    "sha256": "5a5205ded8d63963dc1874362ee232367af660a29ac9c5a7ca9c68f2527acbce"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_SRAMTemplate_core.sv",
+    "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_68.sv",
+    "sha256": "8713e8f6983e988f8ce8c6fa2463ff39cd0d9941961537258bc2ec003e249336"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_PlruReplacer.sv",
+    "sha256": "bf4220141023899761e980d96195b8b35d44b6bdf1e8e324a5dbca8e38903709"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/IndexableCAMTemplate.sv",
+    "sha256": "3e9279529e9d69b83df73d199c4c5fac81205b0040967fffa168cbea54107198"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass.sv",
+    "sha256": "96a5a297ddfec217bfb29a0c8fe01b8a64d89681561bbc12de4800160f50a916"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/WrBypass_33.sv",
+    "sha256": "7f1abbd3534afe5a38bc29da3c2eb60802c1fe304b1776fc5eb589d00c194189"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/xs_mbist_pipe_core.sv",
+    "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSc.sv",
+    "sha256": "462b45d44fc9ec5b5b2b02fcad0592affba31fd5896eadf6ccfe3a1300612c8c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSc_1.sv",
+    "sha256": "a8995e7c42ecc818ff4d51ca1fed21de1d79665bb60e52d339465e6057279486"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSc_2.sv",
+    "sha256": "894a2fc46b2b56a86add2303a1d8977bd9e54b4f30345f020742477c10fb9919"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSc_3.sv",
+    "sha256": "9c2b0a3e9e1773e3a9c0f0d53bf119e1819b00c24e1fdbb4934fe6a4873f444f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistClockGateCell.sv",
+    "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p128x24m6s1h0l1b_bp_sc.sv",
+    "sha256": "268ce4c3ee1b32b2daa087af704177bef2ed8ad7f5c2c5f12adafe3e6ce6cf2f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_5.sv",
+    "sha256": "75f44affa1722d3787eda926dc82ad85da225c9cfad1e8dcb054b11f3c165dc0"
+   }
+  ],
+  "impl_sha256": "d846d1981db22640932daaf4ee3ac1ee251d0380bc148582f3a4712594066216",
+  "repo_impl_files": 17
+ },
+ "mc_memory_objects": [
+  "sram_array_1p128x24m6s1h0l1b_bp_sc",
+  "array_5"
+ ],
+ "native_facts_sha256": "90ebdb3691783ab63a1077f7293a1c0ebcacfe97eddd0bcc2eb71fb9fcf487ee",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1123,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "7b1dd37bad70afe886977a9644c8b71a5b642d0f",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6a268612fc748408b1db69624e4a080474df8c6ecde16e40ab9e16cecf2c8191",
+ "provisional": false,
+ "receipt_sha256": "75dae6d3dc03faf473d4ea04c32477c04ec98a7cf295e7798ed2aa4f69ac0d1e",
+ "reproduce": {
+  "command": "PROOF_COMMIT=7b1dd37bad70afe886977a9644c8b71a5b642d0f scripts/run_proof.sh SCTable SCTable_1",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "e31352dc5f0a8cf5580bf5e1674fd1e4c99f24fa63143d2110993c6cbf9a04bc",
+ "run_id": "SCTable-20261006T131654Z-7b1dd37ba",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/SCTable_1.tcl",
+    "sha256": "d5d07a59f9fd557baabc67119f690b5df48a43693eaaf7df9c6046c088f22c33"
+   }
+  ],
+  "sha256": "73de92732a9c705d61bbfad6bc152b5f09acafe40cfd95b895a9ed8275b1c888"
+ },
+ "target": "SCTable_1",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "SCTable",
+ "variant": "SCTable_1",
+ "verdict": "SUCCEEDED"
+}

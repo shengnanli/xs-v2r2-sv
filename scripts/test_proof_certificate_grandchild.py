@@ -90,10 +90,21 @@ def _grand_cert(fx, verdict='SUCCEEDED', golden_text=GRAND_TEXT):
     return doc
 
 
+MC_RAM = 'ram_16x25.sv'
+
+
+def _mc_entry():
+    g = pathlib.Path(os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical') / 'golden-rtl'
+    b = (g / MC_RAM).read_bytes()
+    return b, {'path': 'golden-rtl/%s' % MC_RAM, 'kind': 'golden', 'sha256': T._sha(b)}
+
+
 def build(case):
     """按 case 造夹具。返回 (fixture, judge_result)。"""
     # golden 文件表是模块级的，夹具在 __init__ 里读它 —— 加一项再造夹具
     T.GOLDEN_FILES[GRAND_SV] = GRAND_TEXT
+    mc = case == 'mc_shared_with_grand'
+    mc_bytes, mc_e = _mc_entry() if mc else (None, None)
 
     def cert_mutate(doc):
         """把 GrandGolden 的 golden 文件塞进 **ChildLeaf 的 impl 闭包** ——
@@ -101,6 +112,14 @@ def build(case):
         impl = doc['input_closure']['impl']
         impl.append({'path': 'golden-rtl/%s' % GRAND_SV, 'kind': 'golden',
                      'sha256': T._sha(GRAND_TEXT.encode())})
+        if mc:
+            # FTB 形状（2026-10-06）：本层 impl 先挂一个 golden FM target（其证书也挂同一份 MC 存储模型），
+            # 再在本层自己挂同一份 MC 模型。本层的 MC hit 必须照计，external_dependency 不得判 spurious。
+            impl.append(dict(mc_e))
+            gold = doc['input_closure']['golden']
+            gold.append(dict(mc_e))
+            doc['input_closure']['golden_sha256'] = PC.closure_digest(gold)
+            doc['external_dependency'] = PC.EXTERNAL_DEPENDENCY_MC
         doc['input_closure']['impl_sha256'] = PC.closure_digest(impl)
         return doc
 
@@ -116,11 +135,17 @@ def build(case):
             doc = _grand_cert(fx, verdict='PARTIAL')
         else:
             doc = _grand_cert(fx)
+        if mc:
+            for k in ('impl', 'golden'):
+                doc['input_closure'][k].append(dict(mc_e))
+                doc['input_closure'][k + '_sha256'] = PC.closure_digest(doc['input_closure'][k])
+            doc['external_dependency'] = PC.EXTERNAL_DEPENDENCY_MC
         fx._w('verif/proof_certificates/%s.json' % GRAND,
               json.dumps(doc, ensure_ascii=False, indent=1, sort_keys=True) + '\n')
 
     try:
-        fx = T.Fixture(cert_mutate=cert_mutate, post_commit=post_commit)
+        kw = dict(extra_golden={MC_RAM: mc_bytes}, mc_repo=True) if mc else {}
+        fx = T.Fixture(cert_mutate=cert_mutate, post_commit=post_commit, **kw)
         return fx, fx.judge()
     finally:
         T.GOLDEN_FILES.pop(GRAND_SV, None)
@@ -152,11 +177,15 @@ def main():
     _, r = build('not_fm_target')
     expect_reason('负例D 挂 golden + 不是 FM target', r, 'impl_golden_')
 
+    _, r = build('mc_shared_with_grand')
+    check('正例2 本层与 golden 子层共用同一 MC 对象 -> 本层计 hit、放行', r is True,
+          '' if r is True else '被拒了: %r' % (r,))
+
     total = len(_RESULTS)
     bad = [n for n, ok, _ in _RESULTS if not ok]
     print('\n断言 %d 条，未过 %d 条' % (total, len(bad)))
-    if total != 5:
-        print('★断言条数 %d != 5 —— 有用例被跳过，判失败★' % total)
+    if total != 6:
+        print('★断言条数 %d != 6 —— 有用例被跳过，判失败★' % total)
         return 1
     rc = 1 if bad else 0
     if SABOTAGE:
