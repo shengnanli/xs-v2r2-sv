@@ -20,8 +20,8 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED        7518
-# status GAP            16491
+# status MEASURED        7514
+# status GAP            16495
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -116,7 +116,7 @@ ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_6.in1To
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_7	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_7	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_7.in1ToN	[ExeUnit] accept vec should no more than 1, %b	A_FUNC_ASSERT	MEASURED	2	0	0	Dispatcher_7	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.intExuBlock.exus_7.in1ToN	[ExeUnit] there is a inst not dispatched to any fu	A_FUNC_ASSERT	MEASURED	1	0	0	Dispatcher_7	yes	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_13	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	fuOutValidOH %b should be one-hot)\n	A_FUNC_ASSERT	MEASURED	2	0	0	ExeUnit_13	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.Vfma	Vfalu OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VFMA	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.VialuFix	VialuF OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VIAluFix	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus.Vimac	VialuF OpType not supported	A_FUNC_ASSERT	MEASURED	1	0	0	VIMacU	yes	assert_is_cycle_visible_behavior	
@@ -11228,17 +11228,17 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.memScheduler.IssueQueueVld
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.memScheduler.IssueQueueVlduVstuVseglduVsegstu.entries	simpEntry_1_in_cnt	B_CONTROL	GAP	1	1	1	EntriesVlduVstuVseglduVsegstu	yes	FC/read_by_logic:EntriesVlduVstuVseglduVsegstu.entryInValidVec_3_probe	rsEntriesSimp_0_io_commonOut_entryInValid} + 2'({1'h0, _othersEntriesSimp_1_io_commonOut_entryInValid} + {1'h…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.memScheduler.IssueQueueVlduVstuVseglduVsegstu.entries	simpEntry_1_out_deq_cnt	B_CONTROL	GAP	1	1	1	EntriesVlduVstuVseglduVsegstu	yes	FC/read_by_logic:EntriesVlduVstuVseglduVsegstu.entryOutDeqValidVec_3_probe	triesSimp_0_io_commonOut_entryOutDeqValid} + 2'({1'h0, _othersEntriesSimp_1_io_commonOut_entryOutDeqValid} + …
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.memScheduler.IssueQueueVlduVstuVseglduVsegstu.entries	simpEntry_1_out_trans_cnt	B_CONTROL	GAP	1	1	1	EntriesVlduVstuVseglduVsegstu	yes	FC/read_by_logic:EntriesVlduVstuVseglduVsegstu.entryOutTransValidVec_3_probe	DeqValid})}))}); wire [3:0] _GEN_26 = {2'h0, 2'({1'h0, _othersEntriesSimp_1_io_commonOut_entryOutTransValid} …
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX0_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX1_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN_0
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX2_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN_1
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX3_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN_2
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX4_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	no	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN_3
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX0_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX1_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN_0
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX2_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN_1
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX3_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN_2
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	VFEX4_fire_cnt	C_DIAG	MEASURED	1	0	0	ExuBlock_2	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	ExuBlock_2._GEN_3
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	alu_fire_0_cnt	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock	brh_fire_0_cnt	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vfma	B_CONTROL	MEASURED	1	1	0	ExeUnit_13	no	FC/drives_child_input:ExeUnit_13.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vialuFix	B_CONTROL	MEASURED	1	1	0	ExeUnit_13	no	FC/drives_child_input:ExeUnit_13.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vimac	B_CONTROL	MEASURED	1	1	0	ExeUnit_13	no	FC/drives_child_input:ExeUnit_13.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vppu	B_CONTROL	MEASURED	1	1	0	ExeUnit_13	no	FC/drives_child_input:ExeUnit_13.clk_en_3_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vfma	B_CONTROL	GAP	1	1	1	ExeUnit_13	yes	FC/drives_child_input:ExeUnit_13.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vialuFix	B_CONTROL	GAP	1	1	1	ExeUnit_13	yes	FC/drives_child_input:ExeUnit_13.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vimac	B_CONTROL	GAP	1	1	1	ExeUnit_13	yes	FC/drives_child_input:ExeUnit_13.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus	clock_gate_en_vppu	B_CONTROL	GAP	1	1	1	ExeUnit_13	yes	FC/drives_child_input:ExeUnit_13.clk_en_3_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vfalu	B_CONTROL	GAP	1	1	1	ExeUnit_14	yes	FC/drives_child_input:ExeUnit_14.clk_en_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vfcvt	B_CONTROL	GAP	1	1	1	ExeUnit_14	yes	FC/drives_child_input:ExeUnit_14.clk_en_1_probe	喂给子实例 ClockGate 的 E 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfExuBlock.exus_1	clock_gate_en_vipu	B_CONTROL	GAP	1	1	1	ExeUnit_14	yes	FC/drives_child_input:ExeUnit_14.clk_en_2_probe	喂给子实例 ClockGate 的 E 端口（input）

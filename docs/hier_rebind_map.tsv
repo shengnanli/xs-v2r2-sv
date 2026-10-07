@@ -2157,6 +2157,15 @@ ExeUnit_10	ClockGate_1	ClockGate	SAME_PATH	ClockGate_1	ClockGate		auto_same
 ExeUnit_10	Falu	FAlu	SAME_PATH	Falu	FAlu		auto_same	
 ExeUnit_10	Fmac	FMA	SAME_PATH	Fmac	FMA		auto_same	
 ExeUnit_10	in1ToN	Dispatcher_10	SAME_PATH	in1ToN	Dispatcher_10		auto_same	
+ExeUnit_13	ClockGate	ClockGate	SAME_PATH	ClockGate	ClockGate		auto_same	
+ExeUnit_13	ClockGate_1	ClockGate	SAME_PATH	ClockGate_1	ClockGate		auto_same	
+ExeUnit_13	ClockGate_2	ClockGate	SAME_PATH	ClockGate_2	ClockGate		auto_same	
+ExeUnit_13	ClockGate_3	ClockGate	SAME_PATH	ClockGate_3	ClockGate		auto_same	
+ExeUnit_13	Vfma	VFMA	SAME_PATH	Vfma	VFMA		auto_same	
+ExeUnit_13	VialuFix	VIAluFix	SAME_PATH	VialuFix	VIAluFix		auto_same	
+ExeUnit_13	Vimac	VIMacU	SAME_PATH	Vimac	VIMacU		auto_same	
+ExeUnit_13	Vppu	VPPU	SAME_PATH	Vppu	VPPU		auto_same	
+ExeUnit_13	in1ToN	Dispatcher_13	SAME_PATH	in1ToN	Dispatcher_13		auto_same	
 ExeUnit_14	ClockGate	ClockGate	SAME_PATH	ClockGate	ClockGate		auto_same	
 ExeUnit_14	ClockGate_1	ClockGate	SAME_PATH	ClockGate_1	ClockGate		auto_same	
 ExeUnit_14	ClockGate_2	ClockGate	SAME_PATH	ClockGate_2	ClockGate		auto_same	
@@ -2221,6 +2230,11 @@ ExuBlock_1	exus_1	ExeUnit_9	SAME_PATH	exus_1	ExeUnit_9		auto_same
 ExuBlock_1	exus_2	ExeUnit_10	SAME_PATH	exus_2	ExeUnit_10		auto_same	
 ExuBlock_1	exus_3	ExeUnit_9	SAME_PATH	exus_3	ExeUnit_9		auto_same	
 ExuBlock_1	exus_4	ExeUnit_10	SAME_PATH	exus_4	ExeUnit_10		auto_same	
+ExuBlock_2	exus	ExeUnit_13	SAME_PATH	exus	ExeUnit_13		auto_same	
+ExuBlock_2	exus_1	ExeUnit_14	SAME_PATH	exus_1	ExeUnit_14		auto_same	
+ExuBlock_2	exus_2	ExeUnit_15	SAME_PATH	exus_2	ExeUnit_15		auto_same	
+ExuBlock_2	exus_3	ExeUnit_16	SAME_PATH	exus_3	ExeUnit_16		auto_same	
+ExuBlock_2	exus_4	ExeUnit_17	SAME_PATH	exus_4	ExeUnit_17		auto_same	
 FAlu	falu	FloatAdder	DEEPER	u_core.falu	FloatAdder		auto_deeper	
 FCVT	fcvt	FPCVT	DEEPER	u_core.fcvt	FPCVT		auto_deeper	
 FDivSqrt	fdiv	FloatDivider	ONE_SITE	u_core.u_fdiv	FloatDivider		auto_one_site	
