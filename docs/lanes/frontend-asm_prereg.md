@@ -445,3 +445,18 @@ fm_verdict 拒绝出 receipt（receipt.json 不存在，证据目录只有 fm.lo
 剩余：§6.4 的两项公共核心改动（MC 模板覆盖 2R1W 带掩码 ram，或 Composer/TageBTable/Tage_SC/Predictor 不再共读 golden WrBypass_32；
 validate_impl_golden_certified 的 `_seen` 共享）落地后，按 PROOF_COMMIT 重出受影响 child 的证书、重写 allow 的 Predictor sha，再跑一次 official。
 
+### 第三批：集成者裁定后的收尾（§7）
+
+| 目标 | PROOF_COMMIT / evidence | 预测 | 实测 | fm_predict check | 证书 sha256（文件） |
+|---|---|---|---|---|---|
+| TageBTable | bb871960e / evidence/bb871960e9ea | SUCCEEDED 396 | SUCCEEDED 396 | rc=0 | 9058b0b2c 提交 |
+| Tage_SC | bb871960e / evidence/bb871960e9ea | PASS_DEAD_REF 16112 | PASS_DEAD_REF 16112（constant 4） | rc=0 | 同上 |
+| Composer | bb871960e / evidence/bb871960e9ea | PASS_DEAD_REF 42060 | PASS_DEAD_REF 42060（constant 664） | rc=0 | 同上 |
+| Predictor（ext 白盒） | bb871960e / evidence/bb871960e9ea/Predictor | SUCCEEDED 528967 | SUCCEEDED 528967（17872 s） | 红（模型 44750 按黑盒计） | 证书复核 unexpected_path:array_1_ext.v，作废 |
+| Predictor（ext 黑盒，§7.3） | 4257175da / evidence/4257175daab2/Predictor | passing + constant = 44750 | SUCCEEDED 44023 + constant 727 = 44750（1181 s） | **rc=0** | 693ea0ca…（97d0091c5） |
+| **Frontend** | d6d8b726f / evidence/d6d8b726f919/Frontend | PASS_DEAD_REF 30093 / constant 259 / unread 64 | **PASS_DEAD_REF 30093 / constant 259 / unread 64**，failing / unmatched / blackbox_out 0，黑盒 16 对象，331 s | 余额 2（BB_IN_RE 注释误数，已登记） | d5730066d09db884949bf160f633f768a5b399509cf62a6f921ff992dc08f629 |
+
+Frontend receipt.json sha256 `1a52bbf99ec0e820142a7eb85d4dd6a125c44922a0ba610009f0c17f4fe588ee`；证书 verif/proof_certificates/Frontend.json（external_dependency=MC_MEMORY_CONTRACT，
+经由 ICache / Predictor），在 HEAD 上 validate_certificate_current = True；八个 green child 证书全部 CURRENT。check_lane_receipts rc=0。
+复跑：`bash scripts/run_proof.sh Frontend Frontend < /dev/null`；`python3 scripts/make_proof_certificate.py --repo . --evidence evidence/<c12>/Frontend`。
+
