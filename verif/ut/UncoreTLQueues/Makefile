@@ -97,6 +97,30 @@ FM_REF_DEPS_Queue2_TLBundleE_1 = ram_sink_2x8.sv
 # 不合并重复寄存器：比较点 = 寄存器位 + 输出位，fm_predict 模型精确适用；常量段 ram 位
 # 在 merge=true 下两侧合并不对称（TLBuffer_13 Makefile 实测同一批 ram 位），关掉是加强不是放宽。
 FM_MERGE_DUP = false
+# ★FM impl 侧逐 variant 只读自己那一份 ram（2026-10-11，agent/memblock-asm）★：UT 两侧仍共用上面整张 RTL_GOLDEN_DEPS；
+# FM 的 impl 闭包若带上全部 21 份 ram，证书复核按 codex 0222 判「impl 挂的 MC 存储对象在 ref 侧没有同一份」
+# （green_child_impl_golden_mc_not_shared）。每个 variant 的 impl 侧 golden 依赖 = 它的 FM_REF_DEPS（同一份，两侧共读）。
+fm-Queue2_TLBundleA_6: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x356.sv
+fm-Queue2_TLBundleA_7: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x406.sv
+fm-Queue2_TLBundleA_8: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x359.sv
+fm-Queue2_TLBundleA_10: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x117.sv
+fm-Queue2_TLBundleA_12: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x133.sv
+fm-Queue2_TLBundleA_14: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x136.sv
+fm-Queue2_TLBundleA_15: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x116.sv
+fm-Queue2_TLBundleA_19: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x119.sv
+fm-Queue2_TLBundleA_31: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x137.sv
+fm-Queue2_TLBundleB: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x309.sv
+fm-Queue2_TLBundleB_1: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x352.sv
+fm-Queue2_TLBundleC: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x373.sv
+fm-Queue2_TLBundleC_1: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x321.sv
+fm-Queue2_TLBundleD_7: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x281.sv
+fm-Queue2_TLBundleD_8: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x284.sv
+fm-Queue2_TLBundleD_11: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x80.sv
+fm-Queue2_TLBundleD_13: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x76.sv
+fm-Queue2_TLBundleD_15: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x79.sv
+fm-Queue2_TLBundleD_20: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x283.sv
+fm-Queue2_TLBundleE: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_sink_2x10.sv
+fm-Queue2_TLBundleE_1: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_sink_2x8.sv
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
