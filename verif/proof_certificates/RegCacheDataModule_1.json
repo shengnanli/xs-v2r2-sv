@@ -1,0 +1,138 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:54:06Z",
+ "generator": {
+  "run_context_worktree_digest": "504638a65f5cbbd8b1b5b2321948bbf93aabcee3d7e44fb05f0a78c41ad827b4",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/e64702417907/RegCacheDataModule_1",
+  "version": 1
+ },
+ "impl_commit": "e647024179073bb35332e4fe3d66e0b5e2136b0c",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegCacheDataModule_1.sv",
+    "sha256": "0c9304fd265d0de3d2aaa76aebf5f141ae4d7b015fbb94ff5d07cf3b2f387bce"
+   }
+  ],
+  "golden_sha256": "e4f8a17f00979547fdea5ec32cb7e944e3318aec9c62aa8122ef3d6c0b2d0e1f",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheDataModule.sv",
+    "sha256": "375d8d9af73076b89df2ef7164de230ada87207356c2c7ce7cefbb80ac4e02c5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheDataModule_1.sv",
+    "sha256": "0c58988a806cc816782124a20a3627a198138044114065ecc505eb1fc4078d9d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheAgeTimer.sv",
+    "sha256": "1d54edf9d35b8259b79e53a57ab1dbc4a53e73075cb3625f217858df6814e4f5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheAgeTimer_1.sv",
+    "sha256": "8762fb8af05af2630f8aef43d0624c1e0a49d738432aadc2e579c886e0d71ec5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheAgeDetector.sv",
+    "sha256": "b38400f1b04c95b3f081fc587163393817fdc01cda3958468176231f84c4a5ca"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheAgeDetector_1.sv",
+    "sha256": "46f9c723fdc67fd0c4397f2fa1e0a4746e3b42295110bf30c15319b43e84defd"
+   }
+  ],
+  "impl_sha256": "e2b6bd2e7b785e0ad05ee86fa4a7a53980cd0e38e8178f24198a87c5f46e1aef",
+  "repo_impl_files": 6
+ },
+ "native_facts_sha256": "01340ca6bee6dc4baf956ad4fcd72cc54bbd1a2a2dd0b5d39ed68ae82891cd07",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 2264,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "e647024179073bb35332e4fe3d66e0b5e2136b0c",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "504638a65f5cbbd8b1b5b2321948bbf93aabcee3d7e44fb05f0a78c41ad827b4",
+ "provisional": false,
+ "receipt_sha256": "8141d8d9c32f7d988954504caf835767410a8d81d62c9be760e31644edbf36aa",
+ "reproduce": {
+  "command": "PROOF_COMMIT=e647024179073bb35332e4fe3d66e0b5e2136b0c scripts/run_proof.sh RegCacheLeaves RegCacheDataModule_1",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "c07699be1047ecd1bfcf456b447f5c0c93957231ac4070b2f653658eeb4c9b6e",
+ "run_id": "RegCacheLeaves-20261003T161021Z-e64702417",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "RegCacheDataModule_1",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RegCacheLeaves",
+ "variant": "RegCacheDataModule_1",
+ "verdict": "SUCCEEDED"
+}

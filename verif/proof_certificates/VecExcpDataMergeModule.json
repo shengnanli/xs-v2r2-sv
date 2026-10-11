@@ -1,0 +1,155 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:51:24Z",
+ "generator": {
+  "run_context_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/6038c4afbc60/VecExcpDataMergeModule",
+  "version": 1
+ },
+ "impl_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VecExcpDataMergeModule.sv",
+    "sha256": "2eb83fb5120299b12bd48f16d3892d9103866a874ed8a4e3975e1688b2632834"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_13.sv",
+    "sha256": "b09d6e57c14d5dc9eb188e426e6cdf66d58027d5112a622e7ec2e69215227515"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/GetE8OffsetInVreg.sv",
+    "sha256": "0dc2672a23b6b7f8ef6602f9a61225f6fc0602c38493f4ed24b53ca893b5cf38"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/NfMappedElemIdx.sv",
+    "sha256": "2b58b6aa09674c834f88a874e5590edfa42d45e1917d4329e1b720212b7addf9"
+   }
+  ],
+  "golden_sha256": "5ce3de4659f520ab47d195cdc6460bc30baf9e272b8bfaeb74048988af47c30b",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_DelayN_core.sv",
+    "sha256": "59f58808b76e143acdd35544d695b434758002779d502eccc0a757eb5ac27d15"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayN_13.sv",
+    "sha256": "c5bfb22beb4ad4d4500bb107fc257c5118e2139244efa92092332c99be2812f4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/GetE8OffsetInVreg.sv",
+    "sha256": "d4762c6be232c6fe226b320d0666337f795a64f8067076a17f4d0d147c884dff"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/NfMappedElemIdx.sv",
+    "sha256": "c51a0eebc9a64db04848187ecfb6bb78f100c668480ce6c11806f98327c94e9b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/VecExcpDataMergeModule.sv",
+    "sha256": "097aece82a8f873354007a0aec8e784a73f8f81c7b40fb54138b6c91eb3bfdf9"
+   }
+  ],
+  "impl_sha256": "f6f1858ee1277b545dbdce6eb5bb1e775b15669db03b0c2daca6510395a3034d",
+  "repo_impl_files": 5
+ },
+ "native_facts_sha256": "e4cf08b3bf851ed87538316a756d2d79e9ff650217a97bf2cff33affc58c5007",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1363,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "648ac3b97a5c09e59c4672453337902903ef11db31e26b4d41df26b567e2ee75"
+  },
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "f1e8f02e1b0c9fc26039dd700260c4489a4017dbbf43b3bb0111d7a6fdb0c216",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+ "provisional": false,
+ "receipt_sha256": "23c5721845466cce847dab94e0eb5542cce34459670abc25c1034e87e3512814",
+ "reproduce": {
+  "command": "PROOF_COMMIT=6038c4afbc6026864dcc19b4cf1563e19077c4d2 scripts/run_proof.sh VecExcpDataMergeModule VecExcpDataMergeModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "2f49b82fffbb4c60ffe308a13306db27d07475b3f81cfa043fea602267fbacdc",
+ "run_id": "VecExcpDataMergeModule-20261004T110138Z-6038c4afb",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/VecExcpDataMergeModule/fm_pins_pre.tcl",
+    "sha256": "648ac3b97a5c09e59c4672453337902903ef11db31e26b4d41df26b567e2ee75"
+   }
+  ],
+  "sha256": "9140e46a76c651e2f58b5f44e6d7b446a8b94248cc425d38e0a593c777593412"
+ },
+ "target": "VecExcpDataMergeModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "VecExcpDataMergeModule",
+ "variant": "VecExcpDataMergeModule",
+ "verdict": "SUCCEEDED"
+}

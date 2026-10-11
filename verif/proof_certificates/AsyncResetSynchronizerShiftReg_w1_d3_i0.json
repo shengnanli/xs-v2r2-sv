@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:47:58Z",
+ "generator": {
+  "run_context_worktree_digest": "6e8c9151861de80ff8b8b45c45bf84cdbea839aa6139e4afedec4ba71d7a3ab3",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/2948215a047b/AsyncResetSynchronizerShiftReg_w1_d3_i0",
+  "version": 1
+ },
+ "impl_commit": "2948215a047b03124179b6c0ce6a0204f203cd3a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv",
+    "sha256": "9c396366afc924253e20d4214fdb6e681cdc779f1f182cb157753c742c3f3991"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv",
+    "sha256": "ec510fc99d081153e48866bc436d7d48094549ccfd65fe03945644529ae66668"
+   }
+  ],
+  "golden_sha256": "c4f9ed65bb21c2800294a026d16c7568f17bfa4b98128b5852c41a0ea03d1c99",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv",
+    "sha256": "1ee89fcdd3b756cb039c91f607fa1cac8cdb6e41890dfab2a48053aafa3cc1a7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv",
+    "sha256": "350781c85bb8492dee337bc741bf17edd08b8a5a402b7bfb5296545dd4d2cd18"
+   }
+  ],
+  "impl_sha256": "40ba5ca68102b6f59288d8785f7683687a95828f47d8ab171aef3696f5ff8626",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "b74fcfee288489081f81a1c26c6a1e653b469f7b60302d5506f57d2d5ef000d7",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 4,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "2948215a047b03124179b6c0ce6a0204f203cd3a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6e8c9151861de80ff8b8b45c45bf84cdbea839aa6139e4afedec4ba71d7a3ab3",
+ "provisional": false,
+ "receipt_sha256": "fe3a27f1ee9c6a79aba4bea56614443f0a176d188540362098d5cfa18e992379",
+ "reproduce": {
+  "command": "PROOF_COMMIT=2948215a047b03124179b6c0ce6a0204f203cd3a scripts/run_proof.sh AsyncResetSyncShiftReg_w1_d3_i0 AsyncResetSynchronizerShiftReg_w1_d3_i0",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "f4c174496283321c68b2f1e335b88b85c74e7b9ee880f693bd9c8213059e7100",
+ "run_id": "AsyncResetSyncShiftReg_w1_d3_i0-20261004T101742Z-2948215a0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "AsyncResetSynchronizerShiftReg_w1_d3_i0",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "AsyncResetSyncShiftReg_w1_d3_i0",
+ "variant": "AsyncResetSynchronizerShiftReg_w1_d3_i0",
+ "verdict": "SUCCEEDED"
+}

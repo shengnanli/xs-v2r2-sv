@@ -1,0 +1,153 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:52:01Z",
+ "generator": {
+  "run_context_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/6038c4afbc60/HPerfMonitor_2",
+  "version": 1
+ },
+ "impl_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/HPerfMonitor_2.sv",
+    "sha256": "a780d7569a8420ba988ce69ad12158a938f9faee616d6951e6e4e8b9ec4e49e7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/HPerfCounter_13.sv",
+    "sha256": "335be6db8c9b79dc29e870135e785c684605ebdb572ac014fa56f9e5782b53df"
+   }
+  ],
+  "golden_sha256": "655d83e32747d65af18770b31da11146ff65849502e15e041a1284a3ab06bdf9",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_HPerfCounter_core.sv",
+    "sha256": "1e64a61c65e6b45878e700697f06018baaf397a65559fdd6f388b66ebc65c75b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter.sv",
+    "sha256": "ecd9589ae0f4e0dae7b9b55cd4b2f1c2960ca632b052cb582356b3e28c3264f7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter_8.sv",
+    "sha256": "157252b291b61e88363827f472377efff78ba7b58b4d8af506ebcf41bffbd791"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/HPerfCounter_13.sv",
+    "sha256": "a56525f0a125a3b0ef84947167599e733e6c2bc4d6620604026ef4c7aeaba790"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/HPerfMonitor.sv",
+    "sha256": "7d8aecd6083dcf73dcf7c789dd1381b4dbb55a7b001c677b2b443b4a1cb37d85"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/HPerfMonitor_1.sv",
+    "sha256": "2580eda16849a6f2204d4715b423a959e6384d8bf71cb334fd947df1c70bd9a3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/HPerfMonitor_2.sv",
+    "sha256": "80172e2f8057faefc283709980eec01a451a289bc4c4341714fd9546ee7b5f17"
+   }
+  ],
+  "impl_sha256": "a6621c6cf3730f7adbef9da5c203adf42d93af5df535106a0cd7747b94b71e8c",
+  "repo_impl_files": 7
+ },
+ "native_facts_sha256": "17b871b5b6cbca86417054535ace3b8f535bda7a0e1f69693617d826e79c0a58",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 624,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 64
+  }
+ },
+ "proof_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "proof_config": {
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/HPerfMonitor_2.json",
+    "sha256": "6ae5c4f7e79280f86299c7e912896188b7ab091305929acffb37218199ab1028"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "2bdca2202c4a6450fb20af77dc2e4994cf7d05b8f5f54978a586f9b951c7671f",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+ "provisional": false,
+ "receipt_sha256": "cbc007137e99ad9776847a5dedf00f5f033ceb0389c7ae1bf362a116c34f4c1b",
+ "reproduce": {
+  "command": "PROOF_COMMIT=6038c4afbc6026864dcc19b4cf1563e19077c4d2 scripts/run_proof.sh HPerfMonitor HPerfMonitor_2",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "7b0707f90112f6487f7c5e2d8a5b9a1d8e3fd3be31e32cbe7b941b4f5e23bfc3",
+ "run_id": "HPerfMonitor-20261004T105727Z-6038c4afb",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "HPerfMonitor_2",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "HPerfMonitor",
+ "variant": "HPerfMonitor_2",
+ "verdict": "PASS_DEAD_REF"
+}

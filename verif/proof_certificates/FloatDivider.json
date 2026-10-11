@@ -1,0 +1,248 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:48:49Z",
+ "generator": {
+  "run_context_worktree_digest": "4f0da58e84aeea02aaeb0d7c9bb7471aefaf8055179b6d8f1d47d18b721d7ffd",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/56fb4b9ce03f/FloatDivider",
+  "version": 1
+ },
+ "impl_commit": "56fb4b9ce03f057f15715b4fdbaec3a5f9cf6dd3",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FloatDivider.sv",
+    "sha256": "bd47212cc36b1217c8d6d2ad9e455f15b2c14e6fd0c2caa32f6f6de46f7cb2df"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ShiftLeftPriorityWithLZDResult.sv",
+    "sha256": "b609c1dc50ea6569c3c5af492e73df20d1674050f9a988c9de4b367e056402ef"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/CSA3to2_20.sv",
+    "sha256": "396018e57cdedb321e1c5d2d30af0e45dc9a53f297d5129656bf2ef77a3b02fd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/CSA3to2_24.sv",
+    "sha256": "253e6b8ace941b9cbd9096eaaba40caa3a5f23c4c281d3179cd9ec7dba19b36b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/r4_qds_v2.sv",
+    "sha256": "ee1cae79b8ab5d33f01141630519964a81293a238ac1566f8dd787534151d94b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/r4_qds_v2_spec.sv",
+    "sha256": "4f60b3335cd47a9e04df68155ba93b48244ed051ffa381396adf7e5cd415f5b8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/fpdiv_r64_block.sv",
+    "sha256": "f23b708f351918243e18edddf719f737a32464d5edad3455587d82bf1b7da214"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FloatDividerR64.sv",
+    "sha256": "d1d4105c9b28fcf68b1422747b35cdd9769592983ae6bca1cfbb20a10c4577f4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/lzc.sv",
+    "sha256": "b075c984d7805b66d7375be4a8e4d2c6e90ff5e3c7ee9914302b375981bd25ef"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/r4_qds_cg.sv",
+    "sha256": "96f89eaaf1f01160337683e8f938a453499f6e87cbb8cc5b7dfa00a1a26e5b4c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/r4_qds.sv",
+    "sha256": "226750777be543f26fcd87583068357a2c6dd64ca11554553016c465ea09dc6d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/r4_qds_spec.sv",
+    "sha256": "cd77d2af713e4f99c2b4ee3dbc2bd361ead9284d996de22ae1f8e58235df2a68"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/fpsqrt_r16_block.sv",
+    "sha256": "0e6076d27db4d89acb7114f79b065b39620b0d6062e5a8d7edc04b97cf019670"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/fpsqrt_r16.sv",
+    "sha256": "b10e1a9d6252d537ef48dd1b27ef4dadb5c720327e53c9f874f51998d2495892"
+   }
+  ],
+  "golden_sha256": "2cf633fa0b356f67494fbc753af6aab27a4d39d3a04a26a83b5a625bf37a4df0",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ShiftLeftPriorityWithLZDResult.sv",
+    "sha256": "0fa300a1ae41272071b07de19ded1aa90fc2c7ebcb5260ba57a2fd0d4af7c795"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CSA3to2_20.sv",
+    "sha256": "68b80478b0b79341c40061a079afbe6667535b211720a40a0ccfe8c3d763dec1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CSA3to2_24.sv",
+    "sha256": "0cd8faaeef8d2e32d8be5743cc3faab634f2fdae542dac65b33b7357d7858619"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/r4_qds_v2.sv",
+    "sha256": "4ecb424e2760354cfec5315f8b824a789606b5ae61fee0c4cf72091bab5e82c8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/r4_qds_v2_spec.sv",
+    "sha256": "0597985a24d95e169f41c6976acc34beaaec59321d11c319c9cee0ea07560298"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/fpdiv_r64_block.sv",
+    "sha256": "dfb73eb17ac261145d85913518c7ac919011b9e7c7ab9f79d995aa9572455ae0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FloatDividerR64.sv",
+    "sha256": "3df2ab15d48b430f456a166ce0306e797ec12da498432eeb01c55f978f89b572"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/lzc.sv",
+    "sha256": "43089629b1a6144a24f86ddfad8a2e323b21c61fe24026b70bedede2173b22b2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/r4_qds_cg.sv",
+    "sha256": "87939f80e924b5403da9f3379b04e7138fb38ce30c37a2b6d492f438527a13d4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/r4_qds.sv",
+    "sha256": "74da1acc110331d6f45498df1386762c9938422b97978ce780caff2f8e7cdc90"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/r4_qds_spec.sv",
+    "sha256": "5e91a8267248aa7af05f77c6c0ea3d3ed0aeaef063097b7cc935195b36879ea4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/fpsqrt_r16_block.sv",
+    "sha256": "16abd38fd472794060dbce0a966fcfb2847a517083bdfc939d40b340f3852337"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/fpsqrt_r16.sv",
+    "sha256": "f35f8a28d1ca7a06280e1f52eb8ab240069085a50cf179ce77ca9cdc37f69077"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FloatDivider.sv",
+    "sha256": "a557a82d1eb2ab754d869316339fccea04491271fede9f68ce70814e1ce55089"
+   }
+  ],
+  "impl_sha256": "d62bdd3bad119514031c3f71e263183ed65576cf9a3483788d0a274bbb3158f4",
+  "repo_impl_files": 14
+ },
+ "native_facts_sha256": "fb49037c2c269f12822048c20d6f5d0e679a507fff2a64c72e5f35e87fa1873b",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 721,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "56fb4b9ce03f057f15715b4fdbaec3a5f9cf6dd3",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4f0da58e84aeea02aaeb0d7c9bb7471aefaf8055179b6d8f1d47d18b721d7ffd",
+ "provisional": false,
+ "receipt_sha256": "97a8c8af1705d140da67a42fcbd811e77f43e5cd88428e6e6aa0bc76c2e79f7b",
+ "reproduce": {
+  "command": "PROOF_COMMIT=56fb4b9ce03f057f15715b4fdbaec3a5f9cf6dd3 scripts/run_proof.sh FloatDivider FloatDivider",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "10f1aa78dd27be37067bd031d934095a572a8f3ce36c88c808eb85f5020b577e",
+ "run_id": "FloatDivider-20261004T134451Z-56fb4b9ce",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/FloatDivider.tcl",
+    "sha256": "f7342acba6ae331451374780c51f035b61d58cc6c3fa7fadcdb6058d533f8ec9"
+   }
+  ],
+  "sha256": "93de284ff57886fcf7ff65d30c446b0fe20d110f7797ff6f68d430cf3f02cb04"
+ },
+ "target": "FloatDivider",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FloatDivider",
+ "variant": "FloatDivider",
+ "verdict": "SUCCEEDED"
+}
