@@ -4,7 +4,7 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-11T06:11:15Z",
+ "generated_at": "2026-10-11T09:16:27Z",
  "generator": {
   "run_context_worktree_digest": "a998df273c72cfc2faf7856a8da01b7e7989a0bcf1c95c73cdd449dbeb3f7fcb",
   "script": "scripts/make_proof_certificate.py",

@@ -4,7 +4,7 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-11T04:32:17Z",
+ "generated_at": "2026-10-11T09:17:08Z",
  "generator": {
   "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
   "script": "scripts/make_proof_certificate.py",
@@ -78,6 +78,7 @@
   "repo_impl_files": 2
  },
  "mc_memory_objects": [
+  "ram_2x116",
   "ram_2x79"
  ],
  "native_facts_sha256": "0d263fc75ea0d7d13153924e0a8b35b2a47fed8403fd773cdd21d708f97e1ee4",

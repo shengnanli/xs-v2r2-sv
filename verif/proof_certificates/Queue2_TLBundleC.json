@@ -1,9 +1,10 @@
 {
  "evidence_archive": null,
  "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-11T06:14:01Z",
+ "generated_at": "2026-10-11T09:13:26Z",
  "generator": {
   "run_context_worktree_digest": "a998df273c72cfc2faf7856a8da01b7e7989a0bcf1c95c73cdd449dbeb3f7fcb",
   "script": "scripts/make_proof_certificate.py",
@@ -146,6 +147,9 @@
   "impl_sha256": "90c0685f852932393ae4d4a69f5898846bb1761c58f4efe83c5fab847b5e3130",
   "repo_impl_files": 22
  },
+ "mc_memory_objects": [
+  "ram_2x373"
+ ],
  "native_facts_sha256": "732c9b54bf3e5bc1a07b0c2e0548bdf200bf0d5ac977ee397e84b6b705f3d516",
  "native_result": {
   "native_verdict": "SUCCEEDED",
