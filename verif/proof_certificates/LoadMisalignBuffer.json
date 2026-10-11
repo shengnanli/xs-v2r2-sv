@@ -1,0 +1,118 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T04:04:44Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/LoadMisalignBuffer",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LoadMisalignBuffer.sv",
+    "sha256": "ce13b289ee45484b24bdb1965b750bf15b168f0cc2d4a785d15611d1615e6805"
+   }
+  ],
+  "golden_sha256": "ecbf8dbadf6126da2c69ff734a44a1d9bbd5e382332ad76582cf024f71f8045f",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/LoadMisalignBuffer.sv",
+    "sha256": "fca42b83c5455ad01c7a949b5f95197d2d25726c643e69956f7c8db577dcb1b9"
+   }
+  ],
+  "impl_sha256": "3fdae67f91aaae380133341c9e1871542c6c9492bcd0d318f5f59919ad01a711",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "d9dd728b77d73e48b3d681105e3c38211b81d2544a1eb86ed93c295f362d2432",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 7661,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "3c004a22190d9231abb28d72316c2691c9aa56cebd331662e3cbaafd73895eb4",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh LoadMisalignBuffer LoadMisalignBuffer",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "c5a4cba6910bac365695e70a51b141818265ab5d5153c269ff2addeed3ab9b4c",
+ "run_id": "LoadMisalignBuffer-20261011T040254Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/LoadMisalignBuffer.tcl",
+    "sha256": "7ffddacf771bc46d4a17054a2a1fd2f258a44fd3c6f729724a2052a6370513f2"
+   }
+  ],
+  "sha256": "bd837551b7f0c8be35d7451f3b2c54bb563f20da10a46f0c469fad0769d5afd5"
+ },
+ "target": "LoadMisalignBuffer",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "LoadMisalignBuffer",
+ "variant": "LoadMisalignBuffer",
+ "verdict": "SUCCEEDED"
+}

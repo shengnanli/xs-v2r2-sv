@@ -1,0 +1,320 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "FrontendBridge",
+ "run_id": "FrontendBridge-20261011T041503Z-20df9ac22",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/FrontendBridge.sv",
+   "kind": "golden",
+   "sha256": "ced4d8f60be10bd5ea9660dfbae2a8a1f18e6217c9a7deeedd377335627f6260"
+  },
+  {
+   "path": "golden-rtl/ICacheBuffer.sv",
+   "kind": "golden",
+   "sha256": "d70d97477c67696524350e3e1f42ae310c893927ab9edcdb890e87c3b2f2c39e"
+  },
+  {
+   "path": "golden-rtl/ICacheCtrlBuffer.sv",
+   "kind": "golden",
+   "sha256": "f9131b6ae47126a342e7246f44b27f4c8da10ef75ce40c286edd12fba594189b"
+  },
+  {
+   "path": "golden-rtl/InstrUncacheBuffer.sv",
+   "kind": "golden",
+   "sha256": "1034501f645b909621295167b6606f617d1ea8ef3a5763eb750fa538f2635c3b"
+  },
+  {
+   "path": "golden-rtl/Queue2_TLBundleA_10.sv",
+   "kind": "golden",
+   "sha256": "915570febd33adb53a4ba370239c93deda22b735cfacbe24594acd4bf0ac07b6"
+  },
+  {
+   "path": "golden-rtl/Queue2_TLBundleA_12.sv",
+   "kind": "golden",
+   "sha256": "1169c182a1c57c8b33f881556a5432366747dd997278e3f037d2aded19086bc6"
+  },
+  {
+   "path": "golden-rtl/Queue2_TLBundleA_8.sv",
+   "kind": "golden",
+   "sha256": "7da19879599964eab6ccc5804b1d338fb442c297a684d48aae18fb29da958ef3"
+  },
+  {
+   "path": "golden-rtl/Queue2_TLBundleD_11.sv",
+   "kind": "golden",
+   "sha256": "b5d4c41f3ca45b323fe9b408542331822dcbd50721798c449e6e463fa78be474"
+  },
+  {
+   "path": "golden-rtl/Queue2_TLBundleD_13.sv",
+   "kind": "golden",
+   "sha256": "ccf255bd0b2267ed04d778ac9c163b62e2ed4e491ebdf51b61fb473a01848de0"
+  },
+  {
+   "path": "golden-rtl/Queue2_TLBundleD_7.sv",
+   "kind": "golden",
+   "sha256": "6bd244ef551bb2b376d61dbd1c0bf30e894e5c17db1b0fb82a6b0f1e51a11837"
+  },
+  {
+   "path": "golden-rtl/ram_2x117.sv",
+   "kind": "golden",
+   "sha256": "626ac00fe9cbd6c20a9dbf9cc708bba53a823ed9ac72ad374014c18cf5d9245e"
+  },
+  {
+   "path": "golden-rtl/ram_2x133.sv",
+   "kind": "golden",
+   "sha256": "f58bd7947fe203f9443a8a61b89907f568f1e07852e7f78033c7e74dadd3a9f5"
+  },
+  {
+   "path": "golden-rtl/ram_2x281.sv",
+   "kind": "golden",
+   "sha256": "2a0ad8ca4e564159ed3d00fab7a3f8ebb97b0ba5b2f87a08298c57b0a0bd6d8c"
+  },
+  {
+   "path": "golden-rtl/ram_2x359.sv",
+   "kind": "golden",
+   "sha256": "062051f01bd19ef622780b1b3eb0e2873b6c906b86ba6a50cda3c93f46a5eb3a"
+  },
+  {
+   "path": "golden-rtl/ram_2x76.sv",
+   "kind": "golden",
+   "sha256": "bd55fa162cd9c32c233112f6885201440aa066f44ed1a38786666eb252ba375f"
+  },
+  {
+   "path": "golden-rtl/ram_2x80.sv",
+   "kind": "golden",
+   "sha256": "6167b085e962e2345d014268261db642e3ffb788b12905d1d2c2bb6833709fc9"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_ChiselQueue_core.sv",
+   "kind": "repo",
+   "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_8.sv",
+   "kind": "repo",
+   "sha256": "1831809eb25070f5743c8c2dfebbba5f31028d6b196d7c5f6a7d769debac99f2"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_7.sv",
+   "kind": "repo",
+   "sha256": "1dc2ec173943b219533c5f648605209fdb1831fd4f079348e7c651fd12b1f7e4"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_12.sv",
+   "kind": "repo",
+   "sha256": "b6747531e2f55092098966520b310c2f69c682b0b142da18d1bbedf1115fa7b0"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_13.sv",
+   "kind": "repo",
+   "sha256": "ec817912ae615e48268ad8b0f9e9d5e76c6218420ab3078dd38f8e714f9a494f"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_10.sv",
+   "kind": "repo",
+   "sha256": "f0fe10f92668fd53fe31acc942014d4bef70f6daaaf9d44b3a9be7c6f1713a2b"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_11.sv",
+   "kind": "repo",
+   "sha256": "3c2204fb539dfd0df72994630928d6db9af8461d0ed0bc605d4ae564f6cc527d"
+  },
+  {
+   "path": "rtl/memblock/ICacheBuffer.sv",
+   "kind": "repo",
+   "sha256": "d10503cbcdd248dbb32eeafb1f76640667573ce0b75465bffca133ae7a38274d"
+  },
+  {
+   "path": "rtl/memblock/InstrUncacheBuffer.sv",
+   "kind": "repo",
+   "sha256": "5d26dc6ede3314bf3049ae002f56b833d81f72b5c7625203d169e41749006fb7"
+  },
+  {
+   "path": "rtl/memblock/ICacheCtrlBuffer.sv",
+   "kind": "repo",
+   "sha256": "19a3de67d1dd16c699bb2909bc24ee6d5fa0fd28dd4a608bc11f63f3b4fa7d33"
+  },
+  {
+   "path": "rtl/memblock/FrontendBridge.sv",
+   "kind": "repo",
+   "sha256": "7f211a7c094406e110ad74a035783c7eccde9d91b49052ea9e8d3feef1e261cf"
+  },
+  {
+   "path": "golden-rtl/ram_2x117.sv",
+   "kind": "golden",
+   "sha256": "626ac00fe9cbd6c20a9dbf9cc708bba53a823ed9ac72ad374014c18cf5d9245e"
+  },
+  {
+   "path": "golden-rtl/ram_2x133.sv",
+   "kind": "golden",
+   "sha256": "f58bd7947fe203f9443a8a61b89907f568f1e07852e7f78033c7e74dadd3a9f5"
+  },
+  {
+   "path": "golden-rtl/ram_2x281.sv",
+   "kind": "golden",
+   "sha256": "2a0ad8ca4e564159ed3d00fab7a3f8ebb97b0ba5b2f87a08298c57b0a0bd6d8c"
+  },
+  {
+   "path": "golden-rtl/ram_2x359.sv",
+   "kind": "golden",
+   "sha256": "062051f01bd19ef622780b1b3eb0e2873b6c906b86ba6a50cda3c93f46a5eb3a"
+  },
+  {
+   "path": "golden-rtl/ram_2x76.sv",
+   "kind": "golden",
+   "sha256": "bd55fa162cd9c32c233112f6885201440aa066f44ed1a38786666eb252ba375f"
+  },
+  {
+   "path": "golden-rtl/ram_2x80.sv",
+   "kind": "golden",
+   "sha256": "6167b085e962e2345d014268261db642e3ffb788b12905d1d2c2bb6833709fc9"
+  }
+ ],
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "FrontendBridge-20261011T041503Z-20df9ac22",
+  "top": "FrontendBridge",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 4777,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 4777,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 395,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "FrontendBridge",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ },
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "mc_memory_objects": [
+  "ram_2x117",
+  "ram_2x133",
+  "ram_2x281",
+  "ram_2x76",
+  "ram_2x80"
+ ]
+}

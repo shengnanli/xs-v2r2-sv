@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/StoreMisalignBuffer
+Implementation : i:/WORK/StoreMisalignBuffer
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 00:05:09 2026
+**************************************************
+
+No aborted compare points.
+
+1

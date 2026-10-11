@@ -1,0 +1,163 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:17:08Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/TLBuffer_9",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/TLBuffer_9.sv",
+    "sha256": "9b493d9a219cb856b82b5a88e810468e4fd51327c48c9841e1d1445b07865e54"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleA_15.sv",
+    "sha256": "14bd1e2997d9eed75d259e03daa7a74a82b2f463a553fd964e05bdc869765bdd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleD_15.sv",
+    "sha256": "3836c65a256726e3de169744abf528e3fa598c34853c4d650c0d978c883edd57"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x116.sv",
+    "sha256": "768f9f0d812187df8988a94ea580838e5eecc4e689657ab53f9d7ed2a2c9a741"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x79.sv",
+    "sha256": "1ed6d22a3c6775e5c61be9d1f1828c04ad9a8e6b312005421beeba33413a5c82"
+   }
+  ],
+  "golden_sha256": "afcf330e931be84bea0c7423bab3d12be26735717d02b5b5adfcf5c9e1138829",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/xs_TLBuffer_ad_core.sv",
+    "sha256": "ac653a192ecf6c3abccf93db78a923433c8373e9d5ddc38a7ac561961141304c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/TLBuffer_9.sv",
+    "sha256": "40f6af63a93fc587beb68f5f79bbcf7bf54cdce21bcc298811786c1832d93dad"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleA_15.sv",
+    "sha256": "14bd1e2997d9eed75d259e03daa7a74a82b2f463a553fd964e05bdc869765bdd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleD_15.sv",
+    "sha256": "3836c65a256726e3de169744abf528e3fa598c34853c4d650c0d978c883edd57"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x116.sv",
+    "sha256": "768f9f0d812187df8988a94ea580838e5eecc4e689657ab53f9d7ed2a2c9a741"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x79.sv",
+    "sha256": "1ed6d22a3c6775e5c61be9d1f1828c04ad9a8e6b312005421beeba33413a5c82"
+   }
+  ],
+  "impl_sha256": "1968a7632f8864224a407f6db1973449f52b74c5b0cffde3c745cd6d52d79fe5",
+  "repo_impl_files": 2
+ },
+ "mc_memory_objects": [
+  "ram_2x116",
+  "ram_2x79"
+ ],
+ "native_facts_sha256": "0d263fc75ea0d7d13153924e0a8b35b2a47fed8403fd773cdd21d708f97e1ee4",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 595,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "29f3c32e38037d8587dd92d7ae969f4b53c216661496d614861e95286ede26cc",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh TLBuffer_9 TLBuffer_9",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "4ff26f5d6bfed1e8295d5fb45cb74a0fa540eeff516fad0f793f7b75eb4710fa",
+ "run_id": "TLBuffer_9-20261011T043128Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "TLBuffer_9",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "TLBuffer_9",
+ "variant": "TLBuffer_9",
+ "verdict": "SUCCEEDED"
+}

@@ -1,0 +1,125 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:56:22Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/AtomicsUnit",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/AtomicsUnit.sv",
+    "sha256": "8b63c11ac55db897d4d0753099a12fb9bad7cb3f8b0c835df4a9075838151003"
+   }
+  ],
+  "golden_sha256": "af3e7462feef11e006c79c9ba1f9907343507d9e9aca5601306da4af92c8a4f4",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/AtomicsUnit.sv",
+    "sha256": "af352819088ffe8aee907d6b7257d9c12be27fbdf8a27638a7c9e2f57ffc9851"
+   }
+  ],
+  "impl_sha256": "23a23fb9f7098c250a5531f3c2fbbd191134452def464e8d5e28fa30ce7f36cd",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "dadfbf3b9217be5429ab6b3ee3e9f66e9a3eb4ed4af7a3e33864ad484ac7a0e3",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 4020,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "50c7d3e72224b072a9531153ffeb0a5d610d6224163c214ebd2a901e7b7e28ac"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "3f96cde85bc31d0f09bf3ab3ecb04b23b18ae87789cb1ae670facf7dde7a392c",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "e0bcb433d864c3b9693eda3ad563f50bb788359e6e0666ddbed184771d50b9f2",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh AtomicsUnit AtomicsUnit",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "15c66955b00b85e7ca7180a5891c5763bbfed1745168b720d57db2580caa6be1",
+ "run_id": "AtomicsUnit-20261011T035521Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/AtomicsUnit.tcl",
+    "sha256": "9ad3f4d2ad14075128ffc8143f46621d74bf7a6cfe4b2d359636ddbfc2f3c359"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/AtomicsUnit/fm_pins_pre.tcl",
+    "sha256": "50c7d3e72224b072a9531153ffeb0a5d610d6224163c214ebd2a901e7b7e28ac"
+   }
+  ],
+  "sha256": "3777c31516ccae443b966116da7f7eaed8bbe64b2238e68ca990430b3d3d8183"
+ },
+ "target": "AtomicsUnit",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "AtomicsUnit",
+ "variant": "AtomicsUnit",
+ "verdict": "SUCCEEDED"
+}

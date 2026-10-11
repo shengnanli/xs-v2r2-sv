@@ -1,0 +1,113 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:31:53Z",
+ "generator": {
+  "run_context_worktree_digest": "b145db2bb19c6957d09532af2cdc8260d0c57947fb3fac7a8bf68203cacd4b05",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/397a2bc9c8d3/ProbeEntry",
+  "version": 1
+ },
+ "impl_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ProbeEntry.sv",
+    "sha256": "002bb146524882908f59ecb81129a31caf3abe8dc9904de1ec8a4c303ec5b833"
+   }
+  ],
+  "golden_sha256": "8d90599088dd7f9eb2a14a1b3833b56d749f6c461c81452495ff57dbe3b2f2c6",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/ProbeEntry.sv",
+    "sha256": "04d1eefece5762e1ba4ca28e690fba518161569a5a189730250da3573ee8b960"
+   }
+  ],
+  "impl_sha256": "1fd4032642062259c9f2c519db00e21ffe0157a7de6460e4ee991c74209f6c85",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "24ced045f7da6bd7608e1d36b85a7c981f524bf50f2e75db1dc748b7367ec88c",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 262,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "b145db2bb19c6957d09532af2cdc8260d0c57947fb3fac7a8bf68203cacd4b05",
+ "provisional": false,
+ "receipt_sha256": "ef8aed426c25d70c70eafbcdff1218952b5ccbc895c0dcb3406a9dc6f4c931ca",
+ "reproduce": {
+  "command": "PROOF_COMMIT=397a2bc9c8d3c32117bc043e0c4ced20959614a3 scripts/run_proof.sh ProbeEntry ProbeEntry",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "b560706b2ed11711c8dc4d23c08fc5d77f26c7482a9e9ad4d38c56faf1321727",
+ "run_id": "ProbeEntry-20261003T235514Z-397a2bc9c",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "ProbeEntry",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "ProbeEntry",
+ "variant": "ProbeEntry",
+ "verdict": "SUCCEEDED"
+}

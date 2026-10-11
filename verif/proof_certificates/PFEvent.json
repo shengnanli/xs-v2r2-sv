@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:30:56Z",
+ "generator": {
+  "run_context_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/6038c4afbc60/PFEvent",
+  "version": 1
+ },
+ "impl_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PFEvent.sv",
+    "sha256": "305db47dcabbbeed8f20ed31e5b3c383d36f08bf0bc61145befab506dd750bbb"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/perfEventsModule.sv",
+    "sha256": "7101f42a606d3c7ce865a19492af87e2477f3a158c7745b76133f953fb9ade07"
+   }
+  ],
+  "golden_sha256": "4ade431f2f298ee5ec07556844f5f10fa3aa78a63d64b22ef80f3e5760e16e3c",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/perfEventsModule.sv",
+    "sha256": "19dcde5c84c953ad54cba7449ab44b71d1a71f5b96cf9da08222d764d6215ae3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/PFEvent.sv",
+    "sha256": "98f978a79f17bb9b4fac9ffe33567ef33497687d146b22a69d0564dd8708bd85"
+   }
+  ],
+  "impl_sha256": "be78a11e5d737edb71f0f525483425fc37094543db9dbbcdf2e1f0b6980c917d",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "52ef116dcc9d171c3193c7bc6f8e684a3124bb6c7d4366388946eb975729c56c",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 3000,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+ "provisional": false,
+ "receipt_sha256": "db41aa7145749a09d96797367fde3e74999cda1375e6dfb64ced0d49395d53b3",
+ "reproduce": {
+  "command": "PROOF_COMMIT=6038c4afbc6026864dcc19b4cf1563e19077c4d2 scripts/run_proof.sh PFEvent PFEvent",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "a1148ca100756a9799ee9af6827385fc8a90ea13cc7ca850e5f9cc05e109cf7f",
+ "run_id": "PFEvent-20261004T110838Z-6038c4afb",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "PFEvent",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PFEvent",
+ "variant": "PFEvent",
+ "verdict": "SUCCEEDED"
+}

@@ -1,0 +1,140 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T04:27:42Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/PTWRepeaterNB",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PTWRepeaterNB.sv",
+    "sha256": "8dc257bf2ca3c83c3126c0c2a2fd8149362a98aa6dc31c7580618b341eb5b0a6"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_1.sv",
+    "sha256": "912369ea3484f75ece44658af080f43b3bb6705d24e33c39ea552c9d39efe092"
+   }
+  ],
+  "golden_sha256": "7ee7095a310ffa417c54ed35e829c6d00b9811a32647721309fcec20750f6b6c",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_DelayN_core.sv",
+    "sha256": "59f58808b76e143acdd35544d695b434758002779d502eccc0a757eb5ac27d15"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayN_1.sv",
+    "sha256": "8ab4381acb0113375dc09c1a52606bf4b5cc02d1fd1f21e4f921fadaed05118f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/xs_PTWRepeaterNB_core.sv",
+    "sha256": "f193bdabec7a05f32471cb6b9d43be0882b013157199fc1dd11215fe92597ab1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/PTWRepeaterNB.sv",
+    "sha256": "73dedd66659ec64e4030430fa27b45c98d6728b1ff2cbbecf68540fa6522033b"
+   }
+  ],
+  "impl_sha256": "12b399caba56886398ed3f483920238d312e9c1a89e2b03e5d5ab9d75afdefdf",
+  "repo_impl_files": 4
+ },
+ "native_facts_sha256": "c74484a9e6f50f63d912e4d51f22befbe112cbcdf91de0058cb1e564864f3f16",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 628,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "09ac98b20286c19555ec4dbb5b1258a3145d1f366eada26dd3bc516aa25e9456"
+  },
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "cdcb0a6b4daeae6020ebfb6c1f45d08c398185cee3f8d298a6ee1fb567b29e0d",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "2d897ffadf91e441b0f393683aad2b911ad0d40a7bd6f95f57bdb4c4d4ce8732",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh PTWRepeaterNB PTWRepeaterNB",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "db751a86b562657c35291c9a94975b594f93b0444344f51e496010fc5c76edfe",
+ "run_id": "PTWRepeaterNB-20261011T042654Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/PTWRepeaterNB/fm_pins_pre.tcl",
+    "sha256": "09ac98b20286c19555ec4dbb5b1258a3145d1f366eada26dd3bc516aa25e9456"
+   }
+  ],
+  "sha256": "6ab74dd04331edb86fc7c167d149a8277853c4ab015a4a4afc69f966b2737a5a"
+ },
+ "target": "PTWRepeaterNB",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PTWRepeaterNB",
+ "variant": "PTWRepeaterNB",
+ "verdict": "SUCCEEDED"
+}

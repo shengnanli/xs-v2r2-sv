@@ -1,0 +1,171 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T04:48:49Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/VLMergeBufferImp",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VLMergeBufferImp.sv",
+    "sha256": "446d6ae7bfad7fa1024d1ea22ff47f070baa94693b0982e5d4bb5b0a64ed90f9"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FreeList.sv",
+    "sha256": "5a17c359ed0000a95876f14459ba0ac2c0bea2f3858a33d7d0b97c900c12fef1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/NewPipelineConnectPipe_29.sv",
+    "sha256": "8f1c8b668dacd6f837b9d7623c1638198842e568eefcae4b8e5a5a0c9da7336f"
+   }
+  ],
+  "golden_sha256": "0bab428c3a6a3dab26e7426af21c6660cec8484b7f8686b37554f5636d00781e",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/vmergebuffer_pkg.sv",
+    "sha256": "30ae5ac2ceaa98b6bc90f2e8d64c1f81904a2b7c99ea5f0b65f3a95d25b9750f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/PipelineConnect.sv",
+    "sha256": "34f2dc60598e7770fb1025291bc792befbeaaa27d5581d233e228c9f0c155c15"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/NewPipelineConnectPipe_29.sv",
+    "sha256": "12cf7e4d7e38d313817aebc3dc1b365c2d617b7928fb849d2381e546c027854f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/FreeList.sv",
+    "sha256": "717c99ad39351155b5325b8928caed3675adf59ccccac701b81a4e7ba7ee2506"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/FreeList_1.sv",
+    "sha256": "9218ee4d40fd1b7d5ca4e0e5c6d3fe2aa31b89c9e7f7e680cf6c08a75001f251"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VLMergeBufferImp.sv",
+    "sha256": "092293d70d4270486a8a89fdeb8b32eca8a73d10997a7a23f6e1050444b5e537"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VSMergeBufferImp.sv",
+    "sha256": "70711cf6063605d8a8b26af1522a85c26b382cf59ea6f2c735f70d68fded7b12"
+   }
+  ],
+  "impl_sha256": "00c7868e2d94831f7b0c31b162f3bf3b995b8fc889fe423cf391e808bd11a56a",
+  "repo_impl_files": 7
+ },
+ "native_facts_sha256": "3df8ea386023d5138e29d9c13167277d3659053e093627ced30ec01c32fb900a",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 24360,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "b9739d7f1ff1c2038915bac00fec708d40815bede75f5a4d99186b48e559193c",
+   "fm_pins_pre.tcl": "ae3bf6f22d8141648ecbea8d2eb4f30b60b8ace29b1383550fd2dc17a3ee5239"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "3977e4aa10036fb873bb24c0cbc6e8ec4d062c2bcc75c82399035a1b78a2ecac",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "155cd4028d214394746b046a23f56cc5a86458134201c81794bfad6ee4070d5c",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh VMergeBuffer VLMergeBufferImp",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "b64c24fc1d9dcb2a565b5c4bf4a2eeef9107854813bf0fe8cc86db5ec66342a4",
+ "run_id": "VMergeBuffer-20261011T043350Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/VLMergeBufferImp.tcl",
+    "sha256": "a6cdedae71ee791d6e82af1314bce78ac72d75af2b6eaff66bf778554d280b83"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/VMergeBuffer/fm_pins_pre.tcl",
+    "sha256": "ae3bf6f22d8141648ecbea8d2eb4f30b60b8ace29b1383550fd2dc17a3ee5239"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/VMergeBuffer/fm_pins.tcl",
+    "sha256": "b9739d7f1ff1c2038915bac00fec708d40815bede75f5a4d99186b48e559193c"
+   }
+  ],
+  "sha256": "e3f5aa1d2cccbc971fa2a9b5788a9f9e449cf51b5ba05fd2ad5477af2075149d"
+ },
+ "target": "VLMergeBufferImp",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "VMergeBuffer",
+ "variant": "VLMergeBufferImp",
+ "verdict": "SUCCEEDED"
+}

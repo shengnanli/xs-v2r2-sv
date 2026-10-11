@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/TLXbar_4
+Implementation : i:/WORK/TLXbar_4
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 00:31:47 2026
+**************************************************
+
+No unverified compare points.
+
+1

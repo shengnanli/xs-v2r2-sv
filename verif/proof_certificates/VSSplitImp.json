@@ -1,0 +1,168 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T04:45:31Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/VSSplitImp",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VSSplitImp.sv",
+    "sha256": "3542d9df2965dc01bbabb049ed5e88104530dd6acb1f6541ae0c99211b09d381"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VSSplitPipelineImp.sv",
+    "sha256": "924c1352324844fccaf5698b2429e352fc41256b6f0189a9ed61b0c479972dda"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VSSplitBufferImp.sv",
+    "sha256": "b1fb5caa0a0cf4d5aeedcf7d98229ac7ff7d9a157e057147cc46d115c93447ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/skidBufferConnect.sv",
+    "sha256": "9326f1a073600070d845d76d5e96cc92848612c6798f8a8a7d35a4ade09b74c6"
+   }
+  ],
+  "golden_sha256": "53ec47c615c8a12f1bc61ea79af3593804b78c877cdd1fdab90ea4d388ac76ec",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/vlsu_pkg.sv",
+    "sha256": "879d7523fc2c19fa86b1045b6ad9001050077dc0eb8b1d7bbb5b195dbe05ce4c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VLSplitPipelineImp.sv",
+    "sha256": "ee12e179d926ecb36e52d40e3499df1748becdd95e6ccb190396dd95cdd738c8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VSSplitPipelineImp.sv",
+    "sha256": "238ef3e74ae096406e693db2af16af1c98cd9590deb4cbbf0829e51a0b94e135"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VLSplitBufferImp.sv",
+    "sha256": "24d086f6e28d846dd8283278b53fa63d2614257b6c687db47d2b2e9a5cd0a3c0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VSSplitBufferImp.sv",
+    "sha256": "6918c094b3d653dc3bada1e3f67919bbfcbb33bff354c3940b192b29ce62b20a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/skidBufferConnect.sv",
+    "sha256": "8284497cd531217757fc0f62f52b9b50668ccf0bfcfc0f6eaa71e7af892c7289"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VLSplitImp.sv",
+    "sha256": "4ef08437c298cf3cdd0639acb31ea462800b3bed05e9dd0af90522b33be8d00b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VSSplitImp.sv",
+    "sha256": "11a347da47e176e11c5e6c4f88b0ba4cb9ce38aa1c312a9dcc5dec95d441ce67"
+   }
+  ],
+  "impl_sha256": "9692db996b8079497e37a25fa8ae476fe1e7ecd8a90b126ba90efc665c1fb134",
+  "repo_impl_files": 8
+ },
+ "native_facts_sha256": "a9ed670fe37ea0e7fbdd24b437905c12e788fc691e5e627a5483aa95572a1584",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 7672,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "8c11fe2d7ebf2dba5c4d47241f96771110a9a039c0f1f4b36a88f87dc2d308d0",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh VSSplitImp VSSplitImp",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "0bba8e2dabcb8c642757f0962e7754015e9cf540890b9d1c4f4c4f7a42e7a3af",
+ "run_id": "VSSplitImp-20261011T044338Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/VSSplitImp.tcl",
+    "sha256": "1f8e8ceaf6c9002012feabb935227a67fa89516de4edd7a88ba2906755fd5b30"
+   }
+  ],
+  "sha256": "cbfae5471b1224f1085aaf13ef54a619e00df8a354b3311882d8ed6ec1c6f948"
+ },
+ "target": "VSSplitImp",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "VSSplitImp",
+ "variant": "VSSplitImp",
+ "verdict": "SUCCEEDED"
+}
