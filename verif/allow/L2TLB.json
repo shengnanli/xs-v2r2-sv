@@ -1,22 +1,512 @@
 {
- "schema": "xs-v2-sv-allow-v1",
- "target": "L2TLB",
  "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "note": "assembly 边界声明（2026-10-03 第 3 轮，agent/l2tlb-assembly）：只剩 1 个存储宏行为模型的两侧对称接口黑盒——L2TlbMissQueue 内 Queue40_L2TlbMQBundle 的 ram_ext（ram_40x47，深度 40 / 6 位地址，inline 触发 FMR_ELAB-147），已在 verif/vendor_boundary.tsv 以 APPROVED_MEMORY_MACRO_MODEL 单条审定（codex 0158 §1，symmetric_both_sides_only），与 L2TlbMissQueue 自己的签核用同一条边界。两侧都是同一份 golden L2TlbMissQueue/Queue40 定义，各 1 个实例。原先 8 个 green_child（PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch/Bitmap/BitmapCache）全部改为两侧白盒展开（ref/impl 同为 golden 定义，UNCHANGED_GOLDEN_DEP）：这 8 个 child 已各自签核，但 green_child 证书路线要求 certificate.impl_commit == POLICY.freeze_commit，而 freeze_commit 仍为 null（fail-closed），在任何 commit 上都过不了闸；照 CtrlBlock 第 2 轮先例改白盒，证明更强（child 内部全部状态进比较）。★不许把 class 改成 vendor_macro 绕过★。",
+ "note": "exact green_child 组合（codex 0228 问题 2，agent/l2tlb-gc，照 L2Top / Frontend 先例）：L2TLB 的 29 个直接实例中 28 个（21 种 design）两侧以 -interface_only 读入，逐实例写死 r/i 路径、child_target 与该 child 的 tracked 证书 sha256；FM_INTERFACE_ONLY 恰为这 21 个 design。本层 glue（xs_L2TLB_core）与 arb1（Arbiter2_PtwReq，组合 2 选 1 仲裁器）两侧白盒受验：canary 实测 arb1 黑盒时唯一 failing 为 arb2.io_in_3_valid（golden 取 arb1 输出 fire、重写核取输入 fire 之或，依赖仲裁器内部语义），白盒后由 FM 直接证。ram_40x47 不在本层出现（在 L2TlbMissQueue 子树内部，按其 APPROVED_MEMORY_MACRO_MODEL 边界由 L2TlbMissQueue 证书承担）。上一轮 child 两侧 golden 白盒 + 147 钉点的路线作废（freeze_commit=null 时期的权宜，0228 明令不恢复 child 内部配对）。",
  "objects": [
   {
-   "side": "r",
-   "design": "ram_40x47",
-   "path": "r:/WORK/L2TLB/missQueue/io_out_q/ram_ext",
    "attrs": "i",
-   "class": "APPROVED_MEMORY_MACRO_MODEL"
+   "certificate_sha256": "",
+   "child_target": "DelayN_220",
+   "class": "green_child",
+   "design": "DelayN_220",
+   "path": "r:/WORK/L2TLB/sfence_tmp_delay",
+   "side": "r"
   },
   {
-   "side": "i",
-   "design": "ram_40x47",
-   "path": "i:/WORK/L2TLB/u_core/u_missQueue/io_out_q/ram_ext",
    "attrs": "i",
-   "class": "APPROVED_MEMORY_MACRO_MODEL"
+   "certificate_sha256": "",
+   "child_target": "DelayN_220",
+   "class": "green_child",
+   "design": "DelayN_220",
+   "path": "i:/WORK/L2TLB/u_core/u_sfence_delay",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "DelayN_221",
+   "class": "green_child",
+   "design": "DelayN_221",
+   "path": "r:/WORK/L2TLB/csr_tmp_delay",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "DelayN_221",
+   "class": "green_child",
+   "design": "DelayN_221",
+   "path": "i:/WORK/L2TLB/u_core/u_csr_delay",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMP",
+   "class": "green_child",
+   "design": "PMP",
+   "path": "r:/WORK/L2TLB/pmp",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMP",
+   "class": "green_child",
+   "design": "PMP",
+   "path": "i:/WORK/L2TLB/u_core/u_pmp",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "r:/WORK/L2TLB/PMPChecker",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "i:/WORK/L2TLB/u_core/u_pmp_chk_ptw",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "r:/WORK/L2TLB/PMPChecker_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "i:/WORK/L2TLB/u_core/u_pmp_chk_llptw0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "r:/WORK/L2TLB/PMPChecker_2",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "i:/WORK/L2TLB/u_core/u_pmp_chk_llptw1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "r:/WORK/L2TLB/PMPChecker_3",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "i:/WORK/L2TLB/u_core/u_pmp_chk_hptw",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "r:/WORK/L2TLB/PMPChecker_4",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PMPChecker",
+   "class": "green_child",
+   "design": "PMPChecker",
+   "path": "i:/WORK/L2TLB/u_core/u_pmp_chk_bitmap",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Bitmap",
+   "class": "green_child",
+   "design": "Bitmap",
+   "path": "r:/WORK/L2TLB/bitmap",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Bitmap",
+   "class": "green_child",
+   "design": "Bitmap",
+   "path": "i:/WORK/L2TLB/u_core/u_bitmap",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "BitmapCache",
+   "class": "green_child",
+   "design": "BitmapCache",
+   "path": "r:/WORK/L2TLB/bitmapcache",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "BitmapCache",
+   "class": "green_child",
+   "design": "BitmapCache",
+   "path": "i:/WORK/L2TLB/u_core/u_bitmapcache",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "L2TlbMissQueue",
+   "class": "green_child",
+   "design": "L2TlbMissQueue",
+   "path": "r:/WORK/L2TLB/missQueue",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "L2TlbMissQueue",
+   "class": "green_child",
+   "design": "L2TlbMissQueue",
+   "path": "i:/WORK/L2TLB/u_core/u_missQueue",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PtwCache",
+   "class": "green_child",
+   "design": "PtwCache",
+   "path": "r:/WORK/L2TLB/cache",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PtwCache",
+   "class": "green_child",
+   "design": "PtwCache",
+   "path": "i:/WORK/L2TLB/u_core/u_cache",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PTW",
+   "class": "green_child",
+   "design": "PTW",
+   "path": "r:/WORK/L2TLB/ptw",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "PTW",
+   "class": "green_child",
+   "design": "PTW",
+   "path": "i:/WORK/L2TLB/u_core/u_ptw",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "HPTW",
+   "class": "green_child",
+   "design": "HPTW",
+   "path": "r:/WORK/L2TLB/hptw",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "HPTW",
+   "class": "green_child",
+   "design": "HPTW",
+   "path": "i:/WORK/L2TLB/u_core/u_hptw",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "LLPTW",
+   "class": "green_child",
+   "design": "LLPTW",
+   "path": "r:/WORK/L2TLB/llptw",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "LLPTW",
+   "class": "green_child",
+   "design": "LLPTW",
+   "path": "i:/WORK/L2TLB/u_core/u_llptw",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter5_L2TlbWithHptwIdBundle",
+   "class": "green_child",
+   "design": "Arbiter5_L2TlbWithHptwIdBundle",
+   "path": "r:/WORK/L2TLB/arb2",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter5_L2TlbWithHptwIdBundle",
+   "class": "green_child",
+   "design": "Arbiter5_L2TlbWithHptwIdBundle",
+   "path": "i:/WORK/L2TLB/u_core/u_arb_cache_in",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter2_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter2_L2TLBImp_Anon",
+   "path": "r:/WORK/L2TLB/hptw_req_arb",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter2_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter2_L2TLBImp_Anon",
+   "path": "i:/WORK/L2TLB/u_core/u_arb_hptw_req",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter2_L2TLBImp_Anon_1",
+   "class": "green_child",
+   "design": "Arbiter2_L2TLBImp_Anon_1",
+   "path": "r:/WORK/L2TLB/hptw_resp_arb",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter2_L2TLBImp_Anon_1",
+   "class": "green_child",
+   "design": "Arbiter2_L2TLBImp_Anon_1",
+   "path": "i:/WORK/L2TLB/u_core/u_arb_hptw_resp",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter1_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter1_L2TLBImp_Anon",
+   "path": "r:/WORK/L2TLB/Arbiter1_L2TLBImp_Anon",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter1_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter1_L2TLBImp_Anon",
+   "path": "i:/WORK/L2TLB/u_core/u_out_arb_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter1_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter1_L2TLBImp_Anon",
+   "path": "r:/WORK/L2TLB/Arbiter1_L2TLBImp_Anon_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter1_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter1_L2TLBImp_Anon",
+   "path": "i:/WORK/L2TLB/u_core/u_out_arb_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter3_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter3_L2TLBImp_Anon",
+   "path": "r:/WORK/L2TLB/Arbiter3_L2TLBImp_Anon",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter3_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter3_L2TLBImp_Anon",
+   "path": "i:/WORK/L2TLB/u_core/u_merge_arb_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter3_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter3_L2TLBImp_Anon",
+   "path": "r:/WORK/L2TLB/Arbiter3_L2TLBImp_Anon_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter3_L2TLBImp_Anon",
+   "class": "green_child",
+   "design": "Arbiter3_L2TLBImp_Anon",
+   "path": "i:/WORK/L2TLB/u_core/u_merge_arb_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "L2TlbPrefetch",
+   "class": "green_child",
+   "design": "L2TlbPrefetch",
+   "path": "r:/WORK/L2TLB/prefetch",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "L2TlbPrefetch",
+   "class": "green_child",
+   "design": "L2TlbPrefetch",
+   "path": "i:/WORK/L2TLB/u_core/u_prefetch",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter2_L2TlbWithHptwIdBundle",
+   "class": "green_child",
+   "design": "Arbiter2_L2TlbWithHptwIdBundle",
+   "path": "r:/WORK/L2TLB/mq_arb",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter2_L2TlbWithHptwIdBundle",
+   "class": "green_child",
+   "design": "Arbiter2_L2TlbWithHptwIdBundle",
+   "path": "i:/WORK/L2TLB/u_core/u_arb_mq",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "DelayN_13",
+   "class": "green_child",
+   "design": "DelayN_13",
+   "path": "r:/WORK/L2TLB/wfiReq_delay",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "DelayN_13",
+   "class": "green_child",
+   "design": "DelayN_13",
+   "path": "i:/WORK/L2TLB/u_core/u_wfi_req_delay",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "DelayN_13",
+   "class": "green_child",
+   "design": "DelayN_13",
+   "path": "r:/WORK/L2TLB/io_wfi_wfiSafe_delay",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "DelayN_13",
+   "class": "green_child",
+   "design": "DelayN_13",
+   "path": "i:/WORK/L2TLB/u_core/u_wfi_safe_delay",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter4_L2TlbMemReqBundle",
+   "class": "green_child",
+   "design": "Arbiter4_L2TlbMemReqBundle",
+   "path": "r:/WORK/L2TLB/mem_arb",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter4_L2TlbMemReqBundle",
+   "class": "green_child",
+   "design": "Arbiter4_L2TlbMemReqBundle",
+   "path": "i:/WORK/L2TLB/u_core/u_mem_arb",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter3_bitmapReqBundle",
+   "class": "green_child",
+   "design": "Arbiter3_bitmapReqBundle",
+   "path": "r:/WORK/L2TLB/bitmap_arb",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "Arbiter3_bitmapReqBundle",
+   "class": "green_child",
+   "design": "Arbiter3_bitmapReqBundle",
+   "path": "i:/WORK/L2TLB/u_core/u_bitmap_arb",
+   "side": "i"
   }
- ]
+ ],
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "L2TLB"
 }
