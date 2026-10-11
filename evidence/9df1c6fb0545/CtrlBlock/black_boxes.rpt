@@ -1,0 +1,121 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/CtrlBlock
+Implementation : i:/WORK/CtrlBlock
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 06:54:07 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    DataModule_BackendPC_16entry
+
+       Instances : 0
+
+i      diff_rat_state_bank_320x776
+
+       Instances : 6 of 6
+       ------------------------
+       i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_0_ext
+       i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_1_ext
+       i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_2_ext
+       i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_3_ext
+       i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_4_ext
+       i:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_5_ext
+
+i      dt_pcTransType_160x2
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/CtrlBlock/rob/dt_pcTransType_ext
+
+i      stateBankTags_320x3
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/CtrlBlock/rat/diffRatBuffer/stateBankTags_ext
+
+e *    xs_DataModule
+
+       Instances : 0
+
+e *    xs_DelayN_core
+
+       Instances : 0
+
+e *    xs_ExceptionGenWbGroup
+
+       Instances : 0
+
+e *    xs_PipeGroupConnect_core
+
+       Instances : 0
+
+e *    xs_PipeGroupConnect_slot
+
+       Instances : 0
+
+e *    xs_PipelineConnectPipe_core
+
+       Instances : 0
+
+e *    xs_SyncDataModule
+
+       Instances : 0
+
+
+
+##################################################################
+####    DESIGN LIBRARY - r:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+i      diff_rat_state_bank_320x776
+
+       Instances : 6 of 6
+       ------------------------
+       r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_0_ext
+       r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_1_ext
+       r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_2_ext
+       r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_3_ext
+       r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_4_ext
+       r:/WORK/CtrlBlock/rat/diffRatBuffer/diff_rat_state_bank_5_ext
+
+i      dt_pcTransType_160x2
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/CtrlBlock/rob/dt_pcTransType_ext
+
+i      stateBankTags_320x3
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/CtrlBlock/rat/diffRatBuffer/stateBankTags_ext
+
+
+1
+
