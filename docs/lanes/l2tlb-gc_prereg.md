@@ -210,3 +210,15 @@ golden Arbiter2_PtwReq 输入 1+38+2+1+38+2+1 = 83）。fm_predict 模型 64151�
 3. 在新提交 Q 上：official L2TLBWrapper → 须 passing 5139 EXACT → 证书 → 提交。
 4. validate 整树（25 + L2TLB + L2TLBWrapper）在 HEAD 上全部 True。
 任何 official 与上表不同即 STOP。
+
+## 8. §7 执行结果（MC 三行由集成者登记于 main `aeb2c42fb` 之后）
+
+1. `git merge aeb2c42fb` → `932718ccf2e6dfef4a7d196e734c5380c7e36ccf`；25 目标 validate 全 True。
+2. official L2TLB（PROOF_COMMIT `932718ccf`）：SUCCEEDED，passing 63052 / constant_reg 16 / failing·unverified·unmatched·unread 0 /
+   bbox_objects 56 / `L2TLB_PIN_END ok=128 bad=0`，无 dont_verify —— 与预测逐项相同；fm_predict 落在 merge 带内。
+   receipt `evidence/932718ccf2e6/L2TLB/receipt.json` sha256 `e75304a529cb9477a1c74fbad5461b1a0320000710eb1c42f431e43afcff5580`；
+   证书 `verif/proof_certificates/L2TLB.json` sha256 `57d584c0deed5ba40041726c080bd5f4639dbcbc9b2af7bcfcfe9e2ee3549293`（提交 `13fe0a5d7`，同时回填 L2TLBWrapper allow）。
+3. official L2TLBWrapper（PROOF_COMMIT `13fe0a5d7`）：SUCCEEDED，passing 5139（fm_predict 逐位相等）/ 全零 / bbox_objects 2。
+   receipt `evidence/13fe0a5d7e44/L2TLBWrapper/receipt.json` sha256 `a21f8c4d61d214f6db1ed805d209a9bfbff95a947f771d64141034d41903b3f5`；
+   证书 sha256 `5183dfd5286cb5483c8918c43577ea6d10d852fef6f31449cb220c43bd8081b1`（提交 `02426b426`）。
+4. 整树 27 目标 validate @`02426b426`：全部 True，不通过 0 个。
