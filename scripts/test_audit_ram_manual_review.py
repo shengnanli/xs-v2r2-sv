@@ -209,7 +209,8 @@ def scope_cases():
 
 def ram40_cases():
     """codex 0209：ram_40x47 父级范围 {L2TlbMissQueue, L2TLB, L2TLBWrapper}，仅限 L2TlbMissQueue 子树。
-    R0 三个父级的真实 allow 声明通过（L2TLB/L2TLBWrapper 同时机器复算 child receipt 未 stale）
+    R0 L2TlbMissQueue 真实 allow 声明通过；R0-0228 L2TLB/L2TLBWrapper 的 allow 不得再有 ram_40x47（codex 0228）
+    R0f 0228 前的 L2TLB / L2TLBWrapper 声明（冻结夹具）通过 0209 父级范围判据
     R1 别的父级（L2Top）                 R2 别的 ram 套 L2TLB 的路径（ram_10x89）
     R3 路径不在 L2TlbMissQueue 子树      R4 两侧不对称（impl 缺）    R5 一侧两个实例
     R6 child receipt 的 impl 闭包 stale  R7 child receipt verdict 不合格  R8 child receipt 不存在
@@ -230,10 +231,23 @@ def ram40_cases():
         d = json.loads((REPO / 'verif' / 'allow' / f'{t}.json').read_text())
         return [e for e in d['objects'] if e['design'] == 'ram_40x47']
 
-    for t in ('L2TlbMissQueue', 'L2TLB', 'L2TLBWrapper'):
-        ok, msg, _ = A.check_parent_scope('ram_40x47', t, objs(t))
-        chk(f'R0 {t}', ok or msg, True)
-    lt = objs('L2TLB')
+    # codex 0228：L2TLB / L2TLBWrapper 改走嵌套 green_child，ram_40x47 只留在 L2TlbMissQueue 子树内部，
+    # 不得再出现在这两个父级的 allow 里。真实声明只剩 L2TlbMissQueue 一处（R0），另两处断言为空（R0-0228）。
+    ok, msg, _ = A.check_parent_scope('ram_40x47', 'L2TlbMissQueue', objs('L2TlbMissQueue'))
+    chk('R0 L2TlbMissQueue', ok or msg, True)
+    for t in ('L2TLB', 'L2TLBWrapper'):
+        chk(f'R0-0228 {t} 无 ram_40x47', not objs(t) or 'ram_40x47_in_%s_allow' % t, True)
+    # R0f..R9 的 L2TLB 级样本：0228 前 main（20df9ac22c5fa1cc081ebbb8bee5e323843526e5）verif/allow/L2TLB.json
+    # 里的 ram_40x47 声明原样冻结为夹具——check_parent_scope 的 0209 判据本身仍在，负测仍须能判红。
+    lt = [{'side': 'r', 'design': 'ram_40x47', 'path': 'r:/WORK/L2TLB/missQueue/io_out_q/ram_ext',
+           'attrs': 'i', 'class': 'APPROVED_MEMORY_MACRO_MODEL'},
+          {'side': 'i', 'design': 'ram_40x47', 'path': 'i:/WORK/L2TLB/u_core/u_missQueue/io_out_q/ram_ext',
+           'attrs': 'i', 'class': 'APPROVED_MEMORY_MACRO_MODEL'}]
+    for t in ('L2TLB', 'L2TLBWrapper'):
+        tl = [dict(e, path=e['path'].replace('/WORK/L2TLB/', '/WORK/L2TLBWrapper/ptw/' if t == 'L2TLBWrapper'
+                                              else '/WORK/L2TLB/')) for e in lt]
+        ok, msg, _ = A.check_parent_scope('ram_40x47', t, tl)
+        chk(f'R0f {t} 夹具', ok or msg, True)
     l2 = [dict(e, path=e['path'].replace('/WORK/L2TLB/', '/WORK/L2Top/')) for e in lt]
     chk('R1 别的父级 L2Top', A.check_parent_scope('ram_40x47', 'L2Top', l2)[0] or 'red', False)
     chk('R2 别的 ram', A.check_parent_scope('ram_10x89', 'L2TLB', lt)[0] or 'red', False)
