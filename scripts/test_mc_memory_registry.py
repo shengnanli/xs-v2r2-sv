@@ -74,9 +74,12 @@ def main():
     # --- 负例：表外 / 像 RAM / 功能模块
     r2 = dict(reg); r2.pop('ram_16x137')
     chk('N1 表外 design', MC.check_entry('ram_16x137', reg=r2), 'mc_not_registered')
-    chk('N2a ram_2x116 名字像 RAM', MC.check_entry('ram_2x116', reg=reg), 'mc_not_registered')
-    chk('N2b sram_array pftch_pht 名字像 RAM', MC.check_entry('sram_array_1p32x148m74s1h0l1b_pftch_pht', reg=reg),
-        'mc_not_registered')
+    # N2：G1 里真实存在、名字像 RAM 的 design，只要表里没有就不放行（从表副本里拿掉，避免日后登记后样本失效）
+    def without(d):
+        r = dict(reg); r.pop(d, None); return r
+    chk('N2a ram_2x116 名字像 RAM', MC.check_entry('ram_2x116', reg=without('ram_2x116')), 'mc_not_registered')
+    chk('N2b sram_array pftch_pht 名字像 RAM', MC.check_entry('sram_array_1p32x148m74s1h0l1b_pftch_pht',
+        reg=without('sram_array_1p32x148m74s1h0l1b_pftch_pht')), 'mc_not_registered')
     chk('N3 普通功能模块 Queue16_CHIREQ', MC.check_entry('Queue16_CHIREQ', reg=reg), 'mc_not_registered')
     # --- 负例：登记字段被改
     def row_mut(design, **kw):
