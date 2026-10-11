@@ -1,0 +1,198 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:49:32Z",
+ "generator": {
+  "run_context_worktree_digest": "4ddb4f08994eaed9875930a074f567c048bfbf8e8a91cfb2232e60e8f7b6f107",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/882209fe5798/BitmapCache",
+  "version": 1
+ },
+ "impl_commit": "882209fe579873307a37cc5a4d2976f954b38027",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BitmapCache.sv",
+    "sha256": "2e7f5cebbde7bbdeb9a0d03b15adf9360c213f2e25d876f2695c47c7d9813529"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClockGate.sv",
+    "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SplittedSRAM.sv",
+    "sha256": "a1e60ea3cf5be088839608cb3bb99e6197cef894708a6f52473ddab6e67af880"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SRAMTemplate_124.sv",
+    "sha256": "ddcd1628e306e952f4308a48ffce6715b7e3963a3db416a4e3b7e2ebd01a863e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p32x90m45s1h0l1b_bitmap.sv",
+    "sha256": "13e0a6e1dc4305dcd16bc7750005572bffb8af0ae3771576616dd4d7c5fefc5e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_9.sv",
+    "sha256": "14a80bd6c84e3fb6b9748e1c33f447520c8ce7a2086e6272d5a3c0ef5fe851f6"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistBitmapCache.sv",
+    "sha256": "cc7b0fd8d7692931cb7a90737614080266ea348930beac2b56ee611201585f59"
+   }
+  ],
+  "golden_sha256": "d7551c0f1476cc5c455e4d3bb920efd4c50f2fd8f818cee24f33cf08978d3ac9",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/mmu_common_pkg.sv",
+    "sha256": "245c2dca32d3f706222733ef8092dfc0135adc019ed555cf664afd3c31f7e664"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_SRAMTemplate_core.sv",
+    "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SRAMTemplate_124.sv",
+    "sha256": "663d1e0bdd58d7b87c025271e4b803b065c47de6861ec56ba7500c1810c0fecc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/SplittedSRAM.sv",
+    "sha256": "0eaa736a994d7306b4178374cb23751d76fb9b0a86b369f6dfbf7dd27cd735a3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/xs_mbist_pipe_core.sv",
+    "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistBitmapCache.sv",
+    "sha256": "c3df16b8773ac2091db3a6c66f5f14c24fd980469b14f79828bba88a6887e06b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/BitmapCache.sv",
+    "sha256": "75694cd8cc379f34f77cf2df56f21c233e08df33ab9190c4d35373e946fc935b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/ClockGate.sv",
+    "sha256": "de1c4425cf7e344bd87e6ada1b8f599080721a54aabcb1104366d1de3b2cd272"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/sram_array_1p32x90m45s1h0l1b_bitmap.sv",
+    "sha256": "13e0a6e1dc4305dcd16bc7750005572bffb8af0ae3771576616dd4d7c5fefc5e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/array_9.sv",
+    "sha256": "14a80bd6c84e3fb6b9748e1c33f447520c8ce7a2086e6272d5a3c0ef5fe851f6"
+   }
+  ],
+  "impl_sha256": "803c933f18a8264d732b2e2def3932d423506fd0cdd7551dd88d343a4ff2a640",
+  "repo_impl_files": 8
+ },
+ "mc_memory_objects": [
+  "sram_array_1p32x90m45s1h0l1b_bitmap",
+  "array_9"
+ ],
+ "native_facts_sha256": "8491f86ba3d9f89118cab824fa4ef5017f82539979adc88b370d002df3ee7f5f",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1925,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "882209fe579873307a37cc5a4d2976f954b38027",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "3393fee5254d19e973a93200e878592b01d0ebf31153d9979ff334dd3bd6ed15",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4ddb4f08994eaed9875930a074f567c048bfbf8e8a91cfb2232e60e8f7b6f107",
+ "provisional": false,
+ "receipt_sha256": "df7d243b47a05dcc77220844bd995e176e4badaa2a84bb63964884d1b1ea027b",
+ "reproduce": {
+  "command": "PROOF_COMMIT=882209fe579873307a37cc5a4d2976f954b38027 scripts/run_proof.sh BitmapCache BitmapCache",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "b285c26f6443e62b5dfca47ccf1d3400dae834829884f679bf1fdb856d11e157",
+ "run_id": "BitmapCache-20261011T094832Z-882209fe5",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/BitmapCache.tcl",
+    "sha256": "47bb4ecd8cd0e1349fabf639d85790736697d12382577487e7b6c544e5ac8bce"
+   }
+  ],
+  "sha256": "4f07d12a9e88763091af36ac6414c2f2c7347c35d5f43ef32a48bb326108aca0"
+ },
+ "target": "BitmapCache",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "BitmapCache",
+ "variant": "BitmapCache",
+ "verdict": "SUCCEEDED"
+}
