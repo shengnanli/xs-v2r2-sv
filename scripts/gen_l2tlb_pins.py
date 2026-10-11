@@ -1,30 +1,27 @@
 #!/usr/bin/env python3
-"""gen_l2tlb_pins.py —— L2TLB / L2TLBWrapper 的 FM「匹配后」钉点（fm_pins.tcl）生成器。
+"""gen_l2tlb_pins.py —— L2TLB 的 FM「匹配后」钉点（fm_pins.tcl）生成器。
 
-## 钉的是什么
+## 钉的是什么（2026-10-11 agent/l2tlb-gc 改写：exact green_child 组合）
 
-L2TLB 的 8 个大 child 两侧白盒展开之后（agent/l2tlb-assembly 第 3 轮），本层 glue 里有一批
-寄存器位**两侧都没有读者**（child 不读这些输入位：PTE 的 RSW 位 [9:8]、sfence 地址的页内偏移
-[9:0]）。它们在 golden 里是 firtool 展平的标量名，在重写核里是数组/struct 名，FM 的名字匹配
-配不上，于是以「unmatched unread」的形态两侧各剩 144 个（evidence/66c5bbc37f67/L2TLB 实测）。
-本文件按**命名规则**把它们一一对应起来（只 set_user_match，不约束 ref、不改 appvar、不加黑盒），
-配上之后它们成为 matched-unread，由 vmucp 实开比较。
+codex 0228 起 L2TLB 改为 exact green_child 组合：22 种直接 child 全部两侧 -interface_only 黑盒，只有本层 glue
+白盒受验（上一轮「child 两侧 golden 白盒」路线与它带来的 sfence/PTE-r/sel_pte/PtwCache merge 一对多钉点全部作废）。
+canary（worktree，不产 receipt；verif/ut/L2TLB/fm_work/L2TLB/unread_points.txt）实测：本层剩下的「两侧都无读者」点
+正好 128↔128，全是 resp_pte_sector 一族——每个 refill 槽 256 位 PTE 扇区里 4 个 PTE 的 [9:8] 位
+（PTE.rsw 之外的保留位：child 端口只取 ppn/perm，这两位在 golden 与重写核里都存了但没人读）。
+它们在 golden 里是 firtool 展平的标量名，在重写核里是二维数组名，FM 的名字匹配配不上，于是以
+「unmatched unread」形态两侧各剩 128。本文件按**命名规则**把它们一一对应起来（只 set_user_match，
+不约束 ref、不改 appvar、不加黑盒），配上之后成为 matched-unread，由 vmucp 实开比较——对应若错，FM 当场报 failing。
 
-对应规则（对着 golden L2TLB.sv 与 rtl/memblock/L2TLB.sv 逐条核过）：
+对应规则（golden L2TLB.sv 对重写 rtl/memblock/L2TLB.sv 核过）：
 
   golden（ref）                                   重写核（impl, u_core 下）
   resp_pte_sector_r_0[b] / resp_pte_sector_r_1[b] resp_pte_sector[0][b] / [0][256+b]
-      （golden 8327-8328 行：id 0 的两半 refill_data_0/_1）
+      （id 0 的两半 refill_data_0/_1）
   resp_pte_sector_r_<k>_<j>[b]  (k=1..7, j=0/1)    resp_pte_sector[k][256*j+b]
-  resp_pte_r_6[b] / resp_pte_r_7[b]               resp_pte_ptw[b] / resp_pte_hptw[b]
-      （id 6 = PTW，id 7 = HPTW，golden 8317/8322 行）
-  cache_io_refill_bits_sel_pte_dup_0_r[b]         refill_sel_pte_r[0][b]
-  sfence_dup_<n>_bits_addr[b]                     sfence_dup[<m>].addr[b]
-      （11 份副本同输入，merge_dup 把两侧各合成一个代表；代表是谁由 FM 定，实测
-        L2TLB 是 golden 2 号 / 重写 0 号；同值副本，配哪个代表都是同一个量）
 
-位集合 = FM 报告的 unmatched-unread 集合（PTE 每 64 位的 [9:8]，sfence 地址 [9:0]），
-字面写死、fail-closed：每条 set_user_match 数返回值，总数 != 字面期望就 error。
+位集合 = 每 64 位 PTE 的 [9:8]，8 槽 × 2 半 × 4 PTE × 2 位 = 128，字面写死、fail-closed：每条 set_user_match
+数返回值，总数 != 128 就 error。生成集合与 canary 实测两侧 128 名逐字相等（机检）。
+L2TLBWrapper 在 green_child 组合下 L2TLB 整体黑盒，这批寄存器不在它的证明里，不再生成它的钉点文件。
 
 用法: python3 scripts/gen_l2tlb_pins.py [--check]
 """
@@ -36,7 +33,7 @@ REPO = Path(__file__).resolve().parent.parent
 PTE_UNREAD_BITS = (8, 9)          # PTE.rsw 之外的 [9:8]：child 只取 ppn/perm，不读这两位
 
 
-def pairs(sfence_ref_copy, sfence_impl_copy):
+def pairs():
     """返回 [(ref 相对名, impl 相对名)]，相对于各自的层次前缀。"""
     out = []
     for k in range(8):
@@ -47,64 +44,29 @@ def pairs(sfence_ref_copy, sfence_impl_copy):
                     rb = 64 * pte + b
                     out.append((f'{rname}_reg\\[{rb}\\]',
                                 f'resp_pte_sector_reg\\[{k}\\]\\[{256 * j + rb}\\]'))
-    for gid, iname in ((6, 'resp_pte_ptw'), (7, 'resp_pte_hptw')):
-        for b in PTE_UNREAD_BITS:
-            out.append((f'resp_pte_r_{gid}_reg\\[{b}\\]', f'{iname}_reg\\[{b}\\]'))
-    for b in PTE_UNREAD_BITS:
-        out.append((f'cache_io_refill_bits_sel_pte_dup_0_r_reg\\[{b}\\]',
-                    f'refill_sel_pte_r_reg\\[0\\]\\[{b}\\]'))
-    for b in range(10):
-        out.append((f'sfence_dup_{sfence_ref_copy}_bits_addr_reg\\[{b}\\]',
-                    f'sfence_dup_reg\\[{sfence_impl_copy}\\]\\\\\\[addr\\]\\[{b}\\]'))
     return out
 
 
-def merge_pairs():
-    """merge_dup 两侧不对称的 3 个点：一对多钉到 golden 侧合并后的幸存者。
-
-    PtwCache 里 `ishptw_1 <= io_req_bits_isHptwReq` / `s2x_info_1 <= io_req_bits_req_info_s2xlate`
-    （golden PtwCache.sv 33894-33895，使能 _s2x_info_T_1 = stageReq_ready & io_req_valid）与
-    `data_isHptwReq` / `data_req_info_s2xlate`（30769/30766，使能 leftFire = io_req_valid &
-    stageDelay_0_ready & ~_GEN，而 stageReq_ready = stageDelay_0_ready & ~_GEN，3085-3086 行）
-    同 D、使能逐项相等。FM 的 merge_dup 在 golden 侧把前者合进后者，重写侧（同一份 golden
-    PtwCache 定义，只是上下文不同）没有合并，于是重写侧剩 3 个单边点（evidence/66c5bbc37f67、
-    413461528f8f 两次实测一致；把 cache.req.valid 与门改成 golden 次序也没有消掉）。
-    这里把重写侧的这 3 个点**额外**对应到 golden 侧的幸存者——那 3 个幸存者本身已按名字与
-    重写侧同名寄存器配上；一对多只是让 FM 也拿重写侧的 ishptw_1/s2x_info_1 去和同一个
-    golden 量比较（比较照比，不是豁免）。
-    ★一对多必须在**同一条** set_user_match 里列全部 impl 对象★（FM man：One reference design
-    object may be matched with more than one implementation design object）。第 4 次跑
-    （evidence/8ae5cf0427db）分两条写，第二条把幸存者从重写侧同名寄存器上改配走了，
-    同名寄存器反成单边未配点——所以这里同名点与额外点一起列。
-    """
-    return [('cache/data_isHptwReq_reg',
-             'u_cache/data_isHptwReq_reg', 'u_cache/ishptw_1_reg'),
-            ('cache/data_req_info_s2xlate_reg\\[0\\]',
-             'u_cache/data_req_info_s2xlate_reg\\[0\\]', 'u_cache/s2x_info_1_reg\\[0\\]'),
-            ('cache/data_req_info_s2xlate_reg\\[1\\]',
-             'u_cache/data_req_info_s2xlate_reg\\[1\\]', 'u_cache/s2x_info_1_reg\\[1\\]')]
+EXPECT = 128
 
 
-# (输出文件, top, ref 前缀, impl 前缀, sfence 代表副本 ref/impl)
+# (输出文件, top, ref 前缀, impl 前缀)
 TARGETS = [
-    ('verif/ut/L2TLB/fm_pins.tcl', 'L2TLB',
-     'r:/WORK/L2TLB', 'i:/WORK/L2TLB/u_core', 2, 0),
-    ('verif/ut/L2TLBWrapper/fm_pins.tcl', 'L2TLBWrapper',
-     'r:/WORK/L2TLBWrapper/ptw', 'i:/WORK/L2TLBWrapper/ptw/u_core', 2, 0),
+    ('verif/ut/L2TLB/fm_pins.tcl', 'L2TLB', 'r:/WORK/L2TLB', 'i:/WORK/L2TLB/u_core'),
 ]
 
 
-def render(top, rpfx, ipfx, sref, simp):
-    ps = pairs(sref, simp)
-    ms = merge_pairs()
+def render(top, rpfx, ipfx):
+    ps = pairs()
+    assert len(ps) == EXPECT and len({r for r, _ in ps}) == EXPECT and len({i for _, i in ps}) == EXPECT
     lines = [
         f'# fm_pins.tcl for {top} -- GENERATED by scripts/gen_l2tlb_pins.py. Do not hand-edit.',
         '# Post-match set_user_match for the glue registers that BOTH sides leave unread',
-        '# (PTE bits [9:8], sfence addr [9:0]); naming rule and evidence in the generator',
+        '# (PTE bits [9:8] of resp_pte_sector); naming rule and evidence in the generator',
         '# docstring. Only declares correspondences: no constraint, no appvar, no black box.',
         '# Fail-closed: every set_user_match return value is counted; total != literal -> error.',
         '# All puts are ASCII.',
-        f'set _l2p_expect {len(ps) + len(ms)}',
+        f'set _l2p_expect {EXPECT}',
         'set _l2p_ok 0',
         'set _l2p_bad 0',
         'proc _l2p {r i} {',
@@ -113,18 +75,10 @@ def render(top, rpfx, ipfx, sref, simp):
         '    if {$::_l2p_bad <= 10} { puts "L2TLB_PIN_FAIL: $r <-> $i" }',
         '  }',
         '}',
-        'proc _l2p3 {r i1 i2} {',
-        '  if {[set_user_match $r $i1 $i2]} { incr ::_l2p_ok } else {',
-        '    incr ::_l2p_bad',
-        '    if {$::_l2p_bad <= 10} { puts "L2TLB_PIN_FAIL: $r <-> $i1 + $i2" }',
-        '  }',
-        '}',
         f'puts "L2TLB_PIN_BEGIN {top} expect=$_l2p_expect"',
     ]
     for r, i in ps:
         lines.append(f'_l2p {rpfx}/{r} {ipfx}/{i}')
-    for r, i1, i2 in ms:
-        lines.append(f'_l2p3 {rpfx}/{r} {ipfx}/{i1} {ipfx}/{i2}')
     lines += [
         f'puts "L2TLB_PIN_END {top} ok=$_l2p_ok bad=$_l2p_bad expect=$_l2p_expect"',
         'if {$_l2p_ok != $_l2p_expect || $_l2p_bad != 0} {',
@@ -137,9 +91,9 @@ def render(top, rpfx, ipfx, sref, simp):
 def main():
     check = '--check' in sys.argv
     rc = 0
-    for rel, top, rp, ip, sr, si in TARGETS:
+    for rel, top, rp, ip in TARGETS:
         p = REPO / rel
-        txt = render(top, rp, ip, sr, si)
+        txt = render(top, rp, ip)
         if check:
             if not p.exists() or p.read_text() != txt:
                 print(f'ERROR: {rel} 与 gen_l2tlb_pins.py 输出不一致，请重跑生成器')

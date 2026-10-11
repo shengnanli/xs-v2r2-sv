@@ -20,4 +20,14 @@
 #   打开本项后 passing 143717 -> 143797（正好 +80）、failing 仍 0、unread 归 0。
 #   passing 不增即空转，不算过。
 
+#
+# ---- 2026-10-11 更新（agent/l2tlb-gc，codex 0222/0228）----
+# FM 输入改为：impl 读 SRAM 一路重写件（SplittedSRAM_1/2、SRAMTemplate_128/129/143），两侧共读登记 MC 存储层
+# （sram_array_*_ptw_l0/l1、array_10/11），array_10_ext/array_11_ext 两侧都不读（对称未解析黑盒）。于是：
+#   · 上面 matched_nc 20 里的 17 个 array_1x_ext/reg_RW0_ren 随 ext 黑盒化消失（ext 内部不再展开）；
+#   · unmatched unread 实测 41↔41（evidence/882209fe5798/PtwCache，钉点脚本字面计数处 fail-closed 停下的那一跑），
+#     五族规则逐条解析为 A32/B4/C4/D1/E0，见 verif/ut/PtwCache/fm_pins.tcl 的 _expect 处。
+# ★复核判据（本轮）★：钉点后 unmatched 六项全零、failing 0、unread 0；passing 恰等于 fm_predict 模型
+#   26599 减 constant_reg（模型 = regs 21088 + outs 2714 + 黑盒输入 2797，ext 当黑盒正是本轮证明形态）。
+#   matched_nc 的实际条数与双射核对写进 docs/lanes/l2tlb-gc_prereg.md。passing 偏离模型即停下诊断。
 fm_target_vmucp_allow

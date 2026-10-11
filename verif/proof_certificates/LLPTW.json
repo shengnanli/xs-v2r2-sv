@@ -1,0 +1,158 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:42:27Z",
+ "generator": {
+  "run_context_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/62de21a18346/LLPTW",
+  "version": 1
+ },
+ "impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LLPTW.sv",
+    "sha256": "494a4953ad2d4661d6b66c6cecadf85e4d225b0abc8a2c94c91e8fb795d32862"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RRArbiterInit_1.sv",
+    "sha256": "e06fb0849e6c5d8166fd2dbac14453e636bb214bc85bc42fa6f3c0444c11bd64"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RRArbiterInit_4.sv",
+    "sha256": "fdbd1217edfaf700df939e9ccdf0f580f3b53498b2a40a50ad3727c0f911491a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter2_LLPTW_Anon.sv",
+    "sha256": "f0ba7312cbc0badaa248f9a6242c285524dd14e609e1304f661c9ec073970954"
+   }
+  ],
+  "golden_sha256": "9226a6638cb8149de80a15ddccf10dc8213ebfad84a2857028ad490bfab150d1",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/mmu_common_pkg.sv",
+    "sha256": "245c2dca32d3f706222733ef8092dfc0135adc019ed555cf664afd3c31f7e664"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/LLPTW.sv",
+    "sha256": "99ea579c90dde5abff08d9d53b87d4f3eaf3140322587bcded61c94877660ba2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit.sv",
+    "sha256": "b6a3406112df63bc1ec77562e11b7fcabaf9ee6ae3e5d90a0edc89034b964bac"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit_1.sv",
+    "sha256": "650e58bf4a5d072ad460512d3785e5065500fbf60852259610a9e9704f04455d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit_4.sv",
+    "sha256": "3d09c81b595c170ffa39617bdcdff7276a4c13d3b90682adfece206024a3ad3c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter2_LLPTW_Anon.sv",
+    "sha256": "f0ba7312cbc0badaa248f9a6242c285524dd14e609e1304f661c9ec073970954"
+   }
+  ],
+  "impl_sha256": "1f0eb1c72388226e0ad11e2544125d16ed1f68dc49678edd9b794e2ece5852d4",
+  "repo_impl_files": 5
+ },
+ "native_facts_sha256": "b18f10dcdcc9d73ebcf84aeb85e7a209299c94a1bf97e0f83a549cdafae93b33",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 5598,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+ "provisional": false,
+ "receipt_sha256": "13ffb1800ff8e954978cf961b4c00529057af930f4ec3da6fd9ede2736b1bc54",
+ "reproduce": {
+  "command": "PROOF_COMMIT=62de21a1834697004056b37449556996a718c8bc scripts/run_proof.sh LLPTW LLPTW",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "54aedfeb19d87119bb2edb7789c132dfa877b5ab8cbb620c62daace44332eab3",
+ "run_id": "LLPTW-20261011T093941Z-62de21a18",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/LLPTW.tcl",
+    "sha256": "ad12e29d88cb99ada7ad0e4bdb1b48877f7a218be5ecd05e3961b34a4e837bf3"
+   }
+  ],
+  "sha256": "d31dc92b994c4148146d86bf20054fd0ae5f1b298e935399a69e66a665de2dbb"
+ },
+ "target": "LLPTW",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "LLPTW",
+ "variant": "LLPTW",
+ "verdict": "SUCCEEDED"
+}

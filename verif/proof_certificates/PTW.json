@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:37:39Z",
+ "generator": {
+  "run_context_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/62de21a18346/PTW",
+  "version": 1
+ },
+ "impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PTW.sv",
+    "sha256": "0d28c88ec25f69c78d9fc6093952ca230cf05bf904ec5415ff66d1204c512357"
+   }
+  ],
+  "golden_sha256": "38c8ea768d1dd75f6d48cfd82a92c4518da4507b96729535d1bca225b34047f3",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/mmu_common_pkg.sv",
+    "sha256": "245c2dca32d3f706222733ef8092dfc0135adc019ed555cf664afd3c31f7e664"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/PTW.sv",
+    "sha256": "bfdca9c30c120d0a7aa9cca6e53862048e846b5dedbe8a452934e9debb188dca"
+   }
+  ],
+  "impl_sha256": "e304f08801cf8583135302c3076757e1df7ebce3fe606dd4530f7953586e013c",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "e9fa037f0ea2963c103d3753c125d506002b76efeac46b6f6ca546f7591d10d9",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 2820,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+ "provisional": false,
+ "receipt_sha256": "3ae49069c848f48545f750d69ee9c7622179ea75b129fd8e8236ec2d62a795e7",
+ "reproduce": {
+  "command": "PROOF_COMMIT=62de21a1834697004056b37449556996a718c8bc scripts/run_proof.sh PTW PTW",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "1edac21967d2a294d4e0be83d4ea2d6c488571cbcbb16996ab6ac9335b9974e5",
+ "run_id": "PTW-20261011T093631Z-62de21a18",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/PTW.tcl",
+    "sha256": "9b3fc1cc1268d1b75001c50259766acbb95f2c72b1154032ee736eea62c20113"
+   }
+  ],
+  "sha256": "497920f4b8e453c609f185dacbdbf83107c21b37d1c9e5931bfa14758e64f381"
+ },
+ "target": "PTW",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PTW",
+ "variant": "PTW",
+ "verdict": "SUCCEEDED"
+}

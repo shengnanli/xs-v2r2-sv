@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:28:24Z",
+ "generator": {
+  "run_context_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/62de21a18346/Arbiter3_L2TLBImp_Anon",
+  "version": 1
+ },
+ "impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter3_L2TLBImp_Anon.sv",
+    "sha256": "b4b70ddea11d0d470e507ac3bf20a6cd5ac3640cf8e3a3cabaa7d3dc952df8e5"
+   }
+  ],
+  "golden_sha256": "b330f5d7848fdb2d8f58c4d30706b4b31f1dbb063078e900ce736cd512a40414",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/BusPerfMonitor.sv",
+    "sha256": "e0fd5015d709bd372c171f86c5774c9af56089a3a23ba57c1343d7da015e14d4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+    "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter3_L2TLBImp_Anon.sv",
+    "sha256": "2a4e9e3f2b9144061a9061ff8735705711d45d5800ea5f5e80ceadc7f55b1af0"
+   }
+  ],
+  "impl_sha256": "cc527b4a9c3ad72c7a1582d0355b1db5e7c7628c8d8b850d21280a20b5dad426",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "3d8811ea013f23fccb8f34fef2fc083b8cf26374567f236b86cfa22f19ceeea4",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1120,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+ "provisional": false,
+ "receipt_sha256": "6d92bf1b2c6dec13dd688cf62ca96d3fd1d087915943a2a702bcbb32038a4745",
+ "reproduce": {
+  "command": "PROOF_COMMIT=62de21a1834697004056b37449556996a718c8bc scripts/run_proof.sh BusArbLeaves Arbiter3_L2TLBImp_Anon",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "dc4e5b820daa04092dcb0d53197bc532d18ed8bb029e95c5c7974a0affb240d9",
+ "run_id": "BusArbLeaves-20261011T092731Z-62de21a18",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "Arbiter3_L2TLBImp_Anon",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "BusArbLeaves",
+ "variant": "Arbiter3_L2TLBImp_Anon",
+ "verdict": "SUCCEEDED"
+}

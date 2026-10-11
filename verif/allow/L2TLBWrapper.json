@@ -1,22 +1,26 @@
 {
- "schema": "xs-v2-sv-allow-v1",
- "target": "L2TLBWrapper",
  "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "note": "assembly 边界声明（2026-10-03 第 3 轮，agent/l2tlb-assembly）：L2TLB 不再黑盒——ref 侧 golden L2TLB、impl 侧重写 rtl/memblock/L2TLB.sv，其下 child 闭包两侧同为 golden 定义（UNCHANGED_GOLDEN_DEP）。原因：green_child 证书路线要求 certificate.impl_commit == POLICY.freeze_commit，freeze_commit 仍为 null（fail-closed），任何 green_child 都过不了闸；照 CtrlBlock 第 2 轮先例改白盒。黑盒只剩 L2TlbMissQueue 内 Queue40_L2TlbMQBundle 的 ram_ext（ram_40x47，inline 触发 FMR_ELAB-147），verif/vendor_boundary.tsv 已单条审定为 APPROVED_MEMORY_MACRO_MODEL（codex 0158 §1，symmetric_both_sides_only），两侧各 1 个实例。★不许把 class 改成 vendor_macro 绕过★。",
+ "note": "exact green_child 组合（codex 0228 问题 2 第 5 步，agent/l2tlb-gc）：唯一直接实例 ptw（L2TLB）两侧以 -interface_only 读入，写死 r/i 路径、child_target=L2TLB 与 L2TLB tracked 证书 sha256；FM_INTERFACE_ONLY 恰为 {L2TLB}。外壳 glue（端口直通 + 19 路 perf 两拍）白盒受验。ram_40x47 不在本层出现。上一轮重写 L2TLB 白盒 + golden child 闭包的路线作废。",
  "objects": [
   {
-   "side": "r",
-   "design": "ram_40x47",
-   "path": "r:/WORK/L2TLBWrapper/ptw/missQueue/io_out_q/ram_ext",
    "attrs": "i",
-   "class": "APPROVED_MEMORY_MACRO_MODEL"
+   "certificate_sha256": "57d584c0deed5ba40041726c080bd5f4639dbcbc9b2af7bcfcfe9e2ee3549293",
+   "child_target": "L2TLB",
+   "class": "green_child",
+   "design": "L2TLB",
+   "path": "r:/WORK/L2TLBWrapper/ptw",
+   "side": "r"
   },
   {
-   "side": "i",
-   "design": "ram_40x47",
-   "path": "i:/WORK/L2TLBWrapper/ptw/u_core/u_missQueue/io_out_q/ram_ext",
    "attrs": "i",
-   "class": "APPROVED_MEMORY_MACRO_MODEL"
+   "certificate_sha256": "57d584c0deed5ba40041726c080bd5f4639dbcbc9b2af7bcfcfe9e2ee3549293",
+   "child_target": "L2TLB",
+   "class": "green_child",
+   "design": "L2TLB",
+   "path": "i:/WORK/L2TLBWrapper/ptw",
+   "side": "i"
   }
- ]
+ ],
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "L2TLBWrapper"
 }

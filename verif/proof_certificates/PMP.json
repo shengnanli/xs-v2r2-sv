@@ -1,0 +1,125 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:43:20Z",
+ "generator": {
+  "run_context_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/62de21a18346/PMP",
+  "version": 1
+ },
+ "impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PMP.sv",
+    "sha256": "b6204853eb10f40f7508a25a4cb3f119cc756b60ea46c1af945278e39f5c0a65"
+   }
+  ],
+  "golden_sha256": "d07e0e426479e49324d9baf01a86ee5a2bb21f9833de4aeaa98b2f140cb9693d",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PMP.sv",
+    "sha256": "af7ce1f89b1349dc3503bb0c348d37a8c6b153b445218aca05bee1395b9e056a"
+   }
+  ],
+  "impl_sha256": "58660523829f5c384a8a06fc3b2b3916023d81c223cf89dc77171565f743cfcb",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "b315dd833321af67c04b1d8c2d034f22a1a93259ada055ee26489e51987aaddb",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 13096,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "a2d2ec0fb54632e0de4ed7309c04aae5da53fa0d18ce3959d6d623aba42b509e"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "0396a75c1614dcc0969b4dacff09150ae2a5bf6552da7895319a757c2c98f658",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+ "provisional": false,
+ "receipt_sha256": "79c9e7586667f5ac36d8b5f5b937e7a17a42bcbc053f1cfb900ca021366de7ea",
+ "reproduce": {
+  "command": "PROOF_COMMIT=62de21a1834697004056b37449556996a718c8bc scripts/run_proof.sh PMP PMP",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "3da59161f0a8ca7c8f8815d61a00aff3fcc19a8e5ed1d5c66280f6d778078483",
+ "run_id": "PMP-20261011T094113Z-62de21a18",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/PMP.tcl",
+    "sha256": "9e03e67b493d4095f6e1ad31fa5bfa0480347e27e293c2a473eab70d904ef317"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/PMP/fm_pins_pre.tcl",
+    "sha256": "a2d2ec0fb54632e0de4ed7309c04aae5da53fa0d18ce3959d6d623aba42b509e"
+   }
+  ],
+  "sha256": "d6ebbda74db0e943d2a3f55836bbb9d0e1c554bee396982b8eec1c0e500cfde0"
+ },
+ "target": "PMP",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PMP",
+ "variant": "PMP",
+ "verdict": "SUCCEEDED"
+}

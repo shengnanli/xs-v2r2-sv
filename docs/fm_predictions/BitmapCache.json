@@ -14,5 +14,5 @@
       "points": 400
     }
   },
-  "note": "merge_dup 改为默认（true）；厂商宏 array_9_ext.v 两侧读入（行为模型存储位进比较点），试跑 passing 13069，与上一份 receipt dfc23ffb 同"
+  "note": "agent/l2tlb-gc 2026-10-11（codex 0222/0228）：array_9_ext.v 两侧都不进 FM（MC_MEMORY_BLACKBOX 对称未解析黑盒），其余不变。merge_dup=true ⇒ 只给带：expected 1925（regs 1415 + outs 110 + bbin 400）减 const/unread，带宽 regs。上一份 receipt（ext 白盒）passing 13069 含 ext 存储位，本次应显著下降并落入 [1925-1415-const, 1925]。"
 }

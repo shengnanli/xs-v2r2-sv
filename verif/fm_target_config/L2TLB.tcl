@@ -54,4 +54,19 @@
 #            sfence_tmp_delay 10 / prefetch 4 / hptw 3 / ptw 1 / csr_dup 24。
 #   144 对：verif/ut/L2TLB/fm_pins.tcl（scripts/gen_l2tlb_pins.py）按命名规则钉上的 glue 位。
 # 预期打开后 passing 恰增 1288、unread 归零；出现 failing 即停下诊断。
+#
+# ---- 第 4 轮更新（2026-10-11，agent/l2tlb-gc，codex 0228 exact green_child 组合）----
+# 22 种直接 child 中 21 种两侧 -interface_only 黑盒（arb1/Arbiter2_PtwReq 两侧白盒），上一轮那 1288 对里属于
+# child 内部的 1144 对随 child 黑盒化不复存在；本层 glue 剩下的「两侧都无读者」点实测正好 128<->128
+# （canary 1，worktree，不产 receipt：verif/ut/L2TLB/fm_work/L2TLB/unread_points.txt，vmucp 开时仍是
+# unmatched unread，vmucp 对未配对点空转）——全是 resp_pte_sector 一族（8 槽 x 2 半 x 4 PTE x PTE[9:8]）。
+# verif/ut/L2TLB/fm_pins.tcl（scripts/gen_l2tlb_pins.py，128 条精确一对一 set_user_match，字面计数 fail-closed）
+# 把它们按命名规则配上 => 成为 matched-unread => 由本条 vmucp 实开比较。六条：
+#   (1) 精确绑定：128 个 ref 名与 128 个 impl 名逐字等于生成器输出（机检，集合相等）；
+#   (2) 双射：ref 侧 128 互异、impl 侧 128 互异、一一对应，无一对多/多对多；
+#   (3) FM 实开比较：canary 2（arb1 白盒 + 128 钉点）passing 63052 = canary 1 的 63006 + 1（原唯一 failing 转 passing）
+#       + 128（vmucp 实比的钉点对）- 83（arb1 改白盒后不再是黑盒输入引脚的 83 位），逐项对上；
+#   (4) 全零：failing 0 / unverified 0 / unmatched（比较点、黑盒输出、unread）两侧 0 / unread 0；
+#   (5) 无 dont_verify、无新黑盒（黑盒集合 = allow 声明的 21 design / 28 实例 x 两侧）；
+#   (6) 本段即 manifest 摘要。出现 failing 即停下诊断，不得回填白名单绕过。
 fm_target_vmucp_allow
