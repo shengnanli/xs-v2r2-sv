@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:32:28Z",
+ "generator": {
+  "run_context_worktree_digest": "b145db2bb19c6957d09532af2cdc8260d0c57947fb3fac7a8bf68203cacd4b05",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/397a2bc9c8d3/WritebackEntry_15",
+  "version": 1
+ },
+ "impl_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WritebackEntry_15.sv",
+    "sha256": "ce6a6a892c8935e2bac7e59cd6e95d75f9f2329664b8fcb683c756d1a0668759"
+   }
+  ],
+  "golden_sha256": "b0aa40d147c3970b86653436deab2c3780112595df1fbbb987c807a84add38a0",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/WritebackEntry.sv",
+    "sha256": "0e828d3b6522afcd473fd81e130f6e8dea5b4698dde12b174d815173b0b726b3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/WritebackEntry_15.sv",
+    "sha256": "bb04bcaa4581e4dc8d5b0683e2f1cdce3662fd2176012e82c6be8b75e2870204"
+   }
+  ],
+  "impl_sha256": "c51f3738d91ad1261b0a21d39d0bcd2cfd0c67b0fe41860869e996569420574c",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "f4990e2bca64fae3d42125fc959c8e13c1050dd8eb1cbe7f79d4d4cae04d5a68",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1042,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "b145db2bb19c6957d09532af2cdc8260d0c57947fb3fac7a8bf68203cacd4b05",
+ "provisional": false,
+ "receipt_sha256": "37b33e771bba0f2613ddb43fae32c51e992a68b54676790c8bc1c99248c3d2cd",
+ "reproduce": {
+  "command": "PROOF_COMMIT=397a2bc9c8d3c32117bc043e0c4ced20959614a3 scripts/run_proof.sh WritebackEntry WritebackEntry_15",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "ab4572e8a16e7321207682bc76433acee615d14daee00d7bf86ff128e3250dda",
+ "run_id": "WritebackEntry-20261003T235706Z-397a2bc9c",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/WritebackEntry_15.tcl",
+    "sha256": "26d7e2acaa648db471b21c4f84515bfd8635826047aae26837ef306730569b59"
+   }
+  ],
+  "sha256": "d90abbe4c8fc4a158d58f18b3b02a354397c032a8b31605f77e8851c015113b4"
+ },
+ "target": "WritebackEntry_15",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "WritebackEntry",
+ "variant": "WritebackEntry_15",
+ "verdict": "SUCCEEDED"
+}

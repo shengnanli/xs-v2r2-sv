@@ -1,0 +1,158 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:48:37Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/VSegmentUnit",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VSegmentUnit.sv",
+    "sha256": "e2803a5cadf9a14f4c2227f093f348fc80c47592c70b1f9ad3deb477b74de33d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VSegmentTrigger.sv",
+    "sha256": "54229bcf3bc0f429a5a0b5564d8af758fe4e8cf04884f56405457a1977c4aded"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/NewPipelineConnectPipe_33.sv",
+    "sha256": "7687eea51bcede45f053c28d22b54ce84a3ed5b97df7d381a2b6ffd58d409e79"
+   }
+  ],
+  "golden_sha256": "4502f396415c31a020672c74f78907bc36bb9366a201b8fb0579880a87e0101a",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/vlsu_pkg.sv",
+    "sha256": "879d7523fc2c19fa86b1045b6ad9001050077dc0eb8b1d7bbb5b195dbe05ce4c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/vsegment_pkg.sv",
+    "sha256": "45c44eec715e383d3f26c833a49fd651122137d241e96f6f5511433282ab1eed"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/MemTrigger.sv",
+    "sha256": "b9363f477dda6ec293fe917f20f1da53c0e380585a538cd71c4fd7d3fff69c71"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VSegmentTrigger.sv",
+    "sha256": "c4eec088bb5edee1bb33296d5c6a2361d00de6ef31bcff6f3962e3f6f29fdc9b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/PipelineConnect.sv",
+    "sha256": "34f2dc60598e7770fb1025291bc792befbeaaa27d5581d233e228c9f0c155c15"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/NewPipelineConnectPipe_33.sv",
+    "sha256": "eb57c313fb401581f034a92a795b45ebcc4df15d5a374836eb8d5db98b09f05b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/VSegmentUnit.sv",
+    "sha256": "d2dfb02f52ad73e47e69ed6fb5d328828cb9dd4e5fc462562a0f089961989b22"
+   }
+  ],
+  "impl_sha256": "ebdf9aeec0f2d8e08315adc6c0001f61b4937ab9c6b0f5f36de84dd8db3b9a93",
+  "repo_impl_files": 7
+ },
+ "native_facts_sha256": "534ab4737c999d7a528c6433708401554f47b91021c9869e7f0123eb4e605599",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 12699,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "6cae0f02c3ed6838273b166ce8fce27bce1e9a46e97152039ea571f0cc560989",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh VSegmentUnit VSegmentUnit",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "c7bc000b07b9dd483e0f4a05088e1f44e5808da88dac4aaaa01cada2d992acc2",
+ "run_id": "VSegmentUnit-20261011T034639Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/VSegmentUnit.tcl",
+    "sha256": "fd39dff7a54e0ffb85bacce4d3a80f4e94d86681a860774d6907f2769c83c87b"
+   }
+  ],
+  "sha256": "90cf87c57e21a0451308ed03074ebb44ee9f233e91feb66d08113329e49fc711"
+ },
+ "target": "VSegmentUnit",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "VSegmentUnit",
+ "variant": "VSegmentUnit",
+ "verdict": "SUCCEEDED"
+}

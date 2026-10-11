@@ -1,0 +1,133 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:30:16Z",
+ "generator": {
+  "run_context_worktree_digest": "53c5407ed3af3c7b09de2184849f851e4eefb01ecf814f6f6bcb5eefbff4707b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/28c7c3b90cda/NewPipelineConnectPipe_34",
+  "version": 1
+ },
+ "impl_commit": "28c7c3b90cdaa1bfe55c1474dcfab3e59590c90b",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/NewPipelineConnectPipe_34.sv",
+    "sha256": "d05e44cf0b4e703c415f1f3af2d2aab87ddc2e2703a69e0b54b5449189bc85cd"
+   }
+  ],
+  "golden_sha256": "e5e584921aab836e9f6017444f7733b0a3eb9309a02a77cdb85b55bad7323e7d",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/PipelineConnect.sv",
+    "sha256": "34f2dc60598e7770fb1025291bc792befbeaaa27d5581d233e228c9f0c155c15"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/NewPipelineConnectPipe_29.sv",
+    "sha256": "12cf7e4d7e38d313817aebc3dc1b365c2d617b7928fb849d2381e546c027854f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/NewPipelineConnectPipe_34.sv",
+    "sha256": "5add6e117dc3525027814bdaae1fb12a20c70d554b81b3a60225d33749cc6555"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/NewPipelineConnectPipe_35.sv",
+    "sha256": "2e4e39cecca2b3a59c9371292aa72a9238bf6ca3275ef027007da79efff14482"
+   }
+  ],
+  "impl_sha256": "f4c9c9d8f51783cbb0152a4455279cc3b0febba5562601f61e4deb803d4cce55",
+  "repo_impl_files": 4
+ },
+ "native_facts_sha256": "fe19507b87cc815ff0e1b72ea9359d81f74d951254f878cb133c04103468c937",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1523,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "28c7c3b90cdaa1bfe55c1474dcfab3e59590c90b",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "53c5407ed3af3c7b09de2184849f851e4eefb01ecf814f6f6bcb5eefbff4707b",
+ "provisional": false,
+ "receipt_sha256": "bbde4124ec083d3d6ea69d586ea836a0e57175f2e55ec9d46a63949b7cefdf8d",
+ "reproduce": {
+  "command": "PROOF_COMMIT=28c7c3b90cdaa1bfe55c1474dcfab3e59590c90b scripts/run_proof.sh NewPipelineConnectPipe_29_34_35 NewPipelineConnectPipe_34",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "da4b214e77581374285667f87ddf45abf11f8175ce770631b10ef34b3d116acb",
+ "run_id": "NewPipelineConnectPipe_29_34_35-20261003T133917Z-28c7c3b90",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/NewPipelineConnectPipe_29_34_35/fm_map/NewPipelineConnectPipe_34.txt",
+    "sha256": "5d6d5b61a6c3f7630aa624b266bf14e4efd2d1e1198a605c360bc3504ee78396"
+   }
+  ],
+  "sha256": "3137ee752ce600bbbe742e137da95ffc4d28642b5001863294fcc26a59c52c47"
+ },
+ "target": "NewPipelineConnectPipe_34",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "NewPipelineConnectPipe_29_34_35",
+ "variant": "NewPipelineConnectPipe_34",
+ "verdict": "SUCCEEDED"
+}

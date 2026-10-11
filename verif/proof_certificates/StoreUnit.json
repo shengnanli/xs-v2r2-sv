@@ -1,0 +1,133 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:45:16Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/StoreUnit",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StoreUnit.sv",
+    "sha256": "97f6b8ec617ed8738e027b653592f3243f962d5d4bdbe846c7d4c4e8ba07ec24"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MemTrigger_3.sv",
+    "sha256": "572bdd3969ebf4ecc3d2e1ebef98ed9c10bad2a2706b018447f3843d5431aa7d"
+   }
+  ],
+  "golden_sha256": "620064a68f21d4d92aa3b69e618249750fea3f3f6fc3ffdd0f00325ceed1456b",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/MemTrigger.sv",
+    "sha256": "b9363f477dda6ec293fe917f20f1da53c0e380585a538cd71c4fd7d3fff69c71"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/MemTrigger_3.sv",
+    "sha256": "c9d684cbcb1e28ffe8404f08cab7a3dc37b47eaa799c03b90fb49386c8135b0f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/StoreUnit.sv",
+    "sha256": "e47d01ec61cb9aea12b06f0d53e86e6651d0a92ca6e4349d8119ce491125dc38"
+   }
+  ],
+  "impl_sha256": "219221ed6220ab26820ca7c54565c92d6528c6f9c19e2bdfdc072a0850247a02",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "e24b1ebea2247e59d10e10c599d755aa7841cc73dd63f38f2440ceca4f23fdc8",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 7483,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "ccd53cd5858a3063fc36e1aa3de366291614bd2155aa52aff059bb92d39c5bc0",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh StoreUnit StoreUnit",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "0e7df00007f7282a0f6db40d22c3cea091a506ac455c4e6d46457168ca8b0fc9",
+ "run_id": "StoreUnit-20261011T034408Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/StoreUnit.tcl",
+    "sha256": "f0d2a1879637a7195b00317b99b3639cd06d17f65b0e5eadd439772cc592ca89"
+   }
+  ],
+  "sha256": "cd22c7c65b88cf1e7fc711b4ea03a8f841da9445e43f67c70beafef4287ed2ed"
+ },
+ "target": "StoreUnit",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "StoreUnit",
+ "variant": "StoreUnit",
+ "verdict": "SUCCEEDED"
+}

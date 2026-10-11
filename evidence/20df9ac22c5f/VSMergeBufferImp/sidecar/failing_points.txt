@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/VSMergeBufferImp
+Implementation : i:/WORK/VSMergeBufferImp
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 00:43:10 2026
+**************************************************
+
+No failing compare points.
+
+1

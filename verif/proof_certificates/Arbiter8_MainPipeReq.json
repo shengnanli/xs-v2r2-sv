@@ -1,0 +1,118 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:31:36Z",
+ "generator": {
+  "run_context_worktree_digest": "b145db2bb19c6957d09532af2cdc8260d0c57947fb3fac7a8bf68203cacd4b05",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/397a2bc9c8d3/Arbiter8_MainPipeReq",
+  "version": 1
+ },
+ "impl_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter8_MainPipeReq.sv",
+    "sha256": "9e9acc0427f8b1b32a6f51d867dc4513fe08c9716dec38f52ec36ef312a05e9d"
+   }
+  ],
+  "golden_sha256": "dd773ce131e8fa41285b6fce94735b52ad53945e47a48d4ac8b86975f7c9aabf",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+    "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/Arbiter8_MainPipeReq.sv",
+    "sha256": "38afcead88dd13610759df4f8d5f4ac3d86609ff81cfe284c1c84274c923b279"
+   }
+  ],
+  "impl_sha256": "4f59529a3e88b6aa7d75ff4837e8d304f7c928e12e9f2d460db7e452cfc77910",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "b10a0e6ea011a6069d6f5386fcc52bdb189fb0d5d46e016e3768d9fc569c41ee",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 116,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "b145db2bb19c6957d09532af2cdc8260d0c57947fb3fac7a8bf68203cacd4b05",
+ "provisional": false,
+ "receipt_sha256": "f7d9387524250a70cde7dd68363d937638dd29860a2fcdb78f1938fd631755fe",
+ "reproduce": {
+  "command": "PROOF_COMMIT=397a2bc9c8d3c32117bc043e0c4ced20959614a3 scripts/run_proof.sh Arbiter8_MainPipeReq Arbiter8_MainPipeReq",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "655b07ca82eb7aaeccc6c4e0f18c533a842bdf22701bc7844aed3d03e7ea12f8",
+ "run_id": "Arbiter8_MainPipeReq-20261003T235842Z-397a2bc9c",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "Arbiter8_MainPipeReq",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Arbiter8_MainPipeReq",
+ "variant": "Arbiter8_MainPipeReq",
+ "verdict": "SUCCEEDED"
+}

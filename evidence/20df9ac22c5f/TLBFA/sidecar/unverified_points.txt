@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/TLBFA
+Implementation : i:/WORK/TLBFA
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 01:40:47 2026
+**************************************************
+
+No unverified compare points.
+
+1

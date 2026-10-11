@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/PipelineRegModule_6
+Implementation : i:/WORK/PipelineRegModule_6
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 00:22:22 2026
+**************************************************
+
+No aborted compare points.
+
+1

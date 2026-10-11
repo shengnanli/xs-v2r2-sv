@@ -1,0 +1,130 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T04:21:47Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/PipelineRegModule",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PipelineRegModule.sv",
+    "sha256": "aee350ecb6bc213ccd834ebecccec7b10643c4af9e196db08c329c208146e917"
+   }
+  ],
+  "golden_sha256": "5b1aa477d1eb20cc1e929e07793913d60f9db3564a023c25f76f2790d0936652",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PipelineRegModule.sv",
+    "sha256": "bd2571ac83909d01afb5edff2d3668269d9fd069e9fdc3a8b3f1ba47d935ec4c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PipelineRegModule_1.sv",
+    "sha256": "2e705810ba8e360f8c36f57af0fde7128300617f5f743b81b381dd3ecd8bc69f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PipelineRegModule_2.sv",
+    "sha256": "9c9cfc5b5942c2f6aacf4aa1a72fc895be1fed603ee87c7a554150b45789ff7c"
+   }
+  ],
+  "impl_sha256": "5e744a3707499bd0dccd259cb9814c7a216901a6a46eca6787d6784866a8bf21",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "51f24ad80398fa83bd4ae009755c8edf89bde3edb3503c9741711c463691986f",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 389,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "3405ea213613297bcb539ec624cfa6e681e0222ec8d6572e000283234a789e59"
+  },
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "16eee2bd5a1b1e746c5588863b02314aba0e1f717a24bbf798e43888ed18c7bf",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "52c7b012c0d9f37b9baed0b10b438dafa0d5db84c1461a617bfaf465bea1da0d",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh PipelineRegModule PipelineRegModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "d81b0300a2e54da641395c97100c93f845cd4288109bac985fb6193a7e0bc92d",
+ "run_id": "PipelineRegModule-20261011T042054Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/PipelineRegModule/fm_pins_pre.tcl",
+    "sha256": "3405ea213613297bcb539ec624cfa6e681e0222ec8d6572e000283234a789e59"
+   }
+  ],
+  "sha256": "56ad9003834ec923371a1eddef6493907afab687cf03f81050c6f21e0e5fc2c7"
+ },
+ "target": "PipelineRegModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PipelineRegModule",
+ "variant": "PipelineRegModule",
+ "verdict": "SUCCEEDED"
+}

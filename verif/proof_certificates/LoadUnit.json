@@ -1,0 +1,128 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:42:46Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/LoadUnit",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LoadUnit.sv",
+    "sha256": "ec032a680a0f2c7e8e5a38e1b5b4579d988ba789fd3b40100f75642fe0c80091"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MemTrigger.sv",
+    "sha256": "adf00efa8c6d4a0e083d7646aa8626f356f9c33c1b3f53d84b082b2b1b5ccb00"
+   }
+  ],
+  "golden_sha256": "b9ebc9e55e7a5bb14fb58a74050310b724cd52092e4a6d527c8af3b826c74666",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/MemTrigger.sv",
+    "sha256": "b9363f477dda6ec293fe917f20f1da53c0e380585a538cd71c4fd7d3fff69c71"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/LoadUnit.sv",
+    "sha256": "c8d36a9b699c07e21b78b4596c8ff9a5285428ade51f1ae7cb2c8f5291632a2d"
+   }
+  ],
+  "impl_sha256": "62061c54ebe78ca94f618764ebab532d256cfcf0e83994c02840552586c92d54",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "9b772cf6d2223d92831915160082c624c25af210f47deae277393d7b68da3967",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 18749,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "251a8ade5c585b9f273ba201c5f974fb2bb5b351d09ab46a4c14e65bd1825be4",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh LoadUnit LoadUnit",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "28981f6b75b6f2a2bf93f99af4559d27dad94aab0083065b62dcc658379303e6",
+ "run_id": "LoadUnit-20261011T033928Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/LoadUnit.tcl",
+    "sha256": "499be8e5491a762613052368af5c44a93c3e862dd4e844b4cc697a9f4e6713b3"
+   }
+  ],
+  "sha256": "c48051387e96fe53ff29039398fe3a07b64eafa480f0ecf3603945f47711e60d"
+ },
+ "target": "LoadUnit",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "LoadUnit",
+ "variant": "LoadUnit",
+ "verdict": "SUCCEEDED"
+}
