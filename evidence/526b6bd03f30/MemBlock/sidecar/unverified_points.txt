@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/MemBlock
+Implementation : i:/WORK/MemBlock
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 08:30:57 2026
+**************************************************
+
+No unverified compare points.
+
+1
