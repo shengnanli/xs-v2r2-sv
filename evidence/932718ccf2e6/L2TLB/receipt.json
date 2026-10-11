@@ -1,0 +1,816 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "L2TLB",
+ "run_id": "L2TLB-20261011T114311Z-932718ccf",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/L2TLB.sv",
+   "kind": "golden",
+   "sha256": "d247762508746190bd608b8f792c53be8fb2f3fd6c6604b9378e149a0e60f7f7"
+  },
+  {
+   "path": "golden-rtl/Arbiter1_L2TLBImp_Anon.sv",
+   "kind": "golden",
+   "sha256": "b12815e511b214e2df374ee7aa1d5c11ae20e2fa852c326fce91c3c9eb981906"
+  },
+  {
+   "path": "golden-rtl/Arbiter2_L2TLBImp_Anon.sv",
+   "kind": "golden",
+   "sha256": "7f31853f2442276a0af27d40c55a8419ed467677bd2260c60e58a2c507bf51f4"
+  },
+  {
+   "path": "golden-rtl/Arbiter2_L2TLBImp_Anon_1.sv",
+   "kind": "golden",
+   "sha256": "176ee648681252f90589b89c0b2d727d63375ed5b41cc712475a576b6cc5738b"
+  },
+  {
+   "path": "golden-rtl/Arbiter2_L2TlbWithHptwIdBundle.sv",
+   "kind": "golden",
+   "sha256": "f99078376542c734cf8298df6f178719094a1858f47a7b5ce0bfab147975d7a3"
+  },
+  {
+   "path": "golden-rtl/Arbiter2_PtwReq.sv",
+   "kind": "golden",
+   "sha256": "3d44ce50597a514813ac162ab4879946f6d1fcc8515e3ee634120407ced1e6eb"
+  },
+  {
+   "path": "golden-rtl/Arbiter3_bitmapReqBundle.sv",
+   "kind": "golden",
+   "sha256": "6c10340cfc62588e94793dd17b08558c3ef3ce0aa5481864986e7f1b4b9d61a8"
+  },
+  {
+   "path": "golden-rtl/Arbiter3_L2TLBImp_Anon.sv",
+   "kind": "golden",
+   "sha256": "b4b70ddea11d0d470e507ac3bf20a6cd5ac3640cf8e3a3cabaa7d3dc952df8e5"
+  },
+  {
+   "path": "golden-rtl/Arbiter4_L2TlbMemReqBundle.sv",
+   "kind": "golden",
+   "sha256": "b247176fe1c5b19ea01c1a9ef4c94d44f729ef7fdb739fbcd057e118d7ac3050"
+  },
+  {
+   "path": "golden-rtl/Arbiter5_L2TlbWithHptwIdBundle.sv",
+   "kind": "golden",
+   "sha256": "69ce62d5be33e56c26ca9b21a86fa7d6cb35e8023bac21ddae8d5bad127a0d52"
+  },
+  {
+   "path": "golden-rtl/Bitmap.sv",
+   "kind": "golden",
+   "sha256": "e250ce910f703acaa12a9a62447d30e34e30aaa2e98669fbc8286e1d4910f9ba"
+  },
+  {
+   "path": "golden-rtl/BitmapCache.sv",
+   "kind": "golden",
+   "sha256": "2e7f5cebbde7bbdeb9a0d03b15adf9360c213f2e25d876f2695c47c7d9813529"
+  },
+  {
+   "path": "golden-rtl/DelayN_13.sv",
+   "kind": "golden",
+   "sha256": "b09d6e57c14d5dc9eb188e426e6cdf66d58027d5112a622e7ec2e69215227515"
+  },
+  {
+   "path": "golden-rtl/DelayN_220.sv",
+   "kind": "golden",
+   "sha256": "86c6d44a0bb032a67afdb9672cefb82da0ae4eb19eabd09211374ae28c95fcb7"
+  },
+  {
+   "path": "golden-rtl/DelayN_221.sv",
+   "kind": "golden",
+   "sha256": "c5ee67e899b305f4d7ab368470b1d85cc8a8c0fff939a078fe53171e79949660"
+  },
+  {
+   "path": "golden-rtl/HPTW.sv",
+   "kind": "golden",
+   "sha256": "b4f4f582b2db5c7c1ffea6870aeac3899291c000ba456146b27e0ff854d5ac1b"
+  },
+  {
+   "path": "golden-rtl/L2TlbMissQueue.sv",
+   "kind": "golden",
+   "sha256": "4e554d72f577da15d3bae53118b762b473502fbcd7e5f33be902f60c4dd84321"
+  },
+  {
+   "path": "golden-rtl/L2TlbPrefetch.sv",
+   "kind": "golden",
+   "sha256": "70d3edbb84dd40c27b7e65ed1b2986f573ed69dbe2ba94141ff43b263498dae8"
+  },
+  {
+   "path": "golden-rtl/LLPTW.sv",
+   "kind": "golden",
+   "sha256": "494a4953ad2d4661d6b66c6cecadf85e4d225b0abc8a2c94c91e8fb795d32862"
+  },
+  {
+   "path": "golden-rtl/PMP.sv",
+   "kind": "golden",
+   "sha256": "b6204853eb10f40f7508a25a4cb3f119cc756b60ea46c1af945278e39f5c0a65"
+  },
+  {
+   "path": "golden-rtl/PMPChecker.sv",
+   "kind": "golden",
+   "sha256": "45c292e7fbf9528db0f1dc76c6b83908b1853148d695b084b8a1e310d0acb3a9"
+  },
+  {
+   "path": "golden-rtl/PTW.sv",
+   "kind": "golden",
+   "sha256": "0d28c88ec25f69c78d9fc6093952ca230cf05bf904ec5415ff66d1204c512357"
+  },
+  {
+   "path": "golden-rtl/PtwCache.sv",
+   "kind": "golden",
+   "sha256": "a8fbb7f57b2ddc52dd1b7be285ea2f7e9b3a6220241f4569487d3d7a40c437da"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/mmu/mmu_common_pkg.sv",
+   "kind": "repo",
+   "sha256": "245c2dca32d3f706222733ef8092dfc0135adc019ed555cf664afd3c31f7e664"
+  },
+  {
+   "path": "rtl/mmu/Arbiter1_L2TLBImp_Anon.sv",
+   "kind": "repo",
+   "sha256": "f1fda33418e20f491b1f47aac8d56597cd27678793298b825e8e0eeaba6445a7"
+  },
+  {
+   "path": "rtl/mmu/Arbiter2_L2TLBImp_Anon.sv",
+   "kind": "repo",
+   "sha256": "5950a5152a95e0056127c8dd84b45d3b107e64992f1fb30aaa265ef9cb996e79"
+  },
+  {
+   "path": "rtl/mmu/Arbiter2_L2TLBImp_Anon_1.sv",
+   "kind": "repo",
+   "sha256": "18eee67e72ec744171667493aa82d0baf4dd62150d760e2b6e6905d9cea4b9e7"
+  },
+  {
+   "path": "rtl/mmu/Arbiter2_L2TlbWithHptwIdBundle.sv",
+   "kind": "repo",
+   "sha256": "af5c5448156100709e57c403167bd31da882eba4f4feb7cdfc0a536672de8e31"
+  },
+  {
+   "path": "rtl/mmu/Arbiter2_PtwReq.sv",
+   "kind": "repo",
+   "sha256": "b808e27b36bd357d07deea2f7e7d2acda0fa2fb3006743314dfd442b2b022669"
+  },
+  {
+   "path": "rtl/mmu/Arbiter3_bitmapReqBundle.sv",
+   "kind": "repo",
+   "sha256": "aacc30b9eee383997c41f1251011443f17c9bb543e5cda7732b8a262e182108a"
+  },
+  {
+   "path": "rtl/mmu/Arbiter3_L2TLBImp_Anon.sv",
+   "kind": "repo",
+   "sha256": "2a4e9e3f2b9144061a9061ff8735705711d45d5800ea5f5e80ceadc7f55b1af0"
+  },
+  {
+   "path": "rtl/mmu/Arbiter4_L2TlbMemReqBundle.sv",
+   "kind": "repo",
+   "sha256": "cfa29b14acc4319532500c7addfa081e1ffce60cf55363a0f09d7b629a7ca4aa"
+  },
+  {
+   "path": "rtl/mmu/Arbiter5_L2TlbWithHptwIdBundle.sv",
+   "kind": "repo",
+   "sha256": "6af2f1a521a1f672c1165eb39212373dc38d1528180ecc7cf217881b74818931"
+  },
+  {
+   "path": "rtl/mmu/Bitmap.sv",
+   "kind": "repo",
+   "sha256": "3f7e13fab3d147adf0b4a758b1b4fabc20baec8797e1ff32e27bf0dc8ac7d2cd"
+  },
+  {
+   "path": "rtl/mmu/BitmapCache.sv",
+   "kind": "repo",
+   "sha256": "75694cd8cc379f34f77cf2df56f21c233e08df33ab9190c4d35373e946fc935b"
+  },
+  {
+   "path": "rtl/common/DelayN_13.sv",
+   "kind": "repo",
+   "sha256": "c5bfb22beb4ad4d4500bb107fc257c5118e2139244efa92092332c99be2812f4"
+  },
+  {
+   "path": "rtl/common/DelayN_220.sv",
+   "kind": "repo",
+   "sha256": "227bbd535f5f4616f54d518ab8bcf2eef700bfee998e48b77a2539758be41233"
+  },
+  {
+   "path": "rtl/common/DelayN_221.sv",
+   "kind": "repo",
+   "sha256": "bc3b8feed35bcc178085e020071595930b788cffb724dadd17a1ec1c46cba0f6"
+  },
+  {
+   "path": "rtl/mmu/HPTW.sv",
+   "kind": "repo",
+   "sha256": "d3d38f70dd307045e5e37910e40e7a9cc1afce1a3b0a343ceb27281cd8d722d4"
+  },
+  {
+   "path": "rtl/memblock/L2TlbMissQueue.sv",
+   "kind": "repo",
+   "sha256": "b3e03464ceec84a2c70534021f82fc8820bf97c01fab42f3ce9d3df66e23bc51"
+  },
+  {
+   "path": "rtl/memblock/L2TlbPrefetch.sv",
+   "kind": "repo",
+   "sha256": "4244bc4c3a38fdabd1ff55015846ea6c00cc871fee0cf44c5fe72aa454eae3c5"
+  },
+  {
+   "path": "rtl/mmu/LLPTW.sv",
+   "kind": "repo",
+   "sha256": "99ea579c90dde5abff08d9d53b87d4f3eaf3140322587bcded61c94877660ba2"
+  },
+  {
+   "path": "rtl/memblock/PMP.sv",
+   "kind": "repo",
+   "sha256": "af7ce1f89b1349dc3503bb0c348d37a8c6b153b445218aca05bee1395b9e056a"
+  },
+  {
+   "path": "rtl/backend/PMPChecker.sv",
+   "kind": "repo",
+   "sha256": "48757f1a260d7f9df060c7931adb7cb248fa1fd051f028fb08009c54a6ef2a96"
+  },
+  {
+   "path": "rtl/mmu/PTW.sv",
+   "kind": "repo",
+   "sha256": "bfdca9c30c120d0a7aa9cca6e53862048e846b5dedbe8a452934e9debb188dca"
+  },
+  {
+   "path": "rtl/mmu/PtwCache.sv",
+   "kind": "repo",
+   "sha256": "23aa4501f4c1f47c05e269d261bb9cdae2f6f21eb5b3d991ddf4fd36d8fd900e"
+  },
+  {
+   "path": "rtl/memblock/L2TLB.sv",
+   "kind": "repo",
+   "sha256": "5d509fdd6edb31e244c65504a1ed45f8010f3934b5b90326325f733759f77f98"
+  }
+ ],
+ "impl_commit": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins.tcl": "fba09b9ac63c2a85658726e193d1ba58ea3ca87ff4c18fcf5e17ee3d562e3cdc"
+  },
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/L2TLB.json",
+    "sha256": "4496a21bd300eab4e6e17df2352a6d2b51ef4036f9c545bb5f457df3636e0556"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "Arbiter1_L2TLBImp_Anon Arbiter2_L2TLBImp_Anon Arbiter2_L2TLBImp_Anon_1 Arbiter2_L2TlbWithHptwIdBundle Arbiter3_bitmapReqBundle Arbiter3_L2TLBImp_Anon Arbiter4_L2TlbMemReqBundle Arbiter5_L2TlbWithHptwIdBundle Bitmap BitmapCache DelayN_13 DelayN_220 DelayN_221 HPTW L2TlbMissQueue L2TlbPrefetch LLPTW PMP PMPChecker PTW PtwCache",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [
+  {
+   "child_target": "DelayN_220",
+   "child_certificate_path": "verif/proof_certificates/DelayN_220.json",
+   "child_certificate_sha256": "839d5a109143aa534957ace5e833d3e75d25d349e2a9be5ed6761b4c698aeb6e",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "2c32a2628d4081de65175c1edf1bea9c40385fc7a6b1addc7fe1aa47a715c27f",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 19,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "DelayN_221",
+   "child_certificate_path": "verif/proof_certificates/DelayN_221.json",
+   "child_certificate_sha256": "99daa91f9008ba03689ed95e347eb605f85373fa0589bc342974e2601a053170",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "2c32a2628d4081de65175c1edf1bea9c40385fc7a6b1addc7fe1aa47a715c27f",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 19,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "PMP",
+   "child_certificate_path": "verif/proof_certificates/PMP.json",
+   "child_certificate_sha256": "a9f8753f4402439d25ce1add5a098b40180e1f843ee5bc731c9e86b322c68bc1",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "58660523829f5c384a8a06fc3b2b3916023d81c223cf89dc77171565f743cfcb",
+   "child_script_closure_sha256": "d6ebbda74db0e943d2a3f55836bbb9d0e1c554bee396982b8eec1c0e500cfde0",
+   "child_impl_files_verified_at_parent_commit": 1,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "PMPChecker",
+   "child_certificate_path": "verif/proof_certificates/PMPChecker.json",
+   "child_certificate_sha256": "15b65d9f3b9cef5fcb1533e29c8b40a086753ec97f7c47f6f08f756716ff02c8",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "ef6fc85464d4dcfd8534ef0922378df1cb0a857194f8a0bda0455aa5eafebe5a",
+   "child_script_closure_sha256": "d0830b69b7f855d7980b7861a8a21a0832bb8269098e57d46f5dd42409823e95",
+   "child_impl_files_verified_at_parent_commit": 4,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Bitmap",
+   "child_certificate_path": "verif/proof_certificates/Bitmap.json",
+   "child_certificate_sha256": "d86029f62b6059b5d86fedb60a2589fa69d869b9106679e53abe8719e65c0a39",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "335d1d9770ee2e60d8cbe0a81fd6fc3c50a2dc90b2fe575511e0e21b48c55417",
+   "child_script_closure_sha256": "8321a11e74a63a0654331bc396e75f405347133a07fc712a2a5bf711f79a713b",
+   "child_impl_files_verified_at_parent_commit": 3,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "BitmapCache",
+   "child_certificate_path": "verif/proof_certificates/BitmapCache.json",
+   "child_certificate_sha256": "5ddd82da9bc074b4b82196cbcc7423c8f0a3207baedceced8ea7e9e86d768f2f",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "882209fe579873307a37cc5a4d2976f954b38027",
+   "child_impl_closure_sha256": "803c933f18a8264d732b2e2def3932d423506fd0cdd7551dd88d343a4ff2a640",
+   "child_script_closure_sha256": "4f07d12a9e88763091af36ac6414c2f2c7347c35d5f43ef32a48bb326108aca0",
+   "child_impl_files_verified_at_parent_commit": 8,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "L2TlbMissQueue",
+   "child_certificate_path": "verif/proof_certificates/L2TlbMissQueue.json",
+   "child_certificate_sha256": "cdf1fd0261c6f215e6d7cafc38fb4783cf67351fb135e4781351f94bd3cf7d64",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "44f8113550bfe1e89ccbe5e3c8f3b0e96d05c6b74f7133ffb5901241146f2ac9",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 1,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "PtwCache",
+   "child_certificate_path": "verif/proof_certificates/PtwCache.json",
+   "child_certificate_sha256": "52057089f31bc8868458575e6ebec65c1d98e7353ebe68525e951200da6c8542",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "f4c4c870f0d4d1c542402edeb18177a6f049124a",
+   "child_impl_closure_sha256": "99dde958e665af9f0d213748ca83b423194a865f1e62295f4c25bad68a3f4a9d",
+   "child_script_closure_sha256": "ab7d8e80673b27ac80d495093ff1e38139ed513530b15ce10bd69148df2793aa",
+   "child_impl_files_verified_at_parent_commit": 12,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "PTW",
+   "child_certificate_path": "verif/proof_certificates/PTW.json",
+   "child_certificate_sha256": "dc7c5de2971707b6f240ef47d9cb1f58a1d3dd7a9b02ca4c9fa0cee2ec928081",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "e304f08801cf8583135302c3076757e1df7ebce3fe606dd4530f7953586e013c",
+   "child_script_closure_sha256": "497920f4b8e453c609f185dacbdbf83107c21b37d1c9e5931bfa14758e64f381",
+   "child_impl_files_verified_at_parent_commit": 2,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "HPTW",
+   "child_certificate_path": "verif/proof_certificates/HPTW.json",
+   "child_certificate_sha256": "f9e55c0059739b91e5d51ba8f1752ba94b9255acf0cd8d3267952353a3b7372a",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "63495f19ca8b778c21eb45122389de1d2e4a281d6ddc5f3291a06f8c07340e98",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 2,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "LLPTW",
+   "child_certificate_path": "verif/proof_certificates/LLPTW.json",
+   "child_certificate_sha256": "ec9632b6b849c0dd8b59f73a8e7d34b8b5dbce43cac01231182d5895ba473466",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "1f0eb1c72388226e0ad11e2544125d16ed1f68dc49678edd9b794e2ece5852d4",
+   "child_script_closure_sha256": "d31dc92b994c4148146d86bf20054fd0ae5f1b298e935399a69e66a665de2dbb",
+   "child_impl_files_verified_at_parent_commit": 5,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Arbiter5_L2TlbWithHptwIdBundle",
+   "child_certificate_path": "verif/proof_certificates/Arbiter5_L2TlbWithHptwIdBundle.json",
+   "child_certificate_sha256": "225cdcc6616cbc48dbc3f3f51b25ac2a56974ffeb151491422148a3bb031b8aa",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "91a4829b63bc5d6a5026c7e826847099e93bad6407d8d6fe8fa192191296925c",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 6,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Arbiter2_L2TLBImp_Anon",
+   "child_certificate_path": "verif/proof_certificates/Arbiter2_L2TLBImp_Anon.json",
+   "child_certificate_sha256": "353284bc44a4ccb8de3273b1a778ae8c0cb197c76c80b97afa9f57b12924cf32",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "f374aad5554e406b54a6ace33d58a61daea31cab51da23e3c1ac48a8f9c975e9",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 5,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Arbiter2_L2TLBImp_Anon_1",
+   "child_certificate_path": "verif/proof_certificates/Arbiter2_L2TLBImp_Anon_1.json",
+   "child_certificate_sha256": "5aa5a6f9833093da3ad9db75c6f2f369bb35127a3c535ce7569815135e0565ce",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "91a4829b63bc5d6a5026c7e826847099e93bad6407d8d6fe8fa192191296925c",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 6,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Arbiter1_L2TLBImp_Anon",
+   "child_certificate_path": "verif/proof_certificates/Arbiter1_L2TLBImp_Anon.json",
+   "child_certificate_sha256": "d6f86ead944d3b9da021f84d2760f2d048fb1d864f5f2d7eaae77112a049dd7e",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "91a4829b63bc5d6a5026c7e826847099e93bad6407d8d6fe8fa192191296925c",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 6,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Arbiter3_L2TLBImp_Anon",
+   "child_certificate_path": "verif/proof_certificates/Arbiter3_L2TLBImp_Anon.json",
+   "child_certificate_sha256": "64db8d907c81bf6cc7fc2b3c8c2149fca70b5891989f4d1be8faa5f0bdb963d5",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "cc527b4a9c3ad72c7a1582d0355b1db5e7c7628c8d8b850d21280a20b5dad426",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 3,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "L2TlbPrefetch",
+   "child_certificate_path": "verif/proof_certificates/L2TlbPrefetch.json",
+   "child_certificate_sha256": "efdb720d60fd989039b4dcd677303b52f80eb7b51edb486c1d49de55e9bff7a0",
+   "child_verdict": "PASS_DEAD_REF",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "32be7a4252649ddd19e6e65c5f8aacfbc588e1cf31e9db274f23afbb940ad7c7",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 1,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Arbiter2_L2TlbWithHptwIdBundle",
+   "child_certificate_path": "verif/proof_certificates/Arbiter2_L2TlbWithHptwIdBundle.json",
+   "child_certificate_sha256": "d227194f67b3ac518cfc1bb5925779708f3c05fb41d8a0a1657cdb9adf391c66",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "f374aad5554e406b54a6ace33d58a61daea31cab51da23e3c1ac48a8f9c975e9",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 5,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "DelayN_13",
+   "child_certificate_path": "verif/proof_certificates/DelayN_13.json",
+   "child_certificate_sha256": "7061d6d7e2a717018581e23d0035409d3c712e14015bb2b492f4009fd6dc17a1",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "2c32a2628d4081de65175c1edf1bea9c40385fc7a6b1addc7fe1aa47a715c27f",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 19,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Arbiter4_L2TlbMemReqBundle",
+   "child_certificate_path": "verif/proof_certificates/Arbiter4_L2TlbMemReqBundle.json",
+   "child_certificate_sha256": "073074916e4ea0ded2f5a91f931fb9cad2938bc7f9c2686521745c0ff4dc3452",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "91a4829b63bc5d6a5026c7e826847099e93bad6407d8d6fe8fa192191296925c",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 6,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Arbiter3_bitmapReqBundle",
+   "child_certificate_path": "verif/proof_certificates/Arbiter3_bitmapReqBundle.json",
+   "child_certificate_sha256": "c99c02ed54b7b50b27ce25e42c5f62d869525a0aa5bac8dacdd35f734e2a170f",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+   "child_impl_closure_sha256": "91a4829b63bc5d6a5026c7e826847099e93bad6407d8d6fe8fa192191296925c",
+   "child_script_closure_sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5",
+   "child_impl_files_verified_at_parent_commit": 6,
+   "parent_commit_used": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+   "child_evidence_retention": "attestation_only"
+  }
+ ],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "L2TLB-20261011T114311Z-932718ccf",
+  "top": "L2TLB",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 63052,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/L2TLB/Arbiter1_L2TLBImp_Anon",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_out_arb_0"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/Arbiter1_L2TLBImp_Anon_1",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_out_arb_1"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/Arbiter3_L2TLBImp_Anon",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_merge_arb_0"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/Arbiter3_L2TLBImp_Anon_1",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_merge_arb_1"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/PMPChecker",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_pmp_chk_ptw"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/PMPChecker_1",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_pmp_chk_llptw0"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/PMPChecker_2",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_pmp_chk_llptw1"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/PMPChecker_3",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_pmp_chk_hptw"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/PMPChecker_4",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_pmp_chk_bitmap"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/arb2",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_arb_cache_in"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/bitmap",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_bitmap"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/bitmap_arb",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_bitmap_arb"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/bitmapcache",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_bitmapcache"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/cache",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_cache"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/csr_tmp_delay",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_csr_delay"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/hptw",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_hptw"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/hptw_req_arb",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_arb_hptw_req"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/hptw_resp_arb",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_arb_hptw_resp"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/io_wfi_wfiSafe_delay",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_wfi_safe_delay"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/llptw",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_llptw"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/mem_arb",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_mem_arb"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/missQueue",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_missQueue"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/mq_arb",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_arb_mq"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/pmp",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_pmp"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/prefetch",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_prefetch"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/ptw",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_ptw"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/sfence_tmp_delay",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_sfence_delay"
+    },
+    {
+     "ref_path": "r:/WORK/L2TLB/wfiReq_delay",
+     "impl_path": "i:/WORK/L2TLB/u_core/u_wfi_req_delay"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [
+    "r:/WORK/L2TLB/Arbiter1_L2TLBImp_Anon",
+    "r:/WORK/L2TLB/Arbiter1_L2TLBImp_Anon_1",
+    "r:/WORK/L2TLB/Arbiter3_L2TLBImp_Anon",
+    "r:/WORK/L2TLB/Arbiter3_L2TLBImp_Anon_1",
+    "r:/WORK/L2TLB/PMPChecker",
+    "r:/WORK/L2TLB/PMPChecker_1",
+    "r:/WORK/L2TLB/PMPChecker_2",
+    "r:/WORK/L2TLB/PMPChecker_3",
+    "r:/WORK/L2TLB/PMPChecker_4",
+    "r:/WORK/L2TLB/arb2",
+    "r:/WORK/L2TLB/bitmap",
+    "r:/WORK/L2TLB/bitmap_arb",
+    "r:/WORK/L2TLB/bitmapcache",
+    "r:/WORK/L2TLB/cache",
+    "r:/WORK/L2TLB/csr_tmp_delay",
+    "r:/WORK/L2TLB/hptw",
+    "r:/WORK/L2TLB/hptw_req_arb",
+    "r:/WORK/L2TLB/hptw_resp_arb",
+    "r:/WORK/L2TLB/io_wfi_wfiSafe_delay",
+    "r:/WORK/L2TLB/llptw",
+    "r:/WORK/L2TLB/mem_arb",
+    "r:/WORK/L2TLB/missQueue",
+    "r:/WORK/L2TLB/mq_arb",
+    "r:/WORK/L2TLB/pmp",
+    "r:/WORK/L2TLB/prefetch",
+    "r:/WORK/L2TLB/ptw",
+    "r:/WORK/L2TLB/sfence_tmp_delay",
+    "r:/WORK/L2TLB/wfiReq_delay"
+   ],
+   "interface_only_impl": [
+    "i:/WORK/L2TLB/u_core/u_arb_cache_in",
+    "i:/WORK/L2TLB/u_core/u_arb_hptw_req",
+    "i:/WORK/L2TLB/u_core/u_arb_hptw_resp",
+    "i:/WORK/L2TLB/u_core/u_arb_mq",
+    "i:/WORK/L2TLB/u_core/u_bitmap",
+    "i:/WORK/L2TLB/u_core/u_bitmap_arb",
+    "i:/WORK/L2TLB/u_core/u_bitmapcache",
+    "i:/WORK/L2TLB/u_core/u_cache",
+    "i:/WORK/L2TLB/u_core/u_csr_delay",
+    "i:/WORK/L2TLB/u_core/u_hptw",
+    "i:/WORK/L2TLB/u_core/u_llptw",
+    "i:/WORK/L2TLB/u_core/u_mem_arb",
+    "i:/WORK/L2TLB/u_core/u_merge_arb_0",
+    "i:/WORK/L2TLB/u_core/u_merge_arb_1",
+    "i:/WORK/L2TLB/u_core/u_missQueue",
+    "i:/WORK/L2TLB/u_core/u_out_arb_0",
+    "i:/WORK/L2TLB/u_core/u_out_arb_1",
+    "i:/WORK/L2TLB/u_core/u_pmp",
+    "i:/WORK/L2TLB/u_core/u_pmp_chk_bitmap",
+    "i:/WORK/L2TLB/u_core/u_pmp_chk_hptw",
+    "i:/WORK/L2TLB/u_core/u_pmp_chk_llptw0",
+    "i:/WORK/L2TLB/u_core/u_pmp_chk_llptw1",
+    "i:/WORK/L2TLB/u_core/u_pmp_chk_ptw",
+    "i:/WORK/L2TLB/u_core/u_prefetch",
+    "i:/WORK/L2TLB/u_core/u_ptw",
+    "i:/WORK/L2TLB/u_core/u_sfence_delay",
+    "i:/WORK/L2TLB/u_core/u_wfi_req_delay",
+    "i:/WORK/L2TLB/u_core/u_wfi_safe_delay"
+   ],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "Arbiter1_L2TLBImp_Anon Arbiter2_L2TLBImp_Anon Arbiter2_L2TLBImp_Anon_1 Arbiter2_L2TlbWithHptwIdBundle Arbiter3_bitmapReqBundle Arbiter3_L2TLBImp_Anon Arbiter4_L2TlbMemReqBundle Arbiter5_L2TlbWithHptwIdBundle Bitmap BitmapCache DelayN_13 DelayN_220 DelayN_221 HPTW L2TlbMissQueue L2TlbPrefetch LLPTW PMP PMPChecker PTW PtwCache",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 63052,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "constant_reg": 16,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "L2TLB",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_aux_observed": 0,
+  "bbox_aux_declared": 0,
+  "bbox_objects": 56
+ }
+}

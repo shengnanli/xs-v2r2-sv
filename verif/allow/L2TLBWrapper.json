@@ -4,7 +4,7 @@
  "objects": [
   {
    "attrs": "i",
-   "certificate_sha256": "",
+   "certificate_sha256": "57d584c0deed5ba40041726c080bd5f4639dbcbc9b2af7bcfcfe9e2ee3549293",
    "child_target": "L2TLB",
    "class": "green_child",
    "design": "L2TLB",
@@ -13,7 +13,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "",
+   "certificate_sha256": "57d584c0deed5ba40041726c080bd5f4639dbcbc9b2af7bcfcfe9e2ee3549293",
    "child_target": "L2TLB",
    "class": "green_child",
    "design": "L2TLB",
