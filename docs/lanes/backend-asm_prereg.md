@@ -94,3 +94,18 @@ dont_verify / elab147 / relaxed_appvars 空；黑盒 92 对象（allow 逐条）
 verdict：31 个 green child 证书全部 current-valid 时 SUCCEEDED；CtrlBlock / ExuBlock 阻塞未解时 PARTIAL（`assembly_green_child_*`）。
 
 ## 对账
+
+### official（bash scripts/run_proof.sh Backend Backend，commit a4f37dbc1，evidence/a4f37dbc1b6f/Backend/）
+
+| 项 | 预测（§5） | 实测 |
+|---|---|---|
+| native | SUCCEEDED | **SUCCEEDED** |
+| passing | 280043 | **280043**（BBPin 209806 / Port 68940 / DFF 1297），差 0 |
+| constant_reg / unread | 0 / 0 | 0 / 0（unread_points.txt 空） |
+| failing / unmatched / blackbox_out | 0 | 0 / 0(0) / 0 |
+| 钉点 | 1297 | BE_CORE_PIN_END ok=1297 bad=0 |
+| 黑盒 | 92 对象（allow） | 92 对象，与 allow 精确相等 |
+| verdict | 阻塞未解时 PARTIAL | **PARTIAL**：`assembly_green_child_interface_only_not_declared_set:CtrlBlock`（首个；ExuBlock 同样不过：`green_child_impl_golden_unexpected_path:ExuBlock:PrintCommitIDModule.v`） |
+
+fm_verdict 拒绝出 receipt（证据目录只有 fm.log / sidecar / 报告），故无 receipt sha256、不能跑 fm_predict check、不能出 Backend 证书。
+Backend 本层 glue 无任何反例；剩下的只有 §3 的两个 child 证书判据问题（公共核心，待集成者裁定），裁定落地后同字节重跑 official 即可。
