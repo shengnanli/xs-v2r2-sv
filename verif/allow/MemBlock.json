@@ -1,0 +1,1304 @@
+{
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "codex 0226 先例的 exact green_child 组合：MemBlock 的 72 个直接实例（50 种 design）两侧 -interface_only，逐 r/i 实例路径 + child_target + 证书 sha256 写死（make_proof_certificate.py --stamp-allow 回填）；本层 glue（xs_MemBlock_core + 生成 wrapper）两侧白盒受验。",
+ "objects": [
+  {
+   "attrs": "i",
+   "certificate_sha256": "4813839d9633eafbd3b6a4b70d25156e5026a49783bda4050f89e95e787b2344",
+   "child_target": "DCacheWrapper",
+   "class": "green_child",
+   "design": "DCacheWrapper",
+   "path": "i:/WORK/MemBlock/inner_dcache",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4813839d9633eafbd3b6a4b70d25156e5026a49783bda4050f89e95e787b2344",
+   "child_target": "DCacheWrapper",
+   "class": "green_child",
+   "design": "DCacheWrapper",
+   "path": "r:/WORK/MemBlock/inner_dcache",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "68c376b9228566117d433987e6b6b587ecb9d0c07b88c04921de85f62ffd9059",
+   "child_target": "Uncache",
+   "class": "green_child",
+   "design": "Uncache",
+   "path": "i:/WORK/MemBlock/inner_uncache",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "68c376b9228566117d433987e6b6b587ecb9d0c07b88c04921de85f62ffd9059",
+   "child_target": "Uncache",
+   "class": "green_child",
+   "design": "Uncache",
+   "path": "r:/WORK/MemBlock/inner_uncache",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "b2be90373b4394ce28154d850757a7844c567a0b5a50c3ba04a89b3e4fb527ee",
+   "child_target": "TLXbar_4",
+   "class": "green_child",
+   "design": "TLXbar_4",
+   "path": "i:/WORK/MemBlock/inner_xbar",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "b2be90373b4394ce28154d850757a7844c567a0b5a50c3ba04a89b3e4fb527ee",
+   "child_target": "TLXbar_4",
+   "class": "green_child",
+   "design": "TLXbar_4",
+   "path": "r:/WORK/MemBlock/inner_xbar",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "L2TLBWrapper",
+   "class": "green_child",
+   "design": "L2TLBWrapper",
+   "path": "i:/WORK/MemBlock/inner_ptw",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "",
+   "child_target": "L2TLBWrapper",
+   "class": "green_child",
+   "design": "L2TLBWrapper",
+   "path": "r:/WORK/MemBlock/inner_ptw",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "9f2bd8525bbde9e73689f37f402d7103450433301ee5081622e4918fc7643308",
+   "child_target": "TLBuffer_6",
+   "class": "green_child",
+   "design": "TLBuffer_6",
+   "path": "i:/WORK/MemBlock/inner_ptw_to_l2_buffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "9f2bd8525bbde9e73689f37f402d7103450433301ee5081622e4918fc7643308",
+   "child_target": "TLBuffer_6",
+   "class": "green_child",
+   "design": "TLBuffer_6",
+   "path": "r:/WORK/MemBlock/inner_ptw_to_l2_buffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "d606d6f1043c743b3d05267fde66112a8dbc31310b7485a4223614f6f78eeeb9",
+   "child_target": "TLBuffer_7",
+   "class": "green_child",
+   "design": "TLBuffer_7",
+   "path": "i:/WORK/MemBlock/inner_l1d_to_l2_buffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "d606d6f1043c743b3d05267fde66112a8dbc31310b7485a4223614f6f78eeeb9",
+   "child_target": "TLBuffer_7",
+   "class": "green_child",
+   "design": "TLBuffer_7",
+   "path": "r:/WORK/MemBlock/inner_l1d_to_l2_buffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "5c6bc8893c687754bea5d4ccbf98e3eb8c589e3bcda23ab7e62058b4f20485a3",
+   "child_target": "FrontendBridge",
+   "class": "green_child",
+   "design": "FrontendBridge",
+   "path": "i:/WORK/MemBlock/inner_frontendBridge",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "5c6bc8893c687754bea5d4ccbf98e3eb8c589e3bcda23ab7e62058b4f20485a3",
+   "child_target": "FrontendBridge",
+   "class": "green_child",
+   "design": "FrontendBridge",
+   "path": "r:/WORK/MemBlock/inner_frontendBridge",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "35a029c6b8b5558bc9ebd04dda2de69985a0d703fe06854a1b3a5261dbe93171",
+   "child_target": "TLBuffer_8",
+   "class": "green_child",
+   "design": "TLBuffer_8",
+   "path": "i:/WORK/MemBlock/inner_buffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "35a029c6b8b5558bc9ebd04dda2de69985a0d703fe06854a1b3a5261dbe93171",
+   "child_target": "TLBuffer_8",
+   "class": "green_child",
+   "design": "TLBuffer_8",
+   "path": "r:/WORK/MemBlock/inner_buffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a3e84fc9a9e0295f99fcfc9016ca8de035b5f0c2307c85c86d2e8140fbb456ae",
+   "child_target": "TLBuffer_9",
+   "class": "green_child",
+   "design": "TLBuffer_9",
+   "path": "i:/WORK/MemBlock/inner_buffers",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a3e84fc9a9e0295f99fcfc9016ca8de035b5f0c2307c85c86d2e8140fbb456ae",
+   "child_target": "TLBuffer_9",
+   "class": "green_child",
+   "design": "TLBuffer_9",
+   "path": "r:/WORK/MemBlock/inner_buffers",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a3e84fc9a9e0295f99fcfc9016ca8de035b5f0c2307c85c86d2e8140fbb456ae",
+   "child_target": "TLBuffer_9",
+   "class": "green_child",
+   "design": "TLBuffer_9",
+   "path": "i:/WORK/MemBlock/inner_buffers_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a3e84fc9a9e0295f99fcfc9016ca8de035b5f0c2307c85c86d2e8140fbb456ae",
+   "child_target": "TLBuffer_9",
+   "class": "green_child",
+   "design": "TLBuffer_9",
+   "path": "r:/WORK/MemBlock/inner_buffers_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "35a029c6b8b5558bc9ebd04dda2de69985a0d703fe06854a1b3a5261dbe93171",
+   "child_target": "TLBuffer_8",
+   "class": "green_child",
+   "design": "TLBuffer_8",
+   "path": "i:/WORK/MemBlock/inner_buffers_2",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "35a029c6b8b5558bc9ebd04dda2de69985a0d703fe06854a1b3a5261dbe93171",
+   "child_target": "TLBuffer_8",
+   "class": "green_child",
+   "design": "TLBuffer_8",
+   "path": "r:/WORK/MemBlock/inner_buffers_2",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "35a029c6b8b5558bc9ebd04dda2de69985a0d703fe06854a1b3a5261dbe93171",
+   "child_target": "TLBuffer_8",
+   "class": "green_child",
+   "design": "TLBuffer_8",
+   "path": "i:/WORK/MemBlock/inner_buffers_3",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "35a029c6b8b5558bc9ebd04dda2de69985a0d703fe06854a1b3a5261dbe93171",
+   "child_target": "TLBuffer_8",
+   "class": "green_child",
+   "design": "TLBuffer_8",
+   "path": "r:/WORK/MemBlock/inner_buffers_3",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "efc1e331747155dbdede40a692bd0aa97c59fd651e47887832c80a3a7a44442e",
+   "child_target": "DelayN_8",
+   "class": "green_child",
+   "design": "DelayN_8",
+   "path": "i:/WORK/MemBlock/inner_csrCtrl_delay",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "efc1e331747155dbdede40a692bd0aa97c59fd651e47887832c80a3a7a44442e",
+   "child_target": "DelayN_8",
+   "class": "green_child",
+   "design": "DelayN_8",
+   "path": "r:/WORK/MemBlock/inner_csrCtrl_delay",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "303723c9ded82d13da2a537dcb6c83854a81e0b86329f224743825c0f06058b1",
+   "child_target": "DelayNWithValid_2",
+   "class": "green_child",
+   "design": "DelayNWithValid_2",
+   "path": "i:/WORK/MemBlock/inner_dcacheError_pipMod",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "303723c9ded82d13da2a537dcb6c83854a81e0b86329f224743825c0f06058b1",
+   "child_target": "DelayNWithValid_2",
+   "class": "green_child",
+   "design": "DelayNWithValid_2",
+   "path": "r:/WORK/MemBlock/inner_dcacheError_pipMod",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "1f08649bf48cbf517736c9d056f8adde7d52451246a50870271c0b7f9cfe3690",
+   "child_target": "DelayNWithValid_3",
+   "class": "green_child",
+   "design": "DelayNWithValid_3",
+   "path": "i:/WORK/MemBlock/inner_io_uncacheError_ecc_error_pipMod",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "1f08649bf48cbf517736c9d056f8adde7d52451246a50870271c0b7f9cfe3690",
+   "child_target": "DelayNWithValid_3",
+   "class": "green_child",
+   "design": "DelayNWithValid_3",
+   "path": "r:/WORK/MemBlock/inner_io_uncacheError_ecc_error_pipMod",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "b6ef23e610adf82b089be42baa22f13eb2753f75d5a7448b3905b5a3886ba62e",
+   "child_target": "LoadUnit",
+   "class": "green_child",
+   "design": "LoadUnit",
+   "path": "i:/WORK/MemBlock/inner_LoadUnit_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "b6ef23e610adf82b089be42baa22f13eb2753f75d5a7448b3905b5a3886ba62e",
+   "child_target": "LoadUnit",
+   "class": "green_child",
+   "design": "LoadUnit",
+   "path": "r:/WORK/MemBlock/inner_LoadUnit_0",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "b6ef23e610adf82b089be42baa22f13eb2753f75d5a7448b3905b5a3886ba62e",
+   "child_target": "LoadUnit",
+   "class": "green_child",
+   "design": "LoadUnit",
+   "path": "i:/WORK/MemBlock/inner_LoadUnit_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "b6ef23e610adf82b089be42baa22f13eb2753f75d5a7448b3905b5a3886ba62e",
+   "child_target": "LoadUnit",
+   "class": "green_child",
+   "design": "LoadUnit",
+   "path": "r:/WORK/MemBlock/inner_LoadUnit_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "b6ef23e610adf82b089be42baa22f13eb2753f75d5a7448b3905b5a3886ba62e",
+   "child_target": "LoadUnit",
+   "class": "green_child",
+   "design": "LoadUnit",
+   "path": "i:/WORK/MemBlock/inner_LoadUnit_2",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "b6ef23e610adf82b089be42baa22f13eb2753f75d5a7448b3905b5a3886ba62e",
+   "child_target": "LoadUnit",
+   "class": "green_child",
+   "design": "LoadUnit",
+   "path": "r:/WORK/MemBlock/inner_LoadUnit_2",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "5d06753cc26668129dd87aa3b1e59a16965c988551807465ae438d7dc0c06ab6",
+   "child_target": "StoreUnit",
+   "class": "green_child",
+   "design": "StoreUnit",
+   "path": "i:/WORK/MemBlock/inner_StoreUnit_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "5d06753cc26668129dd87aa3b1e59a16965c988551807465ae438d7dc0c06ab6",
+   "child_target": "StoreUnit",
+   "class": "green_child",
+   "design": "StoreUnit",
+   "path": "r:/WORK/MemBlock/inner_StoreUnit_0",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "5d06753cc26668129dd87aa3b1e59a16965c988551807465ae438d7dc0c06ab6",
+   "child_target": "StoreUnit",
+   "class": "green_child",
+   "design": "StoreUnit",
+   "path": "i:/WORK/MemBlock/inner_StoreUnit_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "5d06753cc26668129dd87aa3b1e59a16965c988551807465ae438d7dc0c06ab6",
+   "child_target": "StoreUnit",
+   "class": "green_child",
+   "design": "StoreUnit",
+   "path": "r:/WORK/MemBlock/inner_StoreUnit_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "95d0aabc17217dbea16ff96dacdcaa242194a1f7ec128e7fbc9e7563257c4f23",
+   "child_target": "MemExeUnit",
+   "class": "green_child",
+   "design": "MemExeUnit",
+   "path": "i:/WORK/MemBlock/inner_stdExeUnits_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "95d0aabc17217dbea16ff96dacdcaa242194a1f7ec128e7fbc9e7563257c4f23",
+   "child_target": "MemExeUnit",
+   "class": "green_child",
+   "design": "MemExeUnit",
+   "path": "r:/WORK/MemBlock/inner_stdExeUnits_0",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "95d0aabc17217dbea16ff96dacdcaa242194a1f7ec128e7fbc9e7563257c4f23",
+   "child_target": "MemExeUnit",
+   "class": "green_child",
+   "design": "MemExeUnit",
+   "path": "i:/WORK/MemBlock/inner_stdExeUnits_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "95d0aabc17217dbea16ff96dacdcaa242194a1f7ec128e7fbc9e7563257c4f23",
+   "child_target": "MemExeUnit",
+   "class": "green_child",
+   "design": "MemExeUnit",
+   "path": "r:/WORK/MemBlock/inner_stdExeUnits_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4d31bea00ae2ffef706e93252540fe630f17fcff9c07a1187708114f9830c319",
+   "child_target": "VLSplitImp",
+   "class": "green_child",
+   "design": "VLSplitImp",
+   "path": "i:/WORK/MemBlock/inner_vlSplit_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4d31bea00ae2ffef706e93252540fe630f17fcff9c07a1187708114f9830c319",
+   "child_target": "VLSplitImp",
+   "class": "green_child",
+   "design": "VLSplitImp",
+   "path": "r:/WORK/MemBlock/inner_vlSplit_0",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4d31bea00ae2ffef706e93252540fe630f17fcff9c07a1187708114f9830c319",
+   "child_target": "VLSplitImp",
+   "class": "green_child",
+   "design": "VLSplitImp",
+   "path": "i:/WORK/MemBlock/inner_vlSplit_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4d31bea00ae2ffef706e93252540fe630f17fcff9c07a1187708114f9830c319",
+   "child_target": "VLSplitImp",
+   "class": "green_child",
+   "design": "VLSplitImp",
+   "path": "r:/WORK/MemBlock/inner_vlSplit_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "8e7638957975b8a0a3b8ec64c841634c7244508e6432f41e1a91e2ef16114b44",
+   "child_target": "VSSplitImp",
+   "class": "green_child",
+   "design": "VSSplitImp",
+   "path": "i:/WORK/MemBlock/inner_vsSplit_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "8e7638957975b8a0a3b8ec64c841634c7244508e6432f41e1a91e2ef16114b44",
+   "child_target": "VSSplitImp",
+   "class": "green_child",
+   "design": "VSSplitImp",
+   "path": "r:/WORK/MemBlock/inner_vsSplit_0",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "8e7638957975b8a0a3b8ec64c841634c7244508e6432f41e1a91e2ef16114b44",
+   "child_target": "VSSplitImp",
+   "class": "green_child",
+   "design": "VSSplitImp",
+   "path": "i:/WORK/MemBlock/inner_vsSplit_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "8e7638957975b8a0a3b8ec64c841634c7244508e6432f41e1a91e2ef16114b44",
+   "child_target": "VSSplitImp",
+   "class": "green_child",
+   "design": "VSSplitImp",
+   "path": "r:/WORK/MemBlock/inner_vsSplit_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "8044dd44b53c2a10200ee16ee0a74418a4b85e3d073a9889909ae0346173d9a5",
+   "child_target": "VLMergeBufferImp",
+   "class": "green_child",
+   "design": "VLMergeBufferImp",
+   "path": "i:/WORK/MemBlock/inner_vlMergeBuffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "8044dd44b53c2a10200ee16ee0a74418a4b85e3d073a9889909ae0346173d9a5",
+   "child_target": "VLMergeBufferImp",
+   "class": "green_child",
+   "design": "VLMergeBufferImp",
+   "path": "r:/WORK/MemBlock/inner_vlMergeBuffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "f9af9207448d79c9b6d10fd3d804c3611fc0e48d9b8c0aeca44715fab8fead99",
+   "child_target": "VSMergeBufferImp",
+   "class": "green_child",
+   "design": "VSMergeBufferImp",
+   "path": "i:/WORK/MemBlock/inner_vsMergeBuffer_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "f9af9207448d79c9b6d10fd3d804c3611fc0e48d9b8c0aeca44715fab8fead99",
+   "child_target": "VSMergeBufferImp",
+   "class": "green_child",
+   "design": "VSMergeBufferImp",
+   "path": "r:/WORK/MemBlock/inner_vsMergeBuffer_0",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "f9af9207448d79c9b6d10fd3d804c3611fc0e48d9b8c0aeca44715fab8fead99",
+   "child_target": "VSMergeBufferImp",
+   "class": "green_child",
+   "design": "VSMergeBufferImp",
+   "path": "i:/WORK/MemBlock/inner_vsMergeBuffer_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "f9af9207448d79c9b6d10fd3d804c3611fc0e48d9b8c0aeca44715fab8fead99",
+   "child_target": "VSMergeBufferImp",
+   "class": "green_child",
+   "design": "VSMergeBufferImp",
+   "path": "r:/WORK/MemBlock/inner_vsMergeBuffer_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c3e62432ce64c6a82d6dc3cc59cf1334f9e31bcd1a36bf4298b0017415932505",
+   "child_target": "VSegmentUnit",
+   "class": "green_child",
+   "design": "VSegmentUnit",
+   "path": "i:/WORK/MemBlock/inner_vSegmentUnit",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c3e62432ce64c6a82d6dc3cc59cf1334f9e31bcd1a36bf4298b0017415932505",
+   "child_target": "VSegmentUnit",
+   "class": "green_child",
+   "design": "VSegmentUnit",
+   "path": "r:/WORK/MemBlock/inner_vSegmentUnit",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "cb88854ee72343cd7b744e6fd1ee27da032ca7c179b0d11515f1f05db8320b43",
+   "child_target": "VfofBuffer",
+   "class": "green_child",
+   "design": "VfofBuffer",
+   "path": "i:/WORK/MemBlock/inner_vfofBuffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "cb88854ee72343cd7b744e6fd1ee27da032ca7c179b0d11515f1f05db8320b43",
+   "child_target": "VfofBuffer",
+   "class": "green_child",
+   "design": "VfofBuffer",
+   "path": "r:/WORK/MemBlock/inner_vfofBuffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "ff6fd865cf809a8eadd0fec14b757299cdc5632789874a8e14ceff98d96cf454",
+   "child_target": "LoadMisalignBuffer",
+   "class": "green_child",
+   "design": "LoadMisalignBuffer",
+   "path": "i:/WORK/MemBlock/inner_loadMisalignBuffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "ff6fd865cf809a8eadd0fec14b757299cdc5632789874a8e14ceff98d96cf454",
+   "child_target": "LoadMisalignBuffer",
+   "class": "green_child",
+   "design": "LoadMisalignBuffer",
+   "path": "r:/WORK/MemBlock/inner_loadMisalignBuffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a62c509bb5b2b6c6c3b29e86ad91458bd997573501bdf0784e76a16b695b2d03",
+   "child_target": "StoreMisalignBuffer",
+   "class": "green_child",
+   "design": "StoreMisalignBuffer",
+   "path": "i:/WORK/MemBlock/inner_storeMisalignBuffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a62c509bb5b2b6c6c3b29e86ad91458bd997573501bdf0784e76a16b695b2d03",
+   "child_target": "StoreMisalignBuffer",
+   "class": "green_child",
+   "design": "StoreMisalignBuffer",
+   "path": "r:/WORK/MemBlock/inner_storeMisalignBuffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4bb2eb78cd5308ed4eaeb23bbc40e865c56f99b818f57cd90ba28ccd4960e9f9",
+   "child_target": "SMSPrefetcher",
+   "class": "green_child",
+   "design": "SMSPrefetcher",
+   "path": "i:/WORK/MemBlock/inner_prefetcherOpt",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4bb2eb78cd5308ed4eaeb23bbc40e865c56f99b818f57cd90ba28ccd4960e9f9",
+   "child_target": "SMSPrefetcher",
+   "class": "green_child",
+   "design": "SMSPrefetcher",
+   "path": "r:/WORK/MemBlock/inner_prefetcherOpt",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "365fc8b8cbb1b63511338071672f520c95fab3e2a94a46915c3fac7a71297fc6",
+   "child_target": "MbistPipeSms",
+   "class": "green_child",
+   "design": "MbistPipeSms",
+   "path": "i:/WORK/MemBlock/inner_mbistSmsPl",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "365fc8b8cbb1b63511338071672f520c95fab3e2a94a46915c3fac7a71297fc6",
+   "child_target": "MbistPipeSms",
+   "class": "green_child",
+   "design": "MbistPipeSms",
+   "path": "r:/WORK/MemBlock/inner_mbistSmsPl",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "62c043264be222acaf25faf44cfb1cebf0fe8d5d162731ba103ca5a8a3df7267",
+   "child_target": "L1Prefetcher",
+   "class": "green_child",
+   "design": "L1Prefetcher",
+   "path": "i:/WORK/MemBlock/inner_l1PrefetcherOpt",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "62c043264be222acaf25faf44cfb1cebf0fe8d5d162731ba103ca5a8a3df7267",
+   "child_target": "L1Prefetcher",
+   "class": "green_child",
+   "design": "L1Prefetcher",
+   "path": "r:/WORK/MemBlock/inner_l1PrefetcherOpt",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "9e1ab0bf1967ff4926186d49a92e77b352247b4554f9676607f89a9f611e5690",
+   "child_target": "Pipeline",
+   "class": "green_child",
+   "design": "Pipeline",
+   "path": "i:/WORK/MemBlock/inner_l1_pf_req_pf_queue_to_ldu_reg",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "9e1ab0bf1967ff4926186d49a92e77b352247b4554f9676607f89a9f611e5690",
+   "child_target": "Pipeline",
+   "class": "green_child",
+   "design": "Pipeline",
+   "path": "r:/WORK/MemBlock/inner_l1_pf_req_pf_queue_to_ldu_reg",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "3023608b23c17095e6ae345cee663fa922ccbfd2fd67a2397626ae6be71a2c34",
+   "child_target": "AtomicsUnit",
+   "class": "green_child",
+   "design": "AtomicsUnit",
+   "path": "i:/WORK/MemBlock/inner_atomicsUnit",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "3023608b23c17095e6ae345cee663fa922ccbfd2fd67a2397626ae6be71a2c34",
+   "child_target": "AtomicsUnit",
+   "class": "green_child",
+   "design": "AtomicsUnit",
+   "path": "r:/WORK/MemBlock/inner_atomicsUnit",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "7234d8b13a7013b3c77052c076ab11c90ff8449d9e6874a65ab33cca038f84af",
+   "child_target": "LsqWrapper",
+   "class": "green_child",
+   "design": "LsqWrapper",
+   "path": "i:/WORK/MemBlock/inner_lsq",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "7234d8b13a7013b3c77052c076ab11c90ff8449d9e6874a65ab33cca038f84af",
+   "child_target": "LsqWrapper",
+   "class": "green_child",
+   "design": "LsqWrapper",
+   "path": "r:/WORK/MemBlock/inner_lsq",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "ab62e7982e13d1c87b775fb0cfe41d5053667fedf855269381bb373c2d05032f",
+   "child_target": "Sbuffer",
+   "class": "green_child",
+   "design": "Sbuffer",
+   "path": "i:/WORK/MemBlock/inner_sbuffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "ab62e7982e13d1c87b775fb0cfe41d5053667fedf855269381bb373c2d05032f",
+   "child_target": "Sbuffer",
+   "class": "green_child",
+   "design": "Sbuffer",
+   "path": "r:/WORK/MemBlock/inner_sbuffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "ee0b9c496368564cc6850b4bf83b51d77ed76f7104ab0ae5f13d3ed139a01eb5",
+   "child_target": "DelayNWithValid_200",
+   "class": "green_child",
+   "design": "DelayNWithValid_200",
+   "path": "i:/WORK/MemBlock/inner_sms_pf_to_l2_pipMod",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "ee0b9c496368564cc6850b4bf83b51d77ed76f7104ab0ae5f13d3ed139a01eb5",
+   "child_target": "DelayNWithValid_200",
+   "class": "green_child",
+   "design": "DelayNWithValid_200",
+   "path": "r:/WORK/MemBlock/inner_sms_pf_to_l2_pipMod",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "ee0b9c496368564cc6850b4bf83b51d77ed76f7104ab0ae5f13d3ed139a01eb5",
+   "child_target": "DelayNWithValid_200",
+   "class": "green_child",
+   "design": "DelayNWithValid_200",
+   "path": "i:/WORK/MemBlock/inner_l1_pf_to_l2_pipMod",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "ee0b9c496368564cc6850b4bf83b51d77ed76f7104ab0ae5f13d3ed139a01eb5",
+   "child_target": "DelayNWithValid_200",
+   "class": "green_child",
+   "design": "DelayNWithValid_200",
+   "path": "r:/WORK/MemBlock/inner_l1_pf_to_l2_pipMod",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "8187c8204d6f108960fb5ee6047d42807b11d39b70e08e50bc8bc5a68060f204",
+   "child_target": "TLBNonBlock",
+   "class": "green_child",
+   "design": "TLBNonBlock",
+   "path": "i:/WORK/MemBlock/inner_dtlb_ld_tlb_ld",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "8187c8204d6f108960fb5ee6047d42807b11d39b70e08e50bc8bc5a68060f204",
+   "child_target": "TLBNonBlock",
+   "class": "green_child",
+   "design": "TLBNonBlock",
+   "path": "r:/WORK/MemBlock/inner_dtlb_ld_tlb_ld",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "505f3c70603ecf1ea8e0bc6fa79ae17fba05d226866cdeb9d90191d3a1d253ba",
+   "child_target": "TLBNonBlock_1",
+   "class": "green_child",
+   "design": "TLBNonBlock_1",
+   "path": "i:/WORK/MemBlock/inner_dtlb_st_tlb_st",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "505f3c70603ecf1ea8e0bc6fa79ae17fba05d226866cdeb9d90191d3a1d253ba",
+   "child_target": "TLBNonBlock_1",
+   "class": "green_child",
+   "design": "TLBNonBlock_1",
+   "path": "r:/WORK/MemBlock/inner_dtlb_st_tlb_st",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "08cab41045ea0e5d0ecfd59d6778d20987d8869d1257edf10c864c171bb940cd",
+   "child_target": "TLBNonBlock_2",
+   "class": "green_child",
+   "design": "TLBNonBlock_2",
+   "path": "i:/WORK/MemBlock/inner_dtlb_prefetch_tlb_prefetch",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "08cab41045ea0e5d0ecfd59d6778d20987d8869d1257edf10c864c171bb940cd",
+   "child_target": "TLBNonBlock_2",
+   "class": "green_child",
+   "design": "TLBNonBlock_2",
+   "path": "r:/WORK/MemBlock/inner_dtlb_prefetch_tlb_prefetch",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "2a2912413181d0d7aa28d6fc154cb05181dfc4d62a95307f6a35c1d9ec84869d",
+   "child_target": "PTWNewFilter",
+   "class": "green_child",
+   "design": "PTWNewFilter",
+   "path": "i:/WORK/MemBlock/inner_dtlbRepeater",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "2a2912413181d0d7aa28d6fc154cb05181dfc4d62a95307f6a35c1d9ec84869d",
+   "child_target": "PTWNewFilter",
+   "class": "green_child",
+   "design": "PTWNewFilter",
+   "path": "r:/WORK/MemBlock/inner_dtlbRepeater",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c50f0516f32f2058ab6867e852e2c4321356204191e346a1363773d8f4a4a6a0",
+   "child_target": "PTWRepeaterNB",
+   "class": "green_child",
+   "design": "PTWRepeaterNB",
+   "path": "i:/WORK/MemBlock/inner_itlbRepeater3",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c50f0516f32f2058ab6867e852e2c4321356204191e346a1363773d8f4a4a6a0",
+   "child_target": "PTWRepeaterNB",
+   "class": "green_child",
+   "design": "PTWRepeaterNB",
+   "path": "r:/WORK/MemBlock/inner_itlbRepeater3",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "3be3419e0f298ddf86c70a585475d2ecdc5f1fbcdc6c82689a13dc518b5ef7d3",
+   "child_target": "PMP",
+   "class": "green_child",
+   "design": "PMP",
+   "path": "i:/WORK/MemBlock/inner_pmp",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "3be3419e0f298ddf86c70a585475d2ecdc5f1fbcdc6c82689a13dc518b5ef7d3",
+   "child_target": "PMP",
+   "class": "green_child",
+   "design": "PMP",
+   "path": "r:/WORK/MemBlock/inner_pmp",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "i:/WORK/MemBlock/inner_pmp_checkers_0",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "r:/WORK/MemBlock/inner_pmp_checkers_0",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "i:/WORK/MemBlock/inner_pmp_checkers_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "r:/WORK/MemBlock/inner_pmp_checkers_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "i:/WORK/MemBlock/inner_pmp_checkers_2",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "r:/WORK/MemBlock/inner_pmp_checkers_2",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "i:/WORK/MemBlock/inner_pmp_checkers_3",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "r:/WORK/MemBlock/inner_pmp_checkers_3",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "i:/WORK/MemBlock/inner_pmp_checkers_4",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "r:/WORK/MemBlock/inner_pmp_checkers_4",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "i:/WORK/MemBlock/inner_pmp_checkers_5",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "r:/WORK/MemBlock/inner_pmp_checkers_5",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "i:/WORK/MemBlock/inner_pmp_checkers_6",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "r:/WORK/MemBlock/inner_pmp_checkers_6",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "i:/WORK/MemBlock/inner_pmp_checkers_7",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "c68b2457abc167f52e0f0a2b80f6de372ceb70a0fd077d6dce9aed1e134231fb",
+   "child_target": "PMPChecker_12",
+   "class": "green_child",
+   "design": "PMPChecker_12",
+   "path": "r:/WORK/MemBlock/inner_pmp_checkers_7",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "5dab3269275eab3b880ab5c1a7f980c43ae446b54175c7f783f6fce5a336923a",
+   "child_target": "NewPipelineConnectPipe_34",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_34",
+   "path": "i:/WORK/MemBlock/inner_otherStoutConnect",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "5dab3269275eab3b880ab5c1a7f980c43ae446b54175c7f783f6fce5a336923a",
+   "child_target": "NewPipelineConnectPipe_34",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_34",
+   "path": "r:/WORK/MemBlock/inner_otherStoutConnect",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "cf765e641ed3cd38ba9fdebcc20333732b5378b8b86fc92b776f1a6cde6ebba6",
+   "child_target": "PipelineRegModule",
+   "class": "green_child",
+   "design": "PipelineRegModule",
+   "path": "i:/WORK/MemBlock/inner_pipelineReg",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "cf765e641ed3cd38ba9fdebcc20333732b5378b8b86fc92b776f1a6cde6ebba6",
+   "child_target": "PipelineRegModule",
+   "class": "green_child",
+   "design": "PipelineRegModule",
+   "path": "r:/WORK/MemBlock/inner_pipelineReg",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "92b66bcd939701308586fd4cc1024dfc90a83165b64677ed2b6aaa571aef2b4d",
+   "child_target": "PipelineRegModule_6",
+   "class": "green_child",
+   "design": "PipelineRegModule_6",
+   "path": "i:/WORK/MemBlock/inner_pipelineReg_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "92b66bcd939701308586fd4cc1024dfc90a83165b64677ed2b6aaa571aef2b4d",
+   "child_target": "PipelineRegModule_6",
+   "class": "green_child",
+   "design": "PipelineRegModule_6",
+   "path": "r:/WORK/MemBlock/inner_pipelineReg_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a0a76a281c79bb8e7ee1e823c90945c399bf817e41b70f3947d63907ee226123",
+   "child_target": "NewPipelineConnectPipe_35",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_35",
+   "path": "i:/WORK/MemBlock/inner_VsSplitConnectStu",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a0a76a281c79bb8e7ee1e823c90945c399bf817e41b70f3947d63907ee226123",
+   "child_target": "NewPipelineConnectPipe_35",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_35",
+   "path": "r:/WORK/MemBlock/inner_VsSplitConnectStu",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a0a76a281c79bb8e7ee1e823c90945c399bf817e41b70f3947d63907ee226123",
+   "child_target": "NewPipelineConnectPipe_35",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_35",
+   "path": "i:/WORK/MemBlock/inner_VsSplitConnectStu_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a0a76a281c79bb8e7ee1e823c90945c399bf817e41b70f3947d63907ee226123",
+   "child_target": "NewPipelineConnectPipe_35",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_35",
+   "path": "r:/WORK/MemBlock/inner_VsSplitConnectStu_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a0a76a281c79bb8e7ee1e823c90945c399bf817e41b70f3947d63907ee226123",
+   "child_target": "NewPipelineConnectPipe_35",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_35",
+   "path": "i:/WORK/MemBlock/inner_VlSplitConnectLdu",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a0a76a281c79bb8e7ee1e823c90945c399bf817e41b70f3947d63907ee226123",
+   "child_target": "NewPipelineConnectPipe_35",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_35",
+   "path": "r:/WORK/MemBlock/inner_VlSplitConnectLdu",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a0a76a281c79bb8e7ee1e823c90945c399bf817e41b70f3947d63907ee226123",
+   "child_target": "NewPipelineConnectPipe_35",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_35",
+   "path": "i:/WORK/MemBlock/inner_VlSplitConnectLdu_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "a0a76a281c79bb8e7ee1e823c90945c399bf817e41b70f3947d63907ee226123",
+   "child_target": "NewPipelineConnectPipe_35",
+   "class": "green_child",
+   "design": "NewPipelineConnectPipe_35",
+   "path": "r:/WORK/MemBlock/inner_VlSplitConnectLdu_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "1ce7aa869b6e6d850b299f79e10cb3aef7048b5ad30e018407951a320a6772cc",
+   "child_target": "DelayN_331",
+   "class": "green_child",
+   "design": "DelayN_331",
+   "path": "i:/WORK/MemBlock/inner_delay",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "1ce7aa869b6e6d850b299f79e10cb3aef7048b5ad30e018407951a320a6772cc",
+   "child_target": "DelayN_331",
+   "class": "green_child",
+   "design": "DelayN_331",
+   "path": "r:/WORK/MemBlock/inner_delay",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "1ce7aa869b6e6d850b299f79e10cb3aef7048b5ad30e018407951a320a6772cc",
+   "child_target": "DelayN_331",
+   "class": "green_child",
+   "design": "DelayN_331",
+   "path": "i:/WORK/MemBlock/inner_delay_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "1ce7aa869b6e6d850b299f79e10cb3aef7048b5ad30e018407951a320a6772cc",
+   "child_target": "DelayN_331",
+   "class": "green_child",
+   "design": "DelayN_331",
+   "path": "r:/WORK/MemBlock/inner_delay_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "441a6a25c277bf14b42d98ca37dbfea6fc963273b240adbc4ff60517c87b9c5a",
+   "child_target": "DelayNWithValid_202",
+   "class": "green_child",
+   "design": "DelayNWithValid_202",
+   "path": "i:/WORK/MemBlock/inner_io_mem_to_ooo_topToBackendBypass_msiInfo_pipMod",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "441a6a25c277bf14b42d98ca37dbfea6fc963273b240adbc4ff60517c87b9c5a",
+   "child_target": "DelayNWithValid_202",
+   "class": "green_child",
+   "design": "DelayNWithValid_202",
+   "path": "r:/WORK/MemBlock/inner_io_mem_to_ooo_topToBackendBypass_msiInfo_pipMod",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "dc49e9c1a0a749b202c358613db5d33a05c9cb370d4cfb911c9cd1a0220e3c3d",
+   "child_target": "DelayNWithValid_203",
+   "class": "green_child",
+   "design": "DelayNWithValid_203",
+   "path": "i:/WORK/MemBlock/inner_io_mem_to_ooo_topToBackendBypass_clintTime_pipMod",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "dc49e9c1a0a749b202c358613db5d33a05c9cb370d4cfb911c9cd1a0220e3c3d",
+   "child_target": "DelayNWithValid_203",
+   "class": "green_child",
+   "design": "DelayNWithValid_203",
+   "path": "r:/WORK/MemBlock/inner_io_mem_to_ooo_topToBackendBypass_clintTime_pipMod",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "02aeacb87f6cd14b2f92a419da56245ebc386cd899124a53ccbc2511d8172f54",
+   "child_target": "DelayN_333",
+   "class": "green_child",
+   "design": "DelayN_333",
+   "path": "i:/WORK/MemBlock/inner_io_outer_l2PfCtrl_delay",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "02aeacb87f6cd14b2f92a419da56245ebc386cd899124a53ccbc2511d8172f54",
+   "child_target": "DelayN_333",
+   "class": "green_child",
+   "design": "DelayN_333",
+   "path": "r:/WORK/MemBlock/inner_io_outer_l2PfCtrl_delay",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "3e917374608f5b29f49d2acd9195491a357ea9be3543bc63129d9ef2258262d7",
+   "child_target": "PFEvent",
+   "class": "green_child",
+   "design": "PFEvent",
+   "path": "i:/WORK/MemBlock/inner_pfevent",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "3e917374608f5b29f49d2acd9195491a357ea9be3543bc63129d9ef2258262d7",
+   "child_target": "PFEvent",
+   "class": "green_child",
+   "design": "PFEvent",
+   "path": "r:/WORK/MemBlock/inner_pfevent",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "51a4533a46aa1eb9a10b08c7fcd1c226b4ef672bacb20ac7ce82559cf318b368",
+   "child_target": "HPerfMonitor_3",
+   "class": "green_child",
+   "design": "HPerfMonitor_3",
+   "path": "i:/WORK/MemBlock/inner_perfEvents_hpm",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "51a4533a46aa1eb9a10b08c7fcd1c226b4ef672bacb20ac7ce82559cf318b368",
+   "child_target": "HPerfMonitor_3",
+   "class": "green_child",
+   "design": "HPerfMonitor_3",
+   "path": "r:/WORK/MemBlock/inner_perfEvents_hpm",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4b642168c9e37d09f52cfe71646b3f261079087fdc55d8d1de1b7ad0f23af97b",
+   "child_target": "MbistPipeMemBlk",
+   "class": "green_child",
+   "design": "MbistPipeMemBlk",
+   "path": "i:/WORK/MemBlock/inner_mbistPl",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "4b642168c9e37d09f52cfe71646b3f261079087fdc55d8d1de1b7ad0f23af97b",
+   "child_target": "MbistPipeMemBlk",
+   "class": "green_child",
+   "design": "MbistPipeMemBlk",
+   "path": "r:/WORK/MemBlock/inner_mbistPl",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "36f98ee49204a52861d81aebf90740532e460f11e400e64a859b7d4b3522cc52",
+   "child_target": "MbistIntfMemBlk",
+   "class": "green_child",
+   "design": "MbistIntfMemBlk",
+   "path": "i:/WORK/MemBlock/inner_mbistIntf",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "36f98ee49204a52861d81aebf90740532e460f11e400e64a859b7d4b3522cc52",
+   "child_target": "MbistIntfMemBlk",
+   "class": "green_child",
+   "design": "MbistIntfMemBlk",
+   "path": "r:/WORK/MemBlock/inner_mbistIntf",
+   "side": "r"
+  }
+ ],
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "MemBlock"
+}

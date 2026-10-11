@@ -352,6 +352,8 @@ FM_INTERFACE_ONLY = AtomicsUnit DCacheWrapper DelayN_331 DelayN_333 DelayN_8 Del
 FM_MODE = assembly
 # 不合并重复寄存器：比较点 = 寄存器位 + 输出位 + 黑盒输入位，fm_predict 模型严格适用。
 FM_MERGE_DUP = false
+# 两侧对称死位真比；依据与六条见 verif/fm_target_config/MemBlock.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 PORTLINT_ORDER = fail
 
 include ../../../scripts/ut_common.mk
