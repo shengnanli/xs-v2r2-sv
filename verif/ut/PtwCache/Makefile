@@ -48,8 +48,38 @@ FM_REF_DEPS_PtwCache = ClockGate.sv SplittedSRAM_1.sv SplittedSRAM_2.sv \
                        SRAMTemplate_128.sv SRAMTemplate_129.sv SRAMTemplate_143.sv \
                        sram_array_1p4x786m131s1h0l1b_ptw_l1.sv \
                        sram_array_1p64x114m57s1h0l1b_ptw_l0.sv \
-                       array_10.sv array_11.sv array_10_ext.v array_11_ext.v \
+                       array_10.sv array_11.sv \
                        MbistPipePtwL0.sv MbistPipePtwL1.sv
+
+# ---------------------------------------------------------------------------
+# ★2026-10-11 agent/l2tlb-gc（codex 0222 / 0228）：FM 证明输入改成「重写件 + 登记 MC 存储层」★
+#
+# 上面「本仓没有这一族的重写件」已过时：SplittedSRAM_1/2（rtl/memblock，共享核
+# SplittedSRAM_ptw_core）与 SRAMTemplate_128/129/143（rtl/common，共享核 xs_SRAMTemplate_core）
+# 都已是本仓重写件，各自对 golden 做过 FM（verif/ut/SplittedSRAM）。
+# 原配置 impl 侧读 golden SplittedSRAM_* / SRAMTemplate_*（普通功能 RTL），按 codex 0222 §2 的 3d 判据
+# 须各自持有 current-valid 证书；又两侧白盒读入厂商叶子 array_10_ext.v / array_11_ext.v，
+# 与 0222 的 MC_MEMORY_BLACKBOX（两侧对称黑盒宏边界）相冲突（impl 读黑盒宏 = mc_blackbox_read）。
+# 现在（仅 FM，UT 不变）：
+#   · impl：PtwCache + MBIST 分发级 + SRAM 一路的重写件（白盒受验）；
+#   · 两侧共读的 golden 只剩 MC_MEMORY_MODEL 存储层 sram_array_*_ptw_l{0,1} / array_10 / array_11；
+#   · array_10_ext / array_11_ext 两侧都不读 ⇒ 对称未解析黑盒（MC_MEMORY_BLACKBOX）。
+fm-PtwCache: RTL_SRCS = $(RTL_DIR)/mmu/PtwCache.sv \
+                        $(RTL_DIR)/dft/MbistPipePtwL0.sv \
+                        $(RTL_DIR)/dft/MbistPipePtwL1.sv \
+                        $(RTL_DIR)/dft/xs_mbist_pipe_core.sv \
+                        $(RTL_DIR)/common/xs_SRAMTemplate_core.sv \
+                        $(RTL_DIR)/common/SRAMTemplate_128.sv \
+                        $(RTL_DIR)/common/SRAMTemplate_129.sv \
+                        $(RTL_DIR)/common/SRAMTemplate_143.sv \
+                        $(RTL_DIR)/memblock/SplittedSRAM_ptw_core.sv \
+                        $(RTL_DIR)/memblock/SplittedSRAM_1.sv \
+                        $(RTL_DIR)/memblock/SplittedSRAM_2.sv
+fm-PtwCache: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
+                               $(GOLDEN_RTL)/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv \
+                               $(GOLDEN_RTL)/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv \
+                               $(GOLDEN_RTL)/array_10.sv \
+                               $(GOLDEN_RTL)/array_11.sv
 
 # ---------------------------------------------------------------------------
 # FM_MERGE_DUP = false —— ★加强，不是放宽★（第 3 轮 FM，接 docs/fm_predictions/PtwCache.md）

@@ -19,5 +19,5 @@
       "points": 2000
     }
   },
-  "note": "第 4 轮（vmucp+60 钉点+消 1 impl 死位）登记。工具的 26599 仍把白盒读入的 array_1x_ext.v 当黑盒（bbin 2797），不是本目标的上界；手工模型 143,797 = regs 21088 + outs 2714 + 3147 + 116848，第 3 轮实测 ref 侧点数 passing 143717 + matched_nc 20 + unmatched-unread 60 = 143,797 逐位相等。本轮预测 passing = 143,797（正好 +80：20 matched_nc + 60 钉点后新配的对，全部由 vmucp 实开比较），failing 0 / unread 0 / unmatched 六项全零 / constant_reg 0。check 机械判 ABOVE_MODEL 是预期内（工具缺口，登记里已说明）。"
+  "note": "agent/l2tlb-gc 2026-10-11（codex 0222/0228）：FM 输入改为 impl=PtwCache+MBIST 分发级+SRAM 一路重写件（SplittedSRAM_1/2、SRAMTemplate_128/129/143），两侧共读 MC_MEMORY_MODEL（sram_array_*_ptw_l0/l1、array_10/11），array_10_ext/array_11_ext 两侧不读=对称未解析黑盒。此时工具模型的『ext 当黑盒、只计输入引脚』正好就是证明形态：预测 passing = 26599（regs 21088 + outs 2714 + bbin 2797）- constant_reg - unread（vmucp 开 ⇒ unread 0），即 EXACT 或差额全由 constant_reg 指认；failing/unverified/unmatched 全零；黑盒 = array_10_ext×1 + array_11_ext×16 两侧对称。若差额非 constant_reg 能解释，STOP。"
 }
