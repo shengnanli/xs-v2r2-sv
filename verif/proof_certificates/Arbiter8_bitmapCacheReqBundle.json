@@ -1,0 +1,118 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:36:05Z",
+ "generator": {
+  "run_context_worktree_digest": "b145db2bb19c6957d09532af2cdc8260d0c57947fb3fac7a8bf68203cacd4b05",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/397a2bc9c8d3/Arbiter8_bitmapCacheReqBundle",
+  "version": 1
+ },
+ "impl_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter8_bitmapCacheReqBundle.sv",
+    "sha256": "30ef97b0ba33afc1b85428231daf805279863775a59a1177f29a1efe475a3e0e"
+   }
+  ],
+  "golden_sha256": "55a8b4600285bd179e64c0ddc7ba5bccc454eead926c6c6dfe20c24cb196fd46",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+    "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter8_bitmapCacheReqBundle.sv",
+    "sha256": "dc02440f36e318405f4399cdeb11658d9c79b79befd483a1200158fd6786fa97"
+   }
+  ],
+  "impl_sha256": "e41757009b5284d1e0bdb33c875dc79087d6ba1499572e73c27f1f4c55c3778b",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "42d2d13834073c9e6100d0eed057bfd058e5f63daec6f24431d94509a4e66862",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 48,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "397a2bc9c8d3c32117bc043e0c4ced20959614a3",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "b145db2bb19c6957d09532af2cdc8260d0c57947fb3fac7a8bf68203cacd4b05",
+ "provisional": false,
+ "receipt_sha256": "34e3af9ffeef298e2a426f129e57f294699da6e55a5f4c0de5831851d12d06cb",
+ "reproduce": {
+  "command": "PROOF_COMMIT=397a2bc9c8d3c32117bc043e0c4ced20959614a3 scripts/run_proof.sh Arbiter8_bitmapCacheReqBundle Arbiter8_bitmapCacheReqBundle",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "23cf9737fc20f6c001c7e3e501b7b6326c0171f942d34bf47e26861efaab2f1b",
+ "run_id": "Arbiter8_bitmapCacheReqBundle-20261004T000017Z-397a2bc9c",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "Arbiter8_bitmapCacheReqBundle",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Arbiter8_bitmapCacheReqBundle",
+ "variant": "Arbiter8_bitmapCacheReqBundle",
+ "verdict": "SUCCEEDED"
+}

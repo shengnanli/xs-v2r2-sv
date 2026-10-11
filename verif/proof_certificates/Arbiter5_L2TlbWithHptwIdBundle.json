@@ -1,0 +1,138 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:30:45Z",
+ "generator": {
+  "run_context_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/62de21a18346/Arbiter5_L2TlbWithHptwIdBundle",
+  "version": 1
+ },
+ "impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter5_L2TlbWithHptwIdBundle.sv",
+    "sha256": "69ce62d5be33e56c26ca9b21a86fa7d6cb35e8023bac21ddae8d5bad127a0d52"
+   }
+  ],
+  "golden_sha256": "ec060b599ba9349c09e00dbe8ce57166e2590cee66050c3fe8729923a582acc8",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+    "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter1_L2TLBImp_Anon.sv",
+    "sha256": "f1fda33418e20f491b1f47aac8d56597cd27678793298b825e8e0eeaba6445a7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter2_L2TLBImp_Anon_1.sv",
+    "sha256": "18eee67e72ec744171667493aa82d0baf4dd62150d760e2b6e6905d9cea4b9e7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter3_bitmapReqBundle.sv",
+    "sha256": "aacc30b9eee383997c41f1251011443f17c9bb543e5cda7732b8a262e182108a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter4_L2TlbMemReqBundle.sv",
+    "sha256": "cfa29b14acc4319532500c7addfa081e1ffce60cf55363a0f09d7b629a7ca4aa"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter5_L2TlbWithHptwIdBundle.sv",
+    "sha256": "6af2f1a521a1f672c1165eb39212373dc38d1528180ecc7cf217881b74818931"
+   }
+  ],
+  "impl_sha256": "91a4829b63bc5d6a5026c7e826847099e93bad6407d8d6fe8fa192191296925c",
+  "repo_impl_files": 6
+ },
+ "native_facts_sha256": "6c1d9cbf6bd2d84e16c209d693a826722732b28f3fc4cd15fa9a796e3f4f9cd2",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 55,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+ "provisional": false,
+ "receipt_sha256": "40544a7ec90540c328a781ca307431d7857a4e60f919a47d69318613fae30e4c",
+ "reproduce": {
+  "command": "PROOF_COMMIT=62de21a1834697004056b37449556996a718c8bc scripts/run_proof.sh L2TlbArbLeaves Arbiter5_L2TlbWithHptwIdBundle",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "191b590b67802eb7ec7e13002a2b8a01cb322c1192e3b921d41a8a2bf2233302",
+ "run_id": "L2TlbArbLeaves-20261011T092947Z-62de21a18",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "Arbiter5_L2TlbWithHptwIdBundle",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "L2TlbArbLeaves",
+ "variant": "Arbiter5_L2TlbWithHptwIdBundle",
+ "verdict": "SUCCEEDED"
+}

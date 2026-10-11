@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/PTW
+Implementation : i:/WORK/PTW
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 05:36:51 2026
+**************************************************
+
+No aborted compare points.
+
+1
