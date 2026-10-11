@@ -477,18 +477,20 @@ module xs_Backend_core (
   assign flush_robIdx = {ctrlBlock_toExuBlock_flush_bits_robIdx_flag, ctrlBlock_toExuBlock_flush_bits_robIdx_value};
 
   // RobPtr.needFlush(redirect)：robIdx = {flag, value}，isAfter(a, b) = (a.flag ^ b.flag) ^ (a.value > b.value)
-  function automatic logic need_flush(input logic [8:0] rob);
-    return ctrlBlock_toExuBlock_flush_valid
-         & (ctrlBlock_toExuBlock_flush_bits_level & rob == flush_robIdx
-            | rob[8] ^ flush_robIdx[8] ^ rob[7:0] > flush_robIdx[7:0]);
+  //   level = "冲刷自身"（flushItself：连同那条指令本身一起冲掉）
+  function automatic logic need_flush(input logic [8:0] rob, input logic valid, input logic level,
+                                      input logic [8:0] redirect_rob);
+    return valid & (level & rob == redirect_rob
+                    | rob[8] ^ redirect_rob[8] ^ rob[7:0] > redirect_rob[7:0]);
   endfunction
 
-  // LoadShouldCancel：依赖的三条 load 流水里任一条在 s2 被取消
-  function automatic logic load_cancel(input logic [2:0][1:0] dep);
-    return io_mem_ldCancel_0_ld2Cancel & dep[0][1]
-         | io_mem_ldCancel_1_ld2Cancel & dep[1][1]
-         | io_mem_ldCancel_2_ld2Cancel & dep[2][1];
+  // LoadShouldCancel：依赖的三条 load 流水里任一条在 s2 被取消（dep[i][1] = 依赖 load 流水 i 的 s2 级）
+  function automatic logic load_cancel(input logic [2:0][1:0] dep, input logic [2:0] ld2_cancel);
+    return ld2_cancel[0] & dep[0][1] | ld2_cancel[1] & dep[1][1] | ld2_cancel[2] & dep[2][1];
   endfunction
+
+  logic [2:0] ld2Cancel;
+  assign ld2Cancel = {io_mem_ldCancel_2_ld2Cancel, io_mem_ldCancel_1_ld2Cancel, io_mem_ldCancel_0_ld2Cancel};
 
   logic [1:0] vldu_timeout;          // 两个 Vldu 口的发射超时（下面计数器）
 
@@ -501,8 +503,11 @@ module xs_Backend_core (
     end else begin : g_other
       assign timeout = 1'b0;
     end
-    assign pipe_isFlush[p] = src_fire ? need_flush(pipe_srcRobIdx[p]) | load_cancel(pipe_srcLdDep[p])
-                                      : need_flush(pipe_outRobIdx[p]) | timeout;
+    assign pipe_isFlush[p] = src_fire
+        ? need_flush(pipe_srcRobIdx[p], ctrlBlock_toExuBlock_flush_valid, ctrlBlock_toExuBlock_flush_bits_level, flush_robIdx)
+          | load_cancel(pipe_srcLdDep[p], ld2Cancel)
+        : need_flush(pipe_outRobIdx[p], ctrlBlock_toExuBlock_flush_valid, ctrlBlock_toExuBlock_flush_bits_level, flush_robIdx)
+          | timeout;
   end
 
   // ---- 向量 load（Vldu）口：发射超时 / 更老的 uop 到来 / 发给 mem 调度器的回应 ----
