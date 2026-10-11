@@ -94,3 +94,40 @@ canary1 的 fm_verdict：PARTIAL（`assembly_green_child_certificate_not_in_comm
 native SUCCEEDED；passing **187008**、constant_reg **10**、failing / unverified / aborted / unmatched / unread / blackbox_out **0**；
 dont_verify / elab147 / relaxed_appvars 空。187018 − 187008 = 10 = constant_reg。
 **verdict 预测 PARTIAL**：§3 表里 5 个 child 证书在父 commit 上不 current（首个按 allow 顺序报出，预计 `L2TLBWrapper` 无证书）。
+
+## 对账
+
+### UT（RTL 字节 = e00faf266，此后 rtl/ 未再改动；每档 200k 拍，checks = 200k × 1431 输出）
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+1` |
+|---|---|---|
+| 1  | checks=286200000 errors=0 PASSED（翻转 987/1431） | checks=286200000 errors=0 PASSED（1410/1431） |
+| 7  | checks=286200000 errors=0 PASSED（982/1431） | checks=286200000 errors=0 PASSED（1400/1431） |
+| 42 | checks=286200000 errors=0 PASSED（1004/1431） | checks=286200000 errors=0 PASSED（1406/1431） |
+
+覆盖（seed 1 / 7 / 42，initreg 0）：原子执行中 112916 / 117900 / 116173 拍；原子写回 13 / 20 / 24；segment 独占 84681 / 79966 / 89043；
+PTW 回应打拍 56 / 55 / 49；违例回滚 1610 / 271 / 776；Uncache 忙 86 / 42 / 45；load 口 1 非对齐写回 34 / 38 / 32；
+向量写回 57864 / 57508 / 57073；例外挂起 7294 / 5368 / 6245。
+变异（scratchpad，seed 7 initreg 0，20k 拍，不进库）：M1 原子状态机口 0/1 优先级互换 ⇒ errors=8008；M7 Sv39 例外地址符号扩展改零扩展 ⇒ 31
+——抓到。**UT 抓不到的 6 个**：M2 segment 接管首拍 s1_kill 恒 1、M3 noS2 命中不看 valididx、M5 uncache 回应不看 outstanding、
+M6 回滚最老比较 > 改 >=、M8 触发器写入不清 timing（随机激励下到不了：PTW 合法回包、相等 ROB 指针、outstanding 下的 uncache 回包都极少）；
+M4 store 写回口 0 的 smb / other 优先级互换是等价变异（两者赢的条件互斥）。这些都在 FM 的比较锥里（本层全部寄存器与组合逻辑白盒，
+merge_dup=false 逐位比）。
+
+### 子证书（codex 0228 后）
+
+MC 登记 10 行合入（main 0fd433dd0，本 lane 以 merge 合入为 e7c2faa6b——不用 rebase，因为 Queue2 证书的 impl_commit cb251a56a 是 lane 内提交，
+rebase 后不再是祖先）；从既有 evidence 重出 Queue2 ×10、TLBuffer_6..9、FrontendBridge、SMSPrefetcher 证书（832cd5f35，未重跑 FM）。
+HEAD 832cd5f35 `batch_reproof.py validate`：**49/50 current-valid**，只剩 L2TLBWrapper（无证书，由 agent/l2tlb-gc lane 自下而上闭合；
+本 lane 不碰 L2TLB 子树）。`FM_INTERFACE_ONLY` = 恰 50 个 green design（不含 ram_40x47）。
+
+### FM
+
+| 跑 | commit | native | passing | failing / unmatched / unread / blackbox_out | constant_reg | verdict | 证据 |
+|---|---|---|---|---|---|---|---|
+| official1（run_proof） | f07ee5fd0 | SUCCEEDED | **187008** | 0 / 0(0) / 0 / 0 | 10 | PARTIAL：`certificate_not_in_commit:L2TLBWrapper`（拒绝出 receipt） | evidence/f07ee5fd08a8/MemBlock（未提交，无 receipt.json），1775 s |
+
+与 §4.2 预测逐项相同（passing 187008、constant 10、verdict PARTIAL）。按 codex 0228：L2TLBWrapper 证书 current-valid 之后，
+由集成者在最终提交态跑唯一一次 official MemBlock（预期同 canary：passing 187008 / constant_reg 10 / 其余全零），出 receipt 与证书。
+复跑：`PROOF_COMMIT=<c> bash scripts/run_proof.sh MemBlock MemBlock < /dev/null`；
+`python3 scripts/make_proof_certificate.py --repo . --stamp-allow verif/allow/MemBlock.json`（L2TLBWrapper 证书入库后先回填 sha）。
