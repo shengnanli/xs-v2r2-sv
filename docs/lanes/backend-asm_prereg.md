@@ -36,6 +36,27 @@
 取舍：并集派生一次 22 分钟、编译 15 分钟；复跑必须 `make derive` 一次后 `touch ut_gen/*.sv`，再 `make run ... -o derive -o simv`
 （ut_common 的 derive 是 .PHONY 的 order-only 前置，否则每次 run 都重派生 22 分钟）。
 
+UT 结果（tb/RTL = a4a84064d，每档 200k 拍，checks = 200k × 1008 输出；复跑：`cd verif/ut/Backend && make derive && touch ut_gen/*.sv &&
+make simv -o derive && ./simv +ntb_random_seed=<S> +ncycles=200000 +vcs+initreg+<0|1> -l sim_<S>_initreg<V>.log`）：
+
+| seed | `+vcs+initreg+0` | `+vcs+initreg+1` |
+|---|---|---|
+| 1  | checks=201600000 errors=0 PASSED（翻转 437/1008） | checks=201600000 errors=0 PASSED（846/1008） |
+| 7  | checks=201600000 errors=0 PASSED（439） | checks=201600000 errors=0 PASSED（846） |
+| 42 | checks=201600000 errors=0 PASSED（434） | checks=201600000 errors=0 PASSED（846） |
+
+覆盖（initreg 0，seed 1/7/42）：执行块冲刷 15027/14844/14941；int0 发射流水 src fire 481/404/360、isFlush 7490/7427/7583；
+load0 流水 out fire 286/262/211；ROB 头访存发射 53/62/56；int 写回忙表清除 467/389/345；int 唤醒 481/405/360；mem 唤醒 62783/62372/62604；
+MSI RegEnable 4055/3890/3997。不设闸（UT 走不到，FM 逐点证明）：Vldu 发射 / 超时 / 更老 uop、vsetvl vtype 暂存（tb 不送向量指令：
+没有 MemBlock 模型时向量 load 发不出去、vsetvli 卡在 ROB 头）。
+激励要点（调试实录）：trigger 必须给 4'hF（TriggerAction.None；0 = 断点异常，否则每条指令都带 exceptionVec[3]）；PC 放低 2 GB（否则取指
+越界异常）；每相开头 200 拍开机程序打开 mstatus.VS/FS；顺序相里访存写回口回放同拍发射的访存 uop（MemBlock 回声）。
+判据自证（scratchpad 变异，只改派生副本 ut_gen/Backend.sv，不进库；seed 7 initreg 0，40k 拍）：
+M7 lda uop.pc 偏移项多加 1 ⇒ errors=40000（抓到，证明 harness 有效）；**UT 抓不到的 7 个**：M1 wbPregsInt 只看 wen、M2 isFlush 去掉
+load 取消、M3 ROB 头访存发射不比 robIdx、M4 MSI 号不带 RegEnable、M5 晚一拍写回 addr 不带使能、M6 needFlush 去掉 level、
+M8 level 取反 —— 都被下游屏蔽（只在 valid / wen 时被读、或依赖本激励下罕见的 robIdx 恰相等），全部在 FM 比较锥内（输入是黑盒输出、
+输出是黑盒输入 / 顶层口），由 FM 逐点证明。
+
 ## 3. 子证书（31 种直接子模块的 current-valid 链）
 
 递归闭包（各 child receipt 的 impl 侧 golden 依赖）共 120 个 target。HEAD 上复核：
