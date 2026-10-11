@@ -1,0 +1,155 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T07:03:46Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/GPAMem",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/GPAMem.sv",
+    "sha256": "d694666b7e61f583e294f46ff4482034b8d8ff51fcecfa5d9a7265fb7b8f67ed"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__64entry_5.sv",
+    "sha256": "4be7eb0798c84a3c07281a2c988f97f6a56fd19f9301472cfdcf766217fed17a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__16entry_20.sv",
+    "sha256": "d2f6a1154771ca246e9abe301a3c829a757085ee4471ab949b933e5c0a56fc4d"
+   }
+  ],
+  "golden_sha256": "7dda6154eac13cae65147c14f37395ceaf91c662216486539fd696c61a3b54a4",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/GPAMem.sv",
+    "sha256": "a69f3098ba2c74042507ec9d12533297a5ed28de25a8c491f4928c54261e5dd5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_DataModule.sv",
+    "sha256": "879ed4221bd71d51d456dec4c8e8a701e8361bb94e5466a0ecd8d2a3e4cb6e1f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_SyncDataModule.sv",
+    "sha256": "79d4dfdbed51fddadb93dea11c71a8d330257bf9a6797105dff15d22c18a170f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DataModule__16entry_20.sv",
+    "sha256": "905d6318ab049173d78f124f09616366fb29ee443893254d18bb74df9bdbb1cc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/SyncDataModuleTemplate__64entry_5.sv",
+    "sha256": "76f2c44a8690a5e2dc7f7bf806fdf74c51af1a69630003979b28001f2d3137b1"
+   }
+  ],
+  "impl_sha256": "aad293452d2b5ce0b32f0586a436164409c47306addcf320eb1f47acb33151c4",
+  "repo_impl_files": 5
+ },
+ "native_facts_sha256": "97c72084f17c50d131b240c83bdf718c07a9f74127022e3e4d39ca0a62757d74",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 3995,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "3040aaed2c07cca29cfef47b3d5c82b065f8cb39bed47d218ab26cdcdfdf07c0"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "b417ef7e2fa61c441f967e585ca7b619746162f106c714ab7e31bf0067353cc6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "f6f41b6d040f5ca392f78f519d342d7be0dcf5779d6d7c968d44e2e84df6ac36",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh GPAMem GPAMem",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "96d8ae9b07b92bacb08e1122ca4ee263991dfb4cc6548c655ffff9e626ad8f7e",
+ "run_id": "GPAMem-20261011T070233Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/GPAMem.tcl",
+    "sha256": "2284248f0d9c6f1ab8d7267d5e68893515e7c5d811ad1ff904d5063eb395be97"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/GPAMem/fm_pins.tcl",
+    "sha256": "3040aaed2c07cca29cfef47b3d5c82b065f8cb39bed47d218ab26cdcdfdf07c0"
+   }
+  ],
+  "sha256": "86071086d3b9e30ebefd1909baa101535a57421d30b6afdb73d40816b7a212b5"
+ },
+ "target": "GPAMem",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "GPAMem",
+ "variant": "GPAMem",
+ "verdict": "SUCCEEDED"
+}

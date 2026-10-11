@@ -1,0 +1,185 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:42:00Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/MemCtrl",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MemCtrl.sv",
+    "sha256": "1d0ff459e6bbd169b39988b17641ccd56c6aeb14bc17e3f28452cf8b6548d30f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SSIT.sv",
+    "sha256": "7ee41952a1bc6b2b0eb285fc176b5882ce5a182d0553e7f09785813e7113d42f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WaitTable.sv",
+    "sha256": "8f798e544cc0fc80efc3fddfaff6e68929d2c646eb672273f7baf5b8590bb465"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__1024entry.sv",
+    "sha256": "2d226c8e4f1883c6ae04fdcad24d831aa5f57931d435dcf60d1465bb7d1b9f84"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__1024entry_1.sv",
+    "sha256": "cb256ba2fe11278e8e67fb958b56ee48dce41c6af579acadacd658eeea26eeb5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__64entry.sv",
+    "sha256": "7bdf70ada2093105feec11829082cbdb0859048753be22db9753399ec924d905"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__64entry_16.sv",
+    "sha256": "c08f8146905d6b4f468d3fecf28b5f97fbfe9e01732ab831c531a22bb8bb1a92"
+   }
+  ],
+  "golden_sha256": "d26df616309f7cb4826e53ea0f4e9b73d7483a796b4a7975e70c45ae64e181d3",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MemCtrl.sv",
+    "sha256": "3e979883b3ee1368161fb93d0e8e1db03aaa4fddb6d3fd466a8308f5df25bf3a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/WaitTable.sv",
+    "sha256": "d6f2a10e1bdbdb8473c34f00bf6cce17e5296b60ebd1717a007e9a32acad33e4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SSIT.sv",
+    "sha256": "d88d85b2163f8c6622a36e1f820b638b30f3d617699005cf1b8f66e86dcc1854"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__1024entry.sv",
+    "sha256": "2d226c8e4f1883c6ae04fdcad24d831aa5f57931d435dcf60d1465bb7d1b9f84"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SyncDataModuleTemplate__1024entry_1.sv",
+    "sha256": "cb256ba2fe11278e8e67fb958b56ee48dce41c6af579acadacd658eeea26eeb5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__64entry.sv",
+    "sha256": "7bdf70ada2093105feec11829082cbdb0859048753be22db9753399ec924d905"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DataModule__64entry_16.sv",
+    "sha256": "c08f8146905d6b4f468d3fecf28b5f97fbfe9e01732ab831c531a22bb8bb1a92"
+   }
+  ],
+  "impl_sha256": "a3534a101ddc6c16b3529bc70fd53ac4875cef6a0978166201edd3ff87a08703",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "08cd8b96d28d0ccb838a8372188c13a82dc1573e26024c6bd5ea296521ffccbf",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 18135,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "4872e550f47dd876e89b9353ea27629e3bf554663854657c8da137a0d19b42a2"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "8fd75bfc4187450b6f6f4a3cbd377c937da5b9b05c9b39c1053c5c7ec3032fb7",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "2d5d9b15b6aad7effefdda1cbfff6978f6e4d51c600b4d4afd93bb667f3c2dab",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh MemCtrl MemCtrl",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "7dcb27e40557367c02cdb4e5f60dfe58db14556b98b5b86e4172af9cc0b9512c",
+ "run_id": "MemCtrl-20261011T063640Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/MemCtrl.tcl",
+    "sha256": "833f927ae604dbc136697f9cc6b70c960c38ab618eed90606e864b3accf87eba"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/MemCtrl/fm_pins.tcl",
+    "sha256": "4872e550f47dd876e89b9353ea27629e3bf554663854657c8da137a0d19b42a2"
+   }
+  ],
+  "sha256": "d84e59516df88a09c3f291e9e37e175ff2fcbfda80892bd5283a0edc7df81c2c"
+ },
+ "target": "MemCtrl",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "MemCtrl",
+ "variant": "MemCtrl",
+ "verdict": "SUCCEEDED"
+}

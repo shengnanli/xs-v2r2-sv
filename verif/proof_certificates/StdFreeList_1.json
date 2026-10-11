@@ -1,0 +1,148 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T07:01:38Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/StdFreeList_1",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StdFreeList_1.sv",
+    "sha256": "96719147461d5aa4c6abbacc9193fef8f62f1a8d56818060d287c11078ad3d63"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_11.sv",
+    "sha256": "51bde6d5f978de11b8575b3025eb9c9a72fababcce5cdcab26b96feec7084d8d"
+   }
+  ],
+  "golden_sha256": "c2fee3547dd7785883b87040da9bac4d891e01534512b8b46eaf1eea1db9a672",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/stdfreelist_pkg.sv",
+    "sha256": "0afdb06aa838bdd8af16f646cd0daab777cf3a28ab9a953af5169fb27b738b64"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList.sv",
+    "sha256": "2d56cb30a261a83f785ec539698ad58d69d7449b2afe146c1206ed9dbc992a68"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator.sv",
+    "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList_1.sv",
+    "sha256": "4d3fa0797b849d42092553c23d1380f2c33815d73f8bd4490f1e0dcb67633e95"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList_2.sv",
+    "sha256": "a3fd8ee6e9902eafc60553e24f39c9d4f4098337cd69bfefab5863c958c1c07a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList_3.sv",
+    "sha256": "52fa4fcc04b74109550949e7880e3a4d2d29a6017dfa7e4e2b6b7c47a7339471"
+   }
+  ],
+  "impl_sha256": "cc13583f78e564b17a73fbbfc3c2b03230c5008a68cc0792983184338d378226",
+  "repo_impl_files": 6
+ },
+ "native_facts_sha256": "e27acdc3885096ffbe1c09b5bee182d091d8807d6606681dfefc74e05cadc219",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 892,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "b020292ec56c5335d80487b9117ce90015398680ccf39a86a193f34c0baaf22d",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh StdFreeListVariants StdFreeList_1",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "d8e484ec5f6454ebce77df308f551817134c605f479a0d99c262366a29de8e49",
+ "run_id": "StdFreeListVariants-20261011T070022Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/StdFreeList_1.tcl",
+    "sha256": "53078fbede44d74bc114bf4fbc8223034f4ad008753f4304bb71304d38706206"
+   }
+  ],
+  "sha256": "3e31b39072451596e3e316556a2e9865151130f0f17a03be461ad3601c226832"
+ },
+ "target": "StdFreeList_1",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "StdFreeListVariants",
+ "variant": "StdFreeList_1",
+ "verdict": "SUCCEEDED"
+}

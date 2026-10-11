@@ -1,0 +1,135 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:52:36Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/MEFreeList",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MEFreeList.sv",
+    "sha256": "0f216021dc1e2bac27b93245882c9ac63a07c1229a185d3fc1bfe115e9a733cd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator.sv",
+    "sha256": "2acd6ac73569ed8750aadb997dd0a3c375f3d986751ea1741acf410ef9516d07"
+   }
+  ],
+  "golden_sha256": "cfca1779ebed4179e6856d09126b00095de3d3d2f6022454c9062cb9ff5c616d",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MEFreeList.sv",
+    "sha256": "ddf9caf66c6122593ff39f497f70fa734c3e91f26bd6ca09f920c327651a1f4b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator.sv",
+    "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+   }
+  ],
+  "impl_sha256": "c4b501fd515e1eca5140bea9c80c616267db84f0d8ab036ef12ba6e13e96760f",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "e66557dbb6842a61bef74b01db6dc81323d12e99c6f70c03556f984909e35e71",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 2716,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "3ce4b835fef9d770823af79b5d83df699d15a90edfea16c8a404211b46271db7"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "97b886abefdaaea7e43e5759ef5a44101ac1245e4ab9539e764ccf5180af3bbf",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "a7996a2cf4ce4b1fcfec1b7a4c5d076884eb7b7a0cefd9c79048e595ceea5cb2",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh MEFreeList MEFreeList",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "cc77ce8858797d00be6ab9bc50cbc037f5fd2628b8cabca60f714610b63e6711",
+ "run_id": "MEFreeList-20261011T064956Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/MEFreeList.tcl",
+    "sha256": "1709438125d28fa02379eda5b835575a9114dcfd03004f1d876defb05698c799"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/MEFreeList/fm_pins.tcl",
+    "sha256": "3ce4b835fef9d770823af79b5d83df699d15a90edfea16c8a404211b46271db7"
+   }
+  ],
+  "sha256": "a0b9c6967f0c6ca9ccd94c71b17d54e55929822bd312a376bd10d61b3fe562e3"
+ },
+ "target": "MEFreeList",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "MEFreeList",
+ "variant": "MEFreeList",
+ "verdict": "SUCCEEDED"
+}

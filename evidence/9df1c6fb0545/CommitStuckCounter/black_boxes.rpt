@@ -1,0 +1,56 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/CommitStuckCounter
+Implementation : i:/WORK/CommitStuckCounter
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 03:52:29 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    NewRobDeqPtrWrapper
+
+       Instances : 0
+
+e *    RobEnqPtrWrapper
+
+       Instances : 0
+
+e *    xs_CommitStuckCounter_core
+
+       Instances : 0
+
+e *    xs_NewRobDeqPtrWrapper_core
+
+       Instances : 0
+
+e *    xs_RobEnqPtrWrapper_core
+
+       Instances : 0
+
+
+1
+

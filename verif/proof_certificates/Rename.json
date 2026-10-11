@@ -1,0 +1,216 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:35:18Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/Rename",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Rename.sv",
+    "sha256": "fe3a5be351de79019fbd1f66c95fd773c711bc43d99660f9469c6e63c63c2410"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/CompressUnit.sv",
+    "sha256": "92074ca65436fc023066b26676ec6d6ca470aa4962c2fc7b261f3d9130a3f491"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MEFreeList.sv",
+    "sha256": "0f216021dc1e2bac27b93245882c9ac63a07c1229a185d3fc1bfe115e9a733cd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StdFreeList.sv",
+    "sha256": "55fb8260345cbb5d9596fbee1e5006a4ab84a602c3ffb6ca514b7326ed142002"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StdFreeList_1.sv",
+    "sha256": "96719147461d5aa4c6abbacc9193fef8f62f1a8d56818060d287c11078ad3d63"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StdFreeList_2.sv",
+    "sha256": "6bb02c84606f20b9aec7561b377230a6acacd5bc8e7c182c5698af23e1ca2ad5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StdFreeList_3.sv",
+    "sha256": "c6b3cc3452d6486121b2c7d294b730fae1d61b29ceb0f787781072ddf6244aaf"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator.sv",
+    "sha256": "2acd6ac73569ed8750aadb997dd0a3c375f3d986751ea1741acf410ef9516d07"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_11.sv",
+    "sha256": "51bde6d5f978de11b8575b3025eb9c9a72fababcce5cdcab26b96feec7084d8d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_12.sv",
+    "sha256": "cd4006a832932dfa5ad1ae84d3aadb22a185694430a2cee6c67219426d24011b"
+   }
+  ],
+  "golden_sha256": "5641e911137f6ec789e5a37764d75c3d441ded026795c1375b612a50fcefc943",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/stdfreelist_pkg.sv",
+    "sha256": "0afdb06aa838bdd8af16f646cd0daab777cf3a28ab9a953af5169fb27b738b64"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Rename.sv",
+    "sha256": "9f3e22dfe2cfc0ba2f013e3ade686a8ca05d086e13a7c97ca4c399e06f4a44b9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CompressUnit.sv",
+    "sha256": "2290cc5a4e9aeccdc8c7f4683a81a07f5981fef9589cb99fa996c5469b8da6b0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MEFreeList.sv",
+    "sha256": "ddf9caf66c6122593ff39f497f70fa734c3e91f26bd6ca09f920c327651a1f4b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList.sv",
+    "sha256": "2d56cb30a261a83f785ec539698ad58d69d7449b2afe146c1206ed9dbc992a68"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList_1.sv",
+    "sha256": "4d3fa0797b849d42092553c23d1380f2c33815d73f8bd4490f1e0dcb67633e95"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList_2.sv",
+    "sha256": "a3fd8ee6e9902eafc60553e24f39c9d4f4098337cd69bfefab5863c958c1c07a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList_3.sv",
+    "sha256": "52fa4fcc04b74109550949e7880e3a4d2d29a6017dfa7e4e2b6b7c47a7339471"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator.sv",
+    "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+   }
+  ],
+  "impl_sha256": "de862454c007b56f9921fb35ee7ae857e0be1ed1f2e312e2647abd7289d747ea",
+  "repo_impl_files": 9
+ },
+ "native_facts_sha256": "2e36f758b1331b0694b54c7420c3419c6dd9e352d12f14dc71a95767bc189a18",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 11153,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "f948b404b0f536438202d6ebdc39db8565164b207b5c46225e7ada9a71145551",
+   "fm_pins_pre.tcl": "cbcbd9a2ce1860ae671d38191eed15d36793babb969594483bbb8826117d6bee"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "106922de4479a7db2c8e1290f6f044098b854d0897032ae56988411a3d88dd17",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "4e9c7e913d1766d6a09c2b6a702f10c011534aea02d8e5f3525d894f916f3cbf",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh Rename Rename",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "881d27870023f1d82280c80298bc1a1d31e4baf5e84280b6b2942e64e03437de",
+ "run_id": "Rename-20261011T062743Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/Rename.tcl",
+    "sha256": "b4c7d866774ddcc6a13ea35b5cb6c3508dea71b3b37df7ec8deed3e6799717bd"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/Rename/fm_pins_pre.tcl",
+    "sha256": "cbcbd9a2ce1860ae671d38191eed15d36793babb969594483bbb8826117d6bee"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/Rename/fm_pins.tcl",
+    "sha256": "f948b404b0f536438202d6ebdc39db8565164b207b5c46225e7ada9a71145551"
+   }
+  ],
+  "sha256": "13e05f431d6a7a53500058803466bc92d412054567cf47ca452c080162d5898e"
+ },
+ "target": "Rename",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Rename",
+ "variant": "Rename",
+ "verdict": "SUCCEEDED"
+}

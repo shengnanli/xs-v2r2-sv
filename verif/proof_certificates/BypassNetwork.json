@@ -1,0 +1,185 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:52:21Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/BypassNetwork",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BypassNetwork.sv",
+    "sha256": "38d0869dfdf65274e8f47ef9c6e1137336724c6652ca2c46319523bd623c7e5b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ImmExtractor.sv",
+    "sha256": "9ea53f4b55ed7dda85d2d01a771437c1590df91dab893c6f7f62c7a0b8e31cb4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ImmExtractor_2.sv",
+    "sha256": "c3df397f7267aab5397c69accafb3fa9f8318c0dc9caf74bfb3b095a6a809abd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ImmExtractor_12.sv",
+    "sha256": "7ea4c002996ba8647c76d96fddca321068fa027f34741da1f00929268718e24d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ImmExtractor_37.sv",
+    "sha256": "48ca6a0b648f2940d6ea674c8ab429edf2d0d95fcfaa3179b7d6c0a14a50dcfa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ImmExtractor_57.sv",
+    "sha256": "bd56d307b45a3e4f1009073d71e864fe9d880a481cf6831961d72d71774a2041"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/UIntExtractor_27_000011100000000000001010101.sv",
+    "sha256": "5b9e078741e1b7fb6f96ad812811dac631a18afb47882e9b1bc254b450bbe6b5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/UIntExtractor_27_000000000000001010100000000.sv",
+    "sha256": "a4fe1c0e962350312051f7926164a1b849a558cff3e4cc116f6060e0299afb0c"
+   }
+  ],
+  "golden_sha256": "18f1ad2e594e1fe40d6dd2804f80e73b624aef6e092fccc0641d9e7a620462b7",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ImmExtractor.sv",
+    "sha256": "e1018270a67932d305ae30f5e58b6be046699907fd887d0087514d4bb84d5d94"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ImmExtractor_2.sv",
+    "sha256": "0b63449470f52204d3a543fdfe9b202f8050b14d0f116ca3458636e233be5630"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ImmExtractor_12.sv",
+    "sha256": "4c2d1cc75663fcc0eb4ae83d298cf6ead0fac9ba1612f6c13d9d4130c6bf0d12"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ImmExtractor_37.sv",
+    "sha256": "2236892bb29681cb9c003a7d1dfb70e4a326f3aeb03efa896ac96f4666f67573"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ImmExtractor_57.sv",
+    "sha256": "0ab91842381b01a7b56d7104a6dcfb4dd340979425ddd5171906ce8f978e4dc7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BypassNetwork.sv",
+    "sha256": "e50d612fd93857ac68944a20c1e2c385ac53a5ee26373eadf625d91e2d4dc962"
+   }
+  ],
+  "impl_sha256": "fb07ba66587b12f799fab32e9fa115dc371836cf8d979dbbb8c0db72b93d0bc8",
+  "repo_impl_files": 6
+ },
+ "native_facts_sha256": "f51b9c53d158126b909f1e2e6a609a5fa4cb8288a047cf1d3be6c45bb83ad207",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 27719,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 64
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/BypassNetwork.json",
+    "sha256": "622d8cae21705ede565c9f5f31456b77ec5c5430832392baf05b38318688c487"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "94c0777b106e00d1a8ef380f0568a7b9db8130df7755567eb27880586d85f7d6"
+  },
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "4009442b94b4911a1979d3a6a80cc72a1a9e55067bfa9ebe8bcf902dfdbf2af5",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "1d1328c7308e79eb0d188b4f766068142de6438597f29020c7480dd8e67a09cc",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh BypassNetwork BypassNetwork",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "634129c9c015442bf54c6d5608e64bf84d30ccda112b9481e2cc5cf60912348f",
+ "run_id": "BypassNetwork-20261011T064906Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/BypassNetwork/fm_pins_pre.tcl",
+    "sha256": "94c0777b106e00d1a8ef380f0568a7b9db8130df7755567eb27880586d85f7d6"
+   }
+  ],
+  "sha256": "f0962da14061eebec9e0e56e93049b708f08ce773dd694e1b409e786310c3adb"
+ },
+ "target": "BypassNetwork",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "BypassNetwork",
+ "variant": "BypassNetwork",
+ "verdict": "PASS_DEAD_REF"
+}

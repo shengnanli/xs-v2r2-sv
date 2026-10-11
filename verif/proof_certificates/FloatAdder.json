@@ -1,0 +1,311 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:27:23Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/FloatAdder",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FloatAdder.sv",
+    "sha256": "02b716a222943804b977225615e9f2643681693fc9cc1cf2efafdfff38dfc89e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Adder.sv",
+    "sha256": "607989537ce18d8e55805e5b12139e3325743f8fd2fb096ae08bfd6e18940e46"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Adder_2.sv",
+    "sha256": "6a869d47f2fa16fb417a2c93f914e6596bb22a59d1d682dfa491bde35daac352"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClosePathAdder.sv",
+    "sha256": "aad8c32b6a9e45d53a725292dabcbe1bbbd9a197c59ee9aae7d4dacea4b39f63"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClosePathAdder_2.sv",
+    "sha256": "581d7195c0e45d2d41a3225141492f0f9cc93f7a56e6f19e938181e62ab9718b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClosePathF32WidenF16MixedPipeline.sv",
+    "sha256": "529ce48b8b6efe15718528eaecf5b97a5c653068e05b307ae25c3852c0b68db4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClosePathF32WidenF16MixedPipelineAdder.sv",
+    "sha256": "aff3c4b7a84d2a61b0b16f6cae2eb455def880a364c8f4cf50981fc4bbeb8828"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClosePathF32WidenF16MixedPipelineAdder_2.sv",
+    "sha256": "5c8577ee750bd46e4f4347cdadb66e808e6a2068df513d1e6f3f4a34e01c7b72"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ClosePathFloatAdderF64WidenPipeline.sv",
+    "sha256": "4d8fef5bcdd801c473cbe73ce728ad3b34fb40f5e0286c82c58d0cc5fe11f6ab"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/CloseShiftLeftWithMux.sv",
+    "sha256": "c876ba7ea31d0088179be545293092cd48c2fb5a06a18bb4bcd046b0d888613d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/CloseShiftLeftWithMux_1.sv",
+    "sha256": "486805d6a525ce565eea5fef397c6a0a1c56b951ffdd7a2dee3d13ef4ba9b04d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarPathAdderF64WidenPipeline.sv",
+    "sha256": "63cdd62d83c47fc2f56bdc935740df2a2637ff514531b8420165c1331c0c0382"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarPathF32WidenF16MixedAdderPipeline.sv",
+    "sha256": "a769476ff2a90ac0ff5412ce4dca6826ab5e12b040c6f4948c1bde72ff2e9fdc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarPathF32WidenF16MixedPipeline.sv",
+    "sha256": "a7cf54d33c305252266edda3eaa3a31285cf024d5059bf50735dc9fa4a76ed1d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarPathFloatAdderF64WidenPipeline.sv",
+    "sha256": "85e28192f60c3906f68365990ddeaa73e273eb8a0ce7d7f46dfb546c36a71fd5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarShiftRightWithMuxInvFirst.sv",
+    "sha256": "27287215e1e13d71fe1656074de982b8d2cd4e2be5a35af556657d637d6ff83c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarShiftRightWithMuxInvFirst_2.sv",
+    "sha256": "0464e7e9a4c470dbbf704da297a95f7ea2b009b838ea135e34910f2828cf1a0a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FloatAdderF32F16MixedPipeline.sv",
+    "sha256": "65e51f0397521205cf58c7439d633a05409b2e3cc2a232955f6a269c313a2226"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FloatAdderF64Pipeline.sv",
+    "sha256": "2589d91bea231328ac0144f2e77df0ad655714c27b9b6c57332d62901fdb0b55"
+   }
+  ],
+  "golden_sha256": "f02838d7ec89a4e2ce595171cedd5bb74139f476bcbf904390b2edcbad7bc9ed",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Adder.sv",
+    "sha256": "77ac06806b3abfd25f044589517e8536f82dc5756db7764f35762da1c1079d67"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarShiftRightWithMuxInvFirst.sv",
+    "sha256": "28bd766d528c756b3ae5c531fc66f1aee8a908a8efa0461c7812a14645da0b4d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarPathAdderF64WidenPipeline.sv",
+    "sha256": "d9139f00d3b37c9d63ca9a9245b159fce6cb01052ae627c75915efc184f6eb1d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarPathFloatAdderF64WidenPipeline.sv",
+    "sha256": "a2aba8e044dc76bd53a176cc05167de904592fe46ec0f4fd1330ac5911453adb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ClosePathAdder.sv",
+    "sha256": "f9140f63395533d3267d22e7d5b99e31f97e5a15afe5dc7a26cca7ff997820e8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ClosePathAdder_2.sv",
+    "sha256": "70de592c7574ca321353426f1b29d3c9a94be9a1b4ff6f593600b40e63fd944f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CloseShiftLeftWithMux.sv",
+    "sha256": "282539bf8c0233158f7a3bffb9801b26081a362f6375600f5fe4b86ffd55ec98"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ClosePathFloatAdderF64WidenPipeline.sv",
+    "sha256": "344f6cec5f97bef90bf096390bb24aecb3eac23e7a01712617f5432c63d8300b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FloatAdderF64Pipeline.sv",
+    "sha256": "bb030055d671a54f6fb07c811653d3f7b7702a2f27a8300b34dc2bfe2d00258c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Adder_2.sv",
+    "sha256": "d1b8661a67a0d7f8e35b71a10e562afefd0ad7e964a4ea877e6c02968c24cce2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarShiftRightWithMuxInvFirst_2.sv",
+    "sha256": "cb349cf1f5ed70f9af78ddeea128ce6451440e40de9a8fcdaaa30f26cd0852f0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarPathF32WidenF16MixedAdderPipeline.sv",
+    "sha256": "7b939a33b974bdf0aa55c31397163ee47b8494d42a60e52ab44be9927a31a402"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarPathF32WidenF16MixedPipeline.sv",
+    "sha256": "ed1c0fbad5ec049b22e26045b1747efe89a45703393233b93c4a1aa6e2950e56"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ClosePathF32WidenF16MixedPipelineAdder.sv",
+    "sha256": "c4201110d1c30a1a958697d8d92642b855795713d6c320636a3fed991000d420"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ClosePathF32WidenF16MixedPipelineAdder_2.sv",
+    "sha256": "b41cce41a2ece250b619487c83a61662229547c25964a3c9e1611997b846c44d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CloseShiftLeftWithMux_1.sv",
+    "sha256": "e22aa9194bb35cfa2cef898164bbd7172a0005231f0bee04f3a296b624a8ada6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ClosePathF32WidenF16MixedPipeline.sv",
+    "sha256": "1ab7fe6aaab3482f5cc42264133eb2f8c9f87a13b20d341edbe05bc7993e790f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FloatAdderF32F16MixedPipeline.sv",
+    "sha256": "f2d5e58b17f322cbc85cc657c44e2a7ac0a39a88105ba242fbbd14508420ed25"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FloatAdder.sv",
+    "sha256": "2e13b795bd158f794d981de092d21641063ac881c47b9f247abc319acd511d89"
+   }
+  ],
+  "impl_sha256": "93a77619f112f8fd228b7178d6fbb672b347fdf6e84b309c0df530e9e859800a",
+  "repo_impl_files": 19
+ },
+ "native_facts_sha256": "b71f95cc3e41bfd6bde1151e6b647f89b6298cda1b208d5b0d479f09ffae739d",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1270,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "b2c69b926e7bfdb5b6348f12edf76d55fa049a1720722ec98dca2e15bfd73379",
+   "fm_pins_pre.tcl": "fbe245fce3aefb495a44403e284ecea50da775b383ec0f58e8a0e26b41f022da"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "4521f653de4651f545b55331b71b516c45e7fe6e2e6311555038c821c93fd885",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "3bb401409f46fd549882a83c139c220edc3aa65d211b6767d0056ae20b400fae",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh FloatAdder FloatAdder",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "7381650757aa9d915980ec2b17467fe057a2709fa336ca1ea317cac8e27a6b4e",
+ "run_id": "FloatAdder-20261011T061839Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/FloatAdder.tcl",
+    "sha256": "0ab2f24842154ad62efcf69980225baea4348a365b0e33d65b38ac8462f261f0"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/FloatAdder/fm_pins_pre.tcl",
+    "sha256": "fbe245fce3aefb495a44403e284ecea50da775b383ec0f58e8a0e26b41f022da"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/FloatAdder/fm_pins.tcl",
+    "sha256": "b2c69b926e7bfdb5b6348f12edf76d55fa049a1720722ec98dca2e15bfd73379"
+   }
+  ],
+  "sha256": "07be2b57eaeb37fde366984058c235f740205258348058f6b8099b9dc7a9bc1e"
+ },
+ "target": "FloatAdder",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FloatAdder",
+ "variant": "FloatAdder",
+ "verdict": "SUCCEEDED"
+}

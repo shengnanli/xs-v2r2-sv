@@ -1,0 +1,509 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Scheduler_2",
+ "run_id": "Scheduler_2-20261011T061427Z-9df1c6fb0",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Scheduler_2.sv",
+   "kind": "golden",
+   "sha256": "c9ea030786fcaf279a47f45a20a42ff9f01e3b64235aca564c4c524981359cd5"
+  },
+  {
+   "path": "golden-rtl/IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.sv",
+   "kind": "golden",
+   "sha256": "0d5b03e70af97a163b5dc9d6844fec8b4cbfe370421badde53c5e841964dfad2"
+  },
+  {
+   "path": "golden-rtl/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.sv",
+   "kind": "golden",
+   "sha256": "ee95f7629fed62ab81492bc0c1ef94f0ebc1d5671d4585b72388f9b901e56db8"
+  },
+  {
+   "path": "golden-rtl/EnqEntry_14.sv",
+   "kind": "golden",
+   "sha256": "c1bf7a7149a1f20b84b626a58ab9ca74de470a4c872a68cf66f0eee82ef0ab8d"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_136.sv",
+   "kind": "golden",
+   "sha256": "250c5cbbd71fa96ed92bdbdf5d9b96c3effcb0e6f675b42dfe422b991ba31bd2"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_138.sv",
+   "kind": "golden",
+   "sha256": "6c6879c08385ea39fb11f7248b9b9af72735d630130944ae42ff4fe806e75b15"
+  },
+  {
+   "path": "golden-rtl/EnqPolicy_14.sv",
+   "kind": "golden",
+   "sha256": "0a4eb282e39f4cc9faf724ad2d9f37ffd2713f10859b5d6a4fbb4dbeca4c84a7"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_68.sv",
+   "kind": "golden",
+   "sha256": "1a8a96655cffab48d3507a6216102ae19d273247d26b268bad2959640bc244f7"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_69.sv",
+   "kind": "golden",
+   "sha256": "162e894d1deff196023340cb65831ed0a73d538beb485e5a6db13e992d446413"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_68.sv",
+   "kind": "golden",
+   "sha256": "6893e2ab7e56a87dc39cf2f9c7b1161de040ae79518673b01dcdbcc35d914ba0"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_69.sv",
+   "kind": "golden",
+   "sha256": "59f617b5495746db03d9f33ccf10244b061c44a983852fa773ac7665897fc3b6"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_71.sv",
+   "kind": "golden",
+   "sha256": "c7d82c1a1e57eea064bb8b26591fb436da9159757593bc8a6ec697c1c9431afd"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_71.sv",
+   "kind": "golden",
+   "sha256": "f5913bdc565deefc71be9f89a44e5d566c22bb7e771e3316422c57c0a57ea6d8"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_73.sv",
+   "kind": "golden",
+   "sha256": "03d65502bf87f203e826083893d659d350c1f122aed22faf161718d8b666a79f"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_73.sv",
+   "kind": "golden",
+   "sha256": "c59821c9a2b95ff99d5184cf70027f89bed44fc56ba5bd4a7da7a6020a5c6fa7"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_75.sv",
+   "kind": "golden",
+   "sha256": "2f0f4d90f18eb4693a50669282f42932c8a56deb7405c5c4cf0fdd2e2ca874e7"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_75.sv",
+   "kind": "golden",
+   "sha256": "163fea1a9c7c225e0097de617b94426a96949e3122ecec164b2feb73cb6ffd6d"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_79.sv",
+   "kind": "golden",
+   "sha256": "4893f522e7567d5ea10f101812a5649c7d6c929dde5055d079fc6275633f3820"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_79.sv",
+   "kind": "golden",
+   "sha256": "11b0a412a33c522f30a34674ad647f006e35fd955cc48870d70b2ad1d822e75e"
+  },
+  {
+   "path": "golden-rtl/NewAgeDetector.sv",
+   "kind": "golden",
+   "sha256": "a473d828149912e0069ac0d6f5d0e58467693d8c247ec6590b5a4b52a441e868"
+  },
+  {
+   "path": "golden-rtl/AgeDetector_8.sv",
+   "kind": "golden",
+   "sha256": "259377e50400019b0cb96bbde38928ba48077374cc1ab2d64201ce7543e38b4c"
+  },
+  {
+   "path": "golden-rtl/AgeDetector_15.sv",
+   "kind": "golden",
+   "sha256": "a56b9bbdbce0bfafc4d6a330299f4c32db2b163e3cd922b1f396a0cab09bd5e6"
+  },
+  {
+   "path": "golden-rtl/IssueQueueVfmaVialuFixVfalu.sv",
+   "kind": "golden",
+   "sha256": "9087143a932e18e4d9ad2d47a9c110a1c1591bab239d8658ccc18034f6eb7916"
+  },
+  {
+   "path": "golden-rtl/EntriesVfmaVialuFixVfalu.sv",
+   "kind": "golden",
+   "sha256": "a87145389401228cfb3d2caf192ba801808fd0f04f2fb7a12f514330db5cb83f"
+  },
+  {
+   "path": "golden-rtl/EnqEntry_16.sv",
+   "kind": "golden",
+   "sha256": "4e82a8826f7755bc13cb3561afd51680d622131d834e3403dc832f3c99fbda74"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_150.sv",
+   "kind": "golden",
+   "sha256": "1612cf4b38f5a22256034aae09f41cf221dea5ca7a609bbe3214b913ff76faef"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_152.sv",
+   "kind": "golden",
+   "sha256": "db3f96a65944372730eb4d299ec1a4303abe9eeef213642b04661cb932369c86"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_80.sv",
+   "kind": "golden",
+   "sha256": "c56b88b1559215633aafc1d18acb88ff8ac88353a3c4f1aa6746d98f82227d2c"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_80.sv",
+   "kind": "golden",
+   "sha256": "17e044d8da1f0ac9c7b08744cef2e4c2ac4eab0da0c3502c3739c637f193e4c9"
+  },
+  {
+   "path": "golden-rtl/IssueQueueVfdivVidiv.sv",
+   "kind": "golden",
+   "sha256": "55db48bf018c30f501a7d7aa2ef0823b6accc20943418bc1e5b015b92e3c0829"
+  },
+  {
+   "path": "golden-rtl/EntriesVfdivVidiv.sv",
+   "kind": "golden",
+   "sha256": "ce561dd016796ba934532f8dcbc24c9f5e66f61248a9e197339213a578b30ba3"
+  },
+  {
+   "path": "golden-rtl/EnqEntry_18.sv",
+   "kind": "golden",
+   "sha256": "a7e6c3586b91344bd926d30d62d6330e675531bccb04f1eca567c189dcdc0849"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_164.sv",
+   "kind": "golden",
+   "sha256": "0d3e9a10558d2546a0c52b7f8bbaa5c2a052d4331c5e56f99be59bec4be4ce3f"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_166.sv",
+   "kind": "golden",
+   "sha256": "be43c638cb7ede4d4d351d45e8ad62594f6c960d81b3a740c6e9fd178c9659d4"
+  },
+  {
+   "path": "golden-rtl/EnqPolicy_18.sv",
+   "kind": "golden",
+   "sha256": "ee43af3b02b488d26dac83bdd457ed8535a641852d94361f16db8090e92350d4"
+  },
+  {
+   "path": "golden-rtl/NewAgeDetector_6.sv",
+   "kind": "golden",
+   "sha256": "f0de2bb0ce9a4c5d4b8bd02aea6054c56a4eb24227bc20acc9cd52416ae125f2"
+  },
+  {
+   "path": "golden-rtl/AgeDetector_12.sv",
+   "kind": "golden",
+   "sha256": "7166aff3db9da4ec30cf292d6e0a4af2cbe18a6922f95dfba38e64dc6fc91af2"
+  },
+  {
+   "path": "golden-rtl/AgeDetector_19.sv",
+   "kind": "golden",
+   "sha256": "8243fc7f6cda058992c3c032393799614b9602b084beb8170a0ee3cfa2491ba1"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Scheduler_2.sv",
+   "kind": "repo",
+   "sha256": "208f7b6904b3885c2eeaecd0b699f54547ffcee43e64f64d83b9d4dbc3426588"
+  },
+  {
+   "path": "rtl/backend/xs_Scheduler_core.sv",
+   "kind": "repo",
+   "sha256": "6161e947af911f8df1dc97f28ea2510e5b2a169ab14ba4a5cb60bd557e696665"
+  },
+  {
+   "path": "rtl/backend/IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.sv",
+   "kind": "repo",
+   "sha256": "22d0117469ef1175bc3a181e5d19204407cc17a2cfd5d66294eb3c2dde6f3b39"
+  },
+  {
+   "path": "rtl/backend/IssueQueueVfmaVialuFixVfalu.sv",
+   "kind": "repo",
+   "sha256": "c2d3d90b4d97da9bcad05756dfca12b1cdffc57f4982cd92ca913fa525036a30"
+  },
+  {
+   "path": "rtl/backend/IssueQueueVfdivVidiv.sv",
+   "kind": "repo",
+   "sha256": "fd02f9c3493f05cec9b05c08d15819ed966b22ac1fd3b6e9b93afbe7f57d6e01"
+  },
+  {
+   "path": "rtl/backend/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.sv",
+   "kind": "repo",
+   "sha256": "7516d468787c1d5a6957dba58a4cc22fce56ddbd1fbb7cb16d646abdb35b2e09"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_68.sv",
+   "kind": "repo",
+   "sha256": "69785b5c064364b8e902601d4a6ea98e02a64faa09d5a63972018517c1f4ad8b"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_69.sv",
+   "kind": "repo",
+   "sha256": "b509596315f2f1ead3ba78fbd1df1c494321ddb2ddbc9c826e25c5162973d485"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_68.sv",
+   "kind": "repo",
+   "sha256": "2cbd003ec6281f48339414a739accf99dfce24fc64a0338fe81ba8d05502bb53"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_69.sv",
+   "kind": "repo",
+   "sha256": "0a64ed401a0ef84348fb1db260930dd81945c4b118e3e6aa6f64c1ad5642a23c"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_71.sv",
+   "kind": "repo",
+   "sha256": "8f2917651bf0a065ba1b882d854bc200b1bd8091fb8043d2e448b991f356387e"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_71.sv",
+   "kind": "repo",
+   "sha256": "79589c54b1d8c8bb0d4bc36ea5e859cbc906b04d6411e7f2aae32c960dbac0b2"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_73.sv",
+   "kind": "repo",
+   "sha256": "8701b6aaeae843285cc5fbf1fcedac0da0473cbac67cff2a421dbc52cf3ef3c4"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_73.sv",
+   "kind": "repo",
+   "sha256": "a9e3e5e36b0c46a862216209ef377b5958a2e68620dfa0edcecfaa677af1d22d"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_75.sv",
+   "kind": "repo",
+   "sha256": "9decdfc321d1511f50d08a0e72aeddaa28083668e87ba762d076c5559d53a9e5"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_75.sv",
+   "kind": "repo",
+   "sha256": "3f250abaa2d24ceae598228888e58c9ebd3da9132f910792014c4091637a3a48"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_79.sv",
+   "kind": "repo",
+   "sha256": "6942e3e1fe7ac8b1f921690146e59d9483a9775559e672f19a6095bb4e9e2a50"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_79.sv",
+   "kind": "repo",
+   "sha256": "a510a6fd08e6940f3a74f8f36e8c733304622f8251258a1aa96ede79284198ce"
+  },
+  {
+   "path": "rtl/backend/NewAgeDetector.sv",
+   "kind": "repo",
+   "sha256": "03633999256b8cbd4e2617700ed96ef8497485fde32dbe6a26e19961b3f317c1"
+  },
+  {
+   "path": "rtl/backend/AgeDetector_8.sv",
+   "kind": "repo",
+   "sha256": "652f75785613d1336b34b9be010e39d8f42a1447bc4ef61760035ed364c3a639"
+  },
+  {
+   "path": "rtl/backend/AgeDetector_15.sv",
+   "kind": "repo",
+   "sha256": "b708b9809c41025322ec5ac599db11ae90528ad3d59680a03bd21c5c1e2dd9ae"
+  },
+  {
+   "path": "rtl/backend/xs_IssueQueue_core.sv",
+   "kind": "repo",
+   "sha256": "c6946d041ae99f868e07f60f4e2cf64a0cc013e5de282defdc5c38a45ff7ad03"
+  },
+  {
+   "path": "rtl/backend/EntriesVfmaVialuFixVfalu.sv",
+   "kind": "repo",
+   "sha256": "6314b5109cd7a4ec2bc0065732e85bf5341c04af0c99b18e0f396297be80be1d"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_80.sv",
+   "kind": "repo",
+   "sha256": "5eabbe65a5bb5e34b4cd0d36b0352982279dfb8f1795aa7681bfabd684faabe7"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_80.sv",
+   "kind": "repo",
+   "sha256": "00381078bf9a1ea98f5d610a6ba029b0b1efe1b5f5be2d2ba4a6d375dc99887b"
+  },
+  {
+   "path": "rtl/backend/EntriesVfdivVidiv.sv",
+   "kind": "repo",
+   "sha256": "85a1c01b7724aeb97b14ae123dbb24155708fb62ec3d1059adc471a04a815ac2"
+  },
+  {
+   "path": "rtl/backend/NewAgeDetector_6.sv",
+   "kind": "repo",
+   "sha256": "35a97d91195329abf7f96b000ebeec65953c85d02dc107248796bfb940d2174c"
+  },
+  {
+   "path": "rtl/backend/AgeDetector_12.sv",
+   "kind": "repo",
+   "sha256": "ed3907703f705f1d27ec9693fbd73549513d97eefc8463b6004c60ca6c2e8189"
+  },
+  {
+   "path": "rtl/backend/AgeDetector_19.sv",
+   "kind": "repo",
+   "sha256": "56292dee8571235b48a596e396a6913ad3f9f3660b27b4d7e0ffd7db77a4b6f9"
+  },
+  {
+   "path": "rtl/backend/xs_iq_entries_core.sv",
+   "kind": "repo",
+   "sha256": "f14b2f2f068ff3edac5c75cd113ebdd392c57053daee733140872f201f7e7216"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite.sv",
+   "kind": "repo",
+   "sha256": "a485f5413767737e437e806d49e332945ba902ce84be6ed496a3ecc9fdc67bbf"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead.sv",
+   "kind": "repo",
+   "sha256": "a3538bd2886f6981f5515e1e21779fdcbcdcaa4c589c849b43edc665079724e4"
+  },
+  {
+   "path": "rtl/backend/xs_NewAgeDetector_core.sv",
+   "kind": "repo",
+   "sha256": "ab2f443094a81c2aef971cfbd9b04f5275db3be7f14239206ef5e8e832ce416e"
+  },
+  {
+   "path": "rtl/backend/xs_AgeDetector_core.sv",
+   "kind": "repo",
+   "sha256": "b3d45baa9410014e01c1a0d7f47ad8fa13ccfe0b09d569545a0c2537a9b2072b"
+  }
+ ],
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "64bd162ffb97461da693c88a63fc21fda025ac809537049e3a45dd25231ac29c"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "Scheduler_2-20261011T061427Z-9df1c6fb0",
+  "top": "Scheduler_2",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 53408,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 53408,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 412,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "Scheduler_2",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

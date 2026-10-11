@@ -1,0 +1,264 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "DataModule_BackendPC_16entry",
+ "run_id": "SyncDataModule-20261011T071031Z-9df1c6fb0",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/DataModule_BackendPC_16entry.sv",
+   "kind": "golden",
+   "sha256": "0c7acc870bba8e93dfe7c29708d4b3eeff441f0f719c56b18f538b24d0e83cfa"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_DataModule.sv",
+   "kind": "repo",
+   "sha256": "879ed4221bd71d51d456dec4c8e8a701e8361bb94e5466a0ecd8d2a3e4cb6e1f"
+  },
+  {
+   "path": "rtl/common/xs_SyncDataModule.sv",
+   "kind": "repo",
+   "sha256": "79d4dfdbed51fddadb93dea11c71a8d330257bf9a6797105dff15d22c18a170f"
+  },
+  {
+   "path": "rtl/common/DataModule_BackendPC_16entry.sv",
+   "kind": "repo",
+   "sha256": "099bb0a5fc85bdd9399aef13bafa2d197454397c828c695bf0c82551c11bdf14"
+  },
+  {
+   "path": "rtl/common/DataModule_FtqPC_16entry.sv",
+   "kind": "repo",
+   "sha256": "332d4db9b82ece8b9c2eb9fae15cd7856fef4290f001cfcc99c5cac1f55fd793"
+  },
+  {
+   "path": "rtl/common/DataModule__64entry.sv",
+   "kind": "repo",
+   "sha256": "807126b660451e91fba095875bb2a4215b05fc322d58603ca808cb6d87d7efcf"
+  },
+  {
+   "path": "rtl/common/DataModule__64entry_16.sv",
+   "kind": "repo",
+   "sha256": "c33b92332eab386025ef07d948f4b4f56d24ffb0528dc7a4170b3082ee6e6d16"
+  },
+  {
+   "path": "rtl/common/DataModule__16entry.sv",
+   "kind": "repo",
+   "sha256": "7b23c030c68e4e70e0b2e498ddf536d9b83a98a93d0d27eb17f3f19120ad38b1"
+  },
+  {
+   "path": "rtl/common/DataModule__16entry_4.sv",
+   "kind": "repo",
+   "sha256": "3aa06cb0313777f77b53d65193a92bbefbbcaf0da3051e4156bd32c758f3bc6e"
+  },
+  {
+   "path": "rtl/common/DataModule__16entry_8.sv",
+   "kind": "repo",
+   "sha256": "f3193c301518b42696aa8ec5ee8c2808ab07dd9c15f1b827bca91e92cdfebee9"
+  },
+  {
+   "path": "rtl/common/DataModule__16entry_12.sv",
+   "kind": "repo",
+   "sha256": "fc2d9d8172196038a73241da3523f3b1e1163196eacbbacf955d38bacdd08a30"
+  },
+  {
+   "path": "rtl/common/DataModule__16entry_16.sv",
+   "kind": "repo",
+   "sha256": "5584cc2b57c97b1615c46b78650b1bb1d45b241897f5284522aac898dc63ae09"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate_BackendPC_64entry.sv",
+   "kind": "repo",
+   "sha256": "d2004593b4424b34c576b73fa17e3ec00288d25f60145ed172d5b0e49b4d762f"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate_FtqPC_64entry.sv",
+   "kind": "repo",
+   "sha256": "a3c81af32ca6f1a075704d295c8ac332c15774b44532ef388eb92562e45aaa1b"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate__1024entry.sv",
+   "kind": "repo",
+   "sha256": "322b4047b48d72c560c021f99222b77e088f0584eb18a93d1a82647d8d91f75b"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate__1024entry_1.sv",
+   "kind": "repo",
+   "sha256": "f97a8c0d9c6733136f565c2877675c3b48c3d8ccc29a087f6e9cc24a4ae6348e"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate__64entry.sv",
+   "kind": "repo",
+   "sha256": "6441d50c991fea299be250a67997465aeb8c8283c46a8660d85a022414050791"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate__64entry_1.sv",
+   "kind": "repo",
+   "sha256": "6c063d79533e78da522106fe520cd2d8ba5f477ba702039740ff7951d234d054"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate__64entry_2.sv",
+   "kind": "repo",
+   "sha256": "b653b8ef7de8b583c70917c9bed801eea3fd40679b826b98ad163ebada8fe028"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate__64entry_3.sv",
+   "kind": "repo",
+   "sha256": "7d107ecb15880fd67c8fcb4e28d714b19cee19f4352a33d76eb14f61305a987d"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate__64entry_4.sv",
+   "kind": "repo",
+   "sha256": "00fae2afb0bcb642b8827695987c3f9d976ab06d99e304dfd0591f9bcb908860"
+  },
+  {
+   "path": "rtl/common/DataModule__16entry_20.sv",
+   "kind": "repo",
+   "sha256": "905d6318ab049173d78f124f09616366fb29ee443893254d18bb74df9bdbb1cc"
+  },
+  {
+   "path": "rtl/common/SyncDataModuleTemplate__64entry_5.sv",
+   "kind": "repo",
+   "sha256": "76f2c44a8690a5e2dc7f7bf806fdf74c51af1a69630003979b28001f2d3137b1"
+  }
+ ],
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "6e03d795ab9141287938b2cc692f442ff3fc827b5aed31258f59a82a1d79ab04"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "SyncDataModule-20261011T071031Z-9df1c6fb0",
+  "top": "DataModule_BackendPC_16entry",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 1550,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 1550,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "DataModule_BackendPC_16entry",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

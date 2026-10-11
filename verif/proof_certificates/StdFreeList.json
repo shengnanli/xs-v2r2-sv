@@ -1,0 +1,128 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:55:52Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/StdFreeList",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StdFreeList.sv",
+    "sha256": "55fb8260345cbb5d9596fbee1e5006a4ab84a602c3ffb6ca514b7326ed142002"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator.sv",
+    "sha256": "2acd6ac73569ed8750aadb997dd0a3c375f3d986751ea1741acf410ef9516d07"
+   }
+  ],
+  "golden_sha256": "fb334dc18fb228e04684d455c13929482ba4f696930a89e5617b2885b84d5f97",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/stdfreelist_pkg.sv",
+    "sha256": "0afdb06aa838bdd8af16f646cd0daab777cf3a28ab9a953af5169fb27b738b64"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/StdFreeList.sv",
+    "sha256": "2d56cb30a261a83f785ec539698ad58d69d7449b2afe146c1206ed9dbc992a68"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator.sv",
+    "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+   }
+  ],
+  "impl_sha256": "b2d0009845d93065333eebd6c6b83199cd1f5e4015fc31b8a89b46e65dae45f3",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "bd6e7f765b6e8018751d22213b0cbf1726e4a2c34a21ec2ef6e7ac43aacc5d34",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1593,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "07326088251cb1104f4e1a8b2c35d8338851331496299b6c6fb611e6c0efde85",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh StdFreeList StdFreeList",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "67d5a3f7524cc322422dca62020f533bb267707b828ab424e14aa8d4af5f83d4",
+ "run_id": "StdFreeList-20261011T065400Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "StdFreeList",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "StdFreeList",
+ "variant": "StdFreeList",
+ "verdict": "SUCCEEDED"
+}

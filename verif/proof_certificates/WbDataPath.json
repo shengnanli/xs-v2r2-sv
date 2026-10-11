@@ -1,0 +1,290 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:52:36Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/WbDataPath",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/WbDataPath.sv",
+    "sha256": "126a723a81815400ae145e1306a55fef508a4570c42126c51d0a5124051a9cb6"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBCollideChecker.sv",
+    "sha256": "2bf562b3470be144351afda87e3456d516ff2d17bf2d05ce6ec18fdd681c5927"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBCollideChecker_1.sv",
+    "sha256": "110efca74f4d8d5468cd66bbd22bcb8df49ca5c441769b3a95b6ac691e425b67"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBCollideChecker_2.sv",
+    "sha256": "bb5496552e2a74e177ae7af3b781875aa0560b9802c41bcd7090f3e5f058c1c8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBCollideChecker_3.sv",
+    "sha256": "46769345f4c921926545af09b4beb38da3c21621d9cafff4032adb5eaf686e34"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBCollideChecker_4.sv",
+    "sha256": "1fd5f46f4f347c570c99b0b5eb0b3711c57befca5ae8fa700219071f0ce91bd6"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter.sv",
+    "sha256": "7ef6f56be8d7b0df1ff99974dbe4aa4711fa90b621363aa83248d0c7bbea3dbe"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter_1.sv",
+    "sha256": "ba2494b102c23f3996b9b6b955f9ed87c334e0db22ef3087b172fac67c881c44"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter_2.sv",
+    "sha256": "e89a1d83317b8d62ce1e50b478268066ae88d671acb5b7f317141108b2608f02"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter_3.sv",
+    "sha256": "e47b6bdaea978ed8f1abe03617505ef2940b8e34b436122e46ea9ac4ebd42ac5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter_14.sv",
+    "sha256": "efcd34ff4158d09f794308b092a468496b1359a4ce63cd99852f6744c08bb0e1"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter_15.sv",
+    "sha256": "a8f5b8fc403f5d42b30133c47edc7b2b90e1add672cef5375557fbbef1a5bd45"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter_20.sv",
+    "sha256": "7b01b8dd332cb1ca1fd6be4ec00a255c60352a6f47646542e823bdf4d7987459"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter_21.sv",
+    "sha256": "ffb654b654460959be13d7560264db9c7cbd9b1c77974f57641e49142bae13b2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RealWBArbiter_26.sv",
+    "sha256": "3832e6d62a1941b901b2a0b1a7c8f1d8b0b1a0c09b9a9aa8c218aa56119f8041"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VldMergeUnit.sv",
+    "sha256": "5e48365b0b96ed81e4e9eb2b798573a8553852865342ac191376034bcf882326"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VldMgu.sv",
+    "sha256": "7263c3da269a01f102ee72f3b36f8485292ee0cf4d3b167c36fbef9ff9c49baa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ByteMaskTailGen.sv",
+    "sha256": "effbf95047e8c37d4f1533e5920e5f518574015e5c2c9df9186be5116209a506"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/UIntToContLow1s.sv",
+    "sha256": "1196c703297a97a4a1888870be786b96439b7221d0fe7ab8a015169ab7e0bb49"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/UIntToContLow0s.sv",
+    "sha256": "fc473dde42be7e2c0d114d7727c54e7414b753eca85f70de0ccf5de864f42e97"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MaskExtractor.sv",
+    "sha256": "8085f1d0ce0e90fd783e62e4663dbcd84ce2b8d28ab1628d5f18927b4c5e7adf"
+   }
+  ],
+  "golden_sha256": "be429c161619335c1896b5b8d242a926d36bbcf0345cfd88c18978336a9e5e68",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_PriorityArbSelect.sv",
+    "sha256": "3a70dd2f6060ec34d5dbd9bb16e8a7084257f175312c3237e60645a27c0e03fb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RealWBCollideChecker.sv",
+    "sha256": "0e202b11db98a8aba3404bbf9cd04815eb61d00768d338a45e08d9d59e8681c2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RealWBCollideChecker_1.sv",
+    "sha256": "a1536b425f45310c3d36f522ef496ae1f6e1e32735384da884db7a4e6ad99975"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RealWBCollideChecker_2.sv",
+    "sha256": "34ff5d6feb46d68d4782f14f3cdb66f365f38ce30f9ef7e98776c348a1fac653"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RealWBCollideChecker_3.sv",
+    "sha256": "a36bd6cc6fe85c4b933fced808595fbbcafbaeaf4aa680d445fc6e63a1228a38"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RealWBCollideChecker_4.sv",
+    "sha256": "5a34c485962e7d9ae2c24cc30a457f361632f73ba58bc6e9a69badf366d13a1f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/UIntToContLow1s.sv",
+    "sha256": "ac3315bfa93de9c0f543eea8ecaa9d6dcad3505f83a0029e980162decc2cc549"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/UIntToContLow0s.sv",
+    "sha256": "424a1075079ab12bdf8799017eeb0f03451134e00fb91d401e1aca3fdc3eadf9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MaskExtractor.sv",
+    "sha256": "df726e90b8f5bace8232037ab8a326576e788cf51ea3924300144982525535d9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ByteMaskTailGen.sv",
+    "sha256": "9a334754033b50d5c532eefd316a30d39457b0bea51f31b92c81232875287cec"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/VldMgu.sv",
+    "sha256": "61c526a773a0b144e3aab5c465dd58ce2932033161a112fbc042aa9078a3d395"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/VldMergeUnit.sv",
+    "sha256": "0b81c90ccca6dc28a0bc44273583f619f859c9f94453c21495522f2572959a30"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/WbDataPath.sv",
+    "sha256": "6305ef5f5d1d31a33f3028213d3ac7b6097bb5afc3707b10b2bb126d5c46fe79"
+   }
+  ],
+  "impl_sha256": "2413e6a2dc0b5cd79bd0f1c48d6af227783bd31e670292537966da327a6ecf0a",
+  "repo_impl_files": 13
+ },
+ "native_facts_sha256": "777dc1861c0518597c2aaac1cf7f60de156a126d822ab3d060a8988071c04213",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 23060,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 1365
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/WbDataPath.json",
+    "sha256": "222167026c85804760b2012d88685ab86129d4d95e934ba540a2c457fb2e54f3"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "94504fd9ebb729b49e680f82523421ac192b376343b036a6d10e18f2ec62989b"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "b83fa60cbd6636ea96dc22a690839ca1bb0d2be274fa514b2c50487aa63237b3",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "49afa5aab646309716e944df1d393b73a37f72da97a7c2f33e7483e84bcda3bd",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh WbDataPath WbDataPath",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "810846426d345af2c501222782ae7c1b423b06975e96ba08c44aa7d519bc2290",
+ "run_id": "WbDataPath-20261011T065022Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/WbDataPath.tcl",
+    "sha256": "da2086128480a12ce818c3a51cd1328bd5b9489ec8f973270c195ad1b55de130"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/WbDataPath/fm_pins_pre.tcl",
+    "sha256": "94504fd9ebb729b49e680f82523421ac192b376343b036a6d10e18f2ec62989b"
+   }
+  ],
+  "sha256": "12f9e8f27f3c05682e9d584e017b9624319b3cead57a4eb89be1d2c552563850"
+ },
+ "target": "WbDataPath",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "WbDataPath",
+ "variant": "WbDataPath",
+ "verdict": "PASS_DEAD_REF"
+}

@@ -1,0 +1,135 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:26:21Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/RenameBuffer",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RenameBuffer.sv",
+    "sha256": "482f15632578955333091a48c81782a5bd4eceee69d8cb7c253280f57dd961aa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator.sv",
+    "sha256": "2acd6ac73569ed8750aadb997dd0a3c375f3d986751ea1741acf410ef9516d07"
+   }
+  ],
+  "golden_sha256": "a45a528febaaf1b8b9d224c82e6eb2cc2599899f7cec98e7d7ca7b8e0d952f4e",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator.sv",
+    "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameBuffer.sv",
+    "sha256": "70d78727e9a2973d76e36ac1299bc88dece6b97311ae8d888c8942b3e46baa26"
+   }
+  ],
+  "impl_sha256": "fcef9b79348cb3f2c7a49b7eb5fdaa3579cb8c0023ac7e94eb250102f4147624",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "6508439ed1897dcd141e35a8fe17499456d4c0ef669abe92b86fe1f23233531d",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 5876,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "728bd8b6e9b26aacffba50eb7d7219e0d2d194914ec74287e491edd8017b8a31"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "b1452db5377f1a705ba5adab65128579d06da015e69a677b9e3917b870e9aaad",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "36cfe6a44d35b57d12549898a5d774bd2e6fde8b2ee9732ba3dc50921ee80cee",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh RenameBuffer RenameBuffer",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "347125fb02b2ac3ebf61c5b4baabb15e560653a4e7327c3a87facde56edc6bf1",
+ "run_id": "RenameBuffer-20261011T061545Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/RenameBuffer.tcl",
+    "sha256": "b22894fe6eac361aae4198014dd3268528dad9d9b3102498928c3ffb2ceaea4a"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/RenameBuffer/fm_pins.tcl",
+    "sha256": "728bd8b6e9b26aacffba50eb7d7219e0d2d194914ec74287e491edd8017b8a31"
+   }
+  ],
+  "sha256": "f03f64f28d7781cbe4c0fc899eb6b9a72a132389b732b349a6aa85f143016aaa"
+ },
+ "target": "RenameBuffer",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RenameBuffer",
+ "variant": "RenameBuffer",
+ "verdict": "SUCCEEDED"
+}

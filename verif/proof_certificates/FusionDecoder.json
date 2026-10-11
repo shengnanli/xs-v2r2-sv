@@ -1,0 +1,125 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T07:16:46Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/FusionDecoder",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FusionDecoder.sv",
+    "sha256": "7094df81e455ab7da754432d0bb2ce458658529d6e1de7740c87be80b268aa01"
+   }
+  ],
+  "golden_sha256": "485ad852d9f97125eafd3e4eca53e23a3e3825b75a81de1ec4f47820f7e7e915",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FusionDecoder.sv",
+    "sha256": "352d2b232f87d17c6ba870018c1d6923e0b24f437f730cea8d5c40a21b840c43"
+   }
+  ],
+  "impl_sha256": "7d646abaf50c448c7ece79f86039c0dbc4e0b9d940a2e5104f692ca5e7a536fc",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "f6d56a5d96106304db6cf5a901c73818deaf6f0f5727bcfb7e7244df4bb9799d",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 345,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "c6b1dda9d2bda68b33d9117ac840a3228b13b7e04c5798dae9c65077ad3d589a"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "1adeee84e975d88dc2692f06cf4dcb61ed68c342713020cf60c6e3f3641a9460",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "52d0fa8e3a4d06a3cd87f8ffb8f4fd6cfc3435109298d533895e086511706381",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh FusionDecoder FusionDecoder",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "c780e614c294128cc4202782bf9f1bd3fc6874f494dff0fdbb477c45c2d98816",
+ "run_id": "FusionDecoder-20261011T071540Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/FusionDecoder.tcl",
+    "sha256": "bde82d4a51219a9e0cf585824408049b8a607a08bf630ff55d09196255c62c02"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/FusionDecoder/fm_pins.tcl",
+    "sha256": "c6b1dda9d2bda68b33d9117ac840a3228b13b7e04c5798dae9c65077ad3d589a"
+   }
+  ],
+  "sha256": "6683770134c2da0f3ef9167e4749e1b2da69ec5e6ad86ed3502d8f5483a188ff"
+ },
+ "target": "FusionDecoder",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FusionDecoder",
+ "variant": "FusionDecoder",
+ "verdict": "SUCCEEDED"
+}

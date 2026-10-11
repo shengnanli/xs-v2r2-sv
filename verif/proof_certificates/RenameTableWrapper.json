@@ -1,0 +1,218 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:48:16Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/RenameTableWrapper",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RenameTableWrapper.sv",
+    "sha256": "0d228547b4d0306533a8cdaac49d5a6e6011b913de87c4e530f92c471ff759b9"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RenameTable.sv",
+    "sha256": "27639ca757de5219561d08e02aa9e21355ae7507cd64f70d52fb95659289cf3a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RenameTable_1.sv",
+    "sha256": "944970a3a9109d0d018ff6e09cc05439ce6a90e43dc7a11ae483ee81936f83fa"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RenameTable_2.sv",
+    "sha256": "e31737289db6327047e05ae5231bdcf978e02ecbce166b9374b1521bf184df6f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RenameTable_3.sv",
+    "sha256": "c9b65fbcc257a351e9a940fefb5206af103a049f275d68c08bd2bd997367f9a8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_4.sv",
+    "sha256": "70c319aa5dff35592db520a8392e103f28513f6c3ad4cc7c2abfb6c6e3ea17e4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_5.sv",
+    "sha256": "1aaabe08a3f2309eb645b96e386055fb784a2240b50c56badaafdb6661b3f5a7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_6.sv",
+    "sha256": "8aff3407c5d7d0b10369a4971319eb94c8df83b8a296b72823f3c7c9ac9ebdee"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_7.sv",
+    "sha256": "e3a38471b8f23957ea3ce41926a5dde15c87ad214914bb200083c842d5ae6b2e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DiffRatStateBuffer.sv",
+    "sha256": "9a628561323ef3a3e7b3461aedfa13787585c16a9648828c34d391de8a996b8c"
+   }
+  ],
+  "golden_sha256": "a06378e5ab246c874e071d172d16495468beb4223aade5aa48664ddc497c2c1b",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/DiffRatStateBuffer.sv",
+    "sha256": "69d2a20164169418324f71094cecd1b973750042e669071224359b3be5cfa2cb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTableWrapper.sv",
+    "sha256": "36449cda55749567a4b90d80bc3a1333a3fa70394018a58ea9775aa2ad602e38"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator.sv",
+    "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_4.sv",
+    "sha256": "129d7c4bd3af57c1297e0e04aa97374122a21d9122231297051ba1a64d16394e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_5.sv",
+    "sha256": "3bb3b69079c6d0344c7d91d3b38e76373a9a39655878a61d6c9f81e9a5c2f866"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_6.sv",
+    "sha256": "a3eadbfd5b46b8fbd55cb4aeed4c5865ffc5926d0f0c1441de4c79d76d66941e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_7.sv",
+    "sha256": "c4abd95905b35c8dafb23bc35c143da847e61de2e145516784f1bdc5dc757922"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTable.sv",
+    "sha256": "9fefc24066041ebc1c6f208293452ef2b3df074b1e846676c8b124ed6d1b337f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTable_1.sv",
+    "sha256": "2f28998e3ce718ad0db165d85bbee0edacddc43ff8c721bca7996e7fe32a7d0b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTable_2.sv",
+    "sha256": "af08fd0f1c142c686646b31447e5ac1bababab91e66b9b45970dd85b10e98f54"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTable_3.sv",
+    "sha256": "c6b2fa617b1f985e7440633f3e532f7aefb14112cf88280862b6ee459c39cf17"
+   }
+  ],
+  "impl_sha256": "02ddd0e3fcd5bd7833bd5c121f52b31e4940f780bb823c1caa4adb3cbf5ae0e1",
+  "repo_impl_files": 11
+ },
+ "native_facts_sha256": "c9a06e2a7fba8fcbd8f677353016273d810dd442a9d6054c47d6c552c26ef62a",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 19766,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/RenameTableWrapper.json",
+    "sha256": "d11c4821663790c9875cf7db57e3ed0e29b969239d01b784e7b272906ac96212"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "1",
+  "fm_mode": "assembly",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "56881b5cfc8e9de7dda9ec91510315e0849916de57bcec4b7bf9c9b6c14e3a1f",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "d518494298e856f1c204b4a32573783fee4665d43977f1b40522dc82d521d8ca",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh RenameTableWrapper RenameTableWrapper",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "9d7d4aeef1faa24fefce1cfc744b5efd1ac022e61674fdb19d0b4ac3426af48d",
+ "run_id": "RenameTableWrapper-20261011T064323Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/RenameTableWrapper.tcl",
+    "sha256": "f9f61e808c7ceb6645c065bda77f39c8d3c1aa56130d59873302df5444c60a61"
+   }
+  ],
+  "sha256": "dfe784380e83b5414f1cba0503936967d99f8e42b943e496942faf7f3ea3b938"
+ },
+ "target": "RenameTableWrapper",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RenameTableWrapper",
+ "variant": "RenameTableWrapper",
+ "verdict": "SUCCEEDED"
+}

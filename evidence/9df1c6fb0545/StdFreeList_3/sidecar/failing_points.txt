@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/StdFreeList_3
+Implementation : i:/WORK/StdFreeList_3
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 03:08:31 2026
+**************************************************
+
+No failing compare points.
+
+1

@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/DiffRatStateBuffer
+Implementation : i:/WORK/DiffRatStateBuffer
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 02:58:11 2026
+**************************************************
+
+No unverified compare points.
+
+1

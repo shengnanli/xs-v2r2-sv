@@ -1,0 +1,429 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Scheduler_3",
+ "run_id": "Scheduler_3-20261011T035232Z-9df1c6fb0",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Scheduler_3.sv",
+   "kind": "golden",
+   "sha256": "d309c4519dc5818d2f5a8c89486279551e60cf0a55fbc2c9e944e0f339913a57"
+  },
+  {
+   "path": "golden-rtl/IssueQueueStaMou.sv",
+   "kind": "golden",
+   "sha256": "4c7b163b4aa457d9e152dba02493c011d81ac7a499f15bb18f4cc759d6dc3d2d"
+  },
+  {
+   "path": "golden-rtl/EntriesStaMou.sv",
+   "kind": "golden",
+   "sha256": "fc3711f8faf481b9849513af943c9dc2100684c99556b4a0383641d56d7948d9"
+  },
+  {
+   "path": "golden-rtl/EnqEntry_20.sv",
+   "kind": "golden",
+   "sha256": "613acd08dd187753ce1cc9bf65890c7e8e10c94057b2033cf69518f3a44989ac"
+  },
+  {
+   "path": "golden-rtl/UIntCompressor_27_000011100000000000001010101.sv",
+   "kind": "golden",
+   "sha256": "d6074f3be04114b079c1a40a1d70566a63636ef951341e7588d91194bed798fe"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_172.sv",
+   "kind": "golden",
+   "sha256": "fd3a943db31c46b0006cae1a5ebe1e4db5cb9c89ac6ee9d078a9ffab511741b7"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_174.sv",
+   "kind": "golden",
+   "sha256": "4a79bde17b70db5168fdf75c2d4069f54021819931b0ce829c1fccbfd14a509e"
+  },
+  {
+   "path": "golden-rtl/EnqPolicy_14.sv",
+   "kind": "golden",
+   "sha256": "0a4eb282e39f4cc9faf724ad2d9f37ffd2713f10859b5d6a4fbb4dbeca4c84a7"
+  },
+  {
+   "path": "golden-rtl/NewAgeDetector_6.sv",
+   "kind": "golden",
+   "sha256": "f0de2bb0ce9a4c5d4b8bd02aea6054c56a4eb24227bc20acc9cd52416ae125f2"
+  },
+  {
+   "path": "golden-rtl/AgeDetector_12.sv",
+   "kind": "golden",
+   "sha256": "7166aff3db9da4ec30cf292d6e0a4af2cbe18a6922f95dfba38e64dc6fc91af2"
+  },
+  {
+   "path": "golden-rtl/AgeDetector_21.sv",
+   "kind": "golden",
+   "sha256": "96905c897d063660741b35ced87d5eaec3ff4a76881d30a1a98ca49599275afc"
+  },
+  {
+   "path": "golden-rtl/IssueQueueLdu.sv",
+   "kind": "golden",
+   "sha256": "9ca402854264403ad86087400f8d0d9c3c2091810da4f8a4685c4aa123de7a99"
+  },
+  {
+   "path": "golden-rtl/EntriesLdu.sv",
+   "kind": "golden",
+   "sha256": "8b45f98596ae9a2f69b8f79128a2d7a2b7a474652e67062649c91570f78d480d"
+  },
+  {
+   "path": "golden-rtl/EnqEntry_24.sv",
+   "kind": "golden",
+   "sha256": "8b4f3dda07586fe08e6e0a5634b1f2ebecdecf2369217b4e5b1562401b62662a"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_200.sv",
+   "kind": "golden",
+   "sha256": "e35f405d1339659edf12280ae87aea7e5effbbd6fef7b8b7756abb3f62579408"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_202.sv",
+   "kind": "golden",
+   "sha256": "da88758b47c4898a4b61582b2cf817b6b591b99db61aa90c0dc4a716fab51816"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableWrite_105.sv",
+   "kind": "golden",
+   "sha256": "646037578d3aa62f2784e2cb39cca701987b22bf85ec707f83125600855a269c"
+  },
+  {
+   "path": "golden-rtl/FuBusyTableRead_105.sv",
+   "kind": "golden",
+   "sha256": "e095f4c710a367d6d325b4f2c7e07c8ae5d9ad492e96c08567d3fc0e9bfdd7f9"
+  },
+  {
+   "path": "golden-rtl/IssueQueueVlduVstuVseglduVsegstu.sv",
+   "kind": "golden",
+   "sha256": "c058ad693374bcee632d1a8f2dd8cb91a1e2ef3edd72c92b70f40b5f1b0864fc"
+  },
+  {
+   "path": "golden-rtl/EntriesVlduVstuVseglduVsegstu.sv",
+   "kind": "golden",
+   "sha256": "91ca09ee26a2ded89156970ce78cb43255eaf857edbab23067cca5caa9d292dc"
+  },
+  {
+   "path": "golden-rtl/EnqEntryVecMem.sv",
+   "kind": "golden",
+   "sha256": "6c5b8dcaa7eee44f071223152bd08994f067bd88bb6c27179159b5b7da83869c"
+  },
+  {
+   "path": "golden-rtl/OthersEntryVecMem.sv",
+   "kind": "golden",
+   "sha256": "ee15077c9d0572b5edf2763ad596dcff86c71ccfef34e3c6c2d332132862c0a4"
+  },
+  {
+   "path": "golden-rtl/OthersEntryVecMem_2.sv",
+   "kind": "golden",
+   "sha256": "6978a5a6ff471298e11a342757940709f15ba4c2d7cd0de42f32e1b8a8425202"
+  },
+  {
+   "path": "golden-rtl/IssueQueueVlduVstu.sv",
+   "kind": "golden",
+   "sha256": "e690da39d55c1a4d5f16677c4049f1487cbe87cda01f138cdad8bd370b8cf9f2"
+  },
+  {
+   "path": "golden-rtl/EntriesVlduVstu.sv",
+   "kind": "golden",
+   "sha256": "2decf3975f6343de4a5f1f118c596ce0a1bf0b6ee7aabe749527dd89802ec562"
+  },
+  {
+   "path": "golden-rtl/EnqEntryVecMem_2.sv",
+   "kind": "golden",
+   "sha256": "19e36e326c57ee125388e5f74245c3f2e59cd6886591e4dfaa0368fd6f8379f7"
+  },
+  {
+   "path": "golden-rtl/OthersEntryVecMem_14.sv",
+   "kind": "golden",
+   "sha256": "b6396c28b4620004defa6146f862f7c0368ea1fdb5abfd7d1f639c25a63e3167"
+  },
+  {
+   "path": "golden-rtl/OthersEntryVecMem_16.sv",
+   "kind": "golden",
+   "sha256": "8062c21317cce2d0398bd6924668a6f829d90de254b58b83d2f2d1450d27bece"
+  },
+  {
+   "path": "golden-rtl/IssueQueueStdMoud.sv",
+   "kind": "golden",
+   "sha256": "babd8d6d94c26daafb42d4ab40df0b4bc7cc6e1271659f4e85348fd4a7339138"
+  },
+  {
+   "path": "golden-rtl/EntriesStdMoud.sv",
+   "kind": "golden",
+   "sha256": "2acf86604dda454c25f28ab1bc423d2bf875df230fc3c116c67ca2fc3ed52c76"
+  },
+  {
+   "path": "golden-rtl/EnqEntry_30.sv",
+   "kind": "golden",
+   "sha256": "ba89c71483d5c059abfbbe9199587f191003e09665358e145226c0994e11440c"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_242.sv",
+   "kind": "golden",
+   "sha256": "4df43d857e9fe3e3c0e24cc02964bb8d799abac4a269db19f1be05faf9fe7901"
+  },
+  {
+   "path": "golden-rtl/OthersEntry_244.sv",
+   "kind": "golden",
+   "sha256": "f609cf4b318a5cda7c202260b24908fedb9abb5ee2dae3f85edfe27a0b2bf3f9"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Scheduler_3.sv",
+   "kind": "repo",
+   "sha256": "5a3d349baccc20c86dc45dab06e7fc607cd1df2ca7e45e5077e77a00245719ab"
+  },
+  {
+   "path": "rtl/backend/xs_Scheduler_core.sv",
+   "kind": "repo",
+   "sha256": "6161e947af911f8df1dc97f28ea2510e5b2a169ab14ba4a5cb60bd557e696665"
+  },
+  {
+   "path": "rtl/backend/IssueQueueStaMou.sv",
+   "kind": "repo",
+   "sha256": "a4a61f33a213f877a791381a6f2161c2b211a3dab75982f9c7164827718dd05e"
+  },
+  {
+   "path": "rtl/backend/IssueQueueLdu.sv",
+   "kind": "repo",
+   "sha256": "31ea4cdd0636c06a46fed5664f7914f538b319bba4958c7c19ff1a37fd8d6ea3"
+  },
+  {
+   "path": "rtl/backend/IssueQueueVlduVstuVseglduVsegstu.sv",
+   "kind": "repo",
+   "sha256": "c2b8078e6fe0c7bad16ca12de358480034e1960140c7f8af21a52d29bb532cf0"
+  },
+  {
+   "path": "rtl/backend/IssueQueueVlduVstu.sv",
+   "kind": "repo",
+   "sha256": "7fae6921441270a9cc511d6bffa4dd6dc46b1000ce569d2732f8d12e5fdbd0b6"
+  },
+  {
+   "path": "rtl/backend/IssueQueueStdMoud.sv",
+   "kind": "repo",
+   "sha256": "4278c05559f33a883bfba06ed2667d4dbb1fdcab96efc6dc114867cecdab1ad3"
+  },
+  {
+   "path": "rtl/backend/EntriesStaMou.sv",
+   "kind": "repo",
+   "sha256": "16ab4decef43ac5e75986809a986a1a48e10d702871f5b3db9f5c93a5cb4d5b1"
+  },
+  {
+   "path": "rtl/backend/NewAgeDetector_6.sv",
+   "kind": "repo",
+   "sha256": "35a97d91195329abf7f96b000ebeec65953c85d02dc107248796bfb940d2174c"
+  },
+  {
+   "path": "rtl/backend/AgeDetector_12.sv",
+   "kind": "repo",
+   "sha256": "ed3907703f705f1d27ec9693fbd73549513d97eefc8463b6004c60ca6c2e8189"
+  },
+  {
+   "path": "rtl/backend/AgeDetector_21.sv",
+   "kind": "repo",
+   "sha256": "c5c755e3561eeb2c9978774f1937dbec13bc674bedc98e87540f189118b16375"
+  },
+  {
+   "path": "rtl/backend/xs_IssueQueue_core.sv",
+   "kind": "repo",
+   "sha256": "c6946d041ae99f868e07f60f4e2cf64a0cc013e5de282defdc5c38a45ff7ad03"
+  },
+  {
+   "path": "rtl/backend/EntriesLdu.sv",
+   "kind": "repo",
+   "sha256": "5ce83ce2508f1dddf8cbfd4d4545ff80448546d8227ef94ce340ad487c0f72e8"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite_105.sv",
+   "kind": "repo",
+   "sha256": "b75b8cb8b687ab8f76740cdeaf3f10c3323f24545d578f4bc668e003ae387523"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_105.sv",
+   "kind": "repo",
+   "sha256": "f2faf026d491abad0284ef3307a825708d55708f662d05d92a4715a1162f0348"
+  },
+  {
+   "path": "rtl/backend/EntriesVlduVstuVseglduVsegstu.sv",
+   "kind": "repo",
+   "sha256": "4735a0901fa0de9d16943b4f30781339a42e34c491c2793e4b810600306077ea"
+  },
+  {
+   "path": "rtl/backend/EntriesVlduVstu.sv",
+   "kind": "repo",
+   "sha256": "fdef96226b69ee69d03794da3ed55d4503874e55fee862fa101f11a27b08334d"
+  },
+  {
+   "path": "rtl/backend/EntriesStdMoud.sv",
+   "kind": "repo",
+   "sha256": "dcc1c8fc6c35b53de2a82f2a32180f34cba0ff69f6b2901e729c969b5fe26666"
+  },
+  {
+   "path": "rtl/backend/xs_iq_entries_core.sv",
+   "kind": "repo",
+   "sha256": "f14b2f2f068ff3edac5c75cd113ebdd392c57053daee733140872f201f7e7216"
+  },
+  {
+   "path": "rtl/backend/xs_NewAgeDetector_core.sv",
+   "kind": "repo",
+   "sha256": "ab2f443094a81c2aef971cfbd9b04f5275db3be7f14239206ef5e8e832ce416e"
+  },
+  {
+   "path": "rtl/backend/xs_AgeDetector_core.sv",
+   "kind": "repo",
+   "sha256": "b3d45baa9410014e01c1a0d7f47ad8fa13ccfe0b09d569545a0c2537a9b2072b"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableWrite.sv",
+   "kind": "repo",
+   "sha256": "a485f5413767737e437e806d49e332945ba902ce84be6ed496a3ecc9fdc67bbf"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead.sv",
+   "kind": "repo",
+   "sha256": "a3538bd2886f6981f5515e1e21779fdcbcdcaa4c589c849b43edc665079724e4"
+  }
+ ],
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "e6db4dc1e3de955ec9fceeba1bc53b3f3393963c7fb54bc03114cff640fd2e66"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "Scheduler_3-20261011T035232Z-9df1c6fb0",
+  "top": "Scheduler_3",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 148682,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 148682,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 341,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "Scheduler_3",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

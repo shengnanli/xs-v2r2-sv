@@ -1,0 +1,163 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T07:38:56Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/SnapshotGenerator_12",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_12.sv",
+    "sha256": "cd4006a832932dfa5ad1ae84d3aadb22a185694430a2cee6c67219426d24011b"
+   }
+  ],
+  "golden_sha256": "ce6cb60827eac4a8fbfdd4aea6a49e3d8ba250470882df09d77c7264cc86deeb",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator.sv",
+    "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_1.sv",
+    "sha256": "a77ecb0883554569bdd0302a13e05cf1bdb534271a60be4391bfe429357d4d90"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_2.sv",
+    "sha256": "50125b7e540ed2936438140bd578a94bc5b2439db3f4620eefc4ee692f0e39f1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_3.sv",
+    "sha256": "4c01961e612d03f602d5cba3389a1552388ef5e008de6682bb47d1d1433a7860"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_4.sv",
+    "sha256": "129d7c4bd3af57c1297e0e04aa97374122a21d9122231297051ba1a64d16394e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_5.sv",
+    "sha256": "3bb3b69079c6d0344c7d91d3b38e76373a9a39655878a61d6c9f81e9a5c2f866"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_6.sv",
+    "sha256": "a3eadbfd5b46b8fbd55cb4aeed4c5865ffc5926d0f0c1441de4c79d76d66941e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_7.sv",
+    "sha256": "c4abd95905b35c8dafb23bc35c143da847e61de2e145516784f1bdc5dc757922"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_11.sv",
+    "sha256": "eb8df8c3bc0e02fd0b63d42bb5cae7d712b7a71a26ad517a28077d65d8f879a0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_12.sv",
+    "sha256": "392e0c71bb5e749c487e1418c16a884e8ec71c5e91847a4831dae3742add1ebb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_14.sv",
+    "sha256": "cf498964745dc84c7476a06d3a89fe1657b7100b227f627134b6e07207295056"
+   }
+  ],
+  "impl_sha256": "3a2fba29d1c4adca85a986e57ce71ea5ba27497e4d6ca3579c290e7ee1c6103b",
+  "repo_impl_files": 11
+ },
+ "native_facts_sha256": "bb0c8ed4e4224fc1897b604b5b3265516188a47ed7469e6ba73922bf83963f4b",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 58,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "a34ea1c8192cda3a7f484c1091979b033e5d35061d5facdd5b77b13beeea949d",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh SnapshotGenerator SnapshotGenerator_12",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "666e5cd8b795ad6e3f2c007a111e5116f9807d0c215aabd4d8ff0a86eba6b89d",
+ "run_id": "SnapshotGenerator-20261011T073808Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "SnapshotGenerator_12",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "SnapshotGenerator",
+ "variant": "SnapshotGenerator_12",
+ "verdict": "SUCCEEDED"
+}

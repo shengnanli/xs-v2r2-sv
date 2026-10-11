@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Scheduler_1
+Implementation : i:/WORK/Scheduler_1
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 02:12:11 2026
+**************************************************
+
+No aborted compare points.
+
+1
