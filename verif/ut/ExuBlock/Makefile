@@ -7,11 +7,13 @@ MODULE = ExuBlock
 # 子树处置：8 个直接 child = ExeUnit ×2 / ExeUnit_1 ×2 / ExeUnit_4 ×2 / ExeUnit_5 / ExeUnit_7，均已签核，两侧白盒；
 #   闭包 = 五个 ExeUnit UT Makefile 的 RTL_SRCS / RTL_GOLDEN_DEPS / FM_REF_DEPS 的并集（同一处置原样继承）：
 #   RTL_SRCS        —— 已签核重写件，impl 读重写件、ref 读 golden；
-#   RTL_GOLDEN_DEPS —— 两侧同读的 golden 件（CryptoModule、PrintCommitIDModule、AsyncResetSynchronizer*，各自 child
+#   RTL_GOLDEN_DEPS —— 两侧同读的 golden 件（CryptoModule、AsyncResetSynchronizer*，各自 child
 #                      Makefile 里的处置原样继承）；ClockGate 读本地签核件 rtl/common/ClockGate.sv。
 # 无黑盒。文件表字面列出（fm_predict / fm_passing_model 静态解析，不展开变量）。
+# PrintCommitIDModule：impl 读本地重写件 rtl/common/PrintCommitIDModule.sv（仿真专用打印，codex 0230），ref / UT golden 侧读 G1 .v。
 RTL_DIR  = ../../../rtl
 RTL_SRCS = \
+  $(RTL_DIR)/common/PrintCommitIDModule.sv \
   $(RTL_DIR)/backend/ExuBlock.sv \
   $(RTL_DIR)/backend/xs_ExuBlock_core.sv \
   $(RTL_DIR)/backend/alu_pkg.sv \
@@ -492,7 +494,6 @@ RTL_SRCS = \
 RTL_GOLDEN_DEPS = \
   $(XSSV_HOME)/rtl/common/ClockGate.sv \
   $(GOLDEN_RTL)/CryptoModule.sv \
-  $(GOLDEN_RTL)/PrintCommitIDModule.v \
   $(GOLDEN_RTL)/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
   $(GOLDEN_RTL)/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
 TB_SRCS  = tb.sv

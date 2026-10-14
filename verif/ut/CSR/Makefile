@@ -1,3 +1,4 @@
+# PrintCommitIDModule：impl 读本地重写件 rtl/common/PrintCommitIDModule.sv（仿真专用打印，codex 0230），ref / UT golden 侧读 G1 .v。
 MODULE = CSR
 # CSR（CSR 功能单元外壳，golden 1774 行，5 个子模块实例）—— 两侧白盒，无黑盒：
 #   * csrMod = NewCSR（本 lane 重写，verif/ut/NewCSR）及其整棵子树（同 verif/ut/NewCSR 的文件表）；
@@ -8,6 +9,7 @@ MODULE = CSR
 # 文件表是字面列出的（fm_predict / fm_passing_model 静态解析，不展开变量）。
 RTL_DIR = ../../../rtl
 RTL_SRCS = \
+  $(RTL_DIR)/common/PrintCommitIDModule.sv \
   $(RTL_DIR)/backend/csr_irq_pkg.sv \
   $(RTL_DIR)/backend/CommitIDModule.sv \
   $(RTL_DIR)/backend/DcsrModule.sv \
@@ -421,8 +423,7 @@ RTL_SRCS = \
   $(RTL_DIR)/backend/TrapTvalMod.sv \
   $(RTL_DIR)/mmu/SatpFlushMod.sv \
   $(RTL_DIR)/backend/CSR.sv
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/PrintCommitIDModule.v \
-                  $(GOLDEN_RTL)/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
+RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
                   $(GOLDEN_RTL)/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
 TB_SRCS = tb.sv
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical

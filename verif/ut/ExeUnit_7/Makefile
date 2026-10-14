@@ -1,3 +1,4 @@
+# PrintCommitIDModule：impl 读本地重写件 rtl/common/PrintCommitIDModule.sv（仿真专用打印，codex 0230），ref / UT golden 侧读 G1 .v。
 MODULE = ExeUnit_7
 
 # ExeUnit_7：CSR 执行单元外壳 —— csr(CSR) / Fence / Div(DivUnit)，三者均不定延迟（busy 外壳，一次只放一条）；
@@ -16,6 +17,7 @@ MODULE = ExeUnit_7
 # 文件表字面列出（fm_predict / fm_passing_model 静态解析，不展开变量）。
 RTL_DIR  = ../../../rtl
 RTL_SRCS = \
+  $(RTL_DIR)/common/PrintCommitIDModule.sv \
   $(RTL_DIR)/backend/ExeUnit_7.sv \
   $(RTL_DIR)/backend/xs_ExeUnit_core.sv \
   $(RTL_DIR)/common/xs_CriticalErrorDelay_core.sv \
@@ -445,7 +447,6 @@ RTL_SRCS = \
   $(RTL_DIR)/mmu/SatpFlushMod.sv \
   $(RTL_DIR)/backend/CSR.sv
 RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
-                  $(GOLDEN_RTL)/PrintCommitIDModule.v \
                   $(GOLDEN_RTL)/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
                   $(GOLDEN_RTL)/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
 TB_SRCS  = tb.sv

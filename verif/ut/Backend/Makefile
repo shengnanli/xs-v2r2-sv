@@ -1,3 +1,4 @@
+# PrintCommitIDModule：impl 读本地重写件 rtl/common/PrintCommitIDModule.sv（仿真专用打印，codex 0230），ref / UT golden 侧读 G1 .v。
 MODULE = Backend
 
 # Backend —— 后端顶层装配（golden 79,590 行 / 2,365 端口 / 46 个直接子模块实例，31 种）。
@@ -14,7 +15,8 @@ RTL_DIR = ../../../rtl
 #   主要是 CtrlBlock 的译码 / 重命名 / 派遣子树与 ExuBlock 的 FPU 叶子等），以及未被重写的 golden 叶子（同名共用一份定义）。
 #   列表由 scratchpad 脚本从 31 个子 UT 目录的 make 变量机械取出后写死在这里（取舍见 docs/lanes/backend-asm_prereg.md）。
 # ---------------------------------------------------------------------------
-RTL_SRCS = $(XSSV_HOME)/rtl/backend/ImmExtractor.sv \
+RTL_SRCS = $(XSSV_HOME)/rtl/common/PrintCommitIDModule.sv \
+    $(XSSV_HOME)/rtl/backend/ImmExtractor.sv \
     $(XSSV_HOME)/rtl/backend/ImmExtractor_2.sv \
     $(XSSV_HOME)/rtl/backend/ImmExtractor_12.sv \
     $(XSSV_HOME)/rtl/backend/ImmExtractor_37.sv \
@@ -960,7 +962,6 @@ RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/RenameBuffer.sv \
     $(GOLDEN_RTL)/RegCacheDataModule_1.sv \
     $(XSSV_HOME)/rtl/common/ClockGate.sv \
     $(GOLDEN_RTL)/CryptoModule.sv \
-    $(GOLDEN_RTL)/PrintCommitIDModule.v \
     $(GOLDEN_RTL)/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
     $(GOLDEN_RTL)/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv \
     $(GOLDEN_RTL)/FloatAdder.sv \

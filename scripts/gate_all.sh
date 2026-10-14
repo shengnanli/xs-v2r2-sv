@@ -89,6 +89,9 @@ run "WBArb 可达性表"     python3 scripts/wbarbiter_reachability.py --check
 
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
 run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
+# impl 闭包不得读 golden PrintCommitIDModule.v（codex 0230：impl 读本地 rtl/common/PrintCommitIDModule.sv）
+run "PrintCommitID 本地件闸" python3 scripts/test_no_golden_print_commit_id.py
+run "PrintCommitID 闸负测"  python3 scripts/test_no_golden_print_commit_id.py --selftest
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——
 # 它追加台账行后 L1 从 181/181 掉到 178/181，而当时没有任何闸会响）。
 run "台账行序闸"       python3 scripts/test_ledger_append_only.py

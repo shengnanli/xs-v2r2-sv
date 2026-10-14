@@ -1,9 +1,10 @@
+# PrintCommitIDModule：impl 读本地重写件 rtl/common/PrintCommitIDModule.sv（仿真专用打印，codex 0230），ref / UT golden 侧读 G1 .v。
 MODULE = ResultControlLeaves7
 
 RTL_DIR = ../../../rtl
 LEAVES = AluResSel ShiftResultSelect WordResultSelect MiscResultSelect \
          JumpDataModule BranchModule CommitIDModule
-RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES)))
+RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(addsuffix .sv,$(LEAVES))) $(RTL_DIR)/common/PrintCommitIDModule.sv
 TB_SRCS = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
@@ -23,7 +24,7 @@ FM_VARIANTS = AluResSel ShiftResultSelect WordResultSelect MiscResultSelect \
 # printer; the readable implementation deliberately preserves that primitive.
 FM_REF_DEPS_BranchModule = SubModule.sv
 FM_REF_DEPS_CommitIDModule = PrintCommitIDModule.v
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/PrintCommitIDModule.v
+RTL_GOLDEN_DEPS =
 
 include ../../../scripts/ut_common.mk
 
