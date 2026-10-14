@@ -396,6 +396,10 @@ def lane_worktrees():
         a = os.path.abspath(w)
         if a == os.path.abspath(REPO) or a == main_wt:
             continue
+        # run_proof.sh 的临时证明 worktree（mktemp 模板 xsv2-proof-XXXXXX，跑完即 remove）不是 lane：
+        # 它里面的 evidence 会写回发起 lane，收它只会让表依赖"生成那一刻哪个证明恰好在跑"（2026-10-14）。
+        if os.path.basename(a).startswith('xsv2-proof-'):
+            continue
         res.append(w)
     return res
 
@@ -456,7 +460,15 @@ def collect(only=None):
     #     xsv2-genidem-zj3zjxny 各一份），那是同一份证据，不是两份。
     # 取 worktree 名字排序的第一个，保证结果与扫描顺序无关。
     seen = {}
-    for wt in sorted(lane_worktrees()):
+    # ★已进版本库的 receipt 先从本仓收，provenance 记 `vcs:<run>`★（2026-10-14）
+    # 原来已跟踪的 receipt 也经 lane worktree 发现，evidence 列记"名字排序第一个"的 worktree。
+    # run_proof 的临时证明 worktree（tmp-*/xsv2-proof-*）排在 wt-* 之前，于是 1598 行全部记成
+    # `xsv2-proof-Xws7NB:<run>`；该临时 worktree 一被回收，--check 按列出的键重算就只找回 318 行
+    # ——表的内容取决于生成那一刻碰巧存在哪些临时 worktree，干净 clone 上不可复现。
+    # 已跟踪的证据本来就在仓里，provenance 就是版本库本身；lane worktree 只负责发现**未跟踪**的。
+    sources = [(str(REPO), 'vcs', True)] + [(wt, os.path.basename(wt), False)
+                                             for wt in sorted(lane_worktrees())]
+    for wt, label, tracked_only in sources:
         ev = os.path.join(wt, 'evidence')
         if not os.path.isdir(ev):
             continue
@@ -464,9 +476,11 @@ def collect(only=None):
             rundir = os.path.join(ev, rundir_name)
             if not os.path.isdir(rundir):
                 continue
-            ev_id = '%s:%s' % (os.path.basename(wt), rundir_name)
+            ev_id = '%s:%s' % (label, rundir_name)
             for tgt in sorted(os.listdir(rundir)):
                 if (rundir_name, tgt) in seen:
+                    continue
+                if tracked_only and (rundir_name, tgt) not in tracked:
                     continue
                 if only is not None and (ev_id, tgt) not in only:
                     continue
