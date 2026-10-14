@@ -72,6 +72,15 @@ M3 新增形态 B「输入偏移地址」（形态 A 环形指针归纳证明原
    那个契约到底指的是什么。结论标 **PASS_INPUT_CONTRACT**，不冒充无条件 PASS；
    没写契约 -> MANUAL。这满足 codex 0158 M3 的原话「父级控制不会**有意**依赖越界地址值」
    ——地址是输入的纯函数，没有任何逻辑去利用越界值。
+
+## 2026-10-14 扩展（codex 0230 问题 1，dt_pcTransType_160x2 逼出来的，判据强度不降）
+
+M1 模板支持 **N 个读口**：端口表里 R0..R{N-1} 依次排在全部写口之前（每口 addr/en/clk/data），
+   正文末尾按 R0..R{N-1} 顺序各一条 `assign Rk_data = Rk_en ? Memory[Rk_addr] : <dw>'bx;`。
+   读口数从模块端口现读，编号必须 0..N-1 连续；模板仍是**逐字**重建 + 逐字比对（读口错接地址、
+   assign 乱序/缺条、读口夹在写口之间、写序颠倒都当场不等）。N=1 时生成的模板与原 1R 模板
+   逐字相同，既有条目的 `--check` 输出逐字节不变。M2 的端口集合随之含 R0..R{N-1}。
+   ★M3 形态未扩★：0230 只授权扩 M1 模板；地址驱动形态认不出照旧 MANUAL。
 """
 from __future__ import print_function
 
@@ -117,16 +126,20 @@ def clog2(n):
 # ---------------------------------------------------------------------------
 # M1 —— memory-only：精确模板等价
 # ---------------------------------------------------------------------------
-def build_expected_body(design, aw, dw, depth, randw, jw, nw=1):
+def build_expected_body(design, aw, dw, depth, randw, jw, nw=1, nr=1):
     """重建 firtool 行为级 RAM 叶子的**完整**正文（module 头到 endmodule）。
 
     nw = 写口数。firtool 对多写口的形状：全部写口共用 W0_clk 的一个 always 块，
-    W0..W{nw-1} 顺序非阻塞赋值（同址后口赢）。"""
-    p = [f'module {design}(',
-         f"input [{aw - 1}:0] R0_addr,",
-         'input R0_en,',
-         'input R0_clk,',
-         f'output [{dw - 1}:0] R0_data,']
+    W0..W{nw-1} 顺序非阻塞赋值（同址后口赢）。
+    nr = 读口数（codex 0230 问题 1）。firtool 对多读口的形状：端口表里 R0..R{nr-1} 依次
+    排在全部写口之前，每口 addr/en/clk/data 四个端口；正文末尾按 R0..R{nr-1} 顺序各一条
+    `assign Rk_data = Rk_en ? Memory[Rk_addr] : <dw>'bx;`。nr=1 时与原 1R 模板逐字相同。"""
+    p = [f'module {design}(']
+    for k in range(nr):
+        p += [f"input [{aw - 1}:0] R{k}_addr,",
+              f'input R{k}_en,',
+              f'input R{k}_clk,',
+              f'output [{dw - 1}:0] R{k}_data,']
     for i in range(nw):
         p += [f'input [{aw - 1}:0] W{i}_addr,',
               f'input W{i}_en,',
@@ -160,9 +173,9 @@ def build_expected_body(design, aw, dw, depth, randw, jw, nw=1):
         '`endif',
         'end',
         '`endif',
-        f"assign R0_data = R0_en ? Memory[R0_addr] : {dw}'bx;",
-        'endmodule',
     ]
+    body += [f"assign R{k}_data = R{k}_en ? Memory[R{k}_addr] : {dw}'bx;" for k in range(nr)]
+    body += ['endmodule']
     return norm(' '.join(p + body))
 
 
@@ -194,9 +207,14 @@ def m1_memory_only(path, design):
     if not widx or widx != list(range(len(widx))):
         return False, f'M1 FAIL: 写口编号 {widx} 不是 0..N-1 连续（fail-closed）', {}
     nw = len(widx)
+    # 读口数同样从端口现读：R<k>_addr 必须恰好是 0..nr-1 连续编号（fail-closed）。
+    ridx = sorted({int(x) for x in re.findall(r'input\s*\[\d+:0\]\s*R(\d+)_addr', txt)})
+    if not ridx or ridx != list(range(len(ridx))):
+        return False, f'M1 FAIL: 读口编号 {ridx} 不是 0..N-1 连续（fail-closed）', {}
+    nr = len(ridx)
 
-    exp = build_expected_body(design, aw, dw, depth, randw, jw, nw)
-    facts = {'addr_width': aw, 'data_width': dw, 'depth': depth, 'n_write': nw,
+    exp = build_expected_body(design, aw, dw, depth, randw, jw, nw, nr)
+    facts = {'addr_width': aw, 'data_width': dw, 'depth': depth, 'n_write': nw, 'n_read': nr,
              'rand_width': randw, 'header_sha256': hdr_sha,
              'oob_headroom': (1 << aw) - depth}
     if actual != exp:
@@ -210,8 +228,9 @@ def m1_memory_only(path, design):
                        f'        模板  : ...{exp[max(0, i - 40):i + 60]}...'), facts
     return True, ('M1 PASS: 正文与 firtool 行为级 RAM 模板**逐字相等** —— '
                   f'只有 1 个存储数组、1 个时钟写 always（{nw} 个写口顺序非阻塞赋值'
-                  + ('，同址后口赢' if nw > 1 else '') + '）、1 个组合读 assign，'
-                  '外加仿真专用随机初始化（SYNTHESIS 下不存在）；无状态机/无算术/'
+                  + ('，同址后口赢' if nw > 1 else '') + '）、'
+                  + (f'{nr} 个组合读 assign（R0..R{nr - 1}），' if nr > 1 else '1 个组合读 assign，')
+                  + '外加仿真专用随机初始化（SYNTHESIS 下不存在）；无状态机/无算术/'
                   '无其它功能逻辑。'), facts
 
 
@@ -960,7 +979,9 @@ def audit(design, golden_rtl, parent_ref, parent_impl, contract=None, review=Non
     ok1, msg1, facts = m1_memory_only(path, design)
     if facts:
         print(f'  形状    : addr {facts["addr_width"]} 位 / data {facts["data_width"]} 位 / '
-              f'depth {facts["depth"]} / 写口 {facts["n_write"]} / 随机化 {facts["rand_width"]} 位')
+              f'depth {facts["depth"]} / '
+              + (f'读口 {facts["n_read"]} / ' if facts['n_read'] > 1 else '')
+              + f'写口 {facts["n_write"]} / 随机化 {facts["rand_width"]} 位')
         print(f'  越界余量: 2^{facts["addr_width"]}={1 << facts["addr_width"]} - {facts["depth"]} '
               f'= {facts["oob_headroom"]} 个地址落在数组之外'
               + ('（★这正是 FMR_ELAB-147 的来源★）' if facts['oob_headroom'] else ''))
@@ -979,7 +1000,9 @@ def audit(design, golden_rtl, parent_ref, parent_impl, contract=None, review=Non
     if not facts:
         print('  => AUDIT_INCOMPLETE（M1 认不出形状，M2/M3 无从做）')
         return 1
-    ports = ['R0_addr', 'R0_en', 'R0_clk', 'R0_data']
+    ports = []
+    for k in range(facts['n_read']):
+        ports += [f'R{k}_addr', f'R{k}_en', f'R{k}_clk', f'R{k}_data']
     for i in range(facts['n_write']):
         ports += [f'W{i}_addr', f'W{i}_en', f'W{i}_clk', f'W{i}_data']
     if parent_ref and parent_impl:

@@ -7,6 +7,8 @@
 
 覆盖（2026-09-27 扩展项 + 原有形态 A）：
   M1  多写口模板逐字相等（正）/ 多一条 assign（负）/ 写口编号不连续（负）/ 宏定义头不同（负）
+  M1  多读口 nRmW（codex 0230）：1R1W 不变 / 3R2W / 8R6W（正）；读口编号不连续 / 读口错接地址 /
+      读 assign 乱序 / 少一条读 assign / 读口夹在写口之后 / 多读口外加逻辑 / 写序颠倒（负）
   M2  generate-for 倍数（正）/ 两侧展开数不等（负）/ 常量连接签名不等（负）/ 循环上界非静态（负）
   M3  形态 A 环形指针归纳（正）/ 形态 B 输入偏移 + 契约（正）/ 无契约（负 MANUAL）/
       契约不充分（负 FAIL）/ V 位宽让 F=0 支路越界（负 FAIL）/ 地址是寄存器（负 MANUAL）/
@@ -26,10 +28,14 @@ import audit_ram_memory_model as A  # noqa: E402
 HDR = "// synthetic firtool header (test fixture)\n`ifndef RANDOM\n  `define RANDOM $random\n`endif\n\n"
 
 
-def leaf(design, aw, dw, depth, nw, extra='', header=HDR, wports=None):
+def leaf(design, aw, dw, depth, nw, extra='', header=HDR, wports=None, nr=1, rports=None,
+         rassign=None):
     wports = wports if wports is not None else list(range(nw))
-    ports = [f'  input  [{aw-1}:0] R0_addr,', '  input R0_en,', '  input R0_clk,',
-             f'  output [{dw-1}:0] R0_data,']
+    rports = rports if rports is not None else list(range(nr))
+    ports = []
+    for k in rports:
+        ports += [f'  input  [{aw-1}:0] R{k}_addr,', f'  input R{k}_en,', f'  input R{k}_clk,',
+                  f'  output [{dw-1}:0] R{k}_data,']
     for i in wports:
         ports += [f'  input [{aw-1}:0] W{i}_addr,', f'  input W{i}_en,', f'  input W{i}_clk,',
                   f'  input [{dw-1}:0] W{i}_data,']
@@ -42,7 +48,9 @@ def leaf(design, aw, dw, depth, nw, extra='', header=HDR, wports=None):
             f"        for (logic [{aw-1}:0] i = {aw}'h0; i < {aw}'h{depth:X}; i += {aw}'h1) begin\n"
             f'          _RANDOM_MEM = `RANDOM;\n          Memory[i] = _RANDOM_MEM[{dw-1}:0];\n'
             '        end\n      `endif\n    end\n  `endif\n'
-            f"  assign R0_data = R0_en ? Memory[R0_addr] : {dw}'bx;\n{extra}endmodule\n")
+            + (rassign if rassign is not None else
+               ''.join(f"  assign R{k}_data = R{k}_en ? Memory[R{k}_addr] : {dw}'bx;\n" for k in rports))
+            + f'{extra}endmodule\n')
 
 
 # ---- 形态 B 的父级：depth 6 = 2 * K(3)，V 2 位（F=0 时最大 3 < 6）--------------------
@@ -192,6 +200,45 @@ def main():
          IMPL_A.replace('localparam int DEPTH = 6;', 'localparam int DEPTH = 7;'), None),
     ]
     bad = 0
+    # ---- M1 多读口（codex 0230 问题 1：nRmW 精确模板）—— 只跑 M1，不需要 parent ----
+    def ra(nr, dw, f):
+        return ''.join(f"  assign R{k}_data = R{k}_en ? Memory[{f(k)}] : {dw}'bx;\n" for k in range(nr))
+    m1_cases = [
+        # (名字, 期望 ok, 输出必含, 文件正文)
+        ('P M1 1R1W 原模板不变', True, '1 个组合读 assign', leaf('m_6x4', 3, 4, 6, 1)),
+        ('P M1 3R2W 多读多写', True, '3 个组合读 assign（R0..R2）', leaf('m_6x4', 3, 4, 6, 2, nr=3)),
+        ('P M1 8R6W（dt_pcTransType 形状）', True, '8 个组合读 assign（R0..R7）',
+         leaf('m_6x4', 8, 2, 160, 6, nr=8)),
+        ('N M1 读口编号不连续', False, 'M1 FAIL: 读口编号', leaf('m_6x4', 3, 4, 6, 2, rports=[0, 2])),
+        ('N M1 读口错接地址', False, 'M1 FAIL: 正文与 firtool',
+         leaf('m_6x4', 3, 4, 6, 2, nr=3, rassign=ra(3, 4, lambda k: 'R0_addr' if k == 2 else f'R{k}_addr'))),
+        ('N M1 读 assign 乱序', False, 'M1 FAIL: 正文与 firtool',
+         leaf('m_6x4', 3, 4, 6, 2, nr=2,
+              rassign="  assign R1_data = R1_en ? Memory[R1_addr] : 4'bx;\n"
+                      "  assign R0_data = R0_en ? Memory[R0_addr] : 4'bx;\n")),
+        ('N M1 少一条读 assign', False, 'M1 FAIL: 正文与 firtool',
+         leaf('m_6x4', 3, 4, 6, 2, nr=3, rassign=ra(2, 4, lambda k: f'R{k}_addr'))),
+        ('N M1 读口夹在写口之后', False, 'M1 FAIL: 正文与 firtool',
+         leaf('m_6x4', 3, 4, 6, 1, nr=2).replace(
+             "  input  [2:0] R1_addr,\n  input R1_en,\n  input R1_clk,\n  output [3:0] R1_data,\n", '').replace(
+             '  input [3:0] W0_data\n',
+             '  input [3:0] W0_data,\n  input  [2:0] R1_addr,\n  input R1_en,\n  input R1_clk,\n'
+             '  output [3:0] R1_data\n')),
+        ('N M1 多读口外加逻辑', False, 'M1 FAIL: 正文与 firtool',
+         leaf('m_6x4', 3, 4, 6, 2, nr=3, extra="  assign R2_data[0] = 1'b0;\n")),
+        ('N M1 写口后赢被改成先赢（写序颠倒）', False, 'M1 FAIL: 正文与 firtool',
+         leaf('m_6x4', 3, 4, 6, 2, nr=2, wports=[1, 0])),
+    ]
+    with tempfile.TemporaryDirectory() as td:
+        for name, exp_ok, must, text in m1_cases:
+            f = pathlib.Path(td) / 'm_6x4.sv'
+            f.write_text(text)
+            ok1, msg1, _ = A.m1_memory_only(f, 'm_6x4')
+            good = (ok1 == exp_ok) and (must in msg1)
+            print(f'{"PASS" if good else "★FAIL"}  {name}  (ok={ok1} 期望 {exp_ok}; 须含 {must!r})')
+            if not good:
+                bad += 1
+                print('      ' + msg1[:400])
     for name, exp_rc, must, design, gf, ref, impl, contract in cases:
         rc, out = run(design, gf, ref, impl, contract)
         ok = (rc == exp_rc) and (must in out)
@@ -199,7 +246,7 @@ def main():
         if not ok:
             bad += 1
             print('\n'.join('      ' + ln for ln in out.splitlines()[-8:]))
-    print(f'=== test_audit_ram_memory_model: {len(cases) - bad}/{len(cases)} ===')
+    print(f'=== test_audit_ram_memory_model: {len(cases) + len(m1_cases) - bad}/{len(cases) + len(m1_cases)} ===')
     return 1 if bad else 0
 
 
