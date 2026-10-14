@@ -141,3 +141,16 @@ B=地址是**本父级 input 端口**的纯函数 `{1'b0,V}+(F?K:0)` + 接口契
 ## 步 3–7
 
 未执行（STOP）。vendor_boundary 行、proof_certificate.py 改动、证书正负测、第 7 步 CtrlBlock 临时验证均无。
+
+## gate_all（步 1 提交上跑，供集成者参考；步 6 本身因 STOP 未达）
+
+    mkdir -p /home/eda/xs-env/tmp-cm
+    TMPDIR=/home/eda/xs-env/tmp-cm bash scripts/gate_all.sh < /dev/null
+    GATE_COMMIT=aafef4a8a4  GATE_RC=1
+
+- 本 lane 相关闸全绿：「RAM 模型审查负测」PASS（25/25）、「RAM 模型审查复算」PASS（--check 输出与改前逐字节相同）。
+- **唯一红**：「receipt 收录表复算」（`gen_receipt_harvest.py --check`）。与本 lane 改动无关，是仓外输入漂移：
+  docs/receipt_harvest.tsv 里 1542 行的 evidence 键是 lane worktree `xsv2-proof-Xws7NB:<run>`，该 worktree
+  已不在 `git worktree list` 里（被移除），`collect(only=listed)` 只能找回 318 行 → 渲染不等。
+  gen_receipt_harvest.py 不读 audit_ram_memory_model.py / 其测试 / docs/lanes。修法是重生成该派生表，
+  本 lane 任务书禁止改派生表，故未动，留给集成者。
