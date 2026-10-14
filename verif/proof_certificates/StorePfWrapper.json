@@ -1,0 +1,129 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:33:34Z",
+ "generator": {
+  "run_context_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/6038c4afbc60/StorePfWrapper",
+  "version": 1
+ },
+ "impl_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StorePfWrapper.sv",
+    "sha256": "6668f5b100d95192239c6ff430d888b037c4e2bf43324afdd50cc01e9b8277fc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Serializer.sv",
+    "sha256": "e52772ba1969e9d9735b19a93cf6d39de95b68a5b7f82c00892da0dae8243456"
+   }
+  ],
+  "golden_sha256": "1701b94c5338c7a580ed4c4a2612ce8269f75ba6a6f1c6e51d538a9d171a3dfb",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/Serializer.sv",
+    "sha256": "8da1017f78fc763a542695e2a9fb6dd55bf83e5f5496bd868fd738dc0146b5a8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/StorePfWrapper.sv",
+    "sha256": "bfd81b78dfb74781c213fcae0df3c6696676dba6a4c438fda673599af5c76a7b"
+   }
+  ],
+  "impl_sha256": "45d079a53e76100a5735a3418265c2d172c4ce0f5ad9b69435bdc74743e412c3",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "e69aad7693bd03b80faa4769fb32032c479ad5b1698cbd1600590a65567e1025",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 5,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_assume_reg_init": "None",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "6a1074e337e2690918c0c8175f57288fc86aac2844e44183b6c146776ddabf0e",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+ "provisional": false,
+ "receipt_sha256": "9a9522daf75f2b80889b87b076a417b064b33db5a6bdf23dd2c6d941d350f69b",
+ "reproduce": {
+  "command": "PROOF_COMMIT=6038c4afbc6026864dcc19b4cf1563e19077c4d2 scripts/run_proof.sh StorePfWrapper StorePfWrapper",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "1703b64b6ccd7485a6e9a8c689c1c5b21a78968f2adeed675f8b53b1888e5716",
+ "run_id": "StorePfWrapper-20261004T105827Z-6038c4afb",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/StorePfWrapper.tcl",
+    "sha256": "7f18e54546c1510f2d7b9e72f3b34e4bf499b612f71655fb72021f6788ad9356"
+   }
+  ],
+  "sha256": "45fbbe5358020126536479c25fd2849623a72b7f1a3933a61a853a94e408e097"
+ },
+ "target": "StorePfWrapper",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "StorePfWrapper",
+ "variant": "StorePfWrapper",
+ "verdict": "SUCCEEDED"
+}

@@ -37,7 +37,7 @@ Composer	Composer	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commi
 CompressUnit	CompressUnit	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 CtrlBlock	CtrlBlock	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 DCache	DCache	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-DCacheWrapper	DCacheWrapper	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+DCacheWrapper	DCacheWrapper	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/DCacheWrapper.json sha256=4813839d9633eafb
 DataPath	DataPath	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 DebugModule	DebugModule	same_name	GLUE_INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 DecodeStage	DecodeStage	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
@@ -85,7 +85,7 @@ Frontend	Frontend	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commi
 Ftq	Ftq	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Ftq.json sha256=f3b0e18d7ca38f0a
 FtqPcMemWrapper	FtqPcMemWrapper	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/FtqPcMemWrapper.json sha256=b2867109c8b8e7cc
 GrantBuffer	GrantBuffer	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/GrantBuffer.json sha256=698f424c7e0198e9
-HPTW	HPTW	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
+HPTW	HPTW	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/HPTW.json sha256=f9e55c0059739b91
 IBuffer	IBuffer	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/IBuffer.json sha256=9bb271ba8a77cd36
 ICache	ICache	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/ICache.json sha256=dcc39c0339516bfe
 ICacheCtrlUnit	ICacheCtrlUnit	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
@@ -135,34 +135,34 @@ L2DataStorage	L2DataStorage	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked c
 L2Directory	L2Directory	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 MainPipe_1	MainPipe_1	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 L2Slice	L2Slice	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
-L2TLB	L2TLB	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-L2TLBWrapper	L2TLBWrapper	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
-L2TlbMissQueue	L2TlbMissQueue	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-L2TlbPrefetch	L2TlbPrefetch	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
+L2TLB	L2TLB	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/L2TLB.json sha256=57d584c0deed5ba4
+L2TLBWrapper	L2TLBWrapper	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/L2TLBWrapper.json sha256=5183dfd5286cb548
+L2TlbMissQueue	L2TlbMissQueue	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/L2TlbMissQueue.json sha256=cdf1fd0261c6f215
+L2TlbPrefetch	L2TlbPrefetch	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/L2TlbPrefetch.json sha256=efdb720d60fd9890
 L2Top	L2Top	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/L2Top.json sha256=fd732f5035f3730e
 LCredit2Decoupled	LCredit2Decoupled	same_name	TRIVIAL	REQUIRED	UNVERIFIED	no tracked certificate
 LCredit2Decoupled_1	LCredit2Decoupled_1	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 LCredit2Decoupled_10	LCredit2Decoupled_10	same_name	TRIVIAL	REQUIRED	UNVERIFIED	no tracked certificate
 LCredit2Decoupled_8	LCredit2Decoupled_8	same_name	TRIVIAL	REQUIRED	UNVERIFIED	no tracked certificate
-LLPTW	LLPTW	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+LLPTW	LLPTW	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/LLPTW.json sha256=ec9632b6b849c0dd
 LevelGateway	LevelGateway	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 LinkMonitor	LinkMonitor	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-LoadMisalignBuffer	LoadMisalignBuffer	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+LoadMisalignBuffer	LoadMisalignBuffer	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/LoadMisalignBuffer.json sha256=ff6fd865cf809a8e
 LoadPipe	LoadPipe	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 LoadQueue	LoadQueue	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 LoadQueueRAR	LoadQueueRAR	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 LoadQueueRAW	LoadQueueRAW	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 LoadQueueReplay	LoadQueueReplay	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 LoadQueueUncache	LoadQueueUncache	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-LoadUnit	LoadUnit	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+LoadUnit	LoadUnit	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/LoadUnit.json sha256=b6ef23e610adf82b
 LqExceptionBuffer	LqExceptionBuffer	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-LsqWrapper	LsqWrapper	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+LsqWrapper	LsqWrapper	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/LsqWrapper.json sha256=7234d8b13a7013b3
 MEFreeList	MEFreeList	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 MSHR	MSHR	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 MSHRCtl	MSHRCtl	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 MSHRSelector	MSHRSelector	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 MainPipe	MainPipe	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-MemBlock	MemBlock	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+MemBlock	MemBlock	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/MemBlock.json sha256=1ed40e7eb58b9b55
 MissQueue	MissQueue	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 MulUnit	MulUnit	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 NewCSR	NewCSR	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
@@ -170,11 +170,11 @@ NewDispatch	NewDispatch	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certi
 NewIFU	NewIFU	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/NewIFU.json sha256=14651564984282fb
 OpenLLC	OpenLLC	same_name	GLUE_INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 PLICFanIn	PLICFanIn	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-PMP	PMP	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-PMPChecker	PMPChecker	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-PMPChecker_10	PMPChecker_12	slot_map	RESTRUCTURED	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 PMPChecker_10；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
-PTW	PTW	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-Pipeline	Pipeline	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
+PMP	PMP	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/PMP.json sha256=a9f8753f4402439d
+PMPChecker	PMPChecker	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/PMPChecker.json sha256=15b65d9f3b9cef5f
+PMPChecker_10	PMPChecker_12	slot_map	RESTRUCTURED	REQUIRED	CERT_REJECTED	槽位判据(site)改判: 原名 PMPChecker_10；依据见 docs/g1_slot_map_evidence.tsv；policy_freeze_commit_null; verif/proof_certificates/PMPChecker_12.json sha256=c68b2457abc167f5
+PTW	PTW	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/PTW.json sha256=dc7c5de2971707b6
+Pipeline	Pipeline	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Pipeline.json sha256=9e1ab0bf1967ff49
 NewPipelineConnectPipe	NewPipelineConnectPipe	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 NewPipelineConnectPipe_1	NewPipelineConnectPipe_1	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 NewPipelineConnectPipe_10	NewPipelineConnectPipe_10	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
@@ -187,8 +187,8 @@ NewPipelineConnectPipe_23	NewPipelineConnectPipe_23	same_name	REWRITE_M	REQUIRED
 NewPipelineConnectPipe_25	NewPipelineConnectPipe_25	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 NewPipelineConnectPipe_27	NewPipelineConnectPipe_29	slot_map	REWRITE_M	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 NewPipelineConnectPipe_27；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
 NewPipelineConnectPipe_31	NewPipelineConnectPipe_33	renumbered	RESTRUCTURED	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 NewPipelineConnectPipe_31；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
-NewPipelineConnectPipe_32	NewPipelineConnectPipe_34	slot_map	RESTRUCTURED	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 NewPipelineConnectPipe_32；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
-NewPipelineConnectPipe_33	NewPipelineConnectPipe_35	slot_map	REWRITE_M	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 NewPipelineConnectPipe_33；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
+NewPipelineConnectPipe_32	NewPipelineConnectPipe_34	slot_map	RESTRUCTURED	REQUIRED	CERT_REJECTED	槽位判据(site)改判: 原名 NewPipelineConnectPipe_32；依据见 docs/g1_slot_map_evidence.tsv；policy_freeze_commit_null; verif/proof_certificates/NewPipelineConnectPipe_34.json sha256=5dab3269275eab3b
+NewPipelineConnectPipe_33	NewPipelineConnectPipe_35	slot_map	REWRITE_M	REQUIRED	CERT_REJECTED	槽位判据(site)改判: 原名 NewPipelineConnectPipe_33；依据见 docs/g1_slot_map_evidence.tsv；policy_freeze_commit_null; verif/proof_certificates/NewPipelineConnectPipe_35.json sha256=a0a76a281c79bb8e
 NewPipelineConnectPipe_5	NewPipelineConnectPipe_5	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 NewPipelineConnectPipe_7	NewPipelineConnectPipe_7	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 NewPipelineConnectPipe_8	NewPipelineConnectPipe_8	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
@@ -196,7 +196,7 @@ NewPipelineConnectPipe_9	NewPipelineConnectPipe_9	same_name	REWRITE_M	REQUIRED	U
 PreDecode	PreDecode	same_name	TRIVIAL	REQUIRED	UNVERIFIED	no tracked certificate
 Predictor	Predictor	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Predictor.json sha256=693ea0ca2118cab6
 ProbeQueue	ProbeQueue	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-PtwCache	PtwCache	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+PtwCache	PtwCache	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/PtwCache.json sha256=52057089f31bc886
 RASStack	RASStack	same_name	TRIVIAL	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/RASStack.json sha256=4927549da1c6d2d0
 RNXbar	RNXbar	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 RVCExpander	RVCExpander	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
@@ -228,7 +228,7 @@ SRAMTemplate_72	SRAMTemplate_78	renumbered	RESTRUCTURED	REQUIRED	CERT_REJECTED	�
 SRAMTemplate_8	SRAMTemplate_8	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 SRAMTemplate_64	SRAMTemplate_64	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SRAMTemplate_64.json sha256=4c1be14e4ba8efbb
 SRAMTemplate_66	SRAMTemplate_68	slot_map	RESTRUCTURED	REQUIRED	CERT_REJECTED	槽位判据(site_common)改判: 原名 SRAMTemplate_66；依据见 docs/g1_slot_map_evidence.tsv；policy_freeze_commit_null; verif/proof_certificates/SRAMTemplate_68.json sha256=27cb1883b03bc4f1
-Sbuffer	Sbuffer	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+Sbuffer	Sbuffer	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Sbuffer.json sha256=ab62e7982e13d1c8
 Scheduler	Scheduler	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 Scheduler_1	Scheduler_1	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 Scheduler_2	Scheduler_2	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
@@ -247,11 +247,11 @@ SplittedSRAMTemplate_3	SplittedSRAMTemplate_3	same_name	INHERIT	REQUIRED	CERT_RE
 SplittedSRAMTemplate_4	SplittedSRAMTemplate_4	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SplittedSRAMTemplate_4.json sha256=0ec4b8e7d124656e
 StdFreeList	StdFreeList	same_name	TRIVIAL	REQUIRED	UNVERIFIED	no tracked certificate
 StoreExceptionBuffer	StoreExceptionBuffer	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-StoreMisalignBuffer	StoreMisalignBuffer	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-StorePfWrapper	StorePfWrapper	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
+StoreMisalignBuffer	StoreMisalignBuffer	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/StoreMisalignBuffer.json sha256=a62c509bb5b2b6c6
+StorePfWrapper	StorePfWrapper	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/StorePfWrapper.json sha256=c9a21aa5cad825fa
 StorePipe	StorePipe	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 StoreQueue	StoreQueue	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-StoreUnit	StoreUnit	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+StoreUnit	StoreUnit	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/StoreUnit.json sha256=5d06753cc2666812
 SubDirectory	SubDirectory	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 SubDirectory_1	SubDirectory_1	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 DataModule_BackendPC_16entry	DataModule_BackendPC_16entry	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
@@ -273,25 +273,25 @@ SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_3	slot_map	REW
 SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_4	slot_map	REWRITE_L	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 SyncDataModuleTemplate__64entry_3；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
 SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_5	slot_map	REWRITE_L	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 SyncDataModuleTemplate__64entry_4；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
 TL2CHICoupledL2	TL2CHICoupledL2	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TL2CHICoupledL2.json sha256=f2298a684090cbe5
-TLBFA	TLBFA	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-TLBFA_1	TLBFA_1	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-TLBNonBlock	TLBNonBlock	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+TLBFA	TLBFA	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TLBFA.json sha256=0424bad747c854f1
+TLBFA_1	TLBFA_1	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TLBFA_1.json sha256=d7851db74967a9a9
+TLBNonBlock	TLBNonBlock	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TLBNonBlock.json sha256=8187c8204d6f1089
 TLBuffer	TLBuffer	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 TLBuffer_13	TLBuffer_13	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 TLBuffer_15	TLBuffer_15	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 TLBuffer_2	TLBuffer_2	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 TLBuffer_20	TLBuffer_20	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 TLBuffer_22	TLBuffer_22	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-TLBuffer_6	TLBuffer_6	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-TLBuffer_7	TLBuffer_7	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-TLBuffer_8	TLBuffer_8	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-TLBuffer_9	TLBuffer_9	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
+TLBuffer_6	TLBuffer_6	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TLBuffer_6.json sha256=c3ef0799a7b86489
+TLBuffer_7	TLBuffer_7	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TLBuffer_7.json sha256=ecd52a37dd78f52d
+TLBuffer_8	TLBuffer_8	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TLBuffer_8.json sha256=e5c8f8bc4c3101f5
+TLBuffer_9	TLBuffer_9	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TLBuffer_9.json sha256=9c4f72d84cfee2c7
 TLLogger	TLLogger	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 TLPLIC	TLPLIC	same_name	TRIVIAL	REQUIRED	UNVERIFIED	no tracked certificate
 TLXbar_1	TLXbar_1	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 TLXbar_2	TLXbar_2	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 TLXbar_3	TLXbar_3	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-TLXbar_4	TLXbar_4	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
+TLXbar_4	TLXbar_4	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TLXbar_4.json sha256=b2be90373b4394ce
 TLXbar_6	TLXbar_6	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 TXDAT	TXDAT	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 TXDAT_4	TXDAT_4	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
@@ -307,8 +307,8 @@ TageTable_2	TageTable_2	same_name	TRIVIAL	REQUIRED	CERT_REJECTED	policy_freeze_c
 TageTable_3	TageTable_3	same_name	TRIVIAL	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TageTable_3.json sha256=d2d9268544fb0696
 Tage_SC	Tage_SC	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Tage_SC.json sha256=3cce3558627b36d2
 TlbStorageWrapper	TlbStorageWrapper	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-TlbStorageWrapper_1	TlbStorageWrapper_1	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-Uncache	Uncache	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+TlbStorageWrapper_1	TlbStorageWrapper_1	same_name	REWRITE_S	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/TlbStorageWrapper_1.json sha256=987d1264c153ec9c
+Uncache	Uncache	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Uncache.json sha256=68c376b922856611
 UopInfoGen	UopInfoGen	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 VSetRiWi	VSetRiWi	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 VSetRvfWvf	VSetRvfWvf	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate

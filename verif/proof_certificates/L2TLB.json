@@ -1,0 +1,360 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "external_dependency_via_children": [
+  "BitmapCache",
+  "PtwCache"
+ ],
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T11:53:49Z",
+ "generator": {
+  "run_context_worktree_digest": "978e2d67113bbd6d3305153f650dcf043e3a197900238e2df537c242e1752c21",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/932718ccf2e6/L2TLB",
+  "version": 1
+ },
+ "impl_commit": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/L2TLB.sv",
+    "sha256": "d247762508746190bd608b8f792c53be8fb2f3fd6c6604b9378e149a0e60f7f7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter1_L2TLBImp_Anon.sv",
+    "sha256": "b12815e511b214e2df374ee7aa1d5c11ae20e2fa852c326fce91c3c9eb981906"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter2_L2TLBImp_Anon.sv",
+    "sha256": "7f31853f2442276a0af27d40c55a8419ed467677bd2260c60e58a2c507bf51f4"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter2_L2TLBImp_Anon_1.sv",
+    "sha256": "176ee648681252f90589b89c0b2d727d63375ed5b41cc712475a576b6cc5738b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter2_L2TlbWithHptwIdBundle.sv",
+    "sha256": "f99078376542c734cf8298df6f178719094a1858f47a7b5ce0bfab147975d7a3"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter2_PtwReq.sv",
+    "sha256": "3d44ce50597a514813ac162ab4879946f6d1fcc8515e3ee634120407ced1e6eb"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter3_bitmapReqBundle.sv",
+    "sha256": "6c10340cfc62588e94793dd17b08558c3ef3ce0aa5481864986e7f1b4b9d61a8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter3_L2TLBImp_Anon.sv",
+    "sha256": "b4b70ddea11d0d470e507ac3bf20a6cd5ac3640cf8e3a3cabaa7d3dc952df8e5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter4_L2TlbMemReqBundle.sv",
+    "sha256": "b247176fe1c5b19ea01c1a9ef4c94d44f729ef7fdb739fbcd057e118d7ac3050"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Arbiter5_L2TlbWithHptwIdBundle.sv",
+    "sha256": "69ce62d5be33e56c26ca9b21a86fa7d6cb35e8023bac21ddae8d5bad127a0d52"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Bitmap.sv",
+    "sha256": "e250ce910f703acaa12a9a62447d30e34e30aaa2e98669fbc8286e1d4910f9ba"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BitmapCache.sv",
+    "sha256": "2e7f5cebbde7bbdeb9a0d03b15adf9360c213f2e25d876f2695c47c7d9813529"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_13.sv",
+    "sha256": "b09d6e57c14d5dc9eb188e426e6cdf66d58027d5112a622e7ec2e69215227515"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_220.sv",
+    "sha256": "86c6d44a0bb032a67afdb9672cefb82da0ae4eb19eabd09211374ae28c95fcb7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_221.sv",
+    "sha256": "c5ee67e899b305f4d7ab368470b1d85cc8a8c0fff939a078fe53171e79949660"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/HPTW.sv",
+    "sha256": "b4f4f582b2db5c7c1ffea6870aeac3899291c000ba456146b27e0ff854d5ac1b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/L2TlbMissQueue.sv",
+    "sha256": "4e554d72f577da15d3bae53118b762b473502fbcd7e5f33be902f60c4dd84321"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/L2TlbPrefetch.sv",
+    "sha256": "70d3edbb84dd40c27b7e65ed1b2986f573ed69dbe2ba94141ff43b263498dae8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LLPTW.sv",
+    "sha256": "494a4953ad2d4661d6b66c6cecadf85e4d225b0abc8a2c94c91e8fb795d32862"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PMP.sv",
+    "sha256": "b6204853eb10f40f7508a25a4cb3f119cc756b60ea46c1af945278e39f5c0a65"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PMPChecker.sv",
+    "sha256": "45c292e7fbf9528db0f1dc76c6b83908b1853148d695b084b8a1e310d0acb3a9"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PTW.sv",
+    "sha256": "0d28c88ec25f69c78d9fc6093952ca230cf05bf904ec5415ff66d1204c512357"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PtwCache.sv",
+    "sha256": "a8fbb7f57b2ddc52dd1b7be285ea2f7e9b3a6220241f4569487d3d7a40c437da"
+   }
+  ],
+  "golden_sha256": "43fac4372ad1595b4c694f73fbefcb2b8f8096428514bbded9951cd462693c61",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/mmu_common_pkg.sv",
+    "sha256": "245c2dca32d3f706222733ef8092dfc0135adc019ed555cf664afd3c31f7e664"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter1_L2TLBImp_Anon.sv",
+    "sha256": "f1fda33418e20f491b1f47aac8d56597cd27678793298b825e8e0eeaba6445a7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter2_L2TLBImp_Anon.sv",
+    "sha256": "5950a5152a95e0056127c8dd84b45d3b107e64992f1fb30aaa265ef9cb996e79"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter2_L2TLBImp_Anon_1.sv",
+    "sha256": "18eee67e72ec744171667493aa82d0baf4dd62150d760e2b6e6905d9cea4b9e7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter2_L2TlbWithHptwIdBundle.sv",
+    "sha256": "af5c5448156100709e57c403167bd31da882eba4f4feb7cdfc0a536672de8e31"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter2_PtwReq.sv",
+    "sha256": "b808e27b36bd357d07deea2f7e7d2acda0fa2fb3006743314dfd442b2b022669"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter3_bitmapReqBundle.sv",
+    "sha256": "aacc30b9eee383997c41f1251011443f17c9bb543e5cda7732b8a262e182108a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter3_L2TLBImp_Anon.sv",
+    "sha256": "2a4e9e3f2b9144061a9061ff8735705711d45d5800ea5f5e80ceadc7f55b1af0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter4_L2TlbMemReqBundle.sv",
+    "sha256": "cfa29b14acc4319532500c7addfa081e1ffce60cf55363a0f09d7b629a7ca4aa"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Arbiter5_L2TlbWithHptwIdBundle.sv",
+    "sha256": "6af2f1a521a1f672c1165eb39212373dc38d1528180ecc7cf217881b74818931"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/Bitmap.sv",
+    "sha256": "3f7e13fab3d147adf0b4a758b1b4fabc20baec8797e1ff32e27bf0dc8ac7d2cd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/BitmapCache.sv",
+    "sha256": "75694cd8cc379f34f77cf2df56f21c233e08df33ab9190c4d35373e946fc935b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayN_13.sv",
+    "sha256": "c5bfb22beb4ad4d4500bb107fc257c5118e2139244efa92092332c99be2812f4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayN_220.sv",
+    "sha256": "227bbd535f5f4616f54d518ab8bcf2eef700bfee998e48b77a2539758be41233"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayN_221.sv",
+    "sha256": "bc3b8feed35bcc178085e020071595930b788cffb724dadd17a1ec1c46cba0f6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/HPTW.sv",
+    "sha256": "d3d38f70dd307045e5e37910e40e7a9cc1afce1a3b0a343ceb27281cd8d722d4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/L2TlbMissQueue.sv",
+    "sha256": "b3e03464ceec84a2c70534021f82fc8820bf97c01fab42f3ce9d3df66e23bc51"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/L2TlbPrefetch.sv",
+    "sha256": "4244bc4c3a38fdabd1ff55015846ea6c00cc871fee0cf44c5fe72aa454eae3c5"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/LLPTW.sv",
+    "sha256": "99ea579c90dde5abff08d9d53b87d4f3eaf3140322587bcded61c94877660ba2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PMP.sv",
+    "sha256": "af7ce1f89b1349dc3503bb0c348d37a8c6b153b445218aca05bee1395b9e056a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/PMPChecker.sv",
+    "sha256": "48757f1a260d7f9df060c7931adb7cb248fa1fd051f028fb08009c54a6ef2a96"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/PTW.sv",
+    "sha256": "bfdca9c30c120d0a7aa9cca6e53862048e846b5dedbe8a452934e9debb188dca"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/PtwCache.sv",
+    "sha256": "23aa4501f4c1f47c05e269d261bb9cdae2f6f21eb5b3d991ddf4fd36d8fd900e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/L2TLB.sv",
+    "sha256": "5d509fdd6edb31e244c65504a1ed45f8010f3934b5b90326325f733759f77f98"
+   }
+  ],
+  "impl_sha256": "da54ccd79cdb0f32c03c00c3e43304bde43069e0ab7d52c3abb0df1152fd96b4",
+  "repo_impl_files": 24
+ },
+ "native_facts_sha256": "25eac1bda2505705fa59333336435b1bdf94c66282f4d9d25bb8f99f07705b30",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 63052,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "932718ccf2e6dfef4a7d196e734c5380c7e36ccf",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/L2TLB.json",
+    "sha256": "4496a21bd300eab4e6e17df2352a6d2b51ef4036f9c545bb5f457df3636e0556"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "Arbiter1_L2TLBImp_Anon Arbiter2_L2TLBImp_Anon Arbiter2_L2TLBImp_Anon_1 Arbiter2_L2TlbWithHptwIdBundle Arbiter3_bitmapReqBundle Arbiter3_L2TLBImp_Anon Arbiter4_L2TlbMemReqBundle Arbiter5_L2TlbWithHptwIdBundle Bitmap BitmapCache DelayN_13 DelayN_220 DelayN_221 HPTW L2TlbMissQueue L2TlbPrefetch LLPTW PMP PMPChecker PTW PtwCache",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "assembly",
+  "pin_scripts": {
+   "fm_pins.tcl": "fba09b9ac63c2a85658726e193d1ba58ea3ca87ff4c18fcf5e17ee3d562e3cdc"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "8dd1ed511acdf7d03edfea8f4c09a42a4b696f8da9573e3f55cbed13bf24a364",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "978e2d67113bbd6d3305153f650dcf043e3a197900238e2df537c242e1752c21",
+ "provisional": false,
+ "receipt_sha256": "e75304a529cb9477a1c74fbad5461b1a0320000710eb1c42f431e43afcff5580",
+ "reproduce": {
+  "command": "PROOF_COMMIT=932718ccf2e6dfef4a7d196e734c5380c7e36ccf scripts/run_proof.sh L2TLB L2TLB",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "ee1a7ba654c8d08c5a1ec32c9ad96cb377000fc817bde2c305a25e31504c83cb",
+ "run_id": "L2TLB-20261011T114311Z-932718ccf",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/L2TLB.tcl",
+    "sha256": "a61bb0631b9fa44328fa7471ac04097b23587398712f311298efa535841faa3a"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/L2TLB/fm_pins.tcl",
+    "sha256": "fba09b9ac63c2a85658726e193d1ba58ea3ca87ff4c18fcf5e17ee3d562e3cdc"
+   }
+  ],
+  "sha256": "b73f69ea1d8267fb79216d10921dfaf6c9627878c66f03a2383e3e2941cab951"
+ },
+ "target": "L2TLB",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "L2TLB",
+ "variant": "L2TLB",
+ "verdict": "SUCCEEDED"
+}

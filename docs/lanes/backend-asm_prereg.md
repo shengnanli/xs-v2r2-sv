@@ -109,3 +109,9 @@ verdict：31 个 green child 证书全部 current-valid 时 SUCCEEDED；CtrlBloc
 
 fm_verdict 拒绝出 receipt（证据目录只有 fm.log / sidecar / 报告），故无 receipt sha256、不能跑 fm_predict check、不能出 Backend 证书。
 Backend 本层 glue 无任何反例；剩下的只有 §3 的两个 child 证书判据问题（公共核心，待集成者裁定），裁定落地后同字节重跑 official 即可。
+
+## 8. codex 0230 后：合并 main 7fea08787（merge，不 rebase）
+
+- 冲突 1 个：verif/proof_certificates/PFEvent.json（两侧都从同一 receipt evidence/6038c4afbc60/PFEvent 出证、impl_commit 同为
+  6038c4afb，仅出证时间字节不同）→ 按 MemBlock / L2TLB 先例**保留 main 的那份**；verif/allow/Backend.json 随之重盖 PFEvent 的 sha（--stamp-allow）。
+  其余证书无冲突。

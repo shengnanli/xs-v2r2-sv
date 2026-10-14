@@ -1,0 +1,143 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:47:44Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/Sbuffer",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Sbuffer.sv",
+    "sha256": "2d645c1ce603f665a0b0b6dca18cdf81b6804b750304ab4db726817698ae0774"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SbufferData.sv",
+    "sha256": "1656555c4606d4a4a00f90d9b5b95bc66390172ba7cbef68b776eb2242a3cbc2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StorePfWrapper.sv",
+    "sha256": "6668f5b100d95192239c6ff430d888b037c4e2bf43324afdd50cc01e9b8277fc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Serializer.sv",
+    "sha256": "e52772ba1969e9d9735b19a93cf6d39de95b68a5b7f82c00892da0dae8243456"
+   }
+  ],
+  "golden_sha256": "5a19733f04f28ca38bc42e2bfd483ece35ef92552a692e449333485f0b320da0",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/Sbuffer.sv",
+    "sha256": "7cbd887059a4530c53457e90849ceccfb6711d3919033895bca67c105dd39813"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/SbufferData.sv",
+    "sha256": "df1ec7f762638157da7a1063d566b67c89b9afd9097b7b4e5aed1c6c8937d98c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/StorePfWrapper.sv",
+    "sha256": "6668f5b100d95192239c6ff430d888b037c4e2bf43324afdd50cc01e9b8277fc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Serializer.sv",
+    "sha256": "e52772ba1969e9d9735b19a93cf6d39de95b68a5b7f82c00892da0dae8243456"
+   }
+  ],
+  "impl_sha256": "ccfc2bd4e8a036b59d848f3629130729a54fb0e3578bed615965fae02578dbb3",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "22f0af6c8c0241ba4d09d8df67f59a57f986fc486d061301ff36da8b46125f7a",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 28329,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "2104b4494d75c154bc1b9d8a0867792739661c63376c93e98e10a8e8e5a9da0e",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh Sbuffer Sbuffer",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "0950457dd241db2338e42c6459c9c9d52f1f404d8cf6a58700d58cf3676e4f41",
+ "run_id": "Sbuffer-20261011T033926Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "Sbuffer",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Sbuffer",
+ "variant": "Sbuffer",
+ "verdict": "SUCCEEDED"
+}

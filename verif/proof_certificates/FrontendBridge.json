@@ -1,0 +1,282 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:18:57Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/FrontendBridge",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FrontendBridge.sv",
+    "sha256": "ced4d8f60be10bd5ea9660dfbae2a8a1f18e6217c9a7deeedd377335627f6260"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheBuffer.sv",
+    "sha256": "d70d97477c67696524350e3e1f42ae310c893927ab9edcdb890e87c3b2f2c39e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ICacheCtrlBuffer.sv",
+    "sha256": "f9131b6ae47126a342e7246f44b27f4c8da10ef75ce40c286edd12fba594189b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/InstrUncacheBuffer.sv",
+    "sha256": "1034501f645b909621295167b6606f617d1ea8ef3a5763eb750fa538f2635c3b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleA_10.sv",
+    "sha256": "915570febd33adb53a4ba370239c93deda22b735cfacbe24594acd4bf0ac07b6"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleA_12.sv",
+    "sha256": "1169c182a1c57c8b33f881556a5432366747dd997278e3f037d2aded19086bc6"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleA_8.sv",
+    "sha256": "7da19879599964eab6ccc5804b1d338fb442c297a684d48aae18fb29da958ef3"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleD_11.sv",
+    "sha256": "b5d4c41f3ca45b323fe9b408542331822dcbd50721798c449e6e463fa78be474"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleD_13.sv",
+    "sha256": "ccf255bd0b2267ed04d778ac9c163b62e2ed4e491ebdf51b61fb473a01848de0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue2_TLBundleD_7.sv",
+    "sha256": "6bd244ef551bb2b376d61dbd1c0bf30e894e5c17db1b0fb82a6b0f1e51a11837"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x117.sv",
+    "sha256": "626ac00fe9cbd6c20a9dbf9cc708bba53a823ed9ac72ad374014c18cf5d9245e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x133.sv",
+    "sha256": "f58bd7947fe203f9443a8a61b89907f568f1e07852e7f78033c7e74dadd3a9f5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x281.sv",
+    "sha256": "2a0ad8ca4e564159ed3d00fab7a3f8ebb97b0ba5b2f87a08298c57b0a0bd6d8c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x359.sv",
+    "sha256": "062051f01bd19ef622780b1b3eb0e2873b6c906b86ba6a50cda3c93f46a5eb3a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x76.sv",
+    "sha256": "bd55fa162cd9c32c233112f6885201440aa066f44ed1a38786666eb252ba375f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x80.sv",
+    "sha256": "6167b085e962e2345d014268261db642e3ffb788b12905d1d2c2bb6833709fc9"
+   }
+  ],
+  "golden_sha256": "b0ae1342d2962bd5c029be6945c5cd50f896471b7ed28f9e6ab8a523faa4151e",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_ChiselQueue_core.sv",
+    "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue2_TLBundleA_8.sv",
+    "sha256": "1831809eb25070f5743c8c2dfebbba5f31028d6b196d7c5f6a7d769debac99f2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue2_TLBundleD_7.sv",
+    "sha256": "1dc2ec173943b219533c5f648605209fdb1831fd4f079348e7c651fd12b1f7e4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue2_TLBundleA_12.sv",
+    "sha256": "b6747531e2f55092098966520b310c2f69c682b0b142da18d1bbedf1115fa7b0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue2_TLBundleD_13.sv",
+    "sha256": "ec817912ae615e48268ad8b0f9e9d5e76c6218420ab3078dd38f8e714f9a494f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue2_TLBundleA_10.sv",
+    "sha256": "f0fe10f92668fd53fe31acc942014d4bef70f6daaaf9d44b3a9be7c6f1713a2b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue2_TLBundleD_11.sv",
+    "sha256": "3c2204fb539dfd0df72994630928d6db9af8461d0ed0bc605d4ae564f6cc527d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/ICacheBuffer.sv",
+    "sha256": "d10503cbcdd248dbb32eeafb1f76640667573ce0b75465bffca133ae7a38274d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/InstrUncacheBuffer.sv",
+    "sha256": "5d26dc6ede3314bf3049ae002f56b833d81f72b5c7625203d169e41749006fb7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/ICacheCtrlBuffer.sv",
+    "sha256": "19a3de67d1dd16c699bb2909bc24ee6d5fa0fd28dd4a608bc11f63f3b4fa7d33"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/FrontendBridge.sv",
+    "sha256": "7f211a7c094406e110ad74a035783c7eccde9d91b49052ea9e8d3feef1e261cf"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x117.sv",
+    "sha256": "626ac00fe9cbd6c20a9dbf9cc708bba53a823ed9ac72ad374014c18cf5d9245e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x133.sv",
+    "sha256": "f58bd7947fe203f9443a8a61b89907f568f1e07852e7f78033c7e74dadd3a9f5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x281.sv",
+    "sha256": "2a0ad8ca4e564159ed3d00fab7a3f8ebb97b0ba5b2f87a08298c57b0a0bd6d8c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x359.sv",
+    "sha256": "062051f01bd19ef622780b1b3eb0e2873b6c906b86ba6a50cda3c93f46a5eb3a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x76.sv",
+    "sha256": "bd55fa162cd9c32c233112f6885201440aa066f44ed1a38786666eb252ba375f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_2x80.sv",
+    "sha256": "6167b085e962e2345d014268261db642e3ffb788b12905d1d2c2bb6833709fc9"
+   }
+  ],
+  "impl_sha256": "8704b1662010e2f489886126c7e73b13da0497197253eb8ae52220a6d901f38c",
+  "repo_impl_files": 11
+ },
+ "mc_memory_objects": [
+  "ram_2x117",
+  "ram_2x133",
+  "ram_2x281",
+  "ram_2x359",
+  "ram_2x76",
+  "ram_2x80"
+ ],
+ "native_facts_sha256": "a61029a7319866272b917c949d190d4ca3123aef910ed54949edde35dcc47db2",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 4777,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "161e1709a87af5959716234c813369e78ddbfcd68a1428ce5bf4d6dee2bd9797",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh FrontendBridge FrontendBridge",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "4052e3673f2a9c9470ccfecf213dd9402ccea415445867be55c544388453f9fd",
+ "run_id": "FrontendBridge-20261011T041503Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/FrontendBridge.tcl",
+    "sha256": "8874ae3d89fdbc41f04f94372b678294254a2a9157f1e741e0e2f60a8d3416ec"
+   }
+  ],
+  "sha256": "bb0e413bc85f7da52ab1631a77897086b0eb5d025e11e26921a49c5b7050fbe3"
+ },
+ "target": "FrontendBridge",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FrontendBridge",
+ "variant": "FrontendBridge",
+ "verdict": "SUCCEEDED"
+}

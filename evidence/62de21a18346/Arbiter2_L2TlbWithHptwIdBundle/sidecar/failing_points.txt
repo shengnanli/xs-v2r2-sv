@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Arbiter2_L2TlbWithHptwIdBundle
+Implementation : i:/WORK/Arbiter2_L2TlbWithHptwIdBundle
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 05:23:20 2026
+**************************************************
+
+No failing compare points.
+
+1

@@ -1,0 +1,178 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T04:22:57Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/PipelineRegModule_6",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PipelineRegModule_6.sv",
+    "sha256": "dcdbec3aca3f72ecc272e25589e444733cbb0e9e10e7f1e7bd0fff9368deac32"
+   }
+  ],
+  "golden_sha256": "15cd9ecccddf759955da039005aac7d9fb022445513b20e78e3f9888b03cbe86",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+    "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_OverrideableQueue_core.sv",
+    "sha256": "4133dc5e3e714915812ded45ea5e8bc29d3e8215f31379f3c8cee333cee874c4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Arbiter16_TLBundleD.sv",
+    "sha256": "6b76e6ecb161a98949e3bd1d31a101ec0838e5b16ce2bad2c30c9d41cabe65f9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Arbiter3_PfGenReq.sv",
+    "sha256": "ac719dbd257811a78b2674b6c8c638752e7f8fb82292472c5fcbbb5421a7afbc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Arbiter4_L2ToL1Hint.sv",
+    "sha256": "fa5daf49e4f01096dcff148b6a5238cb6e6ac463c158a9ca934bda8b56311ded"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/Arbiter4_PrefetchReq.sv",
+    "sha256": "4586bffeb1fa81ad12c69e2cc745d12a82fb3b44f2b15a3e2db83b44d1c64f37"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CSA4to2_15.sv",
+    "sha256": "b39e04a21e65ac9eec90e147b0e7224a649d81fda9beed4c05a089ec52cb4d8e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/MbistIntfFrontend.sv",
+    "sha256": "b0c4c35de73704f5126877414e09d86faf7d449687e0f660330b0e69b5c1c434"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/MbistIntfMemBlk.sv",
+    "sha256": "59237faadbc073a127f84fa446d841e21ba6459db528076ac8e3fa01188a9697"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/NfMappedElemIdx.sv",
+    "sha256": "c51a0eebc9a64db04848187ecfb6bb78f100c668480ce6c11806f98327c94e9b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/OverrideableQueue.sv",
+    "sha256": "a0d78afb9646b7a1599e0a68c9d2d4e298ebae0719576d52d4e7c5b30d2147ad"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/frontend/OverrideableQueue_1.sv",
+    "sha256": "06b0176f9995c08d1dde532a1b87954cd0433a2c1a7b3c03310fd4a58f75ce6f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PipelineRegModule_6.sv",
+    "sha256": "a0fc437d94998ece43537e332f9e7a3ce336ccacca1b6b21a3075559c42f49c7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/SatpFlushMod.sv",
+    "sha256": "dc9e7c2175adc854ac980d58e78c5506f8d852a30b74cf2337e89f4ee51f052c"
+   }
+  ],
+  "impl_sha256": "99a7c076079527a0dd7ef0741e4e2e3069962e1e9423486ce4ab51a4ec1357d1",
+  "repo_impl_files": 14
+ },
+ "native_facts_sha256": "4cdffa1376a5ab5fb080f74a3095ce3fdc22dd79f6b17272fb0099ffc855d555",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 147,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "dfac8da0e95a05701ac72a0a0cfd5289b9548068af3491b7feed2e67190bd21e",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh Pipeline200c PipelineRegModule_6",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "238a3b34bf9256d255343f46b1593e656ac73d89cc211278bfa6331526a10e87",
+ "run_id": "Pipeline200c-20261011T042210Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "PipelineRegModule_6",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Pipeline200c",
+ "variant": "PipelineRegModule_6",
+ "verdict": "SUCCEEDED"
+}

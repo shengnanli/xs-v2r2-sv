@@ -65,7 +65,10 @@ def run(d):
 # 原先写死 Tage_SC 的 bank_1_tage_table_3_provided_at_pred；Tage_SC 被重写（bpu-tables）后它的
 # owner_rewritten 变成 yes，正是本文件第 1 条描述的"豁免失效"——它从此不再是合法夹具，而不是闸坏了。
 # 所以：原夹具仍合法就用原夹具；否则在当前分档台账里**确定性地**另选一条
-# （PERF、C_DIAG、owner_rewritten==no、单一持有模块、name 在台账里唯一，按 (scope,name) 排序取首条）。
+# （PERF、C_DIAG、owner_rewritten==no、单一持有模块，按 (scope,name) 排序取首条）。
+# 2026-10-11：MemBlock 重写后，「name 全表唯一」的候选（原只剩 MemBlock 的 3 条）归零；而闸本身
+# （perf_compare.load_tier / check_perf_tier）一律按 (scope, name) 取行，name 唯一并非判据需要。
+# 改为以 (scope, name) 为键：下面各注入也都按 (scope, name) 精确定位，不会误伤同名计数器。
 # 判据与注入一条不少，只是对象跟着台账走；找不到任何合法夹具则 fail-closed。
 PREF_SCOPE_SUFFIX = 'frontend.inner.bpu.predictors.tage'
 PREF_NAME = 'bank_1_tage_table_3_provided_at_pred'
@@ -75,13 +78,13 @@ def fixture_fields():
     rows = [ln.split('\t') for ln in
             (REPO / 'docs' / 'perf_tier_ledger.tsv').read_text().splitlines()]
     rows = [f for f in rows if len(f) > 9 and not f[0].startswith('#')]
-    names = {}
+    keys = {}
     for f in rows:
-        names[f[2]] = names.get(f[2], 0) + 1
+        keys[(f[1], f[2])] = keys.get((f[1], f[2]), 0) + 1
 
     def ok(f):
         return (f[0] == 'PERF' and f[3] == 'C_DIAG' and f[9] == 'no'
-                and ' ' not in f[8] and names[f[2]] == 1)
+                and ' ' not in f[8] and keys[(f[1], f[2])] == 1)
     for f in rows:
         if f[2] == PREF_NAME and f[1].endswith(PREF_SCOPE_SUFFIX) and ok(f):
             return f
@@ -92,7 +95,7 @@ def fixture_fields():
 
 
 FIX = fixture_fields()
-FIX_NAME, FIX_OWNER = FIX[2], FIX[8]
+FIX_SCOPE, FIX_NAME, FIX_OWNER = FIX[1], FIX[2], FIX[8]
 FIX_ROW = '\t'.join([FIX[3], FIX[1], FIX[2], '1037', '8', '-1029', FIX[8], FIX[9], 'WAIVED',
                      'C_DIAG 且持有模块本轮未重写（codex 0162 D3）'])
 print('  夹具计数器: %s / %s（owner %s）' % (FIX[1], FIX_NAME, FIX_OWNER))
@@ -104,7 +107,7 @@ def fresh():
         shutil.copy(str(REPO / 'docs' / f), str(d / f))
     m = d / 'perf_mismatch_ledger.tsv'
     t = m.read_text()
-    if ('\t' + FIX_NAME + '\t') not in t:
+    if ('\t' + FIX_SCOPE + '\t' + FIX_NAME + '\t') not in t:
         m.write_text(t.rstrip('\n') + '\n' + FIX_ROW + '\n')
     return d
 
@@ -161,7 +164,7 @@ def loosen(t):
     out = []
     for ln in t.splitlines():
         f = ln.split('\t')
-        if len(f) > 3 and f[2] == FIX_NAME and f[3] == 'C_DIAG':
+        if len(f) > 3 and f[1] == FIX_SCOPE and f[2] == FIX_NAME and f[3] == 'C_DIAG':
             f[3] = 'B_CONTROL'
             ln = '\t'.join(f)
         out.append(ln)
@@ -193,7 +196,7 @@ def drop_row(t):
     lines = t.splitlines()
     for i, ln in enumerate(lines):
         f = ln.split('\t')
-        if len(f) > 2 and f[2] == FIX_NAME:
+        if len(f) > 2 and f[1] == FIX_SCOPE and f[2] == FIX_NAME:
             del lines[i]
             break
     return '\n'.join(lines) + '\n'

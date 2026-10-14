@@ -1,0 +1,345 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/L2TLB
+Implementation : i:/WORK/L2TLB
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 07:50:50 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+i      Arbiter1_L2TLBImp_Anon
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_out_arb_0
+       i:/WORK/L2TLB/u_core/u_out_arb_1
+
+i      Arbiter2_L2TLBImp_Anon
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_arb_hptw_req
+
+i      Arbiter2_L2TLBImp_Anon_1
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_arb_hptw_resp
+
+i      Arbiter2_L2TlbWithHptwIdBundle
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_arb_mq
+
+i      Arbiter3_L2TLBImp_Anon
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_merge_arb_0
+       i:/WORK/L2TLB/u_core/u_merge_arb_1
+
+i      Arbiter3_bitmapReqBundle
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_bitmap_arb
+
+i      Arbiter4_L2TlbMemReqBundle
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_mem_arb
+
+i      Arbiter5_L2TlbWithHptwIdBundle
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_arb_cache_in
+
+i      Bitmap
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_bitmap
+
+i      BitmapCache
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_bitmapcache
+
+i      DelayN_13
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_wfi_req_delay
+       i:/WORK/L2TLB/u_core/u_wfi_safe_delay
+
+i      DelayN_220
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_sfence_delay
+
+i      DelayN_221
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_csr_delay
+
+i      HPTW
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_hptw
+
+i      L2TlbMissQueue
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_missQueue
+
+i      L2TlbPrefetch
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_prefetch
+
+i      LLPTW
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_llptw
+
+i      PMP
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_pmp
+
+i      PMPChecker
+
+       Instances : 5 of 5
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_pmp_chk_ptw
+       i:/WORK/L2TLB/u_core/u_pmp_chk_llptw0
+       i:/WORK/L2TLB/u_core/u_pmp_chk_llptw1
+       i:/WORK/L2TLB/u_core/u_pmp_chk_hptw
+       i:/WORK/L2TLB/u_core/u_pmp_chk_bitmap
+
+i      PTW
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_ptw
+
+i      PtwCache
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/L2TLB/u_core/u_cache
+
+e *    xs_BitmapCache_core
+
+       Instances : 0
+
+e *    xs_Bitmap_core
+
+       Instances : 0
+
+e *    xs_HPTW_core
+
+       Instances : 0
+
+e *    xs_L2TlbMissQueue_core
+
+       Instances : 0
+
+e *    xs_L2TlbPrefetch_core
+
+       Instances : 0
+
+e *    xs_LLPTW_core
+
+       Instances : 0
+
+e *    xs_PMP_core
+
+       Instances : 0
+
+e *    xs_PTW_core
+
+       Instances : 0
+
+e *    xs_PtwCache_core
+
+       Instances : 0
+
+
+
+##################################################################
+####    DESIGN LIBRARY - r:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+i      Arbiter1_L2TLBImp_Anon
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/L2TLB/Arbiter1_L2TLBImp_Anon
+       r:/WORK/L2TLB/Arbiter1_L2TLBImp_Anon_1
+
+i      Arbiter2_L2TLBImp_Anon
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/hptw_req_arb
+
+i      Arbiter2_L2TLBImp_Anon_1
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/hptw_resp_arb
+
+i      Arbiter2_L2TlbWithHptwIdBundle
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/mq_arb
+
+i      Arbiter3_L2TLBImp_Anon
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/L2TLB/Arbiter3_L2TLBImp_Anon
+       r:/WORK/L2TLB/Arbiter3_L2TLBImp_Anon_1
+
+i      Arbiter3_bitmapReqBundle
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/bitmap_arb
+
+i      Arbiter4_L2TlbMemReqBundle
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/mem_arb
+
+i      Arbiter5_L2TlbWithHptwIdBundle
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/arb2
+
+i      Bitmap
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/bitmap
+
+i      BitmapCache
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/bitmapcache
+
+i      DelayN_13
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/L2TLB/wfiReq_delay
+       r:/WORK/L2TLB/io_wfi_wfiSafe_delay
+
+i      DelayN_220
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/sfence_tmp_delay
+
+i      DelayN_221
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/csr_tmp_delay
+
+i      HPTW
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/hptw
+
+i      L2TlbMissQueue
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/missQueue
+
+i      L2TlbPrefetch
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/prefetch
+
+i      LLPTW
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/llptw
+
+i      PMP
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/pmp
+
+i      PMPChecker
+
+       Instances : 5 of 5
+       ------------------------
+       r:/WORK/L2TLB/PMPChecker
+       r:/WORK/L2TLB/PMPChecker_1
+       r:/WORK/L2TLB/PMPChecker_2
+       r:/WORK/L2TLB/PMPChecker_3
+       r:/WORK/L2TLB/PMPChecker_4
+
+i      PTW
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/ptw
+
+i      PtwCache
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/L2TLB/cache
+
+
+1
+

@@ -71,63 +71,22 @@ RTL_GOLDEN_DEPS = \
   $(GOLDEN_RTL)/array_9_ext.v
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/L2TLBWrapper.sv $(GOLDEN_RTL)/L2TLB.sv $(RTL_GOLDEN_DEPS)
+# FM（codex 0228 问题 2 第 5 步，agent/l2tlb-gc，2026-10-11）：★exact green_child 组合★。
+# 唯一直接 child ptw（L2TLB）两侧以 -interface_only 读入（对称黑盒）；verif/allow/L2TLBWrapper.json 写死
+# r/i 路径 + child_target=L2TLB + L2TLB 证书 sha256（L2TLB 的证书再递归绑定它的 22 种 child）。
+# 本层白盒受验的只有外壳 glue：端口直通 + 19 路 perf 计数两拍。ram_40x47 不在 interface_only 里（0228 §6）：
+# 它在 L2TLB → L2TlbMissQueue 子树内部，本层看不见。上一轮「重写 L2TLB 白盒 + golden child 闭包 + 147 钉点」作废。
 FM_VARIANTS = L2TLBWrapper
-# ★字面文件名★（fm_passing_model 不展开 make 函数）
-FM_REF_DEPS_L2TLBWrapper = \
-  L2TLB.sv \
-  Arbiter1_L2TLBImp_Anon.sv \
-  Arbiter2_L2TLBImp_Anon.sv \
-  Arbiter2_L2TLBImp_Anon_1.sv \
-  Arbiter2_L2TlbWithHptwIdBundle.sv \
-  Arbiter2_LLPTW_Anon.sv \
-  Arbiter2_PtwReq.sv \
-  Arbiter3_L2TLBImp_Anon.sv \
-  Arbiter3_bitmapReqBundle.sv \
-  Arbiter4_L2TlbMemReqBundle.sv \
-  Arbiter5_L2TlbWithHptwIdBundle.sv \
-  Arbiter8_bitmapCacheReqBundle.sv \
-  Bitmap.sv \
-  BitmapCache.sv \
-  ClockGate.sv \
-  DelayN_13.sv \
-  DelayN_220.sv \
-  DelayN_221.sv \
-  HPTW.sv \
-  L2TlbMissQueue.sv \
-  L2TlbPrefetch.sv \
-  LLPTW.sv \
-  MbistBitmapCache.sv \
-  MbistPipePtwL0.sv \
-  MbistPipePtwL1.sv \
-  PMP.sv \
-  PMPChecker.sv \
-  PTW.sv \
-  PtwCache.sv \
-  Queue40_L2TlbMQBundle.sv \
-  RRArbiterInit.sv \
-  RRArbiterInit_1.sv \
-  RRArbiterInit_4.sv \
-  SRAMTemplate_124.sv \
-  SRAMTemplate_128.sv \
-  SRAMTemplate_129.sv \
-  SRAMTemplate_143.sv \
-  SplittedSRAM.sv \
-  SplittedSRAM_1.sv \
-  SplittedSRAM_2.sv \
-  array_10.sv \
-  array_11.sv \
-  array_9.sv \
-  ram_40x47.sv \
-  sram_array_1p32x90m45s1h0l1b_bitmap.sv \
-  sram_array_1p4x786m131s1h0l1b_ptw_l1.sv \
-  sram_array_1p64x114m57s1h0l1b_ptw_l0.sv \
-  array_10_ext.v \
-  array_11_ext.v \
-  array_9_ext.v
-FM_INTERFACE_ONLY = ram_40x47
-# 合并重复寄存器：开（与 verif/ut/L2TLB 同理：重写 L2TLB 的 csr_dup[i]/sfence_dup[i] 每份是完整
-# struct，golden 的每份副本被 firtool 按消费者裁成字段子集；不合并则重写侧多出的字段副本无对应）。
-FM_MERGE_DUP = true
+# ★字面文件名★（fm_passing_model 静态解析）
+FM_REF_DEPS_L2TLBWrapper = L2TLB.sv
+FM_IMPL_RTL = $(XSSV_HOME)/rtl/memblock/L2TLB.sv $(XSSV_HOME)/rtl/mmu/L2TLBWrapper.sv
+fm-L2TLBWrapper: RTL_SRCS = $(FM_IMPL_RTL)
+fm-L2TLBWrapper: RTL_GOLDEN_DEPS =
+FM_INTERFACE_ONLY = L2TLB
+FM_MODE = assembly
+# 不合并重复寄存器：L2TLB 黑盒后本层只剩 perf 两拍寄存器，没有 csr_dup 那类字段裁剪副本；关掉合并 =
+# 比较点 = 寄存器位 + 输出位 + 黑盒输入位，fm_predict 模型严格适用（加强，不是放宽）。
+FM_MERGE_DUP = false
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 PORTLINT_ORDER = fail

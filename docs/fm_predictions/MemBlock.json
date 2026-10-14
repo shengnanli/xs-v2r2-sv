@@ -1,0 +1,263 @@
+{
+  "target": "MemBlock",
+  "ut": "MemBlock",
+  "regs": 4072,
+  "outs": 23708,
+  "expected": 187018,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 159238,
+  "bbox": {
+    "AtomicsUnit": {
+      "insts": 1,
+      "in_bits": 1322,
+      "points": 1322
+    },
+    "DCacheWrapper": {
+      "insts": 1,
+      "in_bits": 3231,
+      "points": 3231
+    },
+    "DelayNWithValid_2": {
+      "insts": 1,
+      "in_bits": 52,
+      "points": 52
+    },
+    "DelayNWithValid_200": {
+      "insts": 2,
+      "in_bits": 56,
+      "points": 112
+    },
+    "DelayNWithValid_202": {
+      "insts": 1,
+      "in_bits": 15,
+      "points": 15
+    },
+    "DelayNWithValid_203": {
+      "insts": 1,
+      "in_bits": 67,
+      "points": 67
+    },
+    "DelayNWithValid_3": {
+      "insts": 1,
+      "in_bits": 51,
+      "points": 51
+    },
+    "DelayN_331": {
+      "insts": 2,
+      "in_bits": 2,
+      "points": 4
+    },
+    "DelayN_333": {
+      "insts": 1,
+      "in_bits": 15,
+      "points": 15
+    },
+    "DelayN_8": {
+      "insts": 1,
+      "in_bits": 275,
+      "points": 275
+    },
+    "FrontendBridge": {
+      "insts": 1,
+      "in_bits": 663,
+      "points": 663
+    },
+    "HPerfMonitor_3": {
+      "insts": 1,
+      "in_bits": 1371,
+      "points": 1371
+    },
+    "L1Prefetcher": {
+      "insts": 1,
+      "in_bits": 585,
+      "points": 585
+    },
+    "L2TLBWrapper": {
+      "insts": 1,
+      "in_bits": 1322,
+      "points": 1322
+    },
+    "LoadMisalignBuffer": {
+      "insts": 1,
+      "in_bits": 5249,
+      "points": 5249
+    },
+    "LoadUnit": {
+      "insts": 3,
+      "in_bits": 11830,
+      "points": 35490
+    },
+    "LsqWrapper": {
+      "insts": 1,
+      "in_bits": 14518,
+      "points": 14518
+    },
+    "MbistIntfMemBlk": {
+      "insts": 1,
+      "in_bits": 328,
+      "points": 328
+    },
+    "MbistPipeMemBlk": {
+      "insts": 1,
+      "in_bits": 828,
+      "points": 828
+    },
+    "MbistPipeSms": {
+      "insts": 1,
+      "in_bits": 323,
+      "points": 323
+    },
+    "MemExeUnit": {
+      "insts": 2,
+      "in_bits": 126,
+      "points": 252
+    },
+    "NewPipelineConnectPipe_34": {
+      "insts": 1,
+      "in_bits": 765,
+      "points": 765
+    },
+    "NewPipelineConnectPipe_35": {
+      "insts": 4,
+      "in_bits": 1452,
+      "points": 5808
+    },
+    "PFEvent": {
+      "insts": 1,
+      "in_bits": 79,
+      "points": 79
+    },
+    "PMP": {
+      "insts": 1,
+      "in_bits": 79,
+      "points": 79
+    },
+    "PMPChecker_12": {
+      "insts": 8,
+      "in_bits": 6489,
+      "points": 51912
+    },
+    "PTWNewFilter": {
+      "insts": 1,
+      "in_bits": 714,
+      "points": 714
+    },
+    "PTWRepeaterNB": {
+      "insts": 1,
+      "in_bits": 321,
+      "points": 321
+    },
+    "Pipeline": {
+      "insts": 1,
+      "in_bits": 59,
+      "points": 59
+    },
+    "PipelineRegModule": {
+      "insts": 1,
+      "in_bits": 197,
+      "points": 197
+    },
+    "PipelineRegModule_6": {
+      "insts": 1,
+      "in_bits": 76,
+      "points": 76
+    },
+    "SMSPrefetcher": {
+      "insts": 1,
+      "in_bits": 789,
+      "points": 789
+    },
+    "Sbuffer": {
+      "insts": 1,
+      "in_bits": 1573,
+      "points": 1573
+    },
+    "StoreMisalignBuffer": {
+      "insts": 1,
+      "in_bits": 1962,
+      "points": 1962
+    },
+    "StoreUnit": {
+      "insts": 2,
+      "in_bits": 3121,
+      "points": 6242
+    },
+    "TLBNonBlock": {
+      "insts": 1,
+      "in_bits": 1326,
+      "points": 1326
+    },
+    "TLBNonBlock_1": {
+      "insts": 1,
+      "in_bits": 867,
+      "points": 867
+    },
+    "TLBNonBlock_2": {
+      "insts": 1,
+      "in_bits": 831,
+      "points": 831
+    },
+    "TLBuffer_6": {
+      "insts": 1,
+      "in_bits": 643,
+      "points": 643
+    },
+    "TLBuffer_7": {
+      "insts": 1,
+      "in_bits": 1126,
+      "points": 1126
+    },
+    "TLBuffer_8": {
+      "insts": 3,
+      "in_bits": 221,
+      "points": 663
+    },
+    "TLBuffer_9": {
+      "insts": 2,
+      "in_bits": 201,
+      "points": 402
+    },
+    "TLXbar_4": {
+      "insts": 1,
+      "in_bits": 302,
+      "points": 302
+    },
+    "Uncache": {
+      "insts": 1,
+      "in_bits": 566,
+      "points": 566
+    },
+    "VLMergeBufferImp": {
+      "insts": 1,
+      "in_bits": 2952,
+      "points": 2952
+    },
+    "VLSplitImp": {
+      "insts": 2,
+      "in_bits": 1692,
+      "points": 3384
+    },
+    "VSMergeBufferImp": {
+      "insts": 2,
+      "in_bits": 1157,
+      "points": 2314
+    },
+    "VSSplitImp": {
+      "insts": 2,
+      "in_bits": 1689,
+      "points": 3378
+    },
+    "VSegmentUnit": {
+      "insts": 1,
+      "in_bits": 2057,
+      "points": 2057
+    },
+    "VfofBuffer": {
+      "insts": 1,
+      "in_bits": 1778,
+      "points": 1778
+    }
+  },
+  "note": "模型 187018 − passing 187008 = constant_reg 10（canary2 实测）；verdict 预计 PARTIAL：L2TLBWrapper 无证书，TLBuffer_7/9、FrontendBridge、SMSPrefetcher 挂未登记 MC 存储"
+}

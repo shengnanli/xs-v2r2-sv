@@ -795,7 +795,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "873e2cd985286baca3af89b48667b4d969957b71d5a316edb9401fab22aa0673",
+   "certificate_sha256": "3e917374608f5b29f49d2acd9195491a357ea9be3543bc63129d9ef2258262d7",
    "child_target": "PFEvent",
    "class": "green_child",
    "design": "PFEvent",
@@ -804,7 +804,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "873e2cd985286baca3af89b48667b4d969957b71d5a316edb9401fab22aa0673",
+   "certificate_sha256": "3e917374608f5b29f49d2acd9195491a357ea9be3543bc63129d9ef2258262d7",
    "child_target": "PFEvent",
    "class": "green_child",
    "design": "PFEvent",

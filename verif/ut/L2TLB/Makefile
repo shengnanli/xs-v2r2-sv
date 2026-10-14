@@ -62,47 +62,37 @@ RTL_GOLDEN_DEPS = \
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/L2TLB.sv $(RTL_GOLDEN_DEPS)
 
-# FM：golden 顶层 L2TLB 为 ref，重写的同名 wrapper 为 impl；两侧读入同一批 golden
-# 子模块（UNCHANGED_GOLDEN_DEP，两侧同源）。
-#
-# ★2026-10-03 第 3 轮（agent/l2tlb-assembly）：8 个大 child 从「两侧对称黑盒」改为
-#  「两侧白盒展开」★
-# 原配置把 PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch/Bitmap/BitmapCache
-# 两侧黑盒，靠 verif/allow/L2TLB.json 的 green_child 声明挂条件绿。截至 main 3cd47062
-# 这 8 个 child 都已各自签核（receipt 闭包与当前字节逐个核过，见
-# docs/lanes/l2tlb-assembly_prereg.md），但 green_child 这条路**在本仓当前状态下走不通**：
-# proof_certificate.py 要求 child 证书 impl_commit == POLICY.json 的 freeze_commit，
-# 而 freeze_commit 仍是 null（fail-closed，全部拒绝）—— 那是 integrator 的冻结动作，
-# 不是本 lane 能改的。于是照 CtrlBlock 第 2 轮的先例：child 两侧白盒展开（同一份
-# golden 定义），黑盒只剩不可 inline 的存储宏行为模型。
-# 这样证明**更强**：child 内部每一个寄存器与输出都进比较，本层 glue 驱动 child 输入
-# 的路径不再止于黑盒输入引脚，而是一直比到 child 内部状态。
-#
-# 唯一保留的黑盒：ram_40x47（L2TlbMissQueue 里 Queue40 的 ram_ext）。
-# 深度 40 / 6 位地址，inline 会触发 FMR_ELAB-147（越界静态下标）→ set_top 失败；
-# 已在 verif/vendor_boundary.tsv 以 APPROVED_MEMORY_MACRO_MODEL 单条审定
-# （codex 0158 §1，symmetric_both_sides_only），本目标两侧各 1 个实例、对称黑盒，
-# 声明在 verif/allow/L2TLB.json。L2TlbMissQueue 自己的证明用的是同一条边界。
-#
-# PMP / PMPChecker / 各 Arbiter / DelayN 与以前一样两侧展开（golden 定义，两侧同源）。
-# ★本轮不把 impl 侧 child 换成重写件★（main 6a06215f 曾试把 PMP 换成重写件，FM 不收敛已 revert）。
+# FM（codex 0228 问题 2，agent/l2tlb-gc，2026-10-11）：★exact green_child 组合★（照 L2Top / Frontend 先例）。
+# L2TLB 的 22 种直接 child（29 个实例）都是已独立 official 证明、持有 tracked 证书的 FM target。其中 21 种（28 个实例）
+# 两侧以 -interface_only 读入（对称黑盒）；verif/allow/L2TLB.json 逐实例写死 r/i 路径 + child_target + 证书 sha256。
+# ★唯一例外 arb1（Arbiter2_PtwReq，两路 TLB 请求的 2 选 1 组合仲裁器）两侧白盒★：canary 1（worktree）实测唯一的
+#   failing 是 arb2.io_in_3_valid —— golden 接 arb1.io_out_ready & arb1.io_out_valid（arb1 输出端），重写核写成
+#   arb1 两个输入 fire 之或（tlb0_req_fire | tlb1_req_fire，用到了"仲裁器 out.fire = 某个 in.fire"这条仲裁器语义）。
+#   arb1 黑盒时这条语义对 FM 不可见，于是报假不等价；白盒时两侧都看得见仲裁器内部（ref 读 golden、impl 读
+#   rtl/mmu/Arbiter2_PtwReq.sv 重写件），等价由 FM 直接证。不改 RTL、不加约束。
+# 只有 L2TLB 本层 glue（xs_L2TLB_core：请求仲裁/合并、refill/resp 装配、csr/sfence 复制、perf）与 arb1 白盒受验。
+#   ref  = golden L2TLB.sv + 22 个 child 的 golden 定义（21 个只取端口，Arbiter2_PtwReq 白盒）；
+#   impl = rtl/memblock/L2TLB.sv + 22 个 child 的重写 wrapper（同上；包文件排在引用它的文件之前）。
+# FM_INTERFACE_ONLY 恰为这 21 个 design（= allow 里 green_child 的 design 集合，codex 0224 §1）。
+# ★ram_40x47 不在 interface_only 里★（0228 §6）：它在 L2TlbMissQueue 子树内部，随 L2TlbMissQueue 一起成为黑盒
+#   内部，本层看不见；边界由 L2TlbMissQueue 自己的证明按 APPROVED_MEMORY_MACRO_MODEL（对称未解析黑盒）承担。
+# 上一轮（agent/l2tlb-assembly 第 3 轮）的「child 两侧 golden 白盒 + 147 条钉点」路线作废：那是 POLICY.freeze_commit
+# 为 null 时的权宜（green_child 当时过不了闸），0224 rolling current-valid 落地后不再需要；0228 明令不恢复 child 内部配对。
+# UT（VCS）不变：RTL_GOLDEN_DEPS 仍是 golden child 全闭包、两侧共用。
 FM_VARIANTS = L2TLB
-# ★字面文件名★（fm_passing_model 不展开 make 函数；与 RTL_GOLDEN_DEPS 逐项相同）
+# ★字面文件名★（fm_passing_model 静态解析）：本层 glue 例化到的 22 个 golden child（21 个 interface-only + arb1 白盒）。
 FM_REF_DEPS_L2TLB = \
   Arbiter1_L2TLBImp_Anon.sv \
   Arbiter2_L2TLBImp_Anon.sv \
   Arbiter2_L2TLBImp_Anon_1.sv \
   Arbiter2_L2TlbWithHptwIdBundle.sv \
-  Arbiter2_LLPTW_Anon.sv \
   Arbiter2_PtwReq.sv \
-  Arbiter3_L2TLBImp_Anon.sv \
   Arbiter3_bitmapReqBundle.sv \
+  Arbiter3_L2TLBImp_Anon.sv \
   Arbiter4_L2TlbMemReqBundle.sv \
   Arbiter5_L2TlbWithHptwIdBundle.sv \
-  Arbiter8_bitmapCacheReqBundle.sv \
   Bitmap.sv \
   BitmapCache.sv \
-  ClockGate.sv \
   DelayN_13.sv \
   DelayN_220.sv \
   DelayN_221.sv \
@@ -110,51 +100,45 @@ FM_REF_DEPS_L2TLB = \
   L2TlbMissQueue.sv \
   L2TlbPrefetch.sv \
   LLPTW.sv \
-  MbistBitmapCache.sv \
-  MbistPipePtwL0.sv \
-  MbistPipePtwL1.sv \
   PMP.sv \
   PMPChecker.sv \
   PTW.sv \
-  PtwCache.sv \
-  Queue40_L2TlbMQBundle.sv \
-  RRArbiterInit.sv \
-  RRArbiterInit_1.sv \
-  RRArbiterInit_4.sv \
-  SRAMTemplate_124.sv \
-  SRAMTemplate_128.sv \
-  SRAMTemplate_129.sv \
-  SRAMTemplate_143.sv \
-  SplittedSRAM.sv \
-  SplittedSRAM_1.sv \
-  SplittedSRAM_2.sv \
-  array_10.sv \
-  array_11.sv \
-  array_9.sv \
-  ram_40x47.sv \
-  sram_array_1p32x90m45s1h0l1b_bitmap.sv \
-  sram_array_1p4x786m131s1h0l1b_ptw_l1.sv \
-  sram_array_1p64x114m57s1h0l1b_ptw_l0.sv \
-  array_10_ext.v \
-  array_11_ext.v \
-  array_9_ext.v
-
-FM_INTERFACE_ONLY = ram_40x47
-
-# 合并重复寄存器：开（与以前一样）。golden 把 CSR/sfence 复制成 10/11 份、每份被 firtool
-# 按消费者裁成字段子集（csr_dup_0 15 个字段、csr_dup_5 只 4 个……）；重写核 csr_dup[i] /
-# sfence_dup[i] 每份都是完整 struct。不合并，重写侧多出来的字段副本在 golden 里没有对应；
-# 合并后同输入的副本各自归一，两侧才能配对。代价：fm_predict 模型只给上界带，不给点值。
+  PtwCache.sv
+FM_IMPL_RTL = \
+  $(XSSV_HOME)/rtl/mmu/mmu_common_pkg.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter1_L2TLBImp_Anon.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter2_L2TLBImp_Anon.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter2_L2TLBImp_Anon_1.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter2_L2TlbWithHptwIdBundle.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter2_PtwReq.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter3_bitmapReqBundle.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter3_L2TLBImp_Anon.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter4_L2TlbMemReqBundle.sv \
+  $(XSSV_HOME)/rtl/mmu/Arbiter5_L2TlbWithHptwIdBundle.sv \
+  $(XSSV_HOME)/rtl/mmu/Bitmap.sv \
+  $(XSSV_HOME)/rtl/mmu/BitmapCache.sv \
+  $(XSSV_HOME)/rtl/common/DelayN_13.sv \
+  $(XSSV_HOME)/rtl/common/DelayN_220.sv \
+  $(XSSV_HOME)/rtl/common/DelayN_221.sv \
+  $(XSSV_HOME)/rtl/mmu/HPTW.sv \
+  $(XSSV_HOME)/rtl/memblock/L2TlbMissQueue.sv \
+  $(XSSV_HOME)/rtl/memblock/L2TlbPrefetch.sv \
+  $(XSSV_HOME)/rtl/mmu/LLPTW.sv \
+  $(XSSV_HOME)/rtl/memblock/PMP.sv \
+  $(XSSV_HOME)/rtl/backend/PMPChecker.sv \
+  $(XSSV_HOME)/rtl/mmu/PTW.sv \
+  $(XSSV_HOME)/rtl/mmu/PtwCache.sv \
+  $(XSSV_HOME)/rtl/memblock/L2TLB.sv
+fm-L2TLB: RTL_SRCS = $(FM_IMPL_RTL)
+fm-L2TLB: RTL_GOLDEN_DEPS =
+FM_INTERFACE_ONLY = Arbiter1_L2TLBImp_Anon Arbiter2_L2TLBImp_Anon Arbiter2_L2TLBImp_Anon_1 Arbiter2_L2TlbWithHptwIdBundle Arbiter3_bitmapReqBundle Arbiter3_L2TLBImp_Anon Arbiter4_L2TlbMemReqBundle Arbiter5_L2TlbWithHptwIdBundle Bitmap BitmapCache DelayN_13 DelayN_220 DelayN_221 HPTW L2TlbMissQueue L2TlbPrefetch LLPTW PMP PMPChecker PTW PtwCache
+FM_MODE = assembly
+# 合并重复寄存器：开（与上一轮同理）。golden 把 CSR/sfence 复制成 10/11 份、每份被 firtool 按消费者裁成字段子集；
+# 重写核 csr_dup[i] / sfence_dup[i] 每份都是完整 struct。不合并则重写侧多出来的字段副本在 golden 里没有对应。
+# 代价：fm_predict 只给上界带。
 FM_MERGE_DUP = true
-
-# ★vmucp（verify_matched_unread_compare_points）= true★（2026-09-21 打开）
-# 第一次跑（未开）留下 809 个 matched-unread 点，全部是 PMP 内 pmaMapping_* 那批
-# 本层锥内无读者的寄存器，ref `pmp/<X>` ↔ impl `u_core/u_pmp/<X>` 后缀逐字相同、
-# 809↔809 双射，无任何人工强配。打开 = 让 FM 把这 809 点也证一遍（更严，不是放松）。
-# 白名单条目与逐条依据在 verif/fm_target_config/L2TLB.tcl（没有那份文件就不在白名单上）。
-# ★第 3 轮（child 白盒化）先关掉跑一遍★：unread 集合会随 8 个 child 展开而变，按 standing
-# rule 先拿到不开时的 matched-unread 清单逐条核双射（第 3 次跑 413461528f8f：1288 对，1144 对后缀逐字
-# 相同/csr_dup 字段对应 + 144 对 fm_pins.tcl 钉点），再打开并核 passing 正好增 unread 数。
+# vmucp：开（verif/fm_target_config/L2TLB.tcl 有依据）。child 全部黑盒后，上一轮那批 child 内部 matched-unread
+# 不复存在；本层若仍有 matched-unread，按 standing rule 逐条核双射后由 vmucp 实开比较。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk

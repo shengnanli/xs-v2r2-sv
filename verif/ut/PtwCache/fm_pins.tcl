@@ -48,7 +48,7 @@
 #   2. 由 ref 推出的 impl 路径必须确实出现在实测 impl 未读集合里（防凭空造点）；
 #   3. 同一条 impl 路径不许被钉两次；
 #   4. 每一次 set_user_match 都必须返回 1（它从不抛异常，catch 是空守卫）；
-#   5. 钉点条数必须同时等于 impl 侧未读点数和字面整数 _expect=60。
+#   5. 钉点条数必须同时等于 impl 侧未读点数和字面整数 _expect（现为 41，依据见 _expect 处）。
 # ★中止一律用 error，不用 exit★（safe interp 隐藏 exit）。★puts 一律 ASCII★（fm.log 非 UTF-8）。
 # =============================================================================
 
@@ -61,7 +61,16 @@ proc ptw_unread {side} {
     return $out
 }
 
-set _expect 60
+# ★2026-10-11 agent/l2tlb-gc：_expect 60 -> 41★（实测，不是推测）
+#   PtwCache 的 FM 输入改为「impl 读 SRAM 一路重写件 + array_1x_ext 两侧对称未解析黑盒」（见 Makefile）后，
+#   第一次 official（evidence/882209fe5798/PtwCache/fm.log 709-833 行）实测 unmatched unread 两侧各 41：
+#   本文件逐条按五族规则解析，41 条全部 set_user_match 成功（miss=0），只在字面计数处 fail-closed 停下。
+#   41 = A 32 + B 4 + C 4 + D 1（只剩 wakeup_req_way_info_reg[0]）+ E 0。
+#   D 族的 wakeup_req_delay_tag[8:3] / delay_way_info[0] 与 E 族 12 个 mbist 地址位不再出现在 unmatched unread 里
+#   （FM 已自行配上或不再是 unread）。它们的去向由外部判据收口：official 须 unread 0、failing 0，且
+#   passing 恰等于 fm_predict 模型（ext 当黑盒的 26599 减 constant_reg）——即 golden 每个寄存器位都进了比较。
+#   五族形状规则不变：D/E 若再出现，族计数对不上照样 error。
+set _expect 41
 set _ref  [ptw_unread reference]
 set _impl [ptw_unread implementation]
 
@@ -140,13 +149,13 @@ if {$_pinned != [llength $_impl]} {
     error "PTWCACHE_PIN_BIJECTION=$_pinned"
 }
 if {$_pinned != $_expect} {
-    puts "PTWCACHE_PIN_ERROR: pinned $_pinned but expected $_expect (60 = 32 A + 4 B + 4 C + 8 D + 12 E)"
+    puts "PTWCACHE_PIN_ERROR: pinned $_pinned but expected $_expect (41 = 32 A + 4 B + 4 C + 1 D + 0 E)"
     error "PTWCACHE_PIN_COUNT=$_pinned"
 }
-if {$_nA != 32 || $_nB != 4 || $_nC != 4 || $_nD != 8 || $_nE != 12} {
-    puts "PTWCACHE_PIN_ERROR: family counts A=$_nA B=$_nB C=$_nC D=$_nD E=$_nE differ from 32/4/4/8/12"
+if {$_nA != 32 || $_nB != 4 || $_nC != 4 || $_nD != 1 || $_nE != 0} {
+    puts "PTWCACHE_PIN_ERROR: family counts A=$_nA B=$_nB C=$_nC D=$_nD E=$_nE differ from 32/4/4/1/0"
     error "PTWCACHE_PIN_FAMILY=$_nA/$_nB/$_nC/$_nD/$_nE"
 }
 puts "PTWCACHE_PINS: pinned $_pinned pairs (A l2/l3 prefetch $_nA / B pre pipeline $_nB / C l1 prefetch $_nC / D wakeup bits $_nD / E mbist addr $_nE)"
 puts "PTWCACHE_PINS: ref [llength $_ref] / impl [llength $_impl] -- bijection holds, no duplicate pins"
-puts "PTWCACHE_PINS: final criterion is external -- unmatched unread must reach 0 after last match; vmucp then compares 20+60 points (passing 143717 -> 143797)"
+puts "PTWCACHE_PINS: final criterion is external -- unmatched unread must reach 0 after last match; vmucp then compares matched-unread + 41 pinned pairs (passing must equal fm_predict model 26599 minus constant_reg)"

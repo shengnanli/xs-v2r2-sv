@@ -59,6 +59,14 @@ fm-Queue78_PCrdGranted fm-Queue40_L2TlbMQBundle: FM_ALLOWLIST = 1
 fm-Queue78_PCrdGranted: RTL_SRCS = $(RTL_DIR)/common/xs_ChiselQueue_core.sv \
                                    $(RTL_DIR)/uncore/Queue78_PCrdGranted.sv
 fm-Queue78_PCrdGranted: RTL_GOLDEN_DEPS =
+# codex 0228 问题 2 第 3 点（agent/l2tlb-gc，2026-10-11）：Queue40_L2TlbMQBundle 同法收窄。golden Queue40 只例化
+# ram_40x47 ram_ext（golden-rtl/Queue40_L2TlbMQBundle.sv:169，两侧对称未解析黑盒）；ram_16x137 只被 golden
+# Queue16_CHIREQ 例化，ram_16x62/ram_4x115/ram_2x15 同理属别的变体 —— 对 Queue40 全是宽 filelist 假依赖
+# （旧 receipt 因此判 mc_not_shared:ram_16x137），不登记 MC，直接从本目标的 FM 输入里清掉。
+# 实际例化闭包 = 薄 wrapper rtl/memblock/Queue40_L2TlbMQBundle.sv + 它例化的 xs_L2TlbMissQueue_core（L2TlbMissQueue.sv）。
+fm-Queue40_L2TlbMQBundle: RTL_SRCS = $(RTL_DIR)/memblock/L2TlbMissQueue.sv \
+                                     $(RTL_DIR)/memblock/Queue40_L2TlbMQBundle.sv
+fm-Queue40_L2TlbMQBundle: RTL_GOLDEN_DEPS =
 # 不合并重复寄存器：比较点 = 寄存器位 + 输出位，fm_predict 模型精确适用；常量段 ram 位
 # 在 merge=true 下两侧合并不对称（TLBuffer_13 Makefile 实测），关掉是加强不是放宽。
 FM_MERGE_DUP = false

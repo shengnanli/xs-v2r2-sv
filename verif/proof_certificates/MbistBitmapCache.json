@@ -1,0 +1,118 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:34:23Z",
+ "generator": {
+  "run_context_worktree_digest": "e2e8f5daa8b429afb4e40a47949984d20a4cbc5fe57781521d5b483930c6a326",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/bd284f4ddd1e/MbistBitmapCache",
+  "version": 1
+ },
+ "impl_commit": "bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistBitmapCache.sv",
+    "sha256": "cc7b0fd8d7692931cb7a90737614080266ea348930beac2b56ee611201585f59"
+   }
+  ],
+  "golden_sha256": "b14dc5af3d007e707d50e090e6d25cea6fc9d8db8ddae76940dd4bce2ca1437f",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/dft/xs_mbist_pipe_core.sv",
+    "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistBitmapCache.sv",
+    "sha256": "c3df16b8773ac2091db3a6c66f5f14c24fd980469b14f79828bba88a6887e06b"
+   }
+  ],
+  "impl_sha256": "48ebd8a024e869d010a736732322c3fd180af71b7a486b6013a3ac0b0db38420",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "02c74d611634ce47b9d9464ee06115e4c096eca6326cbb72941b67e3979e70f5",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 661,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "e2e8f5daa8b429afb4e40a47949984d20a4cbc5fe57781521d5b483930c6a326",
+ "provisional": false,
+ "receipt_sha256": "be701a1960084028bf3737f15c49fdf0bc119fa17bd41a7635a4170ca763a27f",
+ "reproduce": {
+  "command": "PROOF_COMMIT=bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86 scripts/run_proof.sh MbistBitmapCache MbistBitmapCache",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "1aad745121adde2c9b6339b2920bcca0a84a8a6b4727fdcd072fe83f0d9db428",
+ "run_id": "MbistBitmapCache-20261003T160615Z-bd284f4dd",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+ },
+ "target": "MbistBitmapCache",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "MbistBitmapCache",
+ "variant": "MbistBitmapCache",
+ "verdict": "SUCCEEDED"
+}

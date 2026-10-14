@@ -1,0 +1,137 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "external_dependency_via_children": [
+  "L2TLB"
+ ],
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T11:57:31Z",
+ "generator": {
+  "run_context_worktree_digest": "dcb0a7c4b6d83adeea96607071fdd0208b540debc470e5126781890dd589fc17",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/13fe0a5d7e44/L2TLBWrapper",
+  "version": 1
+ },
+ "impl_commit": "13fe0a5d7e4451552f4a0a24353f85a74a83b22a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/L2TLBWrapper.sv",
+    "sha256": "dd4c717372852140ed01c5dd548a34f79d5e0137c11e332b9771c34c21512732"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/L2TLB.sv",
+    "sha256": "d247762508746190bd608b8f792c53be8fb2f3fd6c6604b9378e149a0e60f7f7"
+   }
+  ],
+  "golden_sha256": "71fdb931f0208782d2d0a2860fbcb7ab6507ba3b1dbd735f5bef8fafd3b2ce32",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/L2TLB.sv",
+    "sha256": "5d509fdd6edb31e244c65504a1ed45f8010f3934b5b90326325f733759f77f98"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/mmu/L2TLBWrapper.sv",
+    "sha256": "e3e3557205ba2ede722ee7056034b9317c9bf7355c963f4484222c7353cf9281"
+   }
+  ],
+  "impl_sha256": "65aa02f6d83b01ce0b8e1c8af7f217294f4cbf183e3c0bcb2dbcc33e2e257c78",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "bd9c63642d8c022a1450e2625705996883dd70b7b464f1dd8ddf78ad120b2ec3",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 5139,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "13fe0a5d7e4451552f4a0a24353f85a74a83b22a",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/L2TLBWrapper.json",
+    "sha256": "814e464c2ad00f0c26c08e9acf402f5dd4b9fb5f94df6508021b28fbf23f87d3"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "L2TLB",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "assembly",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "3ab527ac31172228f7e35bf3ea41a32973e59af6bde1da5959134d15d0962638",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "dcb0a7c4b6d83adeea96607071fdd0208b540debc470e5126781890dd589fc17",
+ "provisional": false,
+ "receipt_sha256": "a21f8c4d61d214f6db1ed805d209a9bfbff95a947f771d64141034d41903b3f5",
+ "reproduce": {
+  "command": "PROOF_COMMIT=13fe0a5d7e4451552f4a0a24353f85a74a83b22a scripts/run_proof.sh L2TLBWrapper L2TLBWrapper",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "900d8d75174ee5c659dbb1617a272130db4a3a5e2e6ce642c59de7e68cf9b6bf",
+ "run_id": "L2TLBWrapper-20261011T115534Z-13fe0a5d7",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/L2TLBWrapper.tcl",
+    "sha256": "dca091c41853605bce0d0597e0523ef445ec9aa6f98c380d4c0adff1efd3fb48"
+   }
+  ],
+  "sha256": "edfe4b6b817ab9ef568107c8bc8fdd9195fcf3e3ecefea1316e8e33c44a0c89e"
+ },
+ "target": "L2TLBWrapper",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "L2TLBWrapper",
+ "variant": "L2TLBWrapper",
+ "verdict": "SUCCEEDED"
+}

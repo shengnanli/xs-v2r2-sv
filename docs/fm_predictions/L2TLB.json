@@ -1,33 +1,118 @@
 {
   "target": "L2TLB",
   "ut": "L2TLB",
-  "regs": 51034,
+  "regs": 13795,
   "outs": 3589,
-  "expected": 57883,
+  "expected": 64151,
   "merge_dup": "true",
   "model_applicable": false,
-  "bbin": 3260,
+  "bbin": 46767,
   "bbox": {
-    "array_10_ext": {
+    "Arbiter1_L2TLBImp_Anon": {
+      "insts": 2,
+      "in_bits": 272,
+      "points": 544
+    },
+    "Arbiter2_L2TLBImp_Anon": {
       "insts": 1,
-      "in_bits": 797,
-      "points": 797
+      "in_bits": 86,
+      "points": 86
     },
-    "array_11_ext": {
-      "insts": 16,
-      "in_bits": 125,
-      "points": 2000
-    },
-    "array_9_ext": {
-      "insts": 4,
-      "in_bits": 100,
-      "points": 400
-    },
-    "ram_40x47": {
+    "Arbiter2_L2TLBImp_Anon_1": {
       "insts": 1,
-      "in_bits": 63,
-      "points": 63
+      "in_bits": 215,
+      "points": 215
+    },
+    "Arbiter2_L2TlbWithHptwIdBundle": {
+      "insts": 1,
+      "in_bits": 88,
+      "points": 88
+    },
+    "Arbiter3_L2TLBImp_Anon": {
+      "insts": 2,
+      "in_bits": 3341,
+      "points": 6682
+    },
+    "Arbiter3_bitmapReqBundle": {
+      "insts": 1,
+      "in_bits": 249,
+      "points": 249
+    },
+    "Arbiter4_L2TlbMemReqBundle": {
+      "insts": 1,
+      "in_bits": 206,
+      "points": 206
+    },
+    "Arbiter5_L2TlbWithHptwIdBundle": {
+      "insts": 1,
+      "in_bits": 219,
+      "points": 219
+    },
+    "Bitmap": {
+      "insts": 1,
+      "in_bits": 702,
+      "points": 702
+    },
+    "BitmapCache": {
+      "insts": 1,
+      "in_bits": 298,
+      "points": 298
+    },
+    "DelayN_13": {
+      "insts": 2,
+      "in_bits": 2,
+      "points": 4
+    },
+    "DelayN_220": {
+      "insts": 1,
+      "in_bits": 72,
+      "points": 72
+    },
+    "DelayN_221": {
+      "insts": 1,
+      "in_bits": 262,
+      "points": 262
+    },
+    "HPTW": {
+      "insts": 1,
+      "in_bits": 819,
+      "points": 819
+    },
+    "L2TlbMissQueue": {
+      "insts": 1,
+      "in_bits": 52,
+      "points": 52
+    },
+    "L2TlbPrefetch": {
+      "insts": 1,
+      "in_bits": 56,
+      "points": 56
+    },
+    "LLPTW": {
+      "insts": 1,
+      "in_bits": 1289,
+      "points": 1289
+    },
+    "PMP": {
+      "insts": 1,
+      "in_bits": 79,
+      "points": 79
+    },
+    "PMPChecker": {
+      "insts": 5,
+      "in_bits": 6355,
+      "points": 31775
+    },
+    "PTW": {
+      "insts": 1,
+      "in_bits": 1497,
+      "points": 1497
+    },
+    "PtwCache": {
+      "insts": 1,
+      "in_bits": 1573,
+      "points": 1573
     }
   },
-  "note": "第 3 轮 child 白盒化登记。工具 57883 把白盒读入的 array_9/10/11_ext.v 当黑盒（与 PtwCache/BitmapCache 同一缺口），不是上界。手工上界 186225 = regs 51034 + outs 3589 + ram_40x47 输入 63 + array_11_ext 116848 + array_10_ext 3147 + array_9_ext 11544；merge_dup=true ⇒ 带 [186225-51034-const-unread, 186225]。判别性：vmucp 开 passing = 关时 passing + 关时 unread；passing(L2TLBWrapper)-passing(L2TLB)=228；黑盒仅 ram_40x47 1/1；failing/unmatched 全 0。详见 docs/lanes/l2tlb-assembly_prereg.md。check 机械判 ABOVE_MODEL 是工具缺口，预期内。"
+  "note": "第 4 轮（agent/l2tlb-gc，codex 0228 exact green_child 组合：21 种 child/28 实例两侧 interface-only，arb1 白盒，128 钉点，vmucp 开，merge_dup=true）登记。工具模型 64151 只给 merge 带。可证伪点预测（canary 2 worktree 实测，official 须逐项相同，不同即 STOP）：native SUCCEEDED；passing 63052；constant_reg 16；failing/unverified/aborted 0；unmatched 比较点/黑盒输出/unread 两侧 0；unread 0；L2TLB_PIN ok=128 bad=0；黑盒 = allow 声明的 56 个对象（21 design，r/i 各 28）；无 dont_verify / elab147。账：63052 = 63006（canary 1）+1（arb2.io_in_3_valid failing 转 passing）+128（钉点对经 vmucp 实比）-83（arb1 输入引脚不再是黑盒引脚）。"
 }

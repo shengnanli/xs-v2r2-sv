@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:38:20Z",
+ "generator": {
+  "run_context_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/62de21a18346/L2TlbMissQueue",
+  "version": 1
+ },
+ "impl_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/L2TlbMissQueue.sv",
+    "sha256": "4e554d72f577da15d3bae53118b762b473502fbcd7e5f33be902f60c4dd84321"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue40_L2TlbMQBundle.sv",
+    "sha256": "93c2889aa12fb15b01c88104379367ffefff9ee04533a4c3180a9660b449a1a4"
+   }
+  ],
+  "golden_sha256": "9180a7f00dc37cc7cd4b2e26f07dc5c3ea20e374d230c369392dc3c52e384c1c",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/L2TlbMissQueue.sv",
+    "sha256": "b3e03464ceec84a2c70534021f82fc8820bf97c01fab42f3ce9d3df66e23bc51"
+   }
+  ],
+  "impl_sha256": "44f8113550bfe1e89ccbe5e3c8f3b0e96d05c6b74f7133ffb5901241146f2ac9",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "83362a7215eec80a9490d9cc168e837d31be38bf2e563bf7808f83c95a2edf39",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 125,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "62de21a1834697004056b37449556996a718c8bc",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/L2TlbMissQueue.json",
+    "sha256": "58ac6fdc03683fb6335b0fd25a16f98eb9b298925001b4efa3b79db5a8aa0181"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "1",
+  "fm_mode": "assembly",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "adf197f298f5eb272bfabd49e95f6a048e6661658cb0e4f9f8cefe9fff400936",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "ed39e19e0697a7949cf383a23453f446ae1dbb9ba9bfad0fb01be0e2821b0294",
+ "provisional": false,
+ "receipt_sha256": "e4894d7715c469bb4ff93d4c149476eb178e7719626024e8ffbe02348cc61f41",
+ "reproduce": {
+  "command": "PROOF_COMMIT=62de21a1834697004056b37449556996a718c8bc scripts/run_proof.sh L2TlbMissQueue L2TlbMissQueue",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "7e01e03151060869fbebd71149b47791a617070fed75f6f81b68924773f56b22",
+ "run_id": "L2TlbMissQueue-20261011T093720Z-62de21a18",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "L2TlbMissQueue",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "L2TlbMissQueue",
+ "variant": "L2TlbMissQueue",
+ "verdict": "SUCCEEDED"
+}

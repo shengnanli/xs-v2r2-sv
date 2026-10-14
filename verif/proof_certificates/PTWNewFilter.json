@@ -1,0 +1,180 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T04:03:05Z",
+ "generator": {
+  "run_context_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/20df9ac22c5f/PTWNewFilter",
+  "version": 1
+ },
+ "impl_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PTWNewFilter.sv",
+    "sha256": "54697594fd5860d6bed508222d63739d6cd12f39a0d205f0f6066bf985b4e751"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PTWFilterEntry.sv",
+    "sha256": "cc1fa5076c398a27f77ca3ebd448100622a4c1ea74719e05579aa145c191fb0f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PTWFilterEntry_1.sv",
+    "sha256": "eed3a2c23f1df95f345b0eca9b085a6bb57555631b05b282ba043a3e2add80f0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_1.sv",
+    "sha256": "912369ea3484f75ece44658af080f43b3bb6705d24e33c39ea552c9d39efe092"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RRArbiterInit_12.sv",
+    "sha256": "a840d1952790fefa26665befee9a7c1768cc0288f092ea976c560f7d91bd2f79"
+   }
+  ],
+  "golden_sha256": "87aa5433687dfd4c2ef046e668cc91bf5d26374f7c2da49d15eef4536f2f4bef",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/memblock_common_pkg.sv",
+    "sha256": "d5f097b8dff9f709df8da7e75abc9a2f50c598152d5187fc0895d07e840cc04a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PTWFilterEntry.sv",
+    "sha256": "98f4c8d4a777a05cede05b2290195eff9ee9f5c70d88ee24940c2da429883eef"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PTWFilterEntry_1.sv",
+    "sha256": "58f791204e008d6b3912eb1b86398486f527ec52663bc6b185e6ce12e8993cbc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_DelayN_core.sv",
+    "sha256": "59f58808b76e143acdd35544d695b434758002779d502eccc0a757eb5ac27d15"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayN_1.sv",
+    "sha256": "8ab4381acb0113375dc09c1a52606bf4b5cc02d1fd1f21e4f921fadaed05118f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit.sv",
+    "sha256": "b6a3406112df63bc1ec77562e11b7fcabaf9ee6ae3e5d90a0edc89034b964bac"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/RRArbiterInit_12.sv",
+    "sha256": "bf9786697e755a453747ddb45d3cbf5a295d10c6c74eaf0a6f1c9c19ed9e227b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/PTWNewFilter.sv",
+    "sha256": "d223b6c0a45d583f39e5efceafc4d07dc6c1882ea76c38c3df72775dfba913d5"
+   }
+  ],
+  "impl_sha256": "165f5f8f366c8688fd46be47fb3de26b1165c946ecafc30a27bfa2e40497f88a",
+  "repo_impl_files": 8
+ },
+ "native_facts_sha256": "c413bbbbd3976f96f8edb865cc3b383bb85b330b25b067fc4898a4826b8afad7",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 2024,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "20df9ac22c5fa1cc081ebbb8bee5e323843526e5",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "fa41ab1e11a5abcf8b6243b39671889f0297f1d3728d49568e2781a9415139cd"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "7bf0418dd498e19d1c037df94445613c850ae0e9d35be4d72675f775e8d3080a",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "2c41c0f53a26a6190ad2c3613b3eda3352806784e2f4a57e377db4b60f118a0b",
+ "provisional": false,
+ "receipt_sha256": "b2f7c8f599026adf650617f2ef6aa0b882ac27281eae9a630e1eebcb686d3bbc",
+ "reproduce": {
+  "command": "PROOF_COMMIT=20df9ac22c5fa1cc081ebbb8bee5e323843526e5 scripts/run_proof.sh PTWNewFilter PTWNewFilter",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "ebd4c6ee104b529fe0fc0d5ef48b4bece1f26e66d8c2857403e808064a52fd10",
+ "run_id": "PTWNewFilter-20261011T040119Z-20df9ac22",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/PTWNewFilter.tcl",
+    "sha256": "3771a7b4f6c940637340266079a08f68af9612650f7ec043fe890029a62c33be"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/PTWNewFilter/fm_pins_pre.tcl",
+    "sha256": "fa41ab1e11a5abcf8b6243b39671889f0297f1d3728d49568e2781a9415139cd"
+   }
+  ],
+  "sha256": "28e0e38b65828f4342a4b8497e2ec82823be51b4a25d6a9a1774d6e75ca20eaf"
+ },
+ "target": "PTWNewFilter",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "PTWNewFilter",
+ "variant": "PTWNewFilter",
+ "verdict": "SUCCEEDED"
+}

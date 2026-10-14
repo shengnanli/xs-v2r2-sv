@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T09:51:44Z",
+ "generator": {
+  "run_context_worktree_digest": "4ddb4f08994eaed9875930a074f567c048bfbf8e8a91cfb2232e60e8f7b6f107",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/882209fe5798/Queue40_L2TlbMQBundle",
+  "version": 1
+ },
+ "impl_commit": "882209fe579873307a37cc5a4d2976f954b38027",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue40_L2TlbMQBundle.sv",
+    "sha256": "93c2889aa12fb15b01c88104379367ffefff9ee04533a4c3180a9660b449a1a4"
+   }
+  ],
+  "golden_sha256": "f27d3d3bf6f1857df8ef875edaaf8103e1658816cd25ae9102fb0457182c53e5",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/L2TlbMissQueue.sv",
+    "sha256": "b3e03464ceec84a2c70534021f82fc8820bf97c01fab42f3ce9d3df66e23bc51"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/Queue40_L2TlbMQBundle.sv",
+    "sha256": "c0fcd292473db1501918cd0e951528069e028524277a5ae29f9b9f2e46527a08"
+   }
+  ],
+  "impl_sha256": "c00ea26153e3af77d8841ad331009f115e4c7e0e3dbb02d65c42096585589f29",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "c615a1caf424ea128caee95075959585d43fd7694d471497cb7c64f18bd83c93",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 125,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "882209fe579873307a37cc5a4d2976f954b38027",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/Queue40_L2TlbMQBundle.json",
+    "sha256": "13caad7bf6bc25d8cf7a1c81c13de591e91c949d3f5c74cb59d4ecac01e77c27"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "1",
+  "fm_mode": "assembly",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "92aeee8f2ae5bc43a4e01fe0a471fb5af486a84dd66ae31c268e3692cd7cb248",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "4ddb4f08994eaed9875930a074f567c048bfbf8e8a91cfb2232e60e8f7b6f107",
+ "provisional": false,
+ "receipt_sha256": "c4332006ab68f34c0b961681154facf932d451aa793688a30717138bbd2bd4eb",
+ "reproduce": {
+  "command": "PROOF_COMMIT=882209fe579873307a37cc5a4d2976f954b38027 scripts/run_proof.sh UncoreChiQueues Queue40_L2TlbMQBundle",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "7e01e03151060869fbebd71149b47791a617070fed75f6f81b68924773f56b22",
+ "run_id": "UncoreChiQueues-20261011T095054Z-882209fe5",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "Queue40_L2TlbMQBundle",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "UncoreChiQueues",
+ "variant": "Queue40_L2TlbMQBundle",
+ "verdict": "SUCCEEDED"
+}

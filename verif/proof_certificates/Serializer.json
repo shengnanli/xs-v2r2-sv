@@ -1,0 +1,119 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:33:52Z",
+ "generator": {
+  "run_context_worktree_digest": "e2e8f5daa8b429afb4e40a47949984d20a4cbc5fe57781521d5b483930c6a326",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/bd284f4ddd1e/Serializer",
+  "version": 1
+ },
+ "impl_commit": "bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Serializer.sv",
+    "sha256": "e52772ba1969e9d9735b19a93cf6d39de95b68a5b7f82c00892da0dae8243456"
+   }
+  ],
+  "golden_sha256": "d8bf364ef2d515000b11285d0d42040f2f7ded3a0ab8ec7d58910659ad416238",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/Serializer.sv",
+    "sha256": "8da1017f78fc763a542695e2a9fb6dd55bf83e5f5496bd868fd738dc0146b5a8"
+   }
+  ],
+  "impl_sha256": "a589edffc642135a6f0d0353e63afb6822dad786b34ff5195418fd1e8125b516",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "9c8cd9c8e2528e88f85a57b30d72ee8b0b3122a67b0e3366e4d62765820efb40",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 5,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_assume_reg_init": "None",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "6a1074e337e2690918c0c8175f57288fc86aac2844e44183b6c146776ddabf0e",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "e2e8f5daa8b429afb4e40a47949984d20a4cbc5fe57781521d5b483930c6a326",
+ "provisional": false,
+ "receipt_sha256": "b0026d7cb3d081bc417a95755f94cb7ff31eccfd33c7bb07349a90eb06b68082",
+ "reproduce": {
+  "command": "PROOF_COMMIT=bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86 scripts/run_proof.sh Serializer Serializer",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "1703b64b6ccd7485a6e9a8c689c1c5b21a78968f2adeed675f8b53b1888e5716",
+ "run_id": "Serializer-20261003T160748Z-bd284f4dd",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/Serializer.tcl",
+    "sha256": "1367c9da4ca670011d261da83d99f9b3cf0d6cf1ff8d62fa8890ec1bf23450fc"
+   }
+  ],
+  "sha256": "cfac37f29427c0d498d3bf6b3290a81bb85c28166c4769e5a2faac94cec29360"
+ },
+ "target": "Serializer",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Serializer",
+ "variant": "Serializer",
+ "verdict": "SUCCEEDED"
+}

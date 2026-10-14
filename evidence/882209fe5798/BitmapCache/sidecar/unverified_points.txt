@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/BitmapCache
+Implementation : i:/WORK/BitmapCache
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 05:48:55 2026
+**************************************************
+
+No unverified compare points.
+
+1

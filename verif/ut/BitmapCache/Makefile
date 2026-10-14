@@ -32,8 +32,15 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/BitmapCache.sv $(RTL_GOLDEN_DEPS) \
 
 FM_VARIANTS = BitmapCache
 FM_REF_DEPS_BitmapCache = ClockGate.sv SplittedSRAM.sv SRAMTemplate_124.sv \
-                          sram_array_1p32x90m45s1h0l1b_bitmap.sv array_9.sv array_9_ext.v \
+                          sram_array_1p32x90m45s1h0l1b_bitmap.sv array_9.sv \
                           MbistBitmapCache.sv
+# ★2026-10-11 agent/l2tlb-gc（codex 0222 / 0228）★：厂商叶子 array_9_ext.v 两侧都不进 FM（UT 仍用它的
+# 行为模型）⇒ 对称未解析黑盒，即 verif/mc_memory_registry.tsv 已登记的 MC_MEMORY_BLACKBOX 边界。
+# 原先两侧白盒读入它：impl 侧读黑盒宏违反 0222（proof_certificate 判 impl_golden_unexpected_path:array_9_ext.v）。
+# impl 侧共读的 golden 只剩已登记 MC_MEMORY_MODEL：sram_array_1p32x90m45s1h0l1b_bitmap / array_9。
+fm-BitmapCache: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
+                                  $(GOLDEN_RTL)/sram_array_1p32x90m45s1h0l1b_bitmap.sv \
+                                  $(GOLDEN_RTL)/array_9.sv
 # 关掉重复寄存器合并：让 passing 与 fm_predict.py 的模型可逐位对账。
 # merge_dup 改用工具默认（true）：impl 改读重写的 SRAMTemplate_124 后，共享核 xs_SRAMTemplate_core 非 holdRead
 # 分支的 rdata_last_REG（主线上与 respReg 同方程、靠 merge 合并；SRAMTemplate_124 / SplittedSRAM 单独签核同口径）
