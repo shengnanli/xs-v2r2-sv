@@ -115,3 +115,19 @@ Backend 本层 glue 无任何反例；剩下的只有 §3 的两个 child 证书
 - 冲突 1 个：verif/proof_certificates/PFEvent.json（两侧都从同一 receipt evidence/6038c4afbc60/PFEvent 出证、impl_commit 同为
   6038c4afb，仅出证时间字节不同）→ 按 MemBlock / L2TLB 先例**保留 main 的那份**；verif/allow/Backend.json 随之重盖 PFEvent 的 sha（--stamp-allow）。
   其余证书无冲突。
+
+## 9. codex 0230 B 线：ExuBlock 改读本地 PrintCommitIDModule 后重证
+
+- 本地件 rtl/common/PrintCommitIDModule.sv（0d2b38bfb；2e0390dff 补一根无读者常量线）。impl 侧改读它的 UT：ExuBlock / ExeUnit_7 / CSR /
+  NewCSR / ResultControlLeaves7 / Backend；静态闸 scripts/test_no_golden_print_commit_id.py（+ --selftest）进 gate_all。
+- 两次未出结果的尝试（无 receipt，证据目录移出仓库）：
+  1. @0d2b38bfb，TMPDIR=/home/eda/xs-env/tmp-be/exu：`make: execvp: /bin/sh: Argument list too long` —— fm-ExuBlock 的 sh -c 命令 131,372 字节
+     超过单参数 128 KiB（969 处工作树路径前缀；新增的一个源文件把它推过线）。改用更短的 TMPDIR=/home/eda/xs-env/tmp-be。
+  2. @0d2b38bfb，FM 跑到匹配后：impl 侧空体本地件被当 empty design 自动黑盒，多 47 个 printCommitIDMod 输入点，
+     fm_pins.tcl 的 CSR_PIN_SHAPE 闸拒绝（无比较）。golden .v 靠 `_dummy_unused` 线非空；本地件补 body_present 常量线（2e0390dff），
+     单模块 FM 复核两侧均无黑盒。
+- official @2e0390dff（PROOF_COMMIT，evidence/2e0390dff8ec/ExuBlock，4050 s）：PASS_DEAD_REF，passing **52811** / failing 0 / unread 258（= dead_ref）/
+  constant_reg 1985 / unmatched 0 / blackbox_out 0 —— 与上一份 receipt 0da19ca59ab5 **逐项相同**；impl 闭包的 golden 条目从 4 个减为 3 个（去掉 PrintCommitIDModule.v）。
+  fm_predict check 余额 47 = 登记时已写明的模型偏差（PrintCommitIDModule 47 个输入被模型当黑盒输入计），与上一份同。
+- receipt.json sha256 8bc0257416718b5b71414a9644a2f52bd42ca2a89ef18127b3d05195bf1181be；证书 verif/proof_certificates/ExuBlock.json
+  sha256 5436c74791ba3b0e649738fc47b99aaf75a82465758ca53340238662b295ebcf；Backend allow 重盖 ExuBlock sha。
