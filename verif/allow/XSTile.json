@@ -4,7 +4,7 @@
  "objects": [
   {
    "attrs": "i",
-   "certificate_sha256": "PENDING_CERTIFICATE",
+   "certificate_sha256": "81ef38cec6ddada7805975dae49078183919f0021d17f2850252d81b9ddfbeec",
    "child_target": "XSCore",
    "class": "green_child",
    "design": "XSCore",
@@ -13,7 +13,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "PENDING_CERTIFICATE",
+   "certificate_sha256": "81ef38cec6ddada7805975dae49078183919f0021d17f2850252d81b9ddfbeec",
    "child_target": "XSCore",
    "class": "green_child",
    "design": "XSCore",
