@@ -22,7 +22,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "PENDING_CERTIFICATE",
+   "certificate_sha256": "21f29741963938c868c13a2ff8cc7e5ebdde8bd4da4c406dd2af1fbc9c706c71",
    "child_target": "Backend",
    "class": "green_child",
    "design": "Backend",
@@ -31,7 +31,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "PENDING_CERTIFICATE",
+   "certificate_sha256": "21f29741963938c868c13a2ff8cc7e5ebdde8bd4da4c406dd2af1fbc9c706c71",
    "child_target": "Backend",
    "class": "green_child",
    "design": "Backend",
