@@ -68,11 +68,13 @@ run "证书 golden-in-impl" python3 scripts/test_proof_certificate_grandchild.py
 run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_certificate_grandchild.py
 # codex 0224：嵌套 green_child 证书树（声明驱动的 hdlin_interface_only、递归复核、判环/深度、memo、MC 传播）。
 run "证书嵌套 green_child" python3 scripts/test_proof_certificate_nested.py
+run "证书 memory interface_only 并集" python3 scripts/test_proof_certificate_memory.py
 # codex 0158 §1 的三项最小功能审查（APPROVED_MEMORY_MACRO_MODEL 入表前置）：
 # 先负测（合成夹具，每条判据一正一反，秒级不读 golden），再对 verif/ram_model_parents.tsv
 # 登记的每一条在 golden 现文件上复算 M1/M2/M3。★此前两条都没进 gate_all★——脚本在、能跑、
 # 没人跑；2026-09-27 扩多写口/多实例/输入偏移三种形态时一并挂上。
 run "RAM 模型审查负测"    python3 scripts/test_audit_ram_memory_model.py
+run "RAM 模型审查形态C负测" python3 scripts/test_audit_ram_shape_c.py
 run "RAM 模型审查复算"    python3 scripts/audit_ram_memory_model.py --check
 run "RAM 人工复核窄出口负测" python3 scripts/test_audit_ram_manual_review.py
 run "MC 存储契约登记表复算" python3 scripts/mc_memory_registry.py --check

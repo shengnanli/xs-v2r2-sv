@@ -465,6 +465,66 @@ def load_mc_context(repo, commit):
     return {'MC': _MC, 'reg': reg, 'vendor_text': vb.decode('utf-8') if vb is not None else ''}, None
 
 
+def _memory_impl_golden_context(repo, parent_commit, doc, g1_root):
+    """validate_impl_golden_certified 的 memory 分支上下文，**只用本证书自己**的 allow / 回读（codex 0234 第 2 条）。"""
+    ctx = {'declared': set(), 'err': None, 'mem': [], 'rows': {}, 'readback': None, 'man': None}
+    rec = (doc.get('proof_config', {}).get('declarations') or {}).get('allow')
+    allow, aerr = _allow_doc_of(repo, parent_commit, doc)
+    if aerr:
+        ctx['err'] = aerr
+    ctx['declared'] = {o.get('design') for o in (allow or {}).get('objects') or []
+                       if o.get('class') == MEMORY_CLASS}
+    if not ctx['declared']:
+        return ctx
+    if not ctx['err'] and rec:
+        blob = repo.show(parent_commit, rec.get('path') or '')
+        if blob is None or hashlib.sha256(blob).hexdigest() != rec.get('sha256'):
+            ctx['err'] = 'allow_changed_at_parent:%s' % rec.get('path')
+    if not ctx['err']:
+        mem, merr = approved_memory_interface_designs(repo, parent_commit, allow, g1_root)
+        ctx['mem'], ctx['err'] = mem or [], merr
+    vb = repo.show(parent_commit, VENDOR_BOUNDARY_PATH)
+    for ln in (vb.decode('utf-8').splitlines() if vb is not None else []):
+        if ln.strip() and not ln.startswith('#'):
+            c = ln.split('\t')
+            ctx['rows'].setdefault(c[0], []).append(c)
+    ctx['readback'] = parse_tcl_name_list(
+        (doc.get('proof_config', {}).get('entry_appvars_readback') or {}).get('hdlin_interface_only'))
+    ctx['man'] = _g1_manifest(g1_root) if g1_root else None
+    return ctx
+
+
+def _memory_impl_golden_check(child, doc, e, base, mod, ctx):
+    """impl 闭包里挂的 golden 是本证书声明的 APPROVED_MEMORY_MACRO_MODEL 时的判据（codex 0233/0234）。"""
+    tag = 'green_child_impl_golden_memory'
+    if ctx['err']:
+        return '%s_invalid:%s:%s:%s' % (tag, child, mod, ctx['err'])
+    if mod not in ctx['mem']:
+        # 声明了 memory 类别但不在「interface-only 且当前有效」集合里（如 attrs='u' 两侧不读，却出现在 impl 闭包）
+        return '%s_not_interface_only:%s:%s' % (tag, child, mod)
+    rb = ctx['readback']
+    if rb is None or len(rb) != len(set(rb)) or mod not in rb:
+        return '%s_readback_missing:%s:%s' % (tag, child, mod)
+    rows = ctx['rows'].get(mod) or []
+    if len(rows) != 1 or len(rows[0]) < 5:
+        return '%s_registry_row:%s:%s' % (tag, child, mod)
+    leaf_file, leaf_sha = rows[0][3], rows[0][4]
+    if base != leaf_file:
+        return '%s_file_identity:%s:%s:closure=%s,registry=%s' % (tag, child, mod, base, leaf_file)
+    if not ctx['man'] or ctx['man'].get(leaf_file) != leaf_sha:
+        return '%s_manifest_mismatch:%s:%s' % (tag, child, mod)
+    if e.get('sha256') != leaf_sha:
+        return '%s_sha_not_registered:%s:%s:impl=%s,registry=%s' % (
+            tag, child, mod, (e.get('sha256') or '?')[:12], leaf_sha[:12])
+    refs = [g for g in (doc.get('input_closure', {}).get('golden') or [])
+            if os.path.basename(g.get('path') or '') == base]
+    if len(refs) != 1:
+        return '%s_not_shared:%s:%s:ref_entries=%d' % (tag, child, mod, len(refs))
+    if refs[0].get('kind') != 'golden' or refs[0].get('sha256') != leaf_sha or refs[0].get('path') != e.get('path'):
+        return '%s_ref_mismatch:%s:%s' % (tag, child, mod)
+    return True
+
+
 def validate_impl_golden_certified(repo, parent_commit, child, doc,
                                    policy=None, fm_targets=None,
                                    fm_targets_unresolved=None, g1_root=None,
@@ -494,11 +554,21 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
     if _seen is None:
         _seen = set()
     gold = impl_golden_entries(doc)
+    mem_ctx = None                     # 本证书自己的 memory 批准上下文（惰性；不继承父证书、不走 _seen）
     for e in gold:
         base = os.path.basename(e.get('path') or '')
         if not base.endswith('.sv'):
             return 'green_child_impl_golden_unexpected_path:%s:%s' % (child, base or '?')
         mod = base[:-3]
+        # (M) ★codex 0234★ 本证书 allow 把该 module 声明为 APPROVED_MEMORY_MACRO_MODEL ⇒ 只走这一分支：
+        #     成立即放行（不计 MC hit、不影响 external_dependency），失败即返回错误，不降落到 MC / FM target 分支。
+        if mem_ctx is None:
+            mem_ctx = _memory_impl_golden_context(repo, parent_commit, doc, g1_root)
+        if mod in mem_ctx['declared']:
+            r = _memory_impl_golden_check(child, doc, e, base, mod, mem_ctx)
+            if r is not True:
+                return r
+            continue
         # ★MC 命中按「当前层」计（2026-10-06 集成者裁定）★：`_seen` 只给递归去重 / 防环用，不许吞掉本层的 hit。
         #   反例（FTB）：FTB 自己 impl 挂 array_1 / sram_array_…_bp_ftb，又挂 golden SRAMTemplate_36（其证书也挂这两份）；
         #   旧写法先在递归里把它们记进共享的 `_seen`，回到 FTB 本层就 `continue` 掉，本层 0 hit
@@ -613,6 +683,78 @@ def green_child_designs(allow):
                    if o.get('class') == 'green_child'})
 
 
+MEMORY_CLASS = 'APPROVED_MEMORY_MACRO_MODEL'
+
+
+def approved_memory_interface_designs(repo, parent_commit, allow, g1_root):
+    """codex 0230 问题 1：allow 里以 **interface-only**（attrs='i'）对称黑盒声明为 APPROVED_MEMORY_MACRO_MODEL、
+    且在父 commit 上当前有效的 design 集合。返回 (sorted list, None) 或 (None, 失败原因)。
+
+    每个这样的 design 都必须逐项成立，任一不成立即整体失败（fail-closed，不是「剔除后继续」）：
+      1. allow 里该 design 的**全部**对象都是 class=APPROVED_MEMORY_MACRO_MODEL 且 attrs='i'
+         （与 vendor_macro / green_child / 'u' 黑盒混用即错）；
+      2. 两侧对称：r 与 i 对象各 ≥1、数目相等、去掉 `r:`/`i:` 前缀后的路径集合相同、无重复；
+      3. 父 commit 的 verif/vendor_boundary.tsv 里**恰好一行**字面 design_pattern == design、
+         kind == APPROVED_MEMORY_MACRO_MODEL、body_rule 含 symmetric_both_sides_only 与 pin_by=leaf_sha256；
+      4. G1：该行 leaf_file 在 G1 golden-rtl 里的字节 sha256 == 行内 leaf_sha256 == G1 MANIFEST 记录；
+      5. 该 G1 文件过 audit_ram_memory_model 的 M1 精确模板（逐字等于 firtool 行为级 RAM 叶子）——
+         登记行即便被伪造成指向一个普通逻辑模块，这里也拦得住。
+    attrs='u'（两侧都不读、未解析黑盒）的 APPROVED_MEMORY_MACRO_MODEL 不进 hdlin_interface_only，
+    也就不在本集合里（GrantBuffer / L2TlbMissQueue 等既有证书即此形态）。"""
+    by = {}
+    for o in (allow or {}).get('objects') or []:
+        by.setdefault(o.get('design'), []).append(o)
+    mem = sorted(d for d, objs in by.items()
+                 if any(o.get('class') == MEMORY_CLASS and o.get('attrs') == 'i' for o in objs))
+    if not mem:
+        return [], None
+    vb = repo.show(parent_commit, VENDOR_BOUNDARY_PATH)
+    rows = []
+    if vb is not None:
+        for ln in vb.decode('utf-8').splitlines():
+            if ln.startswith('#') or not ln.strip():
+                continue
+            rows.append(ln.split('\t'))
+    man = _g1_manifest(g1_root) if g1_root else None
+    for d in mem:
+        objs = by[d]
+        if any(o.get('class') != MEMORY_CLASS or o.get('attrs') != 'i' for o in objs):
+            return None, 'memory_interface_only_mixed_declaration:%s' % d
+        rp = [o.get('path') or '' for o in objs if o.get('side') == 'r']
+        ip = [o.get('path') or '' for o in objs if o.get('side') == 'i']
+        if any(o.get('side') not in ('r', 'i') for o in objs):
+            return None, 'memory_interface_only_bad_side:%s' % d
+        rn = [x[2:] for x in rp if x.startswith('r:')]
+        inn = [x[2:] for x in ip if x.startswith('i:')]
+        if (not rp or len(rp) != len(ip) or len(rn) != len(rp) or len(inn) != len(ip)
+                or len(set(rn)) != len(rn) or len(set(inn)) != len(inn) or sorted(rn) != sorted(inn)):
+            return None, 'memory_interface_only_asymmetric:%s:r=%d,i=%d' % (d, len(rp), len(ip))
+        hit = [r for r in rows if r and r[0] == d]
+        if len(hit) != 1:
+            return None, 'memory_interface_only_unregistered:%s:%d_rows' % (d, len(hit))
+        r = hit[0]
+        if len(r) < 10 or r[1] != MEMORY_CLASS:
+            return None, 'memory_interface_only_wrong_registry_kind:%s:%s' % (d, r[1] if len(r) > 1 else '?')
+        if 'symmetric_both_sides_only' not in r[9] or 'pin_by=leaf_sha256' not in r[9]:
+            return None, 'memory_interface_only_registry_body_rule:%s' % d
+        if not g1_root:
+            return None, 'memory_interface_only_g1_root_missing:%s' % d
+        gf = pathlib.Path(g1_root) / 'golden-rtl' / r[3]
+        if not gf.is_file():
+            return None, 'memory_interface_only_g1_file_missing:%s:%s' % (d, r[3])
+        gsha = hashlib.sha256(gf.read_bytes()).hexdigest()
+        if gsha != r[4] or not man or man.get(r[3]) != r[4]:
+            return None, 'memory_interface_only_g1_hash_mismatch:%s:file=%s,registry=%s,manifest=%s' % (
+                d, gsha[:12], r[4][:12], (man or {}).get(r[3], '-')[:12])
+        if str(_HERE) not in sys.path:
+            sys.path.insert(0, str(_HERE))
+        import audit_ram_memory_model as _ARM
+        ok1, why1, _ = _ARM.m1_memory_only(gf, d)
+        if not ok1:
+            return None, 'memory_interface_only_not_memory_template:%s:%s' % (d, why1.splitlines()[0][:80])
+    return mem, None
+
+
 def parse_tcl_name_list(v):
     """hdlin_interface_only 的回读值按 Tcl list 解析成名字列表；含花括号/引号等非简单名字 → None（判错）。"""
     if v is None:
@@ -686,11 +828,20 @@ def validate_certificate_current(repo, parent_commit, child, doc,
 
     # entry appvar：POLICY 钉死值精确比较；唯独 hdlin_interface_only 改为**声明驱动**（codex 0224 §1）——
     # 回读值按 Tcl list 解析、不许重复，去重排序后必须严格等于本证书 allow 里 green_child 的 design 集合
-    # （没有 green_child 则必须为空）。MC_MEMORY_* 不计入。
+    # ∪ 逐条登记且当前有效的 interface-only APPROVED_MEMORY_MACRO_MODEL design 集合（codex 0230 问题 1；
+    # 两者都没有则必须为空）。MC_MEMORY_* / vendor_macro / 未登记 RAM 不计入。
     allow, aerr = _allow_doc_of(repo, parent_commit, doc)
     if aerr:
         return 'green_child_%s:%s' % (aerr, child)
     gc_designs = green_child_designs(allow)
+    # codex 0230 问题 1：回读集合 = green_child design 集合 ∪ 本 allow 里逐条声明、在父 commit 上当前有效的
+    # interface-only APPROVED_MEMORY_MACRO_MODEL design 集合（两者并列，不互相冒充；同一 design 两类都占即错）
+    mem_designs, merr = approved_memory_interface_designs(repo, parent_commit, allow, g1_root)
+    if merr:
+        return 'green_child_%s:%s' % (merr, child)
+    if set(mem_designs) & set(gc_designs):
+        return 'green_child_interface_only_class_overlap:%s:%s' % (child, sorted(set(mem_designs) & set(gc_designs)))
+    declared_io = sorted(set(gc_designs) | set(mem_designs))
     appvars = (doc['proof_config'].get('entry_appvars_readback') or {})
     for k, want in policy['pinned_entry_appvars'].items():
         if k == 'hdlin_interface_only':
@@ -699,9 +850,9 @@ def validate_certificate_current(repo, parent_commit, child, doc,
                 return 'green_child_interface_only_unparsable:%s:%r' % (child, appvars.get(k))
             if len(got) != len(set(got)):
                 return 'green_child_interface_only_duplicate:%s:%r' % (child, appvars.get(k))
-            if sorted(got) != gc_designs:
-                return ('green_child_interface_only_not_declared_set:%s:readback=%s,green_child=%s'
-                        % (child, sorted(got), gc_designs))
+            if sorted(got) != declared_io:
+                return ('green_child_interface_only_not_declared_set:%s:readback=%s,green_child=%s,memory=%s'
+                        % (child, sorted(got), gc_designs, mem_designs))
             continue
         if appvars.get(k) != want:
             return ('green_child_appvar_policy_mismatch:%s:%s=%r!=%r'
