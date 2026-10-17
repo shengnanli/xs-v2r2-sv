@@ -30,7 +30,7 @@
 #
 # 结论: COLLECTED / NEEDS_RERUN / NEEDS_RTL_MERGE / SUPERSEDED
 #
-# 本次统计: 受检 receipt 1602 份 / 不同目标 1602 个 / COLLECTED=1590 NEEDS_RERUN=9 SUPERSEDED=3
+# 本次统计: 受检 receipt 1603 份 / 不同目标 1603 个 / COLLECTED=1591 NEEDS_RERUN=9 SUPERSEDED=3
 target	golden_lines	impl_in_main	in_vcs	merge_dup	mdup_band	chk_golden	chk_impl	chk_fm_eq	chk_pins	chk_emitter	chk_decl	chk_tool	chk_facts	verdict	evidence	rounds	other_rounds	why
 AMOALU	128	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2f84dea722ff	1	-	已在版本库里（evidence/2f84dea722ff 已被 git 跟踪）
 AXI4Deinterleaver	5572	yes	yes	true	21.6%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	1	-	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
@@ -91,9 +91,10 @@ Arbiter5_MSHRAcquire	150	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none
 Arbiter8_MainPipeReq	243	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:397a2bc9c8d3	2	vcs:bd284f4ddd1e(COLLECTED)	已在版本库里（evidence/397a2bc9c8d3 已被 git 跟踪）
 Arbiter8_bitmapCacheReqBundle	148	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:397a2bc9c8d3	2	vcs:bd284f4ddd1e(COLLECTED)	已在版本库里（evidence/397a2bc9c8d3 已被 git 跟踪）
 ArrayMulDataModule	24372	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:014a7e1521d4	2	wt-othersentry:def744f0db86(SUPERSEDED)	前提标注: constant_reg=31 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/014a7e1521d4 已被 git 跟踪）
-AsyncResetSynchronizerPrimitiveShiftReg_d3_i0	136	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2f9bb8a2b814	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/2f9bb8a2b814 已被 git 跟踪）
+AsyncResetSynchronizerPrimitiveShiftReg_d3_i0	136	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:2f9bb8a2b814(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 AsyncResetSynchronizerShiftReg_w1_d3_i0	101	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:2948215a047b	1	-	已在版本库里（evidence/2948215a047b 已被 git 跟踪）
 AtomicsUnit	1181	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:f27d65aafd36(COLLECTED)	前提标注: constant_reg=4 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
+Backend	79590	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:a47c23dc5c5b	1	-	已在版本库里（evidence/a47c23dc5c5b 已被 git 跟踪）
 BankedDataArray	4168	yes	yes	true	81.3%/wide	same	same	same	same	same	same	same	same	COLLECTED	vcs:68d1a0932a12	2	vcs:0b523bc0d2bb(NEEDS_RERUN)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
 Bitmap	3349	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:397a2bc9c8d3	3	vcs:46fb5c533f75(COLLECTED) vcs:62de21a18346(COLLECTED)	前提标注: constant_reg=11 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/397a2bc9c8d3 已被 git 跟踪）
 BitmapCache	940	yes	yes	true	89.5%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:68d1a0932a12	4	vcs:397a2bc9c8d3(NEEDS_RERUN) vcs:882209fe5798(COLLECTED) vcs:dfc23ffb1c9b(COLLECTED)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
@@ -106,11 +107,11 @@ BranchModule	109	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	sam
 BranchUnit	405	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:7bd30c050029	1	-	已在版本库里（evidence/7bd30c050029 已被 git 跟踪）
 BusErrorUnit	346	yes	yes	true	45.5%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:fa200b1c-200c-final	2	vcs:92a50405-200c-final(COLLECTED)	已在版本库里（evidence/fa200b1c-200c-final 已被 git 跟踪）
 BusPerfMonitor	624	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:97d5fc20f936	1	-	已在版本库里（evidence/97d5fc20f936 已被 git 跟踪）
-BusyTable	21579	yes	yes	true	94.9%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:f7b397210f5b	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/f7b397210f5b 已被 git 跟踪）
-BusyTable_1	2854	yes	yes	true	91.4%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:f7b397210f5b	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/f7b397210f5b 已被 git 跟踪）
-BusyTable_2	1539	yes	yes	true	87.7%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:f7b397210f5b	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/f7b397210f5b 已被 git 跟踪）
-BusyTable_3	443	yes	yes	true	78.6%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:f7b397210f5b	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/f7b397210f5b 已被 git 跟踪）
-BypassNetwork	5503	yes	yes	false	exact	same	same	trace_equal	same	same	same	same	same	COLLECTED	vcs:ccf7f50a4e5a	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/ccf7f50a4e5a 已被 git 跟踪）
+BusyTable	21579	yes	yes	true	94.9%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f7b397210f5b(COLLECTED)	前提标注: constant_reg=1 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+BusyTable_1	2854	yes	yes	true	91.4%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f7b397210f5b(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+BusyTable_2	1539	yes	yes	true	87.7%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f7b397210f5b(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+BusyTable_3	443	yes	yes	true	78.6%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f7b397210f5b(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+BypassNetwork	5503	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:ccf7f50a4e5a(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 ByteMaskTailGen	182	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:1a087214915d	1	-	已在版本库里（evidence/1a087214915d 已被 git 跟踪）
 C22	97	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:014a7e1521d4	3	wt-othersentry:7ba5abbff807(SUPERSEDED) wt-othersentry:def744f0db86(SUPERSEDED)	已在版本库里（evidence/014a7e1521d4 已被 git 跟踪）
 C32	99	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:014a7e1521d4	3	wt-othersentry:7ba5abbff807(SUPERSEDED) wt-othersentry:def744f0db86(SUPERSEDED)	已在版本库里（evidence/014a7e1521d4 已被 git 跟踪）
@@ -168,9 +169,9 @@ ClosePathFloatAdderF64WidenPipeline	705	yes	yes	false	exact	same	same	trace_equa
 CloseShiftLeftWithMux	106	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:c19d699f	1	-	已在版本库里（evidence/c19d699f 已被 git 跟踪）
 CloseShiftLeftWithMux_1	103	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:c19d699f	1	-	已在版本库里（evidence/c19d699f 已被 git 跟踪）
 CloseShiftLeftWithMux_9	101	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:c19d699f	1	-	已在版本库里（evidence/c19d699f 已被 git 跟踪）
-CommitStuckCounter	125	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8dded020a6c1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8dded020a6c1 已被 git 跟踪）
+CommitStuckCounter	125	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:8dded020a6c1(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 Composer	4787	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:bb871960e9ea	7	vcs:335a330a9baa(NEEDS_RERUN) vcs:7b1dd37bad70(NEEDS_RERUN) vcs:9cc9c9c74aac(NEEDS_RERUN) vcs:be19d6a02dba(NEEDS_RERUN) vcs:eb08246eb9a9(NEEDS_RERUN) wt-warn:e0bc44bf9a73(NEEDS_RERUN)	前提标注: constant_reg=664 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/bb871960e9ea 已被 git 跟踪）
-CompressUnit	662	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:f40deba9439d	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/f40deba9439d 已被 git 跟踪）
+CompressUnit	662	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f40deba9439d(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 ConditionalZeroModule	97	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:45cf2620708e	1	-	已在版本库里（evidence/45cf2620708e 已被 git 跟踪）
 Conversion	108	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:d227288c948d	1	-	已在版本库里（evidence/d227288c948d 已被 git 跟踪）
 Conversion_12	108	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:d227288c948d	1	-	已在版本库里（evidence/d227288c948d 已被 git 跟踪）
@@ -178,22 +179,22 @@ Conversion_8	108	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	sam
 CountModule	346	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:f696c5c84a6d	1	-	已在版本库里（evidence/f696c5c84a6d 已被 git 跟踪）
 CounterFilter	915	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:414ed06a79c5	1	-	已在版本库里（evidence/414ed06a79c5 已被 git 跟踪）
 CryptoModule	138	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:6038c4afbc60	1	-	已在版本库里（evidence/6038c4afbc60 已被 git 跟踪）
-CtrlBlock	57635	yes	yes	false	exact	same	same	trace_equal	same	same	same	same	same	COLLECTED	vcs:a757ff84032a	3	vcs:27fd6722e959(COLLECTED) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=3244 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/a757ff84032a 已被 git 跟踪）
+CtrlBlock	57635	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:27fd6722e959(COLLECTED) vcs:a757ff84032a(COLLECTED)	前提标注: constant_reg=3244 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 CtrlUnit	389	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:414ed06a79c5	1	-	已在版本库里（evidence/414ed06a79c5 已被 git 跟踪）
 CustomL1Hint	192	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:a7f4ef161492	1	-	已在版本库里（evidence/a7f4ef161492 已被 git 跟踪）
 DCache	23854	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:68d1a0932a12	4	vcs:0dc9c4532cf5(COLLECTED) vcs:ce9d0692bc8e(NEEDS_RERUN) vcs:f009d7b3c6d1(COLLECTED)	前提标注: constant_reg=411 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
 DCacheWrapper	1985	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:844a80f26d1e(COLLECTED)	前提标注: constant_reg=807 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
-DataModule_BackendPC_16entry	495	yes	yes	true	51.6%/wide	same	same	trace_equal	bridged	inert	none	same	same	COLLECTED	vcs:25cdce831a66	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/SyncDataModule/fm_pins_pre.tcl; emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/25cdce831a66 已被 git 跟踪）
+DataModule_BackendPC_16entry	495	yes	yes	true	51.6%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 DataModule_FtqPC_16entry	616	yes	yes	true	74.5%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
 DataModule__16entry	1201	yes	yes	true	91.5%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
 DataModule__16entry_12	2987	yes	yes	true	91.7%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
-DataModule__16entry_16	2119	yes	yes	true	66.7%/wide	same	same	trace_equal	bridged	inert	none	same	same	COLLECTED	vcs:25cdce831a66	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/SyncDataModule/fm_pins_pre.tcl; emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/25cdce831a66 已被 git 跟踪）
-DataModule__16entry_20	297	yes	yes	true	94.1%/wide	same	same	trace_equal	bridged	same	none	same	same	COLLECTED	vcs:9154088d8da0	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/SyncDataModule/fm_pins_pre.tcl; 已在版本库里（evidence/9154088d8da0 已被 git 跟踪）
+DataModule__16entry_16	2119	yes	yes	true	66.7%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+DataModule__16entry_20	297	yes	yes	true	94.1%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:9154088d8da0(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 DataModule__16entry_4	1790	yes	yes	true	94.1%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
 DataModule__16entry_8	791	yes	yes	true	89.6%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
-DataModule__64entry	579	yes	yes	true	97.0%/wide	same	same	trace_equal	bridged	inert	none	same	same	COLLECTED	vcs:25cdce831a66	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/SyncDataModule/fm_pins_pre.tcl; emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/25cdce831a66 已被 git 跟踪）
-DataModule__64entry_16	1127	yes	yes	true	97.2%/wide	same	same	trace_equal	bridged	inert	none	same	same	COLLECTED	vcs:25cdce831a66	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/SyncDataModule/fm_pins_pre.tcl; emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/25cdce831a66 已被 git 跟踪）
-DataPath	25618	yes	yes	false	exact	same	same	trace_equal	same	same	same	same	same	COLLECTED	vcs:19b1b6fa6f10	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=150 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/19b1b6fa6f10 已被 git 跟踪）
+DataModule__64entry	579	yes	yes	true	97.0%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+DataModule__64entry_16	1127	yes	yes	true	97.2%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+DataPath	25618	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:19b1b6fa6f10(COLLECTED)	前提标注: constant_reg=150 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 DataSRAMBank	318	yes	yes	true	0.2%	same	same	same	none	same	same	same	same	COLLECTED	vcs:68d1a0932a12	2	vcs:754c1d99ea72(NEEDS_RERUN)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
 DataSRAMBank_1	318	yes	yes	true	0.2%	same	same	same	none	same	same	same	same	COLLECTED	vcs:68d1a0932a12	2	vcs:754c1d99ea72(NEEDS_RERUN)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
 DataSRAMBank_2	318	yes	yes	true	0.2%	same	same	same	none	same	same	same	same	COLLECTED	vcs:68d1a0932a12	2	vcs:754c1d99ea72(NEEDS_RERUN)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
@@ -208,9 +209,9 @@ DeMultiplexer	126	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none	same	s
 DeMultiplexer_1	194	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:7a881579fe64	1	-	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/7a881579fe64 已被 git 跟踪）
 Debug	306	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2f9bb8a2b814	1	-	已在版本库里（evidence/2f9bb8a2b814 已被 git 跟踪）
 DebugModule	274	yes	yes	false	exact	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	1	-	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-DecodeStage	10850	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:fe8b8e8c8332	3	vcs:772003f0e63e(COLLECTED) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=22 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/fe8b8e8c8332 已被 git 跟踪）
-DecodeUnit	6252	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2897a7dbeeb5	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/2897a7dbeeb5 已被 git 跟踪）
-DecodeUnitComp	45149	yes	yes	true	14.3%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(NEEDS_RERUN)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
+DecodeStage	10850	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:772003f0e63e(COLLECTED) vcs:fe8b8e8c8332(COLLECTED)	前提标注: constant_reg=22 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+DecodeUnit	6252	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:2897a7dbeeb5(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+DecodeUnitComp	45149	yes	yes	true	14.3%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 Decoupled2LCredit	239	yes	yes	true	50.5%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-chi:4a19d583a6ce(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
 Decoupled2LCredit_1	201	yes	yes	true	51.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-chi:4a19d583a6ce(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
 Decoupled2LCredit_2	233	yes	yes	true	50.2%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-chi:4a19d583a6ce(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
@@ -262,7 +263,7 @@ DelayReg_23	176	yes	yes	true	80.0%/wide	same	same	trace_equal	none	same	none	sam
 DelayReg_24	210	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:b1d8de9ca9f3	1	-	已在版本库里（evidence/b1d8de9ca9f3 已被 git 跟踪）
 DelayReg_25	602	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:b1d8de9ca9f3	1	-	已在版本库里（evidence/b1d8de9ca9f3 已被 git 跟踪）
 DelayReg_26	262	yes	yes	true	66.7%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:b1d8de9ca9f3	1	-	已在版本库里（evidence/b1d8de9ca9f3 已被 git 跟踪）
-DiffRatStateBuffer	10187	yes	yes	false	exact	same	same	trace_equal	none	same	same	same	same	COLLECTED	vcs:6aed766ee2eb	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/6aed766ee2eb 已被 git 跟踪）
+DiffRatStateBuffer	10187	yes	yes	false	exact	same	same	same	none	same	same	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:6aed766ee2eb(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 Directory	2725	yes	yes	true	69.8%/wide	same	same	same	same	same	same	same	same	COLLECTED	vcs:4464d4e059b0	3	vcs:4e3aa2c94341(NEEDS_RERUN) vcs:f49dee3e7949(NEEDS_RERUN)	已在版本库里（evidence/4464d4e059b0 已被 git 跟踪）
 Directory_1	2725	yes	yes	true	69.8%/wide	same	same	same	same	same	same	same	same	COLLECTED	vcs:4464d4e059b0	3	vcs:4e3aa2c94341(NEEDS_RERUN) vcs:f49dee3e7949(NEEDS_RERUN)	已在版本库里（evidence/4464d4e059b0 已被 git 跟踪）
 Directory_2	2725	yes	yes	true	69.8%/wide	same	same	same	same	same	same	same	same	COLLECTED	vcs:4464d4e059b0	3	vcs:4e3aa2c94341(NEEDS_RERUN) vcs:f49dee3e7949(NEEDS_RERUN)	已在版本库里（evidence/4464d4e059b0 已被 git 跟踪）
@@ -333,9 +334,9 @@ ExeUnit_5	2713	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLE
 ExeUnit_7	2400	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:52257043735e	1	-	前提标注: constant_reg=1011 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/52257043735e 已被 git 跟踪）
 ExeUnit_8	1131	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:bbd73158a339	1	-	前提标注: constant_reg=299 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/bbd73158a339 已被 git 跟踪）
 ExeUnit_9	395	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:41366b7e2f9c	1	-	前提标注: constant_reg=30 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/41366b7e2f9c 已被 git 跟踪）
-ExuBlock	3634	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:0da19ca59ab5	2	wt-backend-asm:2e0390dff8ec(NEEDS_RTL_MERGE)	前提标注: constant_reg=1985 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/0da19ca59ab5 已被 git 跟踪）
+ExuBlock	3634	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:2e0390dff8ec	2	vcs:0da19ca59ab5(COLLECTED)	前提标注: constant_reg=1985 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/2e0390dff8ec 已被 git 跟踪）
 ExuBlock_1	823	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:1e7fbcc94d3c	1	-	前提标注: constant_reg=903 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/1e7fbcc94d3c 已被 git 跟踪）
-ExuBlock_2	997	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:01fafdfce389	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=1464 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/01fafdfce389 已被 git 跟踪）
+ExuBlock_2	997	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:01fafdfce389(COLLECTED)	前提标注: constant_reg=1464 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 F3Predecoder	1131	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:f51166aa4f76	2	vcs:b5084fb3e0ed(NEEDS_RERUN)	已在版本库里（evidence/f51166aa4f76 已被 git 跟踪）
 FAlu	268	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:80e9b96e8eb6	6	vcs:194f78e14165(NEEDS_RERUN) vcs:704ba690a090(COLLECTED) vcs:7398e0afdfc7(COLLECTED) wt-partial:0536ef08a32a-b(SUPERSEDED) wt-partial:p-FAlu(SUPERSEDED)	前提标注: constant_reg=167 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/80e9b96e8eb6 已被 git 跟踪）
 FCVT	416	yes	yes	true	65.9%/wide	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:40ace84c0bea	5	vcs:80e9b96e8eb6(COLLECTED) vcs:b8c893dad053(COLLECTED) wt-partial:0536ef08a32a-c(SUPERSEDED) wt-partial:p-FCVT(SUPERSEDED)	前提标注: constant_reg=16 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/40ace84c0bea 已被 git 跟踪）
@@ -343,7 +344,7 @@ FDivSqrt	319	yes	yes	true	47.9%/wide	same	same	trace_equal	same	same	none	same	s
 FIFOReg	248	yes	yes	true	89.3%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:7a881579fe64	1	-	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/7a881579fe64 已被 git 跟踪）
 FMA	391	yes	yes	true	72.5%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:7a881579fe64	3	vcs:6a3028fdc3f3(COLLECTED) vcs:a757ff84032a(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/7a881579fe64 已被 git 跟踪）
 FPCVT	145	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:f18656085f00	1	-	前提标注: constant_reg=27 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/f18656085f00 已被 git 跟踪）
-FPDecoder	649	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:f40deba9439d	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/f40deba9439d 已被 git 跟踪）
+FPDecoder	649	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f40deba9439d(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 FP_INCVT	1069	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:96363f56a451	1	-	前提标注: constant_reg=27 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/96363f56a451 已被 git 跟踪）
 FTB	3378	yes	yes	true	58.5%/wide	same	same	same	same	same	same	same	same	COLLECTED	vcs:68d1a0932a12	4	vcs:397a2bc9c8d3(COLLECTED) vcs:7b1dd37bad70(COLLECTED) vcs:d37248da1db4(COLLECTED)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
 FTBBank	7528	yes	yes	true	93.3%/wide	same	same	same	none	same	same	same	same	COLLECTED	vcs:68d1a0932a12	4	vcs:7b1dd37bad70(COLLECTED) vcs:f40deba9439d(COLLECTED) wt-warn:e0bc44bf9a73(SUPERSEDED)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
@@ -377,7 +378,7 @@ Fence	273	yes	yes	true	17.9%	same	same	trace_equal	none	inert	same	same	same	COL
 FliDTable	195	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	1	-	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
 FliHTable	145	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	1	-	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
 FliSTable	174	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	1	-	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
-FloatAdder	172	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:57d1475144ad	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=167 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/57d1475144ad 已被 git 跟踪）
+FloatAdder	172	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:57d1475144ad(COLLECTED)	前提标注: constant_reg=167 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 FloatAdderF16Pipeline	319	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:6038c4afbc60	1	-	前提标注: constant_reg=5 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/6038c4afbc60 已被 git 跟踪）
 FloatAdderF32F16MixedPipeline	395	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:5990b596a86b	1	-	前提标注: constant_reg=36 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/5990b596a86b 已被 git 跟踪）
 FloatAdderF32WidenF16MixedPipeline	408	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:194f78e14165	2	vcs:2c59d6196113(NEEDS_RERUN)	前提标注: constant_reg=20 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/194f78e14165 已被 git 跟踪）
@@ -442,8 +443,8 @@ FuBusyTableWrite_73	130	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	
 FuBusyTableWrite_75	138	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:201cb5db74de	1	-	前提标注: constant_reg=1 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/201cb5db74de 已被 git 跟踪）
 FuBusyTableWrite_79	126	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:201cb5db74de	1	-	前提标注: constant_reg=1 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/201cb5db74de 已被 git 跟踪）
 FuBusyTableWrite_80	137	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:201cb5db74de	1	-	前提标注: constant_reg=1 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/201cb5db74de 已被 git 跟踪）
-FusionDecoder	2539	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:41fb20c06e47	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/41fb20c06e47 已被 git 跟踪）
-GPAMem	140	yes	yes	false	exact	same	same	trace_equal	bridged	same	none	same	same	COLLECTED	vcs:206bcc51efa6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/GPAMem/fm_pins.tcl; 已在版本库里（evidence/206bcc51efa6 已被 git 跟踪）
+FusionDecoder	2539	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:41fb20c06e47(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+GPAMem	140	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:206bcc51efa6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 GatedSplittedSRAM	369	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:68d1a0932a12	5	vcs:0dc9c4532cf5(COLLECTED) vcs:702d456904d5(NEEDS_RERUN) vcs:ce9d0692bc8e(COLLECTED) vcs:f6806ac59aae(NEEDS_RERUN)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
 GatedSplittedSRAM_1	369	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:68d1a0932a12	5	vcs:0dc9c4532cf5(COLLECTED) vcs:702d456904d5(NEEDS_RERUN) vcs:ce9d0692bc8e(COLLECTED) vcs:f6806ac59aae(NEEDS_RERUN)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
 GatedSplittedSRAM_2	369	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:68d1a0932a12	5	vcs:0dc9c4532cf5(COLLECTED) vcs:702d456904d5(NEEDS_RERUN) vcs:ce9d0692bc8e(COLLECTED) vcs:f6806ac59aae(NEEDS_RERUN)	已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
@@ -661,9 +662,9 @@ LqMaskModule	1174	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	
 LqPAddrModule	2024	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2fdc00c890e0	1	-	已在版本库里（evidence/2fdc00c890e0 已被 git 跟踪）
 LqPAddrModule_1	1304	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:341d7e6f14cf	1	-	已在版本库里（evidence/341d7e6f14cf 已被 git 跟踪）
 LqVAddrModule	1717	yes	yes	true	96.2%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:b84bf4ee4ead	2	wt-lqrchild:814987674ddf(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/b84bf4ee4ead 已被 git 跟踪）
-LsqEnqCtrl	2595	yes	yes	true	49.7%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:8514c7292f4b	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/8514c7292f4b 已被 git 跟踪）
+LsqEnqCtrl	2595	yes	yes	true	49.7%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:8514c7292f4b(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 LsqWrapper	10584	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:c54743d408e0(COLLECTED)	前提标注: constant_reg=2752 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
-MEFreeList	5884	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:361e2ab086bf	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/361e2ab086bf 已被 git 跟踪）
+MEFreeList	5884	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:361e2ab086bf(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 MLevelPermitModule	182	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
 MMIOBridge	2673	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:0394e97e720c	1	-	已在版本库里（evidence/0394e97e720c 已被 git 跟踪）
 MMIOBridgeEntry	505	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:97d5fc20f936	1	-	已在版本库里（evidence/97d5fc20f936 已被 git 跟踪）
@@ -721,7 +722,7 @@ McountinhibitModule	143	yes	yes	true	24.6%	same	same	trace_equal	none	same	none	
 McycleModule	133	yes	yes	true	33.3%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:786d0b438756	1	-	已在版本库里（evidence/786d0b438756 已被 git 跟踪）
 MedelegModule	286	yes	yes	true	19.2%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
 MemBlock	57550	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:526b6bd03f30	1	-	前提标注: constant_reg=10 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/526b6bd03f30 已被 git 跟踪）
-MemCtrl	163	yes	no	false	exact	same	same	same	same	same	none	same	same	COLLECTED	wt-backend-asm:9df1c6fb0545	2	vcs:206bcc51efa6(NEEDS_RERUN)	★库里那份（evidence/206bcc51efa6）判据没过，改收这一份★
+MemCtrl	163	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:206bcc51efa6(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 MemExeUnit	125	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:1bf831352049(COLLECTED)	已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
 MemTrigger	284	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2ef9556668e5	2	vcs:99eadd4c10f9(NEEDS_RERUN)	已在版本库里（evidence/2ef9556668e5 已被 git 跟踪）
 MemTrigger_3	338	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2ef9556668e5	1	-	已在版本库里（evidence/2ef9556668e5 已被 git 跟踪）
@@ -803,32 +804,32 @@ NCBTransactionQueue_1	11134	yes	yes	true	91.6%/wide	same	same	trace_equal	DIFFER
 NewAgeDetector	134	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:1338bdb28432	1	-	已在版本库里（evidence/1338bdb28432 已被 git 跟踪）
 NewAgeDetector_6	128	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:1338bdb28432	1	-	已在版本库里（evidence/1338bdb28432 已被 git 跟踪）
 NewCSR	15945	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:814fe410e15a	1	-	前提标注: constant_reg=465 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/814fe410e15a 已被 git 跟踪）
-NewDispatch	100983	yes	yes	true	0.7%	same	same	trace_equal	same	same	same	same	same	COLLECTED	vcs:f3841854160e	4	vcs:639bbfb0d9c6(COLLECTED) wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-gatefix:173b0ea3d073(SUPERSEDED)	前提标注: constant_reg=18 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/f3841854160e 已被 git 跟踪）
+NewDispatch	100983	yes	yes	true	0.7%	same	same	same	same	same	same	same	same	COLLECTED	vcs:9df1c6fb0545	4	vcs:639bbfb0d9c6(COLLECTED) vcs:f3841854160e(COLLECTED) wt-gatefix:173b0ea3d073(SUPERSEDED)	前提标注: constant_reg=18 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 NewIFU	5714	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	2	vcs:48bc44efbe64(COLLECTED)	前提标注: constant_reg=4 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
-NewPipelineConnectPipe	268	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_1	346	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_10	298	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_13	388	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_14	419	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_16	406	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_18	316	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_20	388	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_23	605	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_25	178	yes	yes	true	49.8%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:f51166aa4f76	3	vcs:3b72cb1a8513(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/f51166aa4f76 已被 git 跟踪）
+NewPipelineConnectPipe	268	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_1	346	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_10	298	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_13	388	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_14	419	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_16	406	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_18	316	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_20	388	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_23	605	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_25	178	yes	yes	true	49.8%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:3b72cb1a8513(NEEDS_RERUN) vcs:f51166aa4f76(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 NewPipelineConnectPipe_27	231	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	1	-	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
 NewPipelineConnectPipe_29	589	yes	yes	true	50.0%/wide	same	same	same	none	same	none	same	same	NEEDS_RERUN	vcs:28c7c3b90cda	4	vcs:6a9e4235497e(NEEDS_RERUN) wt-mismatch:3e9c6f419205(NEEDS_RERUN) wt-mismatch:d0d4d30f8bc4(NEEDS_RERUN)	用了 FM_FIELD_MAP（packed payload 钉点）：它经 open 读入而非 source，不在 sidecar 字节快照里，闭包缺这一项无法复核; ★已在版本库里（evidence/28c7c3b90cda）且已计进 proven，但上面的判据没过 —— 需要重出证，不是待收★
 NewPipelineConnectPipe_33	170	yes	yes	true	49.9%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	1	-	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
 NewPipelineConnectPipe_34	422	yes	yes	true	50.0%/wide	same	same	same	none	same	none	same	same	NEEDS_RERUN	vcs:28c7c3b90cda	4	vcs:6a9e4235497e(NEEDS_RERUN) wt-mismatch:3e9c6f419205(NEEDS_RERUN) wt-mismatch:d0d4d30f8bc4(NEEDS_RERUN)	用了 FM_FIELD_MAP（packed payload 钉点）：它经 open 读入而非 source，不在 sidecar 字节快照里，闭包缺这一项无法复核; ★已在版本库里（evidence/28c7c3b90cda）且已计进 proven，但上面的判据没过 —— 需要重出证，不是待收★
 NewPipelineConnectPipe_35	1197	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	4	vcs:28c7c3b90cda(NEEDS_RERUN) wt-mismatch:3e9c6f419205(NEEDS_RERUN) wt-mismatch:d0d4d30f8bc4(NEEDS_RERUN)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_5	394	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_7	327	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_8	310	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewPipelineConnectPipe_9	285	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-NewRobDeqPtrWrapper	886	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8dded020a6c1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8dded020a6c1 已被 git 跟踪）
+NewPipelineConnectPipe_5	394	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_7	327	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_8	310	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewPipelineConnectPipe_9	285	yes	yes	true	50.0%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+NewRobDeqPtrWrapper	886	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:8dded020a6c1(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 NfMappedElemIdx	177	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	1	-	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
 OffsetScoreTable	809	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:c8313ce28267	1	-	已在版本库里（evidence/c8313ce28267 已被 git 跟踪）
 OffsetScoreTable_1	1793	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:c8313ce28267	1	-	已在版本库里（evidence/c8313ce28267 已被 git 跟踪）
-Og2ForVector	3182	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:e7e43874c72f	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/e7e43874c72f 已被 git 跟踪）
+Og2ForVector	3182	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:e7e43874c72f(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 OthersEntry	2501	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:cfd090825783	7	vcs:563e6f964222(NEEDS_RERUN) vcs:809aebb69f98(NEEDS_RERUN) vcs:9c2517d9e886(NEEDS_RERUN) wt-dbgfix:609baba5d551(NEEDS_RERUN) wt-othersentry:435655c3b73e(NEEDS_RERUN) wt-othersentry:6e3b15fcb7c5(NEEDS_RERUN)	已在版本库里（evidence/cfd090825783 已被 git 跟踪）
 OthersEntryVecMem	2708	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:5183c7f25a28	1	-	已在版本库里（evidence/5183c7f25a28 已被 git 跟踪）
 OthersEntryVecMem_14	2688	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:5183c7f25a28	1	-	已在版本库里（evidence/5183c7f25a28 已被 git 跟踪）
@@ -1177,7 +1178,7 @@ RealWBCollideChecker_4	163	yes	yes	false	exact	same	same	trace_equal	none	same	n
 Rec7Table	396	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	1	-	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
 RecentRequestTable	228	yes	yes	true	56.0%/wide	same	same	same	same	same	same	same	same	COLLECTED	vcs:4464d4e059b0	3	vcs:397a2bc9c8d3(NEEDS_RERUN) vcs:bd284f4ddd1e(NEEDS_RERUN)	已在版本库里（evidence/4464d4e059b0 已被 git 跟踪）
 RecentRequestTable_1	228	yes	yes	true	56.6%/wide	same	same	same	same	same	same	same	same	COLLECTED	vcs:4464d4e059b0	3	vcs:397a2bc9c8d3(NEEDS_RERUN) vcs:bd284f4ddd1e(NEEDS_RERUN)	已在版本库里（evidence/4464d4e059b0 已被 git 跟踪）
-RedirectGenerator	1134	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:f19e2a7b2dc1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/f19e2a7b2dc1 已被 git 跟踪）
+RedirectGenerator	1134	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f19e2a7b2dc1(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 Reduction	1394	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:6038c4afbc60	1	-	已在版本库里（evidence/6038c4afbc60 已被 git 跟踪）
 RegCache	1648	yes	yes	true	15.0%	same	same	trace_equal	none	inert	same	same	same	COLLECTED	vcs:25cdce831a66	3	vcs:50c3e3521dd6(COLLECTED) wt-err3:d2b3624d2fcd(NEEDS_RERUN)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/25cdce831a66 已被 git 跟踪）
 RegCacheAgeDetector	1356	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:e64702417907	1	-	已在版本库里（evidence/e64702417907 已被 git 跟踪）
@@ -1186,17 +1187,17 @@ RegCacheAgeTimer	1390	yes	yes	false	exact	same	same	same	none	same	none	same	sam
 RegCacheAgeTimer_1	956	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:e64702417907	1	-	已在版本库里（evidence/e64702417907 已被 git 跟踪）
 RegCacheDataModule	818	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:e64702417907	1	-	已在版本库里（evidence/e64702417907 已被 git 跟踪）
 RegCacheDataModule_1	700	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:e64702417907	1	-	已在版本库里（evidence/e64702417907 已被 git 跟踪）
-RegCacheTagModule	2025	yes	yes	true	44.4%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:8514c7292f4b	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-ndaux:b43c623cb486(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/8514c7292f4b 已被 git 跟踪）
-RegCacheTagModule_1	1347	yes	yes	true	42.9%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:8514c7292f4b	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-ndaux:b43c623cb486(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/8514c7292f4b 已被 git 跟踪）
-RegCacheTagTable	1391	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:8514c7292f4b	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/8514c7292f4b 已被 git 跟踪）
+RegCacheTagModule	2025	yes	yes	true	44.4%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:8514c7292f4b(COLLECTED) wt-ndaux:b43c623cb486(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+RegCacheTagModule_1	1347	yes	yes	true	42.9%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:8514c7292f4b(COLLECTED) wt-ndaux:b43c623cb486(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+RegCacheTagTable	1391	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:8514c7292f4b(COLLECTED)	前提标注: constant_reg=16 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 RegionWays	740	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	2	vcs:1b420e2033a9(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
-Rename	7139	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:173b0ea3d073	3	vcs:843afc0c2d9a(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=200 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/173b0ea3d073 已被 git 跟踪）
-RenameBuffer	40993	yes	no	false	exact	same	same	same	same	same	none	same	same	COLLECTED	wt-backend-asm:9df1c6fb0545	3	vcs:eeac500fbad6(NEEDS_RERUN) wt-renamebuf2:c4671b8d9671(NEEDS_RERUN)	★库里那份（evidence/eeac500fbad6）判据没过，改收这一份★
-RenameTable	3655	yes	yes	true	55.5%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:aad807db4fb6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/aad807db4fb6 已被 git 跟踪）
-RenameTableWrapper	2249	yes	yes	false	exact	same	same	trace_equal	none	same	same	same	same	COLLECTED	vcs:6aed766ee2eb	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/6aed766ee2eb 已被 git 跟踪）
-RenameTable_1	3952	yes	yes	true	67.8%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:aad807db4fb6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/aad807db4fb6 已被 git 跟踪）
-RenameTable_2	5030	yes	yes	true	62.8%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:aad807db4fb6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/aad807db4fb6 已被 git 跟踪）
-RenameTable_3	713	yes	yes	true	58.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:aad807db4fb6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/aad807db4fb6 已被 git 跟踪）
+Rename	7139	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:173b0ea3d073(COLLECTED) vcs:843afc0c2d9a(NEEDS_RERUN)	前提标注: constant_reg=200 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+RenameBuffer	40993	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:eeac500fbad6(NEEDS_RERUN) wt-renamebuf2:c4671b8d9671(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+RenameTable	3655	yes	yes	true	55.5%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:aad807db4fb6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+RenameTableWrapper	2249	yes	yes	false	exact	same	same	same	none	same	same	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:6aed766ee2eb(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+RenameTable_1	3952	yes	yes	true	67.8%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:aad807db4fb6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+RenameTable_2	5030	yes	yes	true	62.8%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:aad807db4fb6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+RenameTable_3	713	yes	yes	true	58.0%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:aad807db4fb6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 Repeater_1	217	yes	yes	true	49.2%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:fca707de44af	1	-	已在版本库里（evidence/fca707de44af 已被 git 跟踪）
 Repeater_2	221	yes	yes	true	49.8%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:fca707de44af	1	-	已在版本库里（evidence/fca707de44af 已被 git 跟踪）
 RequestArb	3320	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:4e3aa2c94341	1	-	已在版本库里（evidence/4e3aa2c94341 已被 git 跟踪）
@@ -1204,7 +1205,7 @@ RequestBuffer	3382	yes	yes	false	exact	same	same	trace_equal	same	same	none	same
 RightShiftModule	102	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:655cc0df124c	1	-	已在版本库里（evidence/655cc0df124c 已被 git 跟踪）
 RightShiftWordModule	102	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:655cc0df124c	1	-	已在版本库里（evidence/655cc0df124c 已被 git 跟踪）
 RightShifter	101	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:a6592249b2e0	1	-	已在版本库里（evidence/a6592249b2e0 已被 git 跟踪）
-RobEnqPtrWrapper	368	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8dded020a6c1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8dded020a6c1 已被 git 跟踪）
+RobEnqPtrWrapper	368	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:8dded020a6c1(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 RoundingUnit	112	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:94a5cd4bac2a	1	-	已在版本库里（evidence/94a5cd4bac2a 已被 git 跟踪）
 RoundingUnit_1	112	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:94a5cd4bac2a	1	-	已在版本库里（evidence/94a5cd4bac2a 已被 git 跟踪）
 RoundingUnit_11	111	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:94a5cd4bac2a	1	-	已在版本库里（evidence/94a5cd4bac2a 已被 git 跟踪）
@@ -1277,17 +1278,17 @@ SRT16Divint	937	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	sa
 SRT16Divint_4	1004	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:379b459189c3	1	-	已在版本库里（evidence/379b459189c3 已被 git 跟踪）
 SRT16Divint_6	1131	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:379b459189c3	1	-	已在版本库里（evidence/379b459189c3 已被 git 跟踪）
 SRT4qdsCons	106	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:96c3fe112cb4	1	-	已在版本库里（evidence/96c3fe112cb4 已被 git 跟踪）
-SSIT	35104	yes	yes	true	100.0%/wide	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:684cbdbaf05c	4	vcs:82fe3881c4d9(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-ssit:2382bd685523(NEEDS_RERUN)	已在版本库里（evidence/684cbdbaf05c 已被 git 跟踪）
+SSIT	35104	yes	yes	true	100.0%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	4	vcs:684cbdbaf05c(COLLECTED) vcs:82fe3881c4d9(NEEDS_RERUN) wt-ssit:2382bd685523(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 SatpFlushMod	139	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	1	-	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
 SatpModule	147	yes	yes	true	33.3%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	前提标注: constant_reg=1 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
 SbpctlModule	179	yes	yes	true	9.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
 Sbuffer	22215	yes	yes	true	82.6%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:74f0107f65db(COLLECTED)	已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
 SbufferData	24872	yes	yes	true	60.2%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:014a7e1521d4	1	-	已在版本库里（evidence/014a7e1521d4 已被 git 跟踪）
 ScauseModule	144	yes	yes	true	33.3%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:fca707de44af	1	-	已在版本库里（evidence/fca707de44af 已被 git 跟踪）
-Scheduler	7195	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:ce9bc7fb4823	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=54 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/ce9bc7fb4823 已被 git 跟踪）
-Scheduler_1	4205	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:24303747f040	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=231 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/24303747f040 已被 git 跟踪）
-Scheduler_2	4941	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:3810d3836a87	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=412 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/3810d3836a87 已被 git 跟踪）
-Scheduler_3	17586	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:df94aa52f4e1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=341 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/df94aa52f4e1 已被 git 跟踪）
+Scheduler	7195	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:ce9bc7fb4823(COLLECTED)	前提标注: constant_reg=54 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+Scheduler_1	4205	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:24303747f040(COLLECTED)	前提标注: constant_reg=231 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+Scheduler_2	4941	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:3810d3836a87(COLLECTED)	前提标注: constant_reg=412 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+Scheduler_3	17586	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:df94aa52f4e1(COLLECTED)	前提标注: constant_reg=341 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 ScontextModule	126	yes	yes	true	33.3%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8f1b34a87004	1	-	已在版本库里（evidence/8f1b34a87004 已被 git 跟踪）
 ScounterenModule	150	yes	yes	true	25.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
 ScountovfModule	107	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:400717601f67	2	vcs:124c66c500dd(NEEDS_RERUN)	已在版本库里（evidence/400717601f67 已被 git 跟踪）
@@ -1318,17 +1319,17 @@ Slice_2	10261	yes	yes	false	exact	same	same	same	bridged	same	same	same	same	COL
 Slice_3	10261	yes	yes	false	exact	same	same	same	bridged	same	same	same	same	COLLECTED	vcs:68d1a0932a12	6	vcs:0dc9c4532cf5(COLLECTED) vcs:1e99538b1f92(COLLECTED) vcs:45c861c20961(COLLECTED) vcs:ce9d0692bc8e(COLLECTED) vcs:e051dab3a0de(COLLECTED)	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/Slice/fm_pins_pre.tcl; 前提标注: constant_reg=1540 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/68d1a0932a12 已被 git 跟踪）
 SlvpredctlModule	163	yes	yes	true	11.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
 SmblockctlModule	187	yes	yes	true	25.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
-SnapshotGenerator	283	yes	yes	true	56.1%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	4	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-renamebuf2:5c8643e77c45(NEEDS_RERUN) wt-renamebuf2:c4671b8d9671(NEEDS_RERUN)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_1	283	yes	yes	true	57.6%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_11	283	yes	yes	true	56.8%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_12	283	yes	yes	true	58.6%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_14	635	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_2	346	yes	yes	true	56.8%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_3	283	yes	yes	true	56.1%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_4	913	yes	yes	true	50.2%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_5	955	yes	yes	true	50.2%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_6	1228	yes	yes	true	50.2%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
-SnapshotGenerator_7	258	yes	yes	true	56.8%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:eeac500fbad6	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/eeac500fbad6 已被 git 跟踪）
+SnapshotGenerator	283	yes	yes	true	56.1%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	4	vcs:eeac500fbad6(COLLECTED) wt-renamebuf2:5c8643e77c45(NEEDS_RERUN) wt-renamebuf2:c4671b8d9671(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_1	283	yes	yes	true	57.6%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_11	283	yes	yes	true	56.8%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_12	283	yes	yes	true	58.6%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_14	635	yes	yes	true	50.0%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_2	346	yes	yes	true	56.8%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_3	283	yes	yes	true	56.1%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_4	913	yes	yes	true	50.2%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_5	955	yes	yes	true	50.2%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_6	1228	yes	yes	true	50.2%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SnapshotGenerator_7	258	yes	yes	true	56.8%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:eeac500fbad6(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 SourceB	570	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:159b9c255274	2	wt-arb:852811706b4c(NEEDS_RERUN)	前提标注: constant_reg=13 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/159b9c255274 已被 git 跟踪）
 SpecBlock_v4	500	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:fa5bddf408ca	1	-	已在版本库里（evidence/fa5bddf408ca 已被 git 跟踪）
 SpfctlModule	243	yes	yes	true	25.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
@@ -1360,10 +1361,10 @@ Sstateen2Module	95	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	s
 Sstateen3Module	95	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:400717601f67	2	vcs:c215f6aa6df0(NEEDS_RERUN)	已在版本库里（evidence/400717601f67 已被 git 跟踪）
 SstcInterruptGen	148	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:92a50405-200c-csr-final	5	vcs:2632fccd-200c-csr-final(COLLECTED) vcs:fa200b1c-200c-final(NEEDS_RERUN) wt-newrtl-next200c:3568d0063514(NEEDS_RERUN) wt-newrtl-next200c:eaa601c2b3e1(SUPERSEDED)	已在版本库里（evidence/92a50405-200c-csr-final 已被 git 跟踪）
 Std	106	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:1bf831352049	1	-	已在版本库里（evidence/1bf831352049 已被 git 跟踪）
-StdFreeList	3654	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:a16cbfcc0c1d	4	vcs:40ec7fc36bb8(NEEDS_RERUN) vcs:e9987342c6f9(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/a16cbfcc0c1d 已被 git 跟踪）
-StdFreeList_1	2139	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:a16cbfcc0c1d	3	vcs:0e1b68b4ea73(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/a16cbfcc0c1d 已被 git 跟踪）
-StdFreeList_2	968	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:a16cbfcc0c1d	3	vcs:e9987342c6f9(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/a16cbfcc0c1d 已被 git 跟踪）
-StdFreeList_3	1163	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:a16cbfcc0c1d	3	vcs:e9987342c6f9(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/a16cbfcc0c1d 已被 git 跟踪）
+StdFreeList	3654	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	4	vcs:40ec7fc36bb8(NEEDS_RERUN) vcs:a16cbfcc0c1d(COLLECTED) vcs:e9987342c6f9(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+StdFreeList_1	2139	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:0e1b68b4ea73(NEEDS_RERUN) vcs:a16cbfcc0c1d(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+StdFreeList_2	968	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:a16cbfcc0c1d(COLLECTED) vcs:e9987342c6f9(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+StdFreeList_3	1163	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:a16cbfcc0c1d(COLLECTED) vcs:e9987342c6f9(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 StimecmpModule	128	yes	yes	true	33.3%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:cb2892a30a11	1	-	已在版本库里（evidence/cb2892a30a11 已被 git 跟踪）
 StopeiModule	99	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:400717601f67	2	vcs:124c66c500dd(NEEDS_RERUN)	已在版本库里（evidence/400717601f67 已被 git 跟踪）
 StopiModule	97	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:400717601f67	2	vcs:2d5cae5b9eb4(NEEDS_RERUN)	已在版本库里（evidence/400717601f67 已被 git 跟踪）
@@ -1382,14 +1383,14 @@ SubDirectory_1	824	yes	no	true	92.4%/wide	same	same	trace_equal	none	inert	same	
 SubModule	95	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:45cf2620708e	1	-	已在版本库里（evidence/45cf2620708e 已被 git 跟踪）
 SyncDataModuleTemplate_BackendPC_64entry	750	yes	yes	true	47.5%/wide	same	same	trace_equal	bridged	inert	none	same	same	COLLECTED	vcs:25cdce831a66	1	-	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/SyncDataModule/fm_pins_pre.tcl; emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/25cdce831a66 已被 git 跟踪）
 SyncDataModuleTemplate_FtqPC_64entry	563	yes	yes	true	53.8%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	3	vcs:25cdce831a66(NEEDS_RERUN) vcs:8b9c32ee57dd(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
-SyncDataModuleTemplate__1024entry	860	yes	yes	true	99.7%/wide	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:8b9c32ee57dd	3	vcs:25cdce831a66(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8b9c32ee57dd 已被 git 跟踪）
-SyncDataModuleTemplate__1024entry_1	995	yes	yes	true	98.7%/wide	same	same	trace_equal	bridged	inert	none	same	same	COLLECTED	vcs:25cdce831a66	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/SyncDataModule/fm_pins_pre.tcl; emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/25cdce831a66 已被 git 跟踪）
+SyncDataModuleTemplate__1024entry	860	yes	yes	true	99.7%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:25cdce831a66(NEEDS_RERUN) vcs:8b9c32ee57dd(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SyncDataModuleTemplate__1024entry_1	995	yes	yes	true	98.7%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:25cdce831a66(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 SyncDataModuleTemplate__64entry	810	yes	yes	true	78.3%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	3	vcs:25cdce831a66(NEEDS_RERUN) vcs:8b9c32ee57dd(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
 SyncDataModuleTemplate__64entry_1	952	yes	yes	true	80.4%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	3	vcs:25cdce831a66(NEEDS_RERUN) vcs:8b9c32ee57dd(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
 SyncDataModuleTemplate__64entry_2	558	yes	yes	true	84.7%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	3	vcs:25cdce831a66(NEEDS_RERUN) vcs:8b9c32ee57dd(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
 SyncDataModuleTemplate__64entry_3	1926	yes	yes	true	77.5%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	3	vcs:25cdce831a66(NEEDS_RERUN) vcs:8b9c32ee57dd(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
-SyncDataModuleTemplate__64entry_4	1866	yes	yes	true	89.7%/wide	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:8b9c32ee57dd	3	vcs:25cdce831a66(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8b9c32ee57dd 已被 git 跟踪）
-SyncDataModuleTemplate__64entry_5	266	yes	yes	true	83.4%/wide	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:8b9c32ee57dd	3	vcs:9154088d8da0(NEEDS_RERUN) wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8b9c32ee57dd 已被 git 跟踪）
+SyncDataModuleTemplate__64entry_4	1866	yes	yes	true	89.7%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:25cdce831a66(NEEDS_RERUN) vcs:8b9c32ee57dd(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+SyncDataModuleTemplate__64entry_5	266	yes	yes	true	83.4%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:8b9c32ee57dd(COLLECTED) vcs:9154088d8da0(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 TL2CHICoupledL2	7663	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:70deb97b6803	1	-	前提标注: constant_reg=371 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/70deb97b6803 已被 git 跟踪）
 TLB	2929	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	2	vcs:6571efce8ce6(COLLECTED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
 TLBFA	21303	yes	yes	true	97.7%/wide	same	same	same	same	same	none	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:010231dd9f68(NEEDS_RERUN)	已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
@@ -1440,8 +1441,8 @@ TlbStorageWrapper_1	1179	yes	yes	false	exact	same	same	same	same	same	none	same	
 TlbStorageWrapper_2	735	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:c62139c3f07b(COLLECTED)	已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
 TlbStorageWrapper_3	731	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:c62139c3f07b(COLLECTED)	已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
 TopDownMonitor	3760	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:b25fa9a98c29	1	-	已在版本库里（evidence/b25fa9a98c29 已被 git 跟踪）
-Trace	702	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:9154088d8da0	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/9154088d8da0 已被 git 跟踪）
-TraceBuffer	1184	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:9154088d8da0	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/9154088d8da0 已被 git 跟踪）
+Trace	702	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:9154088d8da0(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+TraceBuffer	1184	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:9154088d8da0(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 TrainFilter	808	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:058ddde1d96b	1	-	前提标注: constant_reg=1 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/058ddde1d96b 已被 git 跟踪）
 TrainFilter_1	754	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:058ddde1d96b	2	vcs:c8313ce28267(NEEDS_RERUN)	前提标注: constant_reg=1 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/058ddde1d96b 已被 git 跟踪）
 TrapEntryDEventModule	210	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:93b434c9-final	2	wt-newrtl-next200c:1ebc8f91-trap(SUPERSEDED)	已在版本库里（evidence/93b434c9-final 已被 git 跟踪）
@@ -1485,7 +1486,7 @@ UncacheEntry_6	1852	yes	yes	false	exact	same	same	trace_equal	none	same	none	sam
 UncacheEntry_7	1852	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8532d10539e3	1	-	前提标注: constant_reg=2 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/8532d10539e3 已被 git 跟踪）
 UncacheEntry_8	1852	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8532d10539e3	1	-	前提标注: constant_reg=2 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/8532d10539e3 已被 git 跟踪）
 UncacheEntry_9	1852	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8532d10539e3	1	-	前提标注: constant_reg=2 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/8532d10539e3 已被 git 跟踪）
-UopInfoGen	266	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:f40deba9439d	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/f40deba9439d 已被 git 跟踪）
+UopInfoGen	266	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f40deba9439d(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 V0RFReadArbiter	423	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:833a201786eb	1	-	已在版本库里（evidence/833a201786eb 已被 git 跟踪）
 V0RFWBCollideChecker	219	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:833a201786eb	1	-	已在版本库里（evidence/833a201786eb 已被 git 跟踪）
 V0RegFilePart0	642	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:833a201786eb	1	-	已在版本库里（evidence/833a201786eb 已被 git 跟踪）
@@ -1542,10 +1543,10 @@ VStopiModule	97	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same
 VStvalModule	132	yes	yes	true	33.3%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:fca707de44af	1	-	已在版本库里（evidence/fca707de44af 已被 git 跟踪）
 VStvecModule	140	yes	yes	true	33.3%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:fca707de44af	1	-	已在版本库里（evidence/fca707de44af 已被 git 跟踪）
 VTypeBuffer	1288	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:50c3e3521dd6	1	-	前提标注: constant_reg=9 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/50c3e3521dd6 已被 git 跟踪）
-VTypeGen	312	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2897a7dbeeb5	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/2897a7dbeeb5 已被 git 跟踪）
+VTypeGen	312	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:2897a7dbeeb5(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 VcsrModule	136	yes	yes	true	4.3%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:786d0b438756	1	-	已在版本库里（evidence/786d0b438756 已被 git 跟踪）
 VecDataSplitModule	152	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:a29f86c7a27c	1	-	已在版本库里（evidence/a29f86c7a27c 已被 git 跟踪）
-VecExceptionGen	340	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(NEEDS_RERUN)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
+VecExceptionGen	340	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(NEEDS_RERUN)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 VecExcpDataMergeModule	1825	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:6038c4afbc60	1	-	已在版本库里（evidence/6038c4afbc60 已被 git 跟踪）
 VectorCvt	256	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:51b225e2e01c	2	vcs:0cb325757095(COLLECTED)	前提标注: constant_reg=71 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/51b225e2e01c 已被 git 跟踪）
 VectorCvtTop	204	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:51b225e2e01c	2	vcs:0cb325757095(COLLECTED)	前提标注: constant_reg=142 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/51b225e2e01c 已被 git 跟踪）
@@ -1563,13 +1564,13 @@ VfRegFilePart3	2694	yes	yes	false	exact	same	same	trace_equal	none	same	none	sam
 VfofBuffer	876	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:20df9ac22c5f	2	vcs:27afa08caf5a(COLLECTED)	已在版本库里（evidence/20df9ac22c5f 已被 git 跟踪）
 VirtualLevelPermitModule	158	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:383bb8897f14	1	-	已在版本库里（evidence/383bb8897f14 已被 git 跟踪）
 VirtualLoadQueue	14257	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:46bca5d516ea	2	vcs:2844576edd7a(COLLECTED)	已在版本库里（evidence/46bca5d516ea 已被 git 跟踪）
-VlBusyTable	1401	yes	yes	true	84.2%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:f7b397210f5b	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/f7b397210f5b 已被 git 跟踪）
+VlBusyTable	1401	yes	yes	true	84.2%/wide	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f7b397210f5b(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 VlRFReadArbiter	423	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:833a201786eb	1	-	已在版本库里（evidence/833a201786eb 已被 git 跟踪）
 VlRFWBCollideChecker	202	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:833a201786eb	1	-	已在版本库里（evidence/833a201786eb 已被 git 跟踪）
 VlRegFile	606	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:833a201786eb	1	-	已在版本库里（evidence/833a201786eb 已被 git 跟踪）
 VldMergeUnit	767	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:1a087214915d	1	-	已在版本库里（evidence/1a087214915d 已被 git 跟踪）
 VldMgu	165	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:1a087214915d	1	-	已在版本库里（evidence/1a087214915d 已被 git 跟踪）
-VsetModule	125	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8dded020a6c1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8dded020a6c1 已被 git 跟踪）
+VsetModule	125	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:8dded020a6c1(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 VstartModule	133	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:383bb8897f14	1	-	已在版本库里（evidence/383bb8897f14 已被 git 跟踪）
 VtypeModule	151	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:383bb8897f14	1	-	已在版本库里（evidence/383bb8897f14 已被 git 跟踪）
 WBArbiter	219	yes	yes	true	76.5%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:201cb5db74de	2	vcs:173b0ea3d073(COLLECTED)	已在版本库里（evidence/201cb5db74de 已被 git 跟踪）
@@ -1585,10 +1586,10 @@ WBArbiter_58	155	yes	yes	true	35.7%/wide	same	same	trace_equal	same	same	none	sa
 WBArbiter_64	190	yes	yes	true	52.9%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:201cb5db74de	2	vcs:173b0ea3d073(COLLECTED)	已在版本库里（evidence/201cb5db74de 已被 git 跟踪）
 WBArbiter_65	227	yes	yes	true	59.1%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:201cb5db74de	2	vcs:173b0ea3d073(COLLECTED)	已在版本库里（evidence/201cb5db74de 已被 git 跟踪）
 WBArbiter_66	155	yes	yes	true	41.7%/wide	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:173b0ea3d073	3	vcs:8cf00b449a3d(NEEDS_RERUN) vcs:8f51e44d74e5(COLLECTED)	已在版本库里（evidence/173b0ea3d073 已被 git 跟踪）
-WaitTable	9481	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:f19e2a7b2dc1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/f19e2a7b2dc1 已被 git 跟踪）
+WaitTable	9481	yes	yes	false	exact	same	same	same	same	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f19e2a7b2dc1(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 WayLookup	3483	yes	yes	true	95.5%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:76d345fc6c4f(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
-WbDataPath	21416	yes	yes	false	exact	same	same	trace_equal	same	same	same	same	same	COLLECTED	vcs:f72c6cf69b28	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	前提标注: constant_reg=2 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/f72c6cf69b28 已被 git 跟踪）
-WbFuBusyTable	198	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
+WbDataPath	21416	yes	yes	false	exact	same	same	same	same	same	same	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:f72c6cf69b28(COLLECTED)	前提标注: constant_reg=2 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+WbFuBusyTable	198	yes	yes	true	0.0%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:9df1c6fb0545(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
 WordResultSelect	107	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:dcb7f549f5e6	2	wt-codex-result7:554d218bc95c(SUPERSEDED)	已在版本库里（evidence/dcb7f549f5e6 已被 git 跟踪）
 WrBypass	312	yes	yes	true	82.1%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:7b1dd37bad70(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
 WrBypass_32	386	yes	yes	true	81.6%/wide	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	2	vcs:7b1dd37bad70(COLLECTED)	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
@@ -1611,14 +1612,14 @@ fpdiv_r64_block_vector	1312	yes	yes	false	exact	same	same	trace_equal	none	same	
 fpsqrt_r16	559	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:44292961f2c0	1	-	前提标注: constant_reg=3 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/44292961f2c0 已被 git 跟踪）
 fpsqrt_r16_block	3575	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:44292961f2c0	1	-	已在版本库里（evidence/44292961f2c0 已被 git 跟踪）
 fpsqrt_vector_r16	1014	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:194f78e14165	2	vcs:5a3282d30ab1(NEEDS_RERUN)	前提标注: constant_reg=1 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/194f78e14165 已被 git 跟踪）
-indexedLSNumOfUopTable	176	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8dded020a6c1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8dded020a6c1 已被 git 跟踪）
-indexedLSUopTable_1	107	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
-indexedLSUopTable_2	105	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
-indexedLSUopTable_3	103	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
-indexedLSUopTable_4	103	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
-indexedLSUopTable_5	105	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
-indexedLSUopTable_6	107	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
-indexedLSUopTable_7	108	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:48de77752045	3	wt-backend-asm:9df1c6fb0545(SUPERSEDED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/48de77752045 已被 git 跟踪）
+indexedLSNumOfUopTable	176	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:8dded020a6c1(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+indexedLSUopTable_1	107	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+indexedLSUopTable_2	105	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+indexedLSUopTable_3	103	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+indexedLSUopTable_4	103	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+indexedLSUopTable_5	105	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+indexedLSUopTable_6	107	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
+indexedLSUopTable_7	108	yes	yes	true	0.0%	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	3	vcs:48de77752045(COLLECTED) wt-decodecomp3:74ab74ecc987(SUPERSEDED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 instretModule	122	yes	yes	true	50.0%/wide	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8f1b34a87004	1	-	已在版本库里（evidence/8f1b34a87004 已被 git 跟踪）
 lzc	214	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:96c3fe112cb4	1	-	已在版本库里（evidence/96c3fe112cb4 已被 git 跟踪）
 lzc_3	145	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:96c3fe112cb4	1	-	已在版本库里（evidence/96c3fe112cb4 已被 git 跟踪）
@@ -1632,5 +1633,5 @@ r4_qds_v2_spec	150	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	s
 skidBufferConnect	1265	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:7b1acd0b334d	1	-	前提标注: constant_reg=284 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/7b1acd0b334d 已被 git 跟踪）
 slidednVs2VdTable	365	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:3c0ff31ede22	1	-	已在版本库里（evidence/3c0ff31ede22 已被 git 跟踪）
 slideupVs2VdTable	262	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:3c0ff31ede22	1	-	已在版本库里（evidence/3c0ff31ede22 已被 git 跟踪）
-strdiedLSNumOfUopTable	109	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:8dded020a6c1	2	wt-backend-asm:9df1c6fb0545(SUPERSEDED)	已在版本库里（evidence/8dded020a6c1 已被 git 跟踪）
+strdiedLSNumOfUopTable	109	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:9df1c6fb0545	2	vcs:8dded020a6c1(COLLECTED)	已在版本库里（evidence/9df1c6fb0545 已被 git 跟踪）
 timeModule	151	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2f9bb8a2b814	1	-	已在版本库里（evidence/2f9bb8a2b814 已被 git 跟踪）
