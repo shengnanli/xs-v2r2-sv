@@ -613,6 +613,78 @@ def green_child_designs(allow):
                    if o.get('class') == 'green_child'})
 
 
+MEMORY_CLASS = 'APPROVED_MEMORY_MACRO_MODEL'
+
+
+def approved_memory_interface_designs(repo, parent_commit, allow, g1_root):
+    """codex 0230 问题 1：allow 里以 **interface-only**（attrs='i'）对称黑盒声明为 APPROVED_MEMORY_MACRO_MODEL、
+    且在父 commit 上当前有效的 design 集合。返回 (sorted list, None) 或 (None, 失败原因)。
+
+    每个这样的 design 都必须逐项成立，任一不成立即整体失败（fail-closed，不是「剔除后继续」）：
+      1. allow 里该 design 的**全部**对象都是 class=APPROVED_MEMORY_MACRO_MODEL 且 attrs='i'
+         （与 vendor_macro / green_child / 'u' 黑盒混用即错）；
+      2. 两侧对称：r 与 i 对象各 ≥1、数目相等、去掉 `r:`/`i:` 前缀后的路径集合相同、无重复；
+      3. 父 commit 的 verif/vendor_boundary.tsv 里**恰好一行**字面 design_pattern == design、
+         kind == APPROVED_MEMORY_MACRO_MODEL、body_rule 含 symmetric_both_sides_only 与 pin_by=leaf_sha256；
+      4. G1：该行 leaf_file 在 G1 golden-rtl 里的字节 sha256 == 行内 leaf_sha256 == G1 MANIFEST 记录；
+      5. 该 G1 文件过 audit_ram_memory_model 的 M1 精确模板（逐字等于 firtool 行为级 RAM 叶子）——
+         登记行即便被伪造成指向一个普通逻辑模块，这里也拦得住。
+    attrs='u'（两侧都不读、未解析黑盒）的 APPROVED_MEMORY_MACRO_MODEL 不进 hdlin_interface_only，
+    也就不在本集合里（GrantBuffer / L2TlbMissQueue 等既有证书即此形态）。"""
+    by = {}
+    for o in (allow or {}).get('objects') or []:
+        by.setdefault(o.get('design'), []).append(o)
+    mem = sorted(d for d, objs in by.items()
+                 if any(o.get('class') == MEMORY_CLASS and o.get('attrs') == 'i' for o in objs))
+    if not mem:
+        return [], None
+    vb = repo.show(parent_commit, VENDOR_BOUNDARY_PATH)
+    rows = []
+    if vb is not None:
+        for ln in vb.decode('utf-8').splitlines():
+            if ln.startswith('#') or not ln.strip():
+                continue
+            rows.append(ln.split('\t'))
+    man = _g1_manifest(g1_root) if g1_root else None
+    for d in mem:
+        objs = by[d]
+        if any(o.get('class') != MEMORY_CLASS or o.get('attrs') != 'i' for o in objs):
+            return None, 'memory_interface_only_mixed_declaration:%s' % d
+        rp = [o.get('path') or '' for o in objs if o.get('side') == 'r']
+        ip = [o.get('path') or '' for o in objs if o.get('side') == 'i']
+        if any(o.get('side') not in ('r', 'i') for o in objs):
+            return None, 'memory_interface_only_bad_side:%s' % d
+        rn = [x[2:] for x in rp if x.startswith('r:')]
+        inn = [x[2:] for x in ip if x.startswith('i:')]
+        if (not rp or len(rp) != len(ip) or len(rn) != len(rp) or len(inn) != len(ip)
+                or len(set(rn)) != len(rn) or len(set(inn)) != len(inn) or sorted(rn) != sorted(inn)):
+            return None, 'memory_interface_only_asymmetric:%s:r=%d,i=%d' % (d, len(rp), len(ip))
+        hit = [r for r in rows if r and r[0] == d]
+        if len(hit) != 1:
+            return None, 'memory_interface_only_unregistered:%s:%d_rows' % (d, len(hit))
+        r = hit[0]
+        if len(r) < 10 or r[1] != MEMORY_CLASS:
+            return None, 'memory_interface_only_wrong_registry_kind:%s:%s' % (d, r[1] if len(r) > 1 else '?')
+        if 'symmetric_both_sides_only' not in r[9] or 'pin_by=leaf_sha256' not in r[9]:
+            return None, 'memory_interface_only_registry_body_rule:%s' % d
+        if not g1_root:
+            return None, 'memory_interface_only_g1_root_missing:%s' % d
+        gf = pathlib.Path(g1_root) / 'golden-rtl' / r[3]
+        if not gf.is_file():
+            return None, 'memory_interface_only_g1_file_missing:%s:%s' % (d, r[3])
+        gsha = hashlib.sha256(gf.read_bytes()).hexdigest()
+        if gsha != r[4] or not man or man.get(r[3]) != r[4]:
+            return None, 'memory_interface_only_g1_hash_mismatch:%s:file=%s,registry=%s,manifest=%s' % (
+                d, gsha[:12], r[4][:12], (man or {}).get(r[3], '-')[:12])
+        if str(_HERE) not in sys.path:
+            sys.path.insert(0, str(_HERE))
+        import audit_ram_memory_model as _ARM
+        ok1, why1, _ = _ARM.m1_memory_only(gf, d)
+        if not ok1:
+            return None, 'memory_interface_only_not_memory_template:%s:%s' % (d, why1.splitlines()[0][:80])
+    return mem, None
+
+
 def parse_tcl_name_list(v):
     """hdlin_interface_only 的回读值按 Tcl list 解析成名字列表；含花括号/引号等非简单名字 → None（判错）。"""
     if v is None:
@@ -686,11 +758,20 @@ def validate_certificate_current(repo, parent_commit, child, doc,
 
     # entry appvar：POLICY 钉死值精确比较；唯独 hdlin_interface_only 改为**声明驱动**（codex 0224 §1）——
     # 回读值按 Tcl list 解析、不许重复，去重排序后必须严格等于本证书 allow 里 green_child 的 design 集合
-    # （没有 green_child 则必须为空）。MC_MEMORY_* 不计入。
+    # ∪ 逐条登记且当前有效的 interface-only APPROVED_MEMORY_MACRO_MODEL design 集合（codex 0230 问题 1；
+    # 两者都没有则必须为空）。MC_MEMORY_* / vendor_macro / 未登记 RAM 不计入。
     allow, aerr = _allow_doc_of(repo, parent_commit, doc)
     if aerr:
         return 'green_child_%s:%s' % (aerr, child)
     gc_designs = green_child_designs(allow)
+    # codex 0230 问题 1：回读集合 = green_child design 集合 ∪ 本 allow 里逐条声明、在父 commit 上当前有效的
+    # interface-only APPROVED_MEMORY_MACRO_MODEL design 集合（两者并列，不互相冒充；同一 design 两类都占即错）
+    mem_designs, merr = approved_memory_interface_designs(repo, parent_commit, allow, g1_root)
+    if merr:
+        return 'green_child_%s:%s' % (merr, child)
+    if set(mem_designs) & set(gc_designs):
+        return 'green_child_interface_only_class_overlap:%s:%s' % (child, sorted(set(mem_designs) & set(gc_designs)))
+    declared_io = sorted(set(gc_designs) | set(mem_designs))
     appvars = (doc['proof_config'].get('entry_appvars_readback') or {})
     for k, want in policy['pinned_entry_appvars'].items():
         if k == 'hdlin_interface_only':
@@ -699,9 +780,9 @@ def validate_certificate_current(repo, parent_commit, child, doc,
                 return 'green_child_interface_only_unparsable:%s:%r' % (child, appvars.get(k))
             if len(got) != len(set(got)):
                 return 'green_child_interface_only_duplicate:%s:%r' % (child, appvars.get(k))
-            if sorted(got) != gc_designs:
-                return ('green_child_interface_only_not_declared_set:%s:readback=%s,green_child=%s'
-                        % (child, sorted(got), gc_designs))
+            if sorted(got) != declared_io:
+                return ('green_child_interface_only_not_declared_set:%s:readback=%s,green_child=%s,memory=%s'
+                        % (child, sorted(got), gc_designs, mem_designs))
             continue
         if appvars.get(k) != want:
             return ('green_child_appvar_policy_mismatch:%s:%s=%r!=%r'

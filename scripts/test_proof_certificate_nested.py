@@ -72,6 +72,9 @@ class Tree(object):
        mc=True                       LA 的 impl 闭包挂真实 MC 模型 ram_16x25（并把真实登记表放进仓库）
        ed={target: value}            强制 external_dependency
        shape='TM'|'TMN'              T 下面只挂 M，或 M 与 N（N 也挂 LA）
+       extra_gold={name: bytes}      额外 G1 文件（进 MANIFEST）
+       extra_files={rel: text}       额外仓库文件（随 C1 提交）
+       g1_override={name: bytes}     写完 MANIFEST 后再改 G1 字节
        post=fn(tree)                 C3 突变"""
 
     def __init__(self, **h):
@@ -85,6 +88,7 @@ class Tree(object):
         gold = {'%s.sv' % t: ('module %s; endmodule // golden\n' % t).encode() for t in TARGETS}
         if h.get('mc'):
             gold['ram_16x25.sv'] = (G1REAL / 'ram_16x25.sv').read_bytes()
+        gold.update(h.get('extra_gold', {}))       # 供 test_proof_certificate_memory.py：额外 G1 文件（进 MANIFEST）
         for n, b in gold.items():
             (self.g1 / 'golden-rtl' / n).write_bytes(b)
         (self.g1 / 'MANIFEST.tsv').write_text(''.join('%s\t%d\t%s\n' % (sha(b), len(b), n) for n, b in gold.items()))
@@ -99,6 +103,10 @@ class Tree(object):
         if h.get('mc'):
             for rel in ('verif/mc_memory_registry.tsv', 'verif/vendor_boundary.tsv'):
                 self.w(rel, (HOME / rel).read_text())
+        for rel, text in h.get('extra_files', {}).items():   # 冻结夹具（如 vendor_boundary.tsv）随 C1 提交
+            self.w(rel, text)
+        for n, b in h.get('g1_override', {}).items():         # G1 字节被换但 MANIFEST 照旧（错 hash 负例）
+            (self.g1 / 'golden-rtl' / n).write_bytes(b)
         sh(self.repo_dir, 'git', 'init', '-q')
         sh(self.repo_dir, 'git', 'config', 'user.email', 'f@t')
         sh(self.repo_dir, 'git', 'config', 'user.name', 'f')
