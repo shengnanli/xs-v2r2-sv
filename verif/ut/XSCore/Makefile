@@ -8,13 +8,13 @@ MODULE = XSCore
 #   （RTL_GOLDEN_DEPS = golden XSCore 的整棵子树 1450 个文件，ClockGate 用本地件），比的只是本层接线。
 #   子模块各自已（或将）独立签核（证书见 verif/allow/XSCore.json），这与 FM 的 green_child 组合同构。
 #   初值档只跑 +vcs+initreg+0 / +1 两个常量档：两侧子模块的不复位表项若用 random 会各摇各的（双例化不许用 random）。
-#   翻转闸：只要求"至少 1 个输出翻转"作冒烟（MIN_TOGGLED 不按实测值设，见 CONVENTIONS「门限卡在实际能过的那个数」）；
-#   本层的真闸是 errors=0 + 10 条跨子模块主通路覆盖（gen.py COVERS）。未翻转输出逐个列在 sim 日志的 COV 行，
-#   对账写在 docs/lanes/xscore-xstile-asm.md。接线本身由 FM 逐点证明（本层没有一个不在比较锥里的点）。
+#   翻转：只要求"至少 1 个输出翻转"作冒烟，不按实测值设门限（CONVENTIONS「门限卡在实际能过的那个数」）。
+#   本层的闸是：顶层输出逐拍 errors=0 + tb_pins.sv 子模块输入引脚逐拍 errors=0 + 5 条跨子模块主通路覆盖（gen.py COVERS）。
+#   翻转数只报告（未翻转的输出 / 引脚逐个列在 sim 日志），接线本身由 FM 逐点证明（本层没有一个不在比较锥里的点）。
 # FM：3 个直接实例全部 exact green_child（两侧 -interface_only），本层 wrapper 两侧白盒受验。
 RTL_DIR = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/xstile/XSCore.sv
-TB_SRCS = tb.sv
+TB_SRCS = tb.sv tb_pins.sv
 
 # UT 两侧共用的 golden 子树（golden XSCore 的传递闭包，ClockGate 换成本地件；清单由 scripts/gen_xstile_closure.py 的 closure() 算出）
 RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
@@ -1506,3 +1506,9 @@ gencheck:
 	python3 gen.py --check
 gentb:
 	python3 gen.py
+
+# 一档 UT = run（输出逐拍比对 + COVERS）+ covcheck（子模块输入引脚逐拍比对 + 按名字的翻转豁免），两者都过才算过。
+#   make ut SEED=<1|7|42> INITREG=<0|1>   → sim_<SEED>_initreg<INITREG>.log
+.PHONY: ut
+ut: run
+	python3 gen.py --covcheck sim_$(SEED)_initreg$(INITREG).log

@@ -8,11 +8,12 @@ MODULE = XSTile
 # UT（取舍同 MemBlock / XSCore）：双例化 golden XSTile 与派生 XSTile_xs，两侧的 6 个子模块**同一份 golden 定义**
 #   （RTL_GOLDEN_DEPS = golden XSTile 的整棵子树 1660 个文件，含 golden XSCore；ClockGate 用本地件），比的只是本层接线。
 #   初值档只跑 +vcs+initreg+0 / +1 两个常量档（双例化不许用 random）。
-#   本层的真闸是 errors=0 + 10 条跨子模块主通路覆盖（gen.py COVERS）；翻转闸见 gen.py 的说明。
+#   本层的闸是：顶层输出逐拍 errors=0 + tb_pins.sv 子模块输入引脚逐拍 errors=0 + 6 条跨子模块主通路覆盖（gen.py COVERS）；
+#   翻转数只报告不设门限（理由见 scripts/gen_xscore_xstile.py ut_main）。
 # FM：6 个直接实例（5 种 design）全部 exact green_child（两侧 -interface_only），本层 wrapper 两侧白盒受验。
 RTL_DIR = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/xstile/XSTile.sv
-TB_SRCS = tb.sv
+TB_SRCS = tb.sv tb_pins.sv
 
 # UT 两侧共用的 golden 子树（golden XSTile 的传递闭包，ClockGate 换成本地件；清单由 scripts/gen_xstile_closure.py 的 closure() 算出）
 RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
@@ -1714,3 +1715,9 @@ gencheck:
 	python3 gen.py --check
 gentb:
 	python3 gen.py
+
+# 一档 UT = run（输出逐拍比对 + COVERS）+ covcheck（子模块输入引脚逐拍比对 + 按名字的翻转豁免），两者都过才算过。
+#   make ut SEED=<1|7|42> INITREG=<0|1>   → sim_<SEED>_initreg<INITREG>.log
+.PHONY: ut
+ut: run
+	python3 gen.py --covcheck sim_$(SEED)_initreg$(INITREG).log

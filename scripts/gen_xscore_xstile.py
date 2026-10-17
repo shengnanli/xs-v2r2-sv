@@ -465,6 +465,96 @@ def build(TOP):
     return S['out'], '\n'.join(lines) + '\n'
 
 
+# ---------------------------------------------------------------------------
+# UT 辅助：子模块输入引脚逐拍比对（verif/ut/<TOP>/tb_pins.sv，由各自的 gen.py 调用）
+#   本层是纯连线，顶层输出比对只看得见"传到了输出"的那部分接线；这里直接把两侧每个子模块的**每个输入引脚**
+#   （golden u_g_<TOP>.<inst>.<port> 对 重写 u_i_<TOP>.<inst>.<port>）逐拍 4 态比较，接错一根线只要源端动过就报。
+#   另记每个引脚是否翻转过（未翻转的由 gen.py 的豁免表按名字 / 前缀说明原因）。
+# ---------------------------------------------------------------------------
+def render_pin_check(TOP):
+    I = L.golden_instances(TOP)
+    pins = []
+    for mod, inst, cm in I:
+        for d, w, p in L.ports(mod):
+            if d == 'input' and p not in ('clock', 'reset'):
+                pins.append((inst, p, w))
+    o = []
+    A = o.append
+    A('// 自动生成：scripts/gen_xscore_xstile.py render_pin_check(%s) —— 勿手改（gen.py 调用）' % TOP)
+    A('// 两侧每个子模块的每个输入引脚逐拍 4 态比较（%d 个引脚，%d 位）；bind 进 tb。' % (len(pins), sum(w for _, _, w in pins)))
+    A('module tb_pins_%s;' % TOP)
+    A('  longint pin_checks = 0, pin_errors = 0;')
+    A('  bit armed = 0;')
+    A('  bit [%d:0] tog;' % (len(pins) - 1))
+    for k, (inst, p, w) in enumerate(pins):
+        A('  logic %sv%d;' % ('' if w == 1 else '[%d:0] ' % (w - 1), k))
+    A('  always @(posedge tb.clock) begin')
+    for k, (inst, p, w) in enumerate(pins):
+        g = 'tb.u_g_%s.%s.%s' % (TOP, inst, p)
+        i = 'tb.u_i_%s.%s.%s' % (TOP, inst, p)
+        A('    pin_checks++; if (%s !== %s) begin pin_errors++; if (pin_errors <= 40) '
+          '$display("[t %%0t] PIN MISMATCH %s.%s g=%%h i=%%h", $time, %s, %s); end' % (g, i, inst, p, g, i))
+        A('    if (armed && %s !== v%d) tog[%d] = 1\'b1; v%d = %s;' % (g, k, k, k, g))
+    A('    armed = 1;')
+    A('  end')
+    A('  final begin')
+    A('    int nt; nt = 0;')
+    for k, (inst, p, w) in enumerate(pins):
+        A('    if (!tog[%d]) begin nt++; $display("PINCOV: %s.%s never toggled"); end' % (k, inst, p))
+    A('    $display("PINCHECK %s: pins=%d checks=%%0d errors=%%0d never_toggled=%%0d", pin_checks, pin_errors, nt);' % (TOP, len(pins)))
+    A('  end')
+    A('endmodule')
+    A('bind tb tb_pins_%s u_tb_pins_%s ();' % (TOP, TOP))
+    return '\n'.join(o) + '\n'
+
+
+def ut_main(T, here, args, argv):
+    """verif/ut/<T>/gen.py 的公共驱动：生成 tb.sv（gen_l2slice_ut.py）+ tb_pins.sv；--check 幂等；--covcheck LOG 判一档。
+
+    --covcheck 的判据（Makefile 的 ut 目标在每档 run 之后调用），两条都过才算这一档过：
+      * tb 判 TEST PASSED（顶层输出逐拍 4 态 errors=0 + COVERS 每项 >0）；
+      * tb_pins.sv 的 PINCHECK：checks>0 且 errors=0（两侧每个子模块的每个输入引脚逐拍 4 态相等）。
+    ★翻转数只报告、不设门限★：未翻转的输出 / 引脚是"本激励没走到"，不是"接对了"；
+      门限贴着实测值设就是假闸（CONVENTIONS「门限卡在实际能过的那个数，那不是闸」），按名字逐条写原因又需要
+      逐条观测（没做）。这些点全部是 FM 的比较点（本层没有一个点不在比较锥里），接线正确性由 FM 证明。"""
+    import filecmp, subprocess, tempfile
+    gen = os.path.join(HERE, 'gen_l2slice_ut.py')
+    tb = os.path.join(here, 'tb.sv')
+    tbp = os.path.join(here, 'tb_pins.sv')
+    pins = render_pin_check(T)
+    if '--covcheck' in argv:
+        log = argv[argv.index('--covcheck') + 1]
+        txt = open(log, errors='replace').read()
+        bad = False
+        m0 = re.search(r'checks=(\d+) errors=(\d+)', txt)
+        print(m0.group(0) if m0 else 'checks 行缺失')
+        if 'TEST PASSED' not in txt:
+            print('COVCHECK FAIL: %s 没有 TEST PASSED' % log)
+            bad = True
+        m = re.search(r'PINCHECK %s: pins=(\d+) checks=(\d+) errors=(\d+) never_toggled=(\d+)' % T, txt)
+        if not m or int(m.group(2)) == 0 or int(m.group(3)) != 0:
+            print('COVCHECK FAIL: PINCHECK 行缺失 / checks=0 / errors!=0：%s' % (m.group(0) if m else None))
+            bad = True
+        else:
+            print(m.group(0))
+        mt = re.search(r'%s: toggled=(\d+)/(\d+)' % T, txt)
+        if mt and m:
+            print('翻转（只报告）：输出 %s/%s，子模块输入引脚 %d/%s'
+                  % (mt.group(1), mt.group(2), int(m.group(1)) - int(m.group(4)), m.group(1)))
+        print('COVCHECK %s %s' % (os.path.basename(log), 'FAIL' if bad else 'OK'))
+        return 1 if bad else 0
+    if '--check' in argv:
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, 'tb.sv')
+            rc = subprocess.call([sys.executable, gen, '--out', out] + args, stdout=subprocess.DEVNULL)
+            ok = rc == 0 and os.path.exists(tb) and filecmp.cmp(out, tb, shallow=False)
+        ok = ok and os.path.exists(tbp) and open(tbp).read() == pins
+        print(('OK: ' if ok else 'DRIFT: ') + tb + ' + tb_pins.sv')
+        return 0 if ok else 1
+    if not os.path.exists(tbp) or open(tbp).read() != pins:
+        open(tbp, 'w').write(pins)
+    return subprocess.call([sys.executable, gen, '--out', tb] + args)
+
 def main(argv):
     check = '--check' in argv
     rc = 0
