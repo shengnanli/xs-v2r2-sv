@@ -1,0 +1,213 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T07:55:05Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/indexedLSNumOfUopTable",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSNumOfUopTable.sv",
+    "sha256": "ea7f1c166e6212533dc3164960608399912ffdd14dcf789fdbb5eb2b0bcea934"
+   }
+  ],
+  "golden_sha256": "1187d73d524bfee0b664137d4633ef19f018201d7eb18d26c10d45b9b4d0fed7",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/backend_common_pkg.sv",
+    "sha256": "f404f8ee5d07d1dd5641a9aab807b29e58ac560529c03fb05f92cd742263b87b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/VsetModule.sv",
+    "sha256": "f687822b4c3bd249f8506721ce1d417964bae8268c1085c94d4597858801dc8c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/strdiedLSNumOfUopTable.sv",
+    "sha256": "0837c38624873a0df386d06e873c6db11f5b88abd50a30cf48087494c5c8a59d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/indexedLSNumOfUopTable.sv",
+    "sha256": "b91c5d7f401fa4aa3ee1da766f9dfe62c433fcda683f4b607c533364b10e2b42"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntToFP.sv",
+    "sha256": "2eeec42c67e25a05415910c2e5e96cd5998e81a00d541f893e4a2b47e5a97f25"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntToFP_1.sv",
+    "sha256": "87732ae0484df820409d811d27062439bc42ff285ba1cd5eccda70f3da7ea336"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntToFP_2.sv",
+    "sha256": "9c2e1098e707536469dae592f251750731245666641b1347177c836dd0129b17"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntToFP_prenorm.sv",
+    "sha256": "c0dd8f2251af6ff5413dd1d8a1aeec65f78bfba1eaad9594f6be67bb89fe1224"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntToFP_postnorm.sv",
+    "sha256": "ab0cfe2c400c2faf7ef7960952b640281900e438e1f4673bb5f0f3cb865b6340"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntToFP_postnorm_1.sv",
+    "sha256": "e1a23e22d02e5019edaee64b353281d62466d79a76437276dd41fe08e74e5ac4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntToFP_postnorm_2.sv",
+    "sha256": "7d421844490009d216693f9e4d574d4c4bb1bf0573443c96e2606bb1c0a78e52"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit.sv",
+    "sha256": "573c6b484ea6e06de36a76b493a7e2ff2aa0ebe9b429b5a6754d6fe21b10056b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_1.sv",
+    "sha256": "f0c0eb5cefb0450de19b0a30dbec6175b7e2d1e6f99bd8bfcdb74798a53ef2a3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_2.sv",
+    "sha256": "4063fe3d92b6a2219aaeda9a862efb699fd536dcaf81882373ab5712b7baabe9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/LZA.sv",
+    "sha256": "e1d17c9bef2d03541e440fe57c30abb79acb06247ba4e9b8d852111f45df8d55"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/CLZ.sv",
+    "sha256": "e58361661e67af8c64b873742d9cac36dd3bb683b23efeb6d1470c09b55b1e0f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_CLZ_core.sv",
+    "sha256": "a78b562f0e9e3cea035fe842d93ec37f274004113fe80305b78fedd68bcaa8af"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntToFPDataModule.sv",
+    "sha256": "fbd8207228f10d5a8de6ee2c51e4594ee66c9761069e9532c421c1733fe21e00"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/alu_pkg.sv",
+    "sha256": "a96bc0038f0fd54e14032e146fb3775e15ae102e0b5b02666b82f2ef1aea5011"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Alu.sv",
+    "sha256": "bc754c0415285e79e4489ba94967f1cfdabd602ff73b846fd07c10c65cd1ba7b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/AluDataModule.sv",
+    "sha256": "89ab055721bd3345d834ad51b03d584614022b28b2bcfe766aebdfa1d2d8cf9b"
+   }
+  ],
+  "impl_sha256": "34e2e1885982fbd431a649935530c844bd53030e505d6b2e1d6a15dd5dd9a981",
+  "repo_impl_files": 21
+ },
+ "native_facts_sha256": "dbaf93b0fe77aa426dc4d9f75c7a49b4a2f28bfb06bbdc450b06eed185e0878b",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 7,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "a43c3d57c5ad76d109458258d6a8bd22078ea3776ad03a1f06e326a8786b12e2",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh BeDataLeaves indexedLSNumOfUopTable",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "30bbd598eaba100b0c42491e069b6a65409e8c5a212897c213a6e7e73d3c4861",
+ "run_id": "BeDataLeaves-20261011T075415Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "indexedLSNumOfUopTable",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "BeDataLeaves",
+ "variant": "indexedLSNumOfUopTable",
+ "verdict": "SUCCEEDED"
+}

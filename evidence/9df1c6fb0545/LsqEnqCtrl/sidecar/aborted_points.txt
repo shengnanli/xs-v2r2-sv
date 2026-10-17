@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/LsqEnqCtrl
+Implementation : i:/WORK/LsqEnqCtrl
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 03:08:50 2026
+**************************************************
+
+No aborted compare points.
+
+1

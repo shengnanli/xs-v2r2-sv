@@ -1,0 +1,133 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T07:07:06Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/RegCacheTagTable",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegCacheTagTable.sv",
+    "sha256": "ee8519294c6e1c6edb458da89e9988462b6919ff89273ba64cd7d5259b4a1ba5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegCacheTagModule.sv",
+    "sha256": "2f8652026971b420aa713b405d25d513c70968d744c5982c174f52e5e4bca9da"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegCacheTagModule_1.sv",
+    "sha256": "ad7c2cd990cbad0b650a9c054fbbc1ac63fc6b7fbf45cff8b1ff5ae74aa8761b"
+   }
+  ],
+  "golden_sha256": "735e2111f7a47bd8cd448bd16ff3e352592512cea1ffd1c7bfa599734cb66652",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheTagModule.sv",
+    "sha256": "062da5d09787c47db656c046fd932bd28fd98a633d8946b22c3fc4b123ca8171"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheTagModule_1.sv",
+    "sha256": "9538c7a6480b3465996e860f8c319cf87f902c127314af3038ff2cd21ca3d140"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheTagTable.sv",
+    "sha256": "8b6c8903168422225722ed29743f433710bd9fe6dc5d97b13c9bda49b01b6abd"
+   }
+  ],
+  "impl_sha256": "af9a38cbe77813bd631854ecd1f8d4d7d590f2bcb93d7254226fb13ecbb7b300",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "2b48a8af9487cc97c1c9a406d82e0eb3a206817666738bde65afd5f93a875507",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 444,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "faced793c26a7afa015a90bb4eb85794d57e28a5946d9cf59782cdec4845f1a0",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh RegCacheTagTable RegCacheTagTable",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "a0cf4eac747d403946a2186d75636db55f0bf5a59d9525b5261f10a087d4d09d",
+ "run_id": "RegCacheTagTable-20261011T070602Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "RegCacheTagTable",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RegCacheTagTable",
+ "variant": "RegCacheTagTable",
+ "verdict": "SUCCEEDED"
+}

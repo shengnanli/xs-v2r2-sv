@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/MemCtrl
+Implementation : i:/WORK/MemCtrl
+Version        : V-2023.12-SP3
+Date           : Sun Oct 11 02:41:24 2026
+**************************************************
+
+No aborted compare points.
+
+1

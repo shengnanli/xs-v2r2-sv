@@ -1,0 +1,168 @@
+{
+  "target": "Backend",
+  "ut": "Backend",
+  "regs": 1297,
+  "outs": 68940,
+  "expected": 280043,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 209806,
+  "bbox": {
+    "BypassNetwork": {
+      "insts": 1,
+      "in_bits": 29440,
+      "points": 29440
+    },
+    "CtrlBlock": {
+      "insts": 1,
+      "in_bits": 20908,
+      "points": 20908
+    },
+    "DataPath": {
+      "insts": 1,
+      "in_bits": 11053,
+      "points": 11053
+    },
+    "DelayN_1": {
+      "insts": 3,
+      "in_bits": 2,
+      "points": 6
+    },
+    "ExuBlock": {
+      "insts": 1,
+      "in_bits": 8639,
+      "points": 8639
+    },
+    "ExuBlock_1": {
+      "insts": 1,
+      "in_bits": 4414,
+      "points": 4414
+    },
+    "ExuBlock_2": {
+      "insts": 1,
+      "in_bits": 6899,
+      "points": 6899
+    },
+    "HPerfMonitor_2": {
+      "insts": 1,
+      "in_bits": 1083,
+      "points": 1083
+    },
+    "NewPipelineConnectPipe": {
+      "insts": 4,
+      "in_bits": 837,
+      "points": 3348
+    },
+    "NewPipelineConnectPipe_1": {
+      "insts": 2,
+      "in_bits": 1024,
+      "points": 2048
+    },
+    "NewPipelineConnectPipe_10": {
+      "insts": 2,
+      "in_bits": 908,
+      "points": 1816
+    },
+    "NewPipelineConnectPipe_13": {
+      "insts": 3,
+      "in_bits": 1377,
+      "points": 4131
+    },
+    "NewPipelineConnectPipe_14": {
+      "insts": 1,
+      "in_bits": 1383,
+      "points": 1383
+    },
+    "NewPipelineConnectPipe_16": {
+      "insts": 1,
+      "in_bits": 1381,
+      "points": 1381
+    },
+    "NewPipelineConnectPipe_18": {
+      "insts": 2,
+      "in_bits": 864,
+      "points": 1728
+    },
+    "NewPipelineConnectPipe_20": {
+      "insts": 3,
+      "in_bits": 937,
+      "points": 2811
+    },
+    "NewPipelineConnectPipe_23": {
+      "insts": 2,
+      "in_bits": 1590,
+      "points": 3180
+    },
+    "NewPipelineConnectPipe_25": {
+      "insts": 2,
+      "in_bits": 130,
+      "points": 260
+    },
+    "NewPipelineConnectPipe_5": {
+      "insts": 1,
+      "in_bits": 1036,
+      "points": 1036
+    },
+    "NewPipelineConnectPipe_7": {
+      "insts": 1,
+      "in_bits": 919,
+      "points": 919
+    },
+    "NewPipelineConnectPipe_8": {
+      "insts": 1,
+      "in_bits": 910,
+      "points": 910
+    },
+    "NewPipelineConnectPipe_9": {
+      "insts": 2,
+      "in_bits": 843,
+      "points": 1686
+    },
+    "Og2ForVector": {
+      "insts": 1,
+      "in_bits": 10234,
+      "points": 10234
+    },
+    "PFEvent": {
+      "insts": 1,
+      "in_bits": 79,
+      "points": 79
+    },
+    "Scheduler": {
+      "insts": 1,
+      "in_bits": 11316,
+      "points": 11316
+    },
+    "Scheduler_1": {
+      "insts": 1,
+      "in_bits": 8250,
+      "points": 8250
+    },
+    "Scheduler_2": {
+      "insts": 1,
+      "in_bits": 8288,
+      "points": 8288
+    },
+    "Scheduler_3": {
+      "insts": 1,
+      "in_bits": 33338,
+      "points": 33338
+    },
+    "VecExcpDataMergeModule": {
+      "insts": 1,
+      "in_bits": 1232,
+      "points": 1232
+    },
+    "WbDataPath": {
+      "insts": 1,
+      "in_bits": 27915,
+      "points": 27915
+    },
+    "WbFuBusyTable": {
+      "insts": 1,
+      "in_bits": 75,
+      "points": 75
+    }
+  },
+  "note": "canary2（工作树，414dfdfc3+核函数修正）native SUCCEEDED passing 280043 = 模型（regs 1297 + outs 68940 + 黑盒输入 209806），constant_reg 0，unread 0；预测 passing 280043、差额 0"
+}

@@ -1,0 +1,257 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "strdiedLSNumOfUopTable",
+ "run_id": "BeDataLeaves-20261011T075427Z-9df1c6fb0",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/strdiedLSNumOfUopTable.sv",
+   "kind": "golden",
+   "sha256": "16868301657ee0016844b1ce874112565d1d61ce4e0f6e57dfb7929ecec80724"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/backend_common_pkg.sv",
+   "kind": "repo",
+   "sha256": "f404f8ee5d07d1dd5641a9aab807b29e58ac560529c03fb05f92cd742263b87b"
+  },
+  {
+   "path": "rtl/backend/VsetModule.sv",
+   "kind": "repo",
+   "sha256": "f687822b4c3bd249f8506721ce1d417964bae8268c1085c94d4597858801dc8c"
+  },
+  {
+   "path": "rtl/backend/strdiedLSNumOfUopTable.sv",
+   "kind": "repo",
+   "sha256": "0837c38624873a0df386d06e873c6db11f5b88abd50a30cf48087494c5c8a59d"
+  },
+  {
+   "path": "rtl/backend/indexedLSNumOfUopTable.sv",
+   "kind": "repo",
+   "sha256": "b91c5d7f401fa4aa3ee1da766f9dfe62c433fcda683f4b607c533364b10e2b42"
+  },
+  {
+   "path": "rtl/backend/IntToFP.sv",
+   "kind": "repo",
+   "sha256": "2eeec42c67e25a05415910c2e5e96cd5998e81a00d541f893e4a2b47e5a97f25"
+  },
+  {
+   "path": "rtl/backend/IntToFP_1.sv",
+   "kind": "repo",
+   "sha256": "87732ae0484df820409d811d27062439bc42ff285ba1cd5eccda70f3da7ea336"
+  },
+  {
+   "path": "rtl/backend/IntToFP_2.sv",
+   "kind": "repo",
+   "sha256": "9c2e1098e707536469dae592f251750731245666641b1347177c836dd0129b17"
+  },
+  {
+   "path": "rtl/backend/IntToFP_prenorm.sv",
+   "kind": "repo",
+   "sha256": "c0dd8f2251af6ff5413dd1d8a1aeec65f78bfba1eaad9594f6be67bb89fe1224"
+  },
+  {
+   "path": "rtl/backend/IntToFP_postnorm.sv",
+   "kind": "repo",
+   "sha256": "ab0cfe2c400c2faf7ef7960952b640281900e438e1f4673bb5f0f3cb865b6340"
+  },
+  {
+   "path": "rtl/backend/IntToFP_postnorm_1.sv",
+   "kind": "repo",
+   "sha256": "e1a23e22d02e5019edaee64b353281d62466d79a76437276dd41fe08e74e5ac4"
+  },
+  {
+   "path": "rtl/backend/IntToFP_postnorm_2.sv",
+   "kind": "repo",
+   "sha256": "7d421844490009d216693f9e4d574d4c4bb1bf0573443c96e2606bb1c0a78e52"
+  },
+  {
+   "path": "rtl/backend/RoundingUnit.sv",
+   "kind": "repo",
+   "sha256": "573c6b484ea6e06de36a76b493a7e2ff2aa0ebe9b429b5a6754d6fe21b10056b"
+  },
+  {
+   "path": "rtl/backend/RoundingUnit_1.sv",
+   "kind": "repo",
+   "sha256": "f0c0eb5cefb0450de19b0a30dbec6175b7e2d1e6f99bd8bfcdb74798a53ef2a3"
+  },
+  {
+   "path": "rtl/backend/RoundingUnit_2.sv",
+   "kind": "repo",
+   "sha256": "4063fe3d92b6a2219aaeda9a862efb699fd536dcaf81882373ab5712b7baabe9"
+  },
+  {
+   "path": "rtl/backend/LZA.sv",
+   "kind": "repo",
+   "sha256": "e1d17c9bef2d03541e440fe57c30abb79acb06247ba4e9b8d852111f45df8d55"
+  },
+  {
+   "path": "rtl/common/CLZ.sv",
+   "kind": "repo",
+   "sha256": "e58361661e67af8c64b873742d9cac36dd3bb683b23efeb6d1470c09b55b1e0f"
+  },
+  {
+   "path": "rtl/common/xs_CLZ_core.sv",
+   "kind": "repo",
+   "sha256": "a78b562f0e9e3cea035fe842d93ec37f274004113fe80305b78fedd68bcaa8af"
+  },
+  {
+   "path": "rtl/backend/IntToFPDataModule.sv",
+   "kind": "repo",
+   "sha256": "fbd8207228f10d5a8de6ee2c51e4594ee66c9761069e9532c421c1733fe21e00"
+  },
+  {
+   "path": "rtl/backend/alu_pkg.sv",
+   "kind": "repo",
+   "sha256": "a96bc0038f0fd54e14032e146fb3775e15ae102e0b5b02666b82f2ef1aea5011"
+  },
+  {
+   "path": "rtl/backend/Alu.sv",
+   "kind": "repo",
+   "sha256": "bc754c0415285e79e4489ba94967f1cfdabd602ff73b846fd07c10c65cd1ba7b"
+  },
+  {
+   "path": "rtl/backend/AluDataModule.sv",
+   "kind": "repo",
+   "sha256": "89ab055721bd3345d834ad51b03d584614022b28b2bcfe766aebdfa1d2d8cf9b"
+  }
+ ],
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "BeDataLeaves-20261011T075427Z-9df1c6fb0",
+  "top": "strdiedLSNumOfUopTable",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 4,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 4,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "strdiedLSNumOfUopTable",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

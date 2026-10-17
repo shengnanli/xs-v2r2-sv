@@ -1,0 +1,435 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:06:08Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/Scheduler",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Scheduler.sv",
+    "sha256": "26748de8146e7449f2e0db69cf4f9d35ab38aa4d2b396fb320004078aeb25b42"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IssueQueueAluMulBkuBrhJmp.sv",
+    "sha256": "b9d735e72102708cfd0cbffa1177a3ed59dc95254d3e9dae8bf5e5fd01ab4a04"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/EntriesAluMulBkuBrhJmp.sv",
+    "sha256": "d7e316096551b2fc3149957b8e154bb39d25a1348037a61bbb1a5a090ca927b0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/EnqEntry.sv",
+    "sha256": "b7a6821e4bd1ea4b65da851b4fbd1ea2f3dc3816cb5fe406d2fd3dcb764f1629"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/UIntCompressor_27_000011100000000000001010101.sv",
+    "sha256": "d6074f3be04114b079c1a40a1d70566a63636ef951341e7588d91194bed798fe"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/OthersEntry.sv",
+    "sha256": "9bfe29801918460adb1e5ad216b699c06c3af48e647dda49135cc117750e0e6e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/OthersEntry_6.sv",
+    "sha256": "93594dca9e45adea18e66da40fce074fd0f8390000c4bcc09f1acf29db2f4a23"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/EnqPolicy.sv",
+    "sha256": "bfad10d8d6b8b7c8a697ddb30bf77de9d44baeb6c2a7caf206cc638b1fd1a741"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableWrite.sv",
+    "sha256": "e67c050742464fa17141393a1777dd23c8ae67f88e9b7c060b9191566f1446db"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableRead.sv",
+    "sha256": "c714fd249a4a971e22a96d0de6a3169214a5d7d47fe33c70ad99135f727091dc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableRead_2.sv",
+    "sha256": "202d0cb5bdcf5ef7f867e0ce29e3a66cc29779277b02422a42b6d88a2cd0b3f9"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MultiWakeupQueue.sv",
+    "sha256": "30de51253ad4548e606565d1ba524508f01559960fb17bba91e5e5e1cb8d80f0"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PipeWithFlush.sv",
+    "sha256": "8d5f36073deed1a2842c922d8ac8ef95bee4ec5eb3c3d7faec88a9def7211229"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/PipeWithFlush_1.sv",
+    "sha256": "f49090ea5152954d5ff7d2a600138c90664ab61fd3fabeb726b681df361d16ae"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/NewAgeDetector.sv",
+    "sha256": "a473d828149912e0069ac0d6f5d0e58467693d8c247ec6590b5a4b52a441e868"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/AgeDetector.sv",
+    "sha256": "6041af2a875257a297295d5d32f873533deb3be66d94007418ace122dce90042"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/AgeDetector_1.sv",
+    "sha256": "3960a49929aabddfb1d9ed5e2c8b6bd3dc472aaf4ea3ec4acc8a4a10568313a7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv",
+    "sha256": "f5d9fa8e9596299bb51afd5d21bad38efc4bf8c454e0d32c6d84fa022722641c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv",
+    "sha256": "6d8709d7bc2f53d04f4a22015a57c77bd2c977085e6b491b646414ae72182f03"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/EnqEntry_4.sv",
+    "sha256": "22da66d8e1a26ef9d30ca62469da66a8f3abc7c2ac513ce3a3b95fd3dfe1cfcb"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/OthersEntry_44.sv",
+    "sha256": "9712098d6697fb4322d21f789668dba5ba9a66f83440e3af6c150c545bffcf1e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/OthersEntry_50.sv",
+    "sha256": "c3442fe85e7404af93861f62089e2872d1c4dda805c047011ecb8d5ea1c534c8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableWrite_22.sv",
+    "sha256": "c42d9fb7cb011c6954b1c42e893b3b4ed4f71c8b5369ad9f8b6660995ea8f926"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableRead_22.sv",
+    "sha256": "6704c6dd34e3d48186975f0d49b25ca6ad2a2c397e1aac5861e6c250efe0bc57"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableRead_23.sv",
+    "sha256": "ba64f2b79c582cb678fb3ab0953b7f02b030f18c658d5cfa3a0f1ac6b5daa064"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableWrite_26.sv",
+    "sha256": "e6f32d6ad3739e25ca71105d2adf3ce2ab0a40395294a8ada640a0d27c9815a2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableRead_26.sv",
+    "sha256": "a2b0196b2dad5ab2d62fb2e067d7480ee5cf2849a597bba2e1e6e6eb931a6bc7"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FuBusyTableRead_28.sv",
+    "sha256": "ccf2e14d00f3a06119577f58eaca0543c095cf4651a839e90600774152251968"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MultiWakeupQueue_2.sv",
+    "sha256": "29b0f6b92e0b10e9efa63c78761a638a52b01e897734c08677264e6dec7d995c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IssueQueueAluCsrFenceDiv.sv",
+    "sha256": "0f6bf83f92691b1c4710526543d0f31fd5f4c4a566261c0f4c58e8ec505c6919"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/EntriesAluCsrFenceDiv.sv",
+    "sha256": "833a614aa1a6ebd91e3c957f9361a29ccddc41aa71d5be87ef57c61a04cad1f6"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/EnqEntry_6.sv",
+    "sha256": "c9c714bdad3aafe45084e9758f38cdb245cb8bb4502c4a4868d3eb3dbda3ea0e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/OthersEntry_66.sv",
+    "sha256": "f33347e0f9af958ff5c2f57b17abf5d85d80e31588777d83927a4b4d46095059"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/OthersEntry_72.sv",
+    "sha256": "a6bcf4add42abdde8e7acac064bf377abf6c8e397b1f5ec3dbd22280d6946b42"
+   }
+  ],
+  "golden_sha256": "c22a91be8c406bddee05a1591acc48b268f917d90562286f1e0027e11dd5d2fd",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Scheduler.sv",
+    "sha256": "2ffd323e4aa68dc43b14bb79a1efa402502e658165105335a1afe2d07343e2ef"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_Scheduler_core.sv",
+    "sha256": "6161e947af911f8df1dc97f28ea2510e5b2a169ab14ba4a5cb60bd557e696665"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IssueQueueAluMulBkuBrhJmp.sv",
+    "sha256": "b7b32daf6482650bb173cd1124cdacc69eaed3a2707ddc6fcf96eb5c4f2b979e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv",
+    "sha256": "ed57e38664612c68c64c1bcf0ab21c759154591a84facf87db5306e1a55cde6b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IssueQueueAluCsrFenceDiv.sv",
+    "sha256": "4983814f2ac25dba16b8fa8d4b7ea7e7d34f35e3d727f28ac35478135abd6b36"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/EntriesAluMulBkuBrhJmp.sv",
+    "sha256": "57503b00271fc639f1948a1f3d307864d716f0b89cedcd740f279d4c6ecc6f00"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableWrite.sv",
+    "sha256": "a485f5413767737e437e806d49e332945ba902ce84be6ed496a3ecc9fdc67bbf"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableRead.sv",
+    "sha256": "a3538bd2886f6981f5515e1e21779fdcbcdcaa4c589c849b43edc665079724e4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableRead_2.sv",
+    "sha256": "216b664f479a042b0e59b679ab232a555be4b6e8cd5244dd8fd4eb81d2939eb2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MultiWakeupQueue.sv",
+    "sha256": "d36a3394e242ed76b84ab370b4a19d7e34dcad3a552263acf5a6361c184f3652"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/NewAgeDetector.sv",
+    "sha256": "03633999256b8cbd4e2617700ed96ef8497485fde32dbe6a26e19961b3f317c1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/AgeDetector.sv",
+    "sha256": "25e1bce6600b78065e7ff0f554dfc0db42b4f8cd0ba713457b63022174ccc62e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/AgeDetector_1.sv",
+    "sha256": "47aaae05d0a9fe04b5a5dbbe03ba16f807ae6bfd4d385a551fb584bd162b4e6a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_IssueQueue_core.sv",
+    "sha256": "c6946d041ae99f868e07f60f4e2cf64a0cc013e5de282defdc5c38a45ff7ad03"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv",
+    "sha256": "a155d04d54bd5ee8ee55113cdb6178c184613b833821b5e6ef302848097c5b9a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableWrite_22.sv",
+    "sha256": "02dc3391c530fae5fabec7b9c43ac0426f5b1668027956f5ea011301fbc8dc39"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableRead_22.sv",
+    "sha256": "d7ec96e2bf55b97183bab0f2dbb7dc59014723124c9752494266e7a181494422"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableRead_23.sv",
+    "sha256": "b442e146afebf5789fd3767eb240775c9ed9b1733f4d1d8cd47b05237d8101b6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableWrite_26.sv",
+    "sha256": "f7355f84e589e2be942ea8422ef80993e57038b1212a6646d81bd3da0782c065"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableRead_26.sv",
+    "sha256": "fd8d80acd66b297687aa8e499c8373c14d38c5df5d7fa3f7197a6634776e46f6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FuBusyTableRead_28.sv",
+    "sha256": "a0e4ca79d35cafa3b66fce628d15b91f654cb8975eec2514ba7d3516cfbcb490"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/MultiWakeupQueue_2.sv",
+    "sha256": "f9481bc2ade2ba754a89b9eea8c784f17fe888cb8091a07d9b8d1d07a5d85993"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/EntriesAluCsrFenceDiv.sv",
+    "sha256": "ae9fbb6fc52c49c26fa3d0f8b92a01e5f0378de5b69f8144f85fb54ca86856ba"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_iq_entries_core.sv",
+    "sha256": "f14b2f2f068ff3edac5c75cd113ebdd392c57053daee733140872f201f7e7216"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/PipeWithFlush.sv",
+    "sha256": "1cab04d4b141b148077f45f6484c5e755c6043486ea65e7c0fcc75e11d9cf533"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/PipeWithFlush_1.sv",
+    "sha256": "ab862c025e65f98549b245e39d3062f4a83b978a27f218d5694e3f1c06453dfd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_MultiWakeupQueue_core.sv",
+    "sha256": "36cc42cb13958c220837a6edf36f87cc81609033e7fd35834de935ed0d21cd7f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_NewAgeDetector_core.sv",
+    "sha256": "ab2f443094a81c2aef971cfbd9b04f5275db3be7f14239206ef5e8e832ce416e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_AgeDetector_core.sv",
+    "sha256": "b3d45baa9410014e01c1a0d7f47ad8fa13ccfe0b09d569545a0c2537a9b2072b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_PipeWithFlush_core.sv",
+    "sha256": "fd7017ae8749de927ab8cf52bd16b8b83066affadb8bde09f98311d813dacc0a"
+   }
+  ],
+  "impl_sha256": "bbe870615ab5a80dfaa2804b5e565bd5ed92cc84d401b6cafee3e04236cf4770",
+  "repo_impl_files": 30
+ },
+ "native_facts_sha256": "f78ea76fe3c056fe0acbf1626c9aca8237c2d572fc06730c56fcbc7c582f813c",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 102880,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "8b14d3dd5c068bb573b66ecde86e3e31d3a51ef018621f3713a3cf4c5756c847"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "506d9419883c41c950ffd5d96674c2c89872f78e5ac94d048360ecc41129abc2",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "db0ff28e69d0ceb953cd3d59190aace00aafc715bbb67445982fad099fa716f9",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh Scheduler Scheduler",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "19cfbcb5069429c7a640268f6893eddda0827d23de2c511e00abe4c421fcd4a7",
+ "run_id": "Scheduler-20261011T035230Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/Scheduler.tcl",
+    "sha256": "f3ba7b8ea4b25205fa89e3543f371e7663e0e82e8d8ed23b507378352c27b56c"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/Scheduler/fm_pins_pre.tcl",
+    "sha256": "8b14d3dd5c068bb573b66ecde86e3e31d3a51ef018621f3713a3cf4c5756c847"
+   }
+  ],
+  "sha256": "ebd507cf9d54b85485105d3ed928ddf1ec3b77f2c7e2237256ebd755df294645"
+ },
+ "target": "Scheduler",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Scheduler",
+ "variant": "Scheduler",
+ "verdict": "SUCCEEDED"
+}

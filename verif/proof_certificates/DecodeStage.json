@@ -1,0 +1,275 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:12:25Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/DecodeStage",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DecodeStage.sv",
+    "sha256": "b050f469589416319fecf5a9ea02408a90a646101ebaae4e6c48ae98f21041bd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DecodeUnit.sv",
+    "sha256": "da56d422639022a94c042535941802b8616b6bbb4b9c49884d19dce41c35d58d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FPDecoder.sv",
+    "sha256": "d3cd8335270275b2384ac125a8471bdb284df8a3f167a87a6cc90c4c1df38c13"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/UopInfoGen.sv",
+    "sha256": "769579503943cef2903e94f5c3dd15c8e1dc6d396aa56fc7c8f61aaed648ad3d"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/strdiedLSNumOfUopTable.sv",
+    "sha256": "16868301657ee0016844b1ce874112565d1d61ce4e0f6e57dfb7929ecec80724"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSNumOfUopTable.sv",
+    "sha256": "ea7f1c166e6212533dc3164960608399912ffdd14dcf789fdbb5eb2b0bcea934"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VTypeGen.sv",
+    "sha256": "3d1ee1077a050a319f0c4a1d7a393bc65c64224ae09592890d61d24b7a495559"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VsetModule.sv",
+    "sha256": "9eb34d3ccb36eb178c06a1f04950b79b36ba9d700ef34c4df888103e29126b87"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DecodeUnitComp.sv",
+    "sha256": "64cba60d6ba64e7cdb762d5fbcf1e24a575712327d99f55e5395439d428f9dd5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VecExceptionGen.sv",
+    "sha256": "a503f6c8fdfd48b94182698b80bc89c6086d76d61528d3411a79071de26e14d9"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_1.sv",
+    "sha256": "1c2edd122093798f9c7afdd213f58192146495ceb3a0c72ee62537543b0ced96"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_2.sv",
+    "sha256": "6db48c45ea63a45864ecd03da770efac346164c2e5edfc23ddc1f720e694088a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_3.sv",
+    "sha256": "3ec5d6f97b1e0f9cb73f9f76a31bdbd5d7b308f92096e87ede137f21c8c44b84"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_4.sv",
+    "sha256": "89eb7088b207a5bcf792de26b82b4d0ed4876c4c6e7e33a85bf4cb17ffdebd02"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_5.sv",
+    "sha256": "76d82c198b8949d4fbdacdf32317eebe971552334e1a45c322ef3ac176959181"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_6.sv",
+    "sha256": "584a9fafd30a9281cbb9c2925f0fa3001e36aadce8c82eac0fcc46bb5438c854"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_7.sv",
+    "sha256": "282e83ef678309bf0fd060a5fc46d90ebfc55b50d9cd6163a9791aa95ecc8946"
+   }
+  ],
+  "golden_sha256": "9a2ca457901a949714e670bae05f0e05bda82737684d9a698a71428bea28a5a1",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/backend_common_pkg.sv",
+    "sha256": "f404f8ee5d07d1dd5641a9aab807b29e58ac560529c03fb05f92cd742263b87b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FPDecoder.sv",
+    "sha256": "088ef87c8c88300d3aa77fac0122512156d6746f7f5a58bef3683f4c381a64b4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/UopInfoGen.sv",
+    "sha256": "71ae245137afac81a776166e54e2c798ad304ee8541bae290ea63621304beded"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/DecodeUnit.sv",
+    "sha256": "aaaabf4c75789c734ab6da6a500f4f494633f6ce56d75aa9e0011c0a98bde52c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/VTypeGen.sv",
+    "sha256": "c94689d79592a6574dcf10e21fbf7e8318afd41dceb03b7bd0265aa43bb84067"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/DecodeStage.sv",
+    "sha256": "90d52ba4c99d648fb17fa768b963b497d216a4549560f643bac04530466a5ca5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DecodeUnitComp.sv",
+    "sha256": "64cba60d6ba64e7cdb762d5fbcf1e24a575712327d99f55e5395439d428f9dd5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VecExceptionGen.sv",
+    "sha256": "a503f6c8fdfd48b94182698b80bc89c6086d76d61528d3411a79071de26e14d9"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_1.sv",
+    "sha256": "1c2edd122093798f9c7afdd213f58192146495ceb3a0c72ee62537543b0ced96"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_2.sv",
+    "sha256": "6db48c45ea63a45864ecd03da770efac346164c2e5edfc23ddc1f720e694088a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_3.sv",
+    "sha256": "3ec5d6f97b1e0f9cb73f9f76a31bdbd5d7b308f92096e87ede137f21c8c44b84"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_4.sv",
+    "sha256": "89eb7088b207a5bcf792de26b82b4d0ed4876c4c6e7e33a85bf4cb17ffdebd02"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_5.sv",
+    "sha256": "76d82c198b8949d4fbdacdf32317eebe971552334e1a45c322ef3ac176959181"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_6.sv",
+    "sha256": "584a9fafd30a9281cbb9c2925f0fa3001e36aadce8c82eac0fcc46bb5438c854"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/indexedLSUopTable_7.sv",
+    "sha256": "282e83ef678309bf0fd060a5fc46d90ebfc55b50d9cd6163a9791aa95ecc8946"
+   }
+  ],
+  "impl_sha256": "b3fd3886178a657fd60a69de8fa47bf7233d6aafe0df653ee95eeadcf1efa7e6",
+  "repo_impl_files": 6
+ },
+ "native_facts_sha256": "6d0ab0529ad8cb07f5981ec600c99d4d5e73239d64a688d8c6c6caee746c7131",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 5293,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "c4d96e17bc43187dfeb6f58584240d8194ea3617cf04595538bd988ff833e09f"
+  },
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "762c072b1fc248b920160143b0e4330ba065f3c872bfd8156bba4b1c9148c379",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "441e44a585ff4336f7b6164d37a2145013ef72016b00201101d164c148cfac09",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh DecodeStage DecodeStage",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "f630f01215e2d35d7473f170c9408f5855d9525c6d3838de4d010ee68fe02bef",
+ "run_id": "DecodeStage-20261011T035232Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/DecodeStage.tcl",
+    "sha256": "8f502a748eb1386b360280ff8d895603091ddefa190f92386c7c660f125c5ae5"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/DecodeStage/fm_pins.tcl",
+    "sha256": "c4d96e17bc43187dfeb6f58584240d8194ea3617cf04595538bd988ff833e09f"
+   }
+  ],
+  "sha256": "0b4bad5acb8f58d121f56affc501756d25c77ee230fca1819b1b232638c08e86"
+ },
+ "target": "DecodeStage",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "DecodeStage",
+ "variant": "DecodeStage",
+ "verdict": "SUCCEEDED"
+}

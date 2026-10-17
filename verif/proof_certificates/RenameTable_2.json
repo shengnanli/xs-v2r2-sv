@@ -1,0 +1,158 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:55:58Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/RenameTable_2",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RenameTable_2.sv",
+    "sha256": "e31737289db6327047e05ae5231bdcf978e02ecbce166b9374b1521bf184df6f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/SnapshotGenerator_6.sv",
+    "sha256": "8aff3407c5d7d0b10369a4971319eb94c8df83b8a296b72823f3c7c9ac9ebdee"
+   }
+  ],
+  "golden_sha256": "cd2edf3068282d40bcb02c2ef1c9ec2485dc823c95f22b129b85e604697ef874",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator.sv",
+    "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_4.sv",
+    "sha256": "129d7c4bd3af57c1297e0e04aa97374122a21d9122231297051ba1a64d16394e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_5.sv",
+    "sha256": "3bb3b69079c6d0344c7d91d3b38e76373a9a39655878a61d6c9f81e9a5c2f866"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_6.sv",
+    "sha256": "a3eadbfd5b46b8fbd55cb4aeed4c5865ffc5926d0f0c1441de4c79d76d66941e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/SnapshotGenerator_7.sv",
+    "sha256": "c4abd95905b35c8dafb23bc35c143da847e61de2e145516784f1bdc5dc757922"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTable.sv",
+    "sha256": "9fefc24066041ebc1c6f208293452ef2b3df074b1e846676c8b124ed6d1b337f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTable_1.sv",
+    "sha256": "2f28998e3ce718ad0db165d85bbee0edacddc43ff8c721bca7996e7fe32a7d0b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTable_2.sv",
+    "sha256": "af08fd0f1c142c686646b31447e5ac1bababab91e66b9b45970dd85b10e98f54"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RenameTable_3.sv",
+    "sha256": "c6b2fa617b1f985e7440633f3e532f7aefb14112cf88280862b6ee459c39cf17"
+   }
+  ],
+  "impl_sha256": "8e3bf17552747ce49f348ff40388b771d57c8a6e4c0675d5803c7b2ae3b943f4",
+  "repo_impl_files": 9
+ },
+ "native_facts_sha256": "f62333ac6b490876a2fe8580f8b3f038e61b8d4ba88c7294a28ef5cd46a88ae8",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 3334,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "319789ec8f06008c66e6e32e27d15595af23ddd7a8f1f53726f310daecae34d1",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh RenameTable RenameTable_2",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "be52cbd3bc702bc3b2cde14c9d8bb2614bc2c9f88b1ca7bdebad5ddf4cdd8b0c",
+ "run_id": "RenameTable-20261011T065402Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "RenameTable_2",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RenameTable",
+ "variant": "RenameTable_2",
+ "verdict": "SUCCEEDED"
+}

@@ -1,0 +1,120 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T06:55:34Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/Og2ForVector",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Og2ForVector.sv",
+    "sha256": "bc079111e3355e613a309a0aba1cfb3ce50edfdd4cb33a22261f909df7a398b9"
+   }
+  ],
+  "golden_sha256": "2855d8c0c6eb1a87ddcf02a5b1d6f3120fb0d658ceaf3733b5fd32636ee5508d",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Og2ForVector.sv",
+    "sha256": "d49fd0f208996e90160177205aa71998e4f0327ab717761628aaef199e76fda9"
+   }
+  ],
+  "impl_sha256": "a5e67e7d5d56eff81257cb20eeab5c972392883dcc7028efdfbecf666881ce9f",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "622adc1b0bd3d08510db7a05d9ce700914f925f3214ffb2b57f3880a507fc762",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 20628,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "2aa48a8e501fb0ecbdb74fa3304fd04bf453eb8b326f639b673d15ab3aaccc6b"
+  },
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "30dd65ae7f9ba5ae825efb31a82a737818e10ffe9e27fde6c6f4b636e7bf0f24",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "511bf8c9a03bfcb5ef6f45366fd43e966ffd41029f8d1dc5a9ec3a22d427fbaf",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh Og2ForVector Og2ForVector",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "4e0973146b1466d32b000f157c3f39100b318da32ed6ca60f2450593e0d1ab96",
+ "run_id": "Og2ForVector-20261011T065343Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/Og2ForVector/fm_pins_pre.tcl",
+    "sha256": "2aa48a8e501fb0ecbdb74fa3304fd04bf453eb8b326f639b673d15ab3aaccc6b"
+   }
+  ],
+  "sha256": "2506bc7a0e2e2486530a70d58d7bc1f90172a10f6116f27673099eb5d031144f"
+ },
+ "target": "Og2ForVector",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "Og2ForVector",
+ "variant": "Og2ForVector",
+ "verdict": "SUCCEEDED"
+}

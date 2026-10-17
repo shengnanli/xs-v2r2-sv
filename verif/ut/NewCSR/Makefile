@@ -1,3 +1,4 @@
+# PrintCommitIDModule：impl 读本地重写件 rtl/common/PrintCommitIDModule.sv（仿真专用打印，codex 0230），ref / UT golden 侧读 G1 .v。
 MODULE = NewCSR
 # NewCSR 本体（golden 15945 行，410 个子模块实例 / 382 种）—— 两侧白盒，无黑盒：
 #   * ref = golden NewCSR + 全部子模块闭包（392 个 golden 文件，含仿真打印件 PrintCommitIDModule.v）；
@@ -9,6 +10,7 @@ MODULE = NewCSR
 # 文件表是字面列出的（fm_predict / fm_passing_model 静态解析，不展开变量）。
 RTL_DIR = ../../../rtl
 RTL_SRCS = \
+  $(RTL_DIR)/common/PrintCommitIDModule.sv \
   $(RTL_DIR)/backend/csr_irq_pkg.sv \
   $(RTL_DIR)/backend/CommitIDModule.sv \
   $(RTL_DIR)/backend/DcsrModule.sv \
@@ -414,7 +416,7 @@ RTL_SRCS = \
   $(RTL_DIR)/common/HPerfMonitor_1.sv \
   $(RTL_DIR)/backend/CSRPermitModule.sv \
   $(RTL_DIR)/backend/NewCSR.sv
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/PrintCommitIDModule.v
+RTL_GOLDEN_DEPS =
 TB_SRCS = tb.sv
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
 GOLDEN_RTL ?= $(G1_CANONICAL)/golden-rtl

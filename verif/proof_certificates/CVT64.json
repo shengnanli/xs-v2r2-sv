@@ -1,0 +1,173 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:54:29Z",
+ "generator": {
+  "run_context_worktree_digest": "6c15b2048f5928d30bfbe5264079a4ae91bd3ed1378a3f19b13c91b01caddc53",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/e858f1db696d/CVT64",
+  "version": 1
+ },
+ "impl_commit": "e858f1db696d6e81e1963c80b41c05e019f6bf85",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/CVT64.sv",
+    "sha256": "87a04dccac4216d51098d25b43fa504c9dc9a9455e81bdeca76930fa6bc44bab"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FP_INCVT.sv",
+    "sha256": "bcd33aae592ec439630b06003ac1615290c6049ea3f73e47ae3f24a8e2b37e70"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/CLZ_6.sv",
+    "sha256": "ab095493c436051952c4488367d5a749cbef0760a0bd673063fd5fa660c870dc"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ShiftRightJam.sv",
+    "sha256": "041c257b44d00abd8b48c24c0aeef2a21ce432821dfc185383475187ca95a232"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RoundingUnit_3.sv",
+    "sha256": "62d3072438f8ed0d0193a1fac0bc8feafe0ad1d8a2bcae7da8d23f772a9a060c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RoundingUnit_4.sv",
+    "sha256": "caf593719b9f755c9a2cd1eada88e7ae04057e42aa9f04a3da0348987d4d6c98"
+   }
+  ],
+  "golden_sha256": "5adbe883d2484b8a3c915729a587788fea2c70fd86d360e54d70885e94d304a4",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_CLZ_core.sv",
+    "sha256": "a78b562f0e9e3cea035fe842d93ec37f274004113fe80305b78fedd68bcaa8af"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/CLZ_6.sv",
+    "sha256": "37767b426ba9e1d7f1e14b23c54b0e8c26b667b7642c717215a65263e94dc3d3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ShiftRightJam.sv",
+    "sha256": "1d2ea1d941fd768b7c8360237a92cfb485324a49c904ef0953f942351e850724"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_3.sv",
+    "sha256": "fc09cf84f3fd7f031e05cfe65df842fc0c04205f08f54f2406bc033258d2a6f2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_4.sv",
+    "sha256": "3373c452c7fc330691f2528a401d51546548eba4ad54ce545e3dfea75baf7e81"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FP_INCVT.sv",
+    "sha256": "fd72ea4512622a5c824b29ad214ff25cee53b7c9116d214550550bece1ce86b7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CVT64.sv",
+    "sha256": "3a9f5213dc688e25b1ce64202f3c5d73d950c1e61d75d1b67e3022bc10162b01"
+   }
+  ],
+  "impl_sha256": "117080b413d27306f5d910a3df91298681aa09fdb98297971d426c3590ba8e8a",
+  "repo_impl_files": 7
+ },
+ "native_facts_sha256": "5f6c83aab8b097871c0031dd58bf154adcfbfc5cc665c0a1f6781133a09b3c0a",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 545,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "e858f1db696d6e81e1963c80b41c05e019f6bf85",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "6c15b2048f5928d30bfbe5264079a4ae91bd3ed1378a3f19b13c91b01caddc53",
+ "provisional": false,
+ "receipt_sha256": "5d5ddbbdd0810fad10bc5766abea7cd6a16247c18c8b73509ff4cb51c5758a42",
+ "reproduce": {
+  "command": "PROOF_COMMIT=e858f1db696d6e81e1963c80b41c05e019f6bf85 scripts/run_proof.sh CVT64 CVT64",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "5e9189de791143490ca74202d94dd59bd1cf228f6247b45e8ca1dae458b929ac",
+ "run_id": "CVT64-20261004T110339Z-e858f1db6",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/CVT64.tcl",
+    "sha256": "5971d56727452eeedb324b8321a781aa04e1614daf755aeba0253ffc4c862d9f"
+   }
+  ],
+  "sha256": "85801af366e3c21447a95856c3abfbab7784264536641b4f9242a97aea9b97ab"
+ },
+ "target": "CVT64",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "CVT64",
+ "variant": "CVT64",
+ "verdict": "SUCCEEDED"
+}

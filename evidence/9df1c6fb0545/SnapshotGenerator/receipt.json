@@ -1,0 +1,207 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "SnapshotGenerator",
+ "run_id": "SnapshotGenerator-20261011T074020Z-9df1c6fb0",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/SnapshotGenerator.sv",
+   "kind": "golden",
+   "sha256": "2acd6ac73569ed8750aadb997dd0a3c375f3d986751ea1741acf410ef9516d07"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/SnapshotGenerator.sv",
+   "kind": "repo",
+   "sha256": "df0455f93ad65d08d102074cc2eb7944606ec70a3255defdd55b6ddf7ce802d0"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_1.sv",
+   "kind": "repo",
+   "sha256": "a77ecb0883554569bdd0302a13e05cf1bdb534271a60be4391bfe429357d4d90"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_2.sv",
+   "kind": "repo",
+   "sha256": "50125b7e540ed2936438140bd578a94bc5b2439db3f4620eefc4ee692f0e39f1"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_3.sv",
+   "kind": "repo",
+   "sha256": "4c01961e612d03f602d5cba3389a1552388ef5e008de6682bb47d1d1433a7860"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_4.sv",
+   "kind": "repo",
+   "sha256": "129d7c4bd3af57c1297e0e04aa97374122a21d9122231297051ba1a64d16394e"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_5.sv",
+   "kind": "repo",
+   "sha256": "3bb3b69079c6d0344c7d91d3b38e76373a9a39655878a61d6c9f81e9a5c2f866"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_6.sv",
+   "kind": "repo",
+   "sha256": "a3eadbfd5b46b8fbd55cb4aeed4c5865ffc5926d0f0c1441de4c79d76d66941e"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_7.sv",
+   "kind": "repo",
+   "sha256": "c4abd95905b35c8dafb23bc35c143da847e61de2e145516784f1bdc5dc757922"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_11.sv",
+   "kind": "repo",
+   "sha256": "eb8df8c3bc0e02fd0b63d42bb5cae7d712b7a71a26ad517a28077d65d8f879a0"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_12.sv",
+   "kind": "repo",
+   "sha256": "392e0c71bb5e749c487e1418c16a884e8ec71c5e91847a4831dae3742add1ebb"
+  },
+  {
+   "path": "rtl/backend/SnapshotGenerator_14.sv",
+   "kind": "repo",
+   "sha256": "cf498964745dc84c7476a06d3a89fe1657b7100b227f627134b6e07207295056"
+  }
+ ],
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "SnapshotGenerator-20261011T074020Z-9df1c6fb0",
+  "top": "SnapshotGenerator",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 82,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 82,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "SnapshotGenerator",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

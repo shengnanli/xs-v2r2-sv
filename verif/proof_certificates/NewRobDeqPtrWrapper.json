@@ -1,0 +1,123 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T07:50:55Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/NewRobDeqPtrWrapper",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/NewRobDeqPtrWrapper.sv",
+    "sha256": "03a69b65a94c69f0337b12750d0ea9aa321bdf09ce299a2a52ab585556af0bf5"
+   }
+  ],
+  "golden_sha256": "a0002800d768031c6f9f7555c8b9913aab30439f8805c7802978d059d035f0af",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CommitStuckCounter.sv",
+    "sha256": "4d19801270451c41afb510aaf2e38432fffd2ac6fba2fc53b871335f6bc8d05c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RobEnqPtrWrapper.sv",
+    "sha256": "6f075a48899fc5e4bd5d1149a8ba12b60fa2f325d5b7996069e92555d530008a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/NewRobDeqPtrWrapper.sv",
+    "sha256": "c87b5aa596d972892d3d6f533a99731d9700b3cdbf18c79eed6dfa9238321456"
+   }
+  ],
+  "impl_sha256": "a2f5c036a63bce818f2c263dfb03abb17bb0dc785fb64d59729003b0bcc74f76",
+  "repo_impl_files": 3
+ },
+ "native_facts_sha256": "47097a9235aeafbc35b0a0a05828ac64e531f2d68549ba6a70bfd81fe4f0a68d",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 225,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "4c3f3bf53cb166c116d588b940fad879482f482bf86232d0e8481a32b695423b",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh RobPtrLeaves NewRobDeqPtrWrapper",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "bee47f5fb89cdb451ef210bcd8983c14d7569bb663848d48f185a017a6c93781",
+ "run_id": "RobPtrLeaves-20261011T075002Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "NewRobDeqPtrWrapper",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RobPtrLeaves",
+ "variant": "NewRobDeqPtrWrapper",
+ "verdict": "SUCCEEDED"
+}

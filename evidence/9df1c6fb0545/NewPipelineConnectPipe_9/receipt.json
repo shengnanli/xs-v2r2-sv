@@ -1,0 +1,227 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "NewPipelineConnectPipe_9",
+ "run_id": "NewPipelineConnectPipe-20261011T073004Z-9df1c6fb0",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/NewPipelineConnectPipe_9.sv",
+   "kind": "golden",
+   "sha256": "8fb5cfd4deac4101d07fb88b1cd1d5afc18c1b94ca39197e0b86349272c23386"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/PipelineConnect.sv",
+   "kind": "repo",
+   "sha256": "34f2dc60598e7770fb1025291bc792befbeaaa27d5581d233e228c9f0c155c15"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe.sv",
+   "kind": "repo",
+   "sha256": "c4c88f96d74b4c7044dbbd029c25fb8cb4861a75367166c895edb12715a1c5ac"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_1.sv",
+   "kind": "repo",
+   "sha256": "b5dd3bdd46e9e985da8da4112828444adfd900f304d4b3e77ce65892824265e9"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_5.sv",
+   "kind": "repo",
+   "sha256": "9373d4b9ebdffaf736da666205e6dfeb4648f70fc39a88982d3a264933372388"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_7.sv",
+   "kind": "repo",
+   "sha256": "a036c84e26663034b135b0da298c7633c3507dfed7e2628f91a59eff322105d2"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_8.sv",
+   "kind": "repo",
+   "sha256": "0c8bac14a464e3a83c3d24db535a1561c07a9e706b18c1636310705805493a1f"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_9.sv",
+   "kind": "repo",
+   "sha256": "dc2ad7a3f74371aeb7099ca2580eed0198a09ffb821c544bd3812bf62de42bff"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_10.sv",
+   "kind": "repo",
+   "sha256": "6329ad8dffe599e55be8177e483e4e5a45628d461c422235f0b9168a3cbee523"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_13.sv",
+   "kind": "repo",
+   "sha256": "cad8d680c9fd11c6d10826610d8fb483544ec019b69b0404b790fafbd20ee928"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_14.sv",
+   "kind": "repo",
+   "sha256": "be125c63a9d4febc0b370afa6672deeb3a8bdfad0c7744a9496ef654163bdb17"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_16.sv",
+   "kind": "repo",
+   "sha256": "19695a2f95bf3fd3983eab64c2f625d6701c07df96f8077dc3b5cb395bf6002d"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_18.sv",
+   "kind": "repo",
+   "sha256": "8c3fb57783a41ea444737454fdbd496515c0ee1f4343c01328acc462eda74b42"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_20.sv",
+   "kind": "repo",
+   "sha256": "53a0f137395aacd4bf291781fc560e0061e9d1f845a6a4e34f3137f323c9c6c1"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_23.sv",
+   "kind": "repo",
+   "sha256": "ead4f06ec39386910c251da80f134972134d20a731459137d46438955e9c4a92"
+  },
+  {
+   "path": "rtl/uncore/NewPipelineConnectPipe_25.sv",
+   "kind": "repo",
+   "sha256": "1ffc6c37a859147017f57436ace08d4becda69b188854bc4745125651d071170"
+  }
+ ],
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "NewPipelineConnectPipe-20261011T073004Z-9df1c6fb0",
+  "top": "NewPipelineConnectPipe_9",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 1677,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 1677,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "NewPipelineConnectPipe_9",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

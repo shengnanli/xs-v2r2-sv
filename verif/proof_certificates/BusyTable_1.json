@@ -1,0 +1,138 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T07:04:48Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/BusyTable_1",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BusyTable_1.sv",
+    "sha256": "230172bd0069f08d80b012c4f9976e29e0c9f094f85500781727ab071d5971a8"
+   }
+  ],
+  "golden_sha256": "3d30442eeaf1aca6b8c974c6aff8f91f7bef6dbee0a415318d386f4e07fec67b",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_BusyTable_core.sv",
+    "sha256": "5557002a052883744fff211bb0b46a113e2de4343d2c7728d55bdde165b20692"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BusyTable.sv",
+    "sha256": "2b28855361ec378a47910dcfba8425efb93f7fb9c5c5cfed02430d5d35441a78"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BusyTable_1.sv",
+    "sha256": "efc7966772811b94d0847753bdbbc2199b9f43d7b7e5ca933c0aa90232c1fb8a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BusyTable_2.sv",
+    "sha256": "93378c15a79752172ea2f5575ffbeab112729561c74cd5b079e398984cc40d0c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BusyTable_3.sv",
+    "sha256": "49ddd740f32efcb0d1a42d5cb2ae9a749048f9f82c611393a49bb3319503a40e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/VlBusyTable.sv",
+    "sha256": "d1e5266e0a166141fddccc5d53abbd0ff5d69821dfa0bb59c711f6cf1a608ffc"
+   }
+  ],
+  "impl_sha256": "d8950f472c9681708246e4642bf65c2651db3c37692a4096d324d34c4a36a221",
+  "repo_impl_files": 6
+ },
+ "native_facts_sha256": "56f66331c5e2e2a66df8ac66b3617272654322af9374f10116faf51522574c62",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 210,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "39e520025ad5d8dd726f5293ca359513ee8abf7d96e32c585a81e45d76f30c3a",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh BusyTable BusyTable_1",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "483c9f97e2406c10e59dd4d8c178581994389c47e717cffe0ca68e253f7e9072",
+ "run_id": "BusyTable-20261011T070308Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "BusyTable_1",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "BusyTable",
+ "variant": "BusyTable_1",
+ "verdict": "SUCCEEDED"
+}

@@ -1,0 +1,143 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T03:49:37Z",
+ "generator": {
+  "run_context_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/6038c4afbc60/FarPathFloatAdderF64WidenPipeline",
+  "version": 1
+ },
+ "impl_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarPathFloatAdderF64WidenPipeline.sv",
+    "sha256": "85e28192f60c3906f68365990ddeaa73e273eb8a0ce7d7f46dfb546c36a71fd5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Adder.sv",
+    "sha256": "607989537ce18d8e55805e5b12139e3325743f8fd2fb096ae08bfd6e18940e46"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarShiftRightWithMuxInvFirst.sv",
+    "sha256": "27287215e1e13d71fe1656074de982b8d2cd4e2be5a35af556657d637d6ff83c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarPathAdderF64WidenPipeline.sv",
+    "sha256": "63cdd62d83c47fc2f56bdc935740df2a2637ff514531b8420165c1331c0c0382"
+   }
+  ],
+  "golden_sha256": "798ad88d1bbad295ef5cc1fea146752f51854f2c146e2909878901a8576f61e2",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/Adder.sv",
+    "sha256": "77ac06806b3abfd25f044589517e8536f82dc5756db7764f35762da1c1079d67"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarShiftRightWithMuxInvFirst.sv",
+    "sha256": "28bd766d528c756b3ae5c531fc66f1aee8a908a8efa0461c7812a14645da0b4d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarPathAdderF64WidenPipeline.sv",
+    "sha256": "d9139f00d3b37c9d63ca9a9245b159fce6cb01052ae627c75915efc184f6eb1d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarPathFloatAdderF64WidenPipeline.sv",
+    "sha256": "a2aba8e044dc76bd53a176cc05167de904592fe46ec0f4fd1330ac5911453adb"
+   }
+  ],
+  "impl_sha256": "4b79790b12e76bc3464ee19b500c2567a9e0a601abd426d728959d3b69ae3e6d",
+  "repo_impl_files": 4
+ },
+ "native_facts_sha256": "21284047208fd5b655b30e544d0470d96a908b1ae19b56f8031a82a4a97a6ea3",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 442,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "6038c4afbc6026864dcc19b4cf1563e19077c4d2",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "8824f45b9a185a5411d5a16e5a22ff0d349ab9e971f0c5193026dc24de4a2d33",
+ "provisional": false,
+ "receipt_sha256": "dce82fe5e2ebc38c49d80a41bbfda3fd920696825c46f4112ea837107974c185",
+ "reproduce": {
+  "command": "PROOF_COMMIT=6038c4afbc6026864dcc19b4cf1563e19077c4d2 scripts/run_proof.sh FarPathFloatAdderF64WidenPipeline FarPathFloatAdderF64WidenPipeline",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "cb36bb79f00efa3f85ce7a829edf8ef971386187e02ad7314454802f5b367b4c",
+ "run_id": "FarPathFloatAdderF64WidenPipeline-20261004T110520Z-6038c4afb",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "FarPathFloatAdderF64WidenPipeline",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FarPathFloatAdderF64WidenPipeline",
+ "variant": "FarPathFloatAdderF64WidenPipeline",
+ "verdict": "SUCCEEDED"
+}

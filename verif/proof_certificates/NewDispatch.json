@@ -1,0 +1,220 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-11T05:43:03Z",
+ "generator": {
+  "run_context_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/9df1c6fb0545/NewDispatch",
+  "version": 1
+ },
+ "impl_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/NewDispatch.sv",
+    "sha256": "5f103781576c638261d5921e2b3cca2a493918c0df983023fffecfe58e951ac3"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BusyTable.sv",
+    "sha256": "64b2ba16569f9d2f0511babb17a51067576e2a55412fec2ed24cf2e73fb16e4c"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BusyTable_1.sv",
+    "sha256": "230172bd0069f08d80b012c4f9976e29e0c9f094f85500781727ab071d5971a8"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BusyTable_2.sv",
+    "sha256": "62b8c05fc5607607ecbe530877dcc0a1bf866dff91d87c7d7eb703b5b5f8b452"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/BusyTable_3.sv",
+    "sha256": "04c4939fd64f2790be31038f171f8cc0976ddfc1a5d57cf384d5af3c892ee54e"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/VlBusyTable.sv",
+    "sha256": "cfb65921b2f2c0f9edf8268de8dfe7e36b51917438ae66ae16f5223d534147ea"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LsqEnqCtrl.sv",
+    "sha256": "632e1aed84f5f1740904efff577eea04d50f694b45e605263bc967ba147ccdc5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegCacheTagTable.sv",
+    "sha256": "ee8519294c6e1c6edb458da89e9988462b6919ff89273ba64cd7d5259b4a1ba5"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegCacheTagModule.sv",
+    "sha256": "2f8652026971b420aa713b405d25d513c70968d744c5982c174f52e5e4bca9da"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RegCacheTagModule_1.sv",
+    "sha256": "ad7c2cd990cbad0b650a9c054fbbc1ac63fc6b7fbf45cff8b1ff5ae74aa8761b"
+   }
+  ],
+  "golden_sha256": "6299fd5c978bbaa5283e64a64a9b36dfbd056e5edd45fb9296742ed4a0e31460",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/xs_BusyTable_core.sv",
+    "sha256": "5557002a052883744fff211bb0b46a113e2de4343d2c7728d55bdde165b20692"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BusyTable.sv",
+    "sha256": "2b28855361ec378a47910dcfba8425efb93f7fb9c5c5cfed02430d5d35441a78"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BusyTable_1.sv",
+    "sha256": "efc7966772811b94d0847753bdbbc2199b9f43d7b7e5ca933c0aa90232c1fb8a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BusyTable_2.sv",
+    "sha256": "93378c15a79752172ea2f5575ffbeab112729561c74cd5b079e398984cc40d0c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/BusyTable_3.sv",
+    "sha256": "49ddd740f32efcb0d1a42d5cb2ae9a749048f9f82c611393a49bb3319503a40e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/VlBusyTable.sv",
+    "sha256": "d1e5266e0a166141fddccc5d53abbd0ff5d69821dfa0bb59c711f6cf1a608ffc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheTagTable.sv",
+    "sha256": "8b6c8903168422225722ed29743f433710bd9fe6dc5d97b13c9bda49b01b6abd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheTagModule.sv",
+    "sha256": "062da5d09787c47db656c046fd932bd28fd98a633d8946b22c3fc4b123ca8171"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RegCacheTagModule_1.sv",
+    "sha256": "9538c7a6480b3465996e860f8c319cf87f902c127314af3038ff2cd21ca3d140"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/LsqEnqCtrl.sv",
+    "sha256": "0379fda1ca40c66924db4feb258e54220ee10c0cf6a41f025b2fd45d8cd98892"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/NewDispatch.sv",
+    "sha256": "ae6307b7ec4afbb1a83fec965da0b4dae00e87e2e39bc261003fc431a5963d4f"
+   }
+  ],
+  "impl_sha256": "10e4c6083aba702dc5acc45c895bc60e9d7d5da64a25f385622010a9587ee66a",
+  "repo_impl_files": 11
+ },
+ "native_facts_sha256": "75afde53df296fdd94d93a1eba0864dfbc4d7e23252d01b23eb4a24fdc5ef5a3",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 58820,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 72
+  }
+ },
+ "proof_commit": "9df1c6fb0545c07f2673c2c13b220d00629bd31a",
+ "proof_config": {
+  "declarations": {
+   "dead_ref": {
+    "path": "verif/dead_ref/NewDispatch.json",
+    "sha256": "3f230fc624677e6c52645a5ba31898d64f5d37dfc18aab05770ef02a6d11b2dd"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {
+   "fm_pins.tcl": "f9fb4914e276362ba0e71d3784181836aff78cee2d1c6f9601531fe1d1190452"
+  },
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "d50631fe7be87270d94d422327b85e2cf78c5e576459badd91e27f5c125eb4dc",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "4878ad2e881a896d61b998d67b3fdfcbd0aeb592f56a9130f9e9c1f5fcbd42fe",
+ "provisional": false,
+ "receipt_sha256": "a5929d8c313482e91f0a1c4d9501a2decbf5eb421ee38f1aaf2cd499d2a5cc78",
+ "reproduce": {
+  "command": "PROOF_COMMIT=9df1c6fb0545c07f2673c2c13b220d00629bd31a scripts/run_proof.sh NewDispatch NewDispatch",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "c0cd361f0e0fff2d5eef23bac3eccddc0a6ddb773d69331ca6df867c8741f917",
+ "run_id": "NewDispatch-20261011T050730Z-9df1c6fb0",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/ut/NewDispatch/fm_pins.tcl",
+    "sha256": "f9fb4914e276362ba0e71d3784181836aff78cee2d1c6f9601531fe1d1190452"
+   }
+  ],
+  "sha256": "de967af70dc9875e002e04075364c2d9391de0e8ca1ba0a3699518a14c06856b"
+ },
+ "target": "NewDispatch",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "NewDispatch",
+ "variant": "NewDispatch",
+ "verdict": "PASS_DEAD_REF"
+}
