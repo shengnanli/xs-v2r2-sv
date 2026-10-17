@@ -2,9 +2,9 @@
 
 - 分支：agent/ctrlblock-memcert（基于 main 7fea08787，认领 d14c4c042）
 - 第一轮（本文件下半部「第一轮」各节）：步 2 M3 MANUAL → STOP（0231）。
-- 第二轮（codex 0232 GO_SCOPED_SHAPE_C）：步 2–6 完成；**步 7 STOP**——CtrlBlock 证书在新 validator 下
-  interface_only 并集判据已过，但被 0230 未覆盖的另一条判据（impl 闭包挂 golden 必须是 FM target / MC 登记）
-  拦下，详见「第二轮 · 步 7」。
+- 第二轮（codex 0232 GO_SCOPED_SHAPE_C）：步 2–6 完成；步 7 曾被 impl-golden 判据拦下（0233 STOP）。
+- 第三轮（codex 0234 GO_NARROW_MEMORY_BRANCH）：impl-golden 并列 memory 分支落地；**CtrlBlock 现有证书
+  current-valid = True**（真实组合提交上判定，未跑 FM、未重出 / 改动证书），见文末「第三轮」。
 
 ## 第一轮 · 步 1：M1 精确模板扩展（scripts/audit_ram_memory_model.py）
 
@@ -533,3 +533,68 @@ verif/mc_memory_registry.tsv 里（其余 73 个都是有 tracked 证书的 FM t
 golden 条目的 module 恰是本证书 allow 里经 `approved_memory_interface_designs` 校验通过的 interface-only
 APPROVED_MEMORY_MACRO_MODEL design，且 ref golden 闭包有逐字节同一份时放行（不改登记表、不改 MC registry）。
 批准后改动只在 proof_certificate.py 一处 + 正负测，CtrlBlock 证书可按 0230 直接用现有证书判 current-valid（无需重跑 FM）。
+
+
+---
+
+# 第三轮（codex 0234 GO_NARROW_MEMORY_BRANCH）
+
+## 改动（scripts/proof_certificate.py，提交 f28fad0788e84ac5c330044870ac632ad15cd8fb）
+
+`validate_impl_golden_certified` 在 MC 分支**之前**加 memory 分支：impl 闭包里的 golden 条目，其 module 若被**本证书自己的**
+allow 声明为 APPROVED_MEMORY_MACRO_MODEL，就只走这一分支，逐项校验：
+1. 复用 `approved_memory_interface_designs`（registry 行 / G1 hash = MANIFEST / class / 对称路径计数 / M1 模板），且该 design
+   在其结果集合内（attrs='u' 两侧不读却出现在 impl 闭包 ⇒ `…_memory_not_interface_only`）；allow 字节在父 commit 上未变；
+2. 本证书 hdlin_interface_only 回读（可解析、无重复）含该 design（standalone 调用也查）；
+3. 四方一致：impl 条目 sha == 唯一一条同名 ref 条目 sha（路径与 kind 也相同）== registry leaf_sha256 == G1 MANIFEST；
+   文件身份 == registry 登记的 leaf_file（不凭同名 module 放行）；
+4. 命中后任何一项失败即返回错误，不降落到 MC / FM target 分支；不计 MC hit，不影响 external_dependency；
+   上下文按证书惰性构建、不读 `_seen`，递归证书各用自己的 allow / 回读 / 闭包（不继承父证书的批准集合）。
+未被本证书声明为 memory 的 golden 走原 MC / FM target 分支，行为不变。没有新建 registry，没有改 MC 表。
+
+## 负测（scripts/test_proof_certificate_memory.py，27/27；原 16 条 + 新 11 条）
+
+I1 / I1s 正例（树 / standalone）；I2 未入 memory 集合的 golden（→ not_fm_target）；I3 ref 闭包缺该文件；I4 ref 条目 sha 不同；
+I5 声明为两侧不读（'u'）却在 impl 读入；I6 class 不是 APPROVED_MEMORY_MACRO_MODEL（→ not_fm_target）；
+I7 (0234-a) ref 与 impl 同一个 hash 但不是 registry 登记值；I8 (0234-b) 父层获准、子层（LA）没有自己的批准声明；
+I9 standalone 回读缺该 memory；I10 命中后失败不降落（登记 kind 错 → memory_invalid）。
+其余证书测试不变：test_proof_certificate 95/95（含 SABOTAGE 元负例如期抓到）、nested 22/22、grandchild 6/6。
+
+## gate_all（f28fad0788）
+
+    TMPDIR=/home/eda/xs-env/tmp-cm bash scripts/gate_all.sh < /dev/null
+    GATE_COMMIT=f28fad0788  GATE_RC=1   （251 项 PASS，1 项红）
+
+唯一红：「receipt 收录表复算」—— 本分支基于 main 7fea08787，没有 main b16eafd75（集成者对 gen_receipt_harvest.py 与
+docs/receipt_harvest.tsv 的 `vcs:<run>` 修复；本 lane 合 main 被权限拒绝，未合）。见下「harvest 旁证」。
+本 lane 新增 / 相关闸全绿：证书判据负测 / 元负例 / golden-in-impl / 嵌套 / memory 并集，RAM 模型审查负测 / 形态C负测 / 复算 /
+人工复核窄出口。
+
+## 第三轮 · 步 7：真实组合提交上判 CtrlBlock current-valid —— **True**
+
+临时 worktree（detached，用完已删）= wt-backend-asm HEAD 4dc41afc619f7ec5a437bf778394947d059397d8 + 本 lane f28fad0788 的
+scripts/audit_ram_memory_model.py、scripts/proof_certificate.py、verif/vendor_boundary.tsv、verif/ram_model_parents.tsv，
+临时提交 6734412cce1ec719482c5320eafc9b8ed898b26c（不在任何分支）。用父 commit 上的 POLICY / fm_targets / G1：
+
+| 证书 | blob sha256 | current-valid |
+|---|---|---|
+| CtrlBlock（PASS_DEAD_REF，impl_commit 9df1c6fb0545） | b179fcc972269178d0cc112c0a3c5bdffbba5b6a5db340065be89b3a9b1a101a | **True** |
+| ExuBlock | 5436c74791ba3b0e649738fc47b99aaf75a82465758ca53340238662b295ebcf | True |
+| Backend allow 的 31 个 green_child（validate_child_certificate，含递归） | — | 31/31 True |
+
+★证书检查代码 / registry 的修正与 FM 执行输入是两回事，分开记录★：
+- 本 lane 改动的只是证书**校验器**（proof_certificate.py）、RAM 审查脚本（audit_ram_memory_model.py）与登记表
+  （vendor_boundary.tsv / ram_model_parents.tsv）。这四个文件都不在 CtrlBlock 证书的 script_closure（fm_eq.tcl、
+  fm_native_emit.tcl、fm_target_config/CtrlBlock.tcl、fm_pins_pre.tcl、fm_pins.tcl）或输入闭包里。
+- current-valid=True 本身就是「原 official 的 RTL / impl 与 golden 闭包 / 脚本闭包 / allow 与 dead_ref 声明 / appvar 回读 /
+  target-config / G1 / 工具」在组合提交上逐项复算未变的机器结论。
+- 故沿用原证明：**没有**重跑 CtrlBlock FM，**没有**重写或重签证书文件（blob sha 不变），也**没有**把那次 official 标成在
+  新脚本下重新执行过。新校验器只是对**同一份**证书给出新的判定。
+
+### harvest 旁证（为什么唯一的红与本 lane 无关）
+
+在本 lane f28fad0788 的字节上换入 main b16eafd75 的 gen_receipt_harvest.py 与 docs/receipt_harvest.tsv 重跑 `--check`：
+仍红，但逐行 diff 只剩 **1 行**——`SSIT` 一行的取证来源从 `vcs:684cbdbaf05c`（COLLECTED）变成仓外 lane worktree
+`wt-backend-asm:9df1c6fb0545`（NEEDS_RERUN，原因「main 里没有钉点文件: /home/eda/xs-env/tmp-rp/be-SSIT/xsv2-proof-…/verif/ut/SSIT/fm_pins…」），
+即其它 lane 的仓外 evidence 在动（该表的口径本来就扫 lane worktree），与本 lane 改的四个文件无关。
+派生表 docs/receipt_harvest.tsv 按任务书不改，留给集成者在合 main 时一并重生成。
