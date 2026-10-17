@@ -1,0 +1,116 @@
+{
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "codex 0226 先例的 exact green_child 组合：XSTile 的 6 个直接实例（core / l2top / 4 个 IntBuffer，5 种 design）两侧 -interface_only，逐 r/i 实例路径 + child_target + 证书 sha256 写死（make_proof_certificate.py --stamp-allow 回填）；本层 wrapper（纯连线，0 寄存器）两侧白盒受验。PENDING_CERTIFICATE = 该 child 证书尚未入库（XSCore：本 lane official 待 Backend 证书；IntBuffer / IntBuffer_1 / IntBuffer_2：已有 SUCCEEDED receipt 未出证），official 前必须回填，未回填时 fm_verdict fail-closed。",
+ "objects": [
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "XSCore",
+   "class": "green_child",
+   "design": "XSCore",
+   "path": "i:/WORK/XSTile/core",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "XSCore",
+   "class": "green_child",
+   "design": "XSCore",
+   "path": "r:/WORK/XSTile/core",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "fd732f5035f3730e1e29cabd693d3e003c3308a535f920d13f361623a38d9e78",
+   "child_target": "L2Top",
+   "class": "green_child",
+   "design": "L2Top",
+   "path": "i:/WORK/XSTile/l2top",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "fd732f5035f3730e1e29cabd693d3e003c3308a535f920d13f361623a38d9e78",
+   "child_target": "L2Top",
+   "class": "green_child",
+   "design": "L2Top",
+   "path": "r:/WORK/XSTile/l2top",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "IntBuffer_1",
+   "class": "green_child",
+   "design": "IntBuffer_1",
+   "path": "i:/WORK/XSTile/intBuffer",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "IntBuffer_1",
+   "class": "green_child",
+   "design": "IntBuffer_1",
+   "path": "r:/WORK/XSTile/intBuffer",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "IntBuffer_2",
+   "class": "green_child",
+   "design": "IntBuffer_2",
+   "path": "i:/WORK/XSTile/intBuffer_1",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "IntBuffer_2",
+   "class": "green_child",
+   "design": "IntBuffer_2",
+   "path": "r:/WORK/XSTile/intBuffer_1",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "IntBuffer",
+   "class": "green_child",
+   "design": "IntBuffer",
+   "path": "i:/WORK/XSTile/intBuffer_2",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "IntBuffer",
+   "class": "green_child",
+   "design": "IntBuffer",
+   "path": "r:/WORK/XSTile/intBuffer_2",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "IntBuffer_1",
+   "class": "green_child",
+   "design": "IntBuffer_1",
+   "path": "i:/WORK/XSTile/intBuffer_3",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "IntBuffer_1",
+   "class": "green_child",
+   "design": "IntBuffer_1",
+   "path": "r:/WORK/XSTile/intBuffer_3",
+   "side": "r"
+  }
+ ],
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "XSTile"
+}

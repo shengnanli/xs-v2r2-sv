@@ -1,0 +1,37 @@
+{
+  "target": "XSTile",
+  "ut": "XSTile",
+  "regs": 0,
+  "outs": 66452,
+  "expected": 71909,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 5457,
+  "bbox": {
+    "IntBuffer": {
+      "insts": 1,
+      "in_bits": 3,
+      "points": 3
+    },
+    "IntBuffer_1": {
+      "insts": 2,
+      "in_bits": 4,
+      "points": 8
+    },
+    "IntBuffer_2": {
+      "insts": 1,
+      "in_bits": 4,
+      "points": 4
+    },
+    "L2Top": {
+      "insts": 1,
+      "in_bits": 3331,
+      "points": 3331
+    },
+    "XSCore": {
+      "insts": 1,
+      "in_bits": 2111,
+      "points": 2111
+    }
+  }
+}

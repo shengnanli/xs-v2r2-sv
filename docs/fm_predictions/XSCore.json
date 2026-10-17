@@ -1,0 +1,27 @@
+{
+  "target": "XSCore",
+  "ut": "XSCore",
+  "regs": 0,
+  "outs": 67860,
+  "expected": 99241,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 31381,
+  "bbox": {
+    "Backend": {
+      "insts": 1,
+      "in_bits": 13504,
+      "points": 13504
+    },
+    "Frontend": {
+      "insts": 1,
+      "in_bits": 1773,
+      "points": 1773
+    },
+    "MemBlock": {
+      "insts": 1,
+      "in_bits": 16104,
+      "points": 16104
+    }
+  }
+}
