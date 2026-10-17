@@ -12,15 +12,17 @@ T = 'XSTile'
 G = 'u_g_XSTile.'
 # 覆盖闸：每条都是一根跨子模块的 golden 线（本层接线的一端），见 rtl/xstile/XSTile.sv 的分组
 COVERS = {
-    'icache_a':     f'{G}_core_auto_memBlock_inner_frontendBridge_icache_out_a_valid',  # core → l2top（ICache 桥 A）
-    'chi_txreq':    f'{G}io_chi_tx_req_flitv',                                          # l2top → 顶层（CHI 请求）
+    'immio_a':      f'{G}_core_auto_memBlock_inner_frontendBridge_instr_uncache_out_a_valid',  # core → l2top（指令 uncache A）
+    'trace_v':      f'{G}_core_io_traceCoreInterface_toEncoder_groups_0_valid',        # core → l2top（trace 组 0）
+    'msi_v':        f'{G}_l2top_io_msiInfo_toCore_valid',                               # l2top → core（MSI）
     'int_clint':    f'{G}_intBuffer_auto_out_0',                                        # intBuffer → core
     'int_plic':     f'{G}_intBuffer_1_auto_out_0_0',                                    # intBuffer_1 → core
     'int_debug':    f'{G}_intBuffer_2_auto_out_0',                                      # intBuffer_2 → core
     'int_nmi':      f'{G}_intBuffer_3_auto_out_0',                                      # intBuffer_3 → core
 }
-# 不设闸（20k 拍探针实测 0）：L1D / PTW 的 TileLink A、PTW / L1D 的 D 回包——核里没有 load / 页表遍历走到 L2
-#   （同 XSCore UT，原因未查明），L2 也拿不到合法 CHI 回包；这些接线由 tb_pins.sv 逐引脚比较 + FM 覆盖。
+# 不设闸（20k 拍探针实测 0 或个位数）：L1D / ICache / PTW 的 TileLink A、各 D 回包、CHI 请求——tile 里核只走指令 uncache
+#   取指（★ICache 为什么不发请求没查明★：同样的复位向量在 XSCore UT 里会走 ICache），L2 也拿不到合法 CHI 回包；
+#   这些接线由 tb_pins.sv 逐引脚比较（源端动过才看得见）+ FM 逐点证明覆盖。
 # 激励分相（ph = (cyc / 5000) % 4）：0/1/3 相 DFT 控制全 0（正常功能模式），2 相全随机压角落。
 PH = '((cyc / 5000) % 4)'
 NARROW = [

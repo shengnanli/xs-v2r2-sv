@@ -8,7 +8,7 @@ MODULE = XSTile
 # UT（取舍同 MemBlock / XSCore）：双例化 golden XSTile 与派生 XSTile_xs，两侧的 6 个子模块**同一份 golden 定义**
 #   （RTL_GOLDEN_DEPS = golden XSTile 的整棵子树 1660 个文件，含 golden XSCore；ClockGate 用本地件），比的只是本层接线。
 #   初值档只跑 +vcs+initreg+0 / +1 两个常量档（双例化不许用 random）。
-#   本层的闸是：顶层输出逐拍 errors=0 + tb_pins.sv 子模块输入引脚逐拍 errors=0 + 6 条跨子模块主通路覆盖（gen.py COVERS）；
+#   本层的闸是：顶层输出逐拍 errors=0 + tb_pins.sv 子模块输入引脚逐拍 errors=0 + 7 条跨子模块主通路覆盖（gen.py COVERS）；
 #   翻转数只报告不设门限（理由见 scripts/gen_xscore_xstile.py ut_main）。
 # FM：6 个直接实例（5 种 design）全部 exact green_child（两侧 -interface_only），本层 wrapper 两侧白盒受验。
 RTL_DIR = ../../../rtl
