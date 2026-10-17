@@ -1598,7 +1598,7 @@ def sc_exhaust(ev_obj, ast, W, domains, label, _no_cut=frozenset()):
                         _walk(c2, seen_w)
         _walk(ast, set())
         eset = set(enum)
-        ranked = sorted(cand, key=lambda w: -len(ev_obj.wire_deps(w)))
+        ranked = sorted(cand, key=lambda w: (-len(ev_obj.wire_deps(w)), w))   # 确定性：并列按名字
         for w in ranked:
             if w in _no_cut or (ast[0] == 'id' and ast[1] == w):
                 continue
