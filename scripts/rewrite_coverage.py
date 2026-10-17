@@ -75,10 +75,149 @@ OUT = REPO / 'docs' / 'rewrite_coverage.tsv'
 MODULE_RE = re.compile(r'^module\s+([A-Za-z_]\w*)', re.M)
 VARIANT_RE = re.compile(r'_\d+$')
 
+def _norm_ws(s):
+    return re.sub(r'\s+', ' ', s).strip()
+
+
+def firtool_memory_shape(text):
+    """golden 文件正文是不是**纯** firtool 行为级存储模型 → (depth, width, n_read, n_write) / None。
+
+    ★按结构认，不按名字认★（2026-10-17，floor-classifier lane）。模板 = firtool 给
+    `SyncReadMem`/`Mem` 生成的叶子，读口全是组合读、写口共用 W0_clk 一个 always 块：
+
+        reg [W-1:0] Memory[0:D-1];
+        always @(posedge W0_clk) begin
+          if (Wk_en & 1'h1)          Memory[Wk_addr] <= Wk_data;                    // 无掩码
+          if (Wk_en & Wk_mask[j])    Memory[Wk_addr][32'hOFF +: G] <= Wk_data[..];  // 按段掩码
+        end
+        assign Rk_data = Rk_en ? Memory[Rk_addr] : W'bx;
+
+    （外加 `ifdef ENABLE_INITIAL_MEM_ 仿真初值块，SYNTHESIS 下不存在，先剥掉。）
+    与 mc_memory_registry.derive 的 1R1W 模板同一套写法，只是读口/写口数与掩码段数
+    从端口表现读 —— 期望正文**逐字重建后整段比对**，多一条 assign / 一个别的寄存器 /
+    一处位选不同都当场不认。端口名、端口顺序、位宽也全部要对上。
+    """
+    i = text.find('\nmodule ')
+    body = text[i + 1:] if i >= 0 else text
+    body = re.sub(r'`ifdef ENABLE_INITIAL_MEM_.*?`endif // ENABLE_INITIAL_MEM_', '',
+                  body, flags=re.S)
+    body = re.sub(r'/\*.*?\*/', ' ', body, flags=re.S)
+    body = re.sub(r'//[^\n]*', '', body)
+    m = re.match(r'\s*module\s+\w+\s*\((.*?)\);(.*)$', body, re.S)
+    if not m:
+        return None
+    ports = []
+    for d in m.group(1).split(','):
+        d = _norm_ws(d)
+        pm = re.fullmatch(r'(input|output)\s+(?:\[(\d+):0\]\s+)?(\w+)', d)
+        if not pm:
+            return None
+        ports.append((pm.group(1), int(pm.group(2)) + 1 if pm.group(2) else 1, pm.group(3)))
+    pw = {n: (d, w) for d, w, n in ports}
+    if len(pw) != len(ports) or 'R0_data' not in pw or 'W0_data' not in pw:
+        return None
+    width = pw['R0_data'][1]
+    mm = re.match(r'\s*reg \[(\d+):0\] Memory\[0:(\d+)\];', m.group(2))
+    if not mm or int(mm.group(1)) + 1 != width:
+        return None
+    depth = int(mm.group(2)) + 1
+    aw = pw.get('R0_addr', (None, 0))[1]
+    if (1 << aw) < depth:
+        return None
+    nr = 0
+    while 'R%d_data' % nr in pw:
+        nr += 1
+    nw = 0
+    while 'W%d_data' % nw in pw:
+        nw += 1
+    want_ports = []
+    for k in range(nr):
+        want_ports += [('input', aw, 'R%d_addr' % k), ('input', 1, 'R%d_en' % k),
+                       ('input', 1, 'R%d_clk' % k), ('output', width, 'R%d_data' % k)]
+    writes = []
+    for k in range(nw):
+        want_ports += [('input', aw, 'W%d_addr' % k), ('input', 1, 'W%d_en' % k),
+                       ('input', 1, 'W%d_clk' % k), ('input', width, 'W%d_data' % k)]
+        mk = 'W%d_mask' % k
+        if mk in pw:
+            nseg = pw[mk][1]
+            if nseg < 1 or width % nseg:
+                return None
+            g = width // nseg
+            want_ports.append(('input', nseg, mk))
+            for j in range(nseg):
+                writes.append("if (W%d_en & W%d_mask[%d]) Memory[W%d_addr][32'h%X +: %d] "
+                              "<= W%d_data[%d:%d];"
+                              % (k, k, j, k, j * g, g, k, j * g + g - 1, j * g))
+        else:
+            writes.append("if (W%d_en & 1'h1) Memory[W%d_addr] <= W%d_data;" % (k, k, k))
+    if ports != want_ports or nr == 0 or nw == 0:
+        return None
+    want = ' '.join(
+        ['reg [%d:0] Memory[0:%d];' % (width - 1, depth - 1),
+         'always @(posedge W0_clk) begin'] + writes + ['end'] +
+        ["assign R%d_data = R%d_en ? Memory[R%d_addr] : %d'bx;" % (k, k, k, width)
+         for k in range(nr)] + ['endmodule'])
+    got = _norm_ws(m.group(2))
+    got = got[:got.index('endmodule') + len('endmodule')] if 'endmodule' in got else got
+    if got.lower() != _norm_ws(want).lower():
+        return None
+    return depth, width, nr, nw
+
+
+_MC_REG = None
+
+
+def _mc_registered():
+    """verif/mc_memory_registry.tsv 登记的 design 名（codex 0222：存储层不重写、由 MC 替换）。
+    表坏了直接抛 —— 覆盖率台账不许在存储契约表读不出来时 fail-open。"""
+    global _MC_REG
+    if _MC_REG is None:
+        import mc_memory_registry as MC
+        _MC_REG = set(MC.load_registry())
+    return _MC_REG
+
+
+# behavioral_ram 家族名（与 g1_configured_universe.EXCL_PATTERNS / g1_leaf_audit.CLASSES
+# 同一份口径）里，本表原先漏收的那一支。★光有名字不算★：还必须过上面的结构模板。
+_DATA_MEM_FAMILY = re.compile(r'^data_mem_')
+
+
+def is_behavioral_memory(name, golden_dir=None):
+    """这个 golden 模块是不是**存储模型**（按规矩不重写，由 MC 替换）。
+
+    两条，任一成立即是：
+      1. verif/mc_memory_registry.tsv 里登记了它 —— 登记表是存储契约的权威出处，
+         表里有的必须归存储，否则台账与契约表互相矛盾；
+      2. 名字属于 behavioral_ram 家族（`data_mem_*`）**且** golden 正文逐字等于
+         firtool 行为级存储模板（firtool_memory_shape）。名字像、正文夹带了别的逻辑 → 不收。
+
+    ★为什么 2 要名字和结构同时成立★：结构模板单独用会把 stateBankTags_320x3 /
+    dt_pcTransType_160x2 / diff_rat_state_bank_320x776 这类**正文也是纯存储**、但工程里
+    另有 lane 在按普通模块记账的叶子一并收走（它们不在 universe 的 behavioral_ram 家族里）。
+    那是另一个口径决定，不该由一次漏收修复顺手做掉。
+    """
+    if name in _mc_registered():
+        return True
+    if not _DATA_MEM_FAMILY.match(name):
+        return False
+    g = pathlib.Path(golden_dir) if golden_dir else GOLDEN
+    f = g / (name + '.sv')
+    if not f.is_file():
+        return False
+    return firtool_memory_shape(f.read_text(errors='replace')) is not None
+
+
 # 排除类：(判据, 名称, 为什么排除)
 EXCLUSIONS = [
     (lambda n: re.match(r'^(array|ram|sram)_', n) or n.endswith('_ext'),
      'vendor_macro', '厂商存储宏/行为级RAM：两侧同源黑盒，不是重写对象'),
+    # ★2026-10-17 补★：上一条的名字表是 `array|ram|sram`，比 universe 的 behavioral_ram
+    # 家族（g1_configured_universe.EXCL_PATTERNS 有 `^data_mem_`）少一支，于是
+    # data_mem_8x4 / data_mem_16x12（2R1W 按段掩码）与 MC 登记表里的 data_mem_0_8x3 /
+    # data_mem_0_4x2 一直挂在「剩余待重写」里。按结构 + 登记表认，见 is_behavioral_memory。
+    (is_behavioral_memory,
+     'mc_memory_model', '行为级存储模型（MC 登记表 / firtool 存储模板）：按规矩不重写，由 MC 替换'),
     (lambda n: 'Mbist' in n or n.startswith('BoreBd'),
      'mbist_dft', 'MBIST/DFT 扫描链基础设施'),
     (lambda n: n == 'LogPerfEndpoint',
