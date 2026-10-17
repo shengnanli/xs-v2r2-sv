@@ -1,0 +1,62 @@
+{
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "codex 0226 先例的 exact green_child 组合：XSCore 的 3 个直接实例（frontend / backend / memBlock）两侧 -interface_only，逐 r/i 实例路径 + child_target + 证书 sha256 写死（make_proof_certificate.py --stamp-allow 回填）；本层 wrapper（纯连线，0 寄存器）两侧白盒受验。PENDING_CERTIFICATE = 该 child 证书尚未入库（Backend：agent/backend-asm 收尾中），official 前必须回填，未回填时 fm_verdict fail-closed。",
+ "objects": [
+  {
+   "attrs": "i",
+   "certificate_sha256": "d5730066d09db884949bf160f633f768a5b399509cf62a6f921ff992dc08f629",
+   "child_target": "Frontend",
+   "class": "green_child",
+   "design": "Frontend",
+   "path": "i:/WORK/XSCore/frontend",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "d5730066d09db884949bf160f633f768a5b399509cf62a6f921ff992dc08f629",
+   "child_target": "Frontend",
+   "class": "green_child",
+   "design": "Frontend",
+   "path": "r:/WORK/XSCore/frontend",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "Backend",
+   "class": "green_child",
+   "design": "Backend",
+   "path": "i:/WORK/XSCore/backend",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "PENDING_CERTIFICATE",
+   "child_target": "Backend",
+   "class": "green_child",
+   "design": "Backend",
+   "path": "r:/WORK/XSCore/backend",
+   "side": "r"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "1ed40e7eb58b9b55e3ce24b677b3551a866de56193fb83ef993bf97fdbc1e569",
+   "child_target": "MemBlock",
+   "class": "green_child",
+   "design": "MemBlock",
+   "path": "i:/WORK/XSCore/memBlock",
+   "side": "i"
+  },
+  {
+   "attrs": "i",
+   "certificate_sha256": "1ed40e7eb58b9b55e3ce24b677b3551a866de56193fb83ef993bf97fdbc1e569",
+   "child_target": "MemBlock",
+   "class": "green_child",
+   "design": "MemBlock",
+   "path": "r:/WORK/XSCore/memBlock",
+   "side": "r"
+  }
+ ],
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "XSCore"
+}
