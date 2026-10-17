@@ -18,6 +18,9 @@ G1 夹具里放入 dt_pcTransType_160x2.sv 的真实 G1 字节（进 MANIFEST）
   M9 普通逻辑伪装 memory：登记行伪造成指向一个逻辑模块（sha 与 G1 一致），M1 模板拦下
   M10 同一 design 既是 green_child 又是 memory      M11 同一 design 'i' 与 'u' 混用
   M12 登记行 body_rule 缺 symmetric_both_sides_only  M13 回读重复 memory
+impl 闭包挂 golden memory 的并列分支（codex 0233/0234）：
+  I1/I1s 正例（树 / standalone）  I2 未入 memory 集合  I3 ref 缺文件  I4 ref sha 不同  I5 'u' 声明却在 impl 读入
+  I6 class 不对  I7 两侧同一非登记 hash  I8 父层获准子层无声明  I9 standalone 回读缺  I10 命中后失败不降落
 用法：python3 scripts/test_proof_certificate_memory.py
 """
 import hashlib
@@ -115,10 +118,80 @@ def main():
     chk('M12 登记行 body_rule 缺对称约束', tree(rows=[row(body_rule='pin_by=leaf_sha256')]),
         'memory_interface_only_registry_body_rule')
     chk('M13 回读重复 memory', tree(readback=f'LA LB {MEM} {MEM}'), 'interface_only_duplicate')
+    impl_golden_cases(chk)
     for p in N.TMP:
         shutil.rmtree(p, ignore_errors=True)
     print('test_proof_certificate_memory: %d 条，%s' % (N.RUN[0], '全过' if not N.FAILS else '★未过 %s' % N.FAILS))
     return 1 if N.FAILS else 0
+
+
+# ---------------------------------------------------------------------------
+# codex 0233/0234：impl 闭包挂 golden memory 的并列分支（validate_impl_golden_certified）
+# ---------------------------------------------------------------------------
+MEM_SHA = hashlib.sha256(MEM_BYTES).hexdigest()
+
+
+def gent(name=f'{MEM}.sv', sha=MEM_SHA):
+    return {'path': f'golden-rtl/{name}', 'kind': 'golden', 'sha256': sha}
+
+
+def with_golden(impl=(), ref=()):
+    """cert_mut：往证书 impl / ref 闭包里加 golden 条目并重算闭包摘要。"""
+    def mut(doc):
+        ic = doc['input_closure']
+        ic['impl'] = ic['impl'] + [dict(x) for x in impl]
+        ic['golden'] = ic['golden'] + [dict(x) for x in ref]
+        ic['impl_sha256'] = N.PC.closure_digest(ic['impl'])
+        ic['golden_sha256'] = N.PC.closure_digest(ic['golden'])
+        return doc
+    return mut
+
+
+def itree(objs=None, readback=None, rows=None, impl=(gent(),), ref=(gent(),), on='M', extra_gold=None):
+    objs = mem_objs() if objs is None else objs
+
+    def add(allow, tr):
+        allow['objects'].extend(objs)
+    gold = {f'{MEM}.sv': MEM_BYTES, 'ram_40x47.sv': FAMILY}
+    gold.update(extra_gold or {})
+    return N.Tree(allow_mut={'M': add}, readback={'M': readback if readback is not None else f'LA LB {MEM}'},
+                  cert_mut={on: with_golden(impl, ref)}, extra_gold=gold,
+                  extra_files={'verif/vendor_boundary.tsv': vb(rows if rows is not None else [ROW])})
+
+
+def standalone(tr, target='M'):
+    """直接调 validate_impl_golden_certified（不经 validate_certificate_current 的前置判据）。"""
+    pol, _ = N.PC.load_policy(tr.repo, tr.parent)
+    tmap, unres = N.FTU.targets_at(str(tr.repo_dir), tr.parent)
+    doc, _b, _e = N.PC.load_certificate(tr.repo, tr.parent, target)
+    return N.PC.validate_impl_golden_certified(tr.repo, tr.parent, target, doc, policy=pol, fm_targets=tmap,
+                                              fm_targets_unresolved=unres, g1_root=str(tr.g1))
+
+
+def impl_golden_cases(chk):
+    fake = b'// fixture: unregistered RAM\n' + MEM_BYTES.replace(MEM.encode(), b'ram_fake_160x2')
+    fsha = hashlib.sha256(fake).hexdigest()
+    chk('I1 impl/ref 同挂已批准 memory（树）', itree().judge(), True)
+    chk('I1s 同上（standalone）', standalone(itree()), True)
+    chk('I2 未入 memory 集合的 golden', itree(impl=(gent(), gent('ram_fake_160x2.sv', fsha)),
+                                         ref=(gent(), gent('ram_fake_160x2.sv', fsha)),
+                                         extra_gold={'ram_fake_160x2.sv': fake}).judge(),
+        'impl_golden_not_fm_target:M:ram_fake_160x2')
+    chk('I3 ref 闭包缺该文件', itree(ref=()).judge(), 'impl_golden_memory_not_shared:M:')
+    chk('I4 ref 条目 sha 不同（standalone）', standalone(itree(ref=(gent(sha='0' * 64),))),
+        'impl_golden_memory_ref_mismatch')
+    chk("I5 声明为两侧不读（'u'）却在 impl 读入", itree(objs=mem_objs(attrs='u'), readback='LA LB').judge(),
+        'impl_golden_memory_not_interface_only')
+    chk('I6 class 不是 APPROVED_MEMORY_MACRO_MODEL（standalone）',
+        standalone(itree(objs=mem_objs(cls='vendor_macro'))), 'impl_golden_not_fm_target:M:dt_pcTransType_160x2')
+    other = 'ab' * 32
+    chk('I7 (0234-a) 两侧同一 hash 但非 registry 登记值（standalone）',
+        standalone(itree(impl=(gent(sha=other),), ref=(gent(sha=other),))), 'impl_golden_memory_sha_not_registered')
+    chk('I8 (0234-b) 父层获准、子层（LA）无自己的批准声明', itree(impl=(gent(),), ref=(gent(),), on='LA').judge(),
+        'impl_golden_not_fm_target:LA:dt_pcTransType_160x2')
+    chk('I9 standalone 回读缺该 memory', standalone(itree(readback='LA LB')), 'impl_golden_memory_readback_missing')
+    chk('I10 命中后失败不降落（登记 kind 错，standalone）', standalone(itree(rows=[row(kind='vendor_sram_leaf')])),
+        'impl_golden_memory_invalid')
 
 
 if __name__ == '__main__':

@@ -465,6 +465,66 @@ def load_mc_context(repo, commit):
     return {'MC': _MC, 'reg': reg, 'vendor_text': vb.decode('utf-8') if vb is not None else ''}, None
 
 
+def _memory_impl_golden_context(repo, parent_commit, doc, g1_root):
+    """validate_impl_golden_certified 的 memory 分支上下文，**只用本证书自己**的 allow / 回读（codex 0234 第 2 条）。"""
+    ctx = {'declared': set(), 'err': None, 'mem': [], 'rows': {}, 'readback': None, 'man': None}
+    rec = (doc.get('proof_config', {}).get('declarations') or {}).get('allow')
+    allow, aerr = _allow_doc_of(repo, parent_commit, doc)
+    if aerr:
+        ctx['err'] = aerr
+    ctx['declared'] = {o.get('design') for o in (allow or {}).get('objects') or []
+                       if o.get('class') == MEMORY_CLASS}
+    if not ctx['declared']:
+        return ctx
+    if not ctx['err'] and rec:
+        blob = repo.show(parent_commit, rec.get('path') or '')
+        if blob is None or hashlib.sha256(blob).hexdigest() != rec.get('sha256'):
+            ctx['err'] = 'allow_changed_at_parent:%s' % rec.get('path')
+    if not ctx['err']:
+        mem, merr = approved_memory_interface_designs(repo, parent_commit, allow, g1_root)
+        ctx['mem'], ctx['err'] = mem or [], merr
+    vb = repo.show(parent_commit, VENDOR_BOUNDARY_PATH)
+    for ln in (vb.decode('utf-8').splitlines() if vb is not None else []):
+        if ln.strip() and not ln.startswith('#'):
+            c = ln.split('\t')
+            ctx['rows'].setdefault(c[0], []).append(c)
+    ctx['readback'] = parse_tcl_name_list(
+        (doc.get('proof_config', {}).get('entry_appvars_readback') or {}).get('hdlin_interface_only'))
+    ctx['man'] = _g1_manifest(g1_root) if g1_root else None
+    return ctx
+
+
+def _memory_impl_golden_check(child, doc, e, base, mod, ctx):
+    """impl 闭包里挂的 golden 是本证书声明的 APPROVED_MEMORY_MACRO_MODEL 时的判据（codex 0233/0234）。"""
+    tag = 'green_child_impl_golden_memory'
+    if ctx['err']:
+        return '%s_invalid:%s:%s:%s' % (tag, child, mod, ctx['err'])
+    if mod not in ctx['mem']:
+        # 声明了 memory 类别但不在「interface-only 且当前有效」集合里（如 attrs='u' 两侧不读，却出现在 impl 闭包）
+        return '%s_not_interface_only:%s:%s' % (tag, child, mod)
+    rb = ctx['readback']
+    if rb is None or len(rb) != len(set(rb)) or mod not in rb:
+        return '%s_readback_missing:%s:%s' % (tag, child, mod)
+    rows = ctx['rows'].get(mod) or []
+    if len(rows) != 1 or len(rows[0]) < 5:
+        return '%s_registry_row:%s:%s' % (tag, child, mod)
+    leaf_file, leaf_sha = rows[0][3], rows[0][4]
+    if base != leaf_file:
+        return '%s_file_identity:%s:%s:closure=%s,registry=%s' % (tag, child, mod, base, leaf_file)
+    if not ctx['man'] or ctx['man'].get(leaf_file) != leaf_sha:
+        return '%s_manifest_mismatch:%s:%s' % (tag, child, mod)
+    if e.get('sha256') != leaf_sha:
+        return '%s_sha_not_registered:%s:%s:impl=%s,registry=%s' % (
+            tag, child, mod, (e.get('sha256') or '?')[:12], leaf_sha[:12])
+    refs = [g for g in (doc.get('input_closure', {}).get('golden') or [])
+            if os.path.basename(g.get('path') or '') == base]
+    if len(refs) != 1:
+        return '%s_not_shared:%s:%s:ref_entries=%d' % (tag, child, mod, len(refs))
+    if refs[0].get('kind') != 'golden' or refs[0].get('sha256') != leaf_sha or refs[0].get('path') != e.get('path'):
+        return '%s_ref_mismatch:%s:%s' % (tag, child, mod)
+    return True
+
+
 def validate_impl_golden_certified(repo, parent_commit, child, doc,
                                    policy=None, fm_targets=None,
                                    fm_targets_unresolved=None, g1_root=None,
@@ -494,11 +554,21 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
     if _seen is None:
         _seen = set()
     gold = impl_golden_entries(doc)
+    mem_ctx = None                     # 本证书自己的 memory 批准上下文（惰性；不继承父证书、不走 _seen）
     for e in gold:
         base = os.path.basename(e.get('path') or '')
         if not base.endswith('.sv'):
             return 'green_child_impl_golden_unexpected_path:%s:%s' % (child, base or '?')
         mod = base[:-3]
+        # (M) ★codex 0234★ 本证书 allow 把该 module 声明为 APPROVED_MEMORY_MACRO_MODEL ⇒ 只走这一分支：
+        #     成立即放行（不计 MC hit、不影响 external_dependency），失败即返回错误，不降落到 MC / FM target 分支。
+        if mem_ctx is None:
+            mem_ctx = _memory_impl_golden_context(repo, parent_commit, doc, g1_root)
+        if mod in mem_ctx['declared']:
+            r = _memory_impl_golden_check(child, doc, e, base, mod, mem_ctx)
+            if r is not True:
+                return r
+            continue
         # ★MC 命中按「当前层」计（2026-10-06 集成者裁定）★：`_seen` 只给递归去重 / 防环用，不许吞掉本层的 hit。
         #   反例（FTB）：FTB 自己 impl 挂 array_1 / sram_array_…_bp_ftb，又挂 golden SRAMTemplate_36（其证书也挂这两份）；
         #   旧写法先在递归里把它们记进共享的 `_seen`，回到 FTB 本层就 `continue` 掉，本层 0 hit
