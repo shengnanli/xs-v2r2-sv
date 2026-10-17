@@ -102,7 +102,7 @@ BlockCipherModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/BlockCipherModule.sv
 BloomFilter	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/BloomFilter.sv
 BoothEncoderF64F32F16	REWRITTEN	PROVEN_DIRECT	rtl/backend/BoothEncoderF64F32F16.sv
 BoothEncoderF64F32F16_3	REWRITTEN	PROVEN_DIRECT	rtl/backend/BoothEncoderF64F32F16_3.sv
-BranchModule	PARTIAL_DRIVE	PROVEN_DIRECT	rtl/backend/BranchModule.sv
+BranchModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/BranchModule.sv
 BranchUnit	REWRITTEN	PROVEN_DIRECT	rtl/backend/BranchUnit.sv
 BusErrorUnit	REWRITTEN	PROVEN_DIRECT	rtl/l2/BusErrorUnit.sv
 BusPerfMonitor	REWRITTEN	PROVEN_DIRECT	rtl/uncore/BusPerfMonitor.sv
@@ -695,11 +695,11 @@ LsqEnqCtrl	REWRITTEN	PROVEN_DIRECT	rtl/backend/LsqEnqCtrl.sv
 LsqWrapper	GOLDEN_REUSE	PROVEN_DIRECT	rtl/memblock/LsqWrapper.sv
 MEFreeList	REWRITTEN	PROVEN_DIRECT	rtl/backend/MEFreeList.sv
 MLevelPermitModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/MLevelPermitModule.sv
-MMIOBridge	PARTIAL_DRIVE	PROVEN_DIRECT	rtl/uncore/MMIOBridge.sv
-MMIOBridgeEntry	SKELETON	PROVEN_DIRECT	rtl/uncore/MMIOBridgeEntry.sv
-MMIOBridgeEntry_2	SKELETON	PROVEN_DIRECT	rtl/uncore/MMIOBridgeEntry_2.sv
-MMIOBridgeEntry_4	SKELETON	PROVEN_DIRECT	rtl/uncore/MMIOBridgeEntry_4.sv
-MMIOBridgeEntry_8	SKELETON	PROVEN_DIRECT	rtl/uncore/MMIOBridgeEntry_8.sv
+MMIOBridge	REWRITTEN	PROVEN_DIRECT	rtl/uncore/MMIOBridge.sv
+MMIOBridgeEntry	REWRITTEN	PROVEN_DIRECT	rtl/uncore/MMIOBridgeEntry.sv
+MMIOBridgeEntry_2	REWRITTEN	PROVEN_DIRECT	rtl/uncore/MMIOBridgeEntry_2.sv
+MMIOBridgeEntry_4	REWRITTEN	PROVEN_DIRECT	rtl/uncore/MMIOBridgeEntry_4.sv
+MMIOBridgeEntry_8	REWRITTEN	PROVEN_DIRECT	rtl/uncore/MMIOBridgeEntry_8.sv
 MMIODiverger	MISSING	UNPROVEN	-
 MMIOMerger	MISSING	UNPROVEN	-
 MNretEventModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/MNretEventModule.sv
@@ -764,7 +764,7 @@ MemUnit	MISSING	UNPROVEN	-
 MenvcfgModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/MenvcfgModule.sv
 MepcModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/MepcModule.sv
 MflushpwrModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/MflushpwrModule.sv
-Mgtu	SKELETON	PROVEN_DIRECT	rtl/backend/Mgtu.sv
+Mgtu	REWRITTEN	PROVEN_DIRECT	rtl/backend/Mgtu.sv
 Mgu	REWRITTEN	PROVEN_DIRECT	rtl/backend/Mgu.sv
 MhartidModule	REWRITTEN	PROVEN_DIRECT	rtl/backend/MhartidModule.sv
 Mhpmcounter10Module	REWRITTEN	PROVEN_DIRECT	rtl/backend/Mhpmcounter10Module.sv
@@ -1585,7 +1585,7 @@ TLXbar_2	MISSING	UNPROVEN	-
 TLXbar_3	GOLDEN_REUSE	PROVEN_DIRECT	rtl/uncore/TLXbar_3.sv
 TLXbar_4	GOLDEN_REUSE	PROVEN_DIRECT	rtl/uncore/TLXbar_4.sv
 TLXbar_5	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TLXbar_5.sv
-TLXbar_6	SKELETON	PROVEN_DIRECT	rtl/uncore/TLXbar_6.sv
+TLXbar_6	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TLXbar_6.sv
 TXDAT	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TXDAT.sv
 TXDAT_4	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TXDAT_4.sv
 TXREQ	REWRITTEN	PROVEN_DIRECT	rtl/uncore/TXREQ.sv

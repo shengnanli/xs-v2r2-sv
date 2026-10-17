@@ -137,7 +137,11 @@ FM_SHELL_BASELINE = 'V-2023.12-SP3'
 
 OK_VERDICTS = ('SUCCEEDED', 'PASS', 'PASS_DEAD_REF', 'SIGNOFF_PASS')
 MODULE_RE = re.compile(r'^module\s+([A-Za-z_]\w*)', re.M)
-TMP_PREFIX_RE = re.compile(r'^/tmp/xsv2-proof-[^/]+/')
+# 证明树根：run_proof 的临时树（任意父目录下的 xsv2-proof-*，TMPDIR 不一定是 /tmp），
+# 或直接在 lane worktree 里跑的（/home/eda/xs-env/wt-*）。只去最近的一层树根。
+# ★不去前缀就会拿 lane worktree 里的那份文件当"main 里的"比★（2026-10-17）：
+# SSIT@684cbdbaf05c 的钉点记成 wt-ssit2/...，wt-ssit2 回收后 main 闸翻红。
+TMP_PREFIX_RE = re.compile(r'^(?:/[^\n]*?/xsv2-proof-[^/]+|/home/eda/xs-env/wt-[^/]+)/')
 PACKED_RE = re.compile(r'^PACKED_MATCH: \d+ points pinned', re.M)
 # ★钉点静默落空★：与 scripts/fm_verdict.py 现行判据**同一个正则对象**（import，不抄写），
 # 只认行首 `Error: Unknown name`，注释/缩进回显不算。两处口径若分叉，同一份日志会在
