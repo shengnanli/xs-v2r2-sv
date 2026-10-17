@@ -80,7 +80,11 @@ NOT_A_MODULE = {
 #
 # 引脚位宽从哪来：读那份**没被 FM 读**的定义文件的端口表（`.v` 优先，其次 `.sv`）。
 # ★读不到就返回 None，不猜★ —— 上界宁可标成"算不出"，也不能虚报一个数。
-# 8/8 逐位命中见 model() 下方 --selftest 的正向用例。
+# 加上这一项后 8 份对账（2026-10-17 按 evidence/7877497350a2 复核更正；原文写作
+# "8/8 逐位命中"，与实测不符）：**5/8 逐位命中**（_145/_146/_152/_163/_185），
+# **3/8 模型比实测恰高 1**（_155/_166/_178：FM merge 合掉 respReg[1]≡rckEnReg 一对，
+# 仍守"模型是上界"）。--selftest 的正向用例取其中 6 份：正向 1 三份逐位相等、
+# 正向 2 三份差额恰为 1；_163/_185 未进自测。
 #
 # ★为什么另起一个正则，而不是放开 INST_RE 的首字母★：INST_RE 决定 `regs`
 # （寄存器位数）的口径，动它会改变**所有已登记目标**的 expected；这里只是发现黑盒，
@@ -263,8 +267,12 @@ def model(top, deps, deps_unexpanded=()):
     # ★deps 没读全就不许算 BBPin★（2026-09-20，NewDispatch 当场逼出来的）
     # `verif/ut/NewDispatch/Makefile` 写的是 `FM_REF_DEPS_NewDispatch = $(ND_CHILDREN)`。
     # from_ut 只挑 `.sv` 结尾的词，于是 deps 读成空 —— 而"闭包为空"和"闭包里真没有
-    # 那几个模块"在下面的 bbox_counts 看来一模一样，NewDispatch 的 9 个真子设计
+    # 那几个模块"在下面的 bbox_counts 看来一模一样，NewDispatch 的真子设计
     # 会被整批误判成黑盒，凭空加出 2999 个比较点。
+    # ★计数更正（2026-10-17 复核）★：原文写"9 个真子设计"。ND_CHILDREN 确是 9 个文件，
+    # 但被误判成黑盒的是 NewDispatch **直接例化**的 7 个（BusyTable/_1/_2/_3、VlBusyTable、
+    # LsqEnqCtrl、RegCacheTagTable，各 1 例）；RegCacheTagModule/_1 是 RegCacheTagTable
+    # 里面的孙模块，父已成黑盒就不再往下走，不单独计。2999 = 345+286+266+170+144+1468+320。
     # ★这正是本文件已经在 bbox_in_bits 里守过的那条：读不到就说读不到，不猜。★
     # 所以这里直接不加 bbin（模型退回 regs+outs，与加这一项之前逐字节相同），
     # 只把"为什么没加"记进结果里。
@@ -448,7 +456,8 @@ def selftest():
     print('    (参考，非判据) NewDispatch deps_unexpanded=%r deps=%d'
           % (nd.get('deps_unexpanded'), len(nd.get('deps') or [])))
     # ★判别性★：守卫不是空转 —— 同一个 top 若不声明"deps 没读全"，
-    # 那 9 个真子设计就会被整批误判成黑盒、凭空加出上千个点。
+    # 那 7 个直接子设计（ND_CHILDREN 9 个文件里除两个孙模块外）就会被整批误判成黑盒、
+    # 凭空加出上千个点（实测 2999）。
     nd_naive = model('NewDispatch', [])
     ck('判别性 去掉守卫就会误判（同一 top 的 naive 算法 bbin > 0）',
        nd_naive.get('bbin', 0) > 0,

@@ -94,8 +94,18 @@ _PREFIX = re.compile(
         | always\s*@\s*\([^)]*\)
         | (?:if|for|while|case[xz]?|casez|unique|priority|foreach)\s*\([^()]*\)
         | \bbegin\b | \bend\b | \belse\b | \bdo\b
-        | \bdefault\s*: | \b\w+\s*:(?!:)
+        | \bend(?:case|generate|function|task)\b
+        | \bdefault\s*:
+        | (?:\d*'[sS]?[bBdDhHoO][0-9a-fA-FxXzZ_?]+|\w+)
+          (?:\s*,\s*(?:\d*'[sS]?[bBdDhHoO][0-9a-fA-FxXzZ_?]+|\w+))*\s*:(?!:)
       )\s*""", re.X)
+# ★2026-10-17 补两条（floor-classifier lane）★
+#   endcase/endgenerate/endfunction/endtask：原表只有 `\bend\b`，它**不匹配 endcase**
+#     （词边界）。于是 `endcase` 后面紧跟的那条赋值整段被吞 —— LoadUnit 的
+#     `endcase vecldout_valid = ...`（1026/1027）、BranchModule 核的
+#     `endcase taken = ...`（1/2）都是这一条。
+#   case 标号：原表只认 `ident:`，不认 `3'd2:` / `2'd1, 2'd2:` 这种带位宽字面量
+#     （及逗号多标号）的标号，标号后的赋值同样看不见。
 
 # 按 `;` 切语句会把 `for (int i = 0; i < N; i++)` 的头劈成三段，第三段长这样：
 #     `i++) begin in_ready[i] = ...`
@@ -104,6 +114,27 @@ _PREFIX = re.compile(
 # PARTIAL_DRIVE，而它们的 FM 全是 SUCCEEDED。
 # 只在 `)` 之前既没有 `(` 也没有 `=` 时才剥，免得吃掉真表达式。
 _ORPHAN_CLOSE = re.compile(r'^(?=[^(=]*\))[^()]*\)\s*')
+# ★2026-10-17 补：步进写成赋值形式的 for 头★（floor-classifier lane，Mgtu 实测）：
+#     for (lane = 0; lane < 128; lane = lane + 1)
+#       io_out_vd[lane] = ...;
+# 第三段是 `lane = lane + 1) io_out_vd[lane] = ...`，`)` 前面有 `=`，上面那条
+# 按设计不剥，于是 _PROC 把 for 的步进 `lane =` 当成了这一段的赋值目标，
+# 循环体里真正的 `io_out_vd[...] =` 就看不见 —— Mgtu 判 SKELETON 0/1，而它 FM 是绿的。
+# 判据：按 `;` 切出来的段里出现**配不上对的 `)`**，只能是因为这一段起点落在
+# 一对括号里面 —— 模块体里能把 `;` 夹进括号的只有 for 头。于是剥到这个 `)` 为止。
+# 括号是配平地数的，`i = i + (1))` 这类也对；`assign y = (a + b);` 括号配平，不动。
+
+
+def _strip_for_step(chunk):
+    depth = 0
+    for i, ch in enumerate(chunk):
+        if ch == '(':
+            depth += 1
+        elif ch == ')':
+            depth -= 1
+            if depth < 0:
+                return chunk[i + 1:].lstrip()
+    return chunk
 
 _PROC = re.compile(r'^\s*(\w+)\s*(?:\[[^\]]*\]|\.\w+)*\s*(?:<=|=)(?!=)')
 
@@ -198,7 +229,7 @@ def const_driven_set(name, bodies, memo=None, stack=None):
         if _CONST_RHS.match(rhs):
             d |= set(re.findall(r'\w+', lhs))
     # 经子模块传上来的
-    for child, cport, names in instance_conns(body):
+    for child, cport, names in instance_conns(body, _ports_of(bodies)):
         sub = const_driven_set(child, bodies, memo, stack)
         if sub is not None and cport in sub:
             d |= names
@@ -286,8 +317,20 @@ def _clean_names(expr):
     return set(re.findall(r'[A-Za-z_]\w*', s))
 
 
-def instance_conns(body):
-    """[(子模块名, 子端口名, 连上去的名字集合)]"""
+def instance_conns(body, ports_of=None):
+    """[(子模块名, 子端口名, 连上去的名字集合)]
+
+    ★隐式端口连接（2026-10-17 补，floor-classifier lane）★
+    SV 有两种不写括号的连法，语义都是「子端口连到父模块里同名的网」：
+        u_core (.*);                  —— 通配：子模块**每一个**没显式连的端口
+        u_core (.clk, .io_a, ...);    —— 具名简写：`.io_a` ≡ `.io_a(io_a)`
+    原先只认 `.p(expr)`，于是 MMIOBridgeEntry×4 / TLXbar_6 这种「wrapper 一行
+    `xs_<名>_core u_core (.*);`」的写法读成一条连接都没有 → SKELETON 0/35、0/51，
+    MMIOBridge 又因为 16 个 Entry 的 io_pCrd_query_* 回连落空跟着判成 PARTIAL_DRIVE。
+    `.*` 要知道子模块有哪些端口，所以需要 ports_of(子模块名) -> 端口名集合；
+    ★子模块不在 rtl/（ports_of 返回 None）时 `.*` 一条都不展开★ —— 不知道它有哪些端口，
+    就不替它认领父模块的任何输出（外部黑盒的显式连接仍照旧算驱动，那是另一条规则）。
+    """
     out = []
     for m in _INST.finditer(body):
         mod = m.group(1)
@@ -304,11 +347,33 @@ def instance_conns(body):
                     break
             i += 1
         blk = body[m.end():i]
+        # 显式连了的端口名（不管连接表达式能不能解析）—— `.*` 不得再替它们补连
+        explicit = set(re.findall(r'(?:^|[(,])\s*\.(\w+)\s*\(', blk))
         for cp, expr in re.findall(r'\.(\w+)\s*\(([^()]*)\)', blk, re.S):
             names = _clean_names(expr)
             if names:
                 out.append((mod, cp, names))
+        # 具名简写 `.p` 后面紧跟 `,` 或连接块结尾（不是 `(`）
+        # `.` 前面必须是连接块开头或 `,`：`{s.f, s.g}` 里的结构体域选不是简写
+        for cp in re.findall(r'(?:^|,)\s*\.(\w+)\s*(?=,|$)', blk.strip()):
+            if cp not in explicit:
+                explicit.add(cp)
+                out.append((mod, cp, {cp}))
+        if re.search(r'\.\*', blk) and ports_of is not None:
+            cports = ports_of(mod)
+            if cports:
+                for cp in sorted(cports - explicit):
+                    out.append((mod, cp, {cp}))
     return out
+
+
+def _ports_of(bodies):
+    """instance_conns 的 ports_of：rtl/ 里有定义的子模块 -> 它的端口名集合；否则 None。
+    只在连接块里真有 `.*` 时才被调用，所以不缓存也不贵。"""
+    def f(mod):
+        b = bodies.get(mod)
+        return None if b is None else (output_ports(b) | input_ports(b))
+    return f
 
 
 def local_driven(body):
@@ -322,6 +387,7 @@ def local_driven(body):
             prev = chunk
             chunk = _PREFIX.sub('', chunk, count=1)
             chunk = _ORPHAN_CLOSE.sub('', chunk, count=1)
+            chunk = _strip_for_step(chunk)
         m = _PROC.match(chunk)
         if m:
             d.add(m.group(1))
@@ -357,7 +423,7 @@ def effective_driven(name, bodies, memo=None, stack=None):
     d = local_driven(body)
     opaque = set()
     self_opaque = has_macro_call(body)
-    for child, cport, names in instance_conns(body):
+    for child, cport, names in instance_conns(body, _ports_of(bodies)):
         sub = effective_driven(child, bodies, memo, stack)
         if sub is None:                       # 外部黑盒：算驱动，不算不透明
             d |= names
@@ -420,6 +486,16 @@ def classify_rtl(repo=None):
             # 同名重复定义：留端口最多的那份（生成变体里偶有同名薄壳）
             if name not in bodies or len(body) > len(bodies[name]):
                 bodies[name], where[name] = body, rel
+    idx = classify_bodies(bodies, where)
+    if repo is None and fp is not None:
+        _CACHE = (fp, idx)
+    return idx
+
+
+def classify_bodies(bodies, where=None):
+    """传递闭包分档的**唯一出处**：classify_rtl（全树）与 --selftest 的多模块用例都走这里。
+    {模块名: (档位, driven, outs, 相对路径, 常量驱动根数)}"""
+    where = where or {}
     memo = {}
     cmemo = {}
     idx = {}
@@ -431,10 +507,8 @@ def classify_rtl(repo=None):
         # decide_tier 看不到 opq，所以在这里补这一刀）
         if tier == 'REWRITTEN' and (opq & outs):
             tier = 'MACRO_OPAQUE'
-        idx[name] = (tier, dn, on, where[name],
+        idx[name] = (tier, dn, on, where.get(name, '-'),
                      len((const_driven_set(name, bodies, cmemo) or set()) & outs))
-    if repo is None and fp is not None:
-        _CACHE = (fp, idx)
     return idx
 
 
@@ -551,6 +625,130 @@ module Cmt(input logic clk, output logic io_b);
   // assign io_b = 1'b1;
 endmodule
 ''', 'SKELETON', (0, 1)),
+    # ---- 2026-10-17 floor-classifier lane：三类假阴性的正例 + 各自的反例 ----
+    # 根因一：endcase 不在语句前缀表里，紧跟 endcase 的那条赋值被吞（LoadUnit / BranchModule）
+    ('P endcase 之后的赋值算驱动', '''
+module AfterCase(input logic [1:0] s, input logic a, output logic io_t, output logic io_m);
+  logic c;
+  always_comb begin
+    case (s)
+      2'd0:    c = a;
+      default: c = 1'b0;
+    endcase
+    io_t = c ^ s[0];
+    io_m = ~io_t;
+  end
+endmodule
+''', 'REWRITTEN', (2, 2)),
+    ('P2 带位宽字面量的 case 标号之后的赋值算驱动', '''
+module CaseLbl(input logic [1:0] s, input logic a, output logic io_x);
+  always_latch begin
+    case (s)
+      2'd1, 2'd2: io_x = a;
+    endcase
+  end
+endmodule
+''', 'REWRITTEN', (1, 1)),
+    ('P3 反例：endcase 之后是比较不是赋值', '''
+module AfterCaseCmp(input logic [1:0] s, input logic a, output logic io_t);
+  logic c;
+  always_comb begin
+    case (s)
+      2'd0:    c = a;
+      default: c = 1'b0;
+    endcase
+    if (c == a) c = 1'b1;
+  end
+endmodule
+''', 'SKELETON', (0, 1)),
+    # 根因二：for 步进写成 `i = i + 1` 时孤立 `)` 不剥，循环体赋值被步进抢走（Mgtu）
+    ('Q for 步进为赋值形式，循环体赋值算驱动', '''
+module LoopStep(input logic [7:0] vl, input logic [3:0] vd, output logic [3:0] io_o);
+  integer lane;
+  always_comb begin
+    for (lane = 0; lane < 4; lane = lane + 1)
+      io_o[lane] = (vl <= lane) | vd[lane];
+  end
+endmodule
+''', 'REWRITTEN', (1, 1)),
+    ('Q2 反例：for 循环体只写局部量', '''
+module LoopStepLocal(input logic [3:0] vd, output logic [3:0] io_o);
+  integer lane;
+  logic [3:0] t;
+  always_comb begin
+    for (lane = 0; lane < 4; lane = lane + 1)
+      t[lane] = vd[lane];
+  end
+endmodule
+''', 'SKELETON', (0, 1)),
+]
+
+# 多模块用例：走 classify_bodies（与全树 classify_rtl 同一个函数），验传递闭包下的分档。
+# (名字, 源码, 看哪个模块, 期望档位, 期望 driven/outs)
+_SELF_MULTI = [
+    # 根因三：隐式端口连接 `.*` / `.name` 不认（MMIOBridgeEntry×4 / TLXbar_6，
+    # 以及经 16 个 Entry 回连而跟着落空的 MMIOBridge）
+    ('R `.*` 通配连到真驱动核', '''
+module xs_W_core(input logic clk, input logic [3:0] io_in, output logic [3:0] io_out, output logic io_v);
+  assign io_out = io_in;
+  always_ff @(posedge clk) io_v <= |io_in;
+endmodule
+module W(input logic clk, input logic [3:0] io_in, output logic [3:0] io_out, output logic io_v);
+  xs_W_core #(.N(1)) u_core (.*);
+endmodule
+''', 'W', 'REWRITTEN', (2, 2)),
+    ('R2 `.*` 再往上一层：父模块经显式回连吃到核的输出', '''
+module xs_E_core(input logic a, output logic io_q);
+  assign io_q = ~a;
+endmodule
+module E(input logic a, output logic io_q);
+  xs_E_core u_core (.*);
+endmodule
+module Top(input logic a, output logic io_q_0);
+  E u_e (.a(a), .io_q(io_q_0));
+endmodule
+''', 'Top', 'REWRITTEN', (1, 1)),
+    ('R3 具名简写 `.p` 等于 `.p(p)`', '''
+module xs_S_core(input logic a, output logic io_q, output logic io_r);
+  assign io_q = a;
+  assign io_r = ~a;
+endmodule
+module S(input logic a, output logic io_q, output logic io_r);
+  xs_S_core u_core (.a, .io_q, .io_r(io_r));
+endmodule
+''', 'S', 'REWRITTEN', (2, 2)),
+    ('R4 显式连接优先于 `.*`：显式连到别处的端口不替父模块认领', '''
+module xs_X_core(input logic a, output logic io_q, output logic io_r);
+  assign io_q = a;
+  assign io_r = a;
+endmodule
+module X(input logic a, output logic io_q, output logic io_r);
+  logic sink;
+  xs_X_core u_core (.io_r(sink), .*);
+endmodule
+''', 'X', 'PARTIAL_DRIVE', (1, 2)),
+    # 反例（壳膨胀）：`.*` 不许把套壳读成重写
+    ('S 反例：`.*` 连到 svh 套壳核 = 仍是 SKELETON', '''
+module xs_V_core(input logic a, output logic io_q);
+`include "V_body.svh"
+endmodule
+module V(input logic a, output logic io_q);
+  xs_V_core u_core (.*);
+endmodule
+''', 'V', 'SKELETON', (0, 1)),
+    ('S2 反例：`.*` 连到 rtl/ 外的子模块，端口不可知，不替它认领输出', '''
+module U(input logic a, output logic io_q);
+  SomeGoldenModule u_g (.*);
+endmodule
+''', 'U', 'SKELETON', (0, 1)),
+    ('S3 反例：结构体域选 `{s.f, s.g}` 不是具名简写', '''
+module xs_T_core(input logic a, output logic io_q);
+  assign io_q = a;
+endmodule
+module T(input logic a, output logic io_q, output logic f);
+  xs_T_core u_core (.a({s.f, s.g}), .io_q(io_q));
+endmodule
+''', 'T', 'PARTIAL_DRIVE', (1, 2)),
 ]
 
 
@@ -561,6 +759,13 @@ def selftest():
         assert len(bodies) == 1, name
         body = list(bodies.values())[0]
         tier, dn, on = classify_body(body)
+        ok = (tier == want_tier and (dn, on) == want_n)
+        print('  %-28s %-14s %d/%d   %s' %
+              (name, tier, dn, on, 'ok' if ok else
+               '★FAIL 期望 %s %d/%d' % (want_tier, want_n[0], want_n[1])))
+        bad += (not ok)
+    for name, src, top, want_tier, want_n in _SELF_MULTI:
+        tier, dn, on = classify_bodies(module_bodies(src))[top][:3]
         ok = (tier == want_tier and (dn, on) == want_n)
         print('  %-28s %-14s %d/%d   %s' %
               (name, tier, dn, on, 'ok' if ok else

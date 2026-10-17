@@ -98,6 +98,10 @@ run "台账行序闸"       python3 scripts/test_ledger_append_only.py
 # 记账，于是一个只实现两成逻辑的 LoadQueueReplay 骨架就把覆盖率从 7.4% 抬到 11.0%，
 # 凭空记 138,860 行 golden。判据已改成按绿判决证据记；这道闸把「改好了」变成「改住了」。
 run "覆盖率空壳闸"     python3 scripts/test_coverage_no_shell_inflation.py
+# 覆盖率台账「存储模型」排除类的正反测（2026-10-17 floor-classifier lane）：
+# MC 登记表每行必须归存储、data_mem_* 须名字+firtool 存储模板同时成立，
+# 名字像 data_mem 而正文有逻辑的不许收。
+run "覆盖率存储排除类正反测"  python3 scripts/test_rewrite_coverage_memory.py
 # round 台账必须与**已提交的 receipt** 逐字节一致。它是 proven 口径的输入之一，
 # 以前是手写的 —— 手写台账必然有两个病：漏记（proven 虚低）与错记（数字与 receipt
 # 对不上，而台账才是被引用的那份）。病根都是台账与证据之间隔着一个人。
@@ -305,9 +309,11 @@ run "StoreQueue tb 幂等"  python3 scripts/gen_storequeue_ut.py --check
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 80 秒）—— 顺序照层次重绑闸的先例。
 # written/REWRITTEN 判据的**下限**自身的正反测。三处口径（三轴轴一 / rewrite_coverage
 # 的 written / perf 归属的 owner_rewritten）共用 scripts/rewritten_floor.py 这一把尺子，
-# 所以这道自测挂了，三张台账同时失去依据。它既要证明能判出空壳（A/G/H/L），
-# 也要证明不会把真驱动误判成空壳（C/D/E/I/J/K/K2/N）——一道只会响的判据和
-# 一道从不响的判据一样没用。
+# 所以这道自测挂了，三张台账同时失去依据。它既要证明能判出空壳（A/G/H/L，
+# 及 2026-10-17 加的 P3/Q2/S/S2/S3：endcase 后的比较、for 体只写局部量、`.*` 连 svh
+# 套壳核 / 连 rtl 外子模块、结构体域选不是具名简写），也要证明不会把真驱动误判成空壳
+# （C/D/E/I/J/K/K2/N，及 P/P2/Q/R/R2/R3/R4：endcase、带位宽 case 标号、赋值式 for 步进、
+# `.*` 与 `.p` 隐式连接）——一道只会响的判据和一道从不响的判据一样没用。
 # receipt 收录表：★慢闸★（逐行重算 542 行，含 tclsh 差分跑，分钟级）。
 # 它要回答的是"这张表还对不对"——表里每一行都是一句"这份 receipt 可以收进台账"，
 # 而那句话依赖 golden/impl 字节、fm_eq.tcl、钉点、emitter、工具版本八项前提。
