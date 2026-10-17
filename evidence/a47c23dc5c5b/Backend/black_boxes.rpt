@@ -1,0 +1,473 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/Backend
+Implementation : i:/WORK/Backend
+Version        : V-2023.12-SP3
+Date           : Sat Oct 17 13:45:29 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+i      BypassNetwork
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork
+
+i      CtrlBlock
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_ctrlBlock
+
+i      DataPath
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_dataPath
+
+i      DelayN_1
+
+       Instances : 3 of 3
+       ------------------------
+       i:/WORK/Backend/inner_dataPath_io_topDownInfo_replayAllocate_delay
+       i:/WORK/Backend/inner_dataPath_io_topDownInfo_sqFull_delay
+       i:/WORK/Backend/inner_dataPath_io_topDownInfo_sbFull_delay
+
+i      ExuBlock
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_intExuBlock
+
+i      ExuBlock_1
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_fpExuBlock
+
+i      ExuBlock_2
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_vfExuBlock
+
+i      HPerfMonitor_2
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_perfEvents_hpm
+
+i      NewPipelineConnectPipe
+
+       Instances : 4 of 4
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2intExuBlock
+       i:/WORK/Backend/inner_bypassNetwork2intExuBlock_2
+       i:/WORK/Backend/inner_bypassNetwork2intExuBlock_4
+       i:/WORK/Backend/inner_bypassNetwork2intExuBlock_6
+
+i      NewPipelineConnectPipe_1
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2intExuBlock_1
+       i:/WORK/Backend/inner_bypassNetwork2intExuBlock_3
+
+i      NewPipelineConnectPipe_10
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2fpExuBlock_2
+       i:/WORK/Backend/inner_bypassNetwork2fpExuBlock_4
+
+i      NewPipelineConnectPipe_13
+
+       Instances : 3 of 3
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2vfExuBlock
+       i:/WORK/Backend/inner_bypassNetwork2vfExuBlock_2
+       i:/WORK/Backend/inner_bypassNetwork2vfExuBlock_4
+
+i      NewPipelineConnectPipe_14
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2vfExuBlock_1
+
+i      NewPipelineConnectPipe_16
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2vfExuBlock_3
+
+i      NewPipelineConnectPipe_18
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus_1
+
+i      NewPipelineConnectPipe_20
+
+       Instances : 3 of 3
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus_2
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus_3
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus_4
+
+i      NewPipelineConnectPipe_23
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus_5
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus_6
+
+i      NewPipelineConnectPipe_25
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus_7
+       i:/WORK/Backend/inner_bypassNetwork2toMemExus_8
+
+i      NewPipelineConnectPipe_5
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2intExuBlock_5
+
+i      NewPipelineConnectPipe_7
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2intExuBlock_7
+
+i      NewPipelineConnectPipe_8
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2fpExuBlock
+
+i      NewPipelineConnectPipe_9
+
+       Instances : 2 of 2
+       ------------------------
+       i:/WORK/Backend/inner_bypassNetwork2fpExuBlock_1
+       i:/WORK/Backend/inner_bypassNetwork2fpExuBlock_3
+
+i      Og2ForVector
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_og2ForVector
+
+i      PFEvent
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_pfevent
+
+i      Scheduler
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_intScheduler
+
+i      Scheduler_1
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_fpScheduler
+
+i      Scheduler_2
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_vfScheduler
+
+i      Scheduler_3
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_memScheduler
+
+i      VecExcpDataMergeModule
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_vecExcpMod
+
+i      WbDataPath
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_wbDataPath
+
+i      WbFuBusyTable
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Backend/inner_wbFuBusyTable
+
+e *    xs_BypassNetwork_core
+
+       Instances : 0
+
+e *    xs_CtrlBlock_core
+
+       Instances : 0
+
+e *    xs_DataPath_core
+
+       Instances : 0
+
+e *    xs_Og2ForVector_core
+
+       Instances : 0
+
+e *    xs_VecExcpDataMergeModule_core
+
+       Instances : 0
+
+e *    xs_WbDataPath_core
+
+       Instances : 0
+
+e *    xs_WbFuBusyTable_core
+
+       Instances : 0
+
+
+
+##################################################################
+####    DESIGN LIBRARY - r:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+i      BypassNetwork
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork
+
+i      CtrlBlock
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_ctrlBlock
+
+i      DataPath
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_dataPath
+
+i      DelayN_1
+
+       Instances : 3 of 3
+       ------------------------
+       r:/WORK/Backend/inner_dataPath_io_topDownInfo_replayAllocate_delay
+       r:/WORK/Backend/inner_dataPath_io_topDownInfo_sqFull_delay
+       r:/WORK/Backend/inner_dataPath_io_topDownInfo_sbFull_delay
+
+i      ExuBlock
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_intExuBlock
+
+i      ExuBlock_1
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_fpExuBlock
+
+i      ExuBlock_2
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_vfExuBlock
+
+i      HPerfMonitor_2
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_perfEvents_hpm
+
+i      NewPipelineConnectPipe
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2intExuBlock
+       r:/WORK/Backend/inner_bypassNetwork2intExuBlock_2
+       r:/WORK/Backend/inner_bypassNetwork2intExuBlock_4
+       r:/WORK/Backend/inner_bypassNetwork2intExuBlock_6
+
+i      NewPipelineConnectPipe_1
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2intExuBlock_1
+       r:/WORK/Backend/inner_bypassNetwork2intExuBlock_3
+
+i      NewPipelineConnectPipe_10
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2fpExuBlock_2
+       r:/WORK/Backend/inner_bypassNetwork2fpExuBlock_4
+
+i      NewPipelineConnectPipe_13
+
+       Instances : 3 of 3
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2vfExuBlock
+       r:/WORK/Backend/inner_bypassNetwork2vfExuBlock_2
+       r:/WORK/Backend/inner_bypassNetwork2vfExuBlock_4
+
+i      NewPipelineConnectPipe_14
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2vfExuBlock_1
+
+i      NewPipelineConnectPipe_16
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2vfExuBlock_3
+
+i      NewPipelineConnectPipe_18
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus_1
+
+i      NewPipelineConnectPipe_20
+
+       Instances : 3 of 3
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus_2
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus_3
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus_4
+
+i      NewPipelineConnectPipe_23
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus_5
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus_6
+
+i      NewPipelineConnectPipe_25
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus_7
+       r:/WORK/Backend/inner_bypassNetwork2toMemExus_8
+
+i      NewPipelineConnectPipe_5
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2intExuBlock_5
+
+i      NewPipelineConnectPipe_7
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2intExuBlock_7
+
+i      NewPipelineConnectPipe_8
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2fpExuBlock
+
+i      NewPipelineConnectPipe_9
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/Backend/inner_bypassNetwork2fpExuBlock_1
+       r:/WORK/Backend/inner_bypassNetwork2fpExuBlock_3
+
+i      Og2ForVector
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_og2ForVector
+
+i      PFEvent
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_pfevent
+
+i      Scheduler
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_intScheduler
+
+i      Scheduler_1
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_fpScheduler
+
+i      Scheduler_2
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_vfScheduler
+
+i      Scheduler_3
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_memScheduler
+
+i      VecExcpDataMergeModule
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_vecExcpMod
+
+i      WbDataPath
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_wbDataPath
+
+i      WbFuBusyTable
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/Backend/inner_wbFuBusyTable
+
+
+1
+
