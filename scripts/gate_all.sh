@@ -116,6 +116,7 @@ run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # 出现任何 golden 逻辑模块即 FATAL；表须能从 rtl/ 与 golden 现场重算。VCS 实 elaborate 在
 # scripts/xstile_rtl_elab.sh（~10 分钟，不进本闸；整芯片仿真泳道调用）。
 run "XSTile 源表幂等"   python3 scripts/xstile_srcmap.py --check
+run "XSTile 源表正反测"  python3 scripts/test_xstile_srcmap.py
 # FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
 # 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
 # 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后
