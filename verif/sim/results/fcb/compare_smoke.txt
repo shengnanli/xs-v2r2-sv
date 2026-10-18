@@ -1,0 +1,5 @@
+[A] difftest golden: PASS  trap='HIT GOOD TRAP at pc = 0xe' counts='instrCnt = 289, cycleCnt = 4,642, IPC = 0.062258' done='DIFFTEST WORKLOAD DONE at cycle                 4649' maxcycle=None difftest_on=True mismatch_lines=0
+[A] difftest impl  : PASS  trap='HIT GOOD TRAP at pc = 0xe' counts='instrCnt = 289, cycleCnt = 4,642, IPC = 0.062258' done='DIFFTEST WORKLOAD DONE at cycle                 4649' maxcycle=None difftest_on=True mismatch_lines=0
+[B] 终点 trap/instrCnt/cycleCnt/done 两侧相等: True
+[B] 逐拍对拍: MATCH  events=245 commits=242 last='E 4641 irq=0 exc=1 epc=0 einst=00000000 nmi=0'
+VERDICT: A(golden)=PASS A(impl)=PASS B=MATCH

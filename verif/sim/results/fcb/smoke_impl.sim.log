@@ -1,0 +1,25 @@
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Oct 18 10:21 2026
+Core  x's Commit SHA is: b36a1a2a57, dirty: 1
+ram image:/home/eda/xs-env/sim-fcb/workloads/flash_recursion_test.bin
+ram size: 8589934592
+diff-test ref so:/home/eda/xs-env/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+simv compiled at Oct 18 2026, 10:20:07
+Using simulated 8192MB RAM
+The image is /home/eda/xs-env/sim-fcb/workloads/flash_recursion_test.bin
+Using simulated 1048576B flash
+The reference model is /home/eda/xs-env/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+The first instruction of core 0 has commited. Difftest enabled. 
+[1;34m[src/memory/paddr.c:251,check_paddr] isa pma check failed, vaddr=0x0000000000000000, paddr=0x0000000000000000, len=0x2, type=0x0, mode=0x3[0m
+[1;34m[src/memory/paddr.c:251,check_paddr] isa pma check failed, vaddr=0x0000000000000000, paddr=0x0000000000000000, len=0x2, type=0x0, mode=0x3[0m
+Core 0 dump: [31mHIT CRITICAL ERROR: please check if software cause a double trap. 
+[0mCore 0: [32mHIT GOOD TRAP at pc = 0xe
+[0m[35mCore-0 instrCnt = 289, cycleCnt = 4,642, IPC = 0.062258
+[0mDIFFTEST WORKLOAD DONE at cycle                 4649
+$finish called from file "/home/eda/xs-env/sim-fcb/difftest/src/test/vsrc/vcs/DifftestEndpoint.sv", line 400.
+$finish at simulation time                 9399
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 9399 ns
+CPU Time:     13.590 seconds;       Data structure size:  60.5Mb
+Sun Oct 18 10:21:37 2026

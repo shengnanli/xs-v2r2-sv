@@ -107,3 +107,86 @@ for s in golden impl; do verif/sim/run_fcb.sh run $s $W/coremark-2-iteration.bin
                          verif/sim/run_fcb.sh run $s $W/dhrystone.bin 50000000 dhrystone & done; wait
 verif/sim/run_fcb.sh compare coremark; verif/sim/run_fcb.sh compare dhrystone
 ```
+
+---
+
+## 5. 结果（2026-10-18，跑后追加；§0–§4 判据未改）
+
+### 5.1 编译组成（impl 实际编译清单，`/home/eda/xs-env/sim-fcb/impl/files_impl_nosimtop.f`，2028 项 + Makefile 另传的打补丁 SimTop.sv）
+
+> 更正 §1.1 的两个数：登记时闭包漏了 `rtl/backend/Rename.sv` 里经 `` `STD_FL `` 宏例化的 `StdFreeList{,_1,_2,_3}`
+> （impl 的 `-y` 库目录为空，VCS 当场 `Error-[CFCILFBI]`，fail-closed 生效）。生成器加宏例化识别后：
+> 闭包 **2136 = rtl 2039 + 登记存储模型 97**，rtl 模块文件 1513 → **1517**，不用的核外同名重写件 173 → 169。
+
+| 来源 | 项数 |
+|---|---|
+| rtl/（12 个 package-only + 1517 个模块文件，定义 XSTile 闭包内 2039 个模块） | 1529 |
+| G1 golden：核内登记存储模型（array* 40 / ram_* 34 / sram_array_* 20 / 3 个具名阵列） | 97 |
+| G1 golden：核外逻辑 326（+ SimTop 由 Makefile 另传）、核外存储模型 46 | 372 |
+| G1 golden：firtool 宏头 `extern_modules.sv`（0 模块，见下 5.5-2） | 1 |
+| 核外 golden 拷贝（8 个共用模块改名 + 21 个核外父模块例化类型名改名） | 29 |
+
+- 与 A 线源表 `docs/xstile_srcmap.tsv`（agent/xstile-srcmap@320ccb643，2136 = RTL 2039 / MEMORY_MODEL 97 / golden 逻辑 0）逐模块对照：
+  `verif/sim/check_xstile_srcmap.py` → (a) 取源不一致 **0**、(b) golden 文件定义闭包内非存储模块 **0**、重复定义 0：**CONSISTENT**。
+  同一检查对 `scripts/full_elab_filelist.py --with-difftest` 的产物也是 **CONSISTENT**（0 / 0 / 0）。
+- impl `build.log`：读入 design file 2036 个（清单 2028 全部读入 + SimTop + difftest vsrc），**从 `-y` 库目录读入 0 个**。
+
+### 5.2 结果总表（两侧同一 difftest 副本、同一 VCS 开关、同一 plusarg）
+
+| 负载 | 侧 | trap | instrCnt | cycleCnt | IPC | A: difftest | B: 逐拍 | trace 事件 | sim CPU s |
+|---|---|---|---|---|---|---|---|---|---|
+| flash_recursion（smoke） | golden | GOOD @0xe | 289 | 4,642 | 0.062258 | PASS | — | 245 | 12.98 |
+| | impl | GOOD @0xe | 289 | 4,642 | 0.062258 | PASS | **MATCH** | 245 | 13.59 |
+| coremark-2-iteration | golden | GOOD @0x80001ca0 | 663,692 | 320,376 | 2.071603 | PASS | — | 493,592 | 3731 |
+| | impl | GOOD @0x80001ca0 | 663,692 | 320,376 | 2.071603 | PASS | **MATCH** | 493,592 | 5065 |
+| dhrystone（1000 runs） | golden | GOOD @0x80000da4 | 429,370 | 147,946 | 2.902208 | PASS | — | 378,536 | 1846 |
+| | impl | GOOD @0x80000da4 | 429,370 | 147,946 | 2.902208 | PASS | **MATCH** | 378,536 | 2503 |
+| cputest ×33 | 两侧 | 33/33 GOOD | 逐项相等 | 逐项相等 | | 33/33 PASS | **33/33 MATCH** | | |
+
+- 两侧 `commit.trace` **整文件 sha256 相同**（`verif/sim/results/fcb/trace_sha256.txt`；coremark 78,984,808 字节）。
+  所以 B 不只是"首个失配之前一致"，而是全程逐拍逐字段一致，包括每拍每槽的 pc/inst/wdest/wdata/robIdx/lqIdx/sqIdx。
+- 计数与 2026-09（只重写约 7% 时）完全相同：coremark 663,692 / 320,376，dhrystone 429,370 / 147,946。
+- UART 输出（sim.log 去仿真器噪声与下述运行期 Warning 后）两侧逐行相同。
+- 观测到的事实（不是判据变更）：smoke 的 trace 没有 `T` 行（flash 负载的 trap 在 `check_all` 之前就结束了这一步），
+  两侧同样没有；cputest/coremark/dhrystone 都有 `T` 行且相等。
+
+### 5.3 判定
+
+- **A（NEMU difftest 架构正确性）**：golden、impl 两侧在 smoke / coremark / dhrystone / cputest 33 个上**全部 PASS**。
+- **B（重写 vs golden 逐拍一致）**：全部 **MATCH**，无首个失配可报。主配置即 §1.2 原始配置，所以 §4.3 的 Z0 诊断档**未触发、未跑**。
+- 适用范围：本结论验证的是 **XSTile 替换**；XSTop 核外件全部是 G1 golden（rtl/ 里 169 个核外同名重写件本轮未用）。
+
+### 5.4 结果文件（`verif/sim/results/fcb/`）
+
+`compare_{smoke,coremark,dhrystone}.txt`（commit_compare 输出）、`{smoke,coremark,dhrystone}_{golden,impl}.sim.log`
+（去掉运行期 Warning 块与空行）、`cputest.tsv`、`trace_sha256.txt`、`impl_runtime_warnings_sample.txt`。
+trace 本体（coremark 约 79MB/侧）留在工作区 `/home/eda/xs-env/sim-fcb/{golden,impl}/run/<tag>/commit.trace`，不入库。
+
+### 5.5 遗留 / 给 rtl owner 的观察（未改 RTL）
+
+1. **impl 侧每次运行 307 条 VCS 运行期 `Warning-[RT-NCMUCS]`，全部在 time 0**（golden 侧 0 条）：
+   `rtl/mmu/PTWFilter.sv:97` `ptwfilter_pkg::level_match` 的 `unique case (level)` 无 default（294 条），
+   `rtl/memblock/VLMergeBufferImp.sv:169` `merge_by_elem` 的 `unique case (aligned)`（其余）。复位前输入为 X 触发，
+   不影响结果（trace 全等），但会淹没日志、也是与 golden 的可观察差异；建议补 `default` 或改 `case`。
+2. **两个 rtl 文件依赖 firtool 宏却不自带定义**：`rtl/backend/{TrapEntryVSEventModule,VSstatusModule}.sv` 用
+   `` `ASSERT_VERBOSE_COND_ `` 等。golden 流里宏由先编的 golden 文件头带进来；rtl 在前的清单会 `Error-[UM]`。
+   本 lane 的处理是清单最前放 G1 的 `extern_modules.sv`（宏头，0 模块）。这是文件顺序依赖，建议 owner 自带宏头。
+3. **核内外共用 8 个同名模块**（§1.1-3）：本轮靠核外侧改名两全；若将来核外也换重写件，或要求"rtl 里同名件全局唯一"，需要决定口径。
+4. impl simv 比 golden 慢约 35%（coremark 5065 s vs 3731 s CPU）；2026-09 时 impl 反而快，原因未查。
+5. 未做：perf 计数对拍（另一条路径，非本 lane）、Z0 档（未触发）、波形诊断（无失配，不需要）。
+
+### 5.6 复现（实际执行的命令）
+
+```bash
+cd /home/eda/xs-env/wt-fullchip-bench
+verif/sim/run_fcb.sh build golden; verif/sim/run_fcb.sh build impl          # 两侧可并行，各约 20 分钟
+W=/home/eda/xs-env/sim-fcb/workloads
+verif/sim/run_fcb.sh run golden $W/flash_recursion_test.bin "" smoke; verif/sim/run_fcb.sh run impl $W/flash_recursion_test.bin "" smoke
+verif/sim/run_fcb.sh compare smoke
+for s in golden impl; do verif/sim/run_fcb.sh run $s $W/coremark-2-iteration.bin 50000000 coremark &
+                         verif/sim/run_fcb.sh run $s $W/dhrystone.bin 50000000 dhrystone & done; wait
+verif/sim/run_fcb.sh compare coremark; verif/sim/run_fcb.sh compare dhrystone
+verif/sim/run_fcb.sh cputest 10
+python3 verif/sim/check_xstile_srcmap.py --srcmap /home/eda/xs-env/wt-xstile-srcmap/docs/xstile_srcmap.tsv \
+    --filelist /home/eda/xs-env/sim-fcb/impl/files_impl_nosimtop.f --build-log /home/eda/xs-env/sim-fcb/impl/build.log
+```

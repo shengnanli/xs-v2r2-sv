@@ -1,0 +1,32 @@
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Oct 18 10:21 2026
+Core  x's Commit SHA is: b36a1a2a57, dirty: 1
+ram image:/home/eda/xs-env/sim-fcb/workloads/dhrystone.bin
+ram size: 8589934592
+diff-test ref so:/home/eda/xs-env/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+set max cycles:             50000000
+simv compiled at Oct 18 2026, 10:20:36
+Using simulated 8192MB RAM
+The image is /home/eda/xs-env/sim-fcb/workloads/dhrystone.bin
+Using simulated 1048576B flash
+The reference model is /home/eda/xs-env/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+The first instruction of core 0 has commited. Difftest enabled. 
+Dhrystone Benchmark, Version C, Version 2.2
+Trying 1000 runs through Dhrystone.
+cycle 103790 inst 418220 ipc 4.029483
+Freq is set to 2.000000e+09 HZ
+==================================================
+Dhrystone PASS
+19269680.000000 Dhrystones_Per_Second
+10967.375977 DMIPS
+5.483688 DMIPS/MHZ
+Core 0: [32mHIT GOOD TRAP at pc = 0x80000da4
+[0m[35mCore-0 instrCnt = 429,370, cycleCnt = 147,946, IPC = 2.902208
+[0mDIFFTEST WORKLOAD DONE at cycle               147953
+$finish called from file "/home/eda/xs-env/sim-fcb/difftest/src/test/vsrc/vcs/DifftestEndpoint.sv", line 400.
+$finish at simulation time               296007
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 296007 ns
+CPU Time:   1845.530 seconds;       Data structure size:  66.0Mb
+Sun Oct 18 10:52:55 2026
