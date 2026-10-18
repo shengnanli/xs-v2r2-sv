@@ -99,5 +99,17 @@ case "${1:-}" in
     tag=${2:?tag}
     python3 "$SV_HOME/verif/sim/commit_compare.py" \
       "$SIMF/golden/run/$tag" "$SIMF/impl/run/$tag";;
+  cputest)  # nexus-am cputest 33 个，两侧各跑，逐个 compare；$2=并行度
+    J=${2:-8}; CT=${CT_DIR:-/home/eda/xs-env/nexus-am/tests/cputest/build}
+    for s in golden impl; do for b in "$CT"/*-riscv64-xs.bin; do echo "$s $b"; done; done |
+      xargs -P "$J" -n2 sh -c 'n=$(basename "$2" -riscv64-xs.bin); timeout 1800 "$0" run "$1" "$2" 2000000 "ct_$n" >/dev/null 2>&1; true' "$0" 2>/dev/null ||
+      true
+    ok=0; bad=0
+    for b in "$CT"/*-riscv64-xs.bin; do
+      n=$(basename "$b" -riscv64-xs.bin)
+      if "$0" compare "ct_$n" > "$SIMF/impl/run/ct_$n/compare.txt" 2>&1; then ok=$((ok+1)); r=PASS; else bad=$((bad+1)); r=FAIL; fi
+      printf '%-20s %s  %s\n' "$n" "$r" "$(grep -E '^\[B\] 逐拍' "$SIMF/impl/run/ct_$n/compare.txt" | head -1)"
+    done
+    echo "cputest: PASS=$ok FAIL=$bad";;
   *) sed -n '2,20p' "$0";;
 esac

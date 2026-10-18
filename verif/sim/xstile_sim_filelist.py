@@ -62,6 +62,10 @@ def insts(text, known):
     for i, t in enumerate(toks):
         if t not in known or (i and toks[i - 1] in ('module', 'endmodule')):
             continue
+        # 宏例化：`MACRO(<模块名>, ...)（rtl/backend/Rename.sv 的 `STD_FL(StdFreeList, ...)，实测漏过一次）
+        if i >= 3 and toks[i - 1] == '(' and toks[i - 3] == '`':
+            out.add(t)
+            continue
         j = i + 1
         if j < n and toks[j] == '#':
             j += 1
