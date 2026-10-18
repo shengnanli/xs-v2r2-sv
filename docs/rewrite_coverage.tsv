@@ -31,6 +31,17 @@ golden_lines_proven	3248480	3901688	83.3
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
 incore_golden_lines_written	3348859	3349310	100.0
 incore_golden_lines_proven	3082317	3349310	92.0
+# incl_cone = 上一行 + verif/proven_in_cone_verified.tsv 里核验通过的父级白盒受验模块（逐条见下，非 COUNTED 的不计）
+#   COUNTED    Rob                        266227 行  R1-R10 全过（parent=CtrlBlock）
+incore_golden_lines_proven_incl_cone	3348544	3349310	100.0
+#   incl_cone 之后核内仍未计 proven：7 个 / 766 行
+#     CommitIDModule                                 97 行
+#     FDPrefetcherMonitor                           111 行
+#     PrintCommitIDModule                            14 行
+#     StorePipe                                      93 行
+#     diff_rat_state_bank_320x776                   120 行
+#     dt_pcTransType_160x2                          183 行
+#     stateBankTags_320x3                           148 行
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	170415	552378	30.9
