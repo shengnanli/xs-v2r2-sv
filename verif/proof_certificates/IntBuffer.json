@@ -3,14 +3,14 @@
  "evidence_retention": "attestation_only",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-17T22:40:58Z",
+ "generated_at": "2026-10-18T00:31:39Z",
  "generator": {
-  "run_context_worktree_digest": "2ae43d8bb723995e1181a32e8803c8f51521ca8eb85b55ead2e44efe6d5ca272",
+  "run_context_worktree_digest": "25c8214da1490f5afde3b77e75701cb854d73575232f79e564668eb66e44e002",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/1bf831352049/IntBuffer",
+  "source_evidence_dir": "evidence/45767953b989/IntBuffer",
   "version": 1
  },
- "impl_commit": "1bf831352049af23cf11a34c77fe86bba0c6be09",
+ "impl_commit": "45767953b98953178b5147eb40dad6d318e28a6a",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -31,7 +31,7 @@
   "impl_sha256": "48ba9e68c3cc399522d2bbf47af96479e877435ba71a20fa1686d0449464af83",
   "repo_impl_files": 1
  },
- "native_facts_sha256": "426552e694c0eacddd3730b77afb754f37a255b65d25fedc9dcfce716711e9fb",
+ "native_facts_sha256": "476a39d89e080a74bd06cf3029f9bcf2f0ce89ecfcdb5d43d25226d323000424",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -50,7 +50,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "1bf831352049af23cf11a34c77fe86bba0c6be09",
+ "proof_commit": "45767953b98953178b5147eb40dad6d318e28a6a",
  "proof_config": {
   "declarations": {},
   "entry_appvars_readback": {
@@ -71,25 +71,25 @@
  },
  "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "2ae43d8bb723995e1181a32e8803c8f51521ca8eb85b55ead2e44efe6d5ca272",
+ "proof_worktree_digest": "25c8214da1490f5afde3b77e75701cb854d73575232f79e564668eb66e44e002",
  "provisional": false,
- "receipt_sha256": "8ceb025435ff2d907ede7d706c8cdcdeac33e7130b19bb9466d046f3d0cfc0e5",
+ "receipt_sha256": "903b064dcf9e9a52c0e81ba909443ca03a8df3fd49d6d4b93378aa818c4dccd4",
  "reproduce": {
-  "command": "PROOF_COMMIT=1bf831352049af23cf11a34c77fe86bba0c6be09 scripts/run_proof.sh IntBuffer IntBuffer",
+  "command": "PROOF_COMMIT=45767953b98953178b5147eb40dad6d318e28a6a scripts/run_proof.sh IntBuffer IntBuffer",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "1161bcf299467b91ce637a1a8ea73cee801b24025192a4383d2cc9df2194d6b0",
- "run_id": "IntBuffer-20261003T123020Z-1bf831352",
+ "run_id": "IntBuffer-20261018T003042Z-45767953b",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
    {
     "kind": "repo",
     "path": "scripts/fm_eq.tcl",
-    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
    },
    {
     "kind": "repo",
@@ -97,7 +97,7 @@
     "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
    }
   ],
-  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
  },
  "target": "IntBuffer",
  "tool": {

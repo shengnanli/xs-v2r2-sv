@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/IntBuffer
+Implementation : i:/WORK/IntBuffer
+Version        : V-2023.12-SP3
+Date           : Sat Oct 17 20:30:50 2026
+**************************************************
+
+No unverified compare points.
+
+1
