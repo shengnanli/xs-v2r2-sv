@@ -1,0 +1,9 @@
+# proven_in_cone_verified.tsv —— 父级证明里两侧白盒受验、逐条人工核验过的模块（codex 0238 裁定 2）。
+# 读者：scripts/rewrite_coverage.py 的 incore_golden_lines_proven_incl_cone 一行；只有 status=VERIFIED
+#   且 scripts/proven_in_cone.py 的 R1-R10 机械复核全过的行才计数，其余只列不计。
+# 加一行 = 一次核验：须在 docs/lanes/ 写明例化路径、impl 选的文件、黑盒报告、allow@run、
+#   compare point 在范围内的证据（钉点数/dead_ref 落点），见 docs/lanes/ledger-0238.md（Rob）。
+# ★不许★从 coverage_three_axis 的 PROVEN_IN_CONE 批量抄进来：那一档是 closure 文件名 − 当前 allow，只算候选。
+# 换了 receipt（父级重跑）或改了 impl 文件，sha 对不上 → 自动不计，须重新核验后改表。
+# module	parent_target	receipt	receipt_sha256	impl_file	impl_sha256	golden_file	golden_sha256	status	evidence
+Rob	CtrlBlock	evidence/9df1c6fb0545/CtrlBlock/receipt.json	de3308eb29958ca63794c90b95ee892a7abaf16993438080c4573e5241d8c87d	rtl/backend/Rob.sv	f24abb526efcd0fdb445e58ed6fea368fdf0f96447026aac29e81f95aec8b9cb	golden-rtl/Rob.sv	4aa8838b95283d5aa1f46161e4abf96de764a6c6cbaff09f189a829ae601f130	VERIFIED	CtrlBlock.sv:21127 例化 Rob rob（golden CtrlBlock.sv:27064 同名）；fm.log:384/590 两侧加载、500/683 两侧 elaborate；black_boxes.rpt 无 Rob；allow@9df1c6fb0545 sha b1d03d20 无 Rob 对象；OE_PIN Rob n=168720 miss=0（fm.log:158894-665055）；unread 16 全在 rob/walkCycle·waitRabWalkCycle（dead_ref golden-only 自环）；Rob 的 golden child（RenameBuffer/VTypeBuffer/SnapshotGenerator_3/NewRobDeqPtrWrapper/RobEnqPtrWrapper/CommitStuckCounter）impl 侧仍是 golden、不计；见 docs/lanes/ledger-0238.md

@@ -111,6 +111,9 @@ run "覆盖率存储排除类正反测"  python3 scripts/test_rewrite_coverage_m
 # 还读 golden 只进 golden_used_by 列，不许把已完成的实现盖成 GOLDEN_REUSE；
 # 反过来 SKELETON/PARTIAL_DRIVE 也不许因此被抬成 REWRITTEN。秒级，不跑 classify_rtl。
 run "三轴轴一优先级正反测"  python3 scripts/test_coverage_three_axis_priority.py
+# incl_cone 核验名单（codex 0238 裁定 2）：verif/proven_in_cone_verified.tsv 的每条判据
+# R1-R10 都有单点变异必须打红的反例，外加真仓 Rob@CtrlBlock 对真证据复核。
+run "incl_cone 核验名单正反测"  python3 scripts/test_proven_in_cone.py
 # round 台账必须与**已提交的 receipt** 逐字节一致。它是 proven 口径的输入之一，
 # 以前是手写的 —— 手写台账必然有两个病：漏记（proven 虚低）与错记（数字与 receipt
 # 对不上，而台账才是被引用的那份）。病根都是台账与证据之间隔着一个人。

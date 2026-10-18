@@ -518,6 +518,29 @@ def build():
                     % (i_done, i_tot, i_done * 100.0 / i_tot))
         rows.append('incore_golden_lines_proven\t%d\t%d\t%.1f'
                     % (i_prov, i_tot, i_prov * 100.0 / i_tot))
+        # ★incl_cone（codex 0238 裁定 2，2026-10-18 加；上面那行原样不动）★
+        # 在 proven 之外，再加上「父级证明里两侧白盒受验、impl 侧选的是可读 RTL」的模块。
+        # ★只认 verif/proven_in_cone_verified.tsv 的逐条核验行★（scripts/proven_in_cone.py
+        # R1-R10 机械复核：receipt/impl/golden 三处 sha、那次 run 的黑盒报告与 allow、
+        # fm.log 两侧 elaborate、不与直接 proven 重复）。不用 coverage_three_axis 的
+        # PROVEN_IN_CONE：那是 closure 文件名 − 当前 allow，读到 ≠ 例化、当前 allow ≠ 那次 run 的。
+        # 父级装配里黑盒掉的 child 由 child 自己的证明覆盖，已在上一行里，这里不重复计。
+        import proven_in_cone as PIC
+        cone, cone_notes = PIC.verified(REPO, prov, done)
+        c_extra = sum(real[m][1] for m in cone if m in real and m in tile)
+        rows.append('# incl_cone = 上一行 + verif/proven_in_cone_verified.tsv 里核验通过的'
+                    '父级白盒受验模块（逐条见下，非 COUNTED 的不计）')
+        for m, st, why in cone_notes:
+            rows.append('#   %-10s %-24s %8s 行  %s'
+                        % (st, m, real[m][1] if m in real else 0, why))
+        rows.append('incore_golden_lines_proven_incl_cone\t%d\t%d\t%.1f'
+                    % (i_prov + c_extra, i_tot, (i_prov + c_extra) * 100.0 / i_tot))
+        # 百分比只留一位小数，差几百行也会印成 100.0 —— 剩下的逐个列出，别让它被读成"全证完"
+        _gap = sorted(m for m in real if m in tile and m not in prov and m not in cone)
+        rows.append('#   incl_cone 之后核内仍未计 proven：%d 个 / %d 行'
+                    % (len(_gap), sum(real[m][1] for m in _gap)))
+        for m in _gap:
+            rows.append('#     %-40s %8d 行' % (m, real[m][1]))
         rows.append('# 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★')
         rows.append('#   已证出来的不作废，只是不该和核内混在一个百分比里报')
         rows.append('outcore_golden_lines_written\t%d\t%d\t%.1f'
