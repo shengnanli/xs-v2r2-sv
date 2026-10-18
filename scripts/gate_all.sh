@@ -112,6 +112,10 @@ run "覆盖率存储排除类正反测"  python3 scripts/test_rewrite_coverage_m
 # 对不上，而台账才是被引用的那份）。病根都是台账与证据之间隔着一个人。
 run "round 台账幂等"   python3 scripts/harvest_round_ledger.py --check --out docs/fm_round_20260917.tsv
 run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
+# XSTile 源表（codex 0238 主线 1）：闭包内 golden 只许是登记过的存储模型（sha 逐字对登记表），
+# 出现任何 golden 逻辑模块即 FATAL；表须能从 rtl/ 与 golden 现场重算。VCS 实 elaborate 在
+# scripts/xstile_rtl_elab.sh（~10 分钟，不进本闸；整芯片仿真泳道调用）。
+run "XSTile 源表幂等"   python3 scripts/xstile_srcmap.py --check
 # FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
 # 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
 # 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后
