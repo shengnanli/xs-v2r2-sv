@@ -107,6 +107,10 @@ run "覆盖率空壳闸"     python3 scripts/test_coverage_no_shell_inflation.py
 # MC 登记表每行必须归存储、data_mem_* 须名字+firtool 存储模板同时成立，
 # 名字像 data_mem 而正文有逻辑的不许收。
 run "覆盖率存储排除类正反测"  python3 scripts/test_rewrite_coverage_memory.py
+# 三轴轴一的优先级（codex 0238 裁定 1）：rtl/ 有定义的先过 rewritten_floor，别处 impl 侧
+# 还读 golden 只进 golden_used_by 列，不许把已完成的实现盖成 GOLDEN_REUSE；
+# 反过来 SKELETON/PARTIAL_DRIVE 也不许因此被抬成 REWRITTEN。秒级，不跑 classify_rtl。
+run "三轴轴一优先级正反测"  python3 scripts/test_coverage_three_axis_priority.py
 # round 台账必须与**已提交的 receipt** 逐字节一致。它是 proven 口径的输入之一，
 # 以前是手写的 —— 手写台账必然有两个病：漏记（proven 虚低）与错记（数字与 receipt
 # 对不上，而台账才是被引用的那份）。病根都是台账与证据之间隔着一个人。

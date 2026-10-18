@@ -7,10 +7,21 @@ XSTop elaborated 集落地后换成它，见 --universe）。**1884 只是定义
 
 三轴各自回答一个不同的问题，不可互相替代：
 
-1. REWRITE_COVERAGE —— 「这个模块有没有可读实现」
-   REWRITTEN       rtl/ 下有同名 module，且不是直接引用 golden 文件
-   GOLDEN_REUSE    impl 侧直接读 golden 逻辑（RTL_GOLDEN_DEPS 里的行为模型/闭包）
+1. REWRITE_COVERAGE —— 「这个模块有没有可读实现，且过了 rewritten_floor」
+   REWRITTEN       rtl/ 下有同名 module，且过了驱动下限（rewritten_floor）
+   PARTIAL_DRIVE / SKELETON / ...  rtl/ 有定义但没过下限（照 rewritten_floor 原样落档）
+   GOLDEN_REUSE    rtl/ 里**没有**定义，而 impl 侧直接读 golden 逻辑
+                   （UT 的 RTL_GOLDEN_DEPS / receipt impl_closure 里 kind=golden）
                    —— 按 codex 裁定**不算重写完成**，单列
+   ★优先级（codex 0238 裁定 1，2026-10-18 改）★：rtl/ 有定义的**先过 floor**，
+   别的 UT / 证明 impl 侧还读着 golden 不能把一份已完成的实现盖成 GOLDEN_REUSE。
+   起因：XSCore 的 UT 把 golden 整棵子树当仿真依赖读进来，旧逻辑
+   `GOLDEN_REUSE if m in reuse else floor` 一下子把 1600 个模块记成 GOLDEN_REUSE，
+   其中 1561 个 rtl/ 里有定义 —— 轴一不再回答「有没有可读实现」。
+   ★但"谁还在用 golden"这件事不能丢★：另起一列 golden_used_by，列出 impl 侧
+   仍读该模块 golden 文件的 UT（ut:<目录>）与证明（fm:<top>，每个 top 取最新一份
+   已跟踪、通过的 receipt）。「rtl 有定义」**不是**它被实际用上的证据；这一列非空
+   的 run 都不是纯重写 run，不许那样宣称。
    VENDOR_BOUNDARY 已审定的厂商硬宏边界（verif/vendor_boundary.tsv）
    MISSING         还没有可读实现
 
@@ -23,6 +34,10 @@ XSTop elaborated 集落地后换成它，见 --universe）。**1884 只是定义
    UNPROVEN        没有任何通过 receipt 触及
    注意：**"文件出现在 source closure" 不等于覆盖**——可能未被例化或被黑盒，
    故这里用 receipt 的 golden_closure 与 allow 黑盒集做差。
+   ★codex 0238 裁定 2★：这个差（closure 文件名 − **当前** allow）只够当**候选**——
+   文件被读 ≠ 被例化，当前 allow ≠ 那次 run 的 allow。行数台账里的
+   incore_golden_lines_proven_incl_cone 不读本档，只认 verif/proven_in_cone_verified.tsv
+   逐条核验过的行（scripts/proven_in_cone.py）。
 
 3. PROOF_ROOT_STATUS —— 「策展的证明根集是否全过，其组合是否盖住全集」
    不要求每个 module 单独跑一次 FM：父级白盒证明与 green_child 组合可覆盖多个定义。
@@ -69,18 +84,113 @@ def rtl_modules():
     return idx
 
 
-def golden_reuse_set():
-    """各 UT Makefile 的 RTL_GOLDEN_DEPS：impl 侧直接读的 golden 文件（非重写）。"""
-    out = set()
-    for mk in (REPO / 'verif' / 'ut').glob('*/Makefile'):
-        txt = re.sub(r'\\\n', ' ', mk.read_text())
-        m = re.search(r'^RTL_GOLDEN_DEPS[^\S\n]*=[^\S\n]*(.*)$', txt, re.M)
-        if m:
-            for tok in m.group(1).split():
-                base = tok.split('/')[-1]
-                if base.endswith('.sv'):
-                    out.add(base[:-3])
+def _is_golden_path(tok):
+    """依赖清单里的一个文件是不是 golden 文件（按目录名 golden-rtl 认，不按模块名猜）。
+
+    旧 golden_reuse_set 只取 basename，于是 `$(XSSV_HOME)/rtl/common/ClockGate.sv`、
+    `$(RTL_DIR)/memblock/*.sv` 这类**本地件**也被当成 golden 复用记了账。"""
+    return '/golden-rtl/' in tok.replace('\\', '/')
+
+
+def ut_golden_users(ut_root=None, repo=None):
+    """{模块名: {'ut:<目录>'}} —— 各 UT 仿真时 impl 侧直接读的 golden 文件。
+
+    ★用 make 展开，不用正则★：旧版对 Makefile 文本做正则，`$(addprefix $(GOLDEN_RTL)/,
+    $(SRAM_DEPS))` 这类变量间接（实测 35 个 UT）全部展开不了、静默漏记；同一个坑
+    fm_target_universe 早就踩过（D70）。展开失败一律 fail-closed 抛出。"""
+    import subprocess
+    repo = pathlib.Path(repo or REPO)
+    ut_root = pathlib.Path(ut_root or (repo / 'verif' / 'ut'))
+    out = {}
+    for mk in sorted(ut_root.glob('*/Makefile')):
+        if 'RTL_GOLDEN_DEPS' not in mk.read_text(errors='replace'):
+            continue
+        r = subprocess.run(
+            ['make', '-s', '--no-print-directory', '-C', str(mk.parent),
+             '--eval', '__xs_golden_deps__: ; @echo $(RTL_GOLDEN_DEPS)',
+             '__xs_golden_deps__', 'XSSV_HOME=%s' % repo],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        if r.returncode != 0:
+            raise SystemExit('coverage_three_axis: 展开 %s 的 RTL_GOLDEN_DEPS 失败（rc=%d）：%s'
+                             % (mk, r.returncode, r.stderr.strip()[:300]))
+        for tok in r.stdout.split():
+            base = tok.rsplit('/', 1)[-1]
+            if base.endswith('.sv') and _is_golden_path(tok):
+                out.setdefault(base[:-3], set()).add('ut:' + mk.parent.name)
     return out
+
+
+_RUN_TS = re.compile(r'-(\d{8}T\d{6}Z)-')
+
+
+def receipt_golden_users(records):
+    """{模块名: {'fm:<top>'}} —— 证明 impl 侧直接读的 golden 文件。
+
+    records = [(receipt 相对路径, receipt dict)]。只收通过、非 provisional、
+    非 dirty 的；同一 top 只取**最新一份**（run_id 时间戳，平手按路径），
+    因为这一列回答的是「现在还有谁在用 golden」，旧 run 用过不代表现行证明还在用。"""
+    latest = {}
+    for rel, r in records:
+        if r.get('verdict') not in PASS:
+            continue
+        if r.get('provisional') or r.get('impl_worktree_dirty'):
+            continue
+        m = _RUN_TS.search(r.get('run_id') or '')
+        key = (m.group(1) if m else '', rel)
+        top = r.get('top')
+        if top and (top not in latest or key > latest[top][0]):
+            latest[top] = (key, r)
+    out = {}
+    for top, (_, r) in latest.items():
+        for e in r.get('impl_closure') or []:
+            p = e.get('path', '')
+            if e.get('kind') == 'golden' and p.endswith('.sv'):
+                out.setdefault(pathlib.Path(p).name[:-3], set()).add('fm:' + top)
+    return out
+
+
+def tracked_receipts(repo=None):
+    """已跟踪的 receipt —— 用法列只认版本库里有的，clean clone 才能复现同一张表。"""
+    import subprocess
+    repo = pathlib.Path(repo or REPO)
+    rels = subprocess.check_output(
+        ['git', '-C', str(repo), 'ls-files', 'evidence/*/receipt.json'],
+        universal_newlines=True).split()
+    out = []
+    for rel in sorted(rels):
+        try:
+            out.append((rel, json.loads((repo / rel).read_text())))
+        except (OSError, ValueError):
+            continue
+    return out
+
+
+def golden_users(ut=None, rec=None):
+    """合并两路用法：{模块名: 排好序的用户列表}。"""
+    merged = {}
+    for src in (ut_golden_users() if ut is None else ut,
+                receipt_golden_users(tracked_receipts()) if rec is None else rec):
+        for m, us in src.items():
+            merged.setdefault(m, set()).update(us)
+    return {m: sorted(us) for m, us in merged.items()}
+
+
+def axis1(m, vend, rtl, floor, users):
+    """轴一判档（codex 0238 裁定 1）：vendor > rtl 有定义走 floor > impl 读 golden > MISSING。"""
+    if m in vend:
+        return 'VENDOR_BOUNDARY'
+    if m in rtl:
+        # ★轴一的下限（2026-09-21 加）★：光有 `module <名字>` 不算重写。
+        #   rewritten_floor 按**驱动闭包**判——输出得真被驱动，
+        #   而且驱动链要落到真逻辑上，不能停在一个空核的端口上。
+        #   加这道下限之前，StoreQueue（壳接空核，163/399）和
+        #   NewDispatch（5974/6699）都在这张表里写着 REWRITTEN。
+        # ★2026-10-18：floor 优先于 golden 用法★（见文件头）——别处还读 golden
+        #   只进 golden_used_by 列，不改本列。
+        return floor.get(m, ('SKELETON',))[0]
+    if m in users:
+        return 'GOLDEN_REUSE'
+    return 'MISSING'
 
 
 def receipts():
@@ -113,7 +223,7 @@ def main():
     uni = load_universe(a.universe)
     vend = vendor_set()
     rtl = rtl_modules()
-    reuse = golden_reuse_set()
+    users = golden_users()
     floor = classify_rtl()
     recs = receipts()
 
@@ -123,35 +233,30 @@ def main():
         in_cone |= (cone - bb)
         blackboxed |= bb
 
+    from gen_xstile_closure import load as load_tile_closure
+    tile = load_tile_closure()
+
     rows = []
     from collections import Counter
-    c1, c2 = Counter(), Counter()
+    c1, c2, c1_core = Counter(), Counter(), Counter()
     for m in uni:
+        a1 = axis1(m, vend, rtl, floor, users)
         if m in vend:
-            a1 = a2 = 'VENDOR_BOUNDARY'
+            a2 = 'VENDOR_BOUNDARY'
+        elif m in proven_direct:
+            a2 = 'PROVEN_DIRECT'
+        elif m in in_cone:
+            a2 = 'PROVEN_IN_CONE'
+        elif m in blackboxed:
+            a2 = 'BLACKBOXED'
         else:
-            if m in rtl:
-                # ★轴一的下限（2026-09-21 加）★：光有 `module <名字>` 不算重写。
-                #   rewritten_floor 按**驱动闭包**判——输出得真被驱动，
-                #   而且驱动链要落到真逻辑上，不能停在一个空核的端口上。
-                #   加这道下限之前，StoreQueue（壳接空核，163/399）和
-                #   NewDispatch（5974/6699）都在这张表里写着 REWRITTEN。
-                a1 = 'GOLDEN_REUSE' if m in reuse else floor.get(m, ('SKELETON',))[0]
-            elif m in reuse:
-                a1 = 'GOLDEN_REUSE'
-            else:
-                a1 = 'MISSING'
-            if m in proven_direct:
-                a2 = 'PROVEN_DIRECT'
-            elif m in in_cone:
-                a2 = 'PROVEN_IN_CONE'
-            elif m in blackboxed:
-                a2 = 'BLACKBOXED'
-            else:
-                a2 = 'UNPROVEN'
+            a2 = 'UNPROVEN'
         c1[a1] += 1
         c2[a2] += 1
-        rows.append((m, a1, a2, str(rtl.get(m, '-'))))
+        if m in tile:
+            c1_core[a1] += 1
+        rows.append((m, a1, a2, str(rtl.get(m, '-')),
+                     ','.join(users.get(m, [])) or '-'))
 
     out = REPO / 'docs' / 'coverage_three_axis.tsv'
     with out.open('w') as f:
@@ -164,7 +269,9 @@ def main():
         except ValueError:
             _uni_disp = a.universe
         f.write(f'# 三轴覆盖（分母 = {_uni_disp} 的 in_universe=yes，共 {len(uni)}）\n')
-        f.write('# module\trewrite_coverage\tformal_coverage\timpl_file\n')
+        f.write('# golden_used_by = impl 侧仍直接读该模块 golden 文件的 UT（ut:）/ 证明（fm:，每 top 最新'
+                '一份已跟踪通过 receipt）；非空 ≠ 没重写，但这些 run 都不是纯重写 run\n')
+        f.write('# module\trewrite_coverage\tformal_coverage\timpl_file\tgolden_used_by\n')
         for r in rows:
             f.write('\t'.join(r) + '\n')
 
@@ -176,6 +283,10 @@ def main():
           f'（GOLDEN_REUSE {c1["GOLDEN_REUSE"]} 不计入，按裁定单列；'
           f'未过驱动下限：PARTIAL_DRIVE {c1["PARTIAL_DRIVE"]} / '
           f'SKELETON {c1["SKELETON"]}，不计入）')
+    print('      其中核内（XSTile 闭包 %d 个）：' % sum(c1_core.values()), dict(c1_core.most_common()))
+    _gu = sum(1 for r in rows if r[4] != '-')
+    _gu_rtl = sum(1 for r in rows if r[4] != '-' and r[3] != '-')
+    print(f'      golden_used_by 非空 {_gu} 个（其中 rtl/ 有定义 {_gu_rtl} 个：有实现但仍有 run 读 golden）')
     print('轴2 FORMAL_COVERAGE：', dict(c2.most_common()))
     cov = c2['PROVEN_DIRECT'] + c2['PROVEN_IN_CONE']
     print(f'      被通过证明真实覆盖 {cov}/{n} = {100*cov/n:.1f}%'
