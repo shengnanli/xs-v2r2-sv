@@ -5110,6 +5110,15 @@ WritebackQueue	entries_6	WritebackEntry	DEEPER	u_core.entries_6	WritebackEntry		
 WritebackQueue	entries_7	WritebackEntry	DEEPER	u_core.entries_7	WritebackEntry		auto_deeper	
 WritebackQueue	entries_8	WritebackEntry	DEEPER	u_core.entries_8	WritebackEntry		auto_deeper	
 WritebackQueue	entries_9	WritebackEntry	DEEPER	u_core.entries_9	WritebackEntry		auto_deeper	
+XSCore	backend	Backend	SAME_PATH	backend	Backend		auto_same	
+XSCore	frontend	Frontend	SAME_PATH	frontend	Frontend		auto_same	
+XSCore	memBlock	MemBlock	SAME_PATH	memBlock	MemBlock		auto_same	
+XSTile	core	XSCore	SAME_PATH	core	XSCore		auto_same	
+XSTile	intBuffer	IntBuffer_1	SAME_PATH	intBuffer	IntBuffer_1		auto_same	
+XSTile	intBuffer_1	IntBuffer_2	SAME_PATH	intBuffer_1	IntBuffer_2		auto_same	
+XSTile	intBuffer_2	IntBuffer	SAME_PATH	intBuffer_2	IntBuffer		auto_same	
+XSTile	intBuffer_3	IntBuffer_1	SAME_PATH	intBuffer_3	IntBuffer_1		auto_same	
+XSTile	l2top	L2Top	SAME_PATH	l2top	L2Top		auto_same	
 compare_2to1	adder_xb	Adder_xb_3	UNRESOLVED				none	
 compare_2to1_2	adder_xb	Adder_xb_20	UNRESOLVED				none	
 compare_3to1	adder_xb	Adder_xb	UNRESOLVED				none	

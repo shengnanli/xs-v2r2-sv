@@ -533,9 +533,9 @@ IndirectCSRPermitModule	SUCCEEDED	p2 f0 um0 unread=? const_reg=? mode=signoff-st
 InstrMMIOEntry	SUCCEEDED	p205 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @9e97d86799c4 evidence/9e97d86799c4/InstrMMIOEntry/receipt.json
 InstrUncache	SUCCEEDED	p205 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @7b1dd37bad70 evidence/7b1dd37bad70/InstrUncache/receipt.json
 InstrUncacheBuffer	SUCCEEDED	p889 f0 um0 unread=? const_reg=83 mode=signoff-strict vmucp=true @3390b6ba80a9 evidence/3390b6ba80a9/InstrUncacheBuffer/receipt.json
-IntBuffer	SUCCEEDED	p2 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @1bf831352049 evidence/1bf831352049/IntBuffer/receipt.json
-IntBuffer_1	SUCCEEDED	p4 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @64f5633a1e77 evidence/64f5633a1e77/IntBuffer_1/receipt.json
-IntBuffer_2	SUCCEEDED	p4 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @64f5633a1e77 evidence/64f5633a1e77/IntBuffer_2/receipt.json
+IntBuffer	SUCCEEDED	p2 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @45767953b989 evidence/45767953b989/IntBuffer/receipt.json
+IntBuffer_1	SUCCEEDED	p4 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @45767953b989 evidence/45767953b989/IntBuffer_1/receipt.json
+IntBuffer_2	SUCCEEDED	p4 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @45767953b989 evidence/45767953b989/IntBuffer_2/receipt.json
 IntFPToVec	SUCCEEDED	p791 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @e858f1db696d evidence/e858f1db696d/IntFPToVec/receipt.json
 IntFile	SUCCEEDED	p651 f0 um0 unread=? const_reg=64 mode=signoff-strict vmucp=false @d18495248b31 evidence/d18495248b31/IntFile/receipt.json
 IntRFReadArbiter	SUCCEEDED	p264 f0 um0 unread=? const_reg=9 mode=signoff-strict vmucp=true @833a201786eb evidence/833a201786eb/IntRFReadArbiter/receipt.json
@@ -1567,6 +1567,8 @@ WritebackEntry	SUCCEEDED	p1042 f0 um0 unread=? const_reg=? mode=signoff-strict v
 WritebackEntry_15	SUCCEEDED	p1042 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @397a2bc9c8d3 evidence/397a2bc9c8d3/WritebackEntry_15/receipt.json
 WritebackQueue	SUCCEEDED	p13053 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @397a2bc9c8d3 evidence/397a2bc9c8d3/WritebackQueue/receipt.json
 XRetPermitModule	SUCCEEDED	p6 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @2f9bb8a2b814 evidence/2f9bb8a2b814/XRetPermitModule/receipt.json
+XSCore	SUCCEEDED	p99241 f0 um0 unread=? const_reg=? mode=assembly vmucp=false @b56cfb91c416 evidence/b56cfb91c416/XSCore/receipt.json
+XSTile	SUCCEEDED	p71909 f0 um0 unread=? const_reg=? mode=assembly vmucp=false @760c0859ab36 evidence/760c0859ab36/XSTile/receipt.json
 compare_2to1	SUCCEEDED	p32 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @3e018650908f evidence/3e018650908f/compare_2to1/receipt.json
 compare_2to1_2	SUCCEEDED	p8 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @3e018650908f evidence/3e018650908f/compare_2to1_2/receipt.json
 compare_3to1	SUCCEEDED	p64 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @3e018650908f evidence/3e018650908f/compare_3to1/receipt.json

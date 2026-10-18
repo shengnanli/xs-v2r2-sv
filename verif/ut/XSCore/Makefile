@@ -16,7 +16,7 @@ RTL_DIR = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/xstile/XSCore.sv
 TB_SRCS = tb.sv tb_pins.sv
 
-# UT 两侧共用的 golden 子树（golden XSCore 的传递闭包，ClockGate 换成本地件；清单由 scripts/gen_xstile_closure.py 的 closure() 算出）
+# UT 两侧共用的 golden 子树（golden XSCore 的传递闭包，ClockGate、PrintCommitIDModule（codex 0230） 换成本地件；清单由 scripts/gen_xstile_closure.py 的 closure() 算出）
 RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
     $(GOLDEN_RTL)/AMOALU.sv \
     $(GOLDEN_RTL)/ActiveGenerationTable.sv \
@@ -949,7 +949,7 @@ RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
     $(GOLDEN_RTL)/Predictor.sv \
     $(GOLDEN_RTL)/PrefetchFilter.sv \
     $(GOLDEN_RTL)/PrefetcherMonitor.sv \
-    $(GOLDEN_RTL)/PrintCommitIDModule.v \
+    $(XSSV_HOME)/rtl/common/PrintCommitIDModule.sv \
     $(GOLDEN_RTL)/PriorityMuxModule.sv \
     $(GOLDEN_RTL)/PriorityMuxModule_12.sv \
     $(GOLDEN_RTL)/PriorityMuxModule_16.sv \

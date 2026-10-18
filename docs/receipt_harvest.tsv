@@ -30,7 +30,7 @@
 #
 # 结论: COLLECTED / NEEDS_RERUN / NEEDS_RTL_MERGE / SUPERSEDED
 #
-# 本次统计: 受检 receipt 1603 份 / 不同目标 1603 个 / COLLECTED=1591 NEEDS_RERUN=9 SUPERSEDED=3
+# 本次统计: 受检 receipt 1605 份 / 不同目标 1605 个 / COLLECTED=1593 NEEDS_RERUN=9 SUPERSEDED=3
 target	golden_lines	impl_in_main	in_vcs	merge_dup	mdup_band	chk_golden	chk_impl	chk_fm_eq	chk_pins	chk_emitter	chk_decl	chk_tool	chk_facts	verdict	evidence	rounds	other_rounds	why
 AMOALU	128	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2f84dea722ff	1	-	已在版本库里（evidence/2f84dea722ff 已被 git 跟踪）
 AXI4Deinterleaver	5572	yes	yes	true	21.6%	same	same	trace_equal	none	inert	none	same	same	COLLECTED	vcs:40ec7fc36bb8	1	-	emitter 仅差 find_cells alias；本次钉点可执行文本里没有它; 已在版本库里（evidence/40ec7fc36bb8 已被 git 跟踪）
@@ -563,9 +563,9 @@ IndirectCSRPermitModule	153	yes	yes	true	0.0%	same	same	trace_equal	none	same	no
 InstrMMIOEntry	201	yes	yes	true	57.6%/wide	same	same	trace_equal	bridged	same	none	same	same	COLLECTED	vcs:9e97d86799c4	1	-	钉点文件字节已变但**调用序列逐字节相同**（scripts/fm_pins_trace.tcl 差分跑）: verif/ut/InstrUncache/fm_pins_pre.tcl; 已在版本库里（evidence/9e97d86799c4 已被 git 跟踪）
 InstrUncache	150	yes	yes	true	0.0%	same	same	same	same	same	none	same	same	COLLECTED	vcs:7b1dd37bad70	4	vcs:40ace84c0bea(COLLECTED) wt-partial:0536ef08a32a-a(SUPERSEDED) wt-partial:p-InstrUncache(SUPERSEDED)	已在版本库里（evidence/7b1dd37bad70 已被 git 跟踪）
 InstrUncacheBuffer	245	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:3390b6ba80a9	1	-	前提标注: constant_reg=83 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/3390b6ba80a9 已被 git 跟踪）
-IntBuffer	123	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:1bf831352049	1	-	已在版本库里（evidence/1bf831352049 已被 git 跟踪）
-IntBuffer_1	134	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	1	-	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
-IntBuffer_2	134	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	1	-	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
+IntBuffer	123	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:1bf831352049	2	vcs:45767953b989(COLLECTED)	已在版本库里（evidence/1bf831352049 已被 git 跟踪）
+IntBuffer_1	134	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	2	vcs:45767953b989(COLLECTED)	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
+IntBuffer_2	134	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:64f5633a1e77	2	vcs:45767953b989(COLLECTED)	已在版本库里（evidence/64f5633a1e77 已被 git 跟踪）
 IntFPToVec	218	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:e858f1db696d	1	-	已在版本库里（evidence/e858f1db696d 已被 git 跟踪）
 IntFile	863	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:d18495248b31	1	-	前提标注: constant_reg=64 且 FM 假设常数寄存器可翻转（全仓既有裁定，不据此改判）; 已在版本库里（evidence/d18495248b31 已被 git 跟踪）
 IntRFReadArbiter	594	yes	yes	false	exact	same	same	trace_equal	same	same	none	same	same	COLLECTED	vcs:833a201786eb	1	-	已在版本库里（evidence/833a201786eb 已被 git 跟踪）
@@ -1600,6 +1600,8 @@ WritebackEntry	275	yes	yes	false	exact	same	same	same	none	same	none	same	same	C
 WritebackEntry_15	275	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:397a2bc9c8d3	2	vcs:bd284f4ddd1e(COLLECTED)	已在版本库里（evidence/397a2bc9c8d3 已被 git 跟踪）
 WritebackQueue	1757	yes	yes	false	exact	same	same	same	none	same	none	same	same	COLLECTED	vcs:397a2bc9c8d3	2	vcs:f40deba9439d(COLLECTED)	已在版本库里（evidence/397a2bc9c8d3 已被 git 跟踪）
 XRetPermitModule	127	yes	yes	false	exact	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:2f9bb8a2b814	1	-	已在版本库里（evidence/2f9bb8a2b814 已被 git 跟踪）
+XSCore	13423	yes	yes	false	exact	same	same	same	none	same	same	same	same	COLLECTED	vcs:b56cfb91c416	1	-	已在版本库里（evidence/b56cfb91c416 已被 git 跟踪）
+XSTile	2077	yes	yes	false	exact	same	same	same	none	same	same	same	same	COLLECTED	vcs:760c0859ab36	1	-	已在版本库里（evidence/760c0859ab36 已被 git 跟踪）
 compare_2to1	107	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:3e018650908f	1	-	已在版本库里（evidence/3e018650908f 已被 git 跟踪）
 compare_2to1_2	107	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:3e018650908f	1	-	已在版本库里（evidence/3e018650908f 已被 git 跟踪）
 compare_3to1	128	yes	yes	true	0.0%	same	same	trace_equal	none	same	none	same	same	COLLECTED	vcs:3e018650908f	1	-	已在版本库里（evidence/3e018650908f 已被 git 跟踪）

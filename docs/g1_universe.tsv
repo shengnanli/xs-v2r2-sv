@@ -322,7 +322,7 @@ WrBypass_33	WrBypass_33	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_c
 WrBypass_41	WrBypass_41	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/WrBypass_41.json sha256=3bdf12e76f0a956c
 WrBypass_43	WrBypass_43	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/WrBypass_43.json sha256=1d140901ac4ec7cb
 WritebackQueue	WritebackQueue	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-XSCore	XSCore	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-XSTile	XSTile	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
+XSCore	XSCore	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/XSCore.json sha256=81ef38cec6ddada7
+XSTile	XSTile	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/XSTile.json sha256=e4c4d1ef0b8eb948
 XSTop	XSTop	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 Rob	Rob	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate

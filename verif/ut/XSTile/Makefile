@@ -1039,7 +1039,7 @@ RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
     $(GOLDEN_RTL)/PrefetchReqBuffer.sv \
     $(GOLDEN_RTL)/Prefetcher.sv \
     $(GOLDEN_RTL)/PrefetcherMonitor.sv \
-    $(GOLDEN_RTL)/PrintCommitIDModule.v \
+    $(XSSV_HOME)/rtl/common/PrintCommitIDModule.sv \
     $(GOLDEN_RTL)/PriorityMuxModule.sv \
     $(GOLDEN_RTL)/PriorityMuxModule_12.sv \
     $(GOLDEN_RTL)/PriorityMuxModule_16.sv \
