@@ -1,0 +1,173 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "external_dependency_via_children": [
+  "L2Top",
+  "XSCore"
+ ],
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-18T01:00:55Z",
+ "generator": {
+  "run_context_worktree_digest": "645d886e688e0edce99441fa2f9a5d600ce855f3474007f00c9723165c408088",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/760c0859ab36/XSTile",
+  "version": 1
+ },
+ "impl_commit": "760c0859ab3619e479d0d8d8e2c1f4e67ec7d9d0",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/XSTile.sv",
+    "sha256": "03e1da0005eaedb5b2e6eed6d7584586f67b1fc8f663d5f069b5bd55709055c2"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/XSCore.sv",
+    "sha256": "c8c5b2c203bea24a0976c44b1859901f49dad2d3a01271ae1d31de80be0b5571"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/L2Top.sv",
+    "sha256": "5ab6751817008bdd096caa13d4d986474e1a9bff773ea014d0ce25cd805c8dbe"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IntBuffer.sv",
+    "sha256": "3792592ea9ea1e2f59f2c14b027417330215318b47012299ba3e42884dd23b3b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IntBuffer_1.sv",
+    "sha256": "c69c55d99bec4382f1bef237c7e33c0cdacee2dcad8eb120898fb77a5080f366"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/IntBuffer_2.sv",
+    "sha256": "ecf00718a449f23006de0623da38fd5600517954b0d0d868950457735cce8aa8"
+   }
+  ],
+  "golden_sha256": "761425a67f99954767631775204ecd92a48643d65961e3cc9f7ae4ac5798b5c3",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/xstile/XSCore.sv",
+    "sha256": "38b54964862850ae76bd158b1c207778f86fce6bfc8f6458b20ddfc6233d8718"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/l2/L2Top.sv",
+    "sha256": "a889244802f3eb8ca26a0393b7d1d8a3835607b199472c0b72633e663cc448ac"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntBuffer.sv",
+    "sha256": "bcfadbc1517b05533a6a0146101f80eff9aded794f58e8d5593d34641a6fd9d0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntBuffer_1.sv",
+    "sha256": "b4129a00a60fd720c077a9e83fd2c87e84c4192a8b7f8ed5328781496dea5b2e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/IntBuffer_2.sv",
+    "sha256": "5681005b159908021dcab3c5e464ab538b34b5cbccd21c163c405b89af4c20d7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/xstile/XSTile.sv",
+    "sha256": "c8f9f84c5cf3ac296cbaf855bc508ba1df594410805266f162b780912b95b028"
+   }
+  ],
+  "impl_sha256": "7644ccab26d2771e48a1abf9be4dcec675140889730615e4e98f642fbfba3eeb",
+  "repo_impl_files": 6
+ },
+ "native_facts_sha256": "50ad422011dacb6b08ea02369cb70fd0f237b76d6d43724cab9bb0746cfa7d6b",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 71909,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "760c0859ab3619e479d0d8d8e2c1f4e67ec7d9d0",
+ "proof_config": {
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/XSTile.json",
+    "sha256": "34b309f8f3a418cdad3470ae606be52aa9d7f20da86d88eebc28abf083e70e51"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "XSCore L2Top IntBuffer IntBuffer_1 IntBuffer_2",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "assembly",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "72fc325dce9e728ada7e32f338b381d1761bb6684014a0f0ee138ed5faae8ab8",
+ "proof_mode": "assembly",
+ "proof_worktree_digest": "645d886e688e0edce99441fa2f9a5d600ce855f3474007f00c9723165c408088",
+ "provisional": false,
+ "receipt_sha256": "c915acf8f4d94a90e409f83a2a51ee253e1f520a64302fd76ec4cf2cf74f6701",
+ "reproduce": {
+  "command": "PROOF_COMMIT=760c0859ab3619e479d0d8d8e2c1f4e67ec7d9d0 scripts/run_proof.sh XSTile XSTile",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "73a600a11f7f2b1049bf34fe27521f6e0b64d6139a01fe9630713527b02c373f",
+ "run_id": "XSTile-20261018T003511Z-760c0859a",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "XSTile",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "XSTile",
+ "variant": "XSTile",
+ "verdict": "SUCCEEDED"
+}
