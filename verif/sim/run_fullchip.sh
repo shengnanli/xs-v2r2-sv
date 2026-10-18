@@ -83,9 +83,17 @@ setup() {
     [ -f "$dd/build/$f" ] || cp "$XS_HOME/build/$f" "$dd/build/$f"
   done
   if [ "$side" = impl ]; then
-    python3 "$SV_HOME/scripts/full_elab_filelist.py" --with-difftest \
-        --out "$dd/files_simtop.f" >"$dd/filelist.log"
-    grep -v '/SimTop\.sv$' "$dd/files_simtop.f" > "$dd/files_impl_nosimtop.f"
+    if [ "${XSTILE_ONLY:-0}" = 1 ]; then
+      # codex 0238：只换 XSTile，核外保持 golden（见 verif/sim/xstile_sim_filelist.py 头注释）。
+      python3 "$SV_HOME/verif/sim/xstile_sim_filelist.py" \
+          --out "$dd/files_impl_nosimtop.f" --tsv "$dd/srcmap.tsv" \
+          --rename-dir "$dd/outcore_renamed" >"$dd/filelist.log"
+      cat "$dd/filelist.log" >&2
+    else
+      python3 "$SV_HOME/scripts/full_elab_filelist.py" --with-difftest \
+          --out "$dd/files_simtop.f" >"$dd/filelist.log"
+      grep -v '/SimTop\.sv$' "$dd/files_simtop.f" > "$dd/files_impl_nosimtop.f"
+    fi
     # ★ 必须打的 SimTop 补丁（见 verif/sim/README.md）★
     # golden SimTop 用 9897 条**绝对层次引用**(XMR) 把模块内部信号(_GEN_n /
     # _T_n_probe / *_probe) 直接引到 LogPerfEndpoint(9903 端口全 input, 纯观测)。
@@ -94,7 +102,11 @@ setup() {
     # 这一步 **不改 golden、不改 rtl/**：只在本工作区生成 SimTop.sv 的打补丁副本。
     rm -rf "$dd/build/rtl"
     mkdir -p "$dd/build/rtl"
-    for f in "$GOLDEN_RTL"/*; do ln -sfn "$f" "$dd/build/rtl/$(basename "$f")"; done
+    # XSTILE_ONLY=1：build/rtl（= vcs 的 `-y` 库兜底目录）**只放打补丁的 SimTop.sv**，
+    # 不链任何 golden 件 —— 清单漏件 VCS 当场报错，不可能静默回落到 golden 逻辑。
+    if [ "${XSTILE_ONLY:-0}" != 1 ]; then
+      for f in "$GOLDEN_RTL"/*; do ln -sfn "$f" "$dd/build/rtl/$(basename "$f")"; done
+    fi
     rm -f "$dd/build/rtl/SimTop.sv"
     python3 - "$GOLDEN_RTL/SimTop.sv" "$dd/build/rtl/SimTop.sv" <<'PYEOF'
 import re, sys, pathlib
