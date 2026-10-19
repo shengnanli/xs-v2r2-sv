@@ -1,0 +1,9 @@
+{
+  "target": "SpillRegister_7",
+  "ut": "QueueChiSpillLogger200c",
+  "regs": 66,
+  "outs": 33,
+  "expected": 99,
+  "merge_dup": "true",
+  "model_applicable": false
+}
