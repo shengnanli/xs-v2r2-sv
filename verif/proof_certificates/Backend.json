@@ -3,14 +3,14 @@
  "evidence_retention": "attestation_only",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-17T20:58:27Z",
+ "generated_at": "2026-10-19T11:11:03Z",
  "generator": {
-  "run_context_worktree_digest": "3be087ff09a59aa477e09633e0a8dd71218ec3a7776abd3a7cb68357509e73c0",
+  "run_context_worktree_digest": "82d72552b3211f3bd44438abb7d1610b87663626e904e4b1cb4eace9d0faa18e",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/a47c23dc5c5b/Backend",
+  "source_evidence_dir": "evidence/7c449d50e39e/Backend",
   "version": 1
  },
- "impl_commit": "a47c23dc5c5befafa141dfb732dbfa5aed4e95c9",
+ "impl_commit": "7c449d50e39edd02f9d095f6f9358bbc2e296429",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -341,7 +341,7 @@
   "impl_sha256": "6bdad4edfb300c57745a8321e960f2ff1a923321dde2c3b5b643895a8e2c35c2",
   "repo_impl_files": 32
  },
- "native_facts_sha256": "e45776f96fadf1ef51bac9c19b59c61e81fe2642e309f67b77194efd5736edd1",
+ "native_facts_sha256": "bb4f733a13bc2a8d8aadfb9b7b0881a55f30f45b02080bf5f9dcbf4a61e620ac",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -360,12 +360,12 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "a47c23dc5c5befafa141dfb732dbfa5aed4e95c9",
+ "proof_commit": "7c449d50e39edd02f9d095f6f9358bbc2e296429",
  "proof_config": {
   "declarations": {
    "allow": {
     "path": "verif/allow/Backend.json",
-    "sha256": "5186e8e0c93ad9ae4bb954fc725fed6c4661f31135bedb9ff6f7d8ab0db9d9e2"
+    "sha256": "21603c429e98e659fa2c287137317776243b26c73fb0469b71fa511002f2a399"
    }
   },
   "entry_appvars_readback": {
@@ -386,20 +386,20 @@
   },
   "verify_matched_unread_compare_points": "false"
  },
- "proof_config_sha256": "9c77137cfe7fb2ab547f60738cbb68111e2381c04796ad782fbba00d7e93920a",
+ "proof_config_sha256": "8c2fe537542968e7a0a355beaf736b22fa47d867b191ae57cbe22f67f1c2c8f2",
  "proof_mode": "assembly",
- "proof_worktree_digest": "3be087ff09a59aa477e09633e0a8dd71218ec3a7776abd3a7cb68357509e73c0",
+ "proof_worktree_digest": "82d72552b3211f3bd44438abb7d1610b87663626e904e4b1cb4eace9d0faa18e",
  "provisional": false,
- "receipt_sha256": "9e9f41669365ad00ddaca185110cd7d3f0acd1f8674b63b75c73292ba36f630e",
+ "receipt_sha256": "ea354d871849b0669462e4e3b68d958aec56f33148ed711db86327f6af58b787",
  "reproduce": {
-  "command": "PROOF_COMMIT=a47c23dc5c5befafa141dfb732dbfa5aed4e95c9 scripts/run_proof.sh Backend Backend",
+  "command": "PROOF_COMMIT=7c449d50e39edd02f9d095f6f9358bbc2e296429 scripts/run_proof.sh Backend Backend",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "f892a3a6816c65693a020ccb93f04c5fc8138d1b2b33a5fad09509ce4d762017",
- "run_id": "Backend-20261017T174018Z-a47c23dc5",
+ "run_id": "Backend-20261019T075339Z-7c449d50e",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
