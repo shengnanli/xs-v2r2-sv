@@ -4,14 +4,14 @@
  "external_dependency": "MC_MEMORY_CONTRACT",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-11T05:34:06Z",
+ "generated_at": "2026-10-19T06:33:58Z",
  "generator": {
-  "run_context_worktree_digest": "e2e8f5daa8b429afb4e40a47949984d20a4cbc5fe57781521d5b483930c6a326",
+  "run_context_worktree_digest": "34a9f3c816103aa1360e84a6159e00bec1b20fdf81dd20e20937995bde49aa27",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/bd284f4ddd1e/SplittedSRAM",
+  "source_evidence_dir": "evidence/10f43d709656/SplittedSRAM",
   "version": 1
  },
- "impl_commit": "bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86",
+ "impl_commit": "10f43d7096561026a1f3c51f2c6a9661b070abe7",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -41,7 +41,7 @@
    {
     "kind": "repo",
     "path": "rtl/common/xs_SRAMTemplate_core.sv",
-    "sha256": "55b51e13e6f58d98385d6fff52b16956e81da22d75b7cbda50279e8efe48d97e"
+    "sha256": "a38d45b1903bed46626ee1216994ccbf4e65031e81a2fce8a7d97005550fbf79"
    },
    {
     "kind": "repo",
@@ -64,14 +64,14 @@
     "sha256": "14a80bd6c84e3fb6b9748e1c33f447520c8ce7a2086e6272d5a3c0ef5fe851f6"
    }
   ],
-  "impl_sha256": "765aed9fe065ebfeb2d15ea596865c92359c62aa7a07305f35cb3f14bd020548",
+  "impl_sha256": "2ace50aef79d17c57be7be64945763bd345c820cde6bac33ac0896d2569ebe92",
   "repo_impl_files": 3
  },
  "mc_memory_objects": [
   "sram_array_1p32x90m45s1h0l1b_bitmap",
   "array_9"
  ],
- "native_facts_sha256": "70e1ca13d4eed7c3600d59644a946994f8d789de0acaac733c9c702e0c15f9ee",
+ "native_facts_sha256": "2d682449119a7c90752743715e6bb997282aa7ab8352167cfae77b8c29a6ce91",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -90,7 +90,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86",
+ "proof_commit": "10f43d7096561026a1f3c51f2c6a9661b070abe7",
  "proof_config": {
   "declarations": {
    "allow": {
@@ -116,25 +116,25 @@
  },
  "proof_config_sha256": "bb89eed7626e50c5c553604a47d55c533a3faa4773db9cdef114b7cd48cc37f5",
  "proof_mode": "assembly",
- "proof_worktree_digest": "e2e8f5daa8b429afb4e40a47949984d20a4cbc5fe57781521d5b483930c6a326",
+ "proof_worktree_digest": "34a9f3c816103aa1360e84a6159e00bec1b20fdf81dd20e20937995bde49aa27",
  "provisional": false,
- "receipt_sha256": "d096ed4c8bbdc885b897751bb50fd37a68c9663f7b16b6e51ea1a1c779317a6e",
+ "receipt_sha256": "33f88be0121a7bad99158efadc19cbd280b6baf3a4a80c5741a7eb0103375398",
  "reproduce": {
-  "command": "PROOF_COMMIT=bd284f4ddd1e6b81e9ce5541aac65c93e31f7f86 scripts/run_proof.sh SplittedSRAMBitmap SplittedSRAM",
+  "command": "PROOF_COMMIT=10f43d7096561026a1f3c51f2c6a9661b070abe7 scripts/run_proof.sh SplittedSRAMBitmap SplittedSRAM",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "068ff295bb64062ca9d6d182dfdc33cbd5b1bce26f6b51a7d930da338a1a7bc9",
- "run_id": "SplittedSRAM-20261003T155701Z-bd284f4dd",
+ "run_id": "SplittedSRAM-20261019T063307Z-10f43d709",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
    {
     "kind": "repo",
     "path": "scripts/fm_eq.tcl",
-    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
    },
    {
     "kind": "repo",
@@ -142,7 +142,7 @@
     "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
    }
   ],
-  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
  },
  "target": "SplittedSRAM",
  "tool": {
