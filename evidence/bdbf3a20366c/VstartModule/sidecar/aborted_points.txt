@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/VstartModule
+Implementation : i:/WORK/VstartModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 01:55:26 2026
+**************************************************
+
+No aborted compare points.
+
+1
