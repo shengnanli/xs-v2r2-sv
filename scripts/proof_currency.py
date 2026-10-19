@@ -408,9 +408,16 @@ def _derive_from_receipt(repo, evdir, g1):
         return doc, None
     except SystemExit:
         msg = buf.getvalue().strip().splitlines()
-        return None, 'receipt_not_certifiable:%s' % ((msg[-1] if msg else '?')[:160]).replace('\t', ' ')
+        return None, _norm_msg('receipt_not_certifiable:%s' % (msg[-1] if msg else '?'), repo)
     except Exception as e:                                  # noqa: BLE001  任何异常 = 派生不出 = 不 current-valid
-        return None, 'receipt_not_certifiable:%s:%s' % (type(e).__name__, str(e)[:120].replace('\t', ' '))
+        return None, _norm_msg('receipt_not_certifiable:%s:%s' % (type(e).__name__, e), repo)
+
+
+def _norm_msg(m, repo):
+    """原因串进派生表：去掉本机仓库绝对路径前缀（否则同一 HEAD 在不同 worktree 重算出的表字节不同），去 tab/换行。"""
+    for pre in {str(pathlib.Path(repo)), str(pathlib.Path(repo).resolve())}:
+        m = m.replace(pre.rstrip('/') + '/', '')
+    return m.replace('\t', ' ').replace('\n', ' ')[:200]
 
 
 def _script_prefilter(pc_repo, head, rec, evdir):
