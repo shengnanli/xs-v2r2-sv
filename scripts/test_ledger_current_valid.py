@@ -211,6 +211,16 @@ def t_real():
     if err:
         return
     canon = (PCUR.G1 / 'CANONICAL_ID.txt').read_text().strip()
+    # BatchRepo（快读）与 proof_certificate.Repo 逐字节同语义：文件 / 不存在 / 目录 / 'HEAD' 与 40-hex
+    raw = PC.Repo(REPO)
+    br = PCUR.BatchRepo(PC.Repo(REPO))
+    probes = [('HEAD', 'scripts/fm_eq.tcl'), (ctx['commit'], 'scripts/fm_eq.tcl'), ('HEAD', 'no/such/file.sv'),
+              ('HEAD', 'scripts'), ('HEAD', 'verif/proof_certificates/POLICY.json'),
+              ('0' * 40, 'scripts/fm_eq.tcl')]
+    ck('BatchRepo.show 与 Repo.show 逐字节一致（含不存在 / 目录 / 坏 commit）',
+       all(br.show(c, pth) == raw.show(c, pth) for c, pth in probes),
+       [(c[:8], pth) for c, pth in probes if br.show(c, pth) != raw.show(c, pth)])
+    ctx['repo'] = br
 
     def val(t, doc):
         return PC.validate_certificate_current(
@@ -232,6 +242,7 @@ def t_real():
         for x in bad['script_closure']['entries']:
             if x['path'] == 'scripts/fm_eq.tcl':
                 x['sha256'] = ('0' if x['sha256'][0] != '0' else '1') + x['sha256'][1:]
+        bad['script_closure']['sha256'] = PC.closure_digest(bad['script_closure']['entries'])  # 自洽，过 schema
         r = val(t, bad)
         ck('(a) 真判据：%s 证书改 fm_eq.tcl 脚本闭包 sha → script_closure_changed' % t,
            isinstance(r, str) and 'script_closure_changed' in r and 'fm_eq.tcl' in r, r)
@@ -273,12 +284,31 @@ def t_real():
         scl.write_text('\n'.join(lines) + '\n')
         ck('(e) 副本里找到了 fm_eq.tcl 行可改', hit)
         doc, why = PCUR.validate_receipt(ctx, canon, dst, rec, PCUR.G1, REPO)
-        ck('(e)(a) 真判据：receipt 的 fm_eq.tcl 脚本闭包 sha 改一位 → script_closure_changed',
-           doc is None and 'script_closure_changed' in (why or '') and 'fm_eq.tcl' in (why or ''), why)
+        # 改过的 sha 在 impl_commit 上也对不上任何 tracked 文件 → 相对化成 external → 判据报 incomplete
+        ck('(e) 真判据：receipt 的 fm_eq.tcl 脚本闭包 sha 改一位 → 脚本闭包判红',
+           doc is None and 'script_closure_' in (why or '') and 'fm_eq.tcl' in (why or ''), why)
         doc, derr = PCUR._derive_from_receipt(REPO, dst, PCUR.G1)
         r = val(t, doc) if doc is not None else derr
-        ck('(e)(a) 绕过预筛、直接派生 + validate_certificate_current 也 → script_closure_changed',
-           isinstance(r, str) and 'script_closure_changed' in r, r)
+        ck('(e) 绕过预筛、直接派生 + validate_certificate_current 也 → 脚本闭包判红',
+           isinstance(r, str) and 'script_closure_' in r, r)
+
+    # (e)(a) 真实过期 receipt：只有 receipt 的根、最新一份在 impl_commit 时的 fm_eq.tcl 与 HEAD 不同
+    stale = None
+    for t2 in sorted(rc):
+        if t2 in certs:
+            continue
+        rel2, rec2 = rc[t2][0]
+        w = PCUR.receipt_prefilter(ctx, rec2, (REPO / rel2).parent)
+        if w and w.startswith('green_child_script_closure_changed:') and w.endswith('scripts/fm_eq.tcl'):
+            stale = (t2, rel2, rec2)
+            break
+    ck('(e)(a) 真仓找得到一份脚本闭包过期的只有 receipt 的根', stale is not None)
+    if stale:
+        t2, rel2, rec2 = stale
+        doc, derr = PCUR._derive_from_receipt(REPO, (REPO / rel2).parent, PCUR.G1)
+        r = val(t2, doc) if doc is not None else derr
+        ck('(e)(a) 真判据：%s（只有 receipt，fm_eq.tcl 已变）绕过预筛直接派生 + validate → script_closure_changed'
+           % t2, isinstance(r, str) and 'script_closure_changed' in r and 'fm_eq.tcl' in r, r)
 
 
 def main():
