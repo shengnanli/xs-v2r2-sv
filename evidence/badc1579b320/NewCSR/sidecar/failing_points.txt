@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/NewCSR
+Implementation : i:/WORK/NewCSR
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 03:57:17 2026
+**************************************************
+
+No failing compare points.
+
+1
