@@ -8,14 +8,14 @@
  ],
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-17T23:53:42Z",
+ "generated_at": "2026-10-19T12:22:02Z",
  "generator": {
-  "run_context_worktree_digest": "1715b6d35300f75d543aa9b879a2060f0e96c18300df44b2c3323fa8a965a6dc",
+  "run_context_worktree_digest": "6705d5287d4bc5694298f17c62eaad12b1428f136b736ec8b1ed657e5dffc459",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/b56cfb91c416/XSCore",
+  "source_evidence_dir": "evidence/526949ca36be/XSCore",
   "version": 1
  },
- "impl_commit": "b56cfb91c416ba5975876a1cd2cd2ba9bab83c4a",
+ "impl_commit": "526949ca36be7806d5a6f3e7b6182315c6ba5dd0",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -66,7 +66,7 @@
   "impl_sha256": "801cf437ab547ddbbd683937b8674aee7b5529868c922b346cb14dfca225d47f",
   "repo_impl_files": 4
  },
- "native_facts_sha256": "76b7b5d3ca369830fc6de675afd44694db2284d4c2b07581586e3c1d3738064f",
+ "native_facts_sha256": "39c0e7850cebcb86b954e91e27917a23b24feb6ee7205eece5714e86d3bdfdd1",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -85,12 +85,12 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "b56cfb91c416ba5975876a1cd2cd2ba9bab83c4a",
+ "proof_commit": "526949ca36be7806d5a6f3e7b6182315c6ba5dd0",
  "proof_config": {
   "declarations": {
    "allow": {
     "path": "verif/allow/XSCore.json",
-    "sha256": "806c8e32775bed886c32251b68668024c4669af7bab6cc9543882fb9f100eb30"
+    "sha256": "d0f8580ceff4a9b5e8e735ccb95b487915c026306e2dc9dc54b4ad13b550685e"
    }
   },
   "entry_appvars_readback": {
@@ -109,20 +109,20 @@
   "pin_scripts": {},
   "verify_matched_unread_compare_points": "false"
  },
- "proof_config_sha256": "e21d017e4db4d074509461a2970fea35210997092dc1e59dfe4d45eba1b98531",
+ "proof_config_sha256": "7bc557a29e9e062c7fc99107b889ce94cc3ca41825a8a1fae8d62e882325fe19",
  "proof_mode": "assembly",
- "proof_worktree_digest": "1715b6d35300f75d543aa9b879a2060f0e96c18300df44b2c3323fa8a965a6dc",
+ "proof_worktree_digest": "6705d5287d4bc5694298f17c62eaad12b1428f136b736ec8b1ed657e5dffc459",
  "provisional": false,
- "receipt_sha256": "122bae2304c2809a3b317c130f12bf48763d0c900036c6843c796fffd458a6dc",
+ "receipt_sha256": "4caa6068859f3b571f7e9e01ab392b4cbf839c86fc7fd7daa4841cc1a0920830",
  "reproduce": {
-  "command": "PROOF_COMMIT=b56cfb91c416ba5975876a1cd2cd2ba9bab83c4a scripts/run_proof.sh XSCore XSCore",
+  "command": "PROOF_COMMIT=526949ca36be7806d5a6f3e7b6182315c6ba5dd0 scripts/run_proof.sh XSCore XSCore",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "b95e44b3ec51db7bd7e65a5ad8b1bdbfe7ece600b603ee6c8d6862e94df722bb",
- "run_id": "XSCore-20261017T224313Z-b56cfb91c",
+ "run_id": "XSCore-20261019T111411Z-526949ca3",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [

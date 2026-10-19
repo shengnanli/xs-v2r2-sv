@@ -70,3 +70,19 @@ Base：main ff7650336 + merge agent/assert-hdr（badc1579b）。claim e0106ce8f�
 - receipt `evidence/7c449d50e39e/Backend/receipt.json` sha256 `ea354d871849b0669462e4e3b68d958aec56f33148ed711db86327f6af58b787`
 - 证书 `verif/proof_certificates/Backend.json` sha256 `783840fc9e40bce27f631f903da5a45a38cbb158bca08c09ab8e60089a5c9bf9`
 - `--stamp-allow verif/allow/XSCore.json`：只改 backend 两条（21f29741… → 783840fc…）。
+
+## 5. XSCore（PROOF_COMMIT 526949ca3）
+
+跑前：526949ca3 上 validate XSCore 的 3 个 green child（Backend 新证书 / Frontend / MemBlock）→ **3/3 True**。预测沿用 `docs/fm_predictions/XSCore.json`（99241）。
+
+| 项 | 预测 | 上一份（b56cfb91c416） | 本次（526949ca3） |
+|---|---|---|---|
+| native / verdict | SUCCEEDED | SUCCEEDED / SUCCEEDED | **SUCCEEDED / SUCCEEDED** |
+| passing | 99241 | 99241 | **99241**（fm_predict check 逐位相等） |
+| failing / unmatched / blackbox_out | 0 | 0 | **0 / 0 / 0** |
+| 黑盒对象 | 6 | 6 | 6 |
+| 用时 | — | 4039 s | 3902 s |
+
+- receipt `evidence/526949ca36be/XSCore/receipt.json` sha256 `4caa6068859f3b571f7e9e01ab392b4cbf839c86fc7fd7daa4841cc1a0920830`
+- 证书 `verif/proof_certificates/XSCore.json` sha256 `cd0dc0855c560430b0975ec14ed159451d38007181a4c4e2e8f5dd27f6d92ebc`
+- `--stamp-allow verif/allow/XSTile.json`：只改 core 两条（81ef38ce… → cd0dc085…）。

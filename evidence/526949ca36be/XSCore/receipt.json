@@ -1,0 +1,253 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "XSCore",
+ "run_id": "XSCore-20261019T111411Z-526949ca3",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/XSCore.sv",
+   "kind": "golden",
+   "sha256": "c8c5b2c203bea24a0976c44b1859901f49dad2d3a01271ae1d31de80be0b5571"
+  },
+  {
+   "path": "golden-rtl/Frontend.sv",
+   "kind": "golden",
+   "sha256": "9dccf9e2a89d9af76abbb521c40b2e95ea3c0c45d5e9df442299b05c3eeb0ca7"
+  },
+  {
+   "path": "golden-rtl/Backend.sv",
+   "kind": "golden",
+   "sha256": "b190a6f14ddf77d0938130e85b11ece8b81125c2cc9ccdbe52e22b1efbefac37"
+  },
+  {
+   "path": "golden-rtl/MemBlock.sv",
+   "kind": "golden",
+   "sha256": "c5ad1d3cadbc428be3e1cc8511270c56399631fe8ce438f88392e81ad80ff4a3"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/Frontend.sv",
+   "kind": "repo",
+   "sha256": "742f68832a610ae58469bad74d68a40219a55c7ba1a9e5993aa4b390fcb2e093"
+  },
+  {
+   "path": "rtl/backend/Backend.sv",
+   "kind": "repo",
+   "sha256": "45450124318e5177da9ea7425b96f6b33fddccd6f828b8429b22423d660a4b09"
+  },
+  {
+   "path": "rtl/memblock/MemBlock.sv",
+   "kind": "repo",
+   "sha256": "e8b9ead5f5f9a1095ef5031ac4bbb5029004512b0297489f46fc8d564e75b956"
+  },
+  {
+   "path": "rtl/xstile/XSCore.sv",
+   "kind": "repo",
+   "sha256": "38b54964862850ae76bd158b1c207778f86fce6bfc8f6458b20ddfc6233d8718"
+  }
+ ],
+ "impl_commit": "526949ca36be7806d5a6f3e7b6182315c6ba5dd0",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/XSCore.json",
+    "sha256": "d0f8580ceff4a9b5e8e735ccb95b487915c026306e2dc9dc54b4ad13b550685e"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "Frontend Backend MemBlock",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [
+  {
+   "child_target": "Frontend",
+   "child_certificate_path": "verif/proof_certificates/Frontend.json",
+   "child_certificate_sha256": "d5730066d09db884949bf160f633f768a5b399509cf62a6f921ff992dc08f629",
+   "child_verdict": "PASS_DEAD_REF",
+   "child_impl_commit": "d6d8b726f9197520ca0b43b51333951a7def9af0",
+   "child_impl_closure_sha256": "7a2f728a8c470c4a1f7a9af9248fbda51674d5668e48fc1c3258ce5f0a380d40",
+   "child_script_closure_sha256": "0808565c539534ce73eb28775a33e1dff88b6807cbcef2bd8b2d5175a89eaf51",
+   "child_impl_files_verified_at_parent_commit": 29,
+   "parent_commit_used": "526949ca36be7806d5a6f3e7b6182315c6ba5dd0",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "Backend",
+   "child_certificate_path": "verif/proof_certificates/Backend.json",
+   "child_certificate_sha256": "783840fc9e40bce27f631f903da5a45a38cbb158bca08c09ab8e60089a5c9bf9",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "7c449d50e39edd02f9d095f6f9358bbc2e296429",
+   "child_impl_closure_sha256": "6bdad4edfb300c57745a8321e960f2ff1a923321dde2c3b5b643895a8e2c35c2",
+   "child_script_closure_sha256": "9b900c0b133492e64d88f14894a32b72dfe76f2d47ef5596f4e0a91d947621af",
+   "child_impl_files_verified_at_parent_commit": 32,
+   "parent_commit_used": "526949ca36be7806d5a6f3e7b6182315c6ba5dd0",
+   "child_evidence_retention": "attestation_only"
+  },
+  {
+   "child_target": "MemBlock",
+   "child_certificate_path": "verif/proof_certificates/MemBlock.json",
+   "child_certificate_sha256": "1ed40e7eb58b9b55e3ce24b677b3551a866de56193fb83ef993bf97fdbc1e569",
+   "child_verdict": "SUCCEEDED",
+   "child_impl_commit": "526b6bd03f30be48f7b22cea1e54e60d9a9326f8",
+   "child_impl_closure_sha256": "497bf3ddbc18eaadcf16fa2bd4d257c22e0f66be2fc01a4898952d0b66613a72",
+   "child_script_closure_sha256": "3a0d6f798760071c46dc316efb8c394e0691730a3e8a38888da32637e217f610",
+   "child_impl_files_verified_at_parent_commit": 55,
+   "parent_commit_used": "526949ca36be7806d5a6f3e7b6182315c6ba5dd0",
+   "child_evidence_retention": "attestation_only"
+  }
+ ],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "XSCore-20261019T111411Z-526949ca3",
+  "top": "XSCore",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 99241,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/XSCore/backend",
+     "impl_path": "i:/WORK/XSCore/backend"
+    },
+    {
+     "ref_path": "r:/WORK/XSCore/frontend",
+     "impl_path": "i:/WORK/XSCore/frontend"
+    },
+    {
+     "ref_path": "r:/WORK/XSCore/memBlock",
+     "impl_path": "i:/WORK/XSCore/memBlock"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [
+    "r:/WORK/XSCore/backend",
+    "r:/WORK/XSCore/frontend",
+    "r:/WORK/XSCore/memBlock"
+   ],
+   "interface_only_impl": [
+    "i:/WORK/XSCore/backend",
+    "i:/WORK/XSCore/frontend",
+    "i:/WORK/XSCore/memBlock"
+   ],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "Frontend Backend MemBlock",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 99241,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "XSCore",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_aux_observed": 0,
+  "bbox_aux_declared": 0,
+  "bbox_objects": 6
+ }
+}
