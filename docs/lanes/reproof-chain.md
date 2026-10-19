@@ -101,3 +101,8 @@ Base：main ff7650336 + merge agent/assert-hdr（badc1579b）。claim e0106ce8f�
 
 - receipt `evidence/338aaf21ad03/XSTile/receipt.json` sha256 `249daf5f686b866eeb125ccbcbf72467e4f6908552a5f33132281d28f03457a8`
 - 证书 `verif/proof_certificates/XSTile.json` sha256 `04e17144598c5746adc2d71245c6decafe9b4c040f64ffed67d8acd8b9beea75`
+
+## 7. 最终复核（HEAD 061b7194f）
+
+`batch_reproof.py validate` 全部 506 个文件：与 badc1579b 上的结果逐行 diff，**只有本链 4 行变化**——ExuBlock / Backend / XSCore / XSTile 由
+`green_child_closure_changed…TrapEntryVSEventModule.sv` 变为 **True**；ExuBlock_1 / ExuBlock_2 仍 True。不通过 176 = 基线既有 175 张（oldcert-triage 范围，未动）+ POLICY.json（非证书）。
