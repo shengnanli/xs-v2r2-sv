@@ -8,14 +8,14 @@
  ],
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-18T01:00:55Z",
+ "generated_at": "2026-10-19T12:50:14Z",
  "generator": {
-  "run_context_worktree_digest": "645d886e688e0edce99441fa2f9a5d600ce855f3474007f00c9723165c408088",
+  "run_context_worktree_digest": "10c9a3078b3602fd3885d1ddbefb663f64943ad5aea743c3424e454e5ffbea1b",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/760c0859ab36/XSTile",
+  "source_evidence_dir": "evidence/338aaf21ad03/XSTile",
   "version": 1
  },
- "impl_commit": "760c0859ab3619e479d0d8d8e2c1f4e67ec7d9d0",
+ "impl_commit": "338aaf21ad03f1c9b7b370c37ce0a01aea59dbe6",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -86,7 +86,7 @@
   "impl_sha256": "7644ccab26d2771e48a1abf9be4dcec675140889730615e4e98f642fbfba3eeb",
   "repo_impl_files": 6
  },
- "native_facts_sha256": "50ad422011dacb6b08ea02369cb70fd0f237b76d6d43724cab9bb0746cfa7d6b",
+ "native_facts_sha256": "2c35b98881f04731ac5a8430bd6a1fac33226810305a74c7a623a54c755870fc",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -105,12 +105,12 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "760c0859ab3619e479d0d8d8e2c1f4e67ec7d9d0",
+ "proof_commit": "338aaf21ad03f1c9b7b370c37ce0a01aea59dbe6",
  "proof_config": {
   "declarations": {
    "allow": {
     "path": "verif/allow/XSTile.json",
-    "sha256": "34b309f8f3a418cdad3470ae606be52aa9d7f20da86d88eebc28abf083e70e51"
+    "sha256": "63c16be7c7a5dd7fa852a64a0e793cd5b44b8142a113e535804e84ef8c92cd3b"
    }
   },
   "entry_appvars_readback": {
@@ -129,20 +129,20 @@
   "pin_scripts": {},
   "verify_matched_unread_compare_points": "false"
  },
- "proof_config_sha256": "72fc325dce9e728ada7e32f338b381d1761bb6684014a0f0ee138ed5faae8ab8",
+ "proof_config_sha256": "c0d6c5399e4c463afedd51d6023789f9211de7e07ca946bc3b12112ed9ff84bf",
  "proof_mode": "assembly",
- "proof_worktree_digest": "645d886e688e0edce99441fa2f9a5d600ce855f3474007f00c9723165c408088",
+ "proof_worktree_digest": "10c9a3078b3602fd3885d1ddbefb663f64943ad5aea743c3424e454e5ffbea1b",
  "provisional": false,
- "receipt_sha256": "c915acf8f4d94a90e409f83a2a51ee253e1f520a64302fd76ec4cf2cf74f6701",
+ "receipt_sha256": "249daf5f686b866eeb125ccbcbf72467e4f6908552a5f33132281d28f03457a8",
  "reproduce": {
-  "command": "PROOF_COMMIT=760c0859ab3619e479d0d8d8e2c1f4e67ec7d9d0 scripts/run_proof.sh XSTile XSTile",
+  "command": "PROOF_COMMIT=338aaf21ad03f1c9b7b370c37ce0a01aea59dbe6 scripts/run_proof.sh XSTile XSTile",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "73a600a11f7f2b1049bf34fe27521f6e0b64d6139a01fe9630713527b02c373f",
- "run_id": "XSTile-20261018T003511Z-760c0859a",
+ "run_id": "XSTile-20261019T122505Z-338aaf21a",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [

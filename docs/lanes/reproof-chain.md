@@ -86,3 +86,18 @@ Base：main ff7650336 + merge agent/assert-hdr（badc1579b）。claim e0106ce8f�
 - receipt `evidence/526949ca36be/XSCore/receipt.json` sha256 `4caa6068859f3b571f7e9e01ab392b4cbf839c86fc7fd7daa4841cc1a0920830`
 - 证书 `verif/proof_certificates/XSCore.json` sha256 `cd0dc0855c560430b0975ec14ed159451d38007181a4c4e2e8f5dd27f6d92ebc`
 - `--stamp-allow verif/allow/XSTile.json`：只改 core 两条（81ef38ce… → cd0dc085…）。
+
+## 6. XSTile（PROOF_COMMIT 338aaf21a）
+
+跑前：338aaf21a 上 validate XSTile 的 5 个 green child（XSCore 新证书 / L2Top / IntBuffer / IntBuffer_1 / IntBuffer_2）→ **5/5 True**。预测沿用 `docs/fm_predictions/XSTile.json`（71909）。
+
+| 项 | 预测 | 上一份（760c0859ab36） | 本次（338aaf21a） |
+|---|---|---|---|
+| native / verdict | SUCCEEDED | SUCCEEDED / SUCCEEDED | **SUCCEEDED / SUCCEEDED** |
+| passing | 71909 | 71909 | **71909**（fm_predict check 逐位相等） |
+| failing / unmatched / blackbox_out | 0 | 0 | **0 / 0 / 0** |
+| 黑盒对象 | 12 | 12 | 12 |
+| 用时 | — | 1318 s | 1292 s |
+
+- receipt `evidence/338aaf21ad03/XSTile/receipt.json` sha256 `249daf5f686b866eeb125ccbcbf72467e4f6908552a5f33132281d28f03457a8`
+- 证书 `verif/proof_certificates/XSTile.json` sha256 `04e17144598c5746adc2d71245c6decafe9b4c040f64ffed67d8acd8b9beea75`
