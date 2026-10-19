@@ -3,14 +3,14 @@
  "evidence_retention": "attestation_only",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-03T11:49:21Z",
+ "generated_at": "2026-10-19T17:19:39Z",
  "generator": {
-  "run_context_worktree_digest": "aab9acf99aca22084f37133ae4fe3604ccf4855a6b770f4635079cc3ea9af028",
+  "run_context_worktree_digest": "0925e31c1ea049c6aa602e17bc435d38f5c50b388ba8b06bdb7be167a118650f",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "/tmp/newrtl200c-proof-queue-head-1791027539081495111/Queue1_CHIRSP",
+  "source_evidence_dir": "evidence/a2b2c7eec2d2/Queue1_CHIRSP",
   "version": 1
  },
- "impl_commit": "92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6",
+ "impl_commit": "a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -61,7 +61,7 @@
   "impl_sha256": "8232ecd627b202d71d45df4828259832b0a8b2a939a2c409cb9e7e2d7703db72",
   "repo_impl_files": 7
  },
- "native_facts_sha256": "139b17bf47732de6b569933bf6aa77a8a636f039765918b4503dcdee7f9c8bda",
+ "native_facts_sha256": "e6ccb753c146cc30ef8f615bd4efe7a40fc1e391f9b5026501f40f2dd22b8faf",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -80,7 +80,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6",
+ "proof_commit": "a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85",
  "proof_config": {
   "declarations": {},
   "entry_appvars_readback": {
@@ -101,25 +101,25 @@
  },
  "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "aab9acf99aca22084f37133ae4fe3604ccf4855a6b770f4635079cc3ea9af028",
+ "proof_worktree_digest": "0925e31c1ea049c6aa602e17bc435d38f5c50b388ba8b06bdb7be167a118650f",
  "provisional": false,
- "receipt_sha256": "4a7660bb4eb189b3818e74d263eda31d34601c5a84fe0a83edfb2588d5e6f79b",
+ "receipt_sha256": "a97a5d3f2433458e2d4dbe5759a5df309ef49c58841a30b1901e850542797e03",
  "reproduce": {
-  "command": "PROOF_COMMIT=92a50405cbb6fb45d13aceb5e9e2c7f1178a0cd6 scripts/run_proof.sh QueueChiSpillLogger200c Queue1_CHIRSP",
+  "command": "PROOF_COMMIT=a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85 scripts/run_proof.sh QueueChiSpillLogger200c Queue1_CHIRSP",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "e534e76b7b6b57ff4b976eaadaa3686b1f6ba22c8e8cf40a793a1fb0f05b73c0",
- "run_id": "QueueChiSpillLogger200c-20261003T114017Z-92a50405c",
+ "run_id": "QueueChiSpillLogger200c-20261019T171822Z-a2b2c7eec",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
    {
     "kind": "repo",
     "path": "scripts/fm_eq.tcl",
-    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
    },
    {
     "kind": "repo",
@@ -127,7 +127,7 @@
     "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
    }
   ],
-  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
  },
  "target": "Queue1_CHIRSP",
  "tool": {

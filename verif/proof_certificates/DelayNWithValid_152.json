@@ -3,14 +3,14 @@
  "evidence_retention": "attestation_only",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-09-20T13:28:24Z",
+ "generated_at": "2026-10-19T16:44:55Z",
  "generator": {
-  "run_context_worktree_digest": "1ece1c1d37eecb518df1cfb2d7843149634edf206f8b2f166cf57ae0325ab77e",
+  "run_context_worktree_digest": "0925e31c1ea049c6aa602e17bc435d38f5c50b388ba8b06bdb7be167a118650f",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/1f82ef7a6c7a/DelayNWithValid_152",
+  "source_evidence_dir": "evidence/a2b2c7eec2d2/DelayNWithValid_152",
   "version": 1
  },
- "impl_commit": "1f82ef7a6c7a93e2f68ca6657faabcca5d80d5f1",
+ "impl_commit": "a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -111,7 +111,7 @@
   "impl_sha256": "f2f78cb8ee80c82907dca37a6f380913e44f950d69c3845ad27f6fb689f4df3d",
   "repo_impl_files": 17
  },
- "native_facts_sha256": "97d33ea19bc78be6d8966641b55b2bdd2d389a22a651243510e58c7c3d99d670",
+ "native_facts_sha256": "1f0e300aa490f48a50d0c8f9235896d78ceb7d15fe78f361da96bbe399c128c0",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -130,7 +130,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "1f82ef7a6c7a93e2f68ca6657faabcca5d80d5f1",
+ "proof_commit": "a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85",
  "proof_config": {
   "declarations": {},
   "entry_appvars_readback": {
@@ -151,25 +151,25 @@
  },
  "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "1ece1c1d37eecb518df1cfb2d7843149634edf206f8b2f166cf57ae0325ab77e",
+ "proof_worktree_digest": "0925e31c1ea049c6aa602e17bc435d38f5c50b388ba8b06bdb7be167a118650f",
  "provisional": false,
- "receipt_sha256": "c84a10466b54bf9cc03ccc31896e96d199f51850ddbad2c1180c03cd793eb823",
+ "receipt_sha256": "92843b44a1d496b60e2c3656b72f1c557ddc00dcf8c7e4930b7a65bbbc24e0e6",
  "reproduce": {
-  "command": "PROOF_COMMIT=1f82ef7a6c7a93e2f68ca6657faabcca5d80d5f1 scripts/run_proof.sh DelayNWithValid DelayNWithValid_152",
+  "command": "PROOF_COMMIT=a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85 scripts/run_proof.sh DelayNWithValid DelayNWithValid_152",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "f720dc0d18f15c57dcdd64fd242dc35c474e1d625a222f436f17f200288ab7b8",
- "run_id": "DelayNWithValid-20260920T104130Z-1f82ef7a",
+ "run_id": "DelayNWithValid-20261019T164251Z-a2b2c7eec",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
    {
     "kind": "repo",
     "path": "scripts/fm_eq.tcl",
-    "sha256": "64823607b0ecd72236d6bb591e23dd049344e6e0e8759a72c5ed6491d63cfe49"
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
    },
    {
     "kind": "repo",
@@ -177,7 +177,7 @@
     "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
    }
   ],
-  "sha256": "734f7e6f9328527970022e04bd0d664eb3c5c38b95f09b45e1af261f8c8b5d73"
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
  },
  "target": "DelayNWithValid_152",
  "tool": {

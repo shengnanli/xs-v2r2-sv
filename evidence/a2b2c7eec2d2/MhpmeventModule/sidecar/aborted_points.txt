@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/MhpmeventModule
+Implementation : i:/WORK/MhpmeventModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 12:31:35 2026
+**************************************************
+
+No aborted compare points.
+
+1

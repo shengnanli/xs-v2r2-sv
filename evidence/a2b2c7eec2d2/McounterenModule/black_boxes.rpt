@@ -1,0 +1,100 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/McounterenModule
+Implementation : i:/WORK/McounterenModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 12:41:30 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    MLevelPermitModule
+
+       Instances : 0
+
+e *    MbmcModule
+
+       Instances : 0
+
+e *    McontextModule
+
+       Instances : 0
+
+e *    McorepwrModule
+
+       Instances : 0
+
+e *    McountinhibitModule
+
+       Instances : 0
+
+e *    MedelegModule
+
+       Instances : 0
+
+e *    MenvcfgModule
+
+       Instances : 0
+
+e *    MflushpwrModule
+
+       Instances : 0
+
+e *    xs_MLevelPermitModule_core
+
+       Instances : 0
+
+e *    xs_MbmcModule_core
+
+       Instances : 0
+
+e *    xs_McontextModule_core
+
+       Instances : 0
+
+e *    xs_McorepwrModule_core
+
+       Instances : 0
+
+e *    xs_McountinhibitModule_core
+
+       Instances : 0
+
+e *    xs_MedelegModule_core
+
+       Instances : 0
+
+e *    xs_MenvcfgModule_core
+
+       Instances : 0
+
+e *    xs_MflushpwrModule_core
+
+       Instances : 0
+
+
+1
+

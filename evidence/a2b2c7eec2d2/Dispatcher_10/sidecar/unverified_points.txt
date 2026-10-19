@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/Dispatcher_10
+Implementation : i:/WORK/Dispatcher_10
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 12:46:27 2026
+**************************************************
+
+No unverified compare points.
+
+1

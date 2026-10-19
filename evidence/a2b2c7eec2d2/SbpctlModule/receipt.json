@@ -1,0 +1,287 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "SbpctlModule",
+ "run_id": "CSRChildless26-20261019T161818Z-a2b2c7eec",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/SbpctlModule.sv",
+   "kind": "golden",
+   "sha256": "d07a11d4615fafde4127fd28b525b99178559ebb88fe50dc2ddfda43fc9a02b6"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/xs_CsrChildless_common.sv",
+   "kind": "repo",
+   "sha256": "e6f14112b66e9bb6f963b7ab954d64833198cbba71ef96a18d1be1038885c411"
+  },
+  {
+   "path": "rtl/backend/Mgtu.sv",
+   "kind": "repo",
+   "sha256": "6ccad014b5fc37af4b97366b5eb52129b198f943b0ff5193ef6583ef53419018"
+  },
+  {
+   "path": "rtl/backend/MidelegModule.sv",
+   "kind": "repo",
+   "sha256": "6e921334137bd65695da803b6739eb1ce2375a723bfa6fb560712f89a7c9154b"
+  },
+  {
+   "path": "rtl/backend/MipModule.sv",
+   "kind": "repo",
+   "sha256": "59560b7d9f58d4f13f6e20a37f82b2b69f2def403d80b24f20decf89df628096"
+  },
+  {
+   "path": "rtl/backend/MiselectModule.sv",
+   "kind": "repo",
+   "sha256": "5bb39fe2017b9ec715a7a714796f87acb0c66e2e6d8fd7e6dcbf31cc8e3482e7"
+  },
+  {
+   "path": "rtl/backend/MnstatusModule.sv",
+   "kind": "repo",
+   "sha256": "4c25d29ac9206b67085bf9d98446086b64b2dc74d4fcfbb8a8098d0367b3261c"
+  },
+  {
+   "path": "rtl/backend/MretEventModule.sv",
+   "kind": "repo",
+   "sha256": "5b2b42212c11db7ee5d0a9d6470184440b94de6135b5ad59732cfe29fa739d9d"
+  },
+  {
+   "path": "rtl/backend/MseccfgModule.sv",
+   "kind": "repo",
+   "sha256": "a418297caa260c0600c2c9f8b66a4ae20e288f3c43ea9035be632b8d174690ff"
+  },
+  {
+   "path": "rtl/backend/Mstateen0Module.sv",
+   "kind": "repo",
+   "sha256": "be5db3383b6248db69b40cd6a4c0fffe7dfd165892e9f0a2b8e176b078673255"
+  },
+  {
+   "path": "rtl/backend/Mstateen1Module.sv",
+   "kind": "repo",
+   "sha256": "c1ae78f9cd26402bd82d3cfd1dff25eb3ac4f2891479ea36d95815ab3606d131"
+  },
+  {
+   "path": "rtl/backend/Mstateen2Module.sv",
+   "kind": "repo",
+   "sha256": "6d529d0b567e27c222050e5bf132393a670a7fd1789d7bcf350f33bb11b44515"
+  },
+  {
+   "path": "rtl/backend/Mstateen3Module.sv",
+   "kind": "repo",
+   "sha256": "98eeaf15a8d8e6ae9591cd32fc347fa1a7e959b5aad856fa9ee6e04b9c97efe9"
+  },
+  {
+   "path": "rtl/backend/MtinstModule.sv",
+   "kind": "repo",
+   "sha256": "d4f6e3751793d88ded87dbf88ca6d4804cc1578c723a80ffbd247219a38f1ce0"
+  },
+  {
+   "path": "rtl/backend/SatpModule.sv",
+   "kind": "repo",
+   "sha256": "ce407e0a1917b5ad3ad6f6e04f65e3db844deca7e08daba67698d960815d3377"
+  },
+  {
+   "path": "rtl/backend/SbpctlModule.sv",
+   "kind": "repo",
+   "sha256": "522f4f866c10060093d460e1b63eea8c152924c7273d566844fd386125e4bb31"
+  },
+  {
+   "path": "rtl/backend/ScounterenModule.sv",
+   "kind": "repo",
+   "sha256": "c01ad8ee06920710ae452ba4449ff54628f3435b5bd8b10d9429c34d6f5af090"
+  },
+  {
+   "path": "rtl/backend/SenvcfgModule.sv",
+   "kind": "repo",
+   "sha256": "7b4d57538adeddb3f12fcbbe699c3c47f0fa5ea91c088a675124419935f40b6f"
+  },
+  {
+   "path": "rtl/backend/SiselectModule.sv",
+   "kind": "repo",
+   "sha256": "3c924d9fe4ae1a3987882ae01fa664ebfa0ab369acba16d0292e0915ae56cff4"
+  },
+  {
+   "path": "rtl/backend/SlvpredctlModule.sv",
+   "kind": "repo",
+   "sha256": "4ec8a97cdfc9c9317aff22db957c6e75e50ac1fcf2e2df310ee5bf598b66b623"
+  },
+  {
+   "path": "rtl/backend/SmblockctlModule.sv",
+   "kind": "repo",
+   "sha256": "85b5a8a06b4ba16f48f71b466353a833df006266d546abbd5a0a03c99bca2860"
+  },
+  {
+   "path": "rtl/backend/SpfctlModule.sv",
+   "kind": "repo",
+   "sha256": "9681eb803e5ccc0b541e744deb9fc737898d9b37ad891e7b432fc482d62ff7e0"
+  },
+  {
+   "path": "rtl/backend/SretEventModule.sv",
+   "kind": "repo",
+   "sha256": "ce9eb98625d4ebe94da9289e0656ec92b89eb6dcd4959ff5ab35b010af280620"
+  },
+  {
+   "path": "rtl/backend/SrnctlModule.sv",
+   "kind": "repo",
+   "sha256": "e236dda77397998686fc4c7e8d69cae5449a5f213050109e1f8886f1e939438b"
+  },
+  {
+   "path": "rtl/backend/Sstateen0Module.sv",
+   "kind": "repo",
+   "sha256": "1ad8dd51f6cfc92ffe4c5391f27d3ea301905c398d6b19a76996972149c847a0"
+  },
+  {
+   "path": "rtl/backend/StimecmpModule.sv",
+   "kind": "repo",
+   "sha256": "90b78ef97fce6ca48da8191b8704ae7b4b93b6f7895a1adb122c7ace83fd5932"
+  },
+  {
+   "path": "rtl/backend/TrapInstMod.sv",
+   "kind": "repo",
+   "sha256": "9ce7a2ed3bde6a8188d86ab059439f26b40c88a40d13e24f9cd45807bbc04c69"
+  },
+  {
+   "path": "rtl/backend/TrapTvalMod.sv",
+   "kind": "repo",
+   "sha256": "104cda2f82d6e0adabe78de2b7367482c3813915a24dee210f3b888c1db5e1d3"
+  }
+ ],
+ "impl_commit": "a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "CSRChildless26-20261019T161818Z-a2b2c7eec",
+  "top": "SbpctlModule",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 78,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 78,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "SbpctlModule",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

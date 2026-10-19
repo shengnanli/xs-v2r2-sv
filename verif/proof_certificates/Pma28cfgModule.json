@@ -3,14 +3,14 @@
  "evidence_retention": "attestation_only",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-03T07:51:48Z",
+ "generated_at": "2026-10-19T17:14:19Z",
  "generator": {
-  "run_context_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+  "run_context_worktree_digest": "0925e31c1ea049c6aa602e17bc435d38f5c50b388ba8b06bdb7be167a118650f",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/cb2892a30a11/Pma28cfgModule",
+  "source_evidence_dir": "evidence/a2b2c7eec2d2/Pma28cfgModule",
   "version": 1
  },
- "impl_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "impl_commit": "a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -111,7 +111,7 @@
   "impl_sha256": "912adc6196052bdfa6fb494c6de355d2a78ac01246c8046b73ae69ee932e7228",
   "repo_impl_files": 17
  },
- "native_facts_sha256": "2c0440d02433ff43bf2061f5395981c304bd42262c9f78676cef2bf9b257c1de",
+ "native_facts_sha256": "23f0290f92dd01143c57533f62b66b7583d9c2804e425711d04e4912788fc47d",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -130,7 +130,7 @@
    "unread_ref": 0
   }
  },
- "proof_commit": "cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c",
+ "proof_commit": "a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85",
  "proof_config": {
   "declarations": {},
   "entry_appvars_readback": {
@@ -151,25 +151,25 @@
  },
  "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "4f2e71967824e558c77a2f00638a69634a25439578468a457452600ca51d0b14",
+ "proof_worktree_digest": "0925e31c1ea049c6aa602e17bc435d38f5c50b388ba8b06bdb7be167a118650f",
  "provisional": false,
- "receipt_sha256": "86a9dc9209a9b6d3c1031c4a1a135b683c0fc4a7427086f051c549f525a72410",
+ "receipt_sha256": "8cc4505859bceed71298dd440a4445a7df95045f328a078fdb7fdae977ca19d7",
  "reproduce": {
-  "command": "PROOF_COMMIT=cb2892a30a110a4f7b2b70eb2f7effe660a1fa8c scripts/run_proof.sh PmaCfgTailLeaves Pma28cfgModule",
+  "command": "PROOF_COMMIT=a2b2c7eec2d203437fd56978bc4eb1bc5d1dca85 scripts/run_proof.sh PmaCfgTailLeaves Pma28cfgModule",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "277102279ec3c4987c5f381d138c275c7b32b612234328a4c18a0345cad2b73c",
- "run_id": "PmaCfgTailLeaves-20261003T071724Z-cb2892a3",
+ "run_id": "PmaCfgTailLeaves-20261019T171327Z-a2b2c7eec",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
    {
     "kind": "repo",
     "path": "scripts/fm_eq.tcl",
-    "sha256": "b253f9ec6a1e6939db000785d1392afb27250cbfe52e52c6b4cb9c95736fd9d7"
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
    },
    {
     "kind": "repo",
@@ -177,7 +177,7 @@
     "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
    }
   ],
-  "sha256": "d78366c2eb8277388a26a13494212fd26fce38d7858828fdc5b574a3b979304a"
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
  },
  "target": "Pma28cfgModule",
  "tool": {
