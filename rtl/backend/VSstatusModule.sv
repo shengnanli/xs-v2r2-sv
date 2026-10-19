@@ -3,6 +3,27 @@
 // FS/VS dirty transitions, SDT visibility, trap entry, sret, and CSR writes are retained.
 // Reset and field priority follow the G1 status CSR semantics exactly.
 // Explicit state names below separate CSR writes from trap/return priority and dirty-state updates.
+// Assertion-print / stop gates used by the `ifndef SYNTHESIS checks below.
+// Same names, override hooks and defaults as the firtool-1.62.1 standard header that every
+// G1 golden file carries: +define+ASSERT_VERBOSE_COND=<expr> / +define+STOP_COND=<expr>
+// add an extra gate; left undefined the gate is 1. `ifndef on the underscore name makes this
+// a no-op when a golden file (or the user) has already defined it, so co-compiling with
+// golden never redefines a macro, whichever file comes first. xs_assert_v2 itself is a
+// DPI-C import supplied by the testbench (difftest src/test/vsrc/common/assert.v).
+`ifndef ASSERT_VERBOSE_COND_
+  `ifdef ASSERT_VERBOSE_COND
+    `define ASSERT_VERBOSE_COND_ (`ASSERT_VERBOSE_COND)
+  `else
+    `define ASSERT_VERBOSE_COND_ 1
+  `endif
+`endif
+`ifndef STOP_COND_
+  `ifdef STOP_COND
+    `define STOP_COND_ (`STOP_COND)
+  `else
+    `define STOP_COND_ 1
+  `endif
+`endif
 module VSstatusModule(
   input         clock,
   input         reset,
