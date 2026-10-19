@@ -44,8 +44,8 @@ Integrator 自做，2026-10-19，基于 main 9ae0e8144。**只读：不改 RTL�
    golden 的 firtool 输出是逐信号 `assign`，VCS 只重算真正变了扇入的那几条。
 2. **IssueQueue 家族（int +87 s、mem +67 s）**：`xs_iq_entry` 118.9 s + `xs_iq_entries_core` 46.3 s
    + `xs_IssueQueue_core` 23.4 s + `xs_AgeDetector_core` 11.7 s。单个构造都不大
-   （最大 `xs_iq_entries_core.sv:567-602` 唤醒匹配 7.3 s），但实例数极多（各参数变体合计约 1700 个
-   entry 实例，每个 payload 541–1362 位）。同一机理：每个 entry 的唤醒/取消/payload 选择写在少数
+   （最大 `xs_iq_entries_core.sv:567-602` 唤醒匹配 7.3 s），但实例多（每个 IQ 16–24 项、十余个 IQ，
+   每项 payload 541–1362 位）。同一机理：每个 entry 的唤醒/取消/payload 选择写在少数
    几个大 always_comb 里，任一唤醒口变化即整块重算。
 3. **SQData8Module（21.5 s，×16）**：`SQData8Module.sv:290-302` always_comb 13.5 s。
 4. 反向：Frontend（Ftq/IBuffer）impl 比 golden 快 21 s；LogPerfEndpoint 两侧同源却少 28 s，
