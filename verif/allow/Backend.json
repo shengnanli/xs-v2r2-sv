@@ -111,7 +111,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "5436c74791ba3b0e649738fc47b99aaf75a82465758ca53340238662b295ebcf",
+   "certificate_sha256": "c933f24173649f97d8ec05674c804ad215c79eba2a044898806e448ac263643f",
    "child_target": "ExuBlock",
    "class": "green_child",
    "design": "ExuBlock",
@@ -120,7 +120,7 @@
   },
   {
    "attrs": "i",
-   "certificate_sha256": "5436c74791ba3b0e649738fc47b99aaf75a82465758ca53340238662b295ebcf",
+   "certificate_sha256": "c933f24173649f97d8ec05674c804ad215c79eba2a044898806e448ac263643f",
    "child_target": "ExuBlock",
    "class": "green_child",
    "design": "ExuBlock",

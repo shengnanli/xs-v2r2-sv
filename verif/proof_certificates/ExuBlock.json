@@ -3,14 +3,14 @@
  "evidence_retention": "attestation_only",
  "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
  "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
- "generated_at": "2026-10-14T21:28:23Z",
+ "generated_at": "2026-10-19T07:50:47Z",
  "generator": {
-  "run_context_worktree_digest": "81ba7dc615b727a700efe870dd3705898c147aec819da1858690bc97c865e89f",
+  "run_context_worktree_digest": "a378e9ae8672708235284e2c85341e013577afc915de9db49ef541f84bbf20ba",
   "script": "scripts/make_proof_certificate.py",
-  "source_evidence_dir": "evidence/2e0390dff8ec/ExuBlock",
+  "source_evidence_dir": "evidence/badc1579b320/ExuBlock",
   "version": 1
  },
- "impl_commit": "2e0390dff8ec21aa6475cc0b32f6e6943ac4e575",
+ "impl_commit": "badc1579b320d32406562c14ec907354d56c7620",
  "impl_worktree_dirty": false,
  "input_closure": {
   "golden": [
@@ -4510,7 +4510,7 @@
    {
     "kind": "repo",
     "path": "rtl/backend/TrapEntryVSEventModule.sv",
-    "sha256": "26be818bc8cc8c20081aa7f2198a92cddf0ffb9fe84d37ee3932f1a0b50cf427"
+    "sha256": "b7dab47e639d9e57dad382be46d6240ccb1db8f086fdf1501fdb08c88b9eaff4"
    },
    {
     "kind": "repo",
@@ -4605,7 +4605,7 @@
    {
     "kind": "repo",
     "path": "rtl/backend/VSstatusModule.sv",
-    "sha256": "7df932a53932ca6e6b44d055f0ba29897bf653df37a0b6c65d85968a60a26179"
+    "sha256": "8e0d49ba9681491dd107a495888d5a2915ae833b0da06b6869b15c380dcc6f75"
    },
    {
     "kind": "repo",
@@ -4808,10 +4808,10 @@
     "sha256": "ec510fc99d081153e48866bc436d7d48094549ccfd65fe03945644529ae66668"
    }
   ],
-  "impl_sha256": "675367a673c84d4dcd7a4eb7eccde030fd82b47d54c4cf778e7f21dc999baf27",
+  "impl_sha256": "c89dc2e8e6c809d8836d43228468ea3744bcc64fd192964c2b00178b732aa193",
   "repo_impl_files": 479
  },
- "native_facts_sha256": "514ccfc7599cc3c001ef3d02847f707c1e698356ba64667a61fb74c472ccfdb5",
+ "native_facts_sha256": "709ee1a25d6f8366725e7dec930353445fcaac2dd20ed8fbe19a4eb329376aa0",
  "native_result": {
   "native_verdict": "SUCCEEDED",
   "stats": {
@@ -4830,7 +4830,7 @@
    "unread_ref": 258
   }
  },
- "proof_commit": "2e0390dff8ec21aa6475cc0b32f6e6943ac4e575",
+ "proof_commit": "badc1579b320d32406562c14ec907354d56c7620",
  "proof_config": {
   "declarations": {
    "dead_ref": {
@@ -4859,18 +4859,18 @@
  },
  "proof_config_sha256": "791b8af79c42c77f67d98a918864d87dbf636fecd1a80213d7dc3cbf3220ab6b",
  "proof_mode": "signoff-strict",
- "proof_worktree_digest": "81ba7dc615b727a700efe870dd3705898c147aec819da1858690bc97c865e89f",
+ "proof_worktree_digest": "a378e9ae8672708235284e2c85341e013577afc915de9db49ef541f84bbf20ba",
  "provisional": false,
- "receipt_sha256": "8bc0257416718b5b71414a9644a2f52bd42ca2a89ef18127b3d05195bf1181be",
+ "receipt_sha256": "6ae548db74f2154b21e1970ab4cdeac6ac3c5852b64ed3ea4dbb6c04d3f1d3ea",
  "reproduce": {
-  "command": "PROOF_COMMIT=2e0390dff8ec21aa6475cc0b32f6e6943ac4e575 scripts/run_proof.sh ExuBlock ExuBlock",
+  "command": "PROOF_COMMIT=badc1579b320d32406562c14ec907354d56c7620 scripts/run_proof.sh ExuBlock ExuBlock",
   "env": {
    "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
    "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
   }
  },
  "result_sha256": "8f33093d6f7b176afb9c5681c5cb35be41788657dcb7d0d7a999a0aa9a9bbccd",
- "run_id": "ExuBlock-20261014T201845Z-2e0390dff",
+ "run_id": "ExuBlock-20261019T063515Z-badc1579b",
  "schema": "xs-v2-sv-proof-certificate-v1",
  "script_closure": {
   "entries": [
