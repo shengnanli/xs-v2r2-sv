@@ -111,6 +111,11 @@ run "覆盖率存储排除类正反测"  python3 scripts/test_rewrite_coverage_m
 # 还读 golden 只进 golden_used_by 列，不许把已完成的实现盖成 GOLDEN_REUSE；
 # 反过来 SKELETON/PARTIAL_DRIVE 也不许因此被抬成 REWRITTEN。秒级，不跑 classify_rtl。
 run "三轴轴一优先级正反测"  python3 scripts/test_coverage_three_axis_priority.py
+# 台账 proven 只认 current-valid 证明（ledger-cv，2026-10-19 用户批准）：证书 / 只有 receipt 的根都走
+# proof_certificate.validate_certificate_current（含脚本闭包）；不 current-valid 但 WB1–WB6 被白盒覆盖的记
+# PROVEN_IN_CONE(superseded_by)，不并入 proven / incl_cone；都不是的如实不计。一半合成仓验分档接线，
+# 一半在真仓 HEAD 上对真证书 / 真 receipt 改 fm_eq.tcl 的脚本闭包 sha，判据本身必须打红。
+run "台账 current-valid 正反测"  python3 scripts/test_ledger_current_valid.py
 # incl_cone 核验名单（codex 0238 裁定 2）：verif/proven_in_cone_verified.tsv 的每条判据
 # R1-R10 都有单点变异必须打红的反例，外加真仓 Rob@CtrlBlock 对真证据复核。
 run "incl_cone 核验名单正反测"  python3 scripts/test_proven_in_cone.py

@@ -61,10 +61,6 @@ G1 = pathlib.Path(os.environ.get('G1_CANONICAL', '/home/eda/xs-env/G1-canonical'
 CERT_DIR = REPO / 'verif' / 'proof_certificates'
 NON_CERT = ('POLICY', 'schema-v1')
 
-_INST = re.compile(r'^\s*([A-Za-z_][A-Za-z0-9_$]*)\s+(?:#\s*\(|[A-Za-z_\\][A-Za-z0-9_$]*\s*\()')
-_MOD = re.compile(r'^\s*module\s+([A-Za-z_][A-Za-z0-9_$]*)')
-
-
 def git(*a):
     return subprocess.check_output(['git', '-C', str(REPO)] + list(a)).decode()
 
@@ -100,107 +96,8 @@ def validate_all(certs, cache=None):
     return {t: fv._child_cert_current(ctx, t, canon) for t in certs if t not in NON_CERT}
 
 
-def golden_graph():
-    """G1 golden：module -> (定义文件, 例化的 module 集合)。"""
-    defs, raw = {}, {}
-    for f in sorted((G1 / 'golden-rtl').glob('*.sv')):
-        cur = None
-        for ln in f.read_text(errors='replace').splitlines():
-            m = _MOD.match(ln)
-            if m:
-                cur = m.group(1)
-                defs[cur] = f.name
-                raw[cur] = set()
-                continue
-            if cur is None:
-                continue
-            if ln.strip().startswith('endmodule'):
-                cur = None
-                continue
-            m = _INST.match(ln)
-            if m:
-                raw[cur].add(m.group(1))
-    known = set(defs)
-    return defs, {k: v & known for k, v in raw.items()}
-
-
-def reach(top, inst, allowed_files, defs, cut):
-    seen, st = set(), [top]
-    while st:
-        m = st.pop()
-        if m in seen:
-            continue
-        seen.add(m)
-        if m in cut and m != top:
-            continue
-        if defs.get(m) not in allowed_files:
-            continue
-        st.extend(inst.get(m, ()))
-    return seen
-
-
-_IMOD = re.compile(r'^\s*module\s+(?:automatic\s+|static\s+)?([A-Za-z_][A-Za-z0-9_$]*)')
-_IINST = re.compile(r'^\s*([A-Za-z_][A-Za-z0-9_$]*)\s+(?:#|[A-Za-z_][A-Za-z0-9_$]*\s*(?:\[[^\]]*\]\s*)?(?:\(|$))')
-_PKG = re.compile(r'^\s*package\s+([A-Za-z_][A-Za-z0-9_$]*)')
-_impl_cache = {}
-
-
-def needed_impl(doc):
-    """WB4 用：T 证书 impl 闭包里 rtl/ 下、**T 自己真正用到**的文件 {(path, sha256)}。
-    从 module T 出发，在该闭包 rtl/ 文件定义的模块里按例化可达；再加被可达文件 import/`::` 引用的 package 文件、
-    被 `include 的文件。同一 UT 的兄弟变体文件（同一份 shared closure 里）不算 T 的依赖。"""
-    ents = [(e['path'], e['sha256']) for e in doc['input_closure']['impl']
-            if e.get('kind') == 'repo' and e['path'].startswith('rtl/')]
-    mdef, minst, pkgs, text = {}, {}, {}, {}
-    for path, _sha in ents:
-        if path not in _impl_cache:
-            try:
-                _impl_cache[path] = (REPO / path).read_text(errors='replace')
-            except OSError:
-                _impl_cache[path] = ''
-        txt = _impl_cache[path]
-        text[path] = txt
-        cur = None
-        for ln in txt.splitlines():
-            m = _IMOD.match(ln)
-            if m:
-                cur = m.group(1)
-                mdef[cur] = path
-                minst.setdefault(cur, set())
-                continue
-            m = _PKG.match(ln)
-            if m:
-                pkgs[m.group(1)] = path
-            if cur:
-                m = _IINST.match(ln)
-                if m:
-                    minst[cur].add(m.group(1))
-    top = doc['variant']
-    if top not in mdef:
-        return set(ents)                     # 找不到定义就退回全集（更严）
-    seen, st = set(), [top]
-    while st:
-        m = st.pop()
-        if m in seen or m not in mdef:
-            continue
-        seen.add(m)
-        st.extend(minst.get(m, ()))
-    files = {mdef[m] for m in seen}
-    grow = True
-    while grow:
-        grow = False
-        for pk, pf in pkgs.items():
-            if pf in files:
-                continue
-            if any(re.search(r'\b%s\s*::' % re.escape(pk), text[f]) or
-                   re.search(r'\bimport\s+%s\b' % re.escape(pk), text[f]) for f in files):
-                files.add(pf)
-                grow = True
-        for path, _sha in ents:
-            if path not in files and any(('`include \"%s\"' % os.path.basename(path)) in text[f] for f in files):
-                files.add(path)
-                grow = True
-    return {(p, s) for p, s in ents if p in files}
+# WB1–WB6 的实现已抽到 scripts/proof_currency.py（ledger-cv lane），与覆盖率台账共用同一份。
+from proof_currency import golden_graph, needed_impl, allow_of, WhiteBox  # noqa: E402
 
 
 def golden_lines(fname):
@@ -219,14 +116,6 @@ def load_docs(certs):
             continue
         docs[t] = json.loads((CERT_DIR / (t + '.json')).read_text())
     return docs
-
-
-def allow_of(doc):
-    rec = (doc.get('proof_config', {}).get('declarations') or {}).get('allow')
-    if not rec:
-        return None
-    p = REPO / rec['path']
-    return json.loads(p.read_text()) if p.exists() else None
 
 
 def coverage_refs():
@@ -308,65 +197,12 @@ def main():
 
     # ---- (iii) 白盒父 ---------------------------------------------------------
     good = [p for p in docs if val.get(p) is True]
-    pinfo = {}
-    for p in good:
-        d = docs[p]
-        gfiles = {os.path.basename(e['path']): e['sha256'] for e in d['input_closure']['golden']}
-        impl = {(e['path'], e['sha256']) for e in d['input_closure']['impl'] if e.get('kind') == 'repo'}
-        implg = {os.path.basename(e['path']) for e in d['input_closure']['impl'] if e.get('kind') == 'golden'}
-        cut = {o.get('design') for o in (allows.get(p) or {}).get('objects') or []}
-        pinfo[p] = (gfiles, impl, implg, cut, d['proof_mode'], d['variant'])
-    reach_cache = {}
-
-    inst_cache = {}
-
-    def impl_insts(p):
-        """WB6：父 impl 闭包 rtl/ 文件里被例化的模块名集合（impl 侧确实例化了重写的 T，而不是文件只被读进来）。"""
-        if p not in inst_cache:
-            names = set()
-            for path, _s in pinfo[p][1]:
-                if not path.startswith('rtl/'):
-                    continue
-                for ln in (REPO / path).read_text(errors='replace').splitlines():
-                    m = _IINST.match(ln)
-                    if m:
-                        names.add(m.group(1))
-            inst_cache[p] = names
-        return inst_cache[p]
+    wbx = WhiteBox({p: docs[p] for p in good}, defs, inst, REPO,
+                   allows={p: allows[p] for p in good})
+    pinfo = wbx.pinfo
 
     def wb_parents(t):
-        d = docs[t]
-        tg = {os.path.basename(e['path']): e['sha256'] for e in d['input_closure']['golden']}
-        tfile = defs.get(d['variant'])
-        tsha = tg.get(tfile)
-        timpl = needed_impl(d)
-        out = []
-        for p in good:
-            if p == t:
-                continue
-            gfiles, impl, implg, cut, mode, var = pinfo[p]
-            if tfile not in gfiles:
-                continue
-            if gfiles[tfile] != tsha:                                   # WB3
-                continue
-            if mode == 'signoff-strict':
-                pass                                                    # WB5（strict 无黑盒）
-            elif mode == 'assembly':
-                if d['variant'] in cut:
-                    continue                                            # WB5
-            else:
-                continue
-            if tfile in implg or not timpl <= impl:                     # WB4
-                continue
-            if p not in reach_cache:
-                reach_cache[p] = reach(var, inst, set(gfiles), defs, cut)
-            if d['variant'] not in reach_cache[p]:                      # WB2
-                continue
-            if d['variant'] not in impl_insts(p):                       # WB6
-                continue
-            out.append(p)
-        # 最近的父在前：golden 闭包小者优先
-        return sorted(out, key=lambda p: (len(pinfo[p][0]), p))
+        return wbx.parents_of(t, docs[t])
 
     def nocert_superseded(p):
         """无证书的父目标 P（只在 verif/allow 里有 green_child 声明）是否已被 current-valid 父白盒覆盖：
@@ -386,9 +222,7 @@ def main():
                                                              (REPO / path).read_text(errors='replace'), re.M)
                        for path, _s in impl if os.path.basename(path) == p + '.sv'):
                 continue
-            if q not in reach_cache:
-                reach_cache[q] = reach(var, inst, set(gfiles), defs, cut)
-            if p in reach_cache[q]:
+            if p in wbx.reach_of(q):
                 return q
         return None
 
