@@ -106,6 +106,9 @@ run() {  # $1=side $2=bin [$3=max-cycles] [$4=tag]
   mkdir -p "$rundir"
   local opts=( "+workload=$bin" "+diff=$REF_SO" "+ram_size=$RAM_SIZE" -suppress=ASLR_DETECTED_INFO )
   [ -n "$maxc" ] && opts+=( "+max-cycles=$maxc" )
+  # SIM_PLUSARGS：额外 plusarg（空格分隔；默认空 = 行为不变）。run_fcb.sh run-debug 用它传 +dump-wave 等。
+  # shellcheck disable=SC2206
+  [ -n "${SIM_PLUSARGS:-}" ] && opts+=( $SIM_PLUSARGS )
   log "run $side $name ${maxc:+max-cycles=$maxc} -> $rundir"
   ( cd "$rundir" && VCS_ARCH_OVERRIDE=linux "$dd/build/simv" "${opts[@]}" \
       2>"$rundir/assert.log" | tee "$rundir/sim.log" )

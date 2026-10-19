@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """快版：SimTop 的 9897 条 perfCnt_bore XMR 分别落在哪个模块、该模块是否被重写、
 被引的内部信号名在该模块源码里是否存在。用 token 集合代替逐条 regex。"""
-import re, pathlib, collections
-FLIST = pathlib.Path('/home/eda/xs-env/sim-work/impl/files_simtop.f')
-SIMTOP = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl/SimTop.sv')
-IMPL = '/home/eda/xs-env/wt-sim/rtl/'
+import os, re, pathlib, collections
+# 路径可用环境变量改；IMPL 默认取本脚本所在检出的 rtl/（原先硬编码 wt-sim worktree）。
+FLIST = pathlib.Path(os.environ.get('BORE_FLIST', '/home/eda/xs-env/sim-work/impl/files_simtop.f'))
+SIMTOP = pathlib.Path(os.environ.get('GOLDEN_RTL', '/home/eda/xs-env/G1-canonical/golden-rtl')) / 'SimTop.sv'
+IMPL = str(pathlib.Path(__file__).resolve().parent.parent.parent / 'rtl') + '/'
 MOD_RE = re.compile(r'^\s*module\s+(\w+)', re.M)
 END_RE = re.compile(r'^\s*endmodule', re.M)
 INST_RE = re.compile(r'^\s*([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(\s*$', re.M)

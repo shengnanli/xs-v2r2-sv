@@ -190,3 +190,5 @@ verif/sim/run_fcb.sh cputest 10
 python3 verif/sim/check_xstile_srcmap.py --srcmap /home/eda/xs-env/wt-xstile-srcmap/docs/xstile_srcmap.tsv \
     --filelist /home/eda/xs-env/sim-fcb/impl/files_impl_nosimtop.f --build-log /home/eda/xs-env/sim-fcb/impl/build.log
 ```
+
+> 复现入口已迁至 `docs/fullchip_sim.md`（只依赖 main 检出，不依赖上面命令里的 wt-* worktree；2026-10-18 usability lane 追加，§0–§5 未改）。

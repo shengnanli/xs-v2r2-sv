@@ -14,18 +14,35 @@
 #   verif/sim/run_fcb.sh build  golden|impl
 #   verif/sim/run_fcb.sh run    golden|impl <workload.bin> [max-cycles] [tag]
 #   verif/sim/run_fcb.sh compare <tag>        # 比两侧 commit.trace + 终点计数
-# 工作区默认 /home/eda/xs-env/sim-fcb（SIMF= 可改）。
+#   verif/sim/run_fcb.sh cputest [并行度]      # nexus-am cputest 33 个，两侧各跑 + 逐个 compare
+#   verif/sim/run_fcb.sh srcmap-check          # impl 清单/build.log 对仓内 docs/xstile_srcmap.tsv
+# 工作区默认 /home/eda/xs-env/sim-fcb（SIMF= 可改）。完整说明：docs/fullchip_sim.md。
+#
+# 调试（Verdi）模式——与上面的快速路径完全分开，不改快速路径的任何行为与输出：
+#   verif/sim/run_fcb.sh build-debug golden|impl
+#   verif/sim/run_fcb.sh run-debug   golden|impl <workload.bin> [max-cycles] [tag] [plusarg...]
+#   verif/sim/run_fcb.sh verdi       golden|impl <tag>
+# 调试工作区 DSIMF（默认 ${SIMF}-debug，独立的 difftest 副本与 golden/impl 构建目录）。
+# 调试 difftest 副本 = 原版 vcs.mk（保留 -debug_access+all）+ -kdb + CONSIDER_FSDB + 同一份
+# FCB_COMMIT_TRACE 补丁；功能 define 与快速路径逐个相同（只多调试开关）。
+# 波形：run-debug 带 +dump-wave=fsdb（全程）或再加 +wave-begin=<ns> +wave-end=<ns>（窗口；
+# 时钟周期 2ns，reset 在 100ns 释放）。也可 +dump-wave=vpd（VPD，全程）。
 # =============================================================================
 set -euo pipefail
 SV_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 export SIMF="${SIMF:-/home/eda/xs-env/sim-fcb}"
+DSIMF="${DSIMF:-${SIMF%/}-debug}"
+STOCK_SIMW="${STOCK_SIMW:-/home/eda/xs-env/sim-work}"
+STOCK_DIFFTEST="${STOCK_DIFFTEST:-$STOCK_SIMW/difftest}"
+VCS_JOBS="${VCS_JOBS:-16}"
 export XSTILE_ONLY=1
 FS="$SV_HOME/verif/sim/run_fastsim.sh"
 log() { echo "[fcb] $*" >&2; }
 die() { echo "[fcb] ERROR: $*" >&2; exit 2; }
 
-patch_trace() {
-  local f="$SIMF/difftest/src/test/csrc/difftest/difftest.cpp"
+patch_trace() {  # [$1=difftest 目录，默认 $SIMF/difftest]
+  local dt="${1:-$SIMF/difftest}"
+  local f="$dt/src/test/csrc/difftest/difftest.cpp"
   grep -q 'FCB_COMMIT_TRACE' "$f" && return 0
   [ -f "$f.orig" ] || cp "$f" "$f.orig"
   python3 - "$f" <<'PY'
@@ -82,9 +99,67 @@ hook = r'''
 '''
 p.write_text(s.replace(anchor, anchor + hook))
 PY
-  diff -u "$f.orig" "$f" > "$SIMF/difftest/commit_trace.patch.txt" || true
+  diff -u "$f.orig" "$f" > "$dt/commit_trace.patch.txt" || true
   grep -q 'FCB_COMMIT_TRACE' "$f" || die "trace 补丁没生效"
-  log "difftest.cpp 已加 commit trace（补丁: $SIMF/difftest/commit_trace.patch.txt）"
+  log "difftest.cpp 已加 commit trace（补丁: $dt/commit_trace.patch.txt）"
+}
+
+# ---------------------------------------------------------------------------
+# 调试工作区（DSIMF）。只在这里出现 -debug_access/-kdb；快速路径（SIMF）一行不受影响。
+# ---------------------------------------------------------------------------
+setup_debug() {
+  [ "$(readlink -f "$DSIMF")" != "$(readlink -f "$SIMF")" ] || die "DSIMF 不能与 SIMF 相同（$DSIMF）"
+  mkdir -p "$DSIMF/workloads"
+  [ -e "$DSIMF/regen" ] || ln -sfn "$STOCK_SIMW/regen" "$DSIMF/regen"
+  local dt="$DSIMF/difftest"
+  if [ ! -d "$dt" ]; then
+    cp -a "$STOCK_DIFFTEST" "$dt"
+    rm -rf "$dt/.git"
+  fi
+  local mk="$dt/vcs.mk"
+  if ! grep -q 'FCB_DEBUG' "$mk"; then
+    grep -q -- ' -debug_access+all' "$mk" || die "调试 difftest 的 vcs.mk 里没有 -debug_access+all（副本不是原版？$STOCK_DIFFTEST）"
+    [ -f "$mk.orig" ] || cp "$mk" "$mk.orig"
+    # 1) -j200 -> -j$VCS_JOBS（与快速路径同一处，非功能）
+    # 2) 在 -debug_access+all 后加 -kdb（Verdi KDB）与 +define+CONSIDER_FSDB（打开 top.v 的 fsdb 分支）。
+    #    不走 vcs.mk 的 CONSIDER_FSDB=1：那个分支给 EXTRA 赋值，而 impl 侧用命令行 EXTRA="-f 清单"，
+    #    命令行变量会把它整个盖掉。VCS 2024 在 -debug_access/-kdb 下原生支持 $fsdbDump*，无需 novas.tab PLI。
+    sed -i -e "s/-j200/-j$VCS_JOBS/" \
+           -e 's/ -debug_access+all / -debug_access+all -kdb +define+CONSIDER_FSDB /' "$mk"
+    sed -i '1i # FCB_DEBUG: verif/sim/run_fcb.sh setup_debug 打的补丁（-kdb、CONSIDER_FSDB、-j）' "$mk"
+    diff -u "$mk.orig" "$mk" > "$dt/vcs.mk.debug.patch.txt" || true
+    log "调试 vcs.mk 已打补丁:"; cat "$dt/vcs.mk.debug.patch.txt" >&2
+  fi
+  grep -q -- '-debug_access+all -kdb +define+CONSIDER_FSDB' "$mk" || die "调试 vcs.mk 补丁没生效"
+  # top.v：fsdb 分支加可选窗口（+wave-begin=<ns> / +wave-end=<ns>），全芯片全程 dump 太大。
+  local tv="$dt/src/test/vsrc/vcs/top.v"
+  if ! grep -q 'FCB_DEBUG_WAVE' "$tv"; then
+    [ -f "$tv.orig" ] || cp "$tv" "$tv.orig"
+    python3 - "$tv" <<'PY'
+import sys, pathlib
+p = pathlib.Path(sys.argv[1]); s = p.read_text()
+old = '      $fsdbDumpfile("simv.fsdb");\n      $fsdbDumpvars(0,"+mda");\n'
+new = ('      // FCB_DEBUG_WAVE（verif/sim/run_fcb.sh）：可选窗口 +wave-begin=<ns> +wave-end=<ns>\n'
+       '      $fsdbDumpfile("simv.fsdb");\n'
+       '      fork begin\n'
+       '        longint fcb_wb, fcb_we;\n'
+       '        if (!$value$plusargs("wave-begin=%d", fcb_wb)) fcb_wb = 0;\n'
+       '        if (!$value$plusargs("wave-end=%d", fcb_we)) fcb_we = 0;\n'
+       '        if (fcb_wb > 0) #(fcb_wb);\n'
+       '        $fsdbDumpvars(0,"+mda");\n'
+       '        $display("[fcb-debug] fsdb dump on at %0t", $time);\n'
+       '        if (fcb_we > fcb_wb) begin #(fcb_we - fcb_wb); $fsdbDumpoff; '
+       '$display("[fcb-debug] fsdb dump off at %0t", $time); end\n'
+       '      end join_none\n')
+assert s.count(old) == 1, "top.v 的 fsdb 块与预期不符，停"
+assert '$vcdpluson' in s, "调试 top.v 应保留原版 VPD 分支"
+p.write_text(s.replace(old, new))
+PY
+    diff -u "$tv.orig" "$tv" > "$dt/top.v.debug.patch.txt" || true
+  fi
+  grep -q 'FCB_DEBUG_WAVE' "$tv" || die "调试 top.v 补丁没生效"
+  patch_trace "$dt"
+  log "调试工作区: $DSIMF (difftest=$dt)"
 }
 
 case "${1:-}" in
@@ -99,6 +174,29 @@ case "${1:-}" in
     tag=${2:?tag}
     python3 "$SV_HOME/verif/sim/commit_compare.py" \
       "$SIMF/golden/run/$tag" "$SIMF/impl/run/$tag";;
+  build-debug)
+    side=${2:?golden|impl}
+    setup_debug
+    SIMW="$DSIMF" DIFFTEST="$DSIMF/difftest" "$SV_HOME/verif/sim/run_fullchip.sh" build "$side"
+    log "调试 simv: $DSIMF/$side/build/simv（KDB: $DSIMF/$side/build/simv.daidir）";;
+  run-debug)
+    side=${2:?side}; bin=${3:?bin}; maxc=${4:-}; tag=${5:-$(basename "$bin" .bin)}
+    shift $(( $# < 5 ? $# : 5 ))
+    mkdir -p "$DSIMF/$side/run/$tag"
+    export XS_COMMIT_TRACE="$DSIMF/$side/run/$tag/commit.trace"
+    SIMF="$DSIMF" SIM_PLUSARGS="$*" "$FS" run "$side" "$bin" "$maxc" "$tag";;
+  verdi)
+    side=${2:?side}; tag=${3:?tag}
+    db="$DSIMF/$side/build/simv.daidir"; wv="$DSIMF/$side/run/$tag/simv.fsdb"
+    [ -d "$db" ] || die "没有 $db —— 先 build-debug $side"
+    cmd=(verdi -dbdir "$db")
+    [ -f "$wv" ] && cmd+=(-ssf "$wv")
+    log "${cmd[*]}"
+    if [ -n "${DISPLAY:-}" ]; then ( cd "$DSIMF/$side/run/$tag" 2>/dev/null || cd "$DSIMF/$side"; exec "${cmd[@]}" ) &
+    else log "未设 DISPLAY，只打印命令"; fi;;
+  srcmap-check)
+    python3 "$SV_HOME/verif/sim/check_xstile_srcmap.py" \
+      --filelist "$SIMF/impl/files_impl_nosimtop.f" --build-log "$SIMF/impl/build.log" --label impl;;
   cputest)  # nexus-am cputest 33 个，两侧各跑，逐个 compare；$2=并行度
     J=${2:-8}; CT=${CT_DIR:-/home/eda/xs-env/nexus-am/tests/cputest/build}
     for s in golden impl; do for b in "$CT"/*-riscv64-xs.bin; do echo "$s $b"; done; done |
@@ -111,5 +209,5 @@ case "${1:-}" in
       printf '%-20s %s  %s\n' "$n" "$r" "$(grep -E '^\[B\] 逐拍' "$SIMF/impl/run/ct_$n/compare.txt" | head -1)"
     done
     echo "cputest: PASS=$ok FAIL=$bad";;
-  *) sed -n '2,20p' "$0";;
+  *) sed -n '3,/^set -euo/p' "$0" | sed '$d';;
 esac

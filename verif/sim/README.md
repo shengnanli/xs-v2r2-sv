@@ -1,5 +1,7 @@
 # verif/sim —— 整芯片（SimTop + difftest + NEMU）仿真泳道
 
+> 当前整芯片对拍（只换 XSTile、逐拍 trace 比对、Verdi 调试构建）的使用说明见 `docs/fullchip_sim.md`；本文是历史泳道记录。
+
 ## 一句话
 
 `scripts/full_elab.sh` 证明的是「整芯片 **XSTop** 在 `+define+SYNTHESIS` 下能 elaborate」。
