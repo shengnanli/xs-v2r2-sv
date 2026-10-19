@@ -1,0 +1,10 @@
+{
+  "target": "Queue1_CHIRSP",
+  "ut": "QueueChiSpillLogger200c",
+  "regs": 74,
+  "outs": 75,
+  "expected": 149,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "reproof-171 重证（HISTORICAL: script_closure_changed fm_eq.tcl）；模型 149 = 74 regs + 75 outs；UT merge_dup=true → 只给 merge 带内结论；旧证书 passing=149（SUCCEEDED）"
+}

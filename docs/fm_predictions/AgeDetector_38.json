@@ -1,0 +1,10 @@
+{
+  "target": "AgeDetector_38",
+  "ut": "AgeDetector_38",
+  "regs": 300,
+  "outs": 24,
+  "expected": 324,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "reproof-171 重证（HISTORICAL: script_closure_changed fm_eq.tcl）；模型 324 = 300 regs + 24 outs；UT merge_dup=true → 只给 merge 带内结论；旧证书 passing=324（SUCCEEDED）"
+}

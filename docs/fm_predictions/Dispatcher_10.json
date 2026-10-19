@@ -1,0 +1,10 @@
+{
+  "target": "Dispatcher_10",
+  "ut": "Dispatcher200c",
+  "regs": 0,
+  "outs": 1313,
+  "expected": 1313,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "reproof-171 重证（HISTORICAL: script_closure_changed fm_eq.tcl）；模型 1313 = 0 regs + 1313 outs；UT merge_dup=true → 只给 merge 带内结论；旧证书 passing=1313（SUCCEEDED）"
+}

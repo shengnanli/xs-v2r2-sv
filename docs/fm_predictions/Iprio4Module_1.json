@@ -1,0 +1,10 @@
+{
+  "target": "Iprio4Module_1",
+  "ut": "CSRControl200c",
+  "regs": 64,
+  "outs": 64,
+  "expected": 128,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "reproof-171 重证（HISTORICAL: script_closure_changed fm_eq.tcl）；模型 128 = 64 regs + 64 outs；UT merge_dup=true → 只给 merge 带内结论；旧证书 passing=128（SUCCEEDED）"
+}

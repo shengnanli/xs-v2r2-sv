@@ -1,0 +1,10 @@
+{
+  "target": "Mhpmcounter5Module",
+  "ut": null,
+  "regs": 64,
+  "outs": 129,
+  "expected": 193,
+  "merge_dup": null,
+  "model_applicable": false,
+  "note": "reproof-171 重证（HISTORICAL: script_closure_changed fm_eq.tcl）；UT HpmCounterTailLeaves 的 FM_VARIANTS 是未展开的 $(LEAVES)，fm_predict 认不出 ut → 按 golden 单模块 compute_model 登记；模型 193 = 64 regs + 129 outs；UT 未设 FM_MERGE_DUP（=true）→ 只给 merge 带内结论；旧证书 passing=193（SUCCEEDED）"
+}

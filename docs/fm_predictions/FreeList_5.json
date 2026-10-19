@@ -1,0 +1,10 @@
+{
+  "target": "FreeList_5",
+  "ut": "FreeList_5",
+  "regs": 915,
+  "outs": 25,
+  "expected": 940,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "reproof-171 重证（HISTORICAL: script_closure_changed fm_eq.tcl）；模型 940 = 915 regs + 25 outs；UT merge_dup=true → 只给 merge 带内结论；旧证书 passing=724（SUCCEEDED）"
+}
