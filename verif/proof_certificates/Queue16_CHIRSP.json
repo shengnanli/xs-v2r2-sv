@@ -1,0 +1,167 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-20T05:02:40Z",
+ "generator": {
+  "run_context_worktree_digest": "dd84390d35af6b0d4f4d7d19dc959a4d7c1b0e55ffd5849a62dac27585ea2b3d",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/562dc7bfffb4/Queue16_CHIRSP",
+  "version": 1
+ },
+ "impl_commit": "562dc7bfffb4f9da8209cf2c38a44c4e8e0be6ac",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/Queue16_CHIRSP.sv",
+    "sha256": "f9cfaacef188d46ace91494170de7c9f5d0d1a8545dba628f3aa7c30d173431a"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_16x62.sv",
+    "sha256": "cd46497f3c73f593106e83a666e9c64a814205a53c1f525049e8b29c6a1b6149"
+   }
+  ],
+  "golden_sha256": "8685fc78865e13abbb13cbb1ecdd7f3bdba44ef427a8d422a2e883d7f298f65a",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_ChiselQueue_core.sv",
+    "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/xs_ChiselQueuePipe_core.sv",
+    "sha256": "66820a8dd32c8e6cd1e513b798a602833a3b81590abbf016604e37a033e0af63"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/L2TlbMissQueue.sv",
+    "sha256": "b3e03464ceec84a2c70534021f82fc8820bf97c01fab42f3ce9d3df66e23bc51"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue16_CHIREQ.sv",
+    "sha256": "027e74138e216c6d26a4e61cde8292e5c64bd6802382dca50c6b95d7baa620a3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue16_CHIRSP.sv",
+    "sha256": "f5d33530de5bafe3c21b4a3b039cbedb5222fb056c956c5697d3a041b8cc57e7"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue4_CHISNP.sv",
+    "sha256": "2495cd96672b256454c32007f1c6af4770c9817d16e6417e154bac631682a517"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue2_PCrdGranted.sv",
+    "sha256": "e910651c6c4bc0971dee5b3d078b03e67f431a963844123fac42a8a582fa4fa4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/Queue78_PCrdGranted.sv",
+    "sha256": "4b0d25dff57ae6e2ca9f6cc660827ca0fd53a0f83796ec156ee6aaa5a5bdb55a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/Queue40_L2TlbMQBundle.sv",
+    "sha256": "c0fcd292473db1501918cd0e951528069e028524277a5ae29f9b9f2e46527a08"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ram_16x62.sv",
+    "sha256": "cd46497f3c73f593106e83a666e9c64a814205a53c1f525049e8b29c6a1b6149"
+   }
+  ],
+  "impl_sha256": "0125f1e8407a81f819866822b08f5763c03e361fe718211b6d59061606e307f7",
+  "repo_impl_files": 9
+ },
+ "mc_memory_objects": [
+  "ram_16x62"
+ ],
+ "native_facts_sha256": "a37e0d525fc7b87fc161e8aa8ebc351f8510328c847ca2cb8ac825773766320e",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 1060,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "562dc7bfffb4f9da8209cf2c38a44c4e8e0be6ac",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "dd84390d35af6b0d4f4d7d19dc959a4d7c1b0e55ffd5849a62dac27585ea2b3d",
+ "provisional": false,
+ "receipt_sha256": "dc6b4d80f88b9cc048f06ad5cb43182911547f4c46b3978451d07a687a759293",
+ "reproduce": {
+  "command": "PROOF_COMMIT=562dc7bfffb4f9da8209cf2c38a44c4e8e0be6ac scripts/run_proof.sh UncoreChiQueues Queue16_CHIRSP",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "2de7a555121d0d0f1f5b2f694318de3dcb9fb980ca6428abfbff5e06709c4fe7",
+ "run_id": "UncoreChiQueues-20261020T045701Z-562dc7bff",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "Queue16_CHIRSP",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "UncoreChiQueues",
+ "variant": "Queue16_CHIRSP",
+ "verdict": "SUCCEEDED"
+}
