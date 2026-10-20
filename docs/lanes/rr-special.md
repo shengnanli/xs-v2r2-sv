@@ -147,4 +147,7 @@ passing 应当逐位不变（只是去掉没被例化的定义）。下游影响
 
 ## 5. gate
 
-（跑完补记。）
+`TMPDIR=/home/eda/xs-env/tmp-rrx timeout 9000 bash scripts/gate_all.sh`，GATE_COMMIT=cf263bcaa0，GATE_RC=1，**只红 1 项**：
+`round 台账幂等`（`harvest_round_ledger --check`：docs/fm_round_20260917.tsv 与 receipt 不一致）。这在预期之内：新增了 16 份 receipt，派生表要由 integrator 重出，本 lane 不提交派生表。
+其余闸全部 PASS（生成器幂等、receipt 收录表复算、覆盖率相关各闸等）。日志在 `/home/eda/xs-env/tmp-rrx/gate.log`。
+
