@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/IntRegFilePart3
+Implementation : i:/WORK/IntRegFilePart3
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 00:03:11 2026
+**************************************************
+
+No unverified compare points.
+
+1

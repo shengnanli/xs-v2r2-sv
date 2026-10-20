@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/AXI4Deinterleaver
+Implementation : i:/WORK/AXI4Deinterleaver
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 00:21:05 2026
+**************************************************
+
+No unverified compare points.
+
+1

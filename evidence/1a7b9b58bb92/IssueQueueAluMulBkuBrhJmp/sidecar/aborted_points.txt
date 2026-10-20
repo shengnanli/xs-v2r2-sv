@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/IssueQueueAluMulBkuBrhJmp
+Implementation : i:/WORK/IssueQueueAluMulBkuBrhJmp
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:00:45 2026
+**************************************************
+
+No aborted compare points.
+
+1

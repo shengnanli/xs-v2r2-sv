@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/AXI4Xbar
+Implementation : i:/WORK/AXI4Xbar
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 00:02:55 2026
+**************************************************
+
+No aborted compare points.
+
+1
