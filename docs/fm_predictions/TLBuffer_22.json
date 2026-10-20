@@ -1,12 +1,10 @@
 {
   "target": "TLBuffer_22",
   "ut": "TLBuffer_22",
-  "regs": 6,
+  "regs": 440,
   "outs": 221,
-  "expected": 227,
+  "expected": 661,
   "merge_dup": "true",
   "model_applicable": false,
-  "prior_receipt": "evidence/bb2f134fee0c/TLBuffer_22",
-  "prior_receipt_passing": 661,
-  "prior_receipt_note": "drift re-proof: 旧 receipt 的 impl 闭包与当前字节不同源；本轮预期 = 旧 receipt passing 逐位相等，若不等必须逐位指认"
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/f51166aa4f76/TLBuffer_22/receipt.json：verdict=SUCCEEDED passing=661 constant_reg=None unread=None。重登记：原登记（f51166aa4，2026-09-20）expected=227（regs 6 + outs 221）是旧模型快照；当前模型（--ut TLBuffer_22，from_ut）regs=440 outs=221 expected=661。按「已有登记按当前模型复算」在跑前更新。"
 }

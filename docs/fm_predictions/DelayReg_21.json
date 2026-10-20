@@ -1,0 +1,10 @@
+{
+  "target": "DelayReg_21",
+  "ut": "DelayReg",
+  "regs": 38416,
+  "outs": 19208,
+  "expected": 57624,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/b1d8de9ca9f3/DelayReg_21/receipt.json：verdict=SUCCEEDED passing=57624 constant_reg=None unread=None。口径：--ut DelayReg（from_ut 可用），merge_dup=true。"
+}

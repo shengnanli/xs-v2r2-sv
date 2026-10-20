@@ -1,0 +1,10 @@
+{
+  "target": "VIAluSrcTypeModule",
+  "ut": "VIAluSrcTypeModule",
+  "regs": 0,
+  "outs": 15,
+  "expected": 15,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/20d19bc5cd93/VIAluSrcTypeModule/receipt.json：verdict=SUCCEEDED passing=15 constant_reg=None unread=None。口径：--ut VIAluSrcTypeModule（from_ut 可用），merge_dup=true。"
+}

@@ -1,0 +1,10 @@
+{
+  "target": "PLICFanIn",
+  "ut": "PLICFanIn",
+  "regs": 0,
+  "outs": 10,
+  "expected": 10,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/a8e4801112af/PLICFanIn/receipt.json：verdict=SUCCEEDED passing=10 constant_reg=None unread=None。口径：--ut PLICFanIn（from_ut 可用），merge_dup=true。"
+}

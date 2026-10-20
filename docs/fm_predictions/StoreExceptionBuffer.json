@@ -1,0 +1,10 @@
+{
+  "target": "StoreExceptionBuffer",
+  "ut": "StoreExceptionBuffer",
+  "regs": 1115,
+  "outs": 131,
+  "expected": 1246,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/f4184ea93fcf/StoreExceptionBuffer/receipt.json：verdict=SUCCEEDED passing=1246 constant_reg=None unread=None。口径：--ut StoreExceptionBuffer（from_ut 可用），merge_dup=true。"
+}

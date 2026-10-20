@@ -1,0 +1,10 @@
+{
+  "target": "Queue1_PrefetchReq",
+  "ut": "Depth1QueueLeaves5",
+  "regs": 100,
+  "outs": 101,
+  "expected": 201,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/786d0b438756/Queue1_PrefetchReq/receipt.json：verdict=SUCCEEDED passing=201 constant_reg=None unread=None。口径：--ut Depth1QueueLeaves5（from_ut 可用），merge_dup=true。"
+}

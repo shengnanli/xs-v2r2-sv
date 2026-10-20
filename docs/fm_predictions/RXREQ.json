@@ -1,0 +1,10 @@
+{
+  "target": "RXREQ",
+  "ut": "RXREQ",
+  "regs": 9,
+  "outs": 119,
+  "expected": 128,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/40ec7fc36bb8/RXREQ/receipt.json：verdict=SUCCEEDED passing=128 constant_reg=None unread=None。口径：--ut RXREQ（from_ut 可用），merge_dup=true。"
+}

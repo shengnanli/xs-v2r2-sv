@@ -1,0 +1,10 @@
+{
+  "target": "VPermSrcTypeModule",
+  "ut": "VPermSrcTypeModule",
+  "regs": 0,
+  "outs": 8,
+  "expected": 8,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/a6592249b2e0/VPermSrcTypeModule/receipt.json：verdict=SUCCEEDED passing=8 constant_reg=None unread=None。口径：--ut VPermSrcTypeModule（from_ut 可用），merge_dup=true。"
+}

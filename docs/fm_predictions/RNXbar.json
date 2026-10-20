@@ -1,0 +1,10 @@
+{
+  "target": "RNXbar",
+  "ut": "RNXbar",
+  "regs": 380,
+  "outs": 2268,
+  "expected": 2648,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/7acbde87fdfd/RNXbar/receipt.json：verdict=SUCCEEDED passing=2645 constant_reg=None unread=None。口径：--ut RNXbar（from_ut 可用），merge_dup=true。"
+}

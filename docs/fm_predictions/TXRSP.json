@@ -1,0 +1,10 @@
+{
+  "target": "TXRSP",
+  "ut": "TXRSP",
+  "regs": 1001,
+  "outs": 66,
+  "expected": 1067,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/40ec7fc36bb8/TXRSP/receipt.json：verdict=SUCCEEDED passing=922 constant_reg=None unread=None。口径：--ut TXRSP（from_ut 可用），merge_dup=true。"
+}

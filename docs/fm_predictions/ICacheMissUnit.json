@@ -1,0 +1,10 @@
+{
+  "target": "ICacheMissUnit",
+  "ut": "ICacheMissUnit",
+  "regs": 1406,
+  "outs": 1809,
+  "expected": 3215,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/76d345fc6c4f/ICacheMissUnit/receipt.json：verdict=SUCCEEDED passing=3215 constant_reg=None unread=None。口径：--ut ICacheMissUnit（from_ut 可用），merge_dup=true。"
+}

@@ -1,0 +1,10 @@
+{
+  "target": "LCredit2Decoupled_10",
+  "ut": "LCredit2Decoupled_10",
+  "regs": 1700,
+  "outs": 425,
+  "expected": 2125,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/40ec7fc36bb8/LCredit2Decoupled_10/receipt.json：verdict=SUCCEEDED passing=2125 constant_reg=None unread=None。口径：--ut LCredit2Decoupled_10（from_ut 可用），merge_dup=true。"
+}

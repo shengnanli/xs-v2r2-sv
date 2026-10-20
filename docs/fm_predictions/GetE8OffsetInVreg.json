@@ -1,0 +1,10 @@
+{
+  "target": "GetE8OffsetInVreg",
+  "ut": "GetE8OffsetInVreg",
+  "regs": 0,
+  "outs": 4,
+  "expected": 4,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/1b6da7421248/GetE8OffsetInVreg/receipt.json：verdict=SUCCEEDED passing=4 constant_reg=None unread=None。口径：--ut GetE8OffsetInVreg（from_ut 可用），merge_dup=true。"
+}

@@ -1,0 +1,10 @@
+{
+  "target": "Hpmcounter8Module",
+  "ut": null,
+  "regs": 64,
+  "outs": 64,
+  "expected": 128,
+  "merge_dup": null,
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/7850a612ea6f/Hpmcounter8Module/receipt.json：verdict=SUCCEEDED passing=128 constant_reg=None unread=None。口径：不带 --ut。实际 ut_dir=HpmcounterLeaves4b（make 展开 FM_VARIANTS 得到），但该 Makefile 的 FM_VARIANTS 由变量给出，fm_predict from_ut 不展开（FileNotFoundError(2, 'No such file or directory')），同 reproof-171 先例只能按 golden 单模块 compute_model 登记，ut=null/merge_dup=null/model_applicable=false；Makefile FM_MERGE_DUP=true(默认)。"
+}
