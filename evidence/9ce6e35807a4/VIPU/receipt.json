@@ -1,0 +1,337 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "VIPU",
+ "run_id": "VIPU-20261020T012332Z-9ce6e3580",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/VIPU.sv",
+   "kind": "golden",
+   "sha256": "951a210c15766c03f69cfc8253f1eebe0496e204340d1857187e2a33df80d371"
+  },
+  {
+   "path": "golden-rtl/CSA3to2_124.sv",
+   "kind": "golden",
+   "sha256": "54089129e2a3c5baf3e1913f9cc6ee2a4a441ae7d35b6e990337bf658863fd3a"
+  },
+  {
+   "path": "golden-rtl/CSA3to2_125.sv",
+   "kind": "golden",
+   "sha256": "c0f667465ee2898a46924cc6c2e49645da4831c761a85d27935c6ce4b05d3b02"
+  },
+  {
+   "path": "golden-rtl/CSA3to2_127.sv",
+   "kind": "golden",
+   "sha256": "41b032a7f474bb9807f942fd06f11283ad241a28537fecb7b96008e7f9bf0c0d"
+  },
+  {
+   "path": "golden-rtl/CSA3to2_132.sv",
+   "kind": "golden",
+   "sha256": "c086c931f663ed33e38dd3ce19ff61c29f8f866259c2cf38c848e2ee1a9d6d4a"
+  },
+  {
+   "path": "golden-rtl/CSA4to2_15.sv",
+   "kind": "golden",
+   "sha256": "b48305d8a5819993ec4817f75d21932a0f7fa60bb6487f4be46ae306e7100f73"
+  },
+  {
+   "path": "golden-rtl/CSA4to2_16.sv",
+   "kind": "golden",
+   "sha256": "b7c5408b7f75c65888f211a831a3000f8905fe57e4c0638b9ebfc3a77237f22b"
+  },
+  {
+   "path": "golden-rtl/compare_2to1.sv",
+   "kind": "golden",
+   "sha256": "1e923e10d895b157197e1c677ba2eefc16330f04aabaca6ed352a0fa05ab4360"
+  },
+  {
+   "path": "golden-rtl/compare_2to1_2.sv",
+   "kind": "golden",
+   "sha256": "1aad9f2fbf4eb76d24b75ac9d30408a7dc89349a5c6fdbac0bc00c771123120f"
+  },
+  {
+   "path": "golden-rtl/compare_3to1.sv",
+   "kind": "golden",
+   "sha256": "69736350a188da6e4ac2b4a21b9e3908bcf81ad9618ed0cc5d2025f342ba0eae"
+  },
+  {
+   "path": "golden-rtl/compare_3to1_1.sv",
+   "kind": "golden",
+   "sha256": "b333ae52619ba43238abbfc9e4a3027680545ff470f8341568c9525c6300d754"
+  },
+  {
+   "path": "golden-rtl/compare_3to1_2.sv",
+   "kind": "golden",
+   "sha256": "d6d401e32b0f55c6796aa4d2e57a3a7f09ccf2fa166b0e30f2c75bc014e3359f"
+  },
+  {
+   "path": "golden-rtl/compare_3to1_6.sv",
+   "kind": "golden",
+   "sha256": "87027a0b645d5ee650ac8c6e9e3faf4ebe5eff8c11e09956b338457cddf9faa8"
+  },
+  {
+   "path": "golden-rtl/Adder_xb.sv",
+   "kind": "golden",
+   "sha256": "b8143f30aef75d41a005ce34f3d709bf970264043d3ecfd306dae53fc6499977"
+  },
+  {
+   "path": "golden-rtl/Adder_xb_3.sv",
+   "kind": "golden",
+   "sha256": "bf4c257fbc6af3a49ca343a22314ce1a222be19db04c15113e737166e8088696"
+  },
+  {
+   "path": "golden-rtl/Adder_xb_8.sv",
+   "kind": "golden",
+   "sha256": "3545a7e50343513123c38f0d099db1aa0e85d42e4faa7a96d3f463ac16a76760"
+  },
+  {
+   "path": "golden-rtl/Adder_xb_20.sv",
+   "kind": "golden",
+   "sha256": "958140a1bd43ccafca977a1058a1b5a79f06c5265455d8509e746455b562675a"
+  },
+  {
+   "path": "golden-rtl/Reduction.sv",
+   "kind": "golden",
+   "sha256": "9d275b86f12031efd0cc0e886e8dec2710292b7910225d4d4c761576a44db523"
+  },
+  {
+   "path": "golden-rtl/VMask.sv",
+   "kind": "golden",
+   "sha256": "c958d6977b4f0605702b27f91a0ab39f84dbd3d19a0033bda5681c726a583615"
+  },
+  {
+   "path": "golden-rtl/VIAluDecoder.sv",
+   "kind": "golden",
+   "sha256": "657f728b8e4fe087b224ca4aba748c4b11ad4ce0b03bca6d6e3f915227f3571b"
+  },
+  {
+   "path": "golden-rtl/VIAlu.sv",
+   "kind": "golden",
+   "sha256": "318fbea4e89c7ea98596b3861527aa7106d50c5340730ef6f5c313ef15fbc35a"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/CSA3to2_124.sv",
+   "kind": "repo",
+   "sha256": "9628e960b93f284b73d28e617bd27bad92df6eeb371392d3391a305806397548"
+  },
+  {
+   "path": "rtl/backend/CSA3to2_125.sv",
+   "kind": "repo",
+   "sha256": "c0577116c5f78b1bfc5697545c6e1e8a0edcbc014b81c7ffa3348812e747b9d7"
+  },
+  {
+   "path": "rtl/backend/CSA3to2_127.sv",
+   "kind": "repo",
+   "sha256": "6daebd3accfdc8cc5779857d088e510c494c836e4898b7e2cfd71a90e3572566"
+  },
+  {
+   "path": "rtl/backend/CSA3to2_132.sv",
+   "kind": "repo",
+   "sha256": "180449a34b8eda949214198c88fdcb6047b9ca8da9bd09e35a12260ccd55a372"
+  },
+  {
+   "path": "rtl/backend/CSA4to2_15.sv",
+   "kind": "repo",
+   "sha256": "b39e04a21e65ac9eec90e147b0e7224a649d81fda9beed4c05a089ec52cb4d8e"
+  },
+  {
+   "path": "rtl/backend/CSA4to2_16.sv",
+   "kind": "repo",
+   "sha256": "ebbed0ea461871b7db1aaba3172c44862bdb3574c0e0bd1a3724ffc7e5f17463"
+  },
+  {
+   "path": "rtl/backend/compare_2to1.sv",
+   "kind": "repo",
+   "sha256": "cd869b5c8bb2a51e01dab3a3629d8983ce150f3fc1a7d9ca9908b660a040d03b"
+  },
+  {
+   "path": "rtl/backend/compare_2to1_2.sv",
+   "kind": "repo",
+   "sha256": "6207d5632bfa71dabfda04e8e3cce528eff6af67e3dc59cd11f071308f8703cf"
+  },
+  {
+   "path": "rtl/backend/compare_3to1.sv",
+   "kind": "repo",
+   "sha256": "cb09b1092f640e319bbab17ff1c4e846dfb6bc3004115ebc4b0e3103cf1657b7"
+  },
+  {
+   "path": "rtl/backend/compare_3to1_1.sv",
+   "kind": "repo",
+   "sha256": "67b673a0496cc454aa0a7356c71d1417f6d1ddf1ed93a8c4db806096d988622f"
+  },
+  {
+   "path": "rtl/backend/compare_3to1_2.sv",
+   "kind": "repo",
+   "sha256": "6789798aea6770e3b9a151a397ca0b25d9f456ef4f853f2aee9f15dd9c9ca2da"
+  },
+  {
+   "path": "rtl/backend/compare_3to1_6.sv",
+   "kind": "repo",
+   "sha256": "bb097ef158b7af2b0574184be65cff183d8e08965542ca3697c4c8a88b84334a"
+  },
+  {
+   "path": "rtl/backend/Reduction.sv",
+   "kind": "repo",
+   "sha256": "df8eed1be2808848e51db1a54609b9ba90b1fa34b346da4a782d15d0505acdcd"
+  },
+  {
+   "path": "rtl/backend/VMask.sv",
+   "kind": "repo",
+   "sha256": "8bc57a37f9f6ed58789a2b4ccbf536ce4907719a9a9f27be0d5f208be9f8b3ef"
+  },
+  {
+   "path": "rtl/backend/VIAluDecoder.sv",
+   "kind": "repo",
+   "sha256": "7b5caf4817e3720cb200dc9d13960f4a8ef61507b17835d8da1804b9d0aaa789"
+  },
+  {
+   "path": "rtl/backend/VIAlu.sv",
+   "kind": "repo",
+   "sha256": "952997228b459ddc93af16d6730699837da9d41be431ee1e74be2bf58b8bee25"
+  },
+  {
+   "path": "rtl/backend/VIPU.sv",
+   "kind": "repo",
+   "sha256": "320daddffb7055010f869c4d31869147edde97f5d7b2dd2191a8efa1844c533f"
+  }
+ ],
+ "impl_commit": "9ce6e35807a4bbd0f27d383a0b0a90d2e55b78d2",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "VIPU-20261020T012332Z-9ce6e3580",
+  "top": "VIPU",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 4052,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 4052,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 2,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "VIPU",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
