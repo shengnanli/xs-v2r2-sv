@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/StrideMetaArray
+Implementation : i:/WORK/StrideMetaArray
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:28:00 2026
+**************************************************
+
+No unverified compare points.
+
+1

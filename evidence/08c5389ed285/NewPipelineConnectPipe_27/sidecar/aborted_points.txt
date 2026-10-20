@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/NewPipelineConnectPipe_27
+Implementation : i:/WORK/NewPipelineConnectPipe_27
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 00:26:25 2026
+**************************************************
+
+No aborted compare points.
+
+1

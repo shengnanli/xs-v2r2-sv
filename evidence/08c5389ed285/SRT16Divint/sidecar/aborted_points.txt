@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/SRT16Divint
+Implementation : i:/WORK/SRT16Divint
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:43:37 2026
+**************************************************
+
+No aborted compare points.
+
+1

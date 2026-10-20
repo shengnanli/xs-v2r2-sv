@@ -1,0 +1,116 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/MStatusModule
+Implementation : i:/WORK/MStatusModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 21:58:39 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    HvienModule
+
+       Instances : 0
+
+e *    HvipModule
+
+       Instances : 0
+
+e *    MvienModule
+
+       Instances : 0
+
+e *    MvipModule
+
+       Instances : 0
+
+e *    PMAEntryHandleModule
+
+       Instances : 0
+
+e *    PMPEntryHandleModule
+
+       Instances : 0
+
+e *    SieModule
+
+       Instances : 0
+
+e *    SipModule
+
+       Instances : 0
+
+e *    TrapHandleModule
+
+       Instances : 0
+
+e *    VSieModule
+
+       Instances : 0
+
+e *    VSipModule
+
+       Instances : 0
+
+e *    xs_CsrVien_core
+
+       Instances : 0
+
+e *    xs_HvipModule_core
+
+       Instances : 0
+
+e *    xs_MvipModule_core
+
+       Instances : 0
+
+e *    xs_PmEntryHandle_core
+
+       Instances : 0
+
+e *    xs_SieModule_core
+
+       Instances : 0
+
+e *    xs_SipModule_core
+
+       Instances : 0
+
+e *    xs_TrapHandleModule_core
+
+       Instances : 0
+
+e *    xs_VSieModule_core
+
+       Instances : 0
+
+e *    xs_VSipModule_core
+
+       Instances : 0
+
+
+1
+

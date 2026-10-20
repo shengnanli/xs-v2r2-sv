@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Permutation
+Implementation : i:/WORK/Permutation
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:10:34 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -1,0 +1,192 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "RealWBCollideChecker_3",
+ "run_id": "RealWBCollideChecker-20261020T022627Z-08c5389ed",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/RealWBCollideChecker_3.sv",
+   "kind": "golden",
+   "sha256": "46769345f4c921926545af09b4beb38da3c21621d9cafff4032adb5eaf686e34"
+  },
+  {
+   "path": "golden-rtl/RealWBArbiter_20.sv",
+   "kind": "golden",
+   "sha256": "7b01b8dd332cb1ca1fd6be4ec00a255c60352a6f47646542e823bdf4d7987459"
+  },
+  {
+   "path": "golden-rtl/RealWBArbiter_21.sv",
+   "kind": "golden",
+   "sha256": "ffb654b654460959be13d7560264db9c7cbd9b1c77974f57641e49142bae13b2"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_PriorityArbSelect.sv",
+   "kind": "repo",
+   "sha256": "3a70dd2f6060ec34d5dbd9bb16e8a7084257f175312c3237e60645a27c0e03fb"
+  },
+  {
+   "path": "rtl/backend/RealWBCollideChecker.sv",
+   "kind": "repo",
+   "sha256": "0e202b11db98a8aba3404bbf9cd04815eb61d00768d338a45e08d9d59e8681c2"
+  },
+  {
+   "path": "rtl/backend/RealWBCollideChecker_1.sv",
+   "kind": "repo",
+   "sha256": "a1536b425f45310c3d36f522ef496ae1f6e1e32735384da884db7a4e6ad99975"
+  },
+  {
+   "path": "rtl/backend/RealWBCollideChecker_2.sv",
+   "kind": "repo",
+   "sha256": "34ff5d6feb46d68d4782f14f3cdb66f365f38ce30f9ef7e98776c348a1fac653"
+  },
+  {
+   "path": "rtl/backend/RealWBCollideChecker_3.sv",
+   "kind": "repo",
+   "sha256": "a36bd6cc6fe85c4b933fced808595fbbcafbaeaf4aa680d445fc6e63a1228a38"
+  },
+  {
+   "path": "rtl/backend/RealWBCollideChecker_4.sv",
+   "kind": "repo",
+   "sha256": "5a34c485962e7d9ae2c24cc30a457f361632f73ba58bc6e9a69badf366d13a1f"
+  }
+ ],
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "RealWBCollideChecker-20261020T022627Z-08c5389ed",
+  "top": "RealWBCollideChecker_3",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 816,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 816,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "RealWBCollideChecker_3",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

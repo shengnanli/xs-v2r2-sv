@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/L2Directory_1
+Implementation : i:/WORK/L2Directory_1
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:42:17 2026
+**************************************************
+
+No failing compare points.
+
+1

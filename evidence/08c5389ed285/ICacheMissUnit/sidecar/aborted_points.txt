@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ICacheMissUnit
+Implementation : i:/WORK/ICacheMissUnit
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 23:39:49 2026
+**************************************************
+
+No aborted compare points.
+
+1

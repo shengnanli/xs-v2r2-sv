@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Sstateen3Module
+Implementation : i:/WORK/Sstateen3Module
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:36:23 2026
+**************************************************
+
+No aborted compare points.
+
+1

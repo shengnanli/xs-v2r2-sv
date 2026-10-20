@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Pmaaddr12Module
+Implementation : i:/WORK/Pmaaddr12Module
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:04:42 2026
+**************************************************
+
+No aborted compare points.
+
+1

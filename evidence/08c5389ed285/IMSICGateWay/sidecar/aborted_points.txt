@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/IMSICGateWay
+Implementation : i:/WORK/IMSICGateWay
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 23:39:57 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -1,0 +1,108 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/FuBusyTableRead_69
+Implementation : i:/WORK/FuBusyTableRead_69
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 21:55:10 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    FuBusyTableRead
+
+       Instances : 0
+
+e *    FuBusyTableRead_105
+
+       Instances : 0
+
+e *    FuBusyTableRead_2
+
+       Instances : 0
+
+e *    FuBusyTableRead_22
+
+       Instances : 0
+
+e *    FuBusyTableRead_23
+
+       Instances : 0
+
+e *    FuBusyTableRead_26
+
+       Instances : 0
+
+e *    FuBusyTableRead_28
+
+       Instances : 0
+
+e *    FuBusyTableRead_42
+
+       Instances : 0
+
+e *    FuBusyTableRead_43
+
+       Instances : 0
+
+e *    FuBusyTableRead_52
+
+       Instances : 0
+
+e *    FuBusyTableRead_53
+
+       Instances : 0
+
+e *    FuBusyTableRead_68
+
+       Instances : 0
+
+e *    FuBusyTableRead_71
+
+       Instances : 0
+
+e *    FuBusyTableRead_73
+
+       Instances : 0
+
+e *    FuBusyTableRead_75
+
+       Instances : 0
+
+e *    FuBusyTableRead_79
+
+       Instances : 0
+
+e *    FuBusyTableRead_80
+
+       Instances : 0
+
+e *    xs_FuBusyTableRead_core
+
+       Instances : 0
+
+
+1
+

@@ -1,0 +1,88 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/BranchModule
+Implementation : i:/WORK/BranchModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 21:45:26 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    AluResSel
+
+       Instances : 0
+
+e *    CommitIDModule
+
+       Instances : 0
+
+e *    JumpDataModule
+
+       Instances : 0
+
+e *    MiscResultSelect
+
+       Instances : 0
+
+e *    PrintCommitIDModule
+
+       Instances : 0
+
+e *    ShiftResultSelect
+
+       Instances : 0
+
+e *    WordResultSelect
+
+       Instances : 0
+
+e *    xs_AluResSel_core
+
+       Instances : 0
+
+e *    xs_CommitIDModule_core
+
+       Instances : 0
+
+e *    xs_JumpDataModule_core
+
+       Instances : 0
+
+e *    xs_MiscResultSelect_core
+
+       Instances : 0
+
+e *    xs_ShiftResultSelect_core
+
+       Instances : 0
+
+e *    xs_WordResultSelect_core
+
+       Instances : 0
+
+
+1
+

@@ -1,0 +1,227 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "ICacheMSHR_1",
+ "run_id": "ICacheMSHR-20261020T015824Z-08c5389ed",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/ICacheMSHR_1.sv",
+   "kind": "golden",
+   "sha256": "10fed8ea4ace4f9d0a721686e7129485905e218fec775851759dc41cf3dd7f8a"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/xs_ICacheMSHR_core.sv",
+   "kind": "repo",
+   "sha256": "8aa6c7f0eab62d713ea50d04deab3f1d8ea83db4e057c35ce097e60df1070497"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR.sv",
+   "kind": "repo",
+   "sha256": "4a0e045818ce55b049d7d888549641c2a00ddfffdacfb01d878aad17f7b4dcd4"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_1.sv",
+   "kind": "repo",
+   "sha256": "bc09aa317f705208b23f1acaabceb8acd3f58947518b703fb8b51b85f82888da"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_2.sv",
+   "kind": "repo",
+   "sha256": "2ec3ee19fe961a0767ad2d857a50d15473d8faef1b93acc994c8f73fd0cfcb9d"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_3.sv",
+   "kind": "repo",
+   "sha256": "0787c015fe380dbe2bfa3e609b3326c257922f4d7ff744501e7d8fb89341063b"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_4.sv",
+   "kind": "repo",
+   "sha256": "9a330e4b19ddfb9e5d3660b91f91a78d1b0b04091230a3d2a7771d13ac2fc66b"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_5.sv",
+   "kind": "repo",
+   "sha256": "ecd804c2e05d5fcea1ab8814cac0128a9aac1c43f2af8aac583637c90c01838f"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_6.sv",
+   "kind": "repo",
+   "sha256": "60bfc705400ded10e36ad75e1e559bc33f7fc2cb6ee553976c15d4186d40e2cb"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_7.sv",
+   "kind": "repo",
+   "sha256": "9a9c5603b69f14425d9568b4c9f120698c317614ebf7ef0403641207c15c4bab"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_8.sv",
+   "kind": "repo",
+   "sha256": "9f35440508457800193889400816832c0656af05506a4bfc7db2d776c1a2aa08"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_9.sv",
+   "kind": "repo",
+   "sha256": "2095f8813ac51eaa9b0c88abf4ff5d4cc4f73bcb00b238a485e558ba66422b30"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_10.sv",
+   "kind": "repo",
+   "sha256": "ae153a64c4cb76f2713ceed23c61047cba55e2c21e11bac550110fd003708afd"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_11.sv",
+   "kind": "repo",
+   "sha256": "45676fee353b5fa38d5a0898bfe1bebb4d19cd6aa262b00af583680d7d086a94"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_12.sv",
+   "kind": "repo",
+   "sha256": "c7495f126fff0e39ebd946fe0e0fffc4a140d02a1b894ffdd45db651e4ddcdfb"
+  },
+  {
+   "path": "rtl/frontend/ICacheMSHR_13.sv",
+   "kind": "repo",
+   "sha256": "59b7cd8f62aea6a1e975d1ced23a37ccd12ca156edefcbbfbaa58cb070f03652"
+  }
+ ],
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ICacheMSHR-20261020T015824Z-08c5389ed",
+  "top": "ICacheMSHR_1",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 170,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 170,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "ICacheMSHR_1",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

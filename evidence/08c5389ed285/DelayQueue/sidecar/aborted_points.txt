@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/DelayQueue
+Implementation : i:/WORK/DelayQueue
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:53:07 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FloatAdderF32F16MixedPipeline
+Implementation : i:/WORK/FloatAdderF32F16MixedPipeline
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 23:35:08 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/VCVT
+Implementation : i:/WORK/VCVT
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:51:20 2026
+**************************************************
+
+No unverified compare points.
+
+1

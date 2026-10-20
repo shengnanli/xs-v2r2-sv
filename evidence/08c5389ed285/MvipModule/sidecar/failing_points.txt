@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/MvipModule
+Implementation : i:/WORK/MvipModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 21:59:01 2026
+**************************************************
+
+No failing compare points.
+
+1

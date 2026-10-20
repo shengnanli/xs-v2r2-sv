@@ -1,0 +1,227 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "MiregModule",
+ "run_id": "CSRLeaves15-20261020T015842Z-08c5389ed",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/MiregModule.sv",
+   "kind": "golden",
+   "sha256": "bf8f5e5e461c9213b1b55a4406d207c8953773006fa4d35f51ca947ee416eeb5"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/MconfigptrModule.sv",
+   "kind": "repo",
+   "sha256": "702d8f5ed0c2a4c6e0620a6877538ed17fc357157c68b97892d98b9b3fd18175"
+  },
+  {
+   "path": "rtl/backend/MhartidModule.sv",
+   "kind": "repo",
+   "sha256": "13e596e2388fb23b55ce1c594d6f3117c31b2d552c261c4985ecf5ac45d50b9b"
+  },
+  {
+   "path": "rtl/backend/HgeipModule.sv",
+   "kind": "repo",
+   "sha256": "01eb8ea70dbffde4926d026e9775ff322d792031464a23e015704fd794aa73b4"
+  },
+  {
+   "path": "rtl/backend/MiregModule.sv",
+   "kind": "repo",
+   "sha256": "df7908c3b81905f78a1421b314ec8591eaedca94da65d1324efad2fb7f614fb6"
+  },
+  {
+   "path": "rtl/backend/SiregModule.sv",
+   "kind": "repo",
+   "sha256": "e5e150a75fa824ab589231249e799ea5e4671ad0984e25af160ccfa1d4b975c7"
+  },
+  {
+   "path": "rtl/backend/VSiregModule.sv",
+   "kind": "repo",
+   "sha256": "2785b0ba7e5add1b8065a0cac6f678e51acda4affe158beec34cce3ac1f2f233"
+  },
+  {
+   "path": "rtl/backend/Tdata2Module.sv",
+   "kind": "repo",
+   "sha256": "91779e96543113cb5e26b3a17abaff7d85f49ba182a2f952ecd736176a165a57"
+  },
+  {
+   "path": "rtl/backend/MtopiModule.sv",
+   "kind": "repo",
+   "sha256": "b9804a8098e0e73231046794d4b83d1a4e99bd6ca7325bcb0f6f72b04cf4da87"
+  },
+  {
+   "path": "rtl/backend/StopiModule.sv",
+   "kind": "repo",
+   "sha256": "1927a140e89b32040efdfbe63f334ac1e1e1e32695bd8f706dc9b6bcc7b55f49"
+  },
+  {
+   "path": "rtl/backend/VStopiModule.sv",
+   "kind": "repo",
+   "sha256": "f98d146590bb0fb7afbf3522b7b0997cc5536d17f698991e4bd0b52019190f18"
+  },
+  {
+   "path": "rtl/backend/Pmacfg0Module.sv",
+   "kind": "repo",
+   "sha256": "a4049acc1a8c3c827d2b3e20130bd95c0bd591b373845cd23d9e17c9de9ab8c9"
+  },
+  {
+   "path": "rtl/backend/Pmacfg2Module.sv",
+   "kind": "repo",
+   "sha256": "1807134e24d770aa81b77d66104b4f4b551ff0edb5268c0705a2806e83c342c9"
+  },
+  {
+   "path": "rtl/backend/Pmacfg4Module.sv",
+   "kind": "repo",
+   "sha256": "cae4a4379ce7621929f42a63d83a9325d03a210e88d4a9015f26c7eb459b6362"
+  },
+  {
+   "path": "rtl/backend/Pmacfg6Module.sv",
+   "kind": "repo",
+   "sha256": "558412f0e7be49e42ebfeb791d37da3e2fc06d4b5e895a68a32b84f95c52b073"
+  },
+  {
+   "path": "rtl/backend/IntSyncSyncCrossingSink.sv",
+   "kind": "repo",
+   "sha256": "fff233384d33e6931fbcbf1936ed1081eb4582530e479b2e99566ceffbe15a9b"
+  }
+ ],
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "CSRLeaves15-20261020T015842Z-08c5389ed",
+  "top": "MiregModule",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 128,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 128,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "MiregModule",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FastArbiter_30
+Implementation : i:/WORK/FastArbiter_30
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 23:34:20 2026
+**************************************************
+
+No aborted compare points.
+
+1

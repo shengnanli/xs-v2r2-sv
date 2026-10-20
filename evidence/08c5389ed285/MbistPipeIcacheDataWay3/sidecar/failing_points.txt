@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/MbistPipeIcacheDataWay3
+Implementation : i:/WORK/MbistPipeIcacheDataWay3
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:22:33 2026
+**************************************************
+
+No failing compare points.
+
+1

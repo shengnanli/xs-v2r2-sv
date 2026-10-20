@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/TXREQ
+Implementation : i:/WORK/TXREQ
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:35:18 2026
+**************************************************
+
+No failing compare points.
+
+1

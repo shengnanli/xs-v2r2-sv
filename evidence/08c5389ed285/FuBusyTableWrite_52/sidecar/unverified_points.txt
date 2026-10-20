@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/FuBusyTableWrite_52
+Implementation : i:/WORK/FuBusyTableWrite_52
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 21:55:32 2026
+**************************************************
+
+No unverified compare points.
+
+1

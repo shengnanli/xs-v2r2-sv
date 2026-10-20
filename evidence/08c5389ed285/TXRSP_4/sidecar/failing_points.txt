@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/TXRSP_4
+Implementation : i:/WORK/TXRSP_4
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:41:07 2026
+**************************************************
+
+No failing compare points.
+
+1

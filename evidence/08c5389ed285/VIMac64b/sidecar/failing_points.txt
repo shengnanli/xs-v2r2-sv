@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/VIMac64b
+Implementation : i:/WORK/VIMac64b
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:47:56 2026
+**************************************************
+
+No failing compare points.
+
+1

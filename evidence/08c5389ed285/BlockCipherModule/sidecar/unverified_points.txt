@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/BlockCipherModule
+Implementation : i:/WORK/BlockCipherModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 23:11:36 2026
+**************************************************
+
+No unverified compare points.
+
+1
