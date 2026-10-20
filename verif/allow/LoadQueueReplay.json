@@ -3,7 +3,7 @@
  "note": "strict + matched blackbox 的 child 闭包声明。fm_verdict 在 signoff-strict 下**不读本文件**（allow_decl 只在 assembly 分支被消费），所以它不改变判定；它唯一的作用是让 make_receipt.py 复算 green_child 闭包并写进 receipt.green_child_closure_checks —— 把原先只能人工核对的依赖变成机器守着的。",
  "objects": [
   {
-   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "certificate_sha256": "75381735bab8e67e191a98c609898f6f49864a34d70e3f8c3670efb8cb1f6109",
    "child_target": "AgeDetector_38",
    "class": "green_child",
    "design": "AgeDetector_38",
@@ -11,7 +11,7 @@
    "side": "r"
   },
   {
-   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "certificate_sha256": "75381735bab8e67e191a98c609898f6f49864a34d70e3f8c3670efb8cb1f6109",
    "child_target": "AgeDetector_38",
    "class": "green_child",
    "design": "AgeDetector_38",
@@ -19,7 +19,7 @@
    "side": "i"
   },
   {
-   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "certificate_sha256": "75381735bab8e67e191a98c609898f6f49864a34d70e3f8c3670efb8cb1f6109",
    "child_target": "AgeDetector_38",
    "class": "green_child",
    "design": "AgeDetector_38",
@@ -27,7 +27,7 @@
    "side": "r"
   },
   {
-   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "certificate_sha256": "75381735bab8e67e191a98c609898f6f49864a34d70e3f8c3670efb8cb1f6109",
    "child_target": "AgeDetector_38",
    "class": "green_child",
    "design": "AgeDetector_38",
@@ -35,7 +35,7 @@
    "side": "i"
   },
   {
-   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "certificate_sha256": "75381735bab8e67e191a98c609898f6f49864a34d70e3f8c3670efb8cb1f6109",
    "child_target": "AgeDetector_38",
    "class": "green_child",
    "design": "AgeDetector_38",
@@ -43,7 +43,7 @@
    "side": "r"
   },
   {
-   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "certificate_sha256": "75381735bab8e67e191a98c609898f6f49864a34d70e3f8c3670efb8cb1f6109",
    "child_target": "AgeDetector_38",
    "class": "green_child",
    "design": "AgeDetector_38",
@@ -51,7 +51,7 @@
    "side": "i"
   },
   {
-   "certificate_sha256": "3e987bcb84422733064b05126eeb4fd75a5313bac6bdd7b6b94389db95dfeac4",
+   "certificate_sha256": "d4cc15523e18f818625678275ff2d20c5bbd3612a6cd67cee39ce5ea74b2f344",
    "child_target": "FreeList_5",
    "class": "green_child",
    "design": "FreeList_5",
@@ -59,7 +59,7 @@
    "side": "r"
   },
   {
-   "certificate_sha256": "3e987bcb84422733064b05126eeb4fd75a5313bac6bdd7b6b94389db95dfeac4",
+   "certificate_sha256": "d4cc15523e18f818625678275ff2d20c5bbd3612a6cd67cee39ce5ea74b2f344",
    "child_target": "FreeList_5",
    "class": "green_child",
    "design": "FreeList_5",
@@ -67,7 +67,7 @@
    "side": "i"
   },
   {
-   "certificate_sha256": "833ac5662353c7503b44337f1bd65a3ee44245bafd8a5bc8e7319cbf992caa70",
+   "certificate_sha256": "a2a2b3ea137c06ee54d3b8674b95e161c7974712b6e794c9e07b8c0b02340706",
    "child_target": "LqVAddrModule",
    "class": "green_child",
    "design": "LqVAddrModule",
@@ -75,7 +75,7 @@
    "side": "r"
   },
   {
-   "certificate_sha256": "833ac5662353c7503b44337f1bd65a3ee44245bafd8a5bc8e7319cbf992caa70",
+   "certificate_sha256": "a2a2b3ea137c06ee54d3b8674b95e161c7974712b6e794c9e07b8c0b02340706",
    "child_target": "LqVAddrModule",
    "class": "green_child",
    "design": "LqVAddrModule",
