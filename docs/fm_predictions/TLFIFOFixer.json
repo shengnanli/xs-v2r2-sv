@@ -1,0 +1,10 @@
+{
+  "target": "TLFIFOFixer",
+  "ut": "TLFIFOFixer",
+  "regs": 12678,
+  "outs": 240,
+  "expected": 12918,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true→带内弱结论；regs 12678+outs 240=12918；旧 receipt ac197ab29255 passing 12918（逐位相等）"
+}

@@ -1,0 +1,10 @@
+{
+  "target": "BloomFilter",
+  "ut": "BloomFilter",
+  "regs": 4102,
+  "outs": 6,
+  "expected": 4108,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true→带内弱结论；regs 4102+outs 6=4108；旧 receipt 5c7eec56325a passing 4108（逐位相等）"
+}

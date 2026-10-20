@@ -1,0 +1,10 @@
+{
+  "target": "NCBTransactionQueue_1",
+  "ut": "NCBTransactionQueue",
+  "regs": 6176,
+  "outs": 567,
+  "expected": 6743,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true→带内弱结论；regs 6176+outs 567=6743；旧 receipt 1a73aaffd324 passing 6743（逐位相等）"
+}

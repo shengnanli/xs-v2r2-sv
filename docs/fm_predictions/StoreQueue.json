@@ -1,0 +1,10 @@
+{
+  "target": "StoreQueue",
+  "ut": "StoreQueue",
+  "regs": 73309,
+  "outs": 3763,
+  "expected": 77072,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true→带内弱结论；regs 73309+outs 3763=77072；旧 receipt 833cdc83077f passing 77012，差 60 = constant_reg 1 + 余 59（只落在 merge 带内，非逐位指认）"
+}

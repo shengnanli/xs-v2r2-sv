@@ -1,0 +1,10 @@
+{
+  "target": "PipeGroupConnect",
+  "ut": "PipeGroupConnect",
+  "regs": 4411,
+  "outs": 4417,
+  "expected": 8828,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true→带内弱结论；regs 4411+outs 4417=8828；旧 receipt e47e713399e0 passing 8828（逐位相等）"
+}

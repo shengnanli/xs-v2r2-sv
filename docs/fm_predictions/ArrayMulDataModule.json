@@ -1,0 +1,10 @@
+{
+  "target": "ArrayMulDataModule",
+  "ut": "ArrayMulDataModule",
+  "regs": 2562,
+  "outs": 130,
+  "expected": 2692,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=false 模型适用；regs 2562+outs 130=2692；旧 receipt 014a7e1521d4 passing 2661，差 31 = constant_reg 31（逐位指认）"
+}

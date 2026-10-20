@@ -1,0 +1,10 @@
+{
+  "target": "AXI4Deinterleaver",
+  "ut": "AXI4Deinterleaver",
+  "regs": 51176,
+  "outs": 728,
+  "expected": 51904,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true（Makefile 未设 FM_MERGE_DUP）→带内弱结论；regs 51176+outs 728=51904；旧 receipt 40ec7fc36bb8 passing 51904（与模型逐位相等）"
+}

@@ -1,0 +1,10 @@
+{
+  "target": "SbufferData",
+  "ut": "SbufferData",
+  "regs": 13968,
+  "outs": 9216,
+  "expected": 23184,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true→带内弱结论；regs 13968+outs 9216=23184；旧 receipt 014a7e1521d4 passing 23184（逐位相等）"
+}

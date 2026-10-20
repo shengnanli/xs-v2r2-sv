@@ -1,0 +1,28 @@
+{
+  "target": "LoadQueueReplay",
+  "ut": "LoadQueueReplay",
+  "regs": 109190,
+  "outs": 4389,
+  "expected": 114222,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 643,
+  "bbox": {
+    "AgeDetector_38": {
+      "insts": 3,
+      "in_bits": 122,
+      "points": 366
+    },
+    "FreeList_5": {
+      "insts": 1,
+      "in_bits": 77,
+      "points": 77
+    },
+    "LqVAddrModule": {
+      "insts": 1,
+      "in_bits": 200,
+      "points": 200
+    }
+  },
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true→带内弱结论；regs 109190+outs 4389+黑盒输入 bbin 643（AgeDetector_38×3 366 / FreeList_5 77 / LqVAddrModule 200）=114222；旧 receipt 7e8081ff298c passing 114160，差 62 无 constant_reg/unread 可指认，只落在 merge 带内"
+}

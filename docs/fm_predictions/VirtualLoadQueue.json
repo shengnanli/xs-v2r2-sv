@@ -1,0 +1,10 @@
+{
+  "target": "VirtualLoadQueue",
+  "ut": "VirtualLoadQueue",
+  "regs": 1483,
+  "outs": 37,
+  "expected": 1520,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-big lane 跑前登记（用户裁定先重证再合口径）；model=Σ实例寄存器位+顶层output位；merge_dup=true→带内弱结论；regs 1483+outs 37=1520；旧 receipt 46bca5d516ea passing 1520（逐位相等）"
+}
