@@ -34,6 +34,18 @@ RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv \
                   $(GOLDEN_RTL)/sram_array_1p512x104m13s1h0l1b_l2_meta.sv
 
+# codex 0222/0226：impl 侧 MC 存储模型必须与 ref 侧逐字节共读（proof_certificate 的 mc_not_shared 判据）——
+# 每个 variant 的 FM impl 只给自己 golden 闭包里真用到的那几份（= 它的 FM_REF_DEPS；生成器默认，UT 不变）。
+fm-SRAMTemplate_128: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_10.sv $(GOLDEN_RTL)/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv
+fm-SRAMTemplate_145: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_12.sv $(GOLDEN_RTL)/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv
+fm-SRAMTemplate_146: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_13.sv $(GOLDEN_RTL)/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv
+fm-SRAMTemplate_152: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_15.sv $(GOLDEN_RTL)/sram_array_1p512x104m13s1h0l1b_l2_meta.sv
+fm-SRAMTemplate_155: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_18.sv $(GOLDEN_RTL)/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv
+fm-SRAMTemplate_163: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_15.sv $(GOLDEN_RTL)/sram_array_1p512x104m13s1h0l1b_l2_meta.sv
+fm-SRAMTemplate_166: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_18.sv $(GOLDEN_RTL)/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv
+fm-SRAMTemplate_178: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_18.sv $(GOLDEN_RTL)/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv
+fm-SRAMTemplate_185: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_15.sv $(GOLDEN_RTL)/sram_array_1p512x104m13s1h0l1b_l2_meta.sv
+
 GOLDEN_SRCS = $(GOLDEN_RTL)/SRAMTemplate_128.sv \
               $(GOLDEN_RTL)/SRAMTemplate_145.sv \
               $(GOLDEN_RTL)/SRAMTemplate_146.sv \

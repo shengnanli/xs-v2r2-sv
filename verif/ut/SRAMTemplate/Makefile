@@ -76,14 +76,40 @@ RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv \
                   $(GOLDEN_RTL)/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv
 
 # codex 0222/0226：impl 侧 MC 存储模型必须与 ref 侧逐字节共读（proof_certificate 的 mc_not_shared 判据）——
-# 下面这些 variant 只给自己 golden 闭包里真用到的那几份（frontend-asm lane 为 Frontend green_child 证书链补）。
+# 每个 variant 的 FM impl 只给自己 golden 闭包里真用到的那几份（= 它的 FM_REF_DEPS；生成器默认，UT 不变）。
+fm-SRAMTemplate: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array.sv $(GOLDEN_RTL)/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv
+fm-SRAMTemplate_100: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_7.sv $(GOLDEN_RTL)/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv
+fm-SRAMTemplate_116: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_8.sv $(GOLDEN_RTL)/sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv
+fm-SRAMTemplate_124: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_9.sv $(GOLDEN_RTL)/sram_array_1p32x90m45s1h0l1b_bitmap.sv
+fm-SRAMTemplate_129: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_11.sv $(GOLDEN_RTL)/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv
+fm-SRAMTemplate_143: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_11.sv $(GOLDEN_RTL)/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv
+fm-SRAMTemplate_148: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_14.sv $(GOLDEN_RTL)/sram_array_1p512x76m19s1h0l1b_l2_tag.sv
+fm-SRAMTemplate_150: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_14.sv $(GOLDEN_RTL)/sram_array_1p512x76m19s1h0l1b_l2_tag.sv
+fm-SRAMTemplate_153: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_16.sv $(GOLDEN_RTL)/sram_array_1p512x16m16s1h0l1b_l2_repl.sv
+fm-SRAMTemplate_154: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_17.sv $(GOLDEN_RTL)/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv
+fm-SRAMTemplate_159: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_14.sv $(GOLDEN_RTL)/sram_array_1p512x76m19s1h0l1b_l2_tag.sv
+fm-SRAMTemplate_16: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_0.sv $(GOLDEN_RTL)/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv
+fm-SRAMTemplate_162: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_14.sv $(GOLDEN_RTL)/sram_array_1p512x76m19s1h0l1b_l2_tag.sv
+fm-SRAMTemplate_164: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_16.sv $(GOLDEN_RTL)/sram_array_1p512x16m16s1h0l1b_l2_repl.sv
+fm-SRAMTemplate_165: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_17.sv $(GOLDEN_RTL)/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv
+fm-SRAMTemplate_181: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_14.sv $(GOLDEN_RTL)/sram_array_1p512x76m19s1h0l1b_l2_tag.sv
+fm-SRAMTemplate_186: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_16.sv $(GOLDEN_RTL)/sram_array_1p512x16m16s1h0l1b_l2_repl.sv
+fm-SRAMTemplate_187: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_17.sv $(GOLDEN_RTL)/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv
+fm-SRAMTemplate_2: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array.sv $(GOLDEN_RTL)/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv
+fm-SRAMTemplate_32: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_0.sv $(GOLDEN_RTL)/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv
 fm-SRAMTemplate_36: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_1.sv $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv
+fm-SRAMTemplate_4: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_0.sv $(GOLDEN_RTL)/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv
 fm-SRAMTemplate_44: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_2.sv $(GOLDEN_RTL)/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv
 fm-SRAMTemplate_45: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_3.sv $(GOLDEN_RTL)/sram_array_1p512x24m12s1h0l1b_bp_tage.sv
 fm-SRAMTemplate_64: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_4.sv $(GOLDEN_RTL)/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv
 fm-SRAMTemplate_68: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_5.sv $(GOLDEN_RTL)/sram_array_1p128x24m6s1h0l1b_bp_sc.sv
 fm-SRAMTemplate_76: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_6.sv $(GOLDEN_RTL)/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
 fm-SRAMTemplate_78: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_6.sv $(GOLDEN_RTL)/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
+fm-SRAMTemplate_8: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_0.sv $(GOLDEN_RTL)/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv
+fm-SRAMTemplate_84: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_7.sv $(GOLDEN_RTL)/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv
+fm-SRAMTemplate_86: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_7.sv $(GOLDEN_RTL)/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv
+fm-SRAMTemplate_88: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_7.sv $(GOLDEN_RTL)/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv
+fm-SRAMTemplate_92: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_7.sv $(GOLDEN_RTL)/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv
 
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/SRAMTemplate.sv \

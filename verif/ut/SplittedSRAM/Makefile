@@ -35,6 +35,11 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/SplittedSRAM_1.sv \
 
 FM_REF_DEPS_SplittedSRAM_1 = SRAMTemplate_128.sv sram_array_1p4x786m131s1h0l1b_ptw_l1.sv array_10.sv
 FM_REF_DEPS_SplittedSRAM_2 = SRAMTemplate_129.sv SRAMTemplate_143.sv sram_array_1p64x114m57s1h0l1b_ptw_l0.sv array_11.sv
+# ★FM impl 侧逐 variant 只读自己那一份宏链（2026-10-20，agent/rr-mcnarrow；cb251a56a 同法）★：UT 仍用上面整张
+# RTL_GOLDEN_DEPS；impl 闭包带着别的 variant 的 MC 宏链 = green_child_impl_golden_mc_not_shared（codex 0222）。
+# 每个 variant 的 impl 侧 golden 依赖 = 它 FM_REF_DEPS 里的宏链（内层 SRAMTemplate_* 在 impl 侧是重写件，不进）。
+fm-SplittedSRAM_1: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_10.sv $(GOLDEN_RTL)/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv
+fm-SplittedSRAM_2: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/array_11.sv $(GOLDEN_RTL)/sram_array_1p64x114m57s1h0l1b_ptw_l0.sv
 
 # 两侧都完整 elaborate 到**同一层**：内层 SRAMTemplate_128/129/143 是本仓重写件
 # （不是厂商宏），ref 侧读 golden 版、impl 侧读重写版，都不抽象；再下一层的

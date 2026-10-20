@@ -67,6 +67,13 @@ fm-Queue78_PCrdGranted: RTL_GOLDEN_DEPS =
 fm-Queue40_L2TlbMQBundle: RTL_SRCS = $(RTL_DIR)/memblock/L2TlbMissQueue.sv \
                                      $(RTL_DIR)/memblock/Queue40_L2TlbMQBundle.sv
 fm-Queue40_L2TlbMQBundle: RTL_GOLDEN_DEPS =
+# ★FM impl 侧逐 variant 只读自己那一份 MC 存储模型（2026-10-20，agent/rr-mcnarrow；cb251a56a 同法）★：UT 两侧仍共用上面整张
+# RTL_GOLDEN_DEPS；FM 的 impl 闭包若带上全家族的 ram，证书复核按 codex 0222 判 green_child_impl_golden_mc_not_shared。
+# 每个 variant 的 impl 侧 golden 依赖 = 它 FM_REF_DEPS 里的 MC 存储模型（同一份，两侧共读）。
+fm-Queue16_CHIREQ: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_16x137.sv
+fm-Queue16_CHIRSP: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_16x62.sv
+fm-Queue4_CHISNP: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_4x115.sv
+fm-Queue2_PCrdGranted: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x15.sv
 # 不合并重复寄存器：比较点 = 寄存器位 + 输出位，fm_predict 模型精确适用；常量段 ram 位
 # 在 merge=true 下两侧合并不对称（TLBuffer_13 Makefile 实测），关掉是加强不是放宽。
 FM_MERGE_DUP = false
