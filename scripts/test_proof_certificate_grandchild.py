@@ -83,6 +83,12 @@ def _grand_cert(fx, verdict='SUCCEEDED', golden_text=GRAND_TEXT):
              'sha256': T._sha(golden_text.encode())}]
     doc['input_closure']['golden'] = gold
     doc['input_closure']['golden_sha256'] = PC.closure_digest(gold)
+    # fx.cert 是 cert_mutate 之后的 ChildLeaf 证书，impl 里挂着 golden GrandGolden.sv 本身；
+    # 照抄进 GrandGolden 自己的证书 = 「impl 侧就是被证的 golden」的自环（codex 0244 A 起按环拒）。去掉它。
+    impl = [e for e in doc['input_closure']['impl']
+            if not (e.get('kind') == 'golden' and e.get('path') == 'golden-rtl/%s' % GRAND_SV)]
+    doc['input_closure']['impl'] = impl
+    doc['input_closure']['impl_sha256'] = PC.closure_digest(impl)
     nr = doc['native_result']
     doc['result_sha256'] = PC.canon_digest({'verdict': verdict, 'native_result': nr})
     doc['reproduce'] = {'command': 'PROOF_COMMIT=%s scripts/run_proof.sh %s %s'
