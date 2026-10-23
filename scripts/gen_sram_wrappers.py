@@ -29,9 +29,9 @@ GOLDEN = pathlib_Path("/home/eda/xs-env/G1-canonical/golden-rtl")
 VARIANTS = None  # None = 自动枚举 G1 全部 SRAMTemplate* 变体（supported 检测过滤）
 
 
-# impl 侧 MC 存储模型按 variant 单独共读的那几个（见 Makefile 生成处的说明）
-MC_SPLIT_VARIANTS = {"SRAMTemplate_36", "SRAMTemplate_44", "SRAMTemplate_45", "SRAMTemplate_64",
-                     "SRAMTemplate_68", "SRAMTemplate_76", "SRAMTemplate_78"}
+# impl 侧 MC 存储模型逐 variant 共读：**每个** variant 的 FM impl golden 依赖 = 它自己的 FM_REF_DEPS
+# （见 Makefile 生成处的说明）。原先是一份名单 MC_SPLIT_VARIANTS（7 个），漏下的 variant 全部判
+# green_child_impl_golden_mc_not_shared（rr-special §3.1）——改成生成器默认行为，不再维护名单。
 
 
 def read(name):
@@ -388,13 +388,13 @@ def main():
               LOCAL_PRIMITIVES.get(d, f"$(GOLDEN_RTL)/{d}") for d in sorted(fm_deps)),
           ""]
     # codex 0222/0226：impl 侧 MC 存储模型须与 ref 侧逐字节共读（proof_certificate 的 mc_not_shared 判据）。
-    # MC_SPLIT_VARIANTS 里的 variant 的 FM impl 只读自己 golden 闭包里真用到的那几份（frontend-asm lane 为
-    # Frontend green_child 证书链补；其余 variant 不动，免得无关目标的证明闭包变陈旧）。
-    split = [i for i in infos if i["name"] in MC_SPLIT_VARIANTS]
-    if split:
+    # 每个 variant 的 FM impl 只读自己 golden 闭包里真用到的那几份 = 它的 FM_REF_DEPS（ClockGate 换本地签核件）。
+    # 默认对全部 variant 生效（rr-mcnarrow，2026-10-20）；原 MC_SPLIT_VARIANTS 那 7 行字节不变。
+    # UT（simv）仍用上面整张 RTL_GOLDEN_DEPS。
+    if infos:
         mk += ["# codex 0222/0226：impl 侧 MC 存储模型必须与 ref 侧逐字节共读（proof_certificate 的 mc_not_shared 判据）——",
-               "# 下面这些 variant 只给自己 golden 闭包里真用到的那几份（frontend-asm lane 为 Frontend green_child 证书链补）。"]
-        for i in split:
+               "# 每个 variant 的 FM impl 只给自己 golden 闭包里真用到的那几份（= 它的 FM_REF_DEPS；生成器默认，UT 不变）。"]
+        for i in infos:
             mk.append(f"fm-{i['name']}: RTL_GOLDEN_DEPS = " + " ".join(
                 LOCAL_PRIMITIVES.get(d, f"$(GOLDEN_RTL)/{d}") for d in sorted(fm_ref[i["name"]])))
         mk += ["", ""]

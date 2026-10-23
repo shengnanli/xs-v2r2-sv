@@ -598,7 +598,17 @@ def emit_mk(infos):
           "# ref 侧 FM_REF_DEPS 仍是 golden ClockGate.sv。",
           "RTL_GOLDEN_DEPS = " + " \\\n                  ".join(
               LOCAL_PRIMITIVES.get(d, f"$(GOLDEN_RTL)/{d}") for d in sorted(fm_deps)),
-          "",
+          ""]
+    # codex 0222/0226：impl 侧 MC 存储模型须与 ref 侧逐字节共读（proof_certificate 的 mc_not_shared 判据）。
+    # 每个 variant 的 FM impl 只读自己 golden 闭包里真用到的那几份 = 它的 FM_REF_DEPS（ClockGate 换本地签核件）；
+    # 生成器默认对全部 variant 生效（rr-mcnarrow，2026-10-20；与 scripts/gen_sram_wrappers.py 同一规则）。
+    # UT（simv）仍用上面整张 RTL_GOLDEN_DEPS。
+    mk += ["# codex 0222/0226：impl 侧 MC 存储模型必须与 ref 侧逐字节共读（proof_certificate 的 mc_not_shared 判据）——",
+           "# 每个 variant 的 FM impl 只给自己 golden 闭包里真用到的那几份（= 它的 FM_REF_DEPS；生成器默认，UT 不变）。"]
+    for i in infos:
+        mk.append(f"fm-{i['name']}: RTL_GOLDEN_DEPS = " + " ".join(
+            LOCAL_PRIMITIVES.get(d, f"$(GOLDEN_RTL)/{d}") for d in sorted(fm_ref[i["name"]])))
+    mk += ["",
           "GOLDEN_SRCS = " + " \\\n              ".join(
               [f"$(GOLDEN_RTL)/{i['name']}.sv" for i in infos]
               + [f"$(GOLDEN_RTL)/{d}" for d in sorted(sim_deps)]),

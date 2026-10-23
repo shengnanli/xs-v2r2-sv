@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/SRAMTemplate_152
+Implementation : i:/WORK/SRAMTemplate_152
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:19:09 2026
+**************************************************
+
+No unverified compare points.
+
+1

@@ -45,6 +45,9 @@ fm-SplittedSRAMTemplate_25: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.
 fm-SplittedSRAMTemplate_27: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_6.sv $(GOLDEN_RTL)/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
 fm-SplittedSRAMTemplate_3: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_2.sv $(GOLDEN_RTL)/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv
 fm-SplittedSRAMTemplate_4: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array_3.sv $(GOLDEN_RTL)/sram_array_1p512x24m12s1h0l1b_bp_tage.sv
+# rr-mcnarrow（2026-10-20）补齐剩下两个 variant（同一规则：= FM_REF_DEPS 去掉 impl 侧由重写件提供的内层 SRAMTemplate）。
+fm-SplittedSRAMTemplate: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array.sv $(GOLDEN_RTL)/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv
+fm-SplittedSRAMTemplate_1: RTL_GOLDEN_DEPS = $(XSSV_HOME)/rtl/common/ClockGate.sv $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/array.sv $(GOLDEN_RTL)/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv
 
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/array_4_ext.v \

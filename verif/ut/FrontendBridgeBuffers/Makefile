@@ -38,6 +38,12 @@ FM_VARIANTS = ICacheBuffer InstrUncacheBuffer ICacheCtrlBuffer
 FM_REF_DEPS_ICacheBuffer = Queue2_TLBundleA_8.sv Queue2_TLBundleD_7.sv ram_2x359.sv ram_2x281.sv
 FM_REF_DEPS_InstrUncacheBuffer = Queue2_TLBundleA_12.sv Queue2_TLBundleD_13.sv ram_2x133.sv ram_2x76.sv
 FM_REF_DEPS_ICacheCtrlBuffer = Queue2_TLBundleA_10.sv Queue2_TLBundleD_11.sv ram_2x117.sv ram_2x80.sv
+# ★FM impl 侧逐 variant 只读自己那一份 ram（2026-10-20，agent/rr-mcnarrow；cb251a56a 同法）★：UT 两侧仍共用上面整张
+# RTL_GOLDEN_DEPS；FM 的 impl 闭包若带上全家族的 ram，证书复核按 codex 0222 判 green_child_impl_golden_mc_not_shared。
+# 每个 variant 的 impl 侧 golden 依赖 = 它 FM_REF_DEPS 里的 ram（同一份，两侧共读）。
+fm-ICacheBuffer: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x359.sv $(GOLDEN_RTL)/ram_2x281.sv
+fm-InstrUncacheBuffer: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x133.sv $(GOLDEN_RTL)/ram_2x76.sv
+fm-ICacheCtrlBuffer: RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ram_2x117.sv $(GOLDEN_RTL)/ram_2x80.sv
 # 不合并重复寄存器：比较点 = 寄存器位 + 输出位，fm_predict 模型精确适用（与 UncoreTLQueues 同）。
 FM_MERGE_DUP = false
 PORTLINT_ORDER = fail
