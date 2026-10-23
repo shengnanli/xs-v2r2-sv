@@ -1,0 +1,153 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-23T05:56:33Z",
+ "generator": {
+  "run_context_worktree_digest": "97b6e7de4f21a073150b0e894fc9260d9771c09a4157a2fba514118be499f09d",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/1a7b9b58bb92/ArrayMulDataModule",
+  "version": 1
+ },
+ "impl_commit": "1a7b9b58bb928902cc58f52043098efec2e64775",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ArrayMulDataModule.sv",
+    "sha256": "0a77831be1b0039bf5bfef7cd82cab3b95b932700a6f92f8f056268528b41650"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/C22.sv",
+    "sha256": "71e815b093a14992cfe022b10869ae10b3cbb2dc264b7f18b0462f53e2bf042f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/C32.sv",
+    "sha256": "f6076b9673b0ddb4637021bffa4690a9c63b61674b06982650c86bfd88771afd"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/C53.sv",
+    "sha256": "a166c32a30988b18e391b699ff8089a986b04a2233c49324abe0b6bac750b67b"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/CSA3_2.sv",
+    "sha256": "4dcbda763f416c74e30e74d0fbbfde84041eb727b7973b5c2dab27b8dccc200b"
+   }
+  ],
+  "golden_sha256": "da2bf0f69613aac3622ded2aa37304f0b3d80ee8f6f1eb4460d8beba3f9abf96",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/C22.sv",
+    "sha256": "7746b9762297a418fa120599c17530ba5d9c02b1eb456af98d3d13c10c715d4c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CSA3_2.sv",
+    "sha256": "03b99b8950697145c3f6b6434860331d5117b7784cfafc8e7bd40f2ee9d0253b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/C32.sv",
+    "sha256": "a491e78b5d9c3352f7eca1713b8b35b94fb9c224e666a685a0d9b053831a5451"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/C53.sv",
+    "sha256": "1023b2ae97c6638fa038fdfe2b2f13571fe57effd3a92463ff26b7d84310159d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ArrayMulDataModule.sv",
+    "sha256": "4b6ee5722dff79f2af49f6a6824efc9300db8de5fab038f814c8bf917d1728b8"
+   }
+  ],
+  "impl_sha256": "9f6661b6028f0b657b950665cab27a277d179b52643a2917e5e4c884adc9fa1a",
+  "repo_impl_files": 5
+ },
+ "native_facts_sha256": "bf34da0495336a90c92d897b2756d408e950a58eff456e1ed26b872293c3ed53",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 2661,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "1a7b9b58bb928902cc58f52043098efec2e64775",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "97b6e7de4f21a073150b0e894fc9260d9771c09a4157a2fba514118be499f09d",
+ "provisional": false,
+ "receipt_sha256": "53602fda2a0e01f03ba2b064736df6b4affeb383c606b4b1ed97aaba863d33f1",
+ "reproduce": {
+  "command": "PROOF_COMMIT=1a7b9b58bb928902cc58f52043098efec2e64775 scripts/run_proof.sh ArrayMulDataModule ArrayMulDataModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "604c25e5559531e17e743a8b475206dfbd958795ff291e95c3db85e0a339b825",
+ "run_id": "ArrayMulDataModule-20261020T031745Z-1a7b9b58b",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "ArrayMulDataModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "ArrayMulDataModule",
+ "variant": "ArrayMulDataModule",
+ "verdict": "SUCCEEDED"
+}

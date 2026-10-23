@@ -1,0 +1,148 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-23T05:55:53Z",
+ "generator": {
+  "run_context_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/08c5389ed285/FarShiftRightWithMuxInvFirst",
+  "version": 1
+ },
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FarShiftRightWithMuxInvFirst.sv",
+    "sha256": "27287215e1e13d71fe1656074de982b8d2cd4e2be5a35af556657d637d6ff83c"
+   }
+  ],
+  "golden_sha256": "c30147b45da1da09c83469c7a5a2f1ce783ec706d5a46c309ce5eb27b2d37e1b",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CloseShiftLeftWithMux.sv",
+    "sha256": "282539bf8c0233158f7a3bffb9801b26081a362f6375600f5fe4b86ffd55ec98"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CloseShiftLeftWithMux_1.sv",
+    "sha256": "e22aa9194bb35cfa2cef898164bbd7172a0005231f0bee04f3a296b624a8ada6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/CloseShiftLeftWithMux_9.sv",
+    "sha256": "a00401a3ccdd4526147817800ea2382daf5ad01b9b69f86696b22917188e4f83"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarShiftRightWithMuxInvFirst.sv",
+    "sha256": "28bd766d528c756b3ae5c531fc66f1aee8a908a8efa0461c7812a14645da0b4d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarShiftRightWithMuxInvFirst_2.sv",
+    "sha256": "cb349cf1f5ed70f9af78ddeea128ce6451440e40de9a8fcdaaa30f26cd0852f0"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/FarShiftRightWithMuxInvFirst_18.sv",
+    "sha256": "94db2c9c0ff580761fa8dc9ca0d9e20111e4757217dc77d20c16ab12fe1ce81d"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/LeftShiftModule.sv",
+    "sha256": "fc3912a571ccf45fb9b025bd560c979cb0341e5b5202d0937bc1ac37e56fbafd"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/LeftShiftWordModule.sv",
+    "sha256": "d70da24c0f429fe01f2aeaebe1eaa194e0babac322a43916f9dd9c41b12a9774"
+   }
+  ],
+  "impl_sha256": "db7c07ca1bc0cc914e474197e64ee0c13c81dfaba315ebbeac444459f44187f8",
+  "repo_impl_files": 8
+ },
+ "native_facts_sha256": "91a12febb216342c5db41095b85e9938c860841efd0a6bd3b247905461687821",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 110,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+ "provisional": false,
+ "receipt_sha256": "879eb4f9a543de501e3a0221a16ea49ac801c36cc30f6b2483152a103aeb3a68",
+ "reproduce": {
+  "command": "PROOF_COMMIT=08c5389ed285c4252ab7d18b1cce665928b0aafd scripts/run_proof.sh ShiftMathLeaves8 FarShiftRightWithMuxInvFirst",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "7027df2298fa1cf0cd396b4396fcbab618cc1a318c48e2d1bb74771184cf0aa1",
+ "run_id": "ShiftMathLeaves8-20261020T015016Z-08c5389ed",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "FarShiftRightWithMuxInvFirst",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "ShiftMathLeaves8",
+ "variant": "FarShiftRightWithMuxInvFirst",
+ "verdict": "SUCCEEDED"
+}

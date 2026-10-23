@@ -1,0 +1,118 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-23T05:56:53Z",
+ "generator": {
+  "run_context_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/08c5389ed285/ShiftLeftPriorityWithLZDResult",
+  "version": 1
+ },
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/ShiftLeftPriorityWithLZDResult.sv",
+    "sha256": "b609c1dc50ea6569c3c5af492e73df20d1674050f9a988c9de4b367e056402ef"
+   }
+  ],
+  "golden_sha256": "9217936f5c60527803bc4dfc0b05dbee6c964ddf00c163489ee2ea5ee14d0b85",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ShiftLeftPriorityWithF32EXPResult.sv",
+    "sha256": "04e13e642750e19049a591e281b974030510f2c1f73b26e84b8185dee83eced8"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/ShiftLeftPriorityWithLZDResult.sv",
+    "sha256": "0fa300a1ae41272071b07de19ded1aa90fc2c7ebcb5260ba57a2fd0d4af7c795"
+   }
+  ],
+  "impl_sha256": "d0d37418e21afc0ef3305e0fcf8e467714a7f42035e1871a913120d5e2f6e060",
+  "repo_impl_files": 2
+ },
+ "native_facts_sha256": "d53bb79e2e7edb91c31ccde8111034e6f1fd65e43eca4dda4473915ed8f3d266",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 59,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+ "provisional": false,
+ "receipt_sha256": "a52d65074a3f185c115750df8d106ebd795450a50b6141a813698cce9373fa94",
+ "reproduce": {
+  "command": "PROOF_COMMIT=08c5389ed285c4252ab7d18b1cce665928b0aafd scripts/run_proof.sh ShiftPriorityLeaves2 ShiftLeftPriorityWithLZDResult",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "49e590fdc880256625d75755c0186d0edf8dd6874fa21012146b7608b3d52ab8",
+ "run_id": "ShiftPriorityLeaves2-20261020T030541Z-08c5389ed",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "ShiftLeftPriorityWithLZDResult",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "ShiftPriorityLeaves2",
+ "variant": "ShiftLeftPriorityWithLZDResult",
+ "verdict": "SUCCEEDED"
+}

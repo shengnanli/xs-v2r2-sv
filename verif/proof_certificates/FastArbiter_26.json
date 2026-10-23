@@ -1,0 +1,133 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-23T05:56:14Z",
+ "generator": {
+  "run_context_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/08c5389ed285/FastArbiter_26",
+  "version": 1
+ },
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/FastArbiter_26.sv",
+    "sha256": "64c8c71ad2ee316d3684908e291cf573913fe5614d13f258cc5d0171d1768329"
+   }
+  ],
+  "golden_sha256": "e99c6570617545cb0e5fb40acf637ced5ed567cecd0e240518242ba0be96ce6c",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_FastArbiter_core.sv",
+    "sha256": "589e52634821c1701e1567bd5ce921eca305f26513303c055dad40fe8cefd804"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/FastArbiter.sv",
+    "sha256": "ed8178f1c41793d03c86ba03cc0e8a0bca30dcbec6ce758f1d77c449a02797d4"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/FastArbiter_1.sv",
+    "sha256": "3a3d18093f1012bbb8d3e24370283a41a10e74920f5c46dcabe6411c95347dc2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/uncore/FastArbiter_26.sv",
+    "sha256": "b1ae2fce5a7dcdec35093e63e037406a30875de5eee1caec82cabe74c9ff286d"
+   }
+  ],
+  "impl_sha256": "64ff63d924cc3b146f935438845676e238d1e2bf4f47d4acb65f6db2a83fa218",
+  "repo_impl_files": 4
+ },
+ "native_facts_sha256": "b9b42e5e5e921c99ce4c6143ec3125782fc1018587fe3643078f36b923517590",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 76,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "true"
+ },
+ "proof_config_sha256": "f77ab203172e3cdf941631d9ef20ce2253384f9b4ed612dd43e65ba8cd3b68c6",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+ "provisional": false,
+ "receipt_sha256": "f1fcd36edd7c5ae47462109a3cfbaefeaa7b78e216e59d07081daaf0afa158f5",
+ "reproduce": {
+  "command": "PROOF_COMMIT=08c5389ed285c4252ab7d18b1cce665928b0aafd scripts/run_proof.sh FastArbiterL2c FastArbiter_26",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "e2cb687b2753cf39de29f6dfb69488b39beaa22d4f85cb671fb85f61b3611aae",
+ "run_id": "FastArbiterL2c-20261020T023946Z-08c5389ed",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   },
+   {
+    "kind": "repo",
+    "path": "verif/fm_target_config/FastArbiter_26.tcl",
+    "sha256": "ade504489d515f7ebe9a249fbf9dcd7c12cc91c8bb9ca3a601432a3cbfdba7cf"
+   }
+  ],
+  "sha256": "f8cc103c681d69f072d7215291b80b6f9b85f393a14efbcfac37539af44feeca"
+ },
+ "target": "FastArbiter_26",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "FastArbiterL2c",
+ "variant": "FastArbiter_26",
+ "verdict": "SUCCEEDED"
+}

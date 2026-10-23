@@ -1,0 +1,233 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-23T05:57:49Z",
+ "generator": {
+  "run_context_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/08c5389ed285/MbistPipeIcacheTag",
+  "version": 1
+ },
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/MbistPipeIcacheTag.sv",
+    "sha256": "c63ae70437159aaf2d62828c9dbe563ffb7a1dc3ca0be138882e06e2f91d8ff0"
+   }
+  ],
+  "golden_sha256": "b1c5cd3086ed4fc15b622f7ac174f2192059980f89c319422e69d7ab10a0595d",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/dft/xs_mbist_pipe_core.sv",
+    "sha256": "5fcc7c7836931f1748b2c4cdcaf7ba7d3180ad8f9d8a11ce8db64d3745a0debb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeDCacheData.sv",
+    "sha256": "3991bda1daacb2f8d4c590a823f300febce260ae6227ba782543ed44e188ad4c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeDcacheTag.sv",
+    "sha256": "f28af702c9d18f7dd521403584f2705689365dd59670cb6ad778bfc138655062"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeFrontend.sv",
+    "sha256": "f27da67978c36d391827b91d2d3931b1862385a91fae7bc9014560fe6cf99eb3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeFtb.sv",
+    "sha256": "492d0afa1a22058ac0d2eede46f56c53a990a19a48a58c9198757a2a38c847cc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheDataWay0.sv",
+    "sha256": "c46f716b56ab95576e19768fb44e71cf5d4f7024a84003ea86bb08f6e90f7bed"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheDataWay1.sv",
+    "sha256": "93d46c443ea510db309448d28e32ce15707052c2a4c3f7a39b7ea4302d9236ce"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheDataWay2.sv",
+    "sha256": "e480b17f4626ef730090d723ab2bcbc13fee407664fb0b5837ba0e5221edc63e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheDataWay3.sv",
+    "sha256": "bed12d1d7884b7e93b585870e33bb7d73d8d2337bc2913400041e1330fc132cf"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIcacheTag.sv",
+    "sha256": "2b36f7c14ad01edf9d1ad2cac75724558e8a9de62f0065412146691b7d7fd45e"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIttage.sv",
+    "sha256": "c7834a72a6513413829676a16e4d586d3687d5c04612188c99ab557093240218"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIttage_1.sv",
+    "sha256": "db493a9ddb81983bfb5b1c874aba49f0acfb82699975035ccd66ce87f569a89a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIttage_2.sv",
+    "sha256": "826caf5a951e3cc3d3d9c963dc1bd9694c688be62fc48d8a1de77b5861120c7c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIttage_3.sv",
+    "sha256": "e6213350891d8cafa0b89b8ab581b3a8246f6478c816f3dd84ec5ffd4f292640"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeIttage_4.sv",
+    "sha256": "a473a5ae9e816365d466d4966159040fecab28bf6411e7e01c790ddab1389639"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeL2Prefetcher.sv",
+    "sha256": "9f4a4df2159cd04f798dd495054ec32d30975bfe840fc4fe8bbb8041f5e5ccd1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeMemBlk.sv",
+    "sha256": "0b1f8130dc30704351c79a4bcac4d8e03d3f6b7b46caaced1b4bdc199c48920f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipePtwL0.sv",
+    "sha256": "f9063dc85f5a46a1044dfa746bfd5deaf837ef276d0ae92190fa07c3dfe9874a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipePtwL1.sv",
+    "sha256": "a92e9e3931a186f1aba05282eafb04f124b3424c9fdf650931a61e8e59c0119a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSc.sv",
+    "sha256": "462b45d44fc9ec5b5b2b02fcad0592affba31fd5896eadf6ccfe3a1300612c8c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSc_1.sv",
+    "sha256": "a8995e7c42ecc818ff4d51ca1fed21de1d79665bb60e52d339465e6057279486"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSc_2.sv",
+    "sha256": "894a2fc46b2b56a86add2303a1d8977bd9e54b4f30345f020742477c10fb9919"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSc_3.sv",
+    "sha256": "9c2b0a3e9e1773e3a9c0f0d53bf119e1819b00c24e1fdbb4934fe6a4873f444f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeSms.sv",
+    "sha256": "1fd5a89cf9d47a54dc961e91a0e7da35cd2cab32aa04aa2eec65564a82b27539"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/dft/MbistPipeTage.sv",
+    "sha256": "cedb2144c62e290e191b4ea06a6df8837ee6cf8bf5073a3144a6805dbf7799a8"
+   }
+  ],
+  "impl_sha256": "4ee1097af1df9b9d9b14f4587f9f4940402a1689fd245ff35853bfa522308079",
+  "repo_impl_files": 25
+ },
+ "native_facts_sha256": "884f7778f4ece51adcc38828710e5603d549728e7a33b6bd5aa15350205af33d",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 563,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+ "provisional": false,
+ "receipt_sha256": "39dead9c0fc439c6aaa47cfa5be7657d8bb0f5577af835ea0634841db49a3021",
+ "reproduce": {
+  "command": "PROOF_COMMIT=08c5389ed285c4252ab7d18b1cce665928b0aafd scripts/run_proof.sh MbistPipe MbistPipeIcacheTag",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "4e1d92f1332e377bb7ad1c0638008564e16947eedf99114830441f335f272fc5",
+ "run_id": "MbistPipe-20261020T022234Z-08c5389ed",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "MbistPipeIcacheTag",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "MbistPipe",
+ "variant": "MbistPipeIcacheTag",
+ "verdict": "SUCCEEDED"
+}

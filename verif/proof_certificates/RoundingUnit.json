@@ -1,0 +1,148 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-10-23T05:55:36Z",
+ "generator": {
+  "run_context_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/08c5389ed285/RoundingUnit",
+  "version": 1
+ },
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/RoundingUnit.sv",
+    "sha256": "b929fd96b7b3ba856ae1ebaa25e5a6925af4d98181b449b51766926d23c7cb44"
+   }
+  ],
+  "golden_sha256": "d43bf4fd8d64e4285351ac9220aa545c76ce5951ff70bf07f4786c46c7f6e1d9",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit.sv",
+    "sha256": "573c6b484ea6e06de36a76b493a7e2ff2aa0ebe9b429b5a6754d6fe21b10056b"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_1.sv",
+    "sha256": "f0c0eb5cefb0450de19b0a30dbec6175b7e2d1e6f99bd8bfcdb74798a53ef2a3"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_2.sv",
+    "sha256": "4063fe3d92b6a2219aaeda9a862efb699fd536dcaf81882373ab5712b7baabe9"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_3.sv",
+    "sha256": "fc09cf84f3fd7f031e05cfe65df842fc0c04205f08f54f2406bc033258d2a6f2"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_4.sv",
+    "sha256": "3373c452c7fc330691f2528a401d51546548eba4ad54ce545e3dfea75baf7e81"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_8.sv",
+    "sha256": "4afd7f8dc6ed609c7fba53a8cb612734986144343874aa6cab523f38bb4a04eb"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_9.sv",
+    "sha256": "ca55a788138a70901a1f399aba76a0271bd2127c196b14eef439d23b3c96486f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/backend/RoundingUnit_11.sv",
+    "sha256": "98e1d9349e0bafe69fe43e580db08ca08320fc71383f9cfc84d62dee941ec434"
+   }
+  ],
+  "impl_sha256": "d5dcbf259386ab2804f74f7d4e71efc1a9948f707a566b0f4fbe41d66895a994",
+  "repo_impl_files": 8
+ },
+ "native_facts_sha256": "95cd80b29d7e6d619e196474da93f76da272cd3e93ce1709f18f8fbd66ce4436",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 25,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "a946427c2ffcea2a2b0ebd7d69ff450ebcb1bc1ebaedc37b91d0b8a4d44095f9",
+ "provisional": false,
+ "receipt_sha256": "7d8d96c3adbe0f8d998fed42f2498854724df65de4b3f8a8191e3ffd2d750959",
+ "reproduce": {
+  "command": "PROOF_COMMIT=08c5389ed285c4252ab7d18b1cce665928b0aafd scripts/run_proof.sh RoundingLeaves8 RoundingUnit",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "08d7aa13cc17709370ac1b720b9c74aa45386c26d52248179e8bdb83604b86bf",
+ "run_id": "RoundingLeaves8-20261020T021501Z-08c5389ed",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "39c99731e63a753d3a084039289272f3803c9743e71d301d512332cff505938f"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "9e29e00c01746cebb0a7ddc7ac617bfa3fba46e8ee5975e30a4a9707fb9953c5"
+ },
+ "target": "RoundingUnit",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "RoundingLeaves8",
+ "variant": "RoundingUnit",
+ "verdict": "SUCCEEDED"
+}
