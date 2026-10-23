@@ -1,0 +1,10 @@
+{
+  "target": "ICacheMSHR",
+  "ut": "ICacheMSHR",
+  "regs": 56,
+  "outs": 114,
+  "expected": 170,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/7a881579fe64/ICacheMSHR/receipt.json：verdict=SUCCEEDED passing=170 constant_reg=None unread=None。口径：--ut ICacheMSHR（from_ut 可用），merge_dup=true。"
+}

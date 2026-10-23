@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/TLXbar_3
+Implementation : i:/WORK/TLXbar_3
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:32:56 2026
+**************************************************
+
+No aborted compare points.
+
+1

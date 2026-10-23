@@ -1,0 +1,10 @@
+{
+  "target": "FastArbiter_30",
+  "ut": "FastArbiter_30",
+  "regs": 0,
+  "outs": 423,
+  "expected": 423,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/7a881579fe64/FastArbiter_30/receipt.json：verdict=SUCCEEDED passing=423 constant_reg=None unread=None。口径：--ut FastArbiter_30（from_ut 可用），merge_dup=true。"
+}

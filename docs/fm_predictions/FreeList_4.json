@@ -1,0 +1,10 @@
+{
+  "target": "FreeList_4",
+  "ut": "FreeListVariants",
+  "regs": 360,
+  "outs": 25,
+  "expected": 385,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/aad807db4fb6/FreeList_4/receipt.json：verdict=SUCCEEDED passing=289 constant_reg=4 unread=None。口径：--ut FreeListVariants（from_ut 可用），merge_dup=true。"
+}

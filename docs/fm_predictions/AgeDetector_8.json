@@ -1,0 +1,10 @@
+{
+  "target": "AgeDetector_8",
+  "ut": "AgeDetector",
+  "regs": 1,
+  "outs": 8,
+  "expected": 9,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/9bbd0085d4cf/AgeDetector_8/receipt.json：verdict=SUCCEEDED passing=9 constant_reg=None unread=None。口径：--ut AgeDetector（from_ut 可用），merge_dup=true。"
+}

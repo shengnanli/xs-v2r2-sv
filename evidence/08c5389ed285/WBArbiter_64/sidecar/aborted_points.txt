@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/WBArbiter_64
+Implementation : i:/WORK/WBArbiter_64
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:18:44 2026
+**************************************************
+
+No aborted compare points.
+
+1

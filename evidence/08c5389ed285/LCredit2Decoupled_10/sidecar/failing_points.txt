@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/LCredit2Decoupled_10
+Implementation : i:/WORK/LCredit2Decoupled_10
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 00:03:45 2026
+**************************************************
+
+No failing compare points.
+
+1

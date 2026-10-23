@@ -1,0 +1,10 @@
+{
+  "target": "DatamoduleResultBuffer",
+  "ut": "DatamoduleResultBuffer",
+  "regs": 508,
+  "outs": 508,
+  "expected": 1016,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/f4184ea93fcf/DatamoduleResultBuffer/receipt.json：verdict=SUCCEEDED passing=1016 constant_reg=None unread=None。口径：--ut DatamoduleResultBuffer（from_ut 可用），merge_dup=true。"
+}

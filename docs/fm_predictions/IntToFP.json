@@ -1,0 +1,23 @@
+{
+  "target": "IntToFP",
+  "ut": null,
+  "regs": 0,
+  "outs": 37,
+  "expected": 177,
+  "merge_dup": null,
+  "model_applicable": false,
+  "bbin": 140,
+  "bbox": {
+    "IntToFP_postnorm": {
+      "insts": 1,
+      "in_bits": 74,
+      "points": 74
+    },
+    "IntToFP_prenorm": {
+      "insts": 1,
+      "in_bits": 66,
+      "points": 66
+    }
+  },
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/96c3fe112cb4/IntToFP/receipt.json：verdict=SUCCEEDED passing=37 constant_reg=None unread=None。口径：不带 --ut。实际 ut_dir=IntToFPLeaves8（make 展开 FM_VARIANTS 得到），但该 Makefile 的 FM_VARIANTS 由变量给出，fm_predict from_ut 不展开（FileNotFoundError(2, 'No such file or directory')），同 reproof-171 先例只能按 golden 单模块 compute_model 登记，ut=null/merge_dup=null/model_applicable=false；Makefile FM_MERGE_DUP=true(默认)。"
+}

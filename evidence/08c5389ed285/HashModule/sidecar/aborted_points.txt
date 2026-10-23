@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/HashModule
+Implementation : i:/WORK/HashModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:30:41 2026
+**************************************************
+
+No aborted compare points.
+
+1

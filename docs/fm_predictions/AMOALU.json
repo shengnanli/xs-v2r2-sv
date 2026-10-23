@@ -1,0 +1,10 @@
+{
+  "target": "AMOALU",
+  "ut": "AMOALU",
+  "regs": 0,
+  "outs": 64,
+  "expected": 64,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/2f84dea722ff/AMOALU/receipt.json：verdict=SUCCEEDED passing=64 constant_reg=None unread=None。口径：--ut AMOALU（from_ut 可用），merge_dup=true。"
+}

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/RXRSP_4
+Implementation : i:/WORK/RXRSP_4
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:18:59 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Pma7cfgModule
+Implementation : i:/WORK/Pma7cfgModule
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 23:01:31 2026
+**************************************************
+
+No failing compare points.
+
+1

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ShiftLeftPriorityWithLZDResult
+Implementation : i:/WORK/ShiftLeftPriorityWithLZDResult
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 23:05:53 2026
+**************************************************
+
+No aborted compare points.
+
+1

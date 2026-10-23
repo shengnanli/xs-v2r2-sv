@@ -1,0 +1,10 @@
+{
+  "target": "DelayN_215",
+  "ut": "DelayN",
+  "regs": 18,
+  "outs": 9,
+  "expected": 27,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/eee60602a12f/DelayN_215/receipt.json：verdict=SUCCEEDED passing=27 constant_reg=None unread=None。口径：--ut DelayN（from_ut 可用），merge_dup=true。"
+}

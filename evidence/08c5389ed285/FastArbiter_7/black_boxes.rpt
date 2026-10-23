@@ -1,0 +1,56 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/FastArbiter_7
+Implementation : i:/WORK/FastArbiter_7
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:23:41 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    FastArbiter_3
+
+       Instances : 0
+
+e *    FastArbiter_4
+
+       Instances : 0
+
+e *    FastArbiter_5
+
+       Instances : 0
+
+e *    FastArbiter_6
+
+       Instances : 0
+
+e *    xs_FastArbiter_core
+
+       Instances : 0
+
+
+1
+

@@ -1,0 +1,182 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "FastArbiter_6",
+ "run_id": "FastArbiterL2-20261020T022303Z-08c5389ed",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/FastArbiter_6.sv",
+   "kind": "golden",
+   "sha256": "2724707a2c3b40635f92899374602a749f99eaaa6b58a003ebc44735153dca44"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_FastArbiter_core.sv",
+   "kind": "repo",
+   "sha256": "589e52634821c1701e1567bd5ce921eca305f26513303c055dad40fe8cefd804"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_3.sv",
+   "kind": "repo",
+   "sha256": "c5154464bc93f4ee53658c4bdcea36c4dcf82ec1c2f4f2c54f6c3139df01bf16"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_4.sv",
+   "kind": "repo",
+   "sha256": "5c0dbcd584cf2394b0163e5ca142066c6744aca5d45018e701858e1c9ff0c3c7"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_5.sv",
+   "kind": "repo",
+   "sha256": "d40b33145d2c04ff599c9b15f0c711f4c2972d79979ce6022170dded7279b75a"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_6.sv",
+   "kind": "repo",
+   "sha256": "7f7cd47dda60633a0a58439fc790ef54f79df445f150e03661ceb8c788a07d94"
+  },
+  {
+   "path": "rtl/uncore/FastArbiter_7.sv",
+   "kind": "repo",
+   "sha256": "0c59b92e48fc19035dcf5ebecaaaf3d88ce9b59e35bd614fa4fe74aee4bad7ef"
+  }
+ ],
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "FastArbiterL2-20261020T022303Z-08c5389ed",
+  "top": "FastArbiter_6",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 95,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 95,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 1,
+  "constant_reg_toggle_assumed": true,
+  "native": "SUCCEEDED",
+  "top": "FastArbiter_6",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

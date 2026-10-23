@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/fpsqrt_r16
+Implementation : i:/WORK/fpsqrt_r16
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 02:02:37 2026
+**************************************************
+
+No unverified compare points.
+
+1

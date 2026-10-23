@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/VIMacSrcTypeModule
+Implementation : i:/WORK/VIMacSrcTypeModule
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:46:31 2026
+**************************************************
+
+No unverified compare points.
+
+1

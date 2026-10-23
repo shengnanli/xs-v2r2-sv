@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/FliDTable
+Implementation : i:/WORK/FliDTable
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 21:52:49 2026
+**************************************************
+
+No failing compare points.
+
+1

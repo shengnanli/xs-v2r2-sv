@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/SinkA
+Implementation : i:/WORK/SinkA
+Version        : V-2023.12-SP3
+Date           : Tue Oct 20 01:24:55 2026
+**************************************************
+
+No unverified compare points.
+
+1

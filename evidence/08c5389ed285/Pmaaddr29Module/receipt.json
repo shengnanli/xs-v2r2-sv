@@ -1,0 +1,302 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Pmaaddr29Module",
+ "run_id": "PmaaddrLeaves30-20261020T020606Z-08c5389ed",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Pmaaddr29Module.sv",
+   "kind": "golden",
+   "sha256": "47eec01a99716e86a2795582b048c1801b72d7fbfbe631b02d21ba3cab79bf43"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Pmaaddr1Module.sv",
+   "kind": "repo",
+   "sha256": "eb4fbfaec56734bff9257d4c3dc9235e56f76833d77b295136100f71483b1344"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr2Module.sv",
+   "kind": "repo",
+   "sha256": "8ac5dda06fa8f2c51dff209bf943ab95166e9b87927e9c3de5116770efcba0fb"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr3Module.sv",
+   "kind": "repo",
+   "sha256": "34664386ec37d85c82e476734ab2ece53c7460701a0dd69ef01a5606a63a31b0"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr4Module.sv",
+   "kind": "repo",
+   "sha256": "637fed35f93a59b892e35a8c314c4b7650f35bb929ba4e4dfac652b5af1092fd"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr5Module.sv",
+   "kind": "repo",
+   "sha256": "a37076381b2ca7230f00f753d3157e5b3f64e12ba26aec6274ab0758cddab3f1"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr6Module.sv",
+   "kind": "repo",
+   "sha256": "044c698bf686891e4b1dc39da4a494867e19f30af9ec65b02f2b9635a4efa0d1"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr7Module.sv",
+   "kind": "repo",
+   "sha256": "76ee37496eb97b4773d3dfe648bab43dc88d42b7cbaa1848c8d968d5b46de679"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr8Module.sv",
+   "kind": "repo",
+   "sha256": "7c39aa618ceed19c67df85828fd517381eb27dbb58c52cda3934cf77871783b1"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr9Module.sv",
+   "kind": "repo",
+   "sha256": "cb72f3cd0c6e77ae9e4c89b1164ab51f3fb95d35d89838854a4c2a8b24159ea0"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr10Module.sv",
+   "kind": "repo",
+   "sha256": "45c30982e3d8276c8c0ed99d8b3728a72620c901bad17a6286718d2fc04ed3bb"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr11Module.sv",
+   "kind": "repo",
+   "sha256": "6ac80ddbaa23f0aa9c0c40b9a542c680855aec8b252befc769abf4563f5ba3b5"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr12Module.sv",
+   "kind": "repo",
+   "sha256": "8c6e47cba33bc5e2ac8f616db9aae74ada32c32f6a6fb808022989e3d463438f"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr13Module.sv",
+   "kind": "repo",
+   "sha256": "0f76e5e7d4107237f6a51ddcfd3baff3d852291e175904bf3d8de8db726b37a6"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr14Module.sv",
+   "kind": "repo",
+   "sha256": "0d76d9f3dad2707bd323555334d3817fefcc322c820db9064b14405b4aab5ca3"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr15Module.sv",
+   "kind": "repo",
+   "sha256": "d1f2ffc0dae5d0629e887696c4e2ea74b99a7d2ee477a2dace5000762b12eba4"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr16Module.sv",
+   "kind": "repo",
+   "sha256": "149b2e3dda1830a28a033dc0953e7ddd9793efc2fc0915d413c905243170e5e0"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr17Module.sv",
+   "kind": "repo",
+   "sha256": "ccb6f3fc8041a2dbd363f6aa8b0d77c6d2750e3fd26a1fd48c98a697cdafb1b1"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr18Module.sv",
+   "kind": "repo",
+   "sha256": "9c5e3c9d60ebc483a00b2a8691d09a6780a76f967081074354ef1a43a579a22f"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr19Module.sv",
+   "kind": "repo",
+   "sha256": "49758d9ac9c7ce249fce75aeda3e1913c025bec9ea7211cb0ce09500db6a79da"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr20Module.sv",
+   "kind": "repo",
+   "sha256": "fff6da414284bfcecc4241a1b20e7e2dda6ebedaeeff6f4d24cd1ae1de72d01d"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr21Module.sv",
+   "kind": "repo",
+   "sha256": "a549e6cb1c53b2c3248c1664cc7309cd258aefca369412db2647ea07d6aeb35b"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr22Module.sv",
+   "kind": "repo",
+   "sha256": "677b1680bdbb3c174673686fadf383ac6b1026145e3d71030dad2c40466cc8ac"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr23Module.sv",
+   "kind": "repo",
+   "sha256": "7821f2d84a9006f3b34127a49030fe25ef3dd943903abbbc323ee3464e0137e0"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr24Module.sv",
+   "kind": "repo",
+   "sha256": "0fae2c96cbf32667395705d79d589c9a54cb060dc85b1b62f798c359e0f6c059"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr25Module.sv",
+   "kind": "repo",
+   "sha256": "326d4cd6a07f0cc329df82f9f15f71d17218b750601482cd8b27509cf5b2a09d"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr26Module.sv",
+   "kind": "repo",
+   "sha256": "d55ece320b60b44858618449a7d2ba66e297477cb2aa01bc87ce002016741c33"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr27Module.sv",
+   "kind": "repo",
+   "sha256": "9b76b0f7b24c55865f2a947fca65ad93d8aea411151ade4ff952fa3307f43a3b"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr28Module.sv",
+   "kind": "repo",
+   "sha256": "f827f0c431fd5c84c419e01a41f1ea67d8bd6e5252cc28c2fe130769066c5e55"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr29Module.sv",
+   "kind": "repo",
+   "sha256": "6c5ec1febedee8ad59a1e0d107a4783dfbc9038bdeb2b65bd0992b8fe036e870"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr30Module.sv",
+   "kind": "repo",
+   "sha256": "13c431c1a7e72ef88103958b62e049909fc6fb18d5e442b0a3dfb1df62efb438"
+  }
+ ],
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "PmaaddrLeaves30-20261020T020606Z-08c5389ed",
+  "top": "Pmaaddr29Module",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 128,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 128,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Pmaaddr29Module",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

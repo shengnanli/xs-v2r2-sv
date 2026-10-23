@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/AMOALU
+Implementation : i:/WORK/AMOALU
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 23:06:53 2026
+**************************************************
+
+No failing compare points.
+
+1

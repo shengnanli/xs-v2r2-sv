@@ -1,0 +1,10 @@
+{
+  "target": "NewPipelineConnectPipe_27",
+  "ut": "NewPipelineConnectPipe_27",
+  "regs": 521,
+  "outs": 522,
+  "expected": 1043,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/40ec7fc36bb8/NewPipelineConnectPipe_27/receipt.json：verdict=SUCCEEDED passing=1043 constant_reg=None unread=None。口径：--ut NewPipelineConnectPipe_27（from_ut 可用），merge_dup=true。"
+}

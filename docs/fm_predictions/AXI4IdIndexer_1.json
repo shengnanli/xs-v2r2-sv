@@ -1,0 +1,10 @@
+{
+  "target": "AXI4IdIndexer_1",
+  "ut": "AXI4IdIndexer_1",
+  "regs": 0,
+  "outs": 292,
+  "expected": 292,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/40ec7fc36bb8/AXI4IdIndexer_1/receipt.json：verdict=SUCCEEDED passing=292 constant_reg=None unread=None。口径：--ut AXI4IdIndexer_1（from_ut 可用），merge_dup=true。"
+}

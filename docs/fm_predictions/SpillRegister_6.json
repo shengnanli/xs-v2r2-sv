@@ -1,0 +1,10 @@
+{
+  "target": "SpillRegister_6",
+  "ut": "BusBufferLeaves5",
+  "regs": 152,
+  "outs": 77,
+  "expected": 229,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/fca707de44af/SpillRegister_6/receipt.json：verdict=SUCCEEDED passing=229 constant_reg=None unread=None。口径：--ut BusBufferLeaves5（from_ut 可用），merge_dup=true。"
+}

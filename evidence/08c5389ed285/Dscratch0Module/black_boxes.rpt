@@ -1,0 +1,140 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/Dscratch0Module
+Implementation : i:/WORK/Dscratch0Module
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 21:51:36 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    Dscratch1Module
+
+       Instances : 0
+
+e *    HgeieModule
+
+       Instances : 0
+
+e *    HieModule
+
+       Instances : 0
+
+e *    HipModule
+
+       Instances : 0
+
+e *    MnscratchModule
+
+       Instances : 0
+
+e *    MscratchModule
+
+       Instances : 0
+
+e *    PrivilegePermitModule
+
+       Instances : 0
+
+e *    ScontextModule
+
+       Instances : 0
+
+e *    SscratchModule
+
+       Instances : 0
+
+e *    TselectModule
+
+       Instances : 0
+
+e *    VSscratchModule
+
+       Instances : 0
+
+e *    cycleModule
+
+       Instances : 0
+
+e *    instretModule
+
+       Instances : 0
+
+e *    xs_Dscratch1Module_core
+
+       Instances : 0
+
+e *    xs_HgeieModule_core
+
+       Instances : 0
+
+e *    xs_HieModule_core
+
+       Instances : 0
+
+e *    xs_HipModule_core
+
+       Instances : 0
+
+e *    xs_MnscratchModule_core
+
+       Instances : 0
+
+e *    xs_MscratchModule_core
+
+       Instances : 0
+
+e *    xs_PrivilegePermitModule_core
+
+       Instances : 0
+
+e *    xs_ScontextModule_core
+
+       Instances : 0
+
+e *    xs_SscratchModule_core
+
+       Instances : 0
+
+e *    xs_TselectModule_core
+
+       Instances : 0
+
+e *    xs_VSscratchModule_core
+
+       Instances : 0
+
+e *    xs_cycleModule_core
+
+       Instances : 0
+
+e *    xs_instretModule_core
+
+       Instances : 0
+
+
+1
+

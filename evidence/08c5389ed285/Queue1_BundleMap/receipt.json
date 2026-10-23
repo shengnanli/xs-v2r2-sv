@@ -1,0 +1,182 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Queue1_BundleMap",
+ "run_id": "Depth1QueueLeaves5-20261020T022513Z-08c5389ed",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Queue1_BundleMap.sv",
+   "kind": "golden",
+   "sha256": "951b927568c2d7847928bf127639f4f676ac354df151dea8bf20c3cf48ac253e"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_ChiselQueue1_core.sv",
+   "kind": "repo",
+   "sha256": "8c12ab1b2180d56e2c80d07cd66a488272a41b455496e87d7f097e15e87e3fa1"
+  },
+  {
+   "path": "rtl/frontend/Queue1_PrefetchReq.sv",
+   "kind": "repo",
+   "sha256": "0fbdd695e09bef8b1fd5b5915921a36ddcc84ec42934c4fa9821bff1a2f66317"
+  },
+  {
+   "path": "rtl/frontend/Queue1_PrefetchResp.sv",
+   "kind": "repo",
+   "sha256": "80d2985902db15f3923adf11d905a54305fbbc0fe09f7641423b02e826e46b8c"
+  },
+  {
+   "path": "rtl/frontend/Queue1_PrefetchTrain.sv",
+   "kind": "repo",
+   "sha256": "486765ac524348483a65843bf83d29d23c973145af1f2039d10f30a88d87cf34"
+  },
+  {
+   "path": "rtl/frontend/Queue1_UInt32.sv",
+   "kind": "repo",
+   "sha256": "0778933def80565e689356f86f180832b5f7aefcb04fef9e5df5c9d7e21e2087"
+  },
+  {
+   "path": "rtl/uncore/Queue1_BundleMap.sv",
+   "kind": "repo",
+   "sha256": "23f30eb78ea122117f12aaf1be100c31e1dbb383eb11df79b68efac657624462"
+  }
+ ],
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "Depth1QueueLeaves5-20261020T022513Z-08c5389ed",
+  "top": "Queue1_BundleMap",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 41,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 41,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Queue1_BundleMap",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/SpecBlock_v4
+Implementation : i:/WORK/SpecBlock_v4
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:23:46 2026
+**************************************************
+
+No failing compare points.
+
+1

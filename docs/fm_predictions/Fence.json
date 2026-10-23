@@ -1,0 +1,10 @@
+{
+  "target": "Fence",
+  "ut": "Fence",
+  "regs": 174,
+  "outs": 799,
+  "expected": 973,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/466d169f9875/Fence/receipt.json：verdict=PASS_DEAD_REF passing=905 constant_reg=None unread=68。口径：--ut Fence（from_ut 可用），merge_dup=true。"
+}

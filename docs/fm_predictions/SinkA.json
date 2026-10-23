@@ -1,0 +1,10 @@
+{
+  "target": "SinkA",
+  "ut": "SinkA",
+  "regs": 0,
+  "outs": 121,
+  "expected": 121,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/40ec7fc36bb8/SinkA/receipt.json：verdict=SUCCEEDED passing=121 constant_reg=None unread=None。口径：--ut SinkA（from_ut 可用），merge_dup=true。"
+}

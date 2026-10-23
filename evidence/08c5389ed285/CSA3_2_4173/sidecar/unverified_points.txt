@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/CSA3_2_4173
+Implementation : i:/WORK/CSA3_2_4173
+Version        : V-2023.12-SP3
+Date           : Mon Oct 19 22:38:13 2026
+**************************************************
+
+No unverified compare points.
+
+1

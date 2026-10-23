@@ -1,0 +1,10 @@
+{
+  "target": "VSetRiWi",
+  "ut": "VSetRiWi",
+  "regs": 0,
+  "outs": 725,
+  "expected": 725,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "rr-small 跑前登记（本 commit 即 PROOF_COMMIT，早于重证）。旧 receipt evidence/b5084fb3e0ed/VSetRiWi/receipt.json：verdict=SUCCEEDED passing=725 constant_reg=None unread=None。口径：--ut VSetRiWi（from_ut 可用），merge_dup=true。"
+}

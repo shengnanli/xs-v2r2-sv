@@ -1,0 +1,202 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "ScountovfModule",
+ "run_id": "CSRLeaves10c-20261020T023130Z-08c5389ed",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/ScountovfModule.sv",
+   "kind": "golden",
+   "sha256": "68aa0e2edf34ecef3cff4b52e31f783679cce313bae4aaba56f4cbc148a2c017"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/Pmpcfg6Module.sv",
+   "kind": "repo",
+   "sha256": "b0c182de663a3153a8b38d476b956820c1b4cc8b948161fb67983e9c19d0454f"
+  },
+  {
+   "path": "rtl/backend/MtopeiModule.sv",
+   "kind": "repo",
+   "sha256": "636ace93dcbe3c3505756a8a64d304fd289bd2e8b56c73ae4e5f72c6dfc858e8"
+  },
+  {
+   "path": "rtl/backend/StopeiModule.sv",
+   "kind": "repo",
+   "sha256": "0aaea88be9d5c534c7a390329f4230f8deb9f3dd5e95f71db59b855497fd354d"
+  },
+  {
+   "path": "rtl/backend/VStopeiModule.sv",
+   "kind": "repo",
+   "sha256": "2255cd5e661db409d47cebf676fb8a3ed516f969b89622da07a71c2d07aaff1e"
+  },
+  {
+   "path": "rtl/backend/Tdata1Module.sv",
+   "kind": "repo",
+   "sha256": "ebfc37eed69b2c954499ecad045757e07f92b66ac7e754ea12b3e45340bae28a"
+  },
+  {
+   "path": "rtl/backend/HcontextModule.sv",
+   "kind": "repo",
+   "sha256": "9e6a45efc27d742475c69be6dd4b6fddf604b513546f73ec70728fcc4eaf1e80"
+  },
+  {
+   "path": "rtl/backend/SLevelPermitModule.sv",
+   "kind": "repo",
+   "sha256": "5462ab2e0923877f7f3d53591ef663f5c674e956198c9fd9422c7fa6d03c051b"
+  },
+  {
+   "path": "rtl/backend/ScountovfModule.sv",
+   "kind": "repo",
+   "sha256": "6b5047b631af0a52cbe73d2901e45c41c456095cc5c76d6c93fd1e7b1c0144ce"
+  },
+  {
+   "path": "rtl/backend/Pmaaddr0Module.sv",
+   "kind": "repo",
+   "sha256": "144688057cfd4a8e2c03cb36ca3b628542128d6777407a31a5fbc39c63f0a041"
+  },
+  {
+   "path": "rtl/backend/Pmpaddr32Module.sv",
+   "kind": "repo",
+   "sha256": "1fc5f59d25764bce774b10605795959b7f3ef4167f1d0d5e7a548018bfca525d"
+  }
+ ],
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "CSRLeaves10c-20261020T023130Z-08c5389ed",
+  "top": "ScountovfModule",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 32,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 32,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "ScountovfModule",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

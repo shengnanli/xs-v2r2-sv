@@ -1,0 +1,222 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Arbiter3_PfGenReq",
+ "run_id": "Pipeline200c-20261020T014517Z-08c5389ed",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Arbiter3_PfGenReq.sv",
+   "kind": "golden",
+   "sha256": "767bc51764d5e2d0f0454f1d13c66354c024da7eb2412215bc5443c4bc3f2c08"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/xs_FixedPriorityArbiter_core.sv",
+   "kind": "repo",
+   "sha256": "e7c8526c5584835cad1b3aa64b7b07d3a2abcabdc83adf1d0783d26da04a5618"
+  },
+  {
+   "path": "rtl/common/xs_OverrideableQueue_core.sv",
+   "kind": "repo",
+   "sha256": "4133dc5e3e714915812ded45ea5e8bc29d3e8215f31379f3c8cee333cee874c4"
+  },
+  {
+   "path": "rtl/uncore/Arbiter16_TLBundleD.sv",
+   "kind": "repo",
+   "sha256": "6b76e6ecb161a98949e3bd1d31a101ec0838e5b16ce2bad2c30c9d41cabe65f9"
+  },
+  {
+   "path": "rtl/frontend/Arbiter3_PfGenReq.sv",
+   "kind": "repo",
+   "sha256": "ac719dbd257811a78b2674b6c8c638752e7f8fb82292472c5fcbbb5421a7afbc"
+  },
+  {
+   "path": "rtl/frontend/Arbiter4_L2ToL1Hint.sv",
+   "kind": "repo",
+   "sha256": "fa5daf49e4f01096dcff148b6a5238cb6e6ac463c158a9ca934bda8b56311ded"
+  },
+  {
+   "path": "rtl/frontend/Arbiter4_PrefetchReq.sv",
+   "kind": "repo",
+   "sha256": "4586bffeb1fa81ad12c69e2cc745d12a82fb3b44f2b15a3e2db83b44d1c64f37"
+  },
+  {
+   "path": "rtl/backend/CSA4to2_15.sv",
+   "kind": "repo",
+   "sha256": "b39e04a21e65ac9eec90e147b0e7224a649d81fda9beed4c05a089ec52cb4d8e"
+  },
+  {
+   "path": "rtl/frontend/MbistIntfFrontend.sv",
+   "kind": "repo",
+   "sha256": "b0c4c35de73704f5126877414e09d86faf7d449687e0f660330b0e69b5c1c434"
+  },
+  {
+   "path": "rtl/memblock/MbistIntfMemBlk.sv",
+   "kind": "repo",
+   "sha256": "59237faadbc073a127f84fa446d841e21ba6459db528076ac8e3fa01188a9697"
+  },
+  {
+   "path": "rtl/backend/NfMappedElemIdx.sv",
+   "kind": "repo",
+   "sha256": "c51a0eebc9a64db04848187ecfb6bb78f100c668480ce6c11806f98327c94e9b"
+  },
+  {
+   "path": "rtl/frontend/OverrideableQueue.sv",
+   "kind": "repo",
+   "sha256": "a0d78afb9646b7a1599e0a68c9d2d4e298ebae0719576d52d4e7c5b30d2147ad"
+  },
+  {
+   "path": "rtl/frontend/OverrideableQueue_1.sv",
+   "kind": "repo",
+   "sha256": "06b0176f9995c08d1dde532a1b87954cd0433a2c1a7b3c03310fd4a58f75ce6f"
+  },
+  {
+   "path": "rtl/memblock/PipelineRegModule_6.sv",
+   "kind": "repo",
+   "sha256": "a0fc437d94998ece43537e332f9e7a3ce336ccacca1b6b21a3075559c42f49c7"
+  },
+  {
+   "path": "rtl/mmu/SatpFlushMod.sv",
+   "kind": "repo",
+   "sha256": "dc9e7c2175adc854ac980d58e78c5506f8d852a30b74cf2337e89f4ee51f052c"
+  }
+ ],
+ "impl_commit": "08c5389ed285c4252ab7d18b1cce665928b0aafd",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "Pipeline200c-20261020T014517Z-08c5389ed",
+  "top": "Arbiter3_PfGenReq",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 72,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 72,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Arbiter3_PfGenReq",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
