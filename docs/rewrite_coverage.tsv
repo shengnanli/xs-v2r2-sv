@@ -8,6 +8,8 @@
 #   written  模块名出现在 rtl/ —— **不说明它写完了**，骨架同样算 written
 #   proven   written 且有绿判决证据（fm_round 的 SUCCEEDED/PASS_DEAD_REF
 #            或 fastlane_ledger 的 WORKING_PASS[_DEAD_REF]）
+#   ★ledger-cv（2026-10-19）★ proven 另须证明对当前 HEAD current-valid（impl/golden/脚本闭包全一致，
+#            判据 = proof_certificate.validate_certificate_current，见 scripts/proof_currency.py）
 #   ★头条数字看 proven★。起因：一个 3,149 行、只实现约两成逻辑的
 #   LoadQueueReplay 骨架放进 rtl/，旧口径下覆盖率从 7.4% 跳到 11.0%，
 #   凭空记账 138,860 行 golden。判据改成按证据记，骨架自然记 0，
@@ -24,45 +26,105 @@
 metric	done	total	percent
 fm_targets_configured	1605	1608	99.8
 unique_design_written	995	1186	83.9
-unique_design_proven	989	1186	83.4
+unique_design_proven	965	1186	81.4
 golden_lines_written	3519274	3901688	90.2
-golden_lines_proven	3248480	3901688	83.3
+golden_lines_proven	3088211	3901688	79.2
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
 incore_golden_lines_written	3348859	3349310	100.0
-incore_golden_lines_proven	3082317	3349310	92.0
+incore_golden_lines_proven	2938748	3349310	87.7
 # incl_cone = 上一行 + verif/proven_in_cone_verified.tsv 里核验通过的父级白盒受验模块（逐条见下，非 COUNTED 的不计）
 #   COUNTED    Rob                        266227 行  R1-R10 全过（parent=CtrlBlock）
-incore_golden_lines_proven_incl_cone	3348544	3349310	100.0
-#   incl_cone 之后核内仍未计 proven：7 个 / 766 行
-#     CommitIDModule                                 97 行
-#     FDPrefetcherMonitor                           111 行
-#     PrintCommitIDModule                            14 行
-#     StorePipe                                      93 行
-#     diff_rat_state_bank_320x776                   120 行
-#     dt_pcTransType_160x2                          183 行
-#     stateBankTags_320x3                           148 行
+incore_golden_lines_proven_incl_cone	3204975	3349310	95.7
+# ★PROVEN_IN_CONE(superseded_by)（ledger-cv）：台账有绿判决、证明不 current-valid，但被 current-valid 父 WB1–WB6 白盒覆盖★
+#   ★不计入 proven 也不计入 incl_cone★：WB 只证明被白盒展开，不证明每个输出都是 compare point（oldcert-triage §6）
+incore_golden_lines_superseded_in_cone_uncounted	143569	3349310	4.3
+#   incl_cone 之后核内仍未计 proven：30 个 / 144335 行
+#     Arbiter1_InsUncacheResp                       100 行  superseded_by=InstrUncache
+#     Arbiter3_CHIREQ                               205 行  superseded_by=MainPipe_1
+#     Arbiter3_TaskBundle                           189 行  superseded_by=MainPipe_1
+#     Arbiter3_TaskWithData                         934 行  superseded_by=MainPipe_1
+#     CommitIDModule                                 97 行  
+#     FAlu                                          268 行  superseded_by=ExeUnit_10
+#     FDPrefetcherMonitor                           111 行  
+#     IntToFP                                       119 行  superseded_by=IntToFPDataModule
+#     IntToFP_1                                     119 行  superseded_by=IntToFPDataModule
+#     IntToFP_2                                     119 行  superseded_by=IntToFPDataModule
+#     IntToFP_postnorm                              124 行  superseded_by=IntToFPDataModule
+#     IntToFP_postnorm_1                            123 行  superseded_by=IntToFPDataModule
+#     IntToFP_postnorm_2                            124 行  superseded_by=IntToFPDataModule
+#     IntToFP_prenorm                               191 行  superseded_by=IntToFPDataModule
+#     LZA                                           158 行  superseded_by=IntToFPDataModule
+#     LoadQueueReplay                            138860 行  superseded_by=LoadQueue
+#     MulUnit                                       347 行  superseded_by=ExeUnit
+#     PrintCommitIDModule                            14 行  
+#     Queue10_GrantBuffer_Anon                      185 行  superseded_by=GrantBuffer
+#     Queue16_DSBeat                                157 行  superseded_by=TXDAT
+#     Queue16_GrantQueueData                        155 行  superseded_by=GrantBuffer
+#     Queue16_GrantQueueTask                        276 行  superseded_by=GrantBuffer
+#     Queue16_HintQueueEntry                        167 行  superseded_by=CustomL1Hint
+#     Queue16_TaskBundle                            285 行  superseded_by=TXDAT
+#     Queue2_CHISNP                                 196 行  superseded_by=RXSNP
+#     Queue4_HintQueueEntry                         168 行  superseded_by=CustomL1Hint
+#     StorePipe                                      93 行  
+#     diff_rat_state_bank_320x776                   120 行  
+#     dt_pcTransType_160x2                          183 行  
+#     stateBankTags_320x3                           148 行  
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	170415	552378	30.9
-outcore_golden_lines_proven	166163	552378	30.1
+outcore_golden_lines_proven	149463	552378	27.1
 #
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	3	1605	0.2
-#   合计 1897 golden 行
-#   SNXbar                                        557 行
-#   SubDirectory                                  516 行
-#   SubDirectory_1                                824 行
+legacy_proven_unanchored	0	1571	0.0
+#   合计 0 golden 行
+#
+# ★台账绿判决但证明不 current-valid（ledger-cv）—— 不计 proven★
+#   PROVEN_IN_CONE(superseded_by)  23 个 / 143569 行（按父：IntToFPDataModule=8, MainPipe_1=3, GrantBuffer=3, TXDAT=2, CustomL1Hint=2, InstrUncache=1, ExeUnit_10=1, LoadQueue=1, ExeUnit=1, RXSNP=1）
+#   不 proven（无 current-valid 证明、无白盒父）  11 个 / 16700 行
+#         3  NO_PROOF -
+#         1  NOT_CURRENT green_child_impl_golden_not_fm_target:AsyncQueueSink
+#         1  NOT_CURRENT green_child_impl_golden_not_fm_target:FastArbiter_29
+#         1  NOT_CURRENT green_child_impl_golden_not_fm_target:Queue2_AXI4BundleR_3
+#         1  NOT_CURRENT green_child_impl_golden_not_fm_target:Queue2_TLBundleA
+#         1  NOT_CURRENT green_child_impl_golden_not_fm_target:Queue2_TLBundleA_2
+#         1  NOT_CURRENT green_child_impl_golden_not_fm_target:Queue2_UInt2
+#         1  NOT_CURRENT green_child_impl_golden_not_fm_target:Queue4_CHIDAT
+#         1  NOT_CURRENT green_child_impl_golden_not_fm_target:Queue4_CHIREQ
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
+#   AXI4Deinterleaver                                5572 行
+#   AXI4Xbar                                         6596 行
+#   Arbiter1_InsUncacheResp                           100 行
+#   Arbiter3_CHIREQ                                   205 行
+#   Arbiter3_TaskBundle                               189 行
+#   Arbiter3_TaskWithData                             934 行
 #   CommitIDModule                                     97 行
+#   DebugModule                                       274 行
+#   FAlu                                              268 行
 #   FDPrefetcherMonitor                               111 行
+#   IntToFP_postnorm                                  371 行
+#   IntToFP_prenorm                                   191 行
+#   LZA                                               158 行
+#   LoadQueueReplay                                138860 行
+#   MulUnit                                           347 行
 #   OpenLLC                                          4252 行
 #   PrintCommitIDModule                                14 行
+#   Queue10_GrantBuffer_Anon                          185 行
+#   Queue16_DSBeat                                    157 行
+#   Queue16_GrantQueueData                            155 行
+#   Queue16_GrantQueueTask                            276 行
+#   Queue16_HintQueueEntry                            167 行
+#   Queue16_TaskBundle                                285 行
+#   Queue2_CHISNP                                     196 行
+#   Queue4_HintQueueEntry                             168 行
+#   RNXbar                                           1440 行
 #   Rob                                            266227 行
+#   SNXbar                                            557 行
 #   StorePipe                                          93 行
+#   SubDirectory                                     1340 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 # ★只列核内★：核外的另列在本表末尾，不要从那里接活

@@ -26,7 +26,7 @@ AXI4IdIndexer_1	AXI4IdIndexer_1	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked
 AXI4Xbar	AXI4Xbar	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 AXI4Xbar_1	AXI4Xbar_6	slot_map	REWRITE_L	OUT_OF_SCOPE	UNVERIFIED	槽位判据(site)改判: 原名 AXI4Xbar_1；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
 Alu	Alu	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-Backend	Backend	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Backend.json sha256=21f29741963938c8
+Backend	Backend	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Backend.json sha256=783840fc9e40bce2
 BankedDataArray	BankedDataArray	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 Bku	Bku	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 BranchUnit	BranchUnit	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
@@ -53,7 +53,7 @@ DuplicatedTagArray	DuplicatedTagArray	same_name	GLUE_INHERIT	REQUIRED	UNVERIFIED
 ExeUnit	ExeUnit	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 ExeUnit_4	ExeUnit_4	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
 ExeUnit_8	ExeUnit_8	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
-ExuBlock	ExuBlock	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/ExuBlock.json sha256=5436c74791ba3b0e
+ExuBlock	ExuBlock	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/ExuBlock.json sha256=c933f24173649f97
 ExuBlock_1	ExuBlock_1	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/ExuBlock_1.json sha256=e3c4ebadae45fe49
 F3Predecoder	F3Predecoder	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 FAlu	FAlu	same_name	REWRITE_M	REQUIRED	UNVERIFIED	no tracked certificate
@@ -64,7 +64,7 @@ FPDecoder	FPDecoder	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commi
 FTB	FTB	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/FTB.json sha256=2cbb35547f9fbbc5
 FTBBank	FTBBank	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/FTBBank.json sha256=0e38f5c64f9f729b
 FTBEntryGen	FTBEntryGen	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/FTBEntryGen.json sha256=394483dc31b3986d
-FastArbiter_27	FastArbiter_26	slot_map	REWRITE_M	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 FastArbiter_27；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
+FastArbiter_27	FastArbiter_26	slot_map	REWRITE_M	REQUIRED	CERT_REJECTED	槽位判据(site)改判: 原名 FastArbiter_27；依据见 docs/g1_slot_map_evidence.tsv；policy_freeze_commit_null; verif/proof_certificates/FastArbiter_26.json sha256=0267f8e213b25ba7
 FastArbiter_30	FastArbiter_29	renumbered	REWRITE_M	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 FastArbiter_30；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
 FastArbiter_31	FastArbiter_30	renumbered	RESTRUCTURED	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 FastArbiter_31；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
 FastArbiter_36	FastArbiter_35	renumbered	RESTRUCTURED	REQUIRED	UNVERIFIED	槽位判据(site)改判: 原名 FastArbiter_36；依据见 docs/g1_slot_map_evidence.tsv；no tracked certificate
@@ -215,9 +215,9 @@ SCTable_1	SCTable_1	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_com
 SCTable_2	SCTable_2	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SCTable_2.json sha256=75be9cc0c70e314f
 SCTable_3	SCTable_3	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SCTable_3.json sha256=233d79ef4be2705d
 SNXbar	SNXbar	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-SRAMTemplate	SRAMTemplate	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
+SRAMTemplate	SRAMTemplate	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SRAMTemplate.json sha256=bc4de781f953eb07
 SRAMTemplate_16	SRAMTemplate_16	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-SRAMTemplate_2	SRAMTemplate_2	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
+SRAMTemplate_2	SRAMTemplate_2	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SRAMTemplate_2.json sha256=c1a71a428e8dea26
 SRAMTemplate_32	SRAMTemplate_32	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
 SRAMTemplate_36	SRAMTemplate_36	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SRAMTemplate_36.json sha256=7df8b908816d1e66
 SRAMTemplate_4	SRAMTemplate_4	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
@@ -237,8 +237,8 @@ SinkA	SinkA	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
 SinkC	SinkC	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 Slice	Slice	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/Slice.json sha256=58cbeb321535d734
 SourceB	SourceB	same_name	REWRITE_S	REQUIRED	UNVERIFIED	no tracked certificate
-SplittedSRAMTemplate	SplittedSRAMTemplate	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-SplittedSRAMTemplate_1	SplittedSRAMTemplate_1	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
+SplittedSRAMTemplate	SplittedSRAMTemplate	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SplittedSRAMTemplate.json sha256=c28f111e005769ae
+SplittedSRAMTemplate_1	SplittedSRAMTemplate_1	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SplittedSRAMTemplate_1.json sha256=96a1d5164481fd2f
 SplittedSRAMTemplate_2	SplittedSRAMTemplate_2	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SplittedSRAMTemplate_2.json sha256=22e7b6505ac8db63
 SplittedSRAMTemplate_23	SplittedSRAMTemplate_23	same_name	REWRITE_M	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/SplittedSRAMTemplate_23.json sha256=c37556ca28ff50d6
 SplittedSRAMTemplate_24	SplittedSRAMTemplate_25	manual_map	RESTRUCTURED	REQUIRED	CERT_REJECTED	槽位判据(site_via_parent)改判: 原名 SplittedSRAMTemplate_24；依据见 docs/g1_slot_map_evidence.tsv；policy_freeze_commit_null; verif/proof_certificates/SplittedSRAMTemplate_25.json sha256=0ded08fdf17060da
@@ -322,7 +322,7 @@ WrBypass_33	WrBypass_33	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_c
 WrBypass_41	WrBypass_41	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/WrBypass_41.json sha256=3bdf12e76f0a956c
 WrBypass_43	WrBypass_43	same_name	INHERIT	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/WrBypass_43.json sha256=1d140901ac4ec7cb
 WritebackQueue	WritebackQueue	same_name	INHERIT	REQUIRED	UNVERIFIED	no tracked certificate
-XSCore	XSCore	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/XSCore.json sha256=81ef38cec6ddada7
-XSTile	XSTile	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/XSTile.json sha256=e4c4d1ef0b8eb948
+XSCore	XSCore	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/XSCore.json sha256=cd0dc0855c560430
+XSTile	XSTile	same_name	REWRITE_L	REQUIRED	CERT_REJECTED	policy_freeze_commit_null; verif/proof_certificates/XSTile.json sha256=04e17144598c5746
 XSTop	XSTop	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
 Rob	Rob	same_name	REWRITE_L	REQUIRED	UNVERIFIED	no tracked certificate
