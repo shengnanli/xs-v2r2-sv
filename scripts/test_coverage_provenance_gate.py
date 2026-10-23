@@ -86,6 +86,10 @@ COV_HDR = '# 三轴覆盖（分母 = .../g1_configured_universe.tsv 的 in_unive
           '# module\trewrite_coverage\tformal_coverage\timpl_file\n'
 
 
+COV_HDR6 = '# 三轴覆盖（分母 = .../g1_configured_universe.tsv 的 in_universe=yes，共 %d）\n' \
+           '# module\trewrite_coverage\tformal_coverage\timpl_file\tgolden_used_by\tproof_status\n'
+
+
 def main():
     cases = []
 
@@ -123,7 +127,45 @@ def main():
         True, '判据 C 失败',
     ))
 
+    # ★ledger-cv★ D：PROVEN_DIRECT 但 proof_status 不是 current_valid（手改一侧）
+    cases.append((
+        'D PROVEN_DIRECT 却记 not_current',
+        (COV_HDR6 % 2) + 'Foo\tREWRITTEN\tPROVEN_DIRECT\trtl/Foo.sv\t-\tnot_current:x\n'
+                         'Bar\tMISSING\tUNPROVEN\t-\t-\t-\n',
+        'Foo\tyes\tr\nBar\tyes\tr\n',
+        [('Foo', 'SUCCEEDED', True)],
+        True, '判据 D 失败',
+    ))
+    # D 反方向：proof_status 说 current_valid，formal 却不是 PROVEN_DIRECT
+    cases.append((
+        'D current_valid 却没记 PROVEN_DIRECT',
+        (COV_HDR6 % 2) + 'Foo\tREWRITTEN\tPROVEN_IN_CONE\trtl/Foo.sv\t-\tcurrent_valid:certificate\n'
+                         'Bar\tMISSING\tUNPROVEN\t-\t-\t-\n',
+        'Foo\tyes\tr\nBar\tyes\tr\n',
+        [('Foo', 'SUCCEEDED', True)],
+        True, '判据 D 失败',
+    ))
+    # C（6 列表）：有通过 receipt、formal 非 DIRECT、proof_status 也是 - → 仍是漏记
+    cases.append((
+        'C 6 列表 proof_status 为 - 仍算漏记',
+        (COV_HDR6 % 2) + 'Foo\tREWRITTEN\tPROVEN_DIRECT\trtl/Foo.sv\t-\tcurrent_valid:certificate\n'
+                         'Bar\tMISSING\tUNPROVEN\t-\t-\t-\n',
+        'Foo\tyes\tr\nBar\tyes\tr\n',
+        [('Foo', 'SUCCEEDED', True), ('Bar', 'SUCCEEDED', True)],
+        True, '判据 C 失败',
+    ))
+
     # ---------- 反向：不许误报 ----------
+    # ★ledger-cv★ 证明不 current-valid 的根：记 superseded_by / not_current 就算记过账，不许报 C
+    cases.append((
+        '反向 不 current-valid 的根记 superseded_by / not_current 不算漏记',
+        (COV_HDR6 % 3) + 'Foo\tREWRITTEN\tPROVEN_DIRECT\trtl/Foo.sv\t-\tcurrent_valid:certificate\n'
+                         'Old\tREWRITTEN\tPROVEN_IN_CONE\trtl/Old.sv\t-\tsuperseded_by=Foo\n'
+                         'Gone\tREWRITTEN\tUNPROVEN\trtl/Gone.sv\t-\tnot_current:green_child_script_closure_changed\n',
+        'Foo\tyes\tr\nOld\tyes\tr\nGone\tyes\tr\n',
+        [('Foo', 'SUCCEEDED', True), ('Old', 'SUCCEEDED', True), ('Gone', 'SUCCEEDED', True)],
+        False, None,
+    ))
     # 全都对上
     cases.append((
         '反向 全部一致',

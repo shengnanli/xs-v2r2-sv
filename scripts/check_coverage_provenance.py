@@ -32,6 +32,12 @@ A  表里每个标 PROVEN_DIRECT 的 top，版本库里必须有一份 verdict �
    {SUCCEEDED, PASS_DEAD_REF, SIGNOFF_PASS} 的 tracked receipt。
    （反向不查 —— 有 receipt 但表里没记，是表陈旧，由生成器幂等闸管，
      不是证据链问题，见 --strict）
+C  （--strict）universe 内每个有 tracked 通过 receipt 的 top，表里必须**记过账**：
+   ★ledger-cv（2026-10-19）起★ 记账 ≠ PROVEN_DIRECT —— 证明不 current-valid 的根按用户批准的口径
+   记 PROVEN_IN_CONE(superseded_by) 或不 proven，生成器在第 6 列 proof_status 写明
+   current_valid:… / superseded_by=… / not_current:…。所以 C 认「formal=PROVEN_DIRECT，
+   或 proof_status 非 -」为记过账；proof_status 为 - 而又不是 PROVEN_DIRECT ⇒ 表陈旧，照旧判红。
+D  有第 6 列时：formal=PROVEN_DIRECT ⟺ proof_status 以 current_valid: 开头（防手改一侧）。
 B  表头声明的分母必须等于 `docs/g1_configured_universe.tsv` 里 in_universe=yes 的行数。
    表头写的是生成那天的真实分母（生成器用 f'…共 {len(uni)}'），universe 一重算它就过期。
 
@@ -66,6 +72,8 @@ def proven_tops():
     """
     header_n = None
     tops = set()
+    global RECORDED, MISMATCH
+    RECORDED, MISMATCH = set(), []
     with io.open(COVERAGE, encoding='utf-8') as f:
         for line in f:
             if line.startswith('#'):
@@ -78,7 +86,17 @@ def proven_tops():
                 continue
             if parts[2].strip() == 'PROVEN_DIRECT':
                 tops.add(parts[0])
+                RECORDED.add(parts[0])
+            if len(parts) >= 6:
+                pst = parts[5].strip()
+                if pst != '-':
+                    RECORDED.add(parts[0])
+                if (parts[2].strip() == 'PROVEN_DIRECT') != pst.startswith('current_valid:'):
+                    MISMATCH.append((parts[0], parts[2].strip(), pst))
     return tops, header_n
+
+
+RECORDED, MISMATCH = set(), []
 
 
 def tracked_passing_tops():
@@ -170,11 +188,11 @@ def main():
         # excluded:simtop_only，只被 SimTop 下的 GatewayEndpoint 例化、在 XSTop 根之外）
         # 本来就不在这张表里，有 receipt 而无表行是正常的，不是漏记。
         # 我的第一版没做这个过滤，把 11 个 DelayReg 误报成漏记了。
-        unrecorded = sorted((ok - proven) & universe_yes_set())
+        unrecorded = sorted((ok - RECORDED) & universe_yes_set())
         if unrecorded:
             bad = True
             print('check_coverage_provenance: 判据 C 失败 —— %d 个 top 有通过 receipt '
-                  '但表里没记 PROVEN_DIRECT' % len(unrecorded), file=sys.stderr)
+                  '但表里没记账（既非 PROVEN_DIRECT，proof_status 也是 -）' % len(unrecorded), file=sys.stderr)
             for t in unrecorded[:10]:
                 print('    %s' % t, file=sys.stderr)
             if len(unrecorded) > 10:
@@ -182,6 +200,15 @@ def main():
             print('  修法：python3 scripts/coverage_three_axis.py 重跑。', file=sys.stderr)
         else:
             print('check_coverage_provenance: 判据 C OK —— 没有漏记的通过 receipt')
+
+    # --- 判据 D：formal 与 proof_status 一致 ---
+    if MISMATCH:
+        bad = True
+        print('check_coverage_provenance: 判据 D 失败 —— %d 行 formal_coverage 与 proof_status 不一致'
+              '（PROVEN_DIRECT ⟺ current_valid:）' % len(MISMATCH), file=sys.stderr)
+        for m in MISMATCH[:10]:
+            print('    %s\t%s\t%s' % m, file=sys.stderr)
+        print('  修法：python3 scripts/coverage_three_axis.py 重跑（别手改表）。', file=sys.stderr)
 
     return 1 if bad else 0
 

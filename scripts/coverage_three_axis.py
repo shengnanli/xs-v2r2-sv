@@ -26,12 +26,19 @@ XSTop elaborated 集落地后换成它，见 --universe）。**1884 只是定义
    MISSING         还没有可读实现
 
 2. FORMAL_COVERAGE —— 「这个定义有没有被真的证明覆盖」
-   PROVEN_DIRECT   自己就是某份通过 receipt 的 top
-   PROVEN_IN_CONE  出现在某份通过 receipt 的 golden 闭包里（= 该证明里两侧都
-                   elaborate 了它，真受验），且未被该证明列为黑盒
-   BLACKBOXED      只以黑盒身份出现在别人的证明里（未受验）
+   ★ledger-cv（2026-10-19，用户批准）：只认对当前 HEAD current-valid 的证明★
+   判据 = scripts/proof_currency.py（证书走 proof_certificate.validate_certificate_current；
+   只有 receipt 的根把已跟踪 evidence 经 make_proof_certificate.build_certificate 派生后走同一函数）。
+   PROVEN_DIRECT   自己是一份 current-valid 证明的 top
+   PROVEN_IN_CONE  (a) 自己是证明根但不 current-valid，被一个 current-valid 父 WB1–WB6 白盒覆盖
+                       —— proof_status 列写 superseded_by=<父>；
+                   (b) 不是证明根，出现在某份 **current-valid** 证明的 golden 闭包里且未被该证明列为黑盒
+                   两种都只是候选口径，不进行数台账（见下）
+   证明根但既不 current-valid、也无白盒父 → 不给 PROVEN_IN_CONE 候选，按黑盒与否落 BLACKBOXED / UNPROVEN，
+                   proof_status 列写 not_current:<原因>
+   BLACKBOXED      只以黑盒身份出现在别人的（current-valid）证明里（未受验）
    VENDOR_BOUNDARY 同上，单列
-   UNPROVEN        没有任何通过 receipt 触及
+   UNPROVEN        没有任何 current-valid 证明触及
    注意：**"文件出现在 source closure" 不等于覆盖**——可能未被例化或被黑盒，
    故这里用 receipt 的 golden_closure 与 allow 黑盒集做差。
    ★codex 0238 裁定 2★：这个差（closure 文件名 − **当前** allow）只够当**候选**——
@@ -193,25 +200,42 @@ def axis1(m, vend, rtl, floor, users):
     return 'MISSING'
 
 
-def receipts():
-    """通过的 receipt：[(top, golden_closure 模块名集合, 黑盒 design 集合)]"""
+def proofs(cur=None):
+    """current-valid 证明：[(top, golden_closure 模块名集合, 黑盒 design 集合)] + Currency。
+    （旧版读磁盘上**所有**通过的 receipt，含过期的与未跟踪的；ledger-cv 起只认 current-valid。）"""
+    import proof_currency as PCUR
+    cur = cur or PCUR.evaluate()
     out = []
-    for rp in sorted((REPO / 'evidence').rglob('receipt.json')) \
-            if (REPO / 'evidence').exists() else []:
-        r = json.loads(rp.read_text())
-        if r.get('verdict') not in PASS:
-            continue
-        if r.get('provisional') or r.get('impl_worktree_dirty'):
-            continue
+    for top in sorted(cur.cv):
+        d = cur.cv[top]
         cone = {pathlib.Path(e['path']).name[:-3]
-                for e in r.get('golden_closure', [])
-                if e['path'].endswith('.sv')}
+                for e in d['input_closure']['golden'] if e['path'].endswith('.sv')}
         bb = set()
-        ap = REPO / 'verif' / 'allow' / f"{r['top']}.json"
+        ap = REPO / 'verif' / 'allow' / f"{top}.json"
         if ap.exists():
             bb = {o['design'] for o in json.loads(ap.read_text()).get('objects', [])}
-        out.append((r['top'], cone, bb))
-    return out
+        out.append((top, cone, bb))
+    return out, cur
+
+
+def axis2(m, vend, cur, in_cone, blackboxed):
+    """轴二判档 → (formal_coverage, proof_status)。cur = proof_currency.Currency。"""
+    tier, det = cur.tier(m)
+    st = {'PROVEN_DIRECT': 'current_valid:%s' % cur.via.get(m),
+          'PROVEN_IN_CONE': 'superseded_by=%s' % det,
+          'NOT_CURRENT': 'not_current:%s' % det}.get(tier, '-')
+    if m in vend:
+        return 'VENDOR_BOUNDARY', st
+    if tier in ('PROVEN_DIRECT', 'PROVEN_IN_CONE'):
+        return tier, st
+    if tier == 'NOT_CURRENT':
+        # 证明根但不 current-valid、无白盒父：不给 closure 候选（用户口径 3：不记 proven）
+        return ('BLACKBOXED' if m in blackboxed else 'UNPROVEN'), st
+    if m in in_cone:
+        return 'PROVEN_IN_CONE', st
+    if m in blackboxed:
+        return 'BLACKBOXED', st
+    return 'UNPROVEN', st
 
 
 def main():
@@ -225,7 +249,7 @@ def main():
     rtl = rtl_modules()
     users = golden_users()
     floor = classify_rtl()
-    recs = receipts()
+    recs, cur = proofs()
 
     proven_direct = {t for t, _, _ in recs}
     in_cone, blackboxed = set(), set()
@@ -238,25 +262,17 @@ def main():
 
     rows = []
     from collections import Counter
-    c1, c2, c1_core = Counter(), Counter(), Counter()
+    c1, c2, c1_core, c2x = Counter(), Counter(), Counter(), Counter()
     for m in uni:
         a1 = axis1(m, vend, rtl, floor, users)
-        if m in vend:
-            a2 = 'VENDOR_BOUNDARY'
-        elif m in proven_direct:
-            a2 = 'PROVEN_DIRECT'
-        elif m in in_cone:
-            a2 = 'PROVEN_IN_CONE'
-        elif m in blackboxed:
-            a2 = 'BLACKBOXED'
-        else:
-            a2 = 'UNPROVEN'
+        a2, pst = axis2(m, vend, cur, in_cone, blackboxed)
         c1[a1] += 1
         c2[a2] += 1
         if m in tile:
             c1_core[a1] += 1
+        c2x[pst.split(':')[0].split('=')[0]] += 1
         rows.append((m, a1, a2, str(rtl.get(m, '-')),
-                     ','.join(users.get(m, [])) or '-'))
+                     ','.join(users.get(m, [])) or '-', pst))
 
     out = REPO / 'docs' / 'coverage_three_axis.tsv'
     with out.open('w') as f:
@@ -271,7 +287,10 @@ def main():
         f.write(f'# 三轴覆盖（分母 = {_uni_disp} 的 in_universe=yes，共 {len(uni)}）\n')
         f.write('# golden_used_by = impl 侧仍直接读该模块 golden 文件的 UT（ut:）/ 证明（fm:，每 top 最新'
                 '一份已跟踪通过 receipt）；非空 ≠ 没重写，但这些 run 都不是纯重写 run\n')
-        f.write('# module\trewrite_coverage\tformal_coverage\timpl_file\tgolden_used_by\n')
+        f.write('# proof_status = 证明根对当前 HEAD 的状态（scripts/proof_currency.py）：current_valid:<certificate|receipt:…> /'
+                ' superseded_by=<白盒父>（不 current-valid，WB1–WB6 成立；候选口径，不进行数台账）/'
+                ' not_current:<原因>（不 current-valid 且无白盒父：不记 proven）；非证明根为 -\n')
+        f.write('# module\trewrite_coverage\tformal_coverage\timpl_file\tgolden_used_by\tproof_status\n')
         for r in rows:
             f.write('\t'.join(r) + '\n')
 
@@ -291,7 +310,9 @@ def main():
     cov = c2['PROVEN_DIRECT'] + c2['PROVEN_IN_CONE']
     print(f'      被通过证明真实覆盖 {cov}/{n} = {100*cov/n:.1f}%'
           f'（BLACKBOXED {c2["BLACKBOXED"]} 未受验，单列）')
-    print(f'轴3 PROOF_ROOT_STATUS：通过 receipt 的证明根 {len(proven_direct)} 个，'
+    print(f'      proof_status：{dict(c2x.most_common())}'
+          f'（PROVEN_IN_CONE 里 superseded_by {c2x["superseded_by"]} 个是不 current-valid 的旧根，只是候选）')
+    print(f'轴3 PROOF_ROOT_STATUS：current-valid 证明根 {len(proven_direct)} 个，'
           f'其组合覆盖 {cov} 个定义；非 provisional、canonical 同源。')
     print(f'台账：{out.relative_to(REPO)}')
     return 0

@@ -418,12 +418,48 @@ def fm_targets():
     return set(tmap)
 
 
-def build():
+def split_current(claimed, cur):
+    """★ledger-cv（2026-10-19，用户批准）：proven 只认对当前 HEAD current-valid 的证明★
+
+    claimed = written ∩ 台账绿判决（round / fastlane）。按 scripts/proof_currency.py 分三档：
+      proven      证明（证书，或只有 receipt 时由已跟踪 evidence 派生的证书文档）过
+                  proof_certificate.validate_certificate_current —— impl / golden / **脚本闭包**全与 HEAD 一致
+      superseded  不 current-valid，但被一个 current-valid 父 WB1–WB6 白盒覆盖 → {m: 父}
+                  ★不计入 proven，也不计入 incl_cone★（WB 只证明被白盒展开，不证明每个输出都是
+                  compare point；incl_cone 只认 verif/proven_in_cone_verified.tsv 的 R1–R10 核验行）
+      dropped     两者都不是 → {m: (tier, 原因)}，如实不计
+    """
+    prov, sup, dropped = set(), {}, {}
+    for m in sorted(claimed):
+        tier, det = cur.tier(m)
+        if tier == 'PROVEN_DIRECT':
+            prov.add(m)
+        elif tier == 'PROVEN_IN_CONE':
+            sup[m] = det
+        else:
+            dropped[m] = (tier, det)
+    return prov, sup, dropped
+
+
+def _why_class(det):
+    """原因串归类（只用于台账注释里的分组计数）：去掉 target 名，保留判据名 + 出问题的文件。"""
+    if not det:
+        return '-'
+    c = det.replace('certificate:', '').replace('receipt:', '').split(':')
+    return ':'.join([c[0]] + c[2:3]) if len(c) >= 3 else c[0]
+
+
+def build(cur=None):
     gold = golden_modules()
     done = rewritten_modules()
     # ★codex 0170 选 A：chk_impl != same 的一律不计当前 proven★
     stale = stale_impl_targets()
-    prov = (rewritten_modules() & proven_modules()) - stale
+    claimed = rewritten_modules() & proven_modules()
+    if cur is None:
+        import proof_currency as PCUR
+        cur = PCUR.evaluate()
+    prov, superseded, dropped = split_current(claimed, cur)
+    prov -= stale
     targets = fm_targets()
 
     excl = collections.Counter()
@@ -457,6 +493,9 @@ def build():
     rows.append('#   written  模块名出现在 rtl/ —— **不说明它写完了**，骨架同样算 written')
     rows.append('#   proven   written 且有绿判决证据（fm_round 的 SUCCEEDED/PASS_DEAD_REF')
     rows.append('#            或 fastlane_ledger 的 WORKING_PASS[_DEAD_REF]）')
+    rows.append('#   ★ledger-cv（2026-10-19）★ proven 另须证明对当前 HEAD current-valid'
+                '（impl/golden/脚本闭包全一致，')
+    rows.append('#            判据 = proof_certificate.validate_certificate_current，见 scripts/proof_currency.py）')
     rows.append('#   ★头条数字看 proven★。起因：一个 3,149 行、只实现约两成逻辑的')
     rows.append('#   LoadQueueReplay 骨架放进 rtl/，旧口径下覆盖率从 7.4% 跳到 11.0%，')
     rows.append('#   凭空记账 138,860 行 golden。判据改成按证据记，骨架自然记 0，')
@@ -535,12 +574,23 @@ def build():
                         % (st, m, real[m][1] if m in real else 0, why))
         rows.append('incore_golden_lines_proven_incl_cone\t%d\t%d\t%.1f'
                     % (i_prov + c_extra, i_tot, (i_prov + c_extra) * 100.0 / i_tot))
+        # ★ledger-cv：PROVEN_IN_CONE(superseded_by) 单列，不并入上面任何一行★
+        s_in = sorted(m for m in superseded if m in real and m in tile and m not in cone)
+        rows.append('# ★PROVEN_IN_CONE(superseded_by)（ledger-cv）：台账有绿判决、证明不 current-valid，'
+                    '但被 current-valid 父 WB1–WB6 白盒覆盖★')
+        rows.append('#   ★不计入 proven 也不计入 incl_cone★：WB 只证明被白盒展开，不证明每个输出都是 compare point'
+                    '（oldcert-triage §6）')
+        rows.append('incore_golden_lines_superseded_in_cone_uncounted\t%d\t%d\t%.1f'
+                    % (sum(real[m][1] for m in s_in), i_tot,
+                       sum(real[m][1] for m in s_in) * 100.0 / i_tot))
         # 百分比只留一位小数，差几百行也会印成 100.0 —— 剩下的逐个列出，别让它被读成"全证完"
         _gap = sorted(m for m in real if m in tile and m not in prov and m not in cone)
         rows.append('#   incl_cone 之后核内仍未计 proven：%d 个 / %d 行'
                     % (len(_gap), sum(real[m][1] for m in _gap)))
         for m in _gap:
-            rows.append('#     %-40s %8d 行' % (m, real[m][1]))
+            _t = ('superseded_by=%s' % superseded[m]) if m in superseded else \
+                 ('%s:%s' % (dropped[m][0], _why_class(dropped[m][1]))) if m in dropped else ''
+            rows.append('#     %-40s %8d 行  %s' % (m, real[m][1], _t))
         rows.append('# 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★')
         rows.append('#   已证出来的不作废，只是不该和核内混在一个百分比里报')
         rows.append('outcore_golden_lines_written\t%d\t%d\t%.1f'
@@ -580,6 +630,18 @@ def build():
         rows.append('#   合计 %d golden 行' % _ul)
         for m in _unanchored:
             rows.append('#   %-40s %8d 行' % (m, real[m][1] if m in real else 0))
+    # ★ledger-cv：台账有绿判决、written，但证明不 current-valid 的（全量，分档计数 + 原因归类）★
+    rows.append('#')
+    rows.append('# ★台账绿判决但证明不 current-valid（ledger-cv）—— 不计 proven★')
+    _sl = sum(real[m][1] for m in superseded if m in real)
+    rows.append('#   PROVEN_IN_CONE(superseded_by)  %d 个 / %d 行（按父：%s）' % (
+        len(superseded), _sl, ', '.join('%s=%d' % kv for kv in
+                                       collections.Counter(superseded.values()).most_common())))
+    _dl = sum(real[m][1] for m in dropped if m in real)
+    rows.append('#   不 proven（无 current-valid 证明、无白盒父）  %d 个 / %d 行' % (len(dropped), _dl))
+    for k, v in sorted(collections.Counter(
+            '%s %s' % (t, _why_class(d)) for t, d in dropped.values()).items(), key=lambda kv: (-kv[1], kv[0])):
+        rows.append('#     %5d  %s' % (v, k))
     rows.append('#')
     rows.append('# written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：')
     for b in sorted(fam_done - fam_prov):
