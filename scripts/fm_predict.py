@@ -71,16 +71,95 @@ def git(*a):
     return r.returncode, r.stdout.strip()
 
 
-def ut_of(target, explicit=None):
-    """找这个 target 属于哪个 UT 目录（Makefile 的 FM_VARIANTS 里含它）。"""
+# ---------------------------------------------------------------------------
+# ★FM_VARIANTS 由 make 自己展开★（codex 0244 B）
+#
+# 原先这里用 `^FM_VARIANTS = (.*)$` 正则逐词比对：`FM_VARIANTS = $(LEAVES)`、
+# `FM_VARIANTS := $(VARIANTS)` 这类写法里只有字面量 `$(LEAVES)`，于是 46 个 UT 目录
+# 的全部变体都被登记成 ut=null（model_applicable=false）。这**不是功能 FAIL**，
+# 只是元数据枚举漏了。
+#
+# 修法不另造解析器：复用 `fm_target_universe._make_one` —— 在**目标自己的 UT
+# 目录**里跑 `make --eval='<goal>: ; @printf ...' <goal>`，由 make 回答
+# "$(strip $(FM_VARIANTS))" 是什么；ut_common.mk 的 `fm-%` 守卫也是拿这同一个
+# 展开串做子串匹配，所以这就是"谁是 fm-<t> 合法目标"的权威口径。
+# 与原实现一样读**工作树**（register 写的就是工作树登记）。
+# ---------------------------------------------------------------------------
+_VARIANT_CACHE = {}
+
+
+def _ut_root(root=None):
+    return pathlib.Path(root) if root else REPO / 'verif' / 'ut'
+
+
+def variant_map(root=None, jobs=8):
+    """{target: [ut_dir, ...]}, [错误…] —— 每个 UT 目录由 make 展开的 FM_VARIANTS 并集。
+
+    逐目录跑不出来的记进错误表，**不吞**：调用方查不到 target 时要能区分
+    "确实不在任何 FM_VARIANTS 里"与"有目录 make 没展开出来、可能就在那里"。
+    """
+    import concurrent.futures as cf
+    import fm_target_universe as FTU                                # noqa: E402
+    root = _ut_root(root)
+    key = str(root)
+    if key in _VARIANT_CACHE:
+        return _VARIANT_CACHE[key]
+    utdirs = sorted(d for d in root.glob('*') if (d / 'Makefile').is_file())
+    out, errs = {}, []
+    with cf.ThreadPoolExecutor(max_workers=max(1, jobs)) as ex:
+        for fut in [ex.submit(FTU._make_one, d) for d in utdirs]:
+            try:
+                name, ts = fut.result()
+            except FTU.MakeUnavailable as e:
+                errs.append(str(e))
+                continue
+            for t in ts:
+                out.setdefault(t, [])
+                if name not in out[t]:
+                    out[t].append(name)
+    for v in out.values():
+        v.sort()
+    _VARIANT_CACHE[key] = (out, errs)
+    return out, errs
+
+
+def ut_of(target, explicit=None, root=None):
+    """找这个 target 属于哪个 UT 目录（make 展开后的 FM_VARIANTS 里含它）。
+
+    多个目录都含它时取字典序第一个（与原正则实现的 sorted 遍历同口径）。
+    查不到且有目录展开失败 -> 退出（fail-closed），不把"没算出来"当"没有"。
+    """
     if explicit:
         return explicit
-    for mk in sorted((REPO / 'verif' / 'ut').glob('*/Makefile')):
-        txt = re.sub(r'\\\n', ' ', mk.read_text(errors='replace'))
-        m = re.search(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', txt, re.M)
-        if m and target in m.group(1).split():
-            return mk.parent.name
+    vm, errs = variant_map(root)
+    if target in vm:
+        return vm[target][0]
+    if errs:
+        sys.exit(f'{target}: 不在已展开的 FM_VARIANTS 里，但有 {len(errs)} 个 UT 目录 '
+                 f'make 展开失败，无法断言它不是 FM target：{errs[:2]}')
     return None
+
+
+def make_vars(utdir, names):
+    """在 UT 目录里让 make 展开若干变量（同 `_make_one` 的打印 goal 做法，不跑配方）。"""
+    import fm_target_universe as FTU                                # noqa: E402
+    mark = FTU._MARK
+    recipe = '; '.join('printf "%s%s=%%s\\n" "$(strip $(%s))"' % (mark, n, n)
+                       for n in names)
+    expr = '%s: ; @%s' % (FTU._PRINT_GOAL, recipe)
+    r = subprocess.run(['make', '--no-print-directory', '--eval=' + expr,
+                        FTU._PRINT_GOAL], cwd=str(utdir),
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       universal_newlines=True)
+    got = {}
+    for ln in r.stdout.splitlines():
+        if ln.startswith(mark):
+            k, _, v = ln[len(mark):].partition('=')
+            got[k] = v
+    if r.returncode != 0 or set(got) != set(names):
+        sys.exit(f'{utdir}: make 展开 {names} 失败 rc={r.returncode}: '
+                 f'{(r.stderr or r.stdout).strip()[:200]}')
+    return got
 
 
 def merge_dup_of(ut):
@@ -94,15 +173,41 @@ def merge_dup_of(ut):
     return (m.group(1).strip() if m else 'true')
 
 
+def _literal_variants(ut, root=None):
+    """`from_ut` 自己（正则、不展开）能看到的 FM_VARIANTS 词表。"""
+    mk = _ut_root(root) / ut / 'Makefile'
+    txt = re.sub(r'\\\n', ' ', mk.read_text(errors='replace'))
+    m = re.search(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', txt, re.M)
+    return m.group(1).split() if m else []
+
+
+def _model_via_make(target, ut, root=None):
+    """`from_ut` 看不到的目标（变体来自 `$(LEAVES)` 等）：闭包变量也交给 make 展开，
+    再按 `from_ut` 同样的规则（取 .sv 裸名、剔 FM_INTERFACE_ONLY）喂给模型。"""
+    d = _ut_root(root) / ut
+    v = make_vars(d, [f'FM_REF_DEPS_{target}', 'FM_INTERFACE_ONLY', 'FM_MERGE_DUP'])
+    iface = set(v['FM_INTERFACE_ONLY'].split())
+    exp = v[f'FM_REF_DEPS_{target}']
+    deps = [x.split('/')[-1][:-3] for x in exp.split() if x.endswith('.sv')]
+    deps = [x for x in deps if x not in iface]
+    unexp = sorted(set(re.findall(r'\$\(([A-Za-z_]\w*)\)', exp)))
+    return compute_model(target, deps, unexp), (v['FM_MERGE_DUP'] or 'true')
+
+
 def predict_one(target, ut=None):
     ut = ut_of(target, ut)
-    rows = from_ut(ut) if ut else None
-    r = None
-    if rows:
-        r = next((x for x in rows if x['top'] == target), None)
+    r, md = None, None
+    if ut and target not in _literal_variants(ut):
+        # ★只有 from_ut 看不到的目标才走 make 路径★：from_ut 看得到的目标
+        # 一个字节都不变，已有登记无需复算。
+        r, md = _model_via_make(target, ut)
+    else:
+        rows = from_ut(ut) if ut else None
+        if rows:
+            r = next((x for x in rows if x['top'] == target), None)
+        md = merge_dup_of(ut)
     if r is None:
         r = compute_model(target, [])
-    md = merge_dup_of(ut)
     out = dict(target=target, ut=ut, regs=r['regs'], outs=r['outs'],
                expected=r['model'], merge_dup=md,
                model_applicable=(md == 'false'))
@@ -302,6 +407,58 @@ def cmd_recompute():
     return rc
 
 
+def selftest_enum():
+    """★变体枚举的双向自证★（codex 0244 B）：在临时 UT 树里造三种 Makefile。
+
+      A  `FM_VARIANTS = $(LEAVES)`（make 变量引用，正则看不到）     -> 必须归 A
+      B  `FM_VARIANTS = Baz`（字面量，不需展开）                    -> 必须归 B
+      C  parse 期 `$(error)`（make 展开失败）                       -> 查不到的名字必须 fail-closed
+    并核 make_vars 把 FM_REF_DEPS_<t> 也交给 make 展开（`$(DEPS)` 间接）。
+    返回失败条数。
+    """
+    import tempfile, shutil
+    fails = 0
+
+    def ck(name, ok):
+        nonlocal fails
+        print(f'  [{"OK" if ok else "FAIL"}] {name}')
+        fails += 0 if ok else 1
+
+    tmp = pathlib.Path(tempfile.mkdtemp(prefix='fmpe-'))
+    try:
+        (tmp / 'A').mkdir(); (tmp / 'B').mkdir()
+        (tmp / 'A' / 'Makefile').write_text(
+            'LEAVES = Foo \\\n         Bar\nDEPS = X.sv Y.sv\n'
+            'FM_VARIANTS = $(LEAVES)\nFM_REF_DEPS_Foo = $(DEPS)\n')
+        (tmp / 'B' / 'Makefile').write_text('FM_VARIANTS = Baz\nFM_MERGE_DUP = false\n')
+        ck('$(LEAVES) 展开：Foo -> A', ut_of('Foo', root=tmp) == 'A')
+        ck('$(LEAVES) 展开（续行第二个词）：Bar -> A', ut_of('Bar', root=tmp) == 'A')
+        ck('普通字面量：Baz -> B', ut_of('Baz', root=tmp) == 'B')
+        ck('不在任何 FM_VARIANTS：Nope -> None', ut_of('Nope', root=tmp) is None)
+        ck('from_ut 视角：A 只看得到字面 $(LEAVES)',
+           _literal_variants('A', root=tmp) == ['$(LEAVES)'])
+        ck('from_ut 视角：B 看得到 Baz', _literal_variants('B', root=tmp) == ['Baz'])
+        v = make_vars(tmp / 'A', ['FM_REF_DEPS_Foo', 'FM_INTERFACE_ONLY', 'FM_MERGE_DUP'])
+        ck('make_vars 展开 FM_REF_DEPS_Foo=$(DEPS)', v['FM_REF_DEPS_Foo'] == 'X.sv Y.sv'
+           and v['FM_INTERFACE_ONLY'] == '' and v['FM_MERGE_DUP'] == '')
+        ck('make_vars 读 FM_MERGE_DUP', make_vars(tmp / 'B', ['FM_MERGE_DUP'])
+           == {'FM_MERGE_DUP': 'false'})
+        (tmp / 'C').mkdir()
+        (tmp / 'C' / 'Makefile').write_text('$(error boom)\n')
+        _VARIANT_CACHE.pop(str(tmp), None)
+        ck('有目录展开失败时 Foo 仍归 A', ut_of('Foo', root=tmp) == 'A')
+        try:
+            ut_of('Nope', root=tmp)
+            ck('有目录展开失败时查不到 -> fail-closed（不返回 None）', False)
+        except SystemExit:
+            ck('有目录展开失败时查不到 -> fail-closed（不返回 None）', True)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+        for k in [k for k in _VARIANT_CACHE if k.startswith(str(tmp))]:
+            _VARIANT_CACHE.pop(k)
+    return fails
+
+
 def selftest():
     """★判据必须先自证它看得见改变★：三绿三红，每一条都来自真实测出来的形态。"""
     cases = [
@@ -343,6 +500,7 @@ def selftest():
         print(f'  [{"OK" if ok else "FAIL"}] {name} -> '
               f'{"红" if red else "绿"}/{why}（期望{"红" if want_red else "绿"}）')
         rc |= 0 if ok else 1
+    rc |= 1 if selftest_enum() else 0
     print('负测', 'PASS' if rc == 0 else 'FAIL')
     return rc
 
