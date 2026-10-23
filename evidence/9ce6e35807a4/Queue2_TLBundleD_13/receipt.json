@@ -1,0 +1,276 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "Queue2_TLBundleD_13",
+ "run_id": "UncoreTLQueues-20261020T013851Z-9ce6e3580",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/Queue2_TLBundleD_13.sv",
+   "kind": "golden",
+   "sha256": "ccf255bd0b2267ed04d778ac9c163b62e2ed4e491ebdf51b61fb473a01848de0"
+  },
+  {
+   "path": "golden-rtl/ram_2x76.sv",
+   "kind": "golden",
+   "sha256": "bd55fa162cd9c32c233112f6885201440aa066f44ed1a38786666eb252ba375f"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_ChiselQueue_core.sv",
+   "kind": "repo",
+   "sha256": "dcba21324dd827fa7a858ab1ed0a18ed40f3d9677a9993cac7d04d8fe776c689"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_6.sv",
+   "kind": "repo",
+   "sha256": "abfd0bc1a1e6443992eef0eeeb0289690caa7d8450b703c2c7697f296e973dae"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_7.sv",
+   "kind": "repo",
+   "sha256": "9b496b3db6124f3d52987b5b7cc8998bb97e617fe9b5df221667847bd9f72be3"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_8.sv",
+   "kind": "repo",
+   "sha256": "1831809eb25070f5743c8c2dfebbba5f31028d6b196d7c5f6a7d769debac99f2"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_10.sv",
+   "kind": "repo",
+   "sha256": "f0fe10f92668fd53fe31acc942014d4bef70f6daaaf9d44b3a9be7c6f1713a2b"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_12.sv",
+   "kind": "repo",
+   "sha256": "b6747531e2f55092098966520b310c2f69c682b0b142da18d1bbedf1115fa7b0"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_14.sv",
+   "kind": "repo",
+   "sha256": "eb78b386b3ea0148cfc50f25fc599a0da4d52787c7957a5ae8ef5dae9da82634"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_15.sv",
+   "kind": "repo",
+   "sha256": "b99da55e261bc5cd8a5432bc9e2cd4240993b163ad0cb8b3cf1f080a80ed90ff"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_19.sv",
+   "kind": "repo",
+   "sha256": "14eb24b045a13926b339054e28302a6f019ceda86e57ebdebf385b22706825f9"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleA_31.sv",
+   "kind": "repo",
+   "sha256": "7969746da4e596f0291c1d7df89951dc394aca24a31a26f125b67a20a815a129"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleB.sv",
+   "kind": "repo",
+   "sha256": "4bfdab42e3578c4aafc6be6cc5682e6ef75ac67559524d747f4a5afa16cd1a08"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleB_1.sv",
+   "kind": "repo",
+   "sha256": "93a28529c5ce9898da38c5831578668d79caee3bb5d60bf0b372b2f00846e617"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleC.sv",
+   "kind": "repo",
+   "sha256": "6779707a0ea2281e9ac87133f0f60f8e3178e46603fb72835b59929fd63d96a3"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleC_1.sv",
+   "kind": "repo",
+   "sha256": "1ff34490ced39b9aac0fa3a8a3850ab018b7f81e1d55a1fd6e819d50d1e8215e"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_7.sv",
+   "kind": "repo",
+   "sha256": "1dc2ec173943b219533c5f648605209fdb1831fd4f079348e7c651fd12b1f7e4"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_8.sv",
+   "kind": "repo",
+   "sha256": "78baeda02da557609f184daea612222cd10f1b35d1248fc8295275b498e557c5"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_11.sv",
+   "kind": "repo",
+   "sha256": "3c2204fb539dfd0df72994630928d6db9af8461d0ed0bc605d4ae564f6cc527d"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_13.sv",
+   "kind": "repo",
+   "sha256": "ec817912ae615e48268ad8b0f9e9d5e76c6218420ab3078dd38f8e714f9a494f"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_15.sv",
+   "kind": "repo",
+   "sha256": "90513568fdd164d8b5c3cd58d627205e166b36cddb9b088a65fb48e3eba5e0dd"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleD_20.sv",
+   "kind": "repo",
+   "sha256": "0398ae14da035ac3701f441e67859fa009815b8f19a238a3147ec03a4e530e19"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleE.sv",
+   "kind": "repo",
+   "sha256": "88cd4dc135ffd6161ffcef7cfd9a05f179a42cf97d1ca26873de091ce1f543c5"
+  },
+  {
+   "path": "rtl/uncore/Queue2_TLBundleE_1.sv",
+   "kind": "repo",
+   "sha256": "6d0c5ac9748104c2b0724da4f5ae1ec97dd0adf474df566cf90c7bd871f74c4b"
+  },
+  {
+   "path": "golden-rtl/ram_2x76.sv",
+   "kind": "golden",
+   "sha256": "bd55fa162cd9c32c233112f6885201440aa066f44ed1a38786666eb252ba375f"
+  }
+ ],
+ "impl_commit": "9ce6e35807a4bbd0f27d383a0b0a90d2e55b78d2",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "UncoreTLQueues-20261020T013851Z-9ce6e3580",
+  "top": "Queue2_TLBundleD_13",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 233,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 233,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "Queue2_TLBundleD_13",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "failing_limit": 20,
+  "failing_truncated": false,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ },
+ "external_dependency": "MC_MEMORY_CONTRACT",
+ "mc_memory_objects": [
+  "ram_2x76"
+ ]
+}
