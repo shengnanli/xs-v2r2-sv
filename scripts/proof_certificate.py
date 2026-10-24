@@ -525,10 +525,58 @@ def _memory_impl_golden_check(child, doc, e, base, mod, ctx):
     return True
 
 
+def _recursion_ctx_key(expect_canonical, policy, fm_targets, fm_targets_unresolved, g1_root):
+    """done-ok 缓存的「策略上下文」部分：同一组判据输入才共享一次完整通过的结论。
+    绑定 expect_canonical / policy 全文 / FM target 全集与未展开项 / G1 根路径与其 MANIFEST 字节。"""
+    man = None
+    if g1_root:
+        mp = pathlib.Path(g1_root) / 'MANIFEST.tsv'
+        try:
+            man = hashlib.sha256(mp.read_bytes()).hexdigest()
+        except OSError:
+            man = None
+    return canon_digest({
+        'expect_canonical': expect_canonical,
+        'policy': policy,
+        'fm_targets': sorted(fm_targets) if fm_targets is not None else None,
+        'fm_targets_unresolved': sorted(str(x) for x in fm_targets_unresolved)
+                                 if fm_targets_unresolved else bool(fm_targets_unresolved),
+        'g1_root': str(g1_root) if g1_root else None,
+        'g1_manifest_sha256': man,
+    })
+
+
+def _validate_cert_node(repo, parent_commit, target, gdoc, gsha, expect_canonical, policy,
+                        fm_targets, fm_targets_unresolved, g1_root, stack, memo, ctx, gdepth):
+    """★统一递归访问状态（codex 0244 A）★：green_child 嵌套边与 impl 侧挂 golden 的证书边**共用**。
+
+    visiting = `stack`（当前递归路径上的 target）：调用方在进来之前已判过 `target in stack` ⇒ 环，直接拒；
+    done-ok  = `memo`：**只缓存完整通过**（True）的结论，失败一律不缓存、下次照算（失败串可能依赖当时的
+               路径，如环；成功则不依赖——成功意味着该节点的整个可达子图无环、且不触达当时栈上的任何节点，
+               在同一 commit / 证书字节 / 策略上下文下换一条路径到达它，结论不变）。
+    键 = (父 commit, target, 证书 blob sha256, 策略上下文摘要, 栈深, golden 链深)：深度也进键，
+         于是"浅处算过的通过"不会替深处吞掉 too_deep。
+    返回 (True, external_dependency) 或 (失败原因串, None)。判据本体 = validate_certificate_current，不另写。"""
+    key = (parent_commit, target, gsha, ctx, len(stack), gdepth)
+    hit = memo.get(key)
+    if hit is not None and hit[0] is True:
+        return hit
+    res = validate_certificate_current(
+        repo, parent_commit, target, gdoc, expect_canonical=expect_canonical, policy=policy,
+        fm_targets=fm_targets, fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root,
+        _stack=stack, _memo=memo, _ctx=ctx, _gdepth=gdepth)
+    if res is True:
+        out = (True, gdoc.get('external_dependency'))
+        memo[key] = out
+        return out
+    return (res, None)
+
+
 def validate_impl_golden_certified(repo, parent_commit, child, doc,
                                    policy=None, fm_targets=None,
                                    fm_targets_unresolved=None, g1_root=None,
-                                   _seen=None, _depth=0, _mc=None, _mc_hits=None):
+                                   expect_canonical=None, _stack=None, _memo=None, _ctx=None,
+                                   _depth=0, _mc=None, _mc_hits=None):
     """★递归★：child 的 impl 闭包里若挂着 golden 文件，那些文件必须**自身**有合格证书，
     且该证书证的 golden 与这里挂的**逐字节同一份**。返回 True 或失败原因串。
 
@@ -545,14 +593,18 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
     但★"查过"和"绿"是两件事★：一次人工核对回答"此刻对不对"，
     一道闸回答"以后变了会不会有人喊"。这个函数是后者。
 
-    递归：golden-in-impl 的那个模块的证书，自己也可能再挂 golden，故继续往下查；
-    `_seen` 防环，`_depth` 兜底（证书链不该深过这个数，深了就是出了别的问题）。
+    递归（codex 0244 A 窄修）：golden-in-impl 的那个模块的证书，必须**自身 current-valid**——
+    逐条过 (i)-(iv) 之后，交给公共核心 `validate_certificate_current`（它复算该证书自己的
+    impl / 脚本 / 声明 / target-config / G1 / 工具 / appvar，并继续往下查它的 impl-golden 与 green_child）。
+    访问状态与 green_child 嵌套共用（见 `_validate_cert_node`）：`_stack` = visiting，命中即判环拒；
+    `_memo` = done-ok，只缓存完整通过。旧的 `_seen`（把"已开始访问"当作"已通过"跳过）已删除。
+    `_depth` 兜底 golden 链深（证书链不该深过这个数，深了就是出了别的问题）。
     """
     MAX_DEPTH = 8
     if _depth > MAX_DEPTH:
         return 'green_child_impl_golden_chain_too_deep:%s' % child
-    if _seen is None:
-        _seen = set()
+    stack = list(_stack) if _stack else [child]
+    memo = _memo if _memo is not None else {}
     gold = impl_golden_entries(doc)
     mem_ctx = None                     # 本证书自己的 memory 批准上下文（惰性；不继承父证书、不走 _seen）
     for e in gold:
@@ -569,11 +621,11 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
             if r is not True:
                 return r
             continue
-        # ★MC 命中按「当前层」计（2026-10-06 集成者裁定）★：`_seen` 只给递归去重 / 防环用，不许吞掉本层的 hit。
+        # ★MC 命中按「当前层」计（2026-10-06 集成者裁定）★：递归去重 / 防环（原 `_seen`，现 `_stack` / `_memo`）不许吞掉本层的 hit。
         #   反例（FTB）：FTB 自己 impl 挂 array_1 / sram_array_…_bp_ftb，又挂 golden SRAMTemplate_36（其证书也挂这两份）；
         #   旧写法先在递归里把它们记进共享的 `_seen`，回到 FTB 本层就 `continue` 掉，本层 0 hit
         #   ⇒ 如实记着 MC_MEMORY_CONTRACT 的 FTB / FTBBank 证书被判 external_dependency_spurious。
-        #   MC 分支是逐条复算、无副作用、不递归，每层每条照查、照计 hit；只有走证书递归的 FM target 才用 `_seen` 去重。
+        #   MC 分支是逐条复算、无副作用、不递归，每层每条照查、照计 hit；只有走证书递归的 FM target 才用 visiting / done-ok 状态。
         # (0) ★codex 0222★ 精确命中 MC 存储契约登记表：从 G1 复算登记的 sha / 端口 / 存储语义 / 子模块链，
         #     并核对使用形态。命中后不再要求它是 FM target（存储层不重写）；登记了但复算不过 = 红，不往下落。
         if _mc is None:
@@ -595,9 +647,6 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
             if _mc_hits is not None:
                 _mc_hits.append(mod)
             continue
-        if mod in _seen:
-            continue
-        _seen.add(mod)
         # (i) 那个模块必须自身是 FM target —— 与 D57 尾条同一条判据，不许在这里放松
         if fm_targets is None:
             return 'green_child_impl_golden_universe_unavailable:%s' % child
@@ -606,7 +655,7 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
                 return 'green_child_impl_golden_universe_unresolved:%s:%s' % (child, mod)
             return 'green_child_impl_golden_not_fm_target:%s:%s' % (child, mod)
         # (ii) 必须有 tracked 证书（只走 git show，工作树放一份不算）
-        gdoc, _gsha, gerr = load_certificate(repo, parent_commit, mod)
+        gdoc, gsha, gerr = load_certificate(repo, parent_commit, mod)
         if gerr:
             return 'green_child_impl_golden_uncertified:%s:%s:%s' % (child, mod, gerr)
         derrs = validate_document(gdoc)
@@ -626,13 +675,17 @@ def validate_impl_golden_certified(repo, parent_commit, child, doc,
         if got[0].get('sha256') != want:
             return ('green_child_impl_golden_bytes_mismatch:%s:%s:cert=%s,impl=%s'
                     % (child, mod, (got[0].get('sha256') or '?')[:12], (want or '?')[:12]))
-        # (v) 它的 impl 若又挂 golden，继续往下（递归）
-        r = validate_impl_golden_certified(
-            repo, parent_commit, mod, gdoc, policy=policy, fm_targets=fm_targets,
-            fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root,
-            _seen=_seen, _depth=_depth + 1, _mc=_mc, _mc_hits=None)
+        # (v) ★codex 0244 A★ 那份子证书自身必须 current-valid（公共核心；它再往下查自己的 impl-golden / green_child）。
+        #     visiting：已在递归路径上 ⇒ 环（A 的证明靠 B、B 的证明又靠 A = 循环论证），拒。
+        if mod in stack:
+            return 'green_child_impl_golden_cycle:%s' % '->'.join(stack + [mod])
+        if _ctx is None:
+            _ctx = _recursion_ctx_key(expect_canonical, policy, fm_targets, fm_targets_unresolved, g1_root)
+        r, _ed = _validate_cert_node(
+            repo, parent_commit, mod, gdoc, gsha, expect_canonical, policy, fm_targets,
+            fm_targets_unresolved, g1_root, stack, memo, _ctx, _depth + 1)
         if r is not True:
-            return r
+            return 'green_child_impl_golden_not_current:%s:%s:%s' % (child, mod, r)
     return True
 
 
@@ -768,7 +821,7 @@ def parse_tcl_name_list(v):
 def validate_certificate_current(repo, parent_commit, child, doc,
                                  expect_canonical=None, policy=None,
                                  fm_targets=None, fm_targets_unresolved=None,
-                                 g1_root=None, _stack=None, _memo=None):
+                                 g1_root=None, _stack=None, _memo=None, _ctx=None, _gdepth=0):
     """★公共 current-valid 核心（codex 0219 §1 / 0222 §2）★ —— green_child 与 D3「经由 child 证书」
     （fm_verdict._child_cert_current）**共用这一份**，不许再分叉。返回 True 或失败原因串。
 
@@ -899,11 +952,18 @@ def validate_certificate_current(repo, parent_commit, child, doc,
         if man.get(base) != e['sha256']:
             return 'green_child_golden_changed:%s:%s' % (child, base)
 
-    # 3d：impl 侧挂的 golden（MC 契约 / 递归证书）
+    # 3d：impl 侧挂的 golden（MC 契约 / 递归证书——子证书自身也走本函数判 current-valid）
+    # visiting 栈 / done-ok memo / 策略上下文与下面的嵌套 green_child 递归共用一份（codex 0244 A）
+    stack = list(_stack or []) + [child]
+    memo = _memo if _memo is not None else {}
+    if _ctx is None:
+        _ctx = _recursion_ctx_key(expect_canonical, policy, fm_targets, fm_targets_unresolved, g1_root)
     hits = []
     r = validate_impl_golden_certified(
         repo, parent_commit, child, doc, policy=policy, fm_targets=fm_targets,
-        fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root, _mc_hits=hits)
+        fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root,
+        expect_canonical=expect_canonical, _stack=stack, _memo=memo, _ctx=_ctx,
+        _depth=_gdepth, _mc_hits=hits)
     if r is not True:
         return r
 
@@ -918,11 +978,9 @@ def validate_certificate_current(repo, parent_commit, child, doc,
     # ★嵌套 green_child 递归复核（codex 0224 §2）★：本证书 allow 里的每个 green_child design，
     # r/i 全部条目须声明同一个非空 certificate_sha256 与同一 child_target；从**根父 commit** 读孙级
     # tracked 证书，核 blob sha，再以根父 commit 为准递归同一 current-valid 校验。
-    # recursion stack 判环、深度上限 MAX_NEST_DEPTH；memo 只做性能优化（键含证书 sha），不代替判环。
-    stack = list(_stack or []) + [child]
+    # recursion stack 判环、深度上限 MAX_NEST_DEPTH；memo 只缓存完整通过（键含证书 sha 与策略上下文），不代替判环。
     if len(stack) > MAX_NEST_DEPTH:
         return 'green_child_nested_too_deep:%s' % '->'.join(stack)
-    memo = _memo if _memo is not None else {}
     child_mc = []
     by_design = {}
     for o in (allow or {}).get('objects') or []:
@@ -939,9 +997,10 @@ def validate_certificate_current(repo, parent_commit, child, doc,
         gsha, gt = next(iter(shas)), next(iter(tgts))
         if gt in stack:
             return 'green_child_nested_cycle:%s' % '->'.join(stack + [gt])
-        key = (parent_commit, gt, gsha)
-        if key in memo:
-            res, gdoc_ed = memo[key]
+        # done-ok 命中（同 commit / 同声明 sha / 同策略上下文 / 同深度，且当初已核过 blob==声明 sha）
+        hit = memo.get((parent_commit, gt, gsha, _ctx, len(stack), 0))
+        if hit is not None and hit[0] is True:
+            res, gdoc_ed = hit
         else:
             gdoc, gblob, gerr = load_certificate(repo, parent_commit, gt)
             if gerr:
@@ -952,12 +1011,9 @@ def validate_certificate_current(repo, parent_commit, child, doc,
             elif gdoc.get('target') != gt:
                 res, gdoc_ed = 'green_child_nested_target_mismatch:%s->%s' % (child, gt), None
             else:
-                res = validate_certificate_current(
-                    repo, parent_commit, gt, gdoc, expect_canonical=expect_canonical, policy=policy,
-                    fm_targets=fm_targets, fm_targets_unresolved=fm_targets_unresolved,
-                    g1_root=g1_root, _stack=stack, _memo=memo)
-                gdoc_ed = gdoc.get('external_dependency')
-            memo[key] = (res, gdoc_ed)
+                res, gdoc_ed = _validate_cert_node(
+                    repo, parent_commit, gt, gdoc, gsha, expect_canonical, policy, fm_targets,
+                    fm_targets_unresolved, g1_root, stack, memo, _ctx, 0)
         if res is not True:
             return res if res.startswith('green_child_nested') else 'green_child_nested_via_%s:%s' % (child, res)
         if gdoc_ed == EXTERNAL_DEPENDENCY_MC:
